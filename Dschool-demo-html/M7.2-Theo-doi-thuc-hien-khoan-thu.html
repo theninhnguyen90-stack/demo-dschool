@@ -1,0 +1,1851 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M7.2 Theo dõi thực hiện khoản thu — Dschool</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f1f5f9;--surface:#fff;--line:#e2e8f0;--line2:#cbd5e1;
+ --ink:#0f172a;--ink2:#475569;--ink3:#94a3b8;--brand:#1d4ed8;--brand-soft:#eff6ff;
+ --red:#dc2626;--red-soft:#fef2f2;--amber:#d97706;--amber-soft:#fffbeb;
+ --green:#059669;--green-soft:#ecfdf5;--violet:#7c3aed}
+body{font:14px/1.5 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font:inherit}
+
+.hdr{height:56px;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 15px;position:sticky;top:0;z-index:40}
+.logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px}
+.logo .mark{width:28px;height:28px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px}
+.school{color:var(--ink2);font-size:12.5px;border-left:1px solid var(--line);padding-left:12px;max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sel{border:1px solid var(--line2);border-radius:7px;padding:5px 9px;font-size:12.5px;background:#fff}
+.sel:disabled{background:var(--bg);color:var(--ink2)}
+.spacer{flex:1}
+.icobtn{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;position:relative;font-size:15px}
+.dot{position:absolute;top:3px;right:3px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--violet);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700}
+
+.wrap{display:flex;min-height:calc(100vh - 56px)}
+.side{width:222px;flex:0 0 222px;background:var(--surface);border-right:1px solid var(--line);padding:10px 8px;position:sticky;top:56px;max-height:calc(100vh - 56px);overflow-y:auto}
+.sgrp{font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;padding:12px 10px 5px}
+.snav{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:var(--ink2);font-size:12.5px;margin-bottom:1px}
+.snav:hover{background:var(--bg)}
+.snav.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
+.snav.off{opacity:.34;pointer-events:none}
+.main{flex:1;padding:15px 18px 44px;min-width:0}
+
+.tophd{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+h1{font-size:19px;font-weight:700}
+.crumb{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2);margin-bottom:5px}
+.crumb button{color:var(--brand);font-weight:600}
+.btn{border:1px solid var(--line2);background:#fff;border-radius:8px;padding:7px 12px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--bg)}
+.btn.p{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn.g{background:var(--green);color:#fff;border-color:var(--green)}
+.btn.d{background:var(--red);color:#fff;border-color:var(--red)}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn.xs{padding:3px 8px;font-size:11.5px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.tabs{display:flex;gap:3px;border-bottom:2px solid var(--line);margin:12px 0 0;overflow-x:auto}
+.tab1{padding:9px 13px;font-size:13.5px;font-weight:600;color:var(--ink2);border-bottom:2px solid transparent;margin-bottom:-2px;display:flex;align-items:center;gap:7px;white-space:nowrap}
+.tab1.on{color:var(--brand);border-bottom-color:var(--brand)}
+.tab1 .b{background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:1px 7px;border-radius:9px}
+.tab1 .c{background:var(--bg);color:var(--ink2);font-size:11px;font-weight:700;padding:1px 7px;border-radius:9px}
+.tab1.on .c{background:var(--brand);color:#fff}
+
+.bar{display:flex;gap:7px;align-items:center;flex-wrap:wrap;padding:11px 0}
+.inp{border:1px solid var(--line2);border-radius:8px;padding:7px 11px;font-size:13px;background:#fff;min-width:240px}
+.fs{border:1px solid var(--line2);border-radius:8px;padding:7px 9px;font-size:12.5px;background:#fff}
+.sum{display:flex;gap:9px;font-size:12px;color:var(--ink2);margin-left:auto;flex-wrap:wrap;align-items:center}
+.sum b{color:var(--ink)}
+.chip{border:1px solid var(--line2);border-radius:999px;padding:4px 11px;font-size:12px;background:#fff;white-space:nowrap}
+.chip.on{background:var(--brand-soft);border-color:var(--brand);color:var(--brand);font-weight:700}
+.scopebar{background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;padding:8px 12px;border-radius:9px;font-size:12.5px;margin-bottom:9px;display:flex;gap:8px;align-items:flex-start}
+.kybar{background:var(--amber-soft);border:1px solid #fde68a;color:#92400e;padding:8px 12px;border-radius:9px;font-size:12.5px;margin-bottom:9px;display:flex;gap:8px;align-items:flex-start}
+.cbbar{background:var(--red-soft);border:1px solid #fecaca;color:#991b1b;padding:8px 12px;border-radius:9px;font-size:12.5px;margin-bottom:9px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+.listw{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.stage{display:flex;gap:13px;align-items:flex-start}
+.stage .listw{flex:1;min-width:0}
+.panel{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:none}
+.stage.open .panel{display:block}
+@media(max-width:1180px){.stage.open .listw{display:none}.stage.open .panel{flex:1}}
+
+.grph{padding:8px 13px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:12px;font-weight:700;color:var(--ink2);display:flex;gap:9px;align-items:center;cursor:pointer;flex-wrap:wrap}
+.grph:hover{background:var(--brand-soft)}
+.grph .ar{color:var(--ink3);width:11px;font-size:11px}
+.grph .gs{margin-left:auto;font-size:11.5px;font-weight:600;color:var(--ink2)}
+.grph.lv2{padding-left:26px;background:#fcfdff}
+.row{border-bottom:1px solid var(--line);padding:10px 13px;cursor:pointer}
+.row:hover{background:var(--brand-soft)}
+.row.on{background:#eff6ff}
+.rh{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.rh b{font-size:13.5px}
+.rmeta{font-size:11.5px;color:var(--ink3);margin-top:3px;display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.money{font-variant-numeric:tabular-nums;font-weight:700}
+.money.due{color:var(--red)}
+.money.mut{color:var(--ink3);font-weight:400}
+.strike{text-decoration:line-through;color:var(--ink3)}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:8px 9px;border-bottom:1px solid var(--line);background:#f8fafc;white-space:nowrap}
+td{padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+.wrapx{overflow-x:auto}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+tbody tr:hover{background:#f8fafc}
+
+.st2{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;white-space:nowrap;display:inline-block}
+.st2.o{background:var(--green-soft);color:var(--green)}
+.st2.w{background:var(--amber-soft);color:var(--amber)}
+.st2.r{background:var(--red-soft);color:var(--red)}
+.st2.n{background:var(--bg);color:var(--ink2)}
+.st2.b{background:#e0e7ff;color:#3730a3}
+.st2.v{background:#ede9fe;color:#5b21b6}
+
+.ph{padding:12px 15px;border-bottom:1px solid var(--line);display:flex;gap:13px;align-items:flex-start;flex-wrap:wrap}
+.ph h2{font-size:15.5px;font-weight:700}
+.ph .m{font-size:12px;color:var(--ink2);margin-top:3px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pill{font-size:10.5px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--ink2)}
+.pbody{padding:14px 15px;max-height:calc(100vh - 210px);overflow-y:auto}
+.sech2{font-size:11px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 7px}
+.sech2:first-child{margin-top:0}
+
+.info{background:var(--brand-soft);border:1px solid #bfdbfe;color:#1e40af;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:11px}
+.warn{background:var(--amber-soft);border:1px solid #fde68a;color:#92400e;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:11px}
+.danger{background:var(--red-soft);border:1px solid #fecaca;color:#991b1b;padding:10px 13px;border-radius:9px;font-size:12.5px;line-height:1.65;margin-bottom:11px}
+.ro{background:#f8fafc;border:1px solid var(--line);color:var(--ink2);padding:8px 11px;border-radius:9px;font-size:12px;margin-bottom:11px}
+.ok{background:var(--green-soft);border:1px solid #a7f3d0;color:#065f46;padding:9px 12px;border-radius:9px;font-size:12.5px;margin-bottom:11px}
+.rolnk{font-size:10px;font-weight:700;color:var(--brand);background:#eef2ff;border:1px solid #c7d2fe;border-radius:999px;padding:1px 7px;cursor:pointer;white-space:nowrap}
+.ct2{font-size:11px;color:var(--ink3);font-family:ui-monospace,monospace;background:var(--bg);padding:2px 6px;border-radius:5px;display:inline-block}
+
+.nh4{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px;margin-bottom:11px}
+.nbox{border:1px solid var(--line);border-radius:11px;padding:10px 13px;background:var(--surface)}
+.nbox .v{font-size:22px;font-weight:800;line-height:1.15;font-variant-numeric:tabular-nums}
+.nbox .l{font-size:11.5px;color:var(--ink2);font-weight:600;min-height:30px}
+.nbox .s{font-size:10.5px;color:var(--ink3);margin-top:4px}
+.nbox.n1{background:var(--green-soft);border-color:#a7f3d0}
+.nbox.n2{background:#eff6ff;border-color:#bfdbfe}
+.nbox.n3{background:var(--amber-soft);border-color:#fde68a}
+.nbox.n4{background:var(--red-soft);border-color:#fecaca}
+.nbox.n5{background:#f8fafc}
+
+.stepl{display:flex;gap:0;margin:10px 0 14px;flex-wrap:wrap}
+.stp{flex:1;min-width:140px;border:1px solid var(--line);padding:8px 11px;font-size:12px;background:#fff;text-align:left}
+.stp:first-child{border-radius:9px 0 0 9px}
+.stp:last-child{border-radius:0 9px 9px 0}
+.stp+.stp{border-left:none}
+.stp b{display:block;font-size:12.5px}
+.stp.done{background:var(--green-soft);border-color:#a7f3d0;color:#065f46}
+.stp.now{background:var(--brand-soft);border-color:#bfdbfe;color:#1e40af}
+.stp .n{font-size:10.5px;color:var(--ink3)}
+
+.tl{border-left:2px solid var(--line);margin-left:7px;padding-left:15px}
+.tli{position:relative;padding:7px 0;font-size:12.5px}
+.tli::before{content:"";position:absolute;left:-21px;top:12px;width:9px;height:9px;border-radius:50%;background:var(--brand);border:2px solid #fff}
+.tli.w::before{background:var(--amber)}.tli.r::before{background:var(--red)}.tli.g::before{background:var(--green)}
+.tli b{display:block;font-weight:600}
+.tli .mm{color:var(--ink3);font-size:11.5px}
+
+.mask{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:60;display:none;place-items:center}
+.mask.on{display:grid}
+.modal{background:#fff;border-radius:13px;width:900px;max-width:95vw;max-height:88vh;display:flex;flex-direction:column}
+.modal.sm{width:620px}
+.mh{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700}
+.mb{padding:15px 18px;overflow-y:auto;font-size:13px}
+.mf{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.fld{margin-bottom:10px;font-size:12.5px;font-weight:700}
+.fldi{width:100%;border:1px solid var(--line2);border-radius:8px;padding:8px 10px;margin-top:4px;font-weight:400}
+.res{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:10px}
+.resh{padding:8px 12px;font-size:12.5px;font-weight:700}
+.resh.ok{background:var(--green-soft);color:#065f46}
+.resh.skip{background:var(--amber-soft);color:#92400e;border-top:1px solid var(--line)}
+.resb{padding:8px 12px;font-size:12.5px}
+.resb .rr{padding:5px 0;border-bottom:1px dashed var(--line);display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.resb .rr:last-child{border-bottom:none}
+.resb .rr b{min-width:34px;text-align:right;font-variant-numeric:tabular-nums}
+.blk{background:var(--red-soft);border:1px solid #fecaca;border-radius:10px;padding:11px 13px;font-size:12.5px;margin-bottom:11px}
+.blk b{color:#991b1b}
+.blk .li{display:flex;gap:8px;align-items:baseline;padding:4px 0;color:#991b1b}
+
+.kv{display:grid;grid-template-columns:150px 1fr;gap:6px 11px;font-size:12.5px;margin-bottom:11px}
+.kv .k{color:var(--ink3)}
+.rolebar{background:#0f172a;color:#cbd5e1;padding:8px 15px;display:flex;align-items:center;gap:7px;font-size:12.5px;flex-wrap:wrap}
+.rolebar b{color:#fff}
+.rb{border:1px solid #334155;border-radius:999px;padding:3px 10px;font-size:12px;color:#cbd5e1}
+.rb:hover{background:#1e293b;color:#fff}
+.rb.on{background:#fff;color:#0f172a;border-color:#fff;font-weight:700}
+.cb{background:#1e293b;color:#94a3b8;border:1px solid #334155;border-radius:7px;padding:3px 9px;font-size:11.5px;margin-left:10px}
+.cb.on{background:#0ea5e9;color:#fff;border-color:#0ea5e9}
+.note{margin-left:auto;color:#64748b;font-size:11.5px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(90px);background:#0f172a;color:#fff;padding:11px 17px;border-radius:9px;font-size:13px;z-index:80;transition:transform .22s;max-width:92vw}
+.toast.on{transform:translateX(-50%)}
+.empty{padding:34px;text-align:center;color:var(--ink3)}
+.lgd{display:flex;gap:14px;font-size:11.5px;color:var(--ink3);padding:9px 13px;border-top:1px solid var(--line);flex-wrap:wrap;align-items:center}
+
+.dsg{display:none;background:#fdf4ff;border:1px solid #f0abfc;color:#86198f;padding:8px 11px;border-radius:9px;font-size:12px;line-height:1.6;margin-bottom:10px}
+body.showdsg .dsg{display:block}
+.dsg b{color:#701a75}
+
+.dotstrip{display:flex;gap:9px;overflow-x:auto;padding-bottom:4px;margin-bottom:11px}
+.dotc{flex:0 0 auto;min-width:212px;border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:#fff;cursor:pointer;text-align:left}
+.dotc:hover{border-color:var(--brand);background:var(--brand-soft)}
+.dotc.nhap{background:var(--amber-soft);border-color:#fde68a}
+.dotc b{display:block;font-size:12.5px}
+.dotc .m{font-size:11px;color:var(--ink2);margin-top:3px}
+.dotc .m2{font-size:11px;color:var(--ink3);margin-top:2px}
+
+.mgline{font-size:11.5px;color:var(--ink2);background:#f8fafc;border-left:2px solid var(--violet);padding:5px 9px;margin-top:4px;border-radius:0 6px 6px 0;line-height:1.55}
+.mgline .bo{color:var(--ink3);display:block;margin-top:2px}
+.qs{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:9px;margin-bottom:11px}
+.qhs{border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:#fff;cursor:pointer;text-align:left}
+.qhs:hover{border-color:var(--brand);background:var(--brand-soft)}
+.qhs b{font-size:13px}
+.qhs .m{font-size:11.5px;color:var(--ink2);margin-top:2px}
+.menhgia{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:7px;margin-top:8px}
+.mgi{border:1px solid var(--line);border-radius:9px;padding:6px 9px;font-size:11.5px;background:#fff}
+.mgi .l{color:var(--ink3);font-size:10.5px}
+.mgi input{width:100%;border:1px solid var(--line2);border-radius:6px;padding:3px 6px;text-align:right;margin-top:3px;font-variant-numeric:tabular-nums}
+.mgi .t{font-size:11px;color:var(--ink2);text-align:right;margin-top:3px;font-variant-numeric:tabular-nums}
+.gdc{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:9px;background:#fff}
+.gdc .hd2{display:flex;gap:9px;align-items:center;flex-wrap:wrap;font-size:12.5px}
+.gdc .noi{font-family:ui-monospace,monospace;font-size:11.5px;color:var(--ink2);background:var(--bg);padding:4px 8px;border-radius:6px;margin:6px 0}
+.gsug{display:flex;gap:8px;align-items:center;padding:5px 0;font-size:12px;flex-wrap:wrap}
+.gsug .rk{font-size:10px;font-weight:800;background:#e0e7ff;color:#3730a3;padding:1px 6px;border-radius:5px}
+.wq{display:flex;gap:10px;align-items:flex-start;padding:10px 13px;border-bottom:1px solid var(--line);cursor:pointer}
+.wq:hover{background:var(--brand-soft)}
+.wq.on{background:#eff6ff}
+.wq .ic{font-size:17px;flex:0 0 22px}
+.wq b{font-size:13px}
+.wq .m{font-size:11.5px;color:var(--ink3);margin-top:2px}
+.doc{border:1px solid var(--line2);border-radius:7px;padding:20px 24px;font-size:12px;line-height:1.75;background:#fff}
+.doc .c{text-align:center}
+.doc .c.b{font-weight:800;font-size:14px;margin:4px 0}
+.doc .c.s{font-size:11px;color:var(--ink2);margin-bottom:12px}
+.doc .sig{display:flex;justify-content:space-around;text-align:center;margin-top:20px;font-size:11.5px}
+.hint{font-size:11px;color:var(--ink3);margin-top:3px;line-height:1.5}
+.vbar{display:flex;gap:0;margin:9px 0 12px;flex-wrap:wrap}
+.vst{flex:1;min-width:120px;border:1px solid var(--line);padding:7px 10px;font-size:11.5px;background:#fff;text-align:center}
+.vst:first-child{border-radius:9px 0 0 9px}.vst:last-child{border-radius:0 9px 9px 0}
+.vst+.vst{border-left:none}
+.vst b{display:block;font-size:12px}
+.vst.done{background:var(--green-soft);border-color:#a7f3d0;color:#065f46}
+.vst.now{background:var(--brand-soft);border-color:#bfdbfe;color:#1e40af;font-weight:700}
+.vst.skip{opacity:.45}
+.fgrid{display:grid;grid-template-columns:170px 1fr;gap:7px 12px;font-size:12.5px;align-items:start}
+.fgrid .k{color:var(--ink3);padding-top:3px}
+.fgrid .hint{margin-top:2px}
+.mcrow{display:grid;grid-template-columns:1fr 1fr 120px 1fr;gap:7px;font-size:12px;padding:6px 0;border-bottom:1px dashed var(--line);align-items:center}
+.mcrow.h{font-weight:700;color:var(--ink3);font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--line)}
+.pbadge{font-size:9.5px;font-weight:800;background:#ede9fe;color:#5b21b6;padding:1px 6px;border-radius:4px}
+.mocg{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:11px;background:var(--surface)}
+.mocg .gh{padding:8px 13px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:12.5px;font-weight:700;display:flex;gap:9px;align-items:center}
+.mocr{display:flex;gap:10px;align-items:center;padding:10px 13px;border-bottom:1px solid var(--line);cursor:pointer;flex-wrap:wrap;font-size:12.5px}
+.mocr:last-child{border-bottom:none}
+.mocr:hover{background:var(--brand-soft)}
+.mocr.on{background:#eff6ff}
+.mocr .lo{font-size:10px;font-weight:800;padding:2px 7px;border-radius:5px;background:var(--bg);color:var(--ink2);white-space:nowrap}
+.mocr .lo.dau{background:#e0e7ff;color:#3730a3}
+.mocr .lo.cuoi{background:#fef3c7;color:#92400e}
+.dk{font-size:11.5px;padding:2px 8px;border-radius:5px;font-weight:600;white-space:nowrap}
+.dk.ok{background:var(--green-soft);color:#065f46}
+.dk.no{background:var(--red-soft);color:#991b1b}
+.cfgbox{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin-bottom:12px}
+.cfgi{border:1px solid var(--line);border-radius:11px;padding:10px 13px;background:var(--surface)}
+.cfgi .l{font-size:11.5px;color:var(--ink2);font-weight:600}
+.cfgi .v{font-size:17px;font-weight:800;margin:3px 0}
+.cfgi .s{font-size:10.5px;color:var(--ink3)}
+.ctag{font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;background:var(--bg);color:var(--ink2);white-space:nowrap}
+.ctag.bg{background:#ede9fe;color:#5b21b6}
+.ctag.tr{background:#dbeafe;color:#1e40af}
+.ctag.sa{background:#fef3c7;color:#92400e}
+.ctag.dk2{background:#fce7f3;color:#9d174d}
+.nhomb{display:inline-block;font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:5px;white-space:nowrap}
+.nhomb.dong{background:#dbeafe;color:#1e40af}
+.nhomb.dk{background:#fce7f3;color:#9d174d}
+.hdtag{font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:4px;white-space:nowrap}
+.hdtag.gop{background:#e0e7ff;color:#3730a3}
+.hdtag.rieng{background:#ffedd5;color:#9a3412}
+.hdbox{border:1px solid var(--line);border-radius:11px;padding:11px 13px;background:#f8fafc;margin-bottom:11px}
+.hdbox .t{font-size:13px;font-weight:700;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hdbox .m{font-size:11.5px;color:var(--ink2);margin-top:4px;line-height:1.55}
+.hdprev{background:#fff;border:1px dashed var(--line2);border-radius:9px;padding:9px 11px;margin-top:8px;font-size:11.5px;line-height:1.7}
+.hdprev b{font-variant-numeric:tabular-nums}
+.grph.lv1{background:#eef2ff;color:#3730a3;font-size:12.5px;padding:9px 13px}
+.grph.lv1:hover{background:#e0e7ff}
+.grph.lv2{padding-left:30px;background:#f8fafc;font-size:12px}
+.grph.lv2:hover{background:var(--brand-soft)}
+.grph .ar{width:12px;flex:0 0 12px;display:inline-block;text-align:center}
+.grph .sub{font-weight:400;color:var(--ink3);font-size:11px}
+.grph .cnt{background:#fff;border:1px solid var(--line2);border-radius:999px;padding:1px 8px;font-size:11px;font-weight:700;color:var(--ink2)}
+.grph .cnt.warn{background:var(--amber-soft);border-color:#fde68a;color:#92400e}
+.row.lv3{padding-left:30px}
+.n4{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:9px 0}
+.n4 div{background:#fff;padding:8px 10px}
+.n4 .l{font-size:10px;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em}
+.n4 .v{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;margin-top:2px}
+.n4 .s{font-size:10.5px;color:var(--ink3);margin-top:2px}
+.n4 .v.pos{color:var(--green)}.n4 .v.neg{color:var(--red)}.n4 .v.mut{color:var(--ink3);font-weight:400;font-size:12px}
+.tts{font-size:10px;font-weight:800;padding:2px 7px;border-radius:5px;white-space:nowrap;display:inline-block}
+.tts.du{background:var(--green-soft);color:var(--green)}
+.tts.thieu{background:var(--amber-soft);color:var(--amber)}
+.tts.chua{background:var(--bg);color:var(--ink2)}
+.tts.chuaqh{background:var(--red-soft);color:var(--red)}
+.tts.bu{background:#dbeafe;color:#1e40af}
+.hdchip{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;border:1px solid;white-space:nowrap;cursor:pointer}
+.hdchip.du{background:var(--green-soft);color:#065f46;border-color:#a7f3d0}
+.hdchip.thieu{background:var(--amber-soft);color:#92400e;border-color:#fde68a}
+.hdchip.chua{background:#fff;color:var(--ink2);border-color:var(--line2)}
+.hdchip.qh{background:var(--red-soft);color:#991b1b;border-color:#fecaca}
+.hdchip.bu{background:#dbeafe;color:#1e40af;border-color:#bfdbfe}
+.prog2{height:6px;border-radius:3px;background:var(--line);overflow:hidden;width:110px;display:inline-block;vertical-align:middle}
+.prog2 i{display:block;height:100%;background:var(--green)}
+.prog2.warn i{background:var(--amber)}.prog2.bad i{background:var(--red)}
+.dumon{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px}
+.dumon .c{border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:#fff}
+.dumon .c.ns{background:#fdf4ff;border-color:#f0abfc}
+.dumon .c .l{font-size:11px;font-weight:700;color:var(--ink2)}
+.dumon .c .v{font-size:17px;font-weight:800;margin:3px 0;font-variant-numeric:tabular-nums}
+.dumon .c .s{font-size:10.5px;color:var(--ink3)}
+/* ---- nhóm hóa đơn trong panel học sinh ---- */
+.hdgrp{border:1px solid var(--line);border-radius:10px;margin-bottom:10px;overflow:hidden;background:var(--surface)}
+.hdgrp.du{border-color:#a7f3d0}
+.hdgrp.qh{border-color:#fecaca}
+.hdgh{display:flex;gap:7px;align-items:center;flex-wrap:wrap;padding:9px 11px;background:var(--bg);border-bottom:1px solid var(--line);font-size:12.5px}
+.hdgrp.du .hdgh{background:var(--green-soft)}
+.hdgrp.qh .hdgh{background:var(--red-soft)}
+.hdgm{padding:6px 11px;font-size:11.5px;color:var(--ink2);border-bottom:1px solid var(--line)}
+.hdga{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:8px 11px;background:#fcfcfd;border-top:1px solid var(--line)}
+table.ktb{font-size:11.5px}
+table.ktb td{vertical-align:top}
+/* ---- khối gập trong tab Thống kê ---- */
+.khoi{border:1px solid var(--line);border-radius:12px;background:var(--surface);margin-bottom:11px;overflow:hidden}
+.khh{display:flex;gap:8px;align-items:center;padding:11px 13px;cursor:pointer;user-select:none;font-size:13px}
+.khh:hover{background:var(--bg)}
+.khoi.on .khh{border-bottom:1px solid var(--line);background:var(--bg)}
+.khh .sub{margin-left:auto;font-size:11.5px;color:var(--ink3);font-weight:400;text-align:right}
+.khb{padding:12px 13px}
+/* ---- dòng nhóm trong bảng thống kê ---- */
+tr.trg{cursor:pointer;background:var(--bg);font-weight:600}
+tr.trg:hover{background:#e8eef7}
+tr.trl td{background:#fcfcfd}
+/* ---- xem trước chứng từ ---- */
+.bl{border:1px solid var(--line2);border-radius:10px;overflow:hidden}
+.blh{padding:12px 14px;background:var(--brand-soft);border-bottom:1px solid var(--line);text-align:center}
+.blh .t{font-weight:800;font-size:13.5px;letter-spacing:.4px}
+.blh .s{font-size:11px;color:var(--ink2);margin-top:3px}
+.blb{padding:12px 14px}
+
+.srcbox2{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:2px 0 10px}
+.srcbox2 .c{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface)}
+.srcbox2 .c.ns{border-color:#fbcfe8;background:#fdf2f8}
+.srcbox2 .l{font-size:11px;color:var(--ink2)}
+.srcbox2 .v{font-size:17px;font-weight:800;margin-top:2px}
+.srcbox2 .s{font-size:11px;color:var(--ink3);margin-top:3px}
+</style>
+</head>
+<body>
+<script>/* sidebar da chuyen ve index.html — node an giu cho JS cu khong vo */
+(function(){var n=document.createElement("nav");n.id="side";n.style.display="none";document.documentElement.appendChild(n)})();</script>
+
+<div class="rolebar">
+  <b>Vai trò:</b>
+  <button class="rb on" data-r="FULL">🔓 Đủ quyền (demo)</button>
+  <button class="rb" data-r="KT">Kế toán</button>
+  <button class="rb" data-r="TQ">Thủ quỹ ĐT B</button>
+  <button class="rb" data-r="GVCN">GVCN 9A2</button>
+  <button class="rb" data-r="PHT">PHT phụ trách ĐT B</button>
+  <button class="rb" data-r="HT">Hiệu trưởng</button>
+  <button class="cb" id="dsgbtn">💡 Ghi chú thiết kế</button>
+  <span class="note">Mặc định <b>Đủ quyền</b>. Demo đặt hôm nay <b>28/09/2026</b> để có hai kỳ đã phát hành — cơ chế dư đầu kỳ cần vậy.</span>
+</div>
+
+<header class="hdr">
+  <div class="logo"><span class="mark">DS</span> Dschool</div>
+  <div class="school">TH, THCS &amp; THPT Nguyễn Tất Thành</div>
+  <select class="sel" id="nam"><option>2026-2027</option><option>2025-2026</option></select>
+  <select class="sel" id="dtsel"></select>
+  <div class="spacer"></div>
+  <button class="icobtn">🔔<span class="dot" id="bell">5</span></button>
+  <div class="avatar" id="ava">DQ</div>
+</header>
+
+<div class="wrap">
+  <main class="main">
+    <div id="head"></div>
+    <div class="tabs" id="tabs"></div>
+    <div id="content"></div>
+  </main>
+</div>
+
+<div class="mask" id="mask"><div class="modal" id="mdl">
+  <div class="mh" id="mh"></div><div class="mb" id="mb"></div><div class="mf" id="mf"></div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ==================== TIỆN ÍCH ==================== */
+const $=s=>document.querySelector(s);
+const HOM='28/09/2026', HOMD=new Date(2026,8,28), NAM='2026-2027';
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const M=n=>(n||0).toLocaleString('vi-VN')+'đ';
+const M0=n=>(n||0).toLocaleString('vi-VN');
+const pd=s=>{if(!s)return new Date(0);const a=String(s).split('/');return new Date(+a[2],+a[1]-1,+a[0]);};
+const dd=(a,b)=>Math.round((b-a)/86400000);
+let TT;
+function toast(t){const e=$('#toast');e.innerHTML=t;e.classList.add('on');clearTimeout(TT);TT=setTimeout(()=>e.classList.remove('on'),3800);}
+function modal(h,b,f,sm){$('#mh').innerHTML=h;$('#mb').innerHTML=b;$('#mf').innerHTML=f||'<button class="btn" data-x="close">Đóng</button>';$('#mdl').className='modal'+(sm?' sm':'');$('#mask').classList.add('on');}
+function closeM(){$('#mask').classList.remove('on');}
+const D=t=>'<div class="dsg">💡 <b>Ghi chú thiết kế.</b> '+t+'</div>';
+
+/* ==================== VAI TRÒ ==================== */
+const QALL=['tinh','phathanh','thutienmat','ca','doisoat_ngay','doisoat_chot','duyet_thang','duyet_cuoi',
+ 'gangd','nhacno','duyet_no30','du_xuly','ctdt_phathanh','ctdt_ky','baocao','xuat'];
+const ROLE={
+ FULL:{n:'Đủ quyền (demo)',av:'DQ',q:QALL,
+  sco:'Vai <b>Đủ quyền (demo)</b> — thấy cả 3 tab, mọi điểm trường, thao tác được mọi chức năng của menu.'},
+ KT:{n:'Phạm Thị Lan — Kế toán',av:'PL',q:['tinh','phathanh','doisoat_chot','gangd','nhacno','du_xuly','ctdt_phathanh','baocao','xuat'],
+  sco:'Bạn là <b>Kế toán</b>, phạm vi <b>toàn trường</b>. Bạn <b>tính, phát hành, thu, đối soát, phát hành chứng từ, xuất tệp</b> — nhưng <b>không duyệt và không ký</b>. Tách người lập khỏi người duyệt là nguyên tắc của nghiệp vụ tiền.'},
+ TQ:{n:'Trần Văn Sơn — Thủ quỹ ĐT B',av:'TS',dt:'B',q:['thutienmat','ca','doisoat_ngay','xuat'],
+  sco:'Bạn là <b>Thủ quỹ Điểm trường B</b>. Chỉ thấy học sinh thuộc <b>Điểm trường B</b> — bản ghi ngoài phạm vi không có trong dữ liệu trả về. Bộ chọn Điểm trường đã <b>khóa</b>.'},
+ GVCN:{n:'Trần Thị Hòa — GVCN 9A2',av:'TH',dt:'A',lop:'9A2',q:['xuat'],
+  sco:'Bạn là <b>GVCN lớp 9A2</b>. Chỉ thấy công nợ học sinh lớp mình, ở dạng <b>rút gọn</b> — tổng nợ và số ngày quá hạn, <b>không có chi tiết từng khoản</b>. Biết em nào chưa đóng khoản gì là biết nhiều hơn mức cần để làm việc.'},
+ PHT:{n:'Nguyễn Đức Thắng — PHT phụ trách ĐT B',av:'NT',dt:'B',q:['duyet_thang','nhacno','xuat'],
+  sco:'Bạn là <b>Phó hiệu trưởng phụ trách Điểm trường B</b>. Phạm vi <b>Điểm trường B</b>, bộ chọn đã khóa. Bạn <b>duyệt đối soát tháng</b> (chặng 1) và chỉ đạo nhắc nợ.'},
+ HT:{n:'Lê Quang Vinh — Hiệu trưởng',av:'LV',q:['duyet_cuoi','duyet_no30','ctdt_ky','baocao','xuat','du_xuly'],
+  sco:'Bạn là <b>Hiệu trưởng</b>, phạm vi <b>toàn trường</b>. Bạn <b>duyệt cuối</b> đối soát tháng, <b>ký số chứng từ điện tử</b> (Nhóm B), quyết định nợ quá hạn 30+ ngày.'},
+};
+let RK='FULL';
+const R=()=>ROLE[RK];
+const can=c=>R().q.includes(c);
+
+/* ==================== CƠ CẤU TRƯỜNG ==================== */
+const DTS={
+ A:{ten:'Điểm trường A — Cơ sở chính',    cap:'TH + THCS + THPT'},
+ B:{ten:'Điểm trường B — Cơ sở Đông Anh', cap:'THCS'},
+ C:{ten:'Điểm trường C — Cơ sở Sóc Sơn',  cap:'Tiểu học'},
+};
+const LOP={
+ '5A1' :{dt:'A',cap:'TH',  gv:'Lê Thị Mai'},
+ '9A2' :{dt:'A',cap:'THCS',gv:'Trần Thị Hòa'},
+ '10A1':{dt:'A',cap:'THPT',gv:'Vũ Đình Nam'},
+ '6B2' :{dt:'B',cap:'THCS',gv:'Ngô Thị Yến'},
+ '8B1' :{dt:'B',cap:'THCS',gv:'Phạm Văn Hải'},
+ '3C1' :{dt:'C',cap:'TH',  gv:'Đỗ Thị Bình'},
+ '5C2' :{dt:'C',cap:'TH',  gv:'Hoàng Văn Tú'},
+};
+const THANGS=['Tháng 8/2026','Tháng 9/2026','Tháng 10/2026'];
+const NGAYHOC={'Tháng 8/2026':18,'Tháng 9/2026':22,'Tháng 10/2026':21};
+const NGAYCB={'Tháng 8/2026':'05/08/2026','Tháng 9/2026':'05/09/2026','Tháng 10/2026':'05/10/2026'};
+const HANNOP={'Tháng 8/2026':'25/08/2026','Tháng 9/2026':'25/09/2026','Tháng 10/2026':'25/10/2026'};
+const thangTruoc=t=>{const i=THANGS.indexOf(t);return i>0?THANGS[i-1]:null;};
+/* 'Tháng 9/2026' -> '09' — cắt chuỗi trực tiếp cho ra '9/', làm hỏng mã hóa đơn */
+const mm=t=>{const k=+String(t).replace('Tháng ','').split('/')[0];return (k<10?'0':'')+k;};
+const daPhatHanh=th=>!!NGAYCB[th]&&pd(NGAYCB[th])<=HOMD;
+let KYCUR='Tháng 9/2026';
+
+/* ==================== MIỄN GIẢM (bản chiếu chỉ đọc từ M7.4) ==================== */
+const MG={
+ MG1:{ten:'Hỗ trợ 40.000đ/ngày bán trú — HS diện chính sách',ns:'nn',kieu:'ngay',muc:40000,dien:['Con thương binh','Con liệt sĩ'],ap:['AN-BT']},
+ MG2:{ten:'Hỗ trợ 28.000đ/ngày bán trú — HS Tiểu học',ns:'nn',kieu:'ngay',muc:28000,dien:['*TH'],ap:['AN-BT']},
+ MG3:{ten:'Miễn 100% BHYT — HS hộ nghèo',ns:'nn',kieu:'pt',muc:100,dien:['Hộ nghèo'],ap:['BHYT']},
+ MG4:{ten:'Giảm 50% đồng phục — hộ cận nghèo',ns:'truong',kieu:'pt',muc:50,dien:['Hộ cận nghèo'],ap:['DP']},
+ MG5:{ten:'Giảm 50% tiền ăn — hộ cận nghèo',ns:'truong',kieu:'pt',muc:50,dien:['Hộ cận nghèo'],ap:['AN-BT']},
+};
+const NGUON={nn:'Ngân sách nhà nước / thành phố',truong:'Quỹ trường'};
+
+/* ==================== KHOẢN THU (bản chiếu chỉ đọc từ M7.1) ==================== */
+/* nhom: 'dong' = Thu đồng loạt (HĐ gộp) · 'dk' = Thu theo đăng ký (HĐ riêng) */
+const GIA={A:{'BHYT':884520,'DP':480000,'SGK':620000,'BHTT':100000,'NUOC':30000,'VS':20000,'AN-BT':42000,'PV-BT':180000,'KNS':150000,'TA-NN':200000,'QBDD':200000},
+           B:{'BHYT':884520,'DP':460000,'SGK':620000,'BHTT':100000,'NUOC':30000,'VS':20000,'AN-BT':42000,'PV-BT':180000,'KNS':150000,'QBDD':150000},
+           C:{'BHYT':884520,'DP':440000,'SGK':520000,'BHTT':100000,'NUOC':30000,'VS':20000,'AN-BT':38000,'PV-BT':150000,'KNS':150000,'QBDD':100000}};
+const KDEF=[
+ {ma:'BHYT', ten:'Bảo hiểm y tế học sinh',      loai:'bb',nhom:'dong',ck:'motlan',thang:'Tháng 8/2026',ct:'bienlai'},
+ {ma:'DP',   ten:'Đồng phục, phù hiệu (2 bộ)',  loai:'dv',nhom:'dong',ck:'motlan',thang:'Tháng 8/2026',ct:'bienlai'},
+ {ma:'SGK',  ten:'Sách giáo khoa và dụng cụ',   loai:'dv',nhom:'dong',ck:'motlan',thang:'Tháng 8/2026',ct:'bienlai'},
+ {ma:'NUOC', ten:'Tiền nước uống',              loai:'dv',nhom:'dong',ck:'thang', ct:'bienlai'},
+ {ma:'VS',   ten:'Tiền phục vụ vệ sinh',        loai:'dv',nhom:'dong',ck:'thang', ct:'bienlai'},
+ {ma:'BHTT', ten:'Bảo hiểm thân thể',           loai:'tn',nhom:'dk',  ck:'motlan',thang:'Tháng 8/2026',ct:'bienlai',dk:'app',tuChoi:'khong'},
+ {ma:'AN-BT',ten:'Tiền ăn bán trú',             loai:'dv',nhom:'dk',  ck:'thang', ct:'bienlai',dk:'m61',sl:1,donvi:'buổi',cheDo:'truoc',tuChoi:'khong'},
+ {ma:'PV-BT',ten:'Tiền phục vụ bán trú',        loai:'dv',nhom:'dk',  ck:'thang', ct:'bienlai',dk:'m61',tuChoi:'khong'},
+ {ma:'KNS',  ten:'Giáo dục kỹ năng sống, STEM', loai:'dv',nhom:'dk',  ck:'thang', ct:'bienlai',dk:'app',tuChoi:'khong'},
+ {ma:'TA-NN',ten:'Tiếng Anh với người nước ngoài',loai:'dv',nhom:'dk',ck:'thang', ct:'hoadon', dk:'app',tuChoi:'khong',chiA:1},
+ {ma:'QBDD',ten:'Quỹ Ban đại diện cha mẹ học sinh',loai:'tn',nhom:'dk',ck:'motlan',thang:'Tháng 9/2026',ct:'bienlai',dk:'app',tuChoi:'co'},
+];
+const KD=m=>KDEF.find(k=>k.ma===m);
+const NGUONDK={m61:'M6.1 Bán trú',m62:'M6.2 Học ngoại khóa',app:'App PH-HS'};
+const giaK=(dt,ma)=>GIA[dt][ma];
+function khoanCua(dt){ return KDEF.filter(k=>!k.chiA||dt==='A').filter(k=>GIA[dt][k.ma]!==undefined); }
+function khoanCuaThang(dt,th){ return khoanCua(dt).filter(k=>k.ck==='motlan'?k.thang===th:true); }
+
+/* ==================== HỌC SINH ==================== */
+/* bt = đăng ký bán trú · an = số buổi ăn thực tế theo tháng · tra = tỷ lệ đã đóng */
+const HS=[
+ {ma:'HS26-0417',ten:'Nguyễn Minh Anh',lop:'9A2',bt:1,kns:1,tann:0,bhtt:1,dien:[],ph:'Nguyễn Văn Bình',sdt:'0912 345 678',tt:'hoc',an:{'Tháng 8/2026':15},tra:{'Tháng 8/2026':1,'Tháng 9/2026':.5}},
+ {ma:'HS26-0418',ten:'Trần Gia Bảo',lop:'9A2',bt:1,kns:1,tann:1,bhtt:0,dien:[],ph:'Trần Quốc Việt',sdt:'0983 221 447',tt:'hoc',an:{'Tháng 8/2026':18},tra:{'Tháng 8/2026':1,'Tháng 9/2026':1}},
+ {ma:'HS26-0419',ten:'Lê Thu Hà',lop:'9A2',bt:1,kns:0,tann:0,bhtt:0,dien:['Hộ nghèo'],ph:'Lê Văn Thành',sdt:'0975 118 902',tt:'hoc',an:{'Tháng 8/2026':3},tra:{'Tháng 8/2026':1,'Tháng 9/2026':0},anDK:{'Tháng 9/2026':10}},
+ {ma:'HS26-0420',tc:['QBDD'],ten:'Phạm Quốc Đạt',lop:'9A2',bt:1,kns:1,tann:0,bhtt:0,dien:[],ph:'Phạm Quốc Toàn',sdt:'0906 774 315',tt:'hoc',an:{'Tháng 8/2026':18},tra:{'Tháng 8/2026':0,'Tháng 9/2026':0}},
+ {ma:'HS26-0421',ten:'Đỗ Khánh Linh',lop:'9A2',bt:1,kns:1,tann:1,bhtt:1,dien:[],ph:'Đỗ Minh Hải',sdt:'0938 402 176',tt:'hoc',an:{'Tháng 8/2026':17},tra:{'Tháng 8/2026':1,'Tháng 9/2026':1}},
+ {ma:'HS26-0422',ten:'Vũ Hoàng Nam',lop:'9A2',bt:1,kns:0,tann:0,bhtt:0,dien:['Hộ cận nghèo'],ph:'Vũ Hoàng Sơn',sdt:'0917 663 208',tt:'hoc',an:{'Tháng 8/2026':16},tra:{'Tháng 8/2026':.4,'Tháng 9/2026':0}},
+ {ma:'HS22-0301',ten:'Đặng Minh Khôi',lop:'5A1',bt:1,kns:1,tann:0,bhtt:0,dien:['Con thương binh'],ph:'Đặng Minh Tú',sdt:'0902 118 375',tt:'hoc',an:{'Tháng 8/2026':18},tra:{'Tháng 8/2026':1,'Tháng 9/2026':1}},
+ {ma:'HS22-0302',tc:['QBDD'],ten:'Lý Ngọc Diệp',lop:'5A1',bt:1,kns:0,tann:0,bhtt:0,dien:['Hộ cận nghèo'],ph:'Lý Văn Quý',sdt:'0977 645 013',tt:'hoc',an:{'Tháng 8/2026':18},tra:{'Tháng 8/2026':0,'Tháng 9/2026':0}},
+ {ma:'HS22-0303',ten:'Trịnh Gia Hân',lop:'5A1',bt:1,kns:1,tann:0,bhtt:1,dien:[],ph:'Trịnh Văn Lâm',sdt:'0949 336 728',tt:'hoc',an:{'Tháng 8/2026':18},tra:{'Tháng 8/2026':1,'Tháng 9/2026':1}},
+ {ma:'HS22-0304',ten:'Bùi Khả Ngân',lop:'5A1',bt:0,kns:1,tann:0,bhtt:0,dien:[],ph:'Bùi Văn Chung',sdt:'0913 552 087',tt:'hoc',an:{},tra:{'Tháng 8/2026':1,'Tháng 9/2026':.6}},
+ {ma:'HS26-1001',ten:'Ngô Bảo Châu',lop:'10A1',bt:0,kns:0,tann:1,bhtt:0,dien:[],ph:'Ngô Văn Kiên',sdt:'0904 551 730',tt:'hoc',an:{},tra:{'Tháng 8/2026':1,'Tháng 9/2026':1}},
+ {ma:'HS26-1002',tc:['QBDD'],ten:'Hoàng Anh Tuấn',lop:'10A1',bt:0,kns:0,tann:0,bhtt:0,dien:[],ph:'Hoàng Anh Dũng',sdt:'0987 310 664',tt:'hoc',an:{},tra:{'Tháng 8/2026':0,'Tháng 9/2026':0}},
+ {ma:'HS26-1003',ten:'Bùi Thảo My',lop:'10A1',bt:0,kns:0,tann:0,bhtt:0,dien:[],ph:'Bùi Đức Trung',sdt:'0968 227 519',tt:'chuyendi',an:{},tra:{'Tháng 8/2026':1,'Tháng 9/2026':0}},
+ {ma:'HS26-1004',ten:'Đặng Tuấn Kiệt',lop:'10A1',bt:0,kns:1,tann:0,bhtt:1,dien:[],ph:'Đặng Văn Hòa',sdt:'0913 780 442',tt:'hoc',an:{},tra:{'Tháng 8/2026':.5,'Tháng 9/2026':0}},
+ {ma:'HS25-0511',ten:'Phan Đức Duy',lop:'8B1',bt:1,kns:1,tann:0,bhtt:0,dien:[],ph:'Phan Đức Hùng',sdt:'0912 004 887',tt:'hoc',an:{'Tháng 8/2026':18},tra:{'Tháng 8/2026':.3,'Tháng 9/2026':0}},
+ {ma:'HS25-0512',ten:'Mai Thanh Vân',lop:'8B1',bt:1,kns:0,tann:0,bhtt:1,dien:[],ph:'Mai Thanh Bình',sdt:'0986 552 140',tt:'hoc',an:{'Tháng 8/2026':18},tra:{'Tháng 8/2026':1,'Tháng 9/2026':1}},
+ {ma:'HS25-0513',tc:['QBDD'],ten:'Hồ Anh Quân',lop:'8B1',bt:0,kns:1,tann:0,bhtt:0,dien:[],ph:'Hồ Anh Vũ',sdt:'0908 771 396',tt:'hoc',an:{},tra:{'Tháng 8/2026':.6,'Tháng 9/2026':0}},
+ {ma:'HS25-0514',ten:'Nguyễn Thùy Dương',lop:'8B1',bt:1,kns:0,tann:0,bhtt:0,dien:[],ph:'Nguyễn Văn Chiến',sdt:'0935 118 042',tt:'baoluu',an:{'Tháng 8/2026':4},tra:{'Tháng 8/2026':1,'Tháng 9/2026':0},nghiBT:'Tháng 9/2026'},
+ {ma:'HS26-0620',ten:'Lê Hoàng Long',lop:'6B2',bt:1,kns:1,tann:0,bhtt:0,dien:[],ph:'Lê Hoàng Vinh',sdt:'0967 220 583',tt:'hoc',an:{'Tháng 8/2026':18},tra:{'Tháng 8/2026':1,'Tháng 9/2026':.7}},
+ {ma:'HS26-0621',ten:'Trần Bảo Ngọc',lop:'6B2',bt:0,kns:0,tann:0,bhtt:1,dien:[],ph:'Trần Bảo Khánh',sdt:'0918 447 021',tt:'hoc',an:{},tra:{'Tháng 8/2026':1,'Tháng 9/2026':1}},
+ {ma:'HS26-0622',ten:'Đinh Nhật Minh',lop:'6B2',bt:1,kns:0,tann:0,bhtt:0,dien:['Hộ nghèo'],ph:'Đinh Nhật Trường',sdt:'0903 665 918',tt:'hoc',an:{'Tháng 8/2026':18},tra:{'Tháng 8/2026':0,'Tháng 9/2026':0}},
+ {ma:'HS26-0623',ten:'Vương Thị Lụa',lop:'6B2',bt:1,kns:1,tann:0,bhtt:0,dien:[],ph:'Vương Văn Nam',sdt:'0949 003 776',tt:'hoc',an:{'Tháng 8/2026':16},tra:{'Tháng 8/2026':1,'Tháng 9/2026':1}},
+ {ma:'HS26-0701',ten:'Nguyễn Hải Đăng',lop:'3C1',bt:1,kns:0,tann:0,bhtt:0,dien:['Hộ nghèo','Con liệt sĩ'],ph:'Nguyễn Hải Sơn',sdt:'0977 003 452',tt:'hoc',an:{'Tháng 8/2026':18},tra:{'Tháng 8/2026':1,'Tháng 9/2026':1}},
+ {ma:'HS26-0702',ten:'Vương Khánh Chi',lop:'3C1',bt:1,kns:1,tann:0,bhtt:1,dien:[],ph:'Vương Khánh Duy',sdt:'0912 887 660',tt:'hoc',an:{'Tháng 8/2026':18},tra:{'Tháng 8/2026':1,'Tháng 9/2026':.4}},
+ {ma:'HS26-0703',ten:'Tạ Minh Quang',lop:'3C1',bt:0,kns:0,tann:0,bhtt:0,dien:[],ph:'Tạ Minh Hoàng',sdt:'0985 114 279',tt:'hoc',an:{},tra:{'Tháng 8/2026':0,'Tháng 9/2026':0}},
+ {ma:'HS26-0704',ten:'Lâm Bảo Trâm',lop:'3C1',bt:1,kns:0,tann:0,bhtt:0,dien:['Hộ cận nghèo'],ph:'Lâm Văn Đại',sdt:'0906 118 224',tt:'hoc',an:{'Tháng 8/2026':12},tra:{'Tháng 8/2026':1,'Tháng 9/2026':0},nghiBT:'Tháng 9/2026'},
+ {ma:'HS22-0801',ten:'Cao Thùy Linh',lop:'5C2',bt:1,kns:1,tann:0,bhtt:0,dien:[],ph:'Cao Văn Đức',sdt:'0906 332 815',tt:'hoc',an:{'Tháng 8/2026':18},tra:{'Tháng 8/2026':.5,'Tháng 9/2026':0}},
+ {ma:'HS22-0802',tc:['QBDD'],ten:'Chu Văn Hùng',lop:'5C2',bt:0,kns:0,tann:0,bhtt:0,dien:[],ph:'Chu Văn Lợi',sdt:'0938 227 104',tt:'hoc',an:{},tra:{'Tháng 8/2026':0,'Tháng 9/2026':0}},
+ {ma:'HS22-0803',ten:'Nông Thị Sen',lop:'5C2',bt:1,kns:0,tann:0,bhtt:0,dien:['Dân tộc thiểu số','Hộ nghèo'],ph:'Nông Văn Pao',sdt:'0949 660 337',tt:'hoc',an:{'Tháng 8/2026':2},anDK:{'Tháng 9/2026':15},tra:{'Tháng 8/2026':1,'Tháng 9/2026':1}},
+ {ma:'HS22-0804',ten:'Phùng Gia Kiệt',lop:'5C2',bt:1,kns:1,tann:0,bhtt:1,dien:[],ph:'Phùng Văn Mạnh',sdt:'0913 445 902',tt:'hoc',an:{'Tháng 8/2026':18},tra:{'Tháng 8/2026':1,'Tháng 9/2026':1}},
+];
+HS.forEach(h=>{h.dt=LOP[h.lop].dt;h.cap=LOP[h.lop].cap;});
+const HSC=m=>HS.find(x=>x.ma===m);
+
+/* ==================== MIỄN GIẢM — chọn mức có lợi nhất ==================== */
+function mgCho(h,ma,goc,sl){
+ const ok=[];
+ Object.keys(MG).forEach(k=>{
+  const m=MG[k]; if(!m.ap.includes(ma)) return;
+  let hop=false;
+  m.dien.forEach(d=>{ if(d==='*TH'){ if(h.cap==='TH')hop=true; } else if(h.dien.includes(d))hop=true; });
+  if(!hop) return;
+  let so=m.kieu==='ngay'?m.muc*(sl||0):Math.round(goc*m.muc/100);
+  if(so>goc)so=goc;
+  ok.push({k,ten:m.ten,ns:m.ns,so});
+ });
+ ok.sort((a,b)=>b.so-a.so);
+ return {chon:ok[0]||null,bo:ok.slice(1)};
+}
+
+/* ==================== ĐĂNG KÝ KHOẢN NHÓM 2 ==================== */
+function dangKy(h,ma,th){
+ if(ma==='AN-BT'||ma==='PV-BT') return h.bt&&!(h.nghiBT&&THANGS.indexOf(th)>=THANGS.indexOf(h.nghiBT));
+ if(ma==='KNS')  return !!h.kns;
+ if(ma==='TA-NN')return !!h.tann;
+ if(ma==='BHTT') return !!h.bhtt;
+ if(ma==='QBDD') return true;   /* ai cũng được phát hành, nhưng có quyền từ chối đóng */
+ return true;
+}
+/* số lượng phát hành (dự kiến) và thực tế */
+function soLuong(h,ma,th){
+ const k=KD(ma);
+ if(!k.sl) return {ph:1,tt:1};
+ const dk=(h.anDK&&h.anDK[th]!==undefined)?h.anDK[th]:NGAYHOC[th];
+ const tt=(h.an&&h.an[th]!==undefined)?h.an[th]:null;   /* null = chưa chốt */
+ return {ph:dk,tt};
+}
+
+/* ==================== ĐỘNG CƠ TÍNH — BỐN CON SỐ ==================== */
+/* Khóa bản ghi: (Học sinh × Khoản thu × Tháng). Khoản đã mang điểm trường từ M7.1 v2. */
+/* ============ SỔ SỐ DƯ TẠM GIỮ (sửa 29/8/2026) ============
+   Hai ngăn: 'gd' tiền gia đình — gộp chung, phụ huynh CHỌN dùng, hoàn được
+             'ns' ngân sách hỗ trợ — gắn cứng mã khoản, tự khấu trừ vào chính khoản đó, KHÔNG hoàn
+   Số dư là ĐẠI LƯỢNG DẪN XUẤT từ bút toán — không có ô nhập ở bất kỳ menu nào. */
+let SODU=[], SDSEQ=1001;
+/* Quyết toán hỗ trợ ngân sách — SỔ KHÁC, đơn vị (Khoản × Kỳ × Điểm trường).
+   Không nằm trong ví của học sinh nào: hóa đơn chưa từng chứa tiền ngân sách. */
+let QTNS={};
+const qtnsDS=()=>Object.keys(QTNS).map(k=>QTNS[k]).filter(x=>dtOK().includes(x.dt));
+const qtnsTong=()=>qtnsDS().reduce((a,b)=>a+b.thua,0);
+const thangSau=t=>{const i=THANGS.indexOf(t);return i>=0?THANGS[i+1]:null;};
+const sdLoc=(hs,ngan,ma)=>SODU.filter(x=>x.hs===hs&&(ngan!=='ns'));
+const sdTong=l=>l.reduce((a,b)=>a+(b.chieu==='co'?b.so:-b.so),0);
+const sdGD=hs=>sdTong(sdLoc(hs,'gd'));
+const sdNS=(hs,ma)=>0;    /* bỏ ngăn ngân sách — chốt 29/8/2026 */
+const sdNSTong=hs=>0;
+const NGAYIM=60;   /* nằm im quá N ngày thì sinh việc rà soát ở M7.3 */
+function ghiSD(hs,ngan,ma,chieu,so,nguon,ly,nguoi){
+ if(so<=0) return;
+ SODU.push({id:'SD-'+(SDSEQ++),hs,ngan,ma,chieu,so,nguon,ly,nguoi:nguoi||R().n,luc:HOM+' '+new Date().toTimeString().slice(0,5)});
+}
+
+let BG=[];      /* bản ghi phải thu */
+let HD=[];      /* hóa đơn */
+let GD=[];      /* giao dịch thanh toán */
+const bgKey=(hs,ma,th)=>hs+'|'+ma+'|'+th;
+const BGI={};
+const bg=(hs,ma,th)=>BGI[bgKey(hs,ma,th)];
+
+function tinhHet(){
+ BG=[];HD=[];GD=[];SODU=[];SDSEQ=1001;QTNS={};Object.keys(BGI).forEach(k=>delete BGI[k]);
+ let seq=0;
+ THANGS.filter(daPhatHanh).forEach(th=>{
+  HS.forEach(h=>{
+   const ks=khoanCuaThang(h.dt,th).filter(k=>k.nhom==='dong'||dangKy(h,k.ma,th));
+   if(!ks.length) return;
+   /* --- dựng dòng phải thu --- */
+   const dong=[];
+   ks.forEach(k=>{
+    const dg=giaK(h.dt,k.ma), sl=soLuong(h,k.ma,th);
+    const goc=k.sl?sl.ph*dg:dg;
+    const r=mgCho(h,k.ma,goc,sl.ph);
+    const mgSo=r.chon?r.chon.so:0;
+    /* CHỐT 29/8/2026 — ① BỎ HẲN.
+       Hỗ trợ ngân sách là khuyến mãi TRỪ THẲNG khi tính ② nên hóa đơn chỉ chứa tiền gia đình;
+       số dư của gia đình thì KHÔNG tự khấu trừ — phụ huynh CHỌN dùng khi thanh toán. */
+    const duDau=0;
+    const phai=Math.max(0,goc-mgSo-duDau);
+    const o={hs:h.ma,ma:k.ma,th,dt:h.dt,nhom:k.nhom,dg,slPH:sl.ph,slTT:sl.tt,goc,mg:r.chon,mgBo:r.bo,mgSo,
+             duDau,phaiDong:phai,daTT:0,duCuoi:null,duNS:0,duGD:0};
+    BG.push(o);BGI[bgKey(h.ma,k.ma,th)]=o;dong.push(o);
+   });
+   /* --- gom thành hóa đơn: 1 gộp + n riêng --- */
+   const gop=dong.filter(o=>o.nhom==='dong'), rieng=dong.filter(o=>o.nhom==='dk');
+   const tra=(h.tra&&h.tra[th])||0;
+   function mkHD(id,loai,ds,ma){
+    const phai=ds.reduce((a,b)=>a+b.phaiDong,0);
+    let thu=Math.round(phai*tra/1000)*1000; if(thu>phai)thu=phai;
+    const o={id,loai,hs:h.ma,dt:h.dt,th,ma,dong:ds,phai,thu,
+             han:HANNOP[th],ph:NGAYCB[th],tt:'hieuluc',
+             qtc:ma?(KD(ma).tuChoi==='co'):false,
+             tuChoi:ma?(KD(ma).tuChoi==='co'&&(h.tc||[]).indexOf(ma)>=0):false};
+    /* phân bổ tiền về từng dòng theo tỷ lệ phải đóng */
+    let con=thu;
+    ds.forEach((d,i)=>{const p=(i===ds.length-1)?con:(phai?Math.round(thu*d.phaiDong/phai):0);
+      d.daTT=Math.min(p,d.phaiDong);con-=d.daTT;});
+    /* giao dịch */
+    if(thu>0){
+     seq++;
+     const mat=(seq%4===0);
+     GD.push({id:mat?('PT-'+h.dt+'-'+mm(th)+'-'+String(seq).padStart(4,'0')):('FT2627'+String(90000+seq)),
+      hd:id,hs:h.ma,dt:h.dt,so:thu,pt:mat?'mat':'sepay',
+      t:(mat?'18':'12')+'/'+mm(th)+'/2026 '+(mat?'14:2':'09:1')+(seq%6),
+      noi:mat?'Nộp tại quầy':('HD '+id+' '+h.ten),by:mat?'Trần Văn Sơn — Thủ quỹ':'Webhook SePay',
+      phien:'DS-'+h.dt+'-'+(mat?'18':'12')+'/'+mm(th)});
+    }
+    HD.push(o);
+   }
+   if(gop.length) mkHD('HDG-'+mm(th)+'-'+h.ma,'gop',gop,null);
+   rieng.forEach(d=>mkHD('HDR-'+mm(th)+'-'+h.ma+'-'+d.ma,'rieng',[d],d.ma));
+   /* --- ④ dư cuối kỳ --- */
+   dong.forEach(o=>{
+    if(o.slTT===null){o.duCuoi=null;return;}
+    const gocTT=KD(o.ma).sl?o.slTT*o.dg:o.dg;
+    const rTT=mgCho(h,o.ma,gocTT,o.slTT);
+    const mgTT=rTT.chon?rTT.chon.so:0;
+    o.duCuoi=(o.duDau+o.daTT)-(gocTT-mgTT);
+    /* ④ chỉ là DƯ TIỀN GIA ĐÌNH — vì ③ là tiền gia đình nộp và miễn giảm đã trừ ở cả hai vế.
+       DƯ NGÂN SÁCH là đại lượng ĐỘC LẬP: phần hỗ trợ đã nhận theo số PHÁT HÀNH
+       nhưng chỉ được hưởng theo số THỰC TẾ. Không nằm trong ④, không cộng vào ④. */
+    o.duGD=o.duCuoi>0?o.duCuoi:0;
+    if(o.mg&&MG[o.mg.k].ns==='nn'&&MG[o.mg.k].kieu==='ngay'&&o.slTT<o.slPH)
+     o.duNS=(o.slPH-o.slTT)*MG[o.mg.k].muc;
+   });
+   /* --- ghi Sổ số dư tạm giữ: quyết toán theo số thực tế, TỰ ĐỘNG, không cần phiếu.
+          Toàn bộ là TIỀN GIA ĐÌNH — hóa đơn chưa từng chứa tiền ngân sách. --- */
+   dong.forEach(o=>{
+    if(o.duGD>0) SODU.push({id:'SD-'+(SDSEQ++),hs:h.ma,dt:h.dt,chieu:'co',so:o.duGD,
+      nguon:'M7.2/QT-'+o.ma+'-'+mm(th),ly:'Quyết toán '+KD(o.ma).ten+' '+th+' — phát hành '+o.slPH+' '+(KD(o.ma).donvi||'')+', thực tế '+o.slTT,
+      nguoi:'Hệ thống (tự động khi M6.1 chốt số)',luc:NGAYCB[thangSau(th)]||HOM});
+    /* chênh lệch hỗ trợ ngân sách KHÔNG vào sổ của em — gom về QTNS theo (Khoản × Kỳ × ĐT) */
+    if(o.duNS>0){const k=o.ma+'|'+th+'|'+h.dt;
+      QTNS[k]=QTNS[k]||{ma:o.ma,ky:th,dt:h.dt,thua:0,n:0};
+      QTNS[k].thua+=o.duNS;QTNS[k].n++;}
+   });
+  });
+ });
+}
+tinhHet();
+
+/* ==================== TRẠNG THÁI THANH TOÁN ==================== */
+const TTP={
+ du   :{t:'Đã đóng đủ',c:'du'},
+ thieu:{t:'Đóng thiếu',c:'thieu'},
+ chua :{t:'Chưa đóng',c:'chua'},
+ bu   :{t:'Dư đủ bù — không phải đóng',c:'bu'},   /* không còn phát sinh sau khi bỏ ① */
+};
+function ttBG(o){
+ if(o.phaiDong===0&&o.duDau>0) return 'bu';   /* dư NGÂN SÁCH đủ bù */
+ if(o.daTT>=o.phaiDong&&o.phaiDong>0) return 'du';
+ if(o.phaiDong===0) return 'du';
+ if(o.daTT>0) return 'thieu';
+ return 'chua';
+}
+function ttHD(o){
+ if(o.phai===0&&o.dong.some(d=>d.duDau>0)) return 'bu';
+ if(o.thu>=o.phai) return 'du';
+ if(o.thu>0) return 'thieu';
+ return 'chua';
+}
+const chePhu=o=>conNoRaw(o)>0&&sdGD(o.hs)>=conNoRaw(o);
+const conNoRaw=o=>o.tuChoi?0:Math.max(0,o.phai-o.thu);
+/* SỬA 29/8/2026 — KHÔNG tính quá hạn phần được Số dư tạm giữ ngăn gia đình che phủ.
+   Trường không được coi là chậm nộp phần tiền mà chính trường đang giữ. */
+const quaHan=o=>(o.thu<o.phai&&!o.tuChoi&&!chePhu(o))?Math.max(0,dd(pd(o.han),HOMD)):0;
+const conNo=o=>o.tuChoi?0:Math.max(0,o.phai-o.thu);
+
+/* hóa đơn / bản ghi theo kỳ đang chọn */
+const hdCua=(hs,th)=>HD.filter(o=>o.hs===hs&&o.th===th);
+const bgCua=(hs,th)=>BG.filter(o=>o.hs===hs&&o.th===th);
+const noHS=hs=>HD.filter(o=>o.hs===hs).reduce((a,b)=>a+conNo(b),0);
+
+/* ==================== HỌC SINH CÓ SỐ DƯ TẠM GIỮ ====================
+   "Dư mồ côi" KHÔNG CÒN LÀ KHÁI NIỆM: dư ngăn gia đình không gắn kỳ, không gắn khoản. */
+const sdCoDu=()=>HS.filter(h=>sdLoc(h.ma,'gd').length);
+function sdImLau(h){
+ const bt=SODU.filter(x=>x.hs===h.ma).slice(-1)[0];
+ if(!bt||sdGD(h.ma)<=0) return 0;
+ return Math.max(0,dd(pd(String(bt.luc).split(' ')[0]),HOMD));
+}
+
+/* ==================== DƯ MỒ CÔI (giữ để tương thích, không còn dùng ở màn hình) ==================== */
+/* ④ > 0 ở kỳ cuối cùng có bản ghi, mà kỳ sau không còn đăng ký (hoặc HS đã rời) */
+let DUMC=[];
+function tinhDuMoCoi(){
+ DUMC=[];
+ const dsTh=THANGS.filter(daPhatHanh);
+ HS.forEach(h=>{
+  KDEF.forEach(k=>{
+   for(let i=dsTh.length-1;i>=0;i--){
+    const o=bg(h.ma,k.ma,dsTh[i]); if(!o) continue;
+    if(!(o.duGD>0||o.duNS>0)) break;
+    const sau=dsTh[i+1]||THANGS[THANGS.indexOf(dsTh[i])+1];
+    const conDK=sau?(k.nhom==='dong'||dangKy(h,k.ma,sau)):false;
+    const roi=h.tt!=='hoc';
+    if(!conDK||roi){
+     DUMC.push({hs:h.ma,ma:k.ma,dt:h.dt,th:dsTh[i],tong:o.duGD+o.duNS,ns:o.duNS,gd:o.duGD,
+      ly:roi?(h.tt==='chuyendi'?'Học sinh đã chuyển trường':'Học sinh đang bảo lưu'):'Ngừng đăng ký khoản này từ '+(sau||'kỳ sau'),
+      tt:'cho'});
+    }
+    break;
+   }
+  });
+ });
+}
+tinhDuMoCoi();
+
+/* ==================== GIAO DỊCH CHƯA KHỚP ==================== */
+let GDCK=[
+ {id:'FT26272910847',t:'28/09/2026 09:14',so:399000,noi:'NGUYEN VAN BINH chuyen tien an cho con',tt:'cho',dt:'A',
+  ly:'Nội dung không có mã hóa đơn — hai hóa đơn đang mở cùng khớp số tiền',
+  sug:['HDR-09-HS26-0417-AN-BT','HDR-09-HS26-0419-AN-BT']},
+ {id:'FT26272911002',t:'28/09/2026 10:26',so:1200000,noi:'dong tien cho 2 chau lop 9A2 va 5A1',tt:'cho',dt:'A',
+  ly:'Một giao dịch cho hai hóa đơn — phải chia số tiền',
+  sug:['HDR-09-HS26-0420-AN-BT','HDR-09-HS22-0302-AN-BT']},
+ {id:'FT26272911115',t:'28/09/2026 11:02',so:500000,noi:'ung ho quy khuyen hoc nha truong',tt:'cho',dt:'A',
+  ly:'Không phải khoản thu của học sinh',sug:[]},
+ {id:'FT26272871994',t:'27/09/2026 15:47',so:200000,noi:'LE VAN THANH nop tien HS26-0419',tt:'gan',dt:'A',
+  ganHD:'HDR-09-HS26-0419-KNS',ganBoi:'Phạm Thị Lan — Kế toán',ganLuc:'27/09/2026 16:20',
+  ganVi:'Phụ huynh gõ mã học sinh thay vì mã hóa đơn. Đã gọi xác nhận qua số 0975 118 902.',
+  daGan:200000,sug:['HDR-09-HS26-0419-KNS'],
+  ganLs:[{hd:'HDR-09-HS26-0419-KNS',so:200000,by:'Phạm Thị Lan — Kế toán',luc:'27/09/2026 16:20',
+    vi:'Phụ huynh gõ mã học sinh thay vì mã hóa đơn.'}]},
+ {id:'FT26272865120',t:'26/09/2026 08:33',so:120000,noi:'chuyen nham',tt:'m75',dt:'B',
+  m75Luc:'26/09/2026 09:10',m75Boi:'Phạm Thị Lan — Kế toán'},
+];
+
+/* ==================== PHIÊN ĐỐI SOÁT ==================== */
+function tienMatNgay(dt,ngay){
+ return GD.filter(g=>g.pt==='mat'&&g.dt===dt&&g.t.indexOf(ngay)===0).reduce((a,b)=>a+b.so,0);
+}
+let PHIEN=[
+ {id:'A|28/09/2026',dt:'A',ngay:'28/09/2026',tt:'mo',  mat:4820000,dem:null,sepay:12480000,khop:10182000,chuaN:3},
+ {id:'B|28/09/2026',dt:'B',ngay:'28/09/2026',tt:'mo',  mat:1650000,dem:null,sepay:3120000, khop:3000000, chuaN:1},
+ {id:'C|28/09/2026',dt:'C',ngay:'28/09/2026',tt:'mo',  mat:980000, dem:null,sepay:2740000, khop:2740000, chuaN:0},
+ {id:'A|27/09/2026',dt:'A',ngay:'27/09/2026',tt:'chot',mat:5240000,dem:5240000,sepay:14120000,khop:13920000,chuaN:1,
+  chotBoi:'Phạm Thị Lan — Kế toán',chotLuc:'27/09/2026 17:40'},
+ {id:'B|27/09/2026',dt:'B',ngay:'27/09/2026',tt:'chot',mat:2350000,dem:2300000,lech:-50000,sepay:4180000,khop:4180000,chuaN:0,
+  giai:'Trả nhầm tiền thừa cho phụ huynh em Mai Thanh Vân 50.000đ, đã liên hệ và thu lại sáng 28/09.',
+  chotBoi:'Phạm Thị Lan — Kế toán',chotLuc:'27/09/2026 17:55'},
+];
+let PHIENT=[
+ {id:'A|Tháng 8/2026',dt:'A',th:'Tháng 8/2026',tt:'khoa',ptBoi:'Nguyễn Đức Thắng — PHT_DT',htBoi:'Lê Quang Vinh — Hiệu trưởng',khoaLuc:'06/09/2026 09:20'},
+ {id:'B|Tháng 8/2026',dt:'B',th:'Tháng 8/2026',tt:'khoa',ptBoi:'Nguyễn Đức Thắng — PHT_DT',htBoi:'Lê Quang Vinh — Hiệu trưởng',khoaLuc:'06/09/2026 09:22'},
+ {id:'C|Tháng 8/2026',dt:'C',th:'Tháng 8/2026',tt:'khoa',ptBoi:'Nguyễn Đức Thắng — PHT_DT',htBoi:'Lê Quang Vinh — Hiệu trưởng',khoaLuc:'06/09/2026 09:25'},
+ {id:'A|Tháng 9/2026',dt:'A',th:'Tháng 9/2026',tt:'chua'},
+ {id:'B|Tháng 9/2026',dt:'B',th:'Tháng 9/2026',tt:'cho_pht'},
+ {id:'C|Tháng 9/2026',dt:'C',th:'Tháng 9/2026',tt:'chua'},
+];
+function tongThang(dt,th){
+ const hs=HD.filter(o=>o.dt===dt&&o.th===th);
+ const bgs=BG.filter(o=>o.dt===dt&&o.th===th);
+ const mat=GD.filter(g=>g.dt===dt&&g.pt==='mat'&&hs.some(o=>o.id===g.hd)).reduce((a,b)=>a+b.so,0);
+ const ck=GD.filter(g=>g.dt===dt&&g.pt==='sepay'&&hs.some(o=>o.id===g.hd)).reduce((a,b)=>a+b.so,0);
+ return {phai:hs.reduce((a,b)=>a+b.phai,0),thu:hs.reduce((a,b)=>a+b.thu,0),mat,ck,
+  mg:bgs.reduce((a,b)=>a+b.mgSo,0),duDau:bgs.reduce((a,b)=>a+b.duDau,0),
+  duCuoi:bgs.reduce((a,b)=>a+(b.duCuoi>0?b.duCuoi:0),0),
+  no:hs.reduce((a,b)=>a+conNo(b),0),hd:hs.length};
+}
+
+/* ==================== CHỨNG TỪ ĐIỆN TỬ ==================== */
+let CTDT=[];
+let CTSOK=false;
+const CTSHET='14/09/2026';
+function tinhCT(){
+ CTDT=[];let n=100;
+ let ds=[];['A','B','C'].forEach(d=>{ds=ds.concat(HD.filter(o=>o.dt===d&&o.thu>=o.phai&&o.phai>0).slice(0,5));});
+ ds.forEach((o,i)=>{
+  n++;
+  const loai=(o.loai==='rieng'&&o.ma==='TA-NN')?'hoadon':'bienlai';
+  const daKy=i<6;
+  CTDT.push({so:(loai==='bienlai'?'BL':'HĐ')+'-2627-'+String(n).padStart(6,'0'),loai,hd:o.id,hs:o.hs,dt:o.dt,
+   tien:o.phai,ngay:o.th==='Tháng 8/2026'?'20/08/2026':'20/09/2026',
+   tt:daKy?'daky':'choky',
+   kyBoi:daKy?'Lê Quang Vinh — Hiệu trưởng':null,kyLuc:daKy?'21/08/2026 08:30':null,
+   thue:daKy?('Đã gửi — mã 01260821'+String(3000+n)):null});
+ });
+ if(CTDT.length>2){CTDT[2].tt='thaythe';CTDT[2].boiSo=CTDT[3].so;
+  CTDT[2].lyThayThe='Sai họ tên người nộp — ghi tên phụ huynh thay vì tên học sinh.';
+  CTDT[3].thayCho=CTDT[2].so;}
+}
+tinhCT();
+
+/* ==================== KHUNG ==================== */
+const NAV=[
+ ['dh','🏠 Trung tâm điều hành',[['M0.1','Bảng điều khiển'],['M0.2','Việc cần làm'],['M0.4','Trang cá nhân']]],
+ ['hs','👥 Học sinh',[['M1.1','Hồ sơ học sinh'],['M1.2','Đối tượng ưu tiên'],['M1.5','Chuyển trường']]],
+ ['vh','🏫 Vận hành &amp; Dịch vụ',[['M6.1','Bán trú'],['M6.2','Học ngoại khóa']]],
+ ['tc','💰 Tài chính',[['M7.1','Danh mục khoản thu'],['M7.2','Theo dõi thực hiện khoản thu','x'],
+   ['M7.3','Điều chỉnh &amp; Hoàn tiền'],['M7.4','Chính sách miễn giảm'],['M7.5','Thu chi &amp; Báo cáo TC'],['M7.6','Chấm công - KPI']]],
+ ['qt','⚙️ Quản trị',[['M10.1','Hồ sơ năm học'],['M10.5','Tài khoản'],['M4.11','Chứng thư số'],['M10.7','Nhật ký hệ thống'],['M10.8','Đồng bộ CSDL ngành']]],
+];
+const MENUOK={FULL:'all',KT:'all',HT:'all',
+ PHT:['M0.1','M0.2','M0.4','M1.1','M1.2','M1.5','M6.1','M6.2','M7.1','M7.2','M7.3','M7.4','M7.5','M10.1'],
+ TQ :['M0.1','M0.2','M0.4','M7.2'],
+ GVCN:['M0.1','M0.2','M0.4','M1.1','M1.2','M6.1','M7.2']};
+function sidebar(){
+ const ok=MENUOK[RK];let h='';
+ NAV.forEach(g=>{h+='<div class="sgrp">'+g[1]+'</div>';
+  g[2].forEach(m=>{const vis=ok==='all'||ok.indexOf(m[0])>=0,on=m[2]==='x';
+   h+='<div class="snav '+(on?'on':'')+' '+(vis?'':'off')+'"><span>'+m[0]+'</span><span style="flex:1;min-width:0">'+m[1]+'</span></div>';});});
+ $('#side').innerHTML=h;
+}
+let DTCUR='ALL';
+const dtOK=()=>R().dt?[R().dt]:(DTCUR==='ALL'?['A','B','C']:[DTCUR]);
+function hsPV(){const r=R();
+ return HS.filter(h=>r.lop?h.lop===r.lop:dtOK().includes(h.dt));}
+const hdPV=()=>{const m={};hsPV().forEach(h=>m[h.ma]=1);return HD.filter(o=>m[o.hs]);};
+
+/* BA TAB — gom từ 8 tab của bản v1.
+   'Theo dõi' và 'Xác nhận đóng tiền' là MỘT việc của MỘT người: nhìn ai còn thiếu
+   rồi ghi nhận ngay tại đó. Bốn tab thống kê đều trả lời cùng câu hỏi
+   "kỳ này thu được bao nhiêu", chỉ khác lát cắt — gom thành một tab nhiều khối. */
+const TABDEF=[
+ {k:'theodoi', t:'Theo dõi &amp; Xác nhận đóng tiền', r:['FULL','KT','TQ','GVCN','PHT','HT']},
+ {k:'thongke', t:'Thống kê thực hiện khoản thu',      r:['FULL','KT','TQ','PHT','HT']},
+ {k:'ctdt',    t:'Chứng từ điện tử',                  r:['FULL','KT','PHT','HT']},
+];
+function tabsCua(){return TABDEF.filter(t=>t.r.includes(RK));}
+
+let S={tab:'theodoi',sel:null,selhd:null,q:'',mo:{},screen:null,sc:null,
+       chips:{du:1,thieu:1,chua:1,bu:1},qh:0,tuchoi:0,sd:0,gdf:'cho',ctf:'all',m62:false,duf:'cho',
+       kh:{tk:1,km:1,dot:0,ds:0,du:0,xuat:0}};   /* khối mở/thu trong tab Thống kê */
+
+function render(){
+ const r=R();
+ $('#ava').textContent=r.av;
+ const v=hdPV().filter(o=>quaHan(o)>0).length;
+ $('#bell').textContent=v||'';$('#bell').style.display=v?'grid':'none';
+ sidebar();
+ const ds=$('#dtsel'),khoa=!!r.dt;
+ if(khoa) DTCUR=r.dt;
+ ds.innerHTML=(khoa?'':'<option value="ALL"'+(DTCUR==='ALL'?' selected':'')+'>Tất cả điểm trường</option>')+
+  ['A','B','C'].map(x=>'<option value="'+x+'"'+(DTCUR===x?' selected':'')+'>'+DTS[x].ten+'</option>').join('');
+ ds.disabled=khoa;
+ $('#head').innerHTML='<div class="tophd"><h1>Theo dõi thực hiện khoản thu</h1>'+
+  '<span class="pill">M7.2 · 💰 Tài chính</span><span class="pill">🔒 Chủ sở hữu khoản phải thu · giao dịch · chứng từ</span>'+
+  '<span class="pill">⚖ Ký số Nhóm B</span>'+
+  '<div class="spacer"></div><span style="font-size:12px;color:var(--ink3)">'+esc(r.n)+' · hôm nay '+HOM+'</span></div>';
+ const T=tabsCua();
+ if(!T.some(t=>t.k===S.tab))S.tab=T[0].k;
+ $('#tabs').innerHTML=T.map(t=>'<button class="tab1 '+(S.tab===t.k?'on':'')+'" data-tab="'+t.k+'">'+t.t+'</button>').join('');
+ if(S.screen==='phien') return $('#content').innerHTML=screenPhien();
+ $('#content').innerHTML=scopeBar()+({theodoi:vTheoDoi,thongke:vThongKe,ctdt:vCtdt}[S.tab])();
+}
+function scopeBar(){
+ let h='<div class="scopebar"><span>🔎</span><div>'+R().sco+'</div></div>';
+ if(['theodoi','thongke'].includes(S.tab)&&KYCUR!=='Tháng 9/2026'){
+  const kt=PHIENT.find(p=>p.th===KYCUR&&p.tt==='khoa');
+  h+='<div class="kybar"><span>🕘</span><div>Đang xem kỳ <b>'+KYCUR+'</b> — không phải kỳ hiện tại. '+
+   (!daPhatHanh(KYCUR)?'Kỳ này <b>chưa tới ngày công bố '+NGAYCB[KYCUR]+'</b> — chưa có hóa đơn nào.'
+    :(kt?'Kỳ này <b>đã chốt sổ</b>: không sửa số cũ, phát sinh mới đi <b>luồng điều chỉnh kỳ sau</b> ở M7.3.'
+        :'Kỳ này <b>chưa chốt sổ</b>.'))+'</div></div>';
+ }
+ return h;
+}
+function kySel(){
+ return '<select class="fs" id="kysel">'+THANGS.map(t=>'<option value="'+t+'"'+(t===KYCUR?' selected':'')+'>'+t+
+  (daPhatHanh(t)?'':' (chưa phát hành)')+'</option>').join('')+'</select>';
+}
+
+/* ==================== TAB 1 — THEO DÕI & XÁC NHẬN ĐÓNG TIỀN ==================== */
+function ttHSKy(h){
+ const hs=hdCua(h.ma,KYCUR); if(!hs.length) return null;
+ const phai=hs.reduce((a,b)=>a+b.phai,0), thu=hs.reduce((a,b)=>a+b.thu,0);
+ const bu=hs.some(o=>ttHD(o)==='bu')&&hs.every(o=>['bu','du'].includes(ttHD(o)));
+ let k= bu?'bu':(thu>=phai?'du':(thu>0?'thieu':'chua'));
+ if(phai===0&&!bu)k='du';
+ const bgs=bgCua(h.ma,KYCUR);
+ return {k,phai,thu,no:hs.reduce((a,b)=>a+conNo(b),0),
+   qh:Math.max.apply(null,[0].concat(hs.map(o=>quaHan(o)))),
+   nKhoan:bgs.length, nXong:bgs.filter(o=>['du','bu'].includes(ttBG(o))).length};
+}
+function hsLoc(){
+ const q=S.q.trim().toLowerCase();
+ return hsPV().filter(h=>{
+  const t=ttHSKy(h); if(!t) return false;
+  if(!S.chips[t.k]) return false;
+  if(S.qh&&!(t.qh>0)) return false;
+  if(S.tuchoi&&!hdCua(h.ma,KYCUR).some(o=>o.tuChoi)) return false;
+  if(S.sd&&!(sdGD(h.ma)>0&&t.no>0&&sdGD(h.ma)>=t.no)) return false;
+  if(q&&!(h.ten+' '+h.ma+' '+h.lop+' '+h.sdt+' '+h.ph).toLowerCase().includes(q)) return false;
+  return true;
+ });
+}
+const dangThu=()=>dtOK().some(dt=>S.mo['d'+dt]===0)||Object.keys(LOP).some(l=>S.mo['l'+l]===0);
+function bacNhac(n){ if(n>=7)return 4; if(n>=3)return 3; return 2; }
+
+function vTheoDoi(){
+ const gv=RK==='GVCN';
+ let h='<div class="bar"><input class="inp" id="q" placeholder="Tìm học sinh, mã HS, lớp, số điện thoại phụ huynh…" value="'+esc(S.q)+'">'+kySel();
+ if(can('nhacno')) h+='<button class="btn p" data-x="nhacloat">🔔 Nhắc nợ hàng loạt</button>';
+ if(can('xuat'))   h+='<button class="btn" data-x="xuat" data-w="theo dõi đóng tiền kỳ '+esc(KYCUR)+'">⬇ Xuất</button>';
+ const L=hsLoc(), all=hsPV().filter(x=>ttHSKy(x));
+ const phai=L.reduce((a,x)=>a+ttHSKy(x).phai,0), thu=L.reduce((a,x)=>a+ttHSKy(x).thu,0);
+ h+='<div class="sum"><span>'+L.length+'/'+all.length+' HS</span>'+
+  '<span>phải đóng <b class="money">'+M(phai)+'</b></span>'+
+  '<span>đã đóng <b class="money">'+M(thu)+'</b></span>'+
+  '<span class="prog2 '+(phai&&thu/phai<.6?'bad':(phai&&thu/phai<.85?'warn':''))+'"><i style="width:'+(phai?Math.round(thu/phai*100):0)+'%"></i></span>'+
+  '<span><b>'+(phai?Math.round(thu/phai*100):0)+'%</b></span></div></div>';
+ if(!all.length) return h+'<div class="empty" style="background:var(--surface);border:1px solid var(--line);border-radius:12px">'+
+   'Kỳ <b>'+KYCUR+'</b> chưa có khoản thu nào phát sinh.'+
+   (daPhatHanh(KYCUR)?'':'<div style="font-size:12px;margin-top:6px">Mốc công bố là <b>'+NGAYCB[KYCUR]+'</b>, chưa tới ngày. Xem điều kiện phát hành ở tab <b>Thống kê thực hiện khoản thu</b>.</div>')+'</div>';
+ h+='<div class="bar" style="padding-top:0">'+
+  ['du','thieu','chua','bu'].map(k=>'<button class="chip '+(S.chips[k]?'on':'')+'" data-x="chip" data-c="'+k+'">'+TTP[k].t+
+   ' ('+all.filter(x=>ttHSKy(x).k===k).length+')</button>').join('')+
+  '<span style="margin-left:8px;padding-left:10px;border-left:1px solid var(--line2);font-size:11.5px;color:var(--ink3);align-self:center">Lọc thêm</span>'+
+  '<button class="chip '+(S.qh?'on':'')+'" data-x="fqh">Quá hạn ('+all.filter(x=>ttHSKy(x).qh>0).length+')</button>'+
+  '<button class="chip '+(S.tuchoi?'on':'')+'" data-x="ftuchoi">Có khoản được từ chối đóng</button>'+
+  '<button class="chip '+(S.sd?'on':'')+'" data-x="fsd">Có số dư đủ trả — chờ PH xác nhận ('+
+   all.filter(x=>{const t=ttHSKy(x);return sdGD(x.ma)>0&&t.no>0&&sdGD(x.ma)>=t.no;}).length+')</button>'+
+  (!S.q.trim()?'<button class="btn sm" data-x="'+(dangThu()?'moall':'thuall')+'">'+(dangThu()?'⊞ Mở tất cả':'⊟ Thu tất cả')+'</button>':'')+'</div>';
+ if(gv) h+='<div class="ro">👁 Vai <b>GVCN</b> thấy bản <b>rút gọn</b>: tổng còn nợ và số ngày quá hạn, <b>không có chi tiết từng khoản</b> — NĐ 13/2023.</div>';
+ else h+=D('<b>Có số dư đủ trả là một CHIP LỌC, không phải một trạng thái thanh toán.</b> Hóa đơn vẫn <i>Chưa đóng</i> vì phụ huynh chưa bấm dùng số dư — '+
+  'nhưng <b>không tính quá hạn</b> phần được số dư che phủ, và <b>nhắc nợ đổi nội dung</b> thành lời mời dùng số dư. '+
+  'Trường không được coi là chậm nộp phần tiền mà chính trường đang giữ.')+
+  D('Một tab, một việc: nhìn ai còn thiếu rồi <b>ghi nhận ngay tại đó</b>. Bản v1 tách "Theo dõi" và "Xác nhận đóng tiền" thành hai tab — nhưng đó là một việc của một người, và tách ra thì thủ quỹ phải đi hai màn hình cho mỗi lần phụ huynh đến nộp.');
+ h+='<div class="stage'+(S.sel?' open':'')+'"><div class="listw">';
+ if(!L.length) h+='<div class="empty">Không có học sinh nào khớp bộ lọc.</div>';
+ else if(S.q.trim()){
+  h+='<div class="grph" style="cursor:default"><span>🔎</span> Kết quả tìm kiếm — đã tự phẳng hóa<span class="gs">'+L.length+' học sinh</span></div>';
+  L.forEach(x=>h+=rowHS(x,1,gv));
+ }else dtOK().forEach(dt=>{
+  const inD=L.filter(x=>x.dt===dt); if(!inD.length) return;
+  const kD='d'+dt,oD=S.mo[kD]!==0;
+  const tD=inD.map(ttHSKy),pD=tD.reduce((a,b)=>a+b.phai,0),thD=tD.reduce((a,b)=>a+b.thu,0);
+  h+='<div class="grph lv1" data-x="grp" data-k="'+kD+'"><span class="ar">'+(oD?'▾':'▸')+'</span><b>'+DTS[dt].ten+'</b>'+
+   '<span class="gs" style="margin-left:auto;display:flex;gap:6px;align-items:center">'+
+   '<span class="cnt">'+inD.length+' HS</span><span class="cnt">phải đóng '+M(pD)+'</span>'+
+   '<span class="cnt">đã đóng '+M(thD)+'</span><span class="cnt">'+(pD?Math.round(thD/pD*100):0)+'%</span>'+
+   (tD.filter(t=>t.qh>0).length?'<span class="cnt warn">'+tD.filter(t=>t.qh>0).length+' quá hạn</span>':'')+'</span></div>';
+  if(!oD) return;
+  Object.keys(LOP).filter(l=>LOP[l].dt===dt).forEach(lp=>{
+   const inL=inD.filter(x=>x.lop===lp); if(!inL.length) return;
+   const kL='l'+lp,oL=S.mo[kL]!==0;
+   const tL=inL.map(ttHSKy),pL=tL.reduce((a,b)=>a+b.phai,0),thL=tL.reduce((a,b)=>a+b.thu,0);
+   h+='<div class="grph lv2" data-x="grp" data-k="'+kL+'"><span class="ar">'+(oL?'▾':'▸')+'</span>'+
+    '<b>Lớp '+lp+'</b><span class="sub">GVCN '+LOP[lp].gv+'</span>'+
+    '<span class="gs" style="margin-left:auto;display:flex;gap:6px;align-items:center">'+
+    '<span class="cnt">'+inL.length+' HS</span><span class="cnt">'+(pL?Math.round(thL/pL*100):0)+'%</span>'+
+    '<span class="cnt">còn nợ '+M(tL.reduce((a,b)=>a+b.no,0))+'</span>'+
+    (tL.filter(t=>t.qh>0).length?'<span class="cnt warn">'+tL.filter(t=>t.qh>0).length+' quá hạn</span>':'')+'</span></div>';
+   if(oL) inL.forEach(x=>h+=rowHS(x,0,gv));
+  });
+ });
+ h+='</div>'+(S.sel?panelHS():'')+'</div>';
+ if(!gv&&can('ca')) h+=caThu();
+ return h;
+}
+function rowHS(h,flat,gv){
+ const t=ttHSKy(h);
+ let s='<div class="row '+(flat?'':'lv3')+' '+(S.sel===h.ma?'on':'')+'" data-x="selhs" data-i="'+h.ma+'"><div class="rh">'+
+  '<b>'+esc(h.ten)+'</b>'+(flat?'<span class="pill">'+h.lop+'</span>':'')+'<span class="ct2">'+h.ma+'</span>'+
+  '<span class="tts '+(t.k==='chua'&&t.qh>0?'chuaqh':TTP[t.k].c)+'">'+TTP[t.k].t+'</span>';
+ if(!gv) s+='<span class="cnt">'+t.nXong+'/'+t.nKhoan+' khoản đã đóng</span>';
+ s+='<span style="margin-left:auto" class="money '+(t.qh>0?'due':'')+'">'+M(t.no||t.phai)+'</span></div>';
+ s+='<div class="rmeta">'+(gv?'':'<span>phải đóng '+M(t.phai)+'</span><span>đã đóng '+M(t.thu)+'</span>')+
+  '<span>còn lại '+M(t.no)+'</span>'+
+  (!gv?'<span class="prog2 '+(t.phai&&t.thu/t.phai<.6?'bad':(t.phai&&t.thu/t.phai<1?'warn':''))+'" style="width:70px"><i style="width:'+(t.phai?Math.round(t.thu/t.phai*100):100)+'%"></i></span>':'')+
+  (t.qh>0?'<span><b style="color:var(--red)">quá hạn '+t.qh+' ngày · bậc '+bacNhac(t.qh)+'</b></span>':'')+
+  (h.tt!=='hoc'?'<span style="color:var(--amber)">'+(h.tt==='chuyendi'?'đã chuyển đi':'đang bảo lưu')+'</span>':'')+
+  (h.dien.length&&!gv?'<span style="color:var(--violet)">'+h.dien.join(' · ')+'</span>':'')+
+  (!gv&&bgCua(h.ma,KYCUR).some(o=>o.duDau>0)?'<span style="color:#1e40af">có dư đầu kỳ (ngân sách)</span>':'')+
+  (sdGD(h.ma)>0?'<span style="color:var(--green)"><b>số dư tạm giữ '+M(sdGD(h.ma))+'</b>'+
+    (t.no>0&&sdGD(h.ma)>=t.no?' — đủ trả, chờ PH xác nhận':'')+'</span>':'')+'</div></div>';
+ return s;
+}
+
+/* ============ PANEL HỌC SINH — N KHOẢN THU CỦA THÁNG, GOM THEO HÓA ĐƠN ============ */
+const LOAIK={bb:'Bắt buộc',dv:'Dịch vụ',tn:'Tự nguyện'};
+const LOAIC={bb:'r',dv:'b',tn:'n'};
+function panelHS(){
+ const h=HSC(S.sel); if(!h) return '';
+ const hs=hdCua(h.ma,KYCUR), bgs=bgCua(h.ma,KYCUR), t=ttHSKy(h);
+ const gv=RK==='GVCN';
+ let s='<div class="panel"><div class="ph"><div style="flex:1;min-width:0"><h2>'+esc(h.ten)+'</h2>'+
+  '<div class="m"><span class="pill">'+h.lop+'</span><span class="pill">'+DTS[h.dt].ten.split('—')[0].trim()+'</span>'+
+  '<span class="ct2">'+h.ma+'</span><span class="tts '+TTP[t.k].c+'">'+TTP[t.k].t+'</span></div>'+
+  '<div class="hint" style="margin-top:3px">PH: '+esc(h.ph)+' · '+h.sdt+'</div></div>'+
+  '<button class="btn sm" data-x="closep">✕</button></div><div class="pbody">';
+ if(gv) return s+'<div class="n4"><div><div class="l">Tổng còn nợ</div><div class="v '+(t.no?'neg':'')+'">'+M0(t.no)+'</div></div>'+
+   '<div><div class="l">Quá hạn</div><div class="v">'+(t.qh||0)+'<span style="font-size:11px"> ngày</span></div></div>'+
+   '<div><div class="l">Bậc nhắc</div><div class="v">'+(t.qh>0?bacNhac(t.qh):'—')+'</div></div>'+
+   '<div><div class="l">Phụ huynh</div><div class="v mut">'+h.sdt+'</div></div></div>'+
+   '<div class="ro">Vai GVCN chỉ thấy đến đây. Chi tiết từng khoản thuộc phạm vi Kế toán — NĐ 13/2023.</div></div></div>';
+
+ s+='<div class="n4"><div><div class="l">Phải đóng kỳ này</div><div class="v">'+M0(t.phai)+'</div><div class="s">'+t.nKhoan+' khoản · '+hs.length+' hóa đơn</div></div>'+
+  '<div><div class="l">Đã đóng</div><div class="v pos">'+M0(t.thu)+'</div><div class="s">'+t.nXong+'/'+t.nKhoan+' khoản xong</div></div>'+
+  '<div><div class="l">Còn lại</div><div class="v '+(t.no?'neg':'')+'">'+M0(t.no)+'</div></div>'+
+  '<div><div class="l">Hạn nộp</div><div class="v mut">'+HANNOP[KYCUR]+(t.qh>0?'<br><span style="color:var(--red);font-size:11px">quá '+t.qh+' ngày</span>':'')+'</div></div></div>';
+ /* --- số dư tạm giữ --- */
+ const sg=sdGD(h.ma), sn=0;
+ if(sg>0){
+  s+='<div class="srcbox2" style="grid-template-columns:1fr"><div class="c"><div class="l">💠 Số dư tạm giữ — tiền nhà trường đang giữ hộ</div>'+
+   '<div class="v" style="color:var(--green)">'+M(sg)+'</div>'+
+   '<div class="s"><b>Một ngăn, toàn bộ là tiền gia đình.</b> Gộp chung · <b>phụ huynh chọn dùng</b> · hoàn được'+
+   (t.no>0?(sg>=t.no?' · <b>đủ trả hết hóa đơn kỳ này</b>':' · trả được một phần'):'')+'</div>'+
+   (sg>0&&t.no>0&&can('thutienmat')?'<div style="margin-top:7px"><button class="btn sm g" data-x="dungsd" data-i="'+h.ma+'">Dùng số dư trả hóa đơn</button></div>':'')+
+   '</div></div>'+
+   '<div style="margin:0 0 10px"><button class="btn sm" data-x="xemsd" data-i="'+h.ma+'">💠 Xem sổ bút toán số dư</button>'+
+   '<button class="btn sm" data-x="dl" data-m="M7.3">↗ M7.3 — hoàn tiền từ số dư</button></div>';
+ }
+
+ /* ----- N khoản thu, gom theo hóa đơn ----- */
+ s+='<div class="sech2">Các khoản thu kỳ '+KYCUR+' — '+t.nKhoan+' khoản</div>';
+ hs.forEach(o=>{
+  const k=ttHD(o), qh=quaHan(o), con=conNo(o);
+  const gds=GD.filter(g=>g.hd===o.id);
+  s+='<div class="hdgrp '+(k==='du'?'du':(qh>0?'qh':''))+'">'+
+   '<div class="hdgh">'+
+    '<span class="hdtag '+(o.loai==='gop'?'gop':'rieng')+'">'+(o.loai==='gop'?'HĐ gộp':'HĐ riêng')+'</span>'+
+    '<b>'+(o.loai==='gop'?'Các khoản Thu đồng loạt ('+o.dong.length+' khoản)':esc(KD(o.ma).ten))+'</b>'+
+    '<span class="ct2">'+o.id+'</span>'+
+    '<span class="tts '+(qh>0&&k!=='du'?'chuaqh':TTP[k].c)+'">'+TTP[k].t+'</span>'+
+    (o.tuChoi?'<span class="ctag" style="background:#dcfce7;color:#166534">PH đã từ chối đóng — không tính nợ</span>':(o.qtc?'<span class="ctag">có quyền từ chối đóng</span>':''))+
+    '<span style="margin-left:auto" class="money '+(qh>0?'due':'')+'">'+M(con||o.phai)+'</span>'+
+   '</div>'+
+   '<div class="hdgm">phải đóng <b>'+M(o.phai)+'</b> · đã đóng <b>'+M(o.thu)+'</b> · còn <b>'+M(con)+'</b> · hạn '+o.han+
+    (qh>0?' · <b style="color:var(--red)">quá hạn '+qh+' ngày</b>':'')+
+    (gds.length?' · '+gds.length+' giao dịch':' · <i>chưa có giao dịch nào</i>')+'</div>';
+  /* dòng khoản */
+  s+='<div class="wrapx"><table class="ktb"><thead><tr><th>Khoản thu</th><th>Loại</th><th>Cách tính</th>'+
+   '<th class="n">② Phải đóng</th><th class="n">③ Đã đóng</th><th class="n">④ Chênh lệch QT</th><th>Trạng thái</th></tr></thead><tbody>';
+  o.dong.forEach(d=>{
+   const kk=KD(d.ma), tb=ttBG(d);
+   s+='<tr><td><b>'+esc(kk.ten)+'</b>'+
+     (d.mg?'<div class="hint" style="color:var(--violet)">🔗 M7.4 '+esc(d.mg.ten)+' −'+M(d.mgSo)+'</div>':'')+'</td>'+
+    '<td><span class="st2 '+LOAIC[kk.loai||'dv']+'">'+LOAIK[kk.loai||'dv']+'</span>'+
+     '<div class="hint">'+(kk.nhom==='dong'?'Thu đồng loạt':'Thu theo đăng ký')+'</div></td>'+
+    '<td>'+(kk.sl?d.slPH+' '+kk.donvi+' × '+M(d.dg)+
+      '<div class="hint">thực tế '+(d.slTT===null?'<b style="color:var(--amber)">chưa chốt</b>':d.slTT+' '+kk.donvi)+' 🔗 '+NGUONDK[kk.dk]+'</div>'
+      :M(d.dg))+'</td>'+
+
+    '<td class="n"><b>'+M(d.phaiDong)+'</b>'+(d.phaiDong===0&&d.duDau>0?'<div class="hint">dư bù hết</div>':'')+'</td>'+
+    '<td class="n">'+M(d.daTT)+'</td>'+
+    '<td class="n">'+(d.duCuoi===null?'<i style="color:var(--amber);font-size:11px">chờ số thực tế</i>'
+      :(d.duCuoi>0?'<b style="color:var(--green)">+'+M(d.duCuoi)+'</b>':(d.duCuoi<0?'<b style="color:var(--red)">'+M(d.duCuoi)+'</b>':'0đ')))+
+      (d.duNS>0?'<div class="hint" style="color:#9d174d">dư ngân sách '+M(d.duNS)+'</div>':'')+'</td>'+
+    '<td><span class="tts '+TTP[tb].c+'">'+TTP[tb].t+'</span></td></tr>';
+  });
+  s+='</tbody></table></div>';
+  /* thao tác trên hóa đơn */
+  s+='<div class="hdga">';
+  if(con>0&&can('thutienmat'))
+   s+='<button class="btn sm g" data-x="xacnhan" data-i="'+o.id+'">✓ Xác nhận đã nộp'+(o.loai==='gop'?' (cả '+o.dong.length+' khoản)':'')+'</button>';
+  if(con>0&&can('nhacno')&&!o.tuChoi)
+   s+='<button class="btn sm" data-x="nhac1" data-i="'+h.ma+'">🔔 Nhắc nợ</button>';
+  if(con===0&&o.phai>0&&can('ctdt_phathanh')&&!CTDT.some(c=>c.hd===o.id))
+   s+='<button class="btn sm" data-x="phct" data-i="'+o.id+'">Phát hành chứng từ</button>';
+  const cts=CTDT.filter(c=>c.hd===o.id);
+  cts.forEach(c=>s+='<span class="ctag">'+esc(c.so)+' '+(c.tt==='daky'?'✓ đã ký':'chờ ký')+'</span>'+
+   '<button class="btn xs p" data-x="xemct" data-s="'+esc(c.so)+'">👁 Xem</button>');
+  s+='<button class="btn sm" data-x="dl" data-m="M7.3">↗ Ticket điều chỉnh / hoàn tiền</button>';
+  if(gds.length) s+='<button class="btn sm" data-x="gdhd" data-i="'+o.id+'">Xem '+gds.length+' giao dịch</button>';
+  s+='</div></div>';
+ });
+ if(hs.some(o=>o.loai==='gop'&&conNo(o)>0))
+  s+=D('Nút <b>Xác nhận đã nộp</b> nằm ở cấp <b>hóa đơn</b>, không phải từng khoản — vì hóa đơn là đơn vị phụ huynh trả. Các khoản <i>Thu đồng loạt</i> gộp chung một mã QR, không tách ra trả riêng tiền nước uống được. Khoản <i>Thu theo đăng ký</i> thì 1 khoản = 1 hóa đơn nên nút nằm ngay trên khoản đó.');
+
+ /* bối cảnh */
+ s+='<div class="sech2">Bối cảnh <span style="font-weight:400;text-transform:none;letter-spacing:0">— bản chiếu chỉ đọc</span></div><div class="fgrid">'+
+  '<div class="k">Tổng nợ mọi kỳ</div><div class="money '+(noHS(h.ma)?'due':'')+'">'+M(noHS(h.ma))+'</div>'+
+  '<div class="k">Trạng thái học</div><div>'+({hoc:'Đang học',chuyendi:'<b style="color:var(--red)">Đã chuyển đi</b>',baoluu:'<b style="color:var(--amber)">Đang bảo lưu</b>'}[h.tt])+
+   (h.tt!=='hoc'?' <span class="rolnk" data-x="dl" data-m="'+(h.tt==='chuyendi'?'M1.5':'M1.6')+'">🔗</span>':'')+'</div>'+
+  '<div class="k">Diện ưu tiên</div><div>'+(h.dien.length?h.dien.map(esc).join(' · ')+' <span class="rolnk" data-x="dl" data-m="M1.2">🔗 M1.2</span>':'<span style="color:var(--ink3)">không có</span>')+'</div>'+
+  '<div class="k">Bán trú</div><div>'+(h.bt?'có đăng ký <span class="rolnk" data-x="dl" data-m="M6.1">🔗 M6.1</span>':'<span style="color:var(--ink3)">không đăng ký</span>')+'</div></div>';
+ if(h.tt!=='hoc') s+='<div class="warn">⚠ Em này <b>'+(h.tt==='chuyendi'?'đã chuyển đi':'đang bảo lưu')+'</b>. Hệ thống <b>không tự dừng nhắc nợ</b> — hiện cột trạng thái để người dùng quyết.</div>';
+ if(t.qh>0) s+='<div class="sech2">Lịch sử nhắc nợ</div><div class="tl">'+
+   '<div class="tli w"><b>Bậc '+bacNhac(t.qh)+' — Push App PH-HS'+(bacNhac(t.qh)>=3?' + việc cho GVCN':'')+'</b><div class="mm">tự động · đã đọc</div></div>'+
+   '<div class="tli"><b>Bậc 2 — Push App PH-HS</b><div class="mm">'+HANNOP[KYCUR]+' 08:00 · tự động</div></div>'+
+   '<div class="tli"><b>Bậc 1 — Push App PH-HS</b><div class="mm">trước hạn 3 ngày · tự động</div></div></div>';
+ return s+'</div></div>';
+}
+
+/* ============ CA THU HÔM NAY ============ */
+let CA=[],CACHOT=false;
+function caThu(){
+ const dtq=R().dt||(DTCUR==='ALL'?'A':DTCUR);
+ const tong=CA.reduce((a,b)=>a+b.so_,0);
+ let h='<div class="sech2">Ca thu hôm nay — '+HOM+' · '+DTS[dtq].ten+'</div><div class="listw"><div class="wrapx"><table><thead><tr>'+
+  '<th>Số phiếu</th><th>Giờ</th><th>Học sinh</th><th>Hóa đơn</th><th>Hình thức</th><th class="n">Số tiền</th></tr></thead><tbody>'+
+  (CA.length?CA.map(c=>'<tr><td><span class="ct2">'+c.so+'</span></td><td>'+c.gio+'</td><td>'+esc(HSC(c.hs).ten)+'</td>'+
+   '<td><span class="ct2">'+c.hd+'</span></td><td>'+c.kieu+'</td><td class="n money">'+M(c.so_)+'</td></tr>').join('')
+   :'<tr><td colspan="6" style="text-align:center;color:var(--ink3);padding:20px">Chưa có phiếu nào trong ca. Xác nhận đóng tiền ở panel học sinh sẽ sinh phiếu vào đây.</td></tr>')+
+  '</tbody></table></div><div class="lgd"><span>'+CA.length+' phiếu</span><span>Tổng hệ thống ghi nhận <b class="money">'+M(tong)+'</b></span>'+
+  '<span style="margin-left:auto">'+(CACHOT?'<span class="st2 o">Đã chốt ca và nộp báo cáo</span>'
+   :'<button class="btn sm p" data-x="chotca">Chốt ca và nộp báo cáo</button>')+'</span></div></div>';
+ h+=D('<b>Máy đếm, người đối chiếu.</b> Tổng hệ thống là "đã nhập bao nhiêu phiếu"; số đếm là "trong két có bao nhiêu tiền". Gộp làm một là bỏ mất chính cái mà đối soát sinh ra để phát hiện.');
+ return h;
+}
+/* form xác nhận — ba hình thức */
+let QKIEU='mat';
+function qFormHTML(o){
+ if(QKIEU==='mat') return '<div class="ro" style="margin:0">Nhận tiền mặt trực tiếp — sinh <b>phiếu thu có số</b>, in được ngay, giao dịch gắn vào phiên đối soát ngày '+HOM+'.</div>';
+ if(QKIEU==='ck')  return '<div class="fgrid" style="margin-bottom:6px"><div class="k">Mã giao dịch ngân hàng</div><div><input class="fldi" style="margin:0" placeholder="FT…"></div>'+
+  '<div class="k">Ngày chuyển</div><div><input class="fldi" style="margin:0;max-width:160px" value="'+HOM+'"></div></div>'+
+  '<div class="ro" style="margin:0">Dùng khi phụ huynh chuyển khoản <b>không qua mã QR</b> nên webhook không nhận diện được.</div>';
+ return '<div class="blk" style="margin:0"><b>⛔ Không nhập tay ở đây.</b>'+
+  '<div class="li"><span>✕</span><div>Chuyển khoản <b>sai cú pháp</b> nghĩa là tiền <b>đã về tài khoản trường</b> và webhook đã ghi nhận — nó đang nằm ở <b>hàng đợi giao dịch chưa khớp</b>. Nhập lại bằng tay ở đây là <b>đếm hai lần</b>.</div></div>'+
+  '<div style="margin-top:7px"><button class="btn sm p" data-x="gohangdoi">↗ Mở hàng đợi giao dịch chưa khớp</button></div></div>';
+}
+function modalXacNhan(o){
+ const h=HSC(o.hs), con=conNo(o);
+ QKIEU='mat';
+ modal('Xác nhận đã nộp — '+esc(h.ten),
+  '<div class="fgrid"><div class="k">Hóa đơn</div><div><span class="hdtag '+(o.loai==='gop'?'gop':'rieng')+'">'+
+   (o.loai==='gop'?'HĐ gộp':'HĐ riêng')+'</span> <span class="ct2">'+o.id+'</span></div>'+
+  '<div class="k">Khoản thu</div><div>'+o.dong.map(d=>esc(KD(d.ma).ten)+' <span class="st2 '+LOAIC[KD(d.ma).loai||'dv']+'">'+
+   LOAIK[KD(d.ma).loai||'dv']+'</span> — '+M(d.phaiDong)).join('<br>')+'</div>'+
+  '<div class="k">Còn phải nộp</div><div class="money" style="font-size:15px">'+M(con)+'</div></div>'+
+  '<div class="sech2">Hình thức</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px">'+
+  '<button class="chip on" data-x="qkieu" data-v="mat">Tiền mặt trực tiếp</button>'+
+  '<button class="chip" data-x="qkieu" data-v="ck">Chuyển khoản ngoài mã QR</button>'+
+  '<button class="chip" data-x="qkieu" data-v="sai">Chuyển khoản sai cú pháp</button></div>'+
+  '<div id="qform">'+qFormHTML(o)+'</div>'+
+  '<div class="fld" style="margin-top:11px">Số tiền nhận<input class="fldi" id="qtien" style="width:190px;text-align:right" value="'+M0(con)+'"></div>'+
+  '<div class="hint">Nhận ít hơn thì hóa đơn chuyển <b>Đóng thiếu</b> — thủ quỹ không có quyền từ chối tiền phụ huynh mang đến.<br>'+
+  '<b>Nhận nhiều hơn số còn nợ thì được</b> <i>(sửa 29/8/2026)</i> — phần thừa <b>ghi CÓ Sổ số dư tạm giữ, ngăn gia đình</b>. '+
+  'Màn hình sẽ <b>hỏi rõ</b> trước khi nhận, không âm thầm; thừa vượt <b>2.000.000đ</b> thì cảnh báo vì thường là nhập sai số.</div>',
+  '<button class="btn" data-x="close">Hủy</button><button class="btn g" data-x="qthu" data-i="'+o.id+'">✓ Xác nhận và in phiếu thu</button>');
+}
+
+/* ==================== TAB 2 — THỐNG KÊ THỰC HIỆN KHOẢN THU ==================== */
+function khoi(id,ic,ten,phu,noi){
+ const op=S.kh[id]===1;
+ return '<div class="khoi'+(op?' on':'')+'"><div class="khh" data-x="khoi" data-k="'+id+'">'+
+  '<span class="ar">'+(op?'▾':'▸')+'</span><span>'+ic+'</span><b>'+ten+'</b>'+
+  '<span class="sub">'+phu+'</span></div>'+(op?'<div class="khb">'+noi+'</div>':'')+'</div>';
+}
+function tkLop(dt,lp){
+ const hs=HS.filter(x=>x.dt===dt&&(!lp||x.lop===lp));
+ let phai=0,thu=0,mg=0,duDau=0,no=0,qh=0,nHD=0,nKhoan=0;
+ hs.forEach(h=>{const t=ttHSKy(h); if(!t) return;
+  phai+=t.phai;thu+=t.thu;no+=t.no;nKhoan+=t.nKhoan;if(t.qh>0)qh++;});
+ bgCua2(dt,lp).forEach(o=>{mg+=o.mgSo;duDau+=o.duDau;});
+ nHD=HD.filter(o=>o.th===KYCUR&&o.dt===dt&&(!lp||HSC(o.hs).lop===lp)).length;
+ return {siso:hs.length,phai,thu,mg,duDau,no,qh,nHD,nKhoan,tl:phai?Math.round(thu/phai*100):0};
+}
+const bgCua2=(dt,lp)=>BG.filter(o=>o.th===KYCUR&&o.dt===dt&&(!lp||HSC(o.hs).lop===lp));
+
+function vThongKe(){
+ let h='<div class="bar">'+kySel()+
+  (can('xuat')?'<button class="btn" data-x="xuatkt">⬇ Xuất tệp cho phần mềm kế toán</button>':'')+
+  (can('baocao')?'<button class="btn p" data-x="kybc">✍️ Ký báo cáo kỳ</button>':'')+'</div>';
+ /* ô số tổng */
+ let T={phai:0,thu:0,mg:0,duDau:0,no:0,nHD:0,nKhoan:0,qh:0};
+ dtOK().forEach(dt=>{const t=tkLop(dt,null);['phai','thu','mg','duDau','no','nHD','nKhoan','qh'].forEach(k=>T[k]+=t[k]);});
+ const tuchoi=hdPV().filter(o=>o.th===KYCUR&&o.tuChoi).reduce((a,b)=>a+b.phai,0);
+ const mauSo=T.phai-tuchoi;
+ const duCuoi=BG.filter(o=>o.th===KYCUR&&dtOK().includes(o.dt)).reduce((a,b)=>a+(b.duGD>0?b.duGD:0),0);
+ h+='<div class="n4"><div><div class="l">Tổng phải thu</div><div class="v">'+M0(T.phai)+'</div><div class="s">'+M0(T.nKhoan)+' khoản · '+M0(T.nHD)+' hóa đơn</div></div>'+
+  '<div><div class="l">Đã thu</div><div class="v pos">'+M0(T.thu)+'</div></div>'+
+  '<div><div class="l">Còn nợ</div><div class="v neg">'+M0(T.no)+'</div><div class="s">'+T.qh+' HS quá hạn</div></div>'+
+  '<div><div class="l">Tỷ lệ thu</div><div class="v">'+(mauSo?Math.round(T.thu/mauSo*100):0)+'%</div>'+
+  '<div class="s">mẫu số <b>trừ</b> khoản được từ chối đóng ('+M0(tuchoi)+')</div></div></div>';
+ h+='<div class="n4"><div><div class="l">Miễn giảm (M7.4)</div><div class="v" style="color:var(--violet)">'+M0(T.mg)+'</div></div>'+
+  '<div><div class="l">Chênh lệch hỗ trợ NS</div><div class="v" style="color:#9d174d">'+M0(qtnsTong())+'</div>'+
+  '<div class="s">→ M7.4 quyết toán</div></div>'+
+  '<div><div class="l">Chênh lệch quyết toán ④</div><div class="v" style="color:var(--green)">'+M0(duCuoi)+'</div>'+
+  '<div class="s">đã ghi CÓ sổ số dư</div></div>'+
+  '<div><div class="l">Số dư tạm giữ đang giữ hộ</div><div class="v" style="color:var(--green)">'+M0(sdCoDu().filter(z=>dtOK().includes(z.dt)).reduce((a,b)=>a+sdGD(b.ma),0))+'</div>'+
+  '<div class="s">'+sdCoDu().filter(z=>dtOK().includes(z.dt)).length+' học sinh · chênh lệch hỗ trợ NS '+M0(qtnsTong())+' chờ quyết toán</div></div></div>';
+ h+=D('<b>Tỷ lệ thu không lấy tổng phải thu làm mẫu số.</b> Khoản có <i>Quyền từ chối đóng = Có</i> phải trừ ra — không đóng là hợp lệ, tính vào thì tỷ lệ thu của trường bị dìm oan.');
+
+ /* --- khối A: theo Điểm trường × Lớp --- */
+ let a='<div class="wrapx"><table><thead><tr><th>Phạm vi</th><th class="n">Sĩ số</th><th class="n">Khoản</th>'+
+  '<th class="n">Hóa đơn</th><th class="n">Phải thu</th><th class="n">Đã thu</th><th class="n">Miễn giảm</th>'+
+  '<th class="n">Còn nợ</th><th>Tỷ lệ</th><th class="n">HS quá hạn</th></tr></thead><tbody>';
+ dtOK().forEach(dt=>{
+  const t=tkLop(dt,null), kD='tk'+dt, oD=S.mo[kD]!==0;
+  a+='<tr class="trg" data-x="grp" data-k="'+kD+'"><td><span class="ar">'+(oD?'▾':'▸')+'</span> <b>'+DTS[dt].ten+'</b></td>'+
+   '<td class="n">'+t.siso+'</td><td class="n">'+M0(t.nKhoan)+'</td><td class="n">'+M0(t.nHD)+'</td>'+
+   '<td class="n">'+M(t.phai)+'</td><td class="n">'+M(t.thu)+'</td>'+
+   '<td class="n" style="color:var(--violet)">'+M(t.mg)+'</td>'+
+   '<td class="n money '+(t.no?'due':'')+'">'+M(t.no)+'</td>'+
+   '<td><span class="prog2 '+(t.tl<60?'bad':(t.tl<85?'warn':''))+'"><i style="width:'+t.tl+'%"></i></span> '+t.tl+'%</td>'+
+   '<td class="n">'+(t.qh||'—')+'</td></tr>';
+  if(!oD) return;
+  Object.keys(LOP).filter(l=>LOP[l].dt===dt).forEach(lp=>{
+   const x=tkLop(dt,lp); if(!x.siso) return;
+   a+='<tr class="trl"><td style="padding-left:30px">Lớp <b>'+lp+'</b> <span class="hint">GVCN '+LOP[lp].gv+'</span></td>'+
+    '<td class="n">'+x.siso+'</td><td class="n">'+M0(x.nKhoan)+'</td><td class="n">'+M0(x.nHD)+'</td>'+
+    '<td class="n">'+M(x.phai)+'</td><td class="n">'+M(x.thu)+'</td>'+
+    '<td class="n" style="color:var(--violet)">'+M(x.mg)+'</td>'+
+    '<td class="n money '+(x.no?'due':'')+'">'+M(x.no)+'</td>'+
+    '<td><span class="prog2 '+(x.tl<60?'bad':(x.tl<85?'warn':''))+'"><i style="width:'+x.tl+'%"></i></span> '+x.tl+'%</td>'+
+    '<td class="n">'+(x.qh||'—')+'</td></tr>';
+  });
+ });
+ a+='</tbody></table></div><div class="lgd"><span>Bấm dòng Điểm trường để mở / thu danh sách lớp.</span></div>';
+ h+=khoi('tk','🏫','Thống kê theo Điểm trường × Lớp học','trọng tâm của tab — công nợ và tỷ lệ thu từng lớp',a);
+
+ /* --- khối B: theo khoản thu --- */
+ const mas=[];BG.filter(o=>o.th===KYCUR&&dtOK().includes(o.dt)).forEach(o=>{if(mas.indexOf(o.ma)<0)mas.push(o.ma);});
+ let b='<div class="wrapx"><table><thead><tr><th>Khoản thu</th><th>Loại</th><th>Nhóm vận hành</th><th class="n">Số HS</th>'+
+  '<th class="n">Phải thu</th><th class="n">Đã thu</th><th class="n">Miễn giảm</th><th class="n">Còn nợ</th><th>Tỷ lệ</th></tr></thead><tbody>';
+ mas.forEach(ma=>{
+  const ds=BG.filter(o=>o.th===KYCUR&&o.ma===ma&&dtOK().includes(o.dt));
+  const p=ds.reduce((x,y)=>x+y.phaiDong,0), t=ds.reduce((x,y)=>x+y.daTT,0), g=ds.reduce((x,y)=>x+y.mgSo,0);
+  const tl=p?Math.round(t/p*100):100, k=KD(ma);
+  b+='<tr><td><b>'+esc(k.ten)+'</b> <span class="ct2">'+ma+'</span></td>'+
+   '<td><span class="st2 '+LOAIC[k.loai||'dv']+'">'+LOAIK[k.loai||'dv']+'</span></td>'+
+   '<td>'+(k.nhom==='dong'?'<span class="hdtag gop">Thu đồng loạt</span>':'<span class="hdtag rieng">Thu theo đăng ký</span>')+'</td>'+
+   '<td class="n">'+M0(ds.length)+'</td><td class="n">'+M(p)+'</td><td class="n">'+M(t)+'</td>'+
+   '<td class="n" style="color:var(--violet)">'+M(g)+'</td>'+
+   '<td class="n money '+(p-t?'due':'')+'">'+M(p-t)+'</td>'+
+   '<td><span class="prog2 '+(tl<60?'bad':(tl<85?'warn':''))+'"><i style="width:'+tl+'%"></i></span> '+tl+'%</td></tr>';
+ });
+ b+='</tbody></table></div>';
+ h+=khoi('km','📋','Thống kê theo khoản thu','khoản nào thu chậm nhất kỳ này',b);
+
+ /* --- khối C: đợt phát hành --- */
+ let c='';
+ THANGS.forEach(th=>{
+  c+='<div class="mocg"><div class="gh"><span>📅</span>'+th+
+   '<span style="margin-left:auto;font-weight:400;color:var(--ink2);font-size:11.5px">công bố '+NGAYCB[th]+' · hạn nộp '+HANNOP[th]+' · '+NGAYHOC[th]+' ngày học</span></div>';
+  dtOK().forEach(dt=>{
+   const ks=khoanCuaThang(dt,th), hs=HD.filter(o=>o.dt===dt&&o.th===th);
+   const thieu=(th==='Tháng 10/2026'&&!S.m62)?[{ten:'Học ngoại khóa — Bơi',menu:'M6.2',vi:'Thu sau · thu cho kỳ Tháng 9/2026 — chờ M6.2 chốt số buổi thực tế'}]:[];
+   const pha=daPhatHanh(th);
+   c+='<div class="mocr" style="cursor:default"><span class="lo dau">'+DTS[dt].ten.split('—')[0].trim()+'</span>'+
+    '<span>'+ks.length+' khoản</span>'+
+    (pha?'<span class="st2 o">Đã phát hành '+M0(hs.length)+' hóa đơn</span>':'<span class="st2 n">Chưa tới hạn</span>')+
+    (pha?'<span class="money">phải thu '+M(hs.reduce((a,b)=>a+b.phai,0))+'</span>':'')+
+    (!pha?(thieu.length?'<span class="dk no">⛔ thiếu điều kiện</span>':'<span class="dk ok">✅ đủ điều kiện</span>'):'')+'</div>';
+   if(!pha&&thieu.length) c+='<div style="padding:0 13px 10px 13px;background:#fff">'+
+    thieu.map(t=>'<div class="blk" style="margin:0"><b>'+esc(t.ten)+'</b> — '+esc(t.vi)+
+     ' <button class="btn xs" data-x="dl" data-m="'+t.menu+'">↗ '+t.menu+'</button>'+
+     (can('tinh')?' <button class="btn xs p" data-x="giam62">Giả lập: M6.2 đã chốt tháng 9</button>':'')+'</div>').join('')+'</div>';
+  });
+  c+='</div>';
+ });
+ c+=D('Điều kiện phát hành <b>tính tại thời điểm hiển thị</b>. Khoản <i>Thu sau</i> của tháng 9 nằm ở mốc tháng 10 và <b>chặn</b> cho tới khi M6.2 chốt số buổi thực tế — không có số thì không tính ra tiền.');
+ h+=khoi('dot','🧮','Đợt phát hành theo mốc','điều kiện đầu vào và số hóa đơn đã phát hành',c);
+
+ /* --- khối D: đối soát --- */
+ let d='<div class="listw" style="margin-bottom:11px">';
+ PHIEN.filter(p=>dtOK().includes(p.dt)).forEach(p=>{
+  d+='<div class="row" data-x="phien" data-i="'+p.id+'"><div class="rh"><b>'+p.ngay+'</b><span class="pill">'+DTS[p.dt].ten+'</span>'+
+   (p.tt==='chot'?'<span class="st2 o">Đã chốt</span>':'<span class="st2 w">Đang mở</span>')+
+   (p.lech?'<span class="st2 r">Lệch quỹ '+M(p.lech)+'</span>':'')+
+   (p.chuaN?'<span class="st2 b">'+p.chuaN+' giao dịch chưa khớp</span>':'')+
+   '<span style="margin-left:auto" class="money">'+M(p.mat+p.khop)+'</span></div>'+
+   '<div class="rmeta"><span>tiền mặt '+M(p.mat)+'</span><span>chuyển khoản đã khớp '+M(p.khop)+'</span>'+
+   (p.sepay-p.khop>0?'<span style="color:var(--amber)">chưa khớp '+M(p.sepay-p.khop)+'</span>':'')+
+   (p.chotBoi?'<span>chốt bởi '+esc(p.chotBoi)+' · '+p.chotLuc+'</span>':'')+'</div></div>';
+ });
+ d+='</div><div class="wrapx"><table><thead><tr><th>Kỳ</th><th>Điểm trường</th><th class="n">Phải thu</th><th class="n">Đã thu</th>'+
+  '<th class="n">Còn nợ</th><th>Trạng thái</th><th></th></tr></thead><tbody>';
+ PHIENT.filter(p=>dtOK().includes(p.dt)).forEach(p=>{
+  const t=tongThang(p.dt,p.th);
+  d+='<tr><td><b>'+p.th+'</b></td><td>'+DTS[p.dt].ten.split('—')[0].trim()+'</td>'+
+   '<td class="n">'+M(t.phai)+'</td><td class="n">'+M(t.thu)+'<div class="hint">mặt '+M(t.mat)+' · CK '+M(t.ck)+'</div></td>'+
+   '<td class="n money '+(t.no?'due':'')+'">'+M(t.no)+'</td>'+
+   '<td>'+({chua:'<span class="st2 n">Chưa tổng hợp</span>',cho_pht:'<span class="st2 w">Chờ PHT_DT duyệt</span>',
+     cho_ht:'<span class="st2 w">Chờ HT duyệt cuối</span>',khoa:'<span class="st2 o">Đã khóa kỳ</span>'}[p.tt])+'</td><td>'+
+   (p.tt==='chua'&&can('doisoat_chot')?'<button class="btn xs" data-x="tonghop" data-i="'+p.id+'">Tổng hợp</button>':'')+
+   (p.tt==='cho_pht'&&can('duyet_thang')?'<button class="btn xs g" data-x="dsduyet" data-i="'+p.id+'">✓ Duyệt</button>':'')+
+   (p.tt==='cho_ht'&&can('duyet_cuoi')?'<button class="btn xs g" data-x="dscuoi" data-i="'+p.id+'">✓ Duyệt cuối + khóa</button>':'')+
+   (p.tt==='khoa'?'<span class="hint">'+esc(p.htBoi||'')+'<br>'+p.khoaLuc+'</span>':'')+'</td></tr>';
+ });
+ d+='</tbody></table></div>';
+ d+=D('Duyệt đối soát tháng <b>thao tác ngay tại dòng dữ liệu</b> — không cần một tab "Chờ tôi duyệt" riêng, vì việc nhắc vai trò đã nằm ở <b>M0.2 Việc cần làm</b> vốn gom cross-module. Chốt sổ tháng là mốc <b>C+</b>: sau khi HT duyệt cuối thì không sửa số cũ.');
+ h+=khoi('ds','🧾','Đối soát ngày và chốt sổ tháng',
+   PHIEN.filter(p=>dtOK().includes(p.dt)&&p.tt==='mo').length+' phiên ngày đang mở · '+
+   GDCK.filter(g=>g.tt==='cho').length+' giao dịch chưa khớp',d);
+
+ /* --- khối E: Sổ số dư tạm giữ (viết lại 29/8/2026) --- */
+ const dsS=sdCoDu().filter(h=>dtOK().indexOf(h.dt)>=0);
+ let e='<div class="dumon"><div class="c"><div class="l">💠 Số dư tạm giữ — tiền đang giữ hộ gia đình</div>'+
+  '<div class="v" style="color:var(--green)">'+M(dsS.reduce((a,h)=>a+sdGD(h.ma),0))+'</div>'+
+  '<div class="s"><b>Một ngăn, gộp chung.</b> Phụ huynh <b>chọn dùng</b> trả hóa đơn nào cũng được · hoàn được · bù trừ vào công nợ được</div></div>'+
+  '<div class="c ns"><div class="l">Chênh lệch hỗ trợ ngân sách phải quyết toán</div>'+
+  '<div class="v" style="color:#9d174d">'+M(qtnsTong())+'</div>'+
+  '<div class="s"><b>Sổ khác, không phải ví của học sinh.</b> Đơn vị <span class="ct2">(Khoản × Kỳ × Điểm trường)</span> — trường ghi nhận hỗ trợ theo số phát hành nhưng chỉ được hưởng theo số thực tế. Đi về <b>M7.4 → M7.5</b></div></div></div>';
+ e+='<div class="wrapx"><table><thead><tr><th>Học sinh</th><th>Lớp</th><th class="n">Ngăn gia đình</th>'+
+  '<th class="n">Còn nợ kỳ này</th><th>Bút toán gần nhất</th><th class="n">Nằm im</th><th></th></tr></thead><tbody>';
+ if(!dsS.length) e+='<tr><td colspan="7" style="text-align:center;color:var(--ink3);padding:20px">Không có học sinh nào có số dư trong phạm vi đang xem.</td></tr>';
+ dsS.forEach(h=>{
+  const g=sdGD(h.ma), n=sdNSTong(h.ma), t=ttHSKy(h), no=t?t.no:0;
+  const bt=SODU.filter(x=>x.hs===h.ma).slice(-1)[0], im=sdImLau(h);
+  e+='<tr><td><b>'+esc(h.ten)+'</b> <span class="ct2">'+h.ma+'</span>'+
+   (h.tt!=='hoc'?'<div class="hint" style="color:var(--red)">'+({chuyendi:'đã chuyển đi',baoluu:'đang bảo lưu'}[h.tt]||'')+'</div>':'')+'</td>'+
+   '<td>'+h.lop+'</td>'+
+   '<td class="n money">'+(g?M(g):'—')+'</td>'+
+   '<td class="n">'+(no?M(no)+(g>=no&&g>0?'<div class="hint" style="color:var(--green)">số dư đủ trả</div>':''):'—')+'</td>'+
+   '<td class="hint" style="max-width:250px">'+(bt?esc(bt.ly)+'<br>'+bt.luc:'—')+'</td>'+
+   '<td class="n">'+(g>0?im+' ngày'+(im>NGAYIM?'<div class="st2 r">quá '+NGAYIM+'</div>':''):'—')+'</td>'+
+   '<td><button class="btn xs" data-x="xemsd" data-i="'+h.ma+'">Xem sổ</button>'+
+    (h.tt!=='hoc'&&g>0?'<div style="margin-top:4px"><button class="btn xs p" data-x="dl" data-m="M7.3">↗ Hoàn</button></div>':'')+'</td></tr>';
+ });
+ e+='</tbody></table></div>';
+ e+='<div class="wrapx" style="margin-top:11px"><table><thead><tr><th>Khoản thu</th><th>Kỳ</th><th>Điểm trường</th>'+
+  '<th class="n">Số HS</th><th class="n">Hỗ trợ ghi nhận thừa</th></tr></thead><tbody>'+
+  (qtnsDS().length?qtnsDS().map(x=>'<tr><td><b>'+esc(KD(x.ma).ten)+'</b> <span class="ct2">'+x.ma+'</span></td>'+
+   '<td>'+x.ky+'</td><td>'+DTS[x.dt].ten.split("—")[0].trim()+'</td><td class="n">'+x.n+'</td>'+
+   '<td class="n"><b style="color:#9d174d">'+M(x.thua)+'</b></td></tr>').join('')
+   :'<tr><td colspan="5" style="text-align:center;color:var(--ink3);padding:14px">Chưa có chênh lệch hỗ trợ ngân sách nào trong phạm vi đang xem.</td></tr>')+
+  '</tbody></table></div>'+
+  '<div class="ro" style="margin-top:8px">Bảng ngay trên <b>không phải sổ số dư</b>. Không em nào có số dư từ nó và nó <b>không hiện trên hồ sơ học sinh</b> — '+
+  'vì gia đình <b>chưa từng nộp</b> đồng ngân sách nào: hỗ trợ đã <b>trừ thẳng khi tính số phải đóng</b>. Dòng này đi về <b>M7.4 → M7.5</b> để quyết toán với ngân sách.</div>'+
+  '<div class="ro" style="margin-top:9px"><b>“Dư mồ côi” không còn là một khái niệm.</b> Bản trước phải có hàng đợi riêng vì dư gắn cứng vào một khoản của một kỳ — '+
+  'hết kỳ là hết chỗ khấu trừ. Nay dư ngăn gia đình <b>không gắn kỳ, không gắn khoản</b>: nó nằm trong sổ của em cho tới khi được dùng hoặc được rút.<br>'+
+  'Ba việc vẫn phải theo dõi: số dư <b>nằm im quá '+NGAYIM+' ngày</b> sinh việc rà soát ở M7.3 · em <b>rời trường</b> còn số dư thì <b>chặn tất toán hồ sơ</b> ở M1.5/M1.6 · '+
+  '<b>cuối năm</b> còn dư thì chuyển năm sau hay hoàn hết — <b>chưa chốt</b>.</div>';
+ e+=D('<b>Số dư là đại lượng dẫn xuất từ bút toán, không phải một ô nhập.</b> Không màn hình nào cho gõ thẳng con số này, kể cả M1.1 Hồ sơ học sinh — '+
+  'M1.1 chỉ hiển thị <b>bản chiếu chỉ đọc</b> kèm liên kết về đây. Một ô số tiền sửa tay được, nằm trên hồ sơ học sinh, không đối chiếu được với giao dịch nào — '+
+  'đó là cách nhanh nhất để mất tiền.');
+ h+=khoi('du','💠','Sổ số dư tạm giữ',dsS.length+' học sinh có số dư · '+dsS.filter(x=>sdImLau(x)>NGAYIM).length+' nằm im quá '+NGAYIM+' ngày · hỗ trợ NS '+M(qtnsTong()),e);
+
+ /* --- khối F: xuất kế toán --- */
+ let f='<div class="wrapx"><table><thead><tr><th>#</th><th>Tệp</th><th class="n">Số dòng</th><th>Xuất lúc</th><th>Người xuất</th><th>Trạng thái</th></tr></thead><tbody>'+
+  XUATLS.map(x=>'<tr'+(x.tt==='thaythe'?' style="background:#fcfcfd"':'')+'><td>#'+x.n+'</td><td>'+esc(x.ten)+'</td>'+
+   '<td class="n">'+M0(x.dong)+'</td><td>'+x.ngay+'</td><td>'+esc(x.by)+'</td>'+
+   '<td>'+(x.tt==='thaythe'?'<span class="st2 n">Đã thay thế bởi lần xuất #'+x.boi+'</span>':'<span class="st2 o">Đang dùng</span>')+'</td></tr>').join('')+
+  '</tbody></table></div>'+
+  '<div class="ro" style="margin-top:10px">Ba loại tệp: <b>Thu chi tiết</b> (mỗi hàng 1 giao dịch) · <b>Phải thu chi tiết</b> (mỗi hàng 1 bản ghi HS × Khoản × Tháng, có đủ ①②③④) · <b>Tổng hợp tháng</b> (mỗi hàng 1 khoản × điểm trường). '+
+  '<b>Cột Điểm trường bắt buộc</b> — sau M7.1 v2, mã khoản chỉ duy nhất trong (Năm học × Điểm trường).</div>'+
+  (can('xuat')?'<div style="margin-top:10px"><button class="btn p" data-x="xuatkt">⬇ Xuất tệp cho phần mềm kế toán</button></div>':'')+
+  '<div class="sech2">Báo cáo đã ký</div><div class="wrapx"><table><thead><tr><th>Kỳ</th><th>Phạm vi</th>'+
+  '<th class="n">Đã thu (chốt cứng)</th><th>Ký lúc</th><th>Người ký</th><th></th></tr></thead><tbody>'+
+  '<tr><td><b>Tháng 8/2026</b></td><td>Toàn trường</td><td class="n money">142.860.000đ</td><td>06/09/2026 09:20</td>'+
+  '<td>Lê Quang Vinh — Hiệu trưởng</td><td><button class="btn xs" data-x="xembc">👁 Xem</button></td></tr></tbody></table></div>'+
+  D('Tệp cũ <b>không xóa</b>, đánh dấu <i>Đã thay thế bởi lần xuất #n</i> — tránh kế toán dùng nhầm file cũ sau khi đã sửa số. Báo cáo đã ký <b>chốt cứng số liệu tại thời điểm ký</b>.');
+ h+=khoi('xuat','📤','Xuất tệp kế toán và báo cáo đã ký',XUATLS.length+' lần xuất · 1 báo cáo đã ký',f);
+ return h;
+}
+
+/* ==================== MÀN HÌNH PHIÊN ĐỐI SOÁT ==================== */
+const MENH=[500000,200000,100000,50000,20000,10000,5000];
+let DEM={};
+function screenPhien(){
+ const p=PHIEN.find(x=>x.id===S.sc);
+ let h='<div class="crumb"><button data-x="backls">Thống kê thực hiện khoản thu</button><span>›</span><span>Đối soát ngày '+p.ngay+'</span><span>›</span><b>'+DTS[p.dt].ten+'</b></div>';
+ h+='<div class="tophd"><h1>Phiên đối soát '+p.ngay+'</h1>'+
+  (p.tt==='chot'?'<span class="st2 o">Đã chốt</span>':'<span class="st2 w">Đang mở</span>')+
+  '<div class="spacer"></div><button class="btn" data-x="backls">✕ Đóng</button></div>';
+ if(p.tt==='chot') h+='<div class="ok">Phiên <b>đã chốt</b> bởi '+esc(p.chotBoi)+' lúc '+p.chotLuc+'. Không thêm/sửa/gỡ giao dịch của ngày này nữa.</div>';
+ h+='<div class="sech2">A · Tiền mặt</div><div class="listw"><div class="wrapx"><table><thead><tr>'+
+  '<th>Thủ quỹ</th><th class="n">Tổng hệ thống</th><th class="n">Đếm thực tế</th><th class="n">Chênh lệch</th><th>Giải trình</th></tr></thead><tbody>'+
+  '<tr><td>Trần Văn Sơn</td><td class="n money">'+M(p.mat)+'</td>'+
+  '<td class="n">'+(p.dem==null?'<i style="color:var(--amber)">chưa nộp ca</i>':M(p.dem))+'</td>'+
+  '<td class="n '+(p.lech?'money due':'')+'">'+(p.dem==null?'—':(p.lech?M(p.lech):'0đ — khớp'))+'</td>'+
+  '<td>'+(p.giai?esc(p.giai):'<span style="color:var(--ink3)">—</span>')+'</td></tr></tbody></table></div>';
+ if(p.tt!=='chot'&&can('doisoat_chot')){
+  h+='<div style="padding:12px 14px"><div class="fld">Đếm tiền mặt theo mệnh giá</div><div class="menhgia">';
+  MENH.forEach(m=>{const n=DEM[m]||0;h+='<div class="mgi"><div class="l">'+M0(m)+'đ</div>'+
+   '<input type="number" min="0" data-x="dem" data-m="'+m+'" value="'+n+'"><div class="t">'+M(n*m)+'</div></div>';});
+  const td=MENH.reduce((a,m)=>a+(DEM[m]||0)*m,0);
+  h+='</div><div style="margin-top:9px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">'+
+   '<span>Tổng đếm: <b class="money">'+M(td)+'</b></span><span>Hệ thống: <b class="money">'+M(p.mat)+'</b></span>'+
+   '<span>Chênh lệch: <b class="money '+(td-p.mat!==0?'due':'')+'">'+M(td-p.mat)+'</b></span>'+
+   (td&&td-p.mat!==0?'<span class="st2 r">Khác 0 — bắt buộc ghi giải trình trước khi chốt</span>':'')+'</div>'+
+   '<div class="hint">Nhập số tờ, hệ thống tự nhân ra tổng. Đây là cách thủ quỹ đếm thật.</div></div>';
+ }
+ h+='</div>';
+ const kh=GD.filter(g=>g.pt==='sepay'&&g.dt===p.dt).slice(0,5);
+ h+='<div class="sech2">B · Chuyển khoản SePay</div><div class="listw"><div class="wrapx"><table><thead><tr>'+
+  '<th>Giờ</th><th>Mã giao dịch NH</th><th class="n">Số tiền</th><th>Nội dung</th><th>Hóa đơn đã khớp</th></tr></thead><tbody>'+
+  (kh.length?kh.map(g=>'<tr><td>'+(g.t.split(' ')[1]||'')+'</td><td><span class="ct2">'+g.id+'</span></td>'+
+   '<td class="n money">'+M(g.so)+'</td><td style="font-family:ui-monospace,monospace;font-size:11.5px">'+esc(g.noi)+'</td>'+
+   '<td><span class="ct2">'+g.hd+'</span> <span class="st2 o">tự khớp</span></td></tr>').join('')
+   :'<tr><td colspan="5" style="text-align:center;color:var(--ink3);padding:18px">Không có giao dịch tự khớp.</td></tr>')+
+  '</tbody></table></div><div class="lgd"><span>Tỷ lệ khớp tự động: <b>'+(p.sepay?Math.round(p.khop/p.sepay*100):100)+'%</b></span></div></div>';
+ h+='<div class="sech2" id="hangdoi">C · Hàng đợi giao dịch chưa khớp</div>'+
+  '<div class="bar" style="padding-top:0">'+[['cho','Chưa khớp'],['gan','Đã gán tay'],['m75','Đã chuyển M7.5'],['all','Tất cả']]
+   .map(f=>'<button class="chip '+(S.gdf===f[0]?'on':'')+'" data-x="gdf" data-f="'+f[0]+'">'+f[1]+' ('+
+    (f[0]==='all'?GDCK.length:GDCK.filter(g=>g.tt===f[0]).length)+')</button>').join('')+'</div>';
+ h+='<div class="ro">ⓘ Hàng đợi này <b>quét toàn bộ năm học, không cắt theo ngày đang xem</b>.</div>';
+ const gl=GDCK.filter(g=>S.gdf==='all'||g.tt===S.gdf);
+ if(!gl.length) h+='<div class="ro">Không có giao dịch nào ở nhóm này.</div>';
+ gl.forEach(g=>{
+  h+='<div class="gdc"><div class="hd2"><b>'+g.t+'</b><span class="ct2">'+g.id+'</span>'+
+   '<span class="money" style="color:var(--green)">+'+M(g.so)+'</span>'+
+   ({cho:'<span class="st2 w">Chưa khớp</span>',gan:'<span class="st2 b">Đã gán tay</span>',m75:'<span class="st2 v">Đã chuyển M7.5</span>'}[g.tt])+'</div>'+
+   '<div class="noi">"'+esc(g.noi)+'"</div>';
+  if(g.ly) h+='<div class="hint">ⓘ '+esc(g.ly)+'</div>';
+  if(g.daGan>0) h+='<div class="hint" style="color:var(--green)">Đã gán <b>'+M(g.daGan)+'</b>/'+M(g.so)+
+   ' — còn <b>'+M(g.so-g.daGan)+'</b> chưa chia:<br>'+(g.ganLs||[]).map(x=>'• '+M(x.so)+' → '+x.hd+' ('+esc(x.by)+', '+x.luc+')').join('<br>')+'</div>';
+  if(g.tt==='cho'){
+   h+='<div style="margin-top:6px;font-size:12px;font-weight:700">Gợi ý của hệ thống</div>'+
+    ((g.sug||[]).length?'':'<div class="hint">Hệ thống <b>không đoán được</b> hóa đơn nào — nội dung chuyển khoản không chứa mã học sinh, số tiền không khớp hóa đơn nào đang mở.</div>');
+   (g.sug||[]).forEach((id,i)=>{const o=HD.find(x=>x.id===id);
+    h+='<div class="gsug"><span class="rk"'+(i?' style="background:var(--bg);color:var(--ink2)"':'')+'>gợi ý '+(i+1)+'</span>'+
+     '<span class="ct2">'+id+'</span>'+(o?'<span>'+esc(HSC(o.hs).ten)+' · '+HSC(o.hs).lop+' · còn '+M(conNo(o))+'</span>':'<span style="color:var(--red)">không tìm thấy</span>')+
+     (can('gangd')&&o?'<button class="btn xs p" data-x="gan" data-g="'+g.id+'" data-h="'+id+'">Gán</button>':'')+'</div>';});
+   h+='<div class="gsug"><span class="rk" style="background:var(--bg);color:var(--ink2)">khác</span>'+
+    '<span>Không phải khoản thu của học sinh → chuyển M7.5 ghi nhận thu khác</span>'+
+    (can('gangd')?'<button class="btn xs" data-x="gm75" data-g="'+g.id+'">Chuyển M7.5</button>':'')+'</div>';
+   if((g.sug||[]).length>1) h+='<div class="hint">Giao dịch này là <b>chuyển gộp cho hai con</b> — gán được vào nhiều hóa đơn, tổng chia phải đúng bằng số tiền giao dịch.</div>';
+  }
+  if(g.tt==='gan') h+='<div class="hint">'+((g.ganLs&&g.ganLs.length>1)
+    ?'Chia cho '+g.ganLs.length+' hóa đơn:<br>'+g.ganLs.map(x=>'• '+M(x.so)+' → <span class="ct2">'+x.hd+'</span> ('+esc(x.by)+', '+x.luc+')').join('<br>')
+    :'Gán vào <span class="ct2">'+g.ganHD+'</span> bởi '+esc(g.ganBoi)+' lúc '+g.ganLuc)+'<br>Lý do: '+esc(g.ganVi||'')+'</div>'+
+   (can('gangd')?'<div style="margin-top:6px"><button class="btn xs" data-x="gogan" data-g="'+g.id+'">Gỡ gán</button></div>':'');
+  if(g.tt==='m75') h+='<div class="hint">Chuyển M7.5 bởi '+esc(g.m75Boi)+' lúc '+g.m75Luc+'</div>';
+  h+='</div>';
+ });
+ h+=D('Gợi ý <b>không tự gán</b>. Gán sai là ghi nhận tiền của gia đình này vào hóa đơn của gia đình khác. Giao dịch từ ngân hàng <b>không bao giờ xóa</b>, chỉ gán / gỡ gán.');
+ if(p.tt!=='chot'){
+  const td=MENH.reduce((a,m)=>a+(DEM[m]||0)*m,0);
+  h+='<div class="sech2">D · Chốt phiên</div><div class="listw" style="padding:13px 15px">'+
+   '<div class="fgrid"><div class="k">Tiền mặt</div><div>hệ thống <b class="money">'+M(p.mat)+'</b> · đếm <b class="money">'+M(td)+'</b> · '+
+   (td===p.mat?'<span style="color:var(--green)">khớp</span>':'<span style="color:var(--red)">lệch '+M(td-p.mat)+'</span>')+'</div>'+
+   '<div class="k">Chuyển khoản</div><div>webhook <b class="money">'+M(p.sepay)+'</b> · đã khớp <b class="money">'+M(p.khop)+
+   '</b> · chưa khớp <b class="money" style="color:var(--amber)">'+M(p.sepay-p.khop)+'</b></div></div>';
+  if(p.chuaN) h+='<div class="warn">⚠ Còn '+p.chuaN+' giao dịch chưa khớp. <b>Chốt phiên vẫn được</b> — chuyển sang hàng đợi ngày kế tiếp. Chặn thì kế toán không bao giờ chốt được ngày nào.</div>';
+  h+=(can('doisoat_chot')?'<button class="btn g" data-x="chotphien" data-i="'+p.id+'">✓ Chốt phiên ngày '+p.ngay+'</button>'
+    :'<span style="color:var(--ink3);font-size:12.5px">Chỉ Kế toán chốt được phiên. Thủ quỹ nộp ca ở tab Theo dõi &amp; Xác nhận đóng tiền.</span>')+'</div>';
+ }
+ return h;
+}
+
+/* ==================== TAB 3 — CHỨNG TỪ ĐIỆN TỬ ==================== */
+const DUTT={cho:'Chờ quyết định',m73:'Đang xử lý ở M7.3',chuyen:'Đã chuyển khoản khác',cuoinam:'Chờ cuối năm',xong:'Đã hoàn tất'};
+let XUATLS=[
+ {n:3,ten:'Thu chi tiết tháng 8/2026',ngay:'06/09/2026 10:12',by:'Phạm Thị Lan — Kế toán',dong:4820,tt:'moi'},
+ {n:2,ten:'Thu chi tiết tháng 8/2026',ngay:'05/09/2026 16:40',by:'Phạm Thị Lan — Kế toán',dong:4818,tt:'thaythe',boi:3},
+ {n:1,ten:'Phải thu chi tiết tháng 8/2026',ngay:'05/09/2026 16:35',by:'Phạm Thị Lan — Kế toán',dong:5102,tt:'moi'},
+];
+function ctSt(c){return {choky:'<span class="st2 w">Chờ ký số</span>',daky:'<span class="st2 o">Đã ký · đã gửi</span>',
+ thaythe:'<span class="st2 n">Đã bị thay thế</span>'}[c.tt]||'';}
+function vCtdt(){
+ const PV=CTDT.filter(c=>dtOK().includes(c.dt));
+ const L=PV.filter(c=>S.ctf==='all'||c.tt===S.ctf);
+ const choky=PV.filter(c=>c.tt==='choky').length;
+ let h='<div class="info"><b>Hai loại chứng từ trong cùng một sổ.</b> Trường công lập thu dịch vụ giáo dục (không chịu thuế GTGT) dùng <b>biên lai điện tử</b> — Mẫu 01/ĐKTĐ-CTĐT, XML kèm chữ ký số. <b>Hóa đơn GTGT</b> chỉ cho khoản chịu thuế. Loại lấy từ cấu hình khoản ở M7.1.</div>';
+ h+='<div class="bar">'+[['all','Tất cả'],['choky','Chờ ký số'],['daky','Đã ký'],['thaythe','Đã bị thay thế']]
+  .map(f=>'<button class="chip '+(S.ctf===f[0]?'on':'')+'" data-x="ctf" data-f="'+f[0]+'">'+f[1]+' ('+
+   (f[0]==='all'?PV.length:PV.filter(c=>c.tt===f[0]).length)+')</button>').join('');
+ if(can('ctdt_ky')&&choky) h+='<button class="btn p" data-x="kyloat">🖊️ Ký hàng loạt '+choky+' chứng từ</button>';
+ if(can('xuat')) h+='<button class="btn" data-x="xuat" data-w="sổ chứng từ điện tử">⬇ Xuất</button>';
+ h+='</div>';
+ if(can('ctdt_ky')&&choky&&!CTSOK) h+='<div class="blk"><b>⛔ Không ký được '+choky+' chứng từ</b>'+
+  '<div class="li"><span>✕</span><div>Chứng thư số của Hiệu trưởng Lê Quang Vinh <b>hết hiệu lực ngày '+CTSHET+'</b>.</div></div>'+
+  '<div style="margin-top:7px;display:flex;gap:7px;flex-wrap:wrap"><button class="btn sm" data-x="dl" data-m="M4.11">↗ M4.11 Chứng thư số — gia hạn</button>'+
+  '<button class="btn sm p" data-x="ctsok">Giả lập: đã gia hạn chứng thư số</button></div>'+
+  '<div class="hint" style="margin-top:6px;color:#991b1b">Ràng buộc chặn phải <b>nêu chính xác còn thiếu gì và dẫn đi đâu</b> — không hiện nút xám câm.</div></div>';
+ h+='<div class="listw"><div class="wrapx"><table><thead><tr><th>Số chứng từ</th><th>Loại</th><th>Học sinh</th>'+
+  '<th class="n">Số tiền</th><th>Ngày</th><th>Trạng thái</th><th>Cơ quan thuế</th><th></th></tr></thead><tbody>';
+ if(!L.length) h+='<tr><td colspan="8" style="text-align:center;color:var(--ink3);padding:22px">Không có chứng từ nào ở nhóm này.</td></tr>';
+ L.forEach(c=>{const hs=HSC(c.hs);
+  h+='<tr><td><b>'+esc(c.so)+'</b>'+(c.thayCho?'<div class="hint">thay cho '+c.thayCho+'</div>':'')+
+   (c.boiSo?'<div class="hint">đã bị thay bởi '+c.boiSo+'</div>':'')+'</td>'+
+   '<td><span class="st2 '+(c.loai==='bienlai'?'b':'v')+'">'+(c.loai==='bienlai'?'Biên lai ĐT':'Hóa đơn GTGT')+'</span></td>'+
+   '<td>'+esc(hs.ten)+'<div class="hint">'+hs.lop+' · '+c.hd+'</div></td>'+
+   '<td class="n money">'+M(c.tien)+'</td><td>'+c.ngay+'</td><td>'+ctSt(c)+
+   (c.lyThayThe?'<div class="hint">'+esc(c.lyThayThe)+'</div>':'')+'</td>'+
+   '<td class="hint">'+esc(c.thue||'—')+'</td>'+
+   '<td><button class="btn xs p" data-x="xemct" data-s="'+esc(c.so)+'">👁 Xem</button> <button class="btn xs" data-x="taict" data-s="'+esc(c.so)+'">⬇ Tải</button></td></tr>';
+ });
+ h+='</tbody></table></div><div class="lgd"><span>Chứng từ đã gửi cơ quan thuế <b>không xóa</b>. Sai thì phát hành bản <b>thay thế</b>; bản cũ chuyển nhãn <i>Đã bị thay thế</i> và vẫn tra ra bằng chip lọc.</span></div></div>';
+ h+=D('Ký chứng từ là <b>Nhóm B</b> — hộp thoại chỉ có một nút, không có đường bỏ qua. XML bắt buộc có thành phần chữ ký số theo NĐ 123/2020 sửa bởi NĐ 70/2025; chứng từ không ký <b>không tồn tại về mặt pháp lý</b>.');
+ return h;
+}
+
+/* ==================== HÀNH ĐỘNG ==================== */
+let SEQP=1;
+function ghiThu(o,so,kieu){
+ const con=conNo(o);
+ const thua=Math.max(0,so-con);
+ o.thu+=Math.min(so,con);
+ if(thua>0) ghiSD(o.hs,'gd',null,'co',thua,'M7.2/'+o.id,
+   'Thu thừa tại quầy — nhận '+M(so)+' cho hóa đơn còn nợ '+M(con),R().n);
+ let con2=Math.min(so,con);
+ o.dong.forEach(d=>{const thieu=d.phaiDong-d.daTT;if(thieu>0&&con2>0){const p=Math.min(thieu,con2);d.daTT+=p;con2-=p;}});
+ const id=(kieu==='mat'?'PT-'+o.dt+'-'+mm(o.th)+'-'+String(9000+(SEQP++)):'FT2627'+String(70000+(SEQP++)));
+ GD.push({id,hd:o.id,hs:o.hs,dt:o.dt,so,pt:kieu==='mat'?'mat':'sepay',t:HOM+' '+new Date().toTimeString().slice(0,5),
+  noi:kieu==='mat'?'Nộp tại quầy — xác nhận thủ công':'Chuyển khoản ngoài mã QR — xác nhận thủ công',
+  by:R().n,phien:'DS-'+o.dt+'-'+HOM.slice(0,5)});
+ if(kieu==='mat'){CA.push({so:id,gio:new Date().toTimeString().slice(0,5),hs:o.hs,hd:o.id,kieu:'Tiền mặt',so_:so});
+  const ph=PHIEN.find(x=>x.dt===o.dt&&x.tt==='mo'); if(ph) ph.mat+=so;}
+ return true;
+}
+function xuatFile(w){
+ modal('Xuất tệp — chọn mục đích sử dụng',
+  '<div class="ro" style="margin-top:0">Dữ liệu xuất chứa <b>thông tin cá nhân của trẻ em</b> và <b>số liệu tài chính của gia đình</b>. Nghị định 13/2023/NĐ-CP: mọi lần xuất phải ghi nhật ký <b>ai xuất · lúc nào · để làm gì</b>.</div>'+
+  '<div class="fld">Mục đích<select class="fldi" id="mdich">'+
+  '<option>Nhập vào phần mềm kế toán MISA / Bravo</option>'+
+  '<option>Báo cáo Phòng / Sở Giáo dục</option>'+
+  '<option>Đối chiếu nội bộ với thủ quỹ điểm trường</option>'+
+  '<option>Lưu trữ hồ sơ quyết toán năm học</option></select></div>'+
+  '<div class="fld">Phạm vi<input class="fldi" value="'+esc(w)+' · '+(DTCUR==='ALL'?'toàn trường':DTS[DTCUR].ten)+'" readonly></div>'+
+  '<div class="hint">Không có mục đích thì không có nút xuất — đây là ràng buộc pháp lý, không phải thủ tục làm phiền.</div>',
+  '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="xuatok" data-w="'+esc(w)+'">⬇ Xuất và ghi nhật ký</button>');
+}
+
+document.addEventListener('click',e=>{
+ const rb=e.target.closest('.rb');
+ if(rb){document.querySelectorAll('.rb').forEach(b=>b.classList.remove('on'));rb.classList.add('on');
+  RK=rb.dataset.r;S.sel=null;S.screen=null;
+  if(!R().dt)DTCUR='ALL';
+  render();return;}
+ if(e.target.id==='dsgbtn'){document.body.classList.toggle('showdsg');
+  e.target.classList.toggle('on',document.body.classList.contains('showdsg'));return;}
+ const tb=e.target.closest('[data-tab]');
+ if(tb){S.tab=tb.dataset.tab;S.sel=null;S.screen=null;render();return;}
+ const el=e.target.closest('[data-x]'); if(!el) return;
+ const x=el.dataset.x, i=el.dataset.i;
+
+ /* --- điều hướng / hiển thị --- */
+ if(x==='close'){closeM();return;}
+ if(x==='closep'){S.sel=null;render();return;}
+ if(x==='selhs'){S.sel=(S.sel===i?null:i);render();return;}
+ if(x==='grp'){const k=el.dataset.k;S.mo[k]=(S.mo[k]===0?1:0);render();return;}
+ if(x==='khoi'){const k=el.dataset.k;S.kh[k]=S.kh[k]?0:1;render();return;}
+ if(x==='moall'){dtOK().forEach(d=>S.mo['d'+d]=1);Object.keys(LOP).forEach(l=>S.mo['l'+l]=1);render();return;}
+ if(x==='thuall'){dtOK().forEach(d=>S.mo['d'+d]=0);Object.keys(LOP).forEach(l=>S.mo['l'+l]=0);render();return;}
+ if(x==='chip'){const c=el.dataset.c;S.chips[c]=S.chips[c]?0:1;S.sel=null;render();return;}
+ if(x==='fqh'){S.qh=S.qh?0:1;S.sel=null;render();return;}
+ if(x==='ftuchoi'){S.tuchoi=S.tuchoi?0:1;S.sel=null;render();return;}
+ if(x==='fsd'){S.sd=S.sd?0:1;S.sel=null;render();return;}
+ if(x==='xemsd'){const h=HSC(i), l=SODU.filter(z=>z.hs===i);
+  modal('Sổ số dư tạm giữ — '+esc(h.ten),
+   '<div class="dumon" style="grid-template-columns:1fr"><div class="c"><div class="l">💠 Số dư tạm giữ</div><div class="v" style="color:var(--green)">'+M(sdGD(i))+'</div>'+
+   '<div class="s"><b>Một ngăn, toàn bộ là tiền gia đình.</b> Hỗ trợ ngân sách đã trừ thẳng khi tính số phải đóng nên hóa đơn chưa từng chứa nó</div></div></div>'+
+   '<div class="wrapx"><table><thead><tr><th>Bút toán</th><th>Điểm trường</th><th class="n">Ghi CÓ</th><th class="n">Ghi NỢ</th>'+
+   '<th>Nguồn</th><th>Lý do</th><th>Người · lúc</th></tr></thead><tbody>'+
+   (l.length?l.map(z=>'<tr><td><span class="ct2">'+z.id+'</span></td>'+
+    '<td>'+(z.dt?DTS[z.dt].ten.split('—')[0].trim():(HSC(z.hs)?DTS[HSC(z.hs).dt].ten.split('—')[0].trim():'—'))+'</td>'+
+    '<td class="n">'+(z.chieu==='co'?'<b style="color:var(--green)">'+M(z.so)+'</b>':'—')+'</td>'+
+    '<td class="n">'+(z.chieu==='no'?'<b style="color:var(--red)">'+M(z.so)+'</b>':'—')+'</td>'+
+    '<td><span class="ct2">'+esc(z.nguon)+'</span></td>'+
+    '<td class="hint" style="max-width:240px">'+esc(z.ly)+'</td>'+
+    '<td class="hint">'+esc(z.nguoi)+'<br>'+z.luc+'</td></tr>').join('')
+    :'<tr><td colspan="7" style="text-align:center;color:var(--ink3);padding:18px">Chưa có bút toán nào.</td></tr>')+
+   '</tbody></table></div>'+
+   '<div class="ro">Số dư là <b>tổng của sổ này</b>, không phải một ô nhập. Mọi bút toán mang <b>nguồn</b> và <b>lý do</b>; '+
+   'M1.1 Hồ sơ học sinh chỉ hiển thị <b>bản chiếu chỉ đọc</b> kèm liên kết về đây.</div>'+
+   (h.tt!=='hoc'&&sdGD(i)>0?'<div class="blk"><b>⛔ Em đã rời trường mà còn số dư ngăn gia đình</b>'+
+    '<div class="li"><span>!</span><div>M1.5 / M1.6 <b>chặn tất toán hồ sơ</b> cho tới khi số dư được hoàn hoặc trừ hết công nợ.</div></div></div>':''));
+  return;}
+ if(x==='dungsd'){const h=HSC(i), t=ttHSKy(h), sg=sdGD(i);
+  const hds=hdCua(i,KYCUR).filter(o=>conNo(o)>0);
+  const dung=Math.min(sg,t.no);
+  modal('Dùng số dư trả hóa đơn — '+esc(h.ten),
+   '<div class="fgrid"><div class="k">Số dư ngăn gia đình</div><div class="money" style="color:var(--green)">'+M(sg)+'</div>'+
+   '<div class="k">Còn nợ kỳ '+KYCUR+'</div><div class="money due">'+M(t.no)+'</div>'+
+   '<div class="k">Sẽ trừ</div><div class="money" style="font-size:15px">'+M(dung)+'</div></div>'+
+   '<div class="wrapx"><table><thead><tr><th>Hóa đơn</th><th class="n">Còn nợ</th><th class="n">Trừ từ số dư</th></tr></thead><tbody>'+
+   (function(){let con=dung;return hds.map(o=>{const p=Math.min(conNo(o),con);con-=p;
+     return '<tr><td><span class="ct2">'+o.id+'</span></td><td class="n">'+M(conNo(o))+'</td><td class="n money">'+M(p)+'</td></tr>';}).join('');})()+
+   '</tbody></table></div>'+
+   '<div class="ro"><b>Hệ thống không tự trừ.</b> Đây là tiền của gia đình — tự trừ nghĩa là tiêu hộ. '+
+   'Trên App phụ huynh tự bấm <i>Dùng số dư</i>; tại quầy thì thủ quỹ chỉ làm được <b>khi phụ huynh có mặt và đồng ý</b>.</div>'+
+   '<label style="display:flex;gap:7px;align-items:flex-start;font-size:12.5px;margin-top:8px">'+
+   '<input type="checkbox" id="phdy" style="margin-top:3px"><span>Phụ huynh <b>có mặt và đồng ý</b> dùng số dư để trả hóa đơn kỳ này</span></label>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn g" data-x="dungsdok" data-i="'+i+'">Trừ '+M(dung)+' từ số dư</button>');
+  return;}
+ if(x==='dungsdok'){
+  if(!$('#phdy').checked){toast('⛔ Chưa xác nhận phụ huynh có mặt và đồng ý. Đây là tiền của gia đình — không tự trừ.');return;}
+  const h=HSC(i), t=ttHSKy(h), sg=sdGD(i);
+  let con=Math.min(sg,t.no), tong=0;
+  hdCua(i,KYCUR).filter(o=>conNo(o)>0).forEach(o=>{
+   const p=Math.min(conNo(o),con); if(p<=0) return;
+   o.thu+=p; let c2=p;
+   o.dong.forEach(d=>{const thieu=d.phaiDong-d.daTT;if(thieu>0&&c2>0){const q=Math.min(thieu,c2);d.daTT+=q;c2-=q;}});
+   ghiSD(i,'gd',null,'no',p,'M7.2/'+o.id,'Phụ huynh chọn dùng số dư trả hóa đơn '+o.id+' kỳ '+KYCUR,R().n);
+   con-=p;tong+=p;});
+  closeM();tinhCT();render();
+  toast('✓ Đã trừ <b>'+M(tong)+'</b> từ số dư tạm giữ. Số dư còn lại <b>'+M(sdGD(i))+'</b>. Ghi <b>bút toán NỢ</b> mang nguồn là mã hóa đơn.');
+  return;}
+ if(x==='gdf'){S.gdf=el.dataset.f;render();return;}
+ if(x==='ctf'){S.ctf=el.dataset.f;render();return;}
+ if(x==='duf'){S.duf=el.dataset.f;render();return;}
+ if(x==='phien'){S.screen='phien';S.sc=i;DEM={};render();return;}
+ if(x==='backls'){S.screen=null;render();return;}
+ if(x==='gohangdoi'){closeM();const p=PHIEN.filter(z=>z.tt==='mo'&&dtOK().indexOf(z.dt)>=0)[0]||PHIEN[0];
+  S.screen='phien';S.sc=p.id;S.gdf='cho';render();
+  setTimeout(()=>{const t=document.getElementById('hangdoi');if(t)t.scrollIntoView({behavior:'smooth'});},60);return;}
+ if(x==='dl'){const m=el.dataset.m;
+  modal('Liên kết sâu sang '+m,'<div class="ro" style="margin-top:0">Mở <b>'+m+'</b> với ngữ cảnh mang theo, làm xong quay lại đúng chỗ này.</div>'+
+   '<div class="fld">Đường dẫn<input class="fldi" readonly value="/'+m.toLowerCase().split('.').join('-')+'?ctx='+(S.sel||'')+'&return=M7.2"></div>'+
+   '<div class="hint">Vai không có quyền tại menu chủ thì <b>không nhìn thấy</b> liên kết này — không phải bấm vào rồi mới báo lỗi.</div>');return;}
+
+ /* --- xác nhận đóng tiền --- */
+ if(x==='xacnhan'){modalXacNhan(HD.find(h=>h.id===i));return;}
+ if(x==='qkieu'){QKIEU=el.dataset.v;
+  document.querySelectorAll('[data-x="qkieu"]').forEach(b=>b.classList.toggle('on',b.dataset.v===QKIEU));
+  const o=HD.find(h=>h.id===document.querySelector('[data-x="qthu"]').dataset.i);
+  $('#qform').innerHTML=qFormHTML(o);return;}
+ if(x==='qthu'){
+  if(QKIEU==='sai'){toast('⛔ Không nhập tay giao dịch sai cú pháp — tiền đã về tài khoản, hãy gán ở hàng đợi.');return;}
+  const o=HD.find(h=>h.id===i);
+  const so=el.dataset.so?+el.dataset.so:(+(($('#qtien')?$('#qtien').value:'').replace(/[^0-9]/g,''))||0);
+  if(so<=0){toast('⛔ Chưa nhập số tiền nhận.');return;}
+  const con=conNo(o), thua=Math.max(0,so-con);
+  if(thua>0&&!el.dataset.ok){
+   modal('Nhận thừa '+M(thua)+'?',
+    '<div class="fgrid"><div class="k">Số tiền nhận</div><div class="money">'+M(so)+'</div>'+
+    '<div class="k">Hóa đơn còn nợ</div><div class="money">'+M(con)+'</div>'+
+    '<div class="k">Phần thừa</div><div class="money" style="color:var(--green);font-size:15px">'+M(thua)+'</div></div>'+
+    (thua>2000000?'<div class="blk"><b>⚠ Thừa vượt 2.000.000đ</b><div class="li"><span>!</span><div>Thừa lớn thường là <b>nhập sai số</b> chứ không phải phụ huynh nộp trước. Kiểm tra lại trước khi xác nhận.</div></div></div>':'')+
+    '<div class="ro">Phần thừa <b>ghi CÓ Sổ số dư tạm giữ, ngăn gia đình</b> của em '+esc(HSC(o.hs).ten)+'. '+
+    'Bút toán mang <span class="ct2">nguồn = '+o.id+'</span> và tên người thu. Lần sau phụ huynh <b>chọn dùng</b> số dư để trả hóa đơn.</div>'+
+    '<div class="hint">Hệ thống <b>hỏi rõ</b>, không âm thầm cộng — thu thừa mà không ai biết là tiền treo.</div>',
+    '<button class="btn" data-x="close">Hủy</button><button class="btn g" data-x="qthu" data-i="'+o.id+'" data-ok="1" data-so="'+so+'">✓ Nhận '+M(so)+' và ghi số dư</button>');
+   return;}
+  if(!ghiThu(o,so,QKIEU))return;
+  closeM();tinhDuMoCoi();tinhCT();render();
+  toast('✓ Đã ghi nhận <b>'+M(so)+'</b> cho hóa đơn <b>'+o.id+'</b>'+
+   (thua>0?' · phần thừa <b>'+M(thua)+'</b> đã ghi CÓ số dư tạm giữ, số dư của em nay là <b>'+M(sdGD(o.hs))+'</b>.':'')+
+   (QKIEU==='mat'?' · đã sinh phiếu thu và cộng vào ca hôm nay.':' · đã gắn vào phiên đối soát ngày '+HOM+'.'));
+  return;}
+
+ /* --- ca thu --- */
+ if(x==='chotca'){
+  if(!CA.length){toast('Chưa có phiếu nào trong ca để chốt.');return;}
+  const t=CA.reduce((a,b)=>a+b.so_,0);
+  modal('Chốt ca và nộp báo cáo',
+   '<div class="fgrid"><div class="k">Số phiếu</div><div><b>'+CA.length+'</b></div>'+
+   '<div class="k">Tổng hệ thống</div><div class="money">'+M(t)+'</div></div>'+
+   '<div class="ro">Chốt ca là <b>thủ quỹ nộp số đếm</b>, chưa phải chốt phiên đối soát. Kế toán mới là người chốt phiên ngày.</div>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn g" data-x="chotcaok">✓ Chốt ca</button>');return;}
+ if(x==='chotcaok'){CACHOT=true;closeM();render();toast('✓ Đã chốt ca và nộp báo cáo cho Kế toán.');return;}
+
+ /* --- đối soát ngày --- */
+ if(x==='chotphien'){
+  const p=PHIEN.find(z=>z.id===i), td=MENH.reduce((a,m)=>a+(DEM[m]||0)*m,0), lech=td-p.mat;
+  if(!td){toast('⛔ Chưa đếm tiền mặt. Nhập số tờ theo mệnh giá trước khi chốt.');return;}
+  modal('Chốt phiên đối soát '+p.ngay,
+   '<div class="fgrid"><div class="k">Tiền mặt hệ thống</div><div class="money">'+M(p.mat)+'</div>'+
+   '<div class="k">Đếm thực tế</div><div class="money">'+M(td)+'</div>'+
+   '<div class="k">Chênh lệch</div><div class="money '+(lech?'due':'')+'">'+M(lech)+'</div></div>'+
+   (lech?'<div class="fld">Giải trình chênh lệch <b style="color:var(--red)">(bắt buộc)</b><textarea class="fldi" id="giai" rows="3" placeholder="Ví dụ: thiếu 50.000đ do trả lại tiền thừa cho PH em Nguyễn Minh Anh, chưa kịp lập phiếu chi."></textarea></div>'
+    :'<div class="ok">Khớp quỹ. Không cần giải trình.</div>')+
+   (p.chuaN?'<div class="warn">⚠ '+p.chuaN+' giao dịch chưa khớp sẽ chuyển sang hàng đợi ngày kế tiếp.</div>':''),
+   '<button class="btn" data-x="close">Hủy</button><button class="btn g" data-x="chotok" data-i="'+i+'">✓ Chốt phiên</button>');return;}
+ if(x==='chotok'){
+  const p=PHIEN.find(z=>z.id===i), td=MENH.reduce((a,m)=>a+(DEM[m]||0)*m,0), lech=td-p.mat;
+  const g=$('#giai')?$('#giai').value.trim():'';
+  if(lech&&!g){toast('⛔ Lệch quỹ <b>'+M(lech)+'</b> mà chưa có giải trình. Không chốt được.');return;}
+  p.tt='chot';p.dem=td;p.lech=lech;p.giai=g;p.chotBoi=R().n;p.chotLuc=HOM+' '+new Date().toTimeString().slice(0,5);
+  closeM();render();toast('✓ Đã chốt phiên '+p.ngay+(lech?' · ghi nhận lệch quỹ '+M(lech)+' kèm giải trình.':' · khớp quỹ.'));return;}
+
+ /* --- hàng đợi giao dịch --- */
+ if(x==='gan'){
+  const g=GDCK.find(z=>z.id===el.dataset.g), hd=el.dataset.h, o=HD.find(z=>z.id===hd);
+  modal('Gán giao dịch vào hóa đơn',
+   '<div class="fgrid"><div class="k">Giao dịch</div><div><span class="ct2">'+g.id+'</span> <b class="money">'+M(g.so)+'</b></div>'+
+   '<div class="k">Nội dung</div><div style="font-family:ui-monospace,monospace;font-size:11.5px">'+esc(g.noi)+'</div>'+
+   '<div class="k">Hóa đơn</div><div><span class="ct2">'+hd+'</span> — '+esc(HSC(o.hs).ten)+' · còn '+M(conNo(o))+'</div></div>'+
+   '<div class="fld">Lý do gán <b style="color:var(--red)">(bắt buộc)</b><textarea class="fldi" id="ganvi" rows="2" placeholder="Ví dụ: PH gọi điện xác nhận đây là tiền nộp cho em…"></textarea></div>'+
+   '<div class="ro">Gán sai là ghi nhận tiền của gia đình này vào hóa đơn của gia đình khác. Lý do lưu vĩnh viễn kèm người thao tác.</div>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="ganok" data-g="'+g.id+'" data-h="'+hd+'">Gán</button>');return;}
+ if(x==='ganok'){
+  const g=GDCK.find(z=>z.id===el.dataset.g), o=HD.find(z=>z.id===el.dataset.h);
+  const vi=$('#ganvi').value.trim();
+  if(!vi){toast('⛔ Chưa ghi lý do gán.');return;}
+  const con=g.so-(g.daGan||0), so=Math.min(con,conNo(o));
+  if(con<=0){toast('⛔ Giao dịch <b>'+g.id+'</b> đã chia hết '+M(g.so)+'. Không còn tiền để gán.');return;}
+  if(conNo(o)<=0){toast('⛔ Hóa đơn <b>'+o.id+'</b> đã đóng đủ — không gán thêm được. Chọn hóa đơn khác, hoặc chuyển M7.5 nếu không phải tiền khoản thu.');return;}
+  ghiThu(o,so,'ck');
+  g.daGan=(g.daGan||0)+so;
+  g.ganLs=(g.ganLs||[]);g.ganLs.push({hd:o.id,so,by:R().n,luc:HOM+' '+new Date().toTimeString().slice(0,5),vi});
+  if(g.daGan>=g.so){g.tt='gan';g.ganHD=o.id;g.ganBoi=R().n;g.ganLuc=HOM+' '+new Date().toTimeString().slice(0,5);g.ganVi=vi;}
+  closeM();tinhDuMoCoi();tinhCT();render();
+  toast('✓ Đã gán <b>'+M(so)+'</b> vào <b>'+o.id+'</b>'+
+   (g.daGan<g.so?' · còn <b>'+M(g.so-g.daGan)+'</b> chưa gán — giao dịch <b>vẫn ở hàng đợi</b> cho tới khi chia hết.':' · đã chia hết số tiền giao dịch.'));return;}
+ if(x==='gogan'){
+  const g=GDCK.find(z=>z.id===el.dataset.g);
+  modal('Gỡ gán giao dịch','<div class="ro" style="margin-top:0">Giao dịch quay lại hàng đợi <b>Chưa khớp</b>, số tiền đã ghi nhận bị trừ khỏi hóa đơn <b>'+g.ganHD+'</b>. Bản ghi gán cũ <b>không xóa</b> — lưu vào nhật ký thao tác.</div>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn r" data-x="goganok" data-g="'+g.id+'">Gỡ gán</button>');return;}
+ if(x==='goganok'){
+  const g=GDCK.find(z=>z.id===el.dataset.g);
+  (g.ganLs||[]).forEach(x=>{const o=HD.find(z=>z.id===x.hd); if(!o)return;
+   const so=Math.min(x.so,o.thu);o.thu-=so;let c=so;
+   o.dong.slice().reverse().forEach(d=>{if(c>0&&d.daTT>0){const p=Math.min(d.daTT,c);d.daTT-=p;c-=p;}});});
+  g.tt='cho';g.ganHD=null;g.daGan=0;g.ganLs=[];
+  closeM();tinhDuMoCoi();tinhCT();render();toast('✓ Đã gỡ gán. Giao dịch trở lại hàng đợi chưa khớp — bản ghi gán cũ vẫn còn trong nhật ký thao tác.');return;}
+ if(x==='gm75'){const g=GDCK.find(z=>z.id===el.dataset.g);
+  g.tt='m75';g.m75Boi=R().n;g.m75Luc=HOM+' '+new Date().toTimeString().slice(0,5);
+  render();toast('✓ Đã chuyển <b>'+g.id+'</b> sang M7.5 Thu chi để ghi nhận khoản thu khác.');return;}
+
+ /* --- chốt sổ tháng --- */
+ if(x==='tonghop'){const p=PHIENT.find(z=>z.id===i);
+  const chua=PHIEN.filter(z=>z.dt===p.dt&&z.tt==='mo').length;
+  if(chua){toast('⛔ Còn '+chua+' phiên ngày chưa chốt ở '+DTS[p.dt].ten+'. Tổng hợp tháng phải đứng trên các ngày đã chốt.');return;}
+  p.tt='cho_pht';render();toast('✓ Đã tổng hợp kỳ '+p.th+' và trình PHT phụ trách điểm trường duyệt.');return;}
+ if(x==='dsduyet'){const p=PHIENT.find(z=>z.id===i);p.tt='cho_ht';render();
+  toast('✓ Đã duyệt chặng 1. Chuyển Hiệu trưởng duyệt cuối.');return;}
+ if(x==='dscuoi'){
+  modal('Duyệt cuối và khóa kỳ',
+   '<div class="ro" style="margin-top:0">Khóa kỳ là mốc <b>C+</b>: sau khi khóa, số liệu kỳ này <b>không sửa được nữa</b>. Phát sinh mới đi luồng <b>điều chỉnh kỳ sau</b> ở M7.3.</div>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn g" data-x="dscuoiok" data-i="'+i+'">✓ Duyệt cuối và khóa kỳ</button>');return;}
+ if(x==='dscuoiok'){const p=PHIENT.find(z=>z.id===i);
+  p.tt='khoa';p.htBoi=R().n;p.khoaLuc=HOM+' '+new Date().toTimeString().slice(0,5);
+  closeM();render();toast('✓ Đã khóa kỳ '+p.th+'. Số liệu chốt cứng.');return;}
+
+ /* --- nhắc nợ --- */
+ if(x==='nhac1'){const h=HSC(i),t=ttHSKy(h),sg=sdGD(i);
+  if(sg>0&&sg>=t.no){
+   modal('Nhắc dùng số dư — '+esc(h.ten),
+    '<div class="ok">Trường <b>đang giữ '+M(sg)+'</b> của gia đình này, đủ trả hết '+M(t.no)+' còn nợ kỳ '+KYCUR+'.</div>'+
+    '<div class="fgrid"><div class="k">Nội dung gửi App</div><div style="font-style:italic">“Bạn có <b>'+M(sg)+'</b> số dư nhà trường đang giữ hộ. Bấm để dùng trả hóa đơn kỳ '+KYCUR+'.”</div>'+
+    '<div class="k">Không phải</div><div style="color:var(--ink3);text-decoration:line-through">“Bạn còn nợ '+M(t.no)+'”</div></div>'+
+    '<div class="ro"><b>Một thao tác, không phải một lời trách.</b> Nhắc nợ một gia đình mà trường đang giữ tiền của họ là sai — '+
+    'và phần được số dư che phủ <b>cũng không tính quá hạn</b>.</div>',
+    '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="nhacok">🔔 Gửi lời mời dùng số dư</button>');
+   return;}
+  modal('Nhắc nợ — '+esc(h.ten),
+   '<div class="fgrid"><div class="k">Còn nợ</div><div class="money due">'+M(t.no)+'</div>'+
+   '<div class="k">Quá hạn</div><div>'+t.qh+' ngày → <b>bậc '+bacNhac(t.qh)+'</b></div>'+
+   '<div class="k">Kênh</div><div>Push App PH-HS'+(bacNhac(t.qh)>=3?' + tạo việc cho GVCN '+LOP[h.lop].gv:'')+'</div>'+
+   '<div class="k">Người nhận</div><div>'+esc(h.ph)+' · '+h.sdt+'</div></div>'+
+   '<div class="ro">Nhắc nợ <b>không gửi SMS/Zalo</b> ở MVP — App PH-HS là kênh chính thức, tránh chi phí và tránh lộ thông tin qua kênh thứ ba.</div>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="nhacok">🔔 Gửi nhắc</button>');return;}
+ if(x==='nhacok'){closeM();toast('✓ Đã gửi nhắc nợ và ghi nhật ký.');return;}
+ if(x==='nhacloat'){
+  const ds=hsLoc().filter(h=>ttHSKy(h).qh>0);
+  const bo=hsLoc().filter(h=>ttHSKy(h).qh===0&&ttHSKy(h).no>0);
+  modal('Nhắc nợ hàng loạt — kỳ '+KYCUR,
+   '<div class="wrapx"><table><thead><tr><th>Nhóm</th><th class="n">Số HS</th><th>Xử lý</th></tr></thead><tbody>'+
+   [4,3,2].map(b=>{const n=ds.filter(h=>bacNhac(ttHSKy(h).qh)===b).length;
+    return '<tr><td>Bậc '+b+(b===4?' — quá hạn ≥ 7 ngày':(b===3?' — quá hạn 3-6 ngày':' — quá hạn 1-2 ngày'))+'</td><td class="n">'+n+'</td>'+
+    '<td>Push App PH-HS'+(b>=3?' + việc cho GVCN':'')+'</td></tr>';}).join('')+
+   '<tr style="background:#fcfcfd"><td>Chưa quá hạn nhưng còn nợ</td><td class="n">'+bo.length+'</td><td><b>Bỏ qua</b> — chưa tới hạn thì chưa phải nợ</td></tr>'+
+   '</tbody></table></div>'+
+   '<div class="ro">Danh sách lấy đúng <b>bộ lọc đang xem</b>. Học sinh <b>đã chuyển đi / bảo lưu</b> vẫn nằm trong danh sách — hệ thống cảnh báo, người dùng quyết.</div>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="nhacloatok" data-n="'+ds.length+'">🔔 Gửi '+ds.length+' lượt nhắc</button>');return;}
+ if(x==='nhacloatok'){closeM();toast('✓ Đã gửi <b>'+el.dataset.n+'</b> lượt nhắc và ghi nhật ký từng lượt.');return;}
+
+ /* --- số dư chưa xử lý --- */
+ if(x==='duhoan'||x==='duchuyen'||x==='ducuoinam'){
+  const a=i.split('|'), d=DUMC.find(z=>z.hs===a[0]&&z.ma===a[1]);
+  if(x==='duhoan'){d.tt='m73';toast('✓ Đã tạo yêu cầu hoàn tiền ở <b>M7.3</b> cho '+M(d.gd)+'. Bản ghi <b>ở lại hàng đợi</b> với nhãn <i>Đang xử lý ở M7.3</i> cho tới khi hoàn xong.');}
+  if(x==='duchuyen'){d.tt='chuyen';toast('✓ Đã chuyển '+M(d.gd)+' sang khấu trừ khoản thu khác.');}
+  if(x==='ducuoinam'){d.tt='cuoinam';toast('✓ Đã đánh dấu giữ tới quyết toán cuối năm.');}
+  render();return;}
+
+ /* --- chứng từ điện tử --- */
+ if(x==='ctsok'){CTSOK=true;render();toast('✓ Giả lập: chứng thư số đã gia hạn tới 14/09/2027.');return;}
+ if(x==='phct'){const o=HD.find(z=>z.id===i);
+  const loai=(o.loai==='rieng'&&o.ma==='TA-NN')?'hoadon':'bienlai';
+  CTDT.unshift({so:(loai==='bienlai'?'BL':'HĐ')+'-2627-'+String(200+CTDT.length).padStart(6,'0'),loai,hd:o.id,hs:o.hs,dt:o.dt,
+   tien:o.phai,ngay:HOM,tt:'choky',thue:null});
+  render();toast('✓ Đã phát hành chứng từ cho <b>'+o.id+'</b> · trạng thái <b>Chờ ký số</b>.');return;}
+ if(x==='kyloat'){
+  if(!CTSOK){toast('⛔ Chứng thư số hết hiệu lực '+CTSHET+'. Gia hạn ở M4.11 trước.');return;}
+  const n=CTDT.filter(c=>c.tt==='choky').length;
+  modal('Ký số '+n+' chứng từ điện tử',
+   '<div class="ro" style="margin-top:0">Chứng từ điện tử theo NĐ 123/2020 (sửa bởi NĐ 70/2025/NĐ-CP) <b>bắt buộc có chữ ký số</b> trong tệp XML. Không ký thì chứng từ <b>không tồn tại về mặt pháp lý</b>.</div>'+
+   '<div class="fgrid"><div class="k">Người ký</div><div>'+esc(R().n)+'</div>'+
+   '<div class="k">Chứng thư số</div><div>MST 0100xxxxxx — hiệu lực tới 14/09/2027</div>'+
+   '<div class="k">Số chứng từ</div><div><b>'+n+'</b></div></div>'+
+   '<div class="warn">⚠ Đây là <b>Nhóm B — bắt buộc ký số</b>. Chứng từ không ký thì <b>không tồn tại về mặt pháp lý</b>.<br>'+
+   '<b>Bản MVP</b> giữ nút <code>Bỏ qua ký số</code> để chạy thử khi chưa ghép chữ ký số thật — <b>nút này bị gỡ ở bản chính thức</b>. '+
+   'Mỗi lần bỏ qua đều <b>ghi audit và đồng bộ M4.3</b>.</div>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="kyloatok" data-k="1">🖊️ Ký bằng USB Token / SmartCA</button>'+
+   '<button class="btn" data-x="kyloatok" data-k="0">Bỏ qua ký số (MVP)</button>');return;}
+ if(x==='kyloatok'){
+  const ky=el.dataset.k!=='0';
+  let n=0;CTDT.filter(c=>c.tt==='choky').forEach(c=>{n++;c.tt='daky';c.kyBoi=R().n+(ky?'':' (bỏ qua ký số — MVP)');c.kyLuc=HOM+' '+new Date().toTimeString().slice(0,5);
+   c.ky=ky;c.thue=ky?('Đã gửi — mã 0126'+String(920000+n)):'Chưa gửi — chưa có chữ ký số';});
+  closeM();render();
+  toast(ky?('✓ Đã ký và gửi cơ quan thuế <b>'+n+'</b> chứng từ.')
+   :('⚠ Đã đánh dấu <b>'+n+'</b> chứng từ là đã xử lý <b>nhưng bỏ qua ký số (MVP)</b> — <b>chưa gửi cơ quan thuế</b>, đã ghi audit và đồng bộ M4.3. Bản chính thức sẽ không có đường này.'));return;}
+ if(x==='xemct'){const c=CTDT.find(z=>z.so===el.dataset.s), h=HSC(c.hs), o=HD.find(z=>z.id===c.hd);
+  modal('Xem chứng từ '+c.so,
+   '<div class="bl"><div class="blh"><div class="t">'+(c.loai==='bienlai'?'BIÊN LAI THU TIỀN ĐIỆN TỬ':'HÓA ĐƠN GIÁ TRỊ GIA TĂNG')+'</div>'+
+   '<div class="s">Mẫu số 01/ĐKTĐ-CTĐT · Ký hiệu 1C26TDS · Số '+c.so+'</div></div>'+
+   '<div class="blb"><div class="fgrid"><div class="k">Đơn vị thu</div><div>Trường TH, THCS &amp; THPT Nguyễn Tất Thành</div>'+
+   '<div class="k">Người nộp</div><div>'+esc(h.ph)+' — phụ huynh em '+esc(h.ten)+' ('+h.lop+')</div>'+
+   '<div class="k">Nội dung</div><div>Thu tiền dịch vụ giáo dục kỳ '+(o?o.th:'')+'</div>'+
+   '<div class="k">Số tiền</div><div class="money" style="font-size:15px">'+M(c.tien)+'</div>'+
+   '<div class="k">Ngày lập</div><div>'+c.ngay+'</div>'+
+   '<div class="k">Chữ ký số</div><div>'+(c.tt==='daky'?'<span class="st2 o">✓ '+esc(c.kyBoi||'Lê Quang Vinh — Hiệu trưởng')+'</span>':'<span class="st2 w">Chưa ký</span>')+'</div></div></div></div>'+
+   '<div class="ro">Xem <b>ngay trong màn hình</b> trước khi tải. Mỗi lần xem / tải đều ghi nhật ký theo NĐ 13/2023.</div>',
+   '<button class="btn" data-x="close">Đóng</button><button class="btn" data-x="taict" data-s="'+esc(c.so)+'">⬇ Tải XML + PDF</button>');return;}
+ if(x==='taict'){toast('⬇ Đã tải <b>'+el.dataset.s+'</b> (XML + PDF) · đã ghi nhật ký truy cập.');return;}
+
+ /* --- xuất / báo cáo --- */
+ if(x==='xuat'){xuatFile(el.dataset.w||'dữ liệu');return;}
+ if(x==='xuatkt'){xuatFile('tệp cho phần mềm kế toán kỳ '+KYCUR);return;}
+ if(x==='xuatok'){
+  const md=$('#mdich')?$('#mdich').value:'';
+  const ten='Thu chi tiết '+KYCUR.replace('Tháng ','tháng ');
+  const n=XUATLS.length?XUATLS[0].n+1:1;
+  const cu=XUATLS.filter(z=>z.tt==='moi'&&z.ten===ten);
+  cu.forEach(z=>{z.tt='thaythe';z.boi=n;});
+  XUATLS.unshift({n,ten,ngay:HOM+' '+new Date().toTimeString().slice(0,5),
+   by:R().n,dong:BG.filter(o=>o.th===KYCUR).length,tt:'moi'});
+  closeM();render();
+  toast('⬇ Đã xuất tệp #'+n+' · mục đích: <b>'+esc(md)+'</b> · đã ghi nhật ký.'+(cu.length?' Lần xuất trước đánh dấu <i>Đã thay thế</i>.':''));return;}
+ if(x==='kybc'){
+  const kt=PHIENT.filter(p=>p.th===KYCUR&&dtOK().indexOf(p.dt)>=0&&p.tt!=='khoa');
+  if(kt.length){toast('⛔ Chưa khóa sổ kỳ '+KYCUR+' ở '+kt.length+' điểm trường. Ký báo cáo trên số chưa chốt là ký vào con số còn thay đổi được. Mở khối <b>Đối soát ngày và chốt sổ tháng</b> để chốt.');return;}
+  modal('Ký báo cáo kỳ '+KYCUR,'<div class="ro" style="margin-top:0">Số liệu trong báo cáo <b>chốt cứng tại thời điểm ký</b>. Sau đó dữ liệu nguồn có thay đổi thì báo cáo đã ký vẫn giữ số cũ — màn hình sẽ hiện cảnh báo lệch.</div>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="kybcok">🖊️ Ký bằng USB Token / SmartCA</button>');return;}
+ if(x==='kybcok'){closeM();toast('✓ Đã ký báo cáo kỳ '+KYCUR+'.');return;}
+ if(x==='xembc'){modal('Báo cáo thu Tháng 8/2026 — đã ký',
+   '<div class="bl"><div class="blh"><div class="t">BÁO CÁO TỔNG HỢP THU THÁNG 8/2026</div><div class="s">Toàn trường · ký ngày 06/09/2026</div></div>'+
+   '<div class="blb"><div class="fgrid"><div class="k">Đã thu (chốt cứng)</div><div class="money" style="font-size:15px">142.860.000đ</div>'+
+   '<div class="k">Người ký</div><div>Lê Quang Vinh — Hiệu trưởng</div>'+
+   '<div class="k">Thời điểm lấy dữ liệu</div><div>06/09/2026 09:18</div></div></div></div>'+
+   '<div class="ro">Trường <b>thời điểm lấy dữ liệu</b> là bắt buộc trên mọi bản chiếu — thiếu nó thì không ai biết con số đang xem cũ hay mới.</div>');return;}
+ if(x==='giam62'){S.m62=true;render();toast('✓ Giả lập: M6.2 đã chốt số buổi thực tế tháng 9. Mốc tháng 10 đủ điều kiện phát hành.');return;}
+ if(x==='gdhd'){const gds=GD.filter(g=>g.hd===i);
+  modal('Giao dịch của hóa đơn '+i,
+   '<div class="wrapx"><table><thead><tr><th>Mã</th><th>Thời điểm</th><th class="n">Số tiền</th><th>Hình thức</th><th>Người ghi nhận</th></tr></thead><tbody>'+
+   gds.map(g=>'<tr><td><span class="ct2">'+g.id+'</span></td><td>'+g.t+'</td><td class="n money">'+M(g.so)+'</td>'+
+   '<td>'+(g.pt==='mat'?'Tiền mặt':'Chuyển khoản')+'</td><td>'+esc(g.by)+'</td></tr>').join('')+'</tbody></table></div>'+
+   '<div class="ro">Giao dịch <b>không bao giờ xóa</b>. Sai thì ghi bút toán đảo, dấu vết cả hai chiều đều còn — truy được kể cả khi người thao tác đã nghỉ việc.</div>');return;}
+});
+
+document.addEventListener('input',e=>{
+ if(e.target.id==='q'){S.q=e.target.value;S.sel=null;render();
+  const q=$('#q');if(q){q.focus();q.setSelectionRange(q.value.length,q.value.length);}return;}
+ if(e.target.dataset&&e.target.dataset.x==='dem'){
+  DEM[e.target.dataset.m]=+e.target.value||0;
+  const p=PHIEN.find(z=>z.id===S.sc), td=MENH.reduce((a,m)=>a+(DEM[m]||0)*m,0);
+  const f=e.target.closest('.mgi'); if(f) f.querySelector('.t').textContent=M((+e.target.value||0)*(+e.target.dataset.m));
+  const box=e.target.closest('.listw');
+  if(box&&p) box.querySelectorAll('span').forEach(s=>{const t=s.textContent||'';
+   if(t.indexOf('Tổng đếm:')===0) s.innerHTML='Tổng đếm: <b class="money">'+M(td)+'</b>';
+   else if(t.indexOf('Chênh lệch:')===0) s.innerHTML='Chênh lệch: <b class="money '+(td-p.mat!==0?'due':'')+'">'+M(td-p.mat)+'</b>';});
+  return;}
+});
+document.addEventListener('change',e=>{
+ if(e.target.id==='dtsel'){DTCUR=e.target.value;S.sel=null;render();return;}
+ if(e.target.id==='kysel'){KYCUR=e.target.value;S.sel=null;render();return;}
+ if(e.target.id==='nam'){toast('Demo chỉ có dữ liệu năm học 2026-2027.');e.target.value='2026-2027';return;}
+});
+$('#mask').addEventListener('click',e=>{if(e.target.id==='mask')closeM();});
+render();
+</script>
+</body>
+</html>

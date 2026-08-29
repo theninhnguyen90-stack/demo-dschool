@@ -1,0 +1,1448 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M6.7 Camera an ninh — Dschool</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f1f5f9;--surface:#fff;--line:#e2e8f0;--line2:#cbd5e1;
+ --ink:#0f172a;--ink2:#475569;--ink3:#94a3b8;--brand:#1d4ed8;--brand-soft:#eff6ff;
+ --red:#dc2626;--red-soft:#fef2f2;--amber:#d97706;--amber-soft:#fffbeb;
+ --green:#059669;--green-soft:#ecfdf5;--violet:#7c3aed}
+body{font:14px/1.5 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font:inherit}
+
+.hdr{height:56px;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:13px;padding:0 15px;position:sticky;top:0;z-index:40}
+.logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px}
+.logo .mark{width:28px;height:28px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px}
+.school{color:var(--ink2);font-size:12.5px;border-left:1px solid var(--line);padding-left:13px;max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sel{border:1px solid var(--line2);border-radius:7px;padding:5px 9px;font-size:12.5px;background:#fff}
+.sel:disabled{background:#f1f5f9;color:var(--ink2);cursor:not-allowed}
+.spacer{flex:1}
+.icobtn{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;position:relative;font-size:15px}
+.icobtn:hover{background:var(--bg)}
+.dot{position:absolute;top:3px;right:3px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--violet);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700}
+.lockico{font-size:11px;color:var(--ink3)}
+
+.wrap{display:flex;min-height:calc(100vh - 56px)}
+.side{width:216px;flex:0 0 216px;background:var(--surface);border-right:1px solid var(--line);padding:10px 8px;position:sticky;top:56px;max-height:calc(100vh - 56px);overflow-y:auto}
+.sgrp{font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;padding:12px 10px 5px}
+.snav{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:var(--ink2);font-size:12.5px;margin-bottom:1px}
+.snav:hover{background:var(--bg)}
+.snav.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
+.snav .nb{margin-left:auto;flex:0 0 auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;min-width:18px;text-align:center;line-height:15px}
+.snav.off{opacity:.34;pointer-events:none}
+.main{flex:1;padding:14px 18px 44px;min-width:0}
+
+.tophd{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+h1{font-size:19px;font-weight:700}
+.btn{border:1px solid var(--line2);background:#fff;border-radius:8px;padding:7px 12px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--bg)}
+.btn.p{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn.p:hover{background:#1e40af}
+.btn.d{background:var(--red);color:#fff;border-color:var(--red)}
+.btn.g{background:var(--green);color:#fff;border-color:var(--green)}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn.xs{padding:3px 8px;font-size:11.5px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.act{background:var(--brand-soft);border-color:var(--brand);color:var(--brand);font-weight:600}
+
+.tabs{display:flex;gap:3px;border-bottom:2px solid var(--line);margin:12px 0 0;flex-wrap:wrap}
+.tab1{padding:9px 14px;font-size:13.5px;font-weight:600;color:var(--ink2);border-bottom:2px solid transparent;margin-bottom:-2px;display:flex;align-items:center;gap:7px}
+.tab1.on{color:var(--brand);border-bottom-color:var(--brand)}
+.tab1 .b{background:var(--bg);color:var(--ink2);font-size:11px;font-weight:700;padding:1px 7px;border-radius:9px}
+.tab1.on .b{background:var(--brand);color:#fff}
+.tab1 .b.r{background:var(--red);color:#fff}
+
+.scope{display:flex;align-items:center;gap:9px;background:#f8fafc;border:1px solid var(--line);border-left:3px solid var(--brand);
+ border-radius:9px;padding:8px 12px;font-size:12px;color:var(--ink2);margin:12px 0 0;flex-wrap:wrap}
+.scope b{color:var(--ink)}
+.scope .sp{flex:1}
+
+.bar{display:flex;gap:7px;align-items:center;flex-wrap:wrap;padding:11px 0}
+.inp{border:1px solid var(--line2);border-radius:8px;padding:7px 11px;font-size:13px;background:#fff;min-width:220px}
+.fs{border:1px solid var(--line2);border-radius:8px;padding:6px 9px;font-size:12.5px;background:#fff}
+.sum{display:flex;gap:13px;font-size:12px;color:var(--ink2);margin-left:auto;flex-wrap:wrap}
+.sum b{color:var(--ink)}
+
+.alert{display:flex;align-items:flex-start;gap:10px;padding:9px 13px;border-radius:10px;font-size:12.5px;font-weight:600;margin-bottom:10px;line-height:1.6}
+.alert .sp{flex:1;font-weight:400}
+.alert .sp b{font-weight:700}
+.alert.w{background:var(--amber-soft);border:1px solid #fde68a;color:#92400e}
+.alert.r{background:var(--red-soft);border:1px solid #fecaca;color:#991b1b}
+.alert.g{background:var(--green-soft);border:1px solid #a7f3d0;color:#065f46}
+.alert.b{background:var(--brand-soft);border:1px solid #bfdbfe;color:#1e40af}
+.info{background:var(--brand-soft);border:1px solid #bfdbfe;color:#1e40af;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.65;margin-bottom:11px}
+.warn{background:var(--amber-soft);border:1px solid #fde68a;color:#92400e;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.65;margin-bottom:11px}
+.danger{background:var(--red-soft);border:1px solid #fecaca;color:#991b1b;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.65;margin-bottom:11px}
+.okbox{background:var(--green-soft);border:1px solid #a7f3d0;color:#065f46;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.65;margin-bottom:11px}
+.ro{background:#f8fafc;border:1px solid var(--line);color:var(--ink2);padding:8px 11px;border-radius:9px;font-size:12px;margin-bottom:11px;line-height:1.6}
+
+.stage{display:flex;gap:13px;align-items:flex-start}
+.listw{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.panel{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:none}
+.stage.open .panel{display:block}
+@media(max-width:1320px){.stage.open .listw{display:none}}
+
+.grph{display:flex;align-items:center;gap:9px;padding:8px 13px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:11.5px;font-weight:700;color:var(--ink2);cursor:pointer}
+.grph .cnt{margin-left:auto;font-weight:600;color:var(--ink3);font-size:11px}
+.grph .arw{font-size:10px;color:var(--ink3)}
+
+.hdrow,.hrow{display:grid;gap:9px;padding:9px 13px;align-items:center;font-size:13px;grid-template-columns:1.25fr 1.5fr 1.75fr .8fr .75fr}
+.hdrow{background:#fbfdff;border-bottom:1px solid var(--line);font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em}
+.hrow{border-bottom:1px solid var(--line);cursor:pointer;border-left:3px solid transparent}
+.hrow:hover{background:var(--brand-soft)}
+.hrow.on{background:#eff6ff;border-left-color:var(--brand)}
+.hrow.bad{border-left-color:var(--red);background:#fffafa}
+.hrow.warnl{border-left-color:var(--amber)}
+.stage.open .hdrow,.stage.open .hrow{grid-template-columns:1.25fr 1.7fr}
+.stage.open .hcol{display:none}
+
+.st2{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;white-space:nowrap;display:inline-block}
+.st2.o{background:var(--green-soft);color:var(--green)}
+.st2.w{background:var(--amber-soft);color:var(--amber)}
+.st2.r{background:var(--red-soft);color:var(--red)}
+.st2.n{background:var(--bg);color:var(--ink2)}
+.st2.b{background:#e0e7ff;color:#3730a3}
+.tg{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;white-space:nowrap;display:inline-block}
+.tg.a{background:#e0e7ff;color:#3730a3}
+.tg.b{background:#fef3c7;color:#92400e}
+.tg.c{background:var(--bg);color:var(--ink2)}
+.tg.g{background:var(--green-soft);color:var(--green)}
+.tg.r{background:var(--red-soft);color:var(--red)}
+
+.ph{padding:12px 15px;border-bottom:1px solid var(--line);display:flex;gap:13px;align-items:center;flex-wrap:wrap}
+.ph .n h2{font-size:16px;font-weight:700}
+.ph .n .m{font-size:12px;color:var(--ink2);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pill{font-size:10.5px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--ink2)}
+/* ★ KHÔNG neo chiều cao vào 100vh: trong khung nhúng hoặc màn hình thấp,
+   calc(100vh - 215px) ra 0 và THÂN PANEL BỊ NÉN SẠCH — nội dung vẫn nằm
+   trong DOM nhưng không ai nhìn thấy. Mốc cố định thì luôn đúng, và panel
+   vẫn tự cuộn bên trong thay vì kéo dài trang ra vài nghìn pixel. */
+.pbody{padding:13px 15px;max-height:760px;overflow-y:auto}
+.card{border:1px solid var(--line);border-radius:11px;margin-bottom:12px;overflow:hidden}
+.card.bad{border-color:#fecaca}
+.ch{display:flex;align-items:center;gap:9px;padding:10px 12px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:13px;font-weight:700;flex-wrap:wrap}
+.ch .sp{flex:1}
+.cb{padding:4px 0}
+.f{display:grid;grid-template-columns:180px 1fr;gap:11px;align-items:start;padding:7px 12px;font-size:13px}
+.f+.f{border-top:1px solid #f1f5f9}
+.f .k{color:var(--ink2);font-size:12.5px}
+.f .v{font-weight:600;min-width:0;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.cact{display:flex;gap:6px;padding:9px 12px;border-top:1px solid var(--line);background:#fcfdfe;flex-wrap:wrap;align-items:center}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:7px 9px;border-bottom:1px solid var(--line);background:#f8fafc;white-space:nowrap}
+td{padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr.warnrow{background:var(--amber-soft)}
+.ro2{background:#f8fafc}
+tr.rorow{background:#f8fafc}
+tr.okrow{background:var(--green-soft)}
+tr.totrow{background:#f1f5f9;font-weight:600}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.stp{flex:1;min-width:140px;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);font-size:12px;color:var(--ink3)}
+.stp.done{background:var(--green-soft);border-color:var(--green);color:var(--green);font-weight:600}
+.stp.now{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:700}
+.stp.off{opacity:.45}
+.frow{display:flex;gap:9px;flex-wrap:wrap}
+.frow>div{flex:1;min-width:130px}
+.kchk{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;cursor:pointer}
+
+.ro2{background:#f8fafc}
+tr.rorow{background:#f8fafc}
+tr.okrow{background:var(--green-soft)}
+tr.totrow{background:#f1f5f9;font-weight:600}
+.cell{width:64px;border:1px solid var(--line2);border-radius:6px;padding:4px 6px;text-align:right;font:inherit;font-size:12.5px}
+.cell:focus{outline:2px solid var(--brand);border-color:var(--brand)}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.stp{flex:1;min-width:150px;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);font-size:12px;color:var(--ink3)}
+.stp.done{background:var(--green-soft);border-color:var(--green);color:var(--green);font-weight:600}
+.stp.now{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:700}
+.stp.off{opacity:.45}
+.spark{display:flex;gap:2px;align-items:flex-end;height:24px}
+.spark i{width:6px;border-radius:1px;display:block}
+.frow{display:flex;gap:9px;flex-wrap:wrap}
+.frow>div{flex:1;min-width:130px}
+.kchk{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;cursor:pointer}
+
+.lt{width:100%;border-collapse:collapse;font-size:11.5px}
+.lt th{background:var(--bg);text-align:left;padding:5px 8px;font-size:10.5px;color:var(--ink3);border:1px solid var(--line)}
+.lt td{padding:5px 8px;border:1px solid var(--line);vertical-align:top}
+.lt td.d{width:46px;font-weight:700;background:#fafbfc;text-align:center}
+.blk{display:inline-block;padding:2px 7px;border-radius:5px;margin:2px 3px 2px 0;font-weight:600;white-space:nowrap}
+.blk.ck{background:#e0e7ff;color:#3730a3}
+.blk.nk{background:var(--green-soft);color:var(--green)}
+.blk.moi{background:#f1f5f9;color:var(--ink2);border:1px dashed var(--ink3)}
+.blk.x{background:var(--red-soft);color:var(--red);box-shadow:0 0 0 1.5px var(--red) inset}
+.blk.s{background:var(--amber-soft);color:var(--amber);box-shadow:0 0 0 1.5px var(--amber) inset}
+.lichpick{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:5px}
+.lprow{display:flex;align-items:center;gap:8px;padding:7px 11px;border-bottom:1px solid #f1f5f9;font-size:12.5px}
+.lprow:last-child{border-bottom:none}
+.lprow.on{background:#f8fafc}
+.lpd{display:flex;align-items:center;gap:6px;width:96px;font-weight:600;cursor:pointer;flex:none}
+.lprow:not(.on) .lpd{color:var(--ink3);font-weight:400}
+.lpsep{color:var(--ink3)}
+.lpt:disabled{background:#f8fafc;color:#cbd5e1}
+.lpinfo{font-size:11px;margin-left:auto;text-align:right;line-height:1.4}
+.lpinfo.x{color:var(--red);font-weight:700}
+.lpinfo.s{color:var(--amber);font-weight:700}
+.lpinfo.o{color:var(--green)}
+.frow{display:flex;gap:9px;flex-wrap:wrap}
+.frow>div{flex:1;min-width:130px}
+.kchk{display:inline-flex;align-items:center;gap:5px;margin-right:12px;font-size:12.5px}
+tr.badrow{background:var(--red-soft)}
+tr.totrow td{background:#f8fafc;font-weight:700}
+.tbw{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.tbx{overflow-x:auto}
+
+.mask{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:60;display:none;place-items:center}
+.mask.on{display:grid}
+.modal{background:#fff;border-radius:13px;width:820px;max-width:94vw;max-height:88vh;display:flex;flex-direction:column}
+.mh{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700}
+.mb{padding:15px 18px;overflow-y:auto;font-size:13px;line-height:1.65}
+.mf{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;align-items:center}
+.fldi{width:100%;border:1px solid var(--line2);border-radius:8px;padding:8px 10px;margin-top:4px}
+.lbl{display:block;font-size:12px;color:var(--ink2);font-weight:600;margin-top:11px}
+
+.rolebar{background:#0f172a;color:#cbd5e1;padding:8px 15px;display:flex;align-items:center;gap:7px;font-size:12.5px;flex-wrap:wrap}
+.rolebar b{color:#fff}
+.rb{border:1px solid #334155;border-radius:999px;padding:3px 10px;font-size:12px;color:#cbd5e1}
+.rb:hover{background:#1e293b;color:#fff}
+.rb.on{background:#fff;color:#0f172a;border-color:#fff;font-weight:700}
+.ntg{border:1px solid #334155;border-radius:999px;padding:3px 10px;font-size:12px;color:#cbd5e1}
+.ntg:hover{background:#1e293b;color:#fff}
+.ntg.on{background:#fbbf24;color:#3b2a05;border-color:#fbbf24;font-weight:700}
+.simw{font-size:11.5px;color:#94a3b8;display:flex;align-items:center;gap:6px;margin-left:auto}
+.simw select{background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:6px;padding:2px 6px;font-size:11.5px}
+/* Ghi chu thiet ke: giai thich VI SAO, khong phai mot phan man hinh that. Mac dinh TAT. */
+body.nn .dnote{display:none!important}
+.dnote{background:#fffbeb;border:1px dashed #fbbf24;color:#78350f;padding:8px 11px;border-radius:9px;font-size:12px;line-height:1.6;margin-bottom:11px}
+.dnote b{color:#78350f}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(110px);background:#0f172a;color:#fff;padding:11px 17px;border-radius:9px;font-size:13px;z-index:80;transition:transform .22s;max-width:92vw}
+.toast.on{transform:translateX(-50%)}
+.empty{padding:38px;text-align:center;color:var(--ink3)}
+.lgd{display:flex;gap:14px;font-size:11.5px;color:var(--ink3);padding:9px 13px;border-top:1px solid var(--line);flex-wrap:wrap;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px 9px;color:var(--ink2)}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+.rolnk{font-size:10px;font-weight:700;color:var(--brand);background:#eef2ff;border:1px solid #c7d2fe;border-radius:999px;padding:1px 7px;white-space:nowrap}
+.rolnk:hover{background:#e0e7ff}
+.crumb{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink2);margin-bottom:9px;flex-wrap:wrap}
+.crumb a{color:var(--brand);cursor:pointer;font-weight:600}
+
+/* --- rieng M6.1 --- */
+.daybar{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:9px 13px;flex-wrap:wrap;margin-bottom:10px}
+.daybar .dt{font-weight:700;font-size:14px;min-width:190px}
+.pbar{display:flex;height:9px;border-radius:5px;overflow:hidden;background:var(--line);flex:1;min-width:180px}
+.pbar i{display:block}
+.pbar i.a{background:var(--green)}
+.pbar i.b{background:var(--amber)}
+.pbar i.c{background:var(--line2)}
+.pbar i.d{background:var(--red)}
+.pleg{display:flex;gap:12px;font-size:11px;color:var(--ink2);flex-wrap:wrap;align-items:center}
+.pleg s{width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:4px}
+.hsrow{display:flex;align-items:center;gap:10px;padding:7px 11px;border-bottom:1px solid #f1f5f9;font-size:13px}
+.hsrow:last-child{border-bottom:none}
+.hsrow .av{width:30px;height:30px;border-radius:50%;background:#e0e7ff;color:#3730a3;display:grid;place-items:center;font-size:11px;font-weight:700;flex:0 0 30px}
+.hsrow .nm{min-width:0;flex:1}
+.hsrow .nm b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hsrow .nm span{font-size:10.5px;color:var(--ink3)}
+.hsrow.lk{background:#fafbfc}
+.tgl{display:flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden;flex:0 0 auto}
+.tgl button{padding:4px 11px;font-size:11.5px;font-weight:600;color:var(--ink2);background:#fff}
+.tgl button.on{background:var(--green);color:#fff}
+.tgl button.on.v{background:var(--red)}
+.tgl button:disabled{opacity:.45;cursor:not-allowed}
+.src{font-size:10.5px;color:var(--ink3);flex:0 0 auto;max-width:250px}
+.aller{color:var(--red);font-size:12px;cursor:help}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.stp{border:1px solid var(--line2);background:#fff;border-radius:9px;padding:7px 13px;font-size:12.5px;font-weight:600;color:var(--ink2);display:flex;align-items:center;gap:7px}
+.stp.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.stp.done{border-color:#a7f3d0;background:var(--green-soft);color:#065f46}
+.stp:disabled{opacity:.45;cursor:not-allowed}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:7px 12px;font-size:13px;border-bottom:1px solid #f1f5f9}
+.kv:last-child{border-bottom:none}
+.kv b{font-variant-numeric:tabular-nums}
+.kv.tot{background:#f8fafc;font-weight:700}
+.mini{width:74px;text-align:right;border:1px solid var(--line2);border-radius:7px;padding:4px 7px;font-variant-numeric:tabular-nums;font-size:12px}
+.qgrp{padding:9px 13px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:11.5px;font-weight:700;color:var(--ink2)}
+.rw{cursor:pointer}
+.tbw table tr.rw:hover{background:var(--brand-soft)}
+.tbw table tr.rw.on{background:#eff6ff;box-shadow:inset 3px 0 0 var(--brand)}
+.tc{width:48px;text-align:center;padding:5px 3px!important;border-left:1px solid var(--line)}
+.tc .xs{font-size:9.5px;letter-spacing:.02em}
+table.lt th.num{width:48px;text-align:center}
+.rw{cursor:pointer}
+.tbw table tr.rw:hover{background:var(--brand-soft)}
+.tbw table tr.rw.on{background:#eff6ff;box-shadow:inset 3px 0 0 var(--brand)}
+tr.hdrow2 td{background:#f1f5f9;font-size:11.5px;color:var(--ink2);padding:6px 11px;border-top:1px solid var(--line2)}
+.num.r{color:var(--red);font-weight:700}
+.num.o{color:var(--green)} .num.w{color:var(--amber)} .num.b{color:var(--brand)} .num.c{color:var(--violet)}
+
+/* ── ô camera ── */
+.cwall{display:grid;gap:9px}
+.ctile{position:relative;background:#0b1220;border:1px solid #1e293b;border-radius:10px;overflow:hidden;aspect-ratio:16/9;cursor:pointer}
+.ctile.on{outline:2px solid var(--brand);outline-offset:1px}
+.ctile .vid{position:absolute;inset:0;background:
+  repeating-linear-gradient(115deg,#0f1a2e 0 22px,#111f38 22px 44px);
+  animation:pan 9s linear infinite;opacity:.95}
+.ctile .glow{position:absolute;inset:0;background:radial-gradient(120% 80% at 30% 20%,rgba(96,165,250,.18),transparent 60%)}
+@keyframes pan{from{background-position:0 0}to{background-position:88px 0}}
+.ctile .mv{position:absolute;bottom:16%;left:-14%;width:11%;height:26%;border-radius:40% 40% 18% 18%;
+  background:rgba(148,163,184,.5);animation:walk 13s linear infinite}
+@keyframes walk{0%{left:-14%}100%{left:106%}}
+.ctile .ov{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:8px 10px;
+  color:#e2e8f0;font-size:11.5px;text-shadow:0 1px 3px rgba(0,0,0,.9)}
+.ctile .ovt{display:flex;align-items:center;gap:7px}
+.ctile .live{display:inline-flex;align-items:center;gap:4px;background:rgba(220,38,38,.92);color:#fff;
+  font-size:9.5px;font-weight:800;letter-spacing:.05em;padding:1px 6px;border-radius:4px}
+.ctile .live i{width:5px;height:5px;border-radius:50%;background:#fff;animation:blink 1.4s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.ctile .ovb{display:flex;justify-content:space-between;align-items:flex-end;font-size:10.5px;color:#cbd5e1}
+.ctile.off .vid,.ctile.off .mv,.ctile.off .glow{display:none}
+.ctile.off{background:#111827;display:grid;place-items:center}
+.ctile .offmsg{color:#94a3b8;font-size:12px;text-align:center;padding:12px;line-height:1.6}
+.ctile.big{aspect-ratio:16/9}
+.wallbar{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.lay{border:1px solid var(--line2);background:#fff;border-radius:7px;padding:4px 10px;font-size:12px}
+.lay.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.simw2{font-size:11px;color:var(--ink3)}
+.rw{cursor:pointer}
+.tbw table tr.rw:hover{background:var(--brand-soft)}
+.tbw table tr.rw.on{background:#eff6ff;box-shadow:inset 3px 0 0 var(--brand)}
+tr.hdrow2 td{background:#f1f5f9;font-size:11.5px;color:var(--ink2);padding:6px 11px;border-top:1px solid var(--line2)}
+.num.r{color:var(--red);font-weight:700}
+.num.o{color:var(--green)} .num.w{color:var(--amber)} .num.b{color:var(--brand)} .num.c{color:var(--violet)}
+.nono{max-width:640px;margin:60px auto;text-align:center}
+</style>
+</head>
+<body class="nn">
+<script>/* sidebar da chuyen ve index.html — node an giu cho JS cu khong vo */
+(function(){var n=document.createElement("nav");n.id="side";n.style.display="none";document.documentElement.appendChild(n)})();</script>
+
+
+<div class="rolebar" id="rolebar"></div>
+
+<header class="hdr">
+  <div class="logo"><span class="mark">DS</span> Dschool</div>
+  <div class="school">THCS &amp; THPT Nguyễn Tất Thành</div>
+  <select class="sel" id="hnam"><option>Năm học 2026-2027</option><option>Năm học 2025-2026</option></select>
+  <select class="sel" id="hdt"></select>
+  <span class="lockico" id="dtlock"></span>
+  <div class="spacer"></div>
+  <button class="icobtn">🔔<span class="dot" id="ndot">3</span></button>
+  <button class="icobtn">💬<span class="dot">2</span></button>
+  <div class="avatar" id="ava">TĐ</div>
+</header>
+
+<div class="wrap">
+  <main class="main">
+    <div id="crumb"></div>
+    <div class="tophd"><h1 id="h1">Camera an ninh</h1><div class="spacer"></div><span id="topact"></span></div>
+    <div class="tabs" id="tabs"></div>
+    <div id="content"></div>
+  </main>
+</div>
+
+<div class="mask" id="mask"><div class="modal">
+  <div class="mh" id="mh"></div><div class="mb" id="mb"></div><div class="mf" id="mf"></div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ========== TIỆN ÍCH ========== */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const p2=n=>String(n).padStart(2,'0');
+const vn=n=>Number(n).toLocaleString('vi-VN');
+const kd=s=>(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d');
+function toast(m){const t=$('#toast');t.innerHTML=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),4200)}
+function closeM(){$('#mask').classList.remove('on')}
+const mfns={};
+function modal(t,b,f){$('#mh').innerHTML=t;$('#mb').innerHTML=b;$('#mf').innerHTML=f;$('#mask').classList.add('on')}
+const THU=['CN','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
+const d2k=d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
+const k2d=k=>{const[a,b,c]=k.split('-').map(Number);return new Date(a,b-1,c)};
+const d2s=d=>p2(d.getDate())+'/'+p2(d.getMonth()+1)+'/'+d.getFullYear();
+const k2s=k=>d2s(k2d(k));
+const kThu=k=>THU[k2d(k).getDay()];
+const thuSo=k=>k2d(k).getDay()+1;          /* T2=2 … T7=7, CN=1 */
+const HOMNAY='2026-12-28';                 /* Thứ Hai — cuối năm ngân sách, đang kiểm kê */
+
+/* ========== DỮ LIỆU NỀN ========== */
+const DT={A:'Điểm trường A',B:'Điểm trường B',C:'Điểm trường C'};
+
+/* ══════════════════════════════════════════════════════════════════
+   M6.7 — CAMERA AN NINH
+   ★ Đây là menu NHẠY CẢM NHẤT hệ thống: nó quay trẻ em.
+     Tài liệu nguồn định vị nó là «điểm demo mạnh nhất» — đúng, nhưng
+     một bức tường video đẹp mà xem ai cũng được, xem bao lâu cũng được
+     thì đó không phải tính năng, đó là rủi ro.
+   ★ Nguyên tắc: XEM ĐƯỢC thì phải ĐỂ LẠI VẾT, và vết đó phải CÓ NGƯỜI ĐỌC.
+   ══════════════════════════════════════════════════════════════════ */
+const NAMHOC='2026-2027';
+/* ★ ĐỒNG HỒ MÔ PHỎNG. Demo nói «hôm nay 28/12/2026» nhưng lại lấy giờ máy thật —
+   mở demo lúc nửa đêm thì MỌI phiên xem đều bị gắn cờ «ngoài giờ hành chính»,
+   và dấu hiệu đáng tin nhất của menu này trở thành nhiễu. Neo vào 09:20. */
+const _T0=Date.now(), _MOC=9*3600+20*60;
+const giaySP=()=>(_MOC+Math.floor((Date.now()-_T0)/1000))%86400;
+const gioSP=()=>Math.floor(giaySP()/3600);
+const hhmm=()=>p2(gioSP())+':'+p2(Math.floor(giaySP()/60)%60);
+const hhmmss=()=>hhmm()+':'+p2(giaySP()%60);
+
+const NS={
+ duc :['Trần Minh Đức','Tài khoản rà soát','A'],
+ huy :['Nguyễn Quang Huy','Hiệu trưởng','A'],
+ khoa:['Đinh Trung Khoa','Quản trị hệ thống','A'],
+ son :['Trịnh Ngọc Sơn','PHT Chuyên môn','A'],
+ huong:['Phạm Thu Hương','PHT Điểm trường A','A'],
+ nam :['Đỗ Văn Nam','Bảo vệ ca ngày — ĐT A','A'],
+ tuan:['Lương Anh Tuấn','Bảo vệ ca đêm — ĐT A','A'],
+ kien:['Vũ Trung Kiên','Bảo vệ — ĐT B','B'],
+ minh:['Lê Văn Minh','GV Tin học','A']
+};
+const tenNS=m=>(NS[m]||['?','?','A'])[0];
+const cdNS =m=>(NS[m]||['?','?','A'])[1];
+const dtNS =m=>(NS[m]||['?','?','A'])[2];
+const tenDu=m=>tenNS(m)+' — '+cdNS(m);
+
+/* ── Vai ──
+   ★ «Các vai khác: không có quyền» là một YÊU CẦU, nên demo phải có
+     một vai như thế để thấy màn hình từ chối trông ra sao. */
+const ROLES={
+ FULL:{ma:'duc', cd:'🔓 Đủ quyền (demo)',sc:'School',dt:null,
+   q:['xem','xemAll','quantri','nhom','phancong','audit','chup','cauhinh'],},
+ HT  :{ma:'huy', cd:'Hiệu trưởng',sc:'School',dt:null,
+   q:['xem','xemAll','nhom','phancong','audit','chup','duyetRa'],},
+ IT  :{ma:'khoa',cd:'Quản trị hệ thống',sc:'School',dt:null,
+   q:['xem','xemAll','quantri','nhom','phancong','audit','cauhinh'],},
+ PCM :{ma:'son', cd:'PHT Chuyên môn',sc:'School',dt:null, q:['xem','xemAll'],},
+ PDT :{ma:'huong',cd:'PHT Điểm trường A',sc:'Branch',dt:'A', q:['xem'],},
+ BV  :{ma:'nam', cd:'Bảo vệ ca ngày — ĐT A',sc:'PhanCong',dt:'A', q:['xem'],},
+ BVD :{ma:'tuan',cd:'Bảo vệ ca đêm — ĐT A',sc:'PhanCong',dt:'A', q:['xem'],},
+ GV  :{ma:'minh',cd:'Giáo viên',sc:'None',dt:'A', q:[],}
+};
+let role='FULL', ST={dt:'ALL',tab:null,lay:'2x2',cam:null,nhom:null};
+const R=()=>ROLES[role];
+const can=q=>R().q.includes(q);
+const toiLa=()=>R().ma;
+const dtHieuLuc=()=>R().sc==='School'?ST.dt:R().dt;
+const dtThuc=()=>{const d=dtHieuLuc(); return d==='ALL'?'A':d};
+
+const CFG={
+ timeout:15,            /* phút — tự đóng phiên xem khi không thao tác */
+ phienDai:30,           /* phút — mốc coi là phiên dài bất thường */
+ gioHC:[6,18],          /* giờ hành chính — ngoài khoảng này là dấu hiệu cần rà */
+ chupCanLyDo:true       /* chụp màn hình bắt buộc nêu lý do */
+};
+
+/* ══════════════════════════════════════════════════════════════════
+   ★★ VỊ TRÍ LẮP CAMERA LÀ MỘT RÀNG BUỘC PHÁP LÝ, KHÔNG PHẢI Ô GHI CHÚ
+   Chủ trương hiện hành: KHUYẾN KHÍCH lắp ở cổng, hành lang, góc khuất,
+   sân — để bảo đảm an toàn; KHÔNG lắp trong từng lớp học.
+   Căn cứ quyền hình ảnh: Bộ luật Dân sự 2015 Đ.32 · Luật Trẻ em 2016
+   (hình ảnh cá nhân là thông tin về đời sống riêng tư).
+   ══════════════════════════════════════════════════════════════════ */
+const VITRI={
+ cong    :['Cổng trường','ok'],
+ sanh    :['Sảnh chính','ok'],
+ hanhlang:['Hành lang','ok'],
+ cauthang:['Cầu thang · góc khuất','ok'],
+ san     :['Sân trường','ok'],
+ baixe   :['Bãi để xe','ok'],
+ bep     :['Khu bếp bán trú','ok'],
+ kho     :['Kho · khu kỹ thuật','ok'],
+ tuong   :['Tường rào · lối phụ','ok'],
+ lop     :['Trong lớp học','cam'],
+ wc      :['Khu vệ sinh','cam'],
+ thaydo  :['Phòng thay đồ · phòng tắm','cam'],
+ yte     :['Phòng y tế','cam'],
+ nghigv  :['Phòng nghỉ giáo viên','cam']
+};
+const viCam=k=>VITRI[k]&&VITRI[k][1]==='cam';
+const LYDO_CAM={
+ lop:'Quay liên tục trong lớp học chạm quyền riêng tư của cả học sinh và giáo viên trong suốt giờ dạy. '
+   +'Chủ trương hiện hành khuyến khích lắp ở cổng, hành lang, góc khuất — không lắp trong từng lớp.',
+ wc:'Khu vệ sinh là nơi riêng tư tuyệt đối. Không có lý do an ninh nào biện minh được.',
+ thaydo:'Phòng thay đồ là nơi riêng tư tuyệt đối.',
+ yte:'Phòng y tế là nơi học sinh được khám và xử trí — thuộc dữ liệu sức khỏe, bảo vệ ở mức nhạy cảm.',
+ nghigv:'Phòng nghỉ giáo viên là không gian riêng tư của người lao động.'
+};
+
+/* ══════════════════════════════════════════════════════════════════
+   CAMERA
+   ★ URL RTSP KHÔNG lưu thành một chuỗi có nhúng mật khẩu.
+     Tài liệu nguồn ghi `rtsp://username:password@ip:port/path` — nếu lưu
+     nguyên chuỗi đó thì mật khẩu sẽ hiện ra ở MỌI chỗ có hiển thị URL:
+     bảng danh sách, thông báo lỗi, log kỹ thuật, ảnh chụp màn hình.
+     Tách host · port · path · user · pass, và GIAO DIỆN KHÔNG BAO GIỜ
+     hiển thị lại mật khẩu — chỉ có nút đổi.
+   ══════════════════════════════════════════════════════════════════ */
+const TT_CAM={hoatdong:['Đang hoạt động','o'],offline:['Mất kết nối','r'],baotri:['Bảo trì','w']};
+let MC=0;
+const CAMERA=[];
+function themCam(o){CAMERA.push({id:'CAM-'+p2(++MC),...o})}
+(function seed(){
+ const d=[
+  /* tên, điểm trường, vị trí, host, path, hãng, trạng thái, có bảng thông báo, phút từ lần kết nối cuối */
+  ['Cổng chính','A','cong','192.168.10.11','/Streaming/Channels/101','Hikvision DS-2CD2143','hoatdong',true,0],
+  ['Cổng phụ — lối xe','A','cong','192.168.10.12','/Streaming/Channels/101','Hikvision DS-2CD2143','hoatdong',true,0],
+  ['Sảnh chính tầng 1','A','sanh','192.168.10.13','/cam/realmonitor?channel=1&subtype=0','Dahua IPC-HFW1230','hoatdong',true,0],
+  ['Hành lang tầng 2','A','hanhlang','192.168.10.14','/cam/realmonitor?channel=1&subtype=0','Dahua IPC-HFW1230','hoatdong',true,0],
+  ['Hành lang tầng 3','A','hanhlang','192.168.10.15','/cam/realmonitor?channel=1&subtype=0','Dahua IPC-HFW1230','hoatdong',false,0],
+  ['Cầu thang bộ khu A','A','cauthang','192.168.10.16','/h264Preview_01_main','Reolink RLC-510A','hoatdong',true,0],
+  ['Sân trường — khu thể chất','A','san','192.168.10.17','/h264Preview_01_main','Reolink RLC-510A','hoatdong',true,0],
+  ['Bãi để xe giáo viên','A','baixe','192.168.10.18','/stream1','TP-Link Tapo C310','hoatdong',true,0],
+  ['Khu bếp bán trú','A','bep','192.168.10.19','/stream1','TP-Link Tapo C310','hoatdong',true,0],
+  ['Kho thiết bị','A','kho','192.168.10.20','/stream1','TP-Link Tapo C310','offline',true,214],
+  ['Tường rào phía sau','A','tuong','192.168.10.21','/h264Preview_01_main','Reolink RLC-510A','baotri',true,1580],
+  ['Cổng chính','B','cong','192.168.20.11','/Streaming/Channels/101','Hikvision DS-2CD2143','hoatdong',true,0],
+  ['Sảnh chính','B','sanh','192.168.20.12','/Streaming/Channels/101','Hikvision DS-2CD2143','hoatdong',true,0],
+  ['Hành lang tầng 2','B','hanhlang','192.168.20.13','/cam/realmonitor?channel=1&subtype=0','Dahua IPC-HFW1230','hoatdong',false,0],
+  ['Sân trường','B','san','192.168.20.14','/h264Preview_01_main','Reolink RLC-510A','hoatdong',true,0],
+  ['Khu bếp bán trú','B','bep','192.168.20.15','/stream1','TP-Link Tapo C310','offline',true,47]
+ ];
+ d.forEach(([ten,dt,vt,host,path,hang,tt,bien,phut])=>themCam({
+  ten,dt,vt,host,port:554,path,hang,tt,bienBao:bien,
+  user:'viewer',passSet:true,loai:'live',
+  ngayTao:'2026-08-'+p2(10+(MC%18)),boi:'khoa',
+  treKN:phut   /* số phút kể từ lần kết nối gần nhất — dùng để suy trạng thái */
+ }));
+})();
+const camById=id=>CAMERA.find(c=>c.id===id);
+/* ★ URL hiển thị KHÔNG chứa mật khẩu — dựng lại từ các phần, che user */
+const urlHien=c=>'rtsp://'+c.user+':••••••@'+c.host+':'+c.port+c.path;
+const urlKhongAuth=c=>'rtsp://'+c.host+':'+c.port+c.path;
+
+/* ── Nhóm camera ── */
+const NHOM=[
+ {id:'NH-01',ten:'Cổng và sảnh — Điểm trường A',dt:'A',lay:'2x2',
+  cams:['CAM-01','CAM-02','CAM-03','CAM-06']},
+ {id:'NH-02',ten:'Hành lang và sân — Điểm trường A',dt:'A',lay:'2x2',
+  cams:['CAM-04','CAM-05','CAM-07','CAM-08']},
+ {id:'NH-03',ten:'Khu phục vụ — Điểm trường A',dt:'A',lay:'2x2',
+  cams:['CAM-09','CAM-10','CAM-11']},
+ /* ★ Cố ý để bố cục 2x2 cho một nhóm 5 camera — để thấy cảnh báo «thừa ô» hoạt động.
+    Đây là tình huống thật: người tạo nhóm thêm dần camera mà quên nâng bố cục. */
+ {id:'NH-04',ten:'Toàn cảnh Điểm trường B',dt:'B',lay:'2x2',
+  cams:['CAM-12','CAM-13','CAM-14','CAM-15','CAM-16']}
+];
+const nhomById=id=>NHOM.find(n=>n.id===id);
+
+/* ══════════════════════════════════════════════════════════════════
+   PHÂN CÔNG BẢO VỆ — dữ liệu, không phải nút bị ẩn
+   ★ Kèm CA TRỰC: bảo vệ ca ngày xem camera lúc 2 giờ sáng là một dấu
+     hiệu, dù về mặt quyền thì họ vẫn xem được camera ấy.
+   ══════════════════════════════════════════════════════════════════ */
+const PHANCONG=[
+ {ai:'nam', dt:'A',cams:['CAM-01','CAM-02','CAM-03','CAM-06','CAM-08'],ca:[6,18],
+  ghi:'Ca ngày — cổng, sảnh, cầu thang, bãi xe'},
+ {ai:'tuan',dt:'A',cams:['CAM-01','CAM-02','CAM-07','CAM-10','CAM-11'],ca:[18,6],
+  ghi:'Ca đêm — cổng, sân, kho, tường rào'},
+ {ai:'kien',dt:'B',cams:['CAM-12','CAM-13','CAM-15'],ca:[6,18],
+  ghi:'Ca ngày — cổng, sảnh, sân'}
+];
+const pcCua=ma=>PHANCONG.find(p=>p.ai===ma);
+
+
+/* ══════════════════════════════════════════════════════════════════
+   PHẠM VI · TRẠNG THÁI DẪN XUẤT
+   ══════════════════════════════════════════════════════════════════ */
+function camTrongPhamVi(){
+ const r=R();
+ if(r.sc==='None') return [];
+ if(r.sc==='PhanCong'){const p=pcCua(r.ma); return p?p.cams.map(camById).filter(Boolean):[]}
+ const d=dtHieuLuc();
+ return CAMERA.filter(c=>d==='ALL'||c.dt===d);
+}
+function nhomTrongPhamVi(){
+ const r=R();
+ if(r.sc==='None'||r.sc==='PhanCong') return [];
+ const d=dtHieuLuc();
+ return NHOM.filter(n=>d==='ALL'||n.dt===d);
+}
+const xemDuoc=id=>camTrongPhamVi().some(c=>c.id===id);
+
+/* ★ OFFLINE LÀ TRẠNG THÁI DẪN XUẤT từ lần kết nối gần nhất, không phải ô ai đặt.
+   «Bảo trì» thì khác — đó là NGƯỜI tuyên bố, và nó đè lên suy luận của máy. */
+function ttCam(c){
+ if(c.tt==='baotri') return 'baotri';
+ return c.treKN>5?'offline':'hoatdong';
+}
+const camSong=c=>ttCam(c)==='hoatdong';
+function moTaTre(c){
+ const p=c.treKN;
+ if(p<60) return p+' phút';
+ if(p<1440) return Math.round(p/60)+' giờ';
+ return Math.round(p/1440)+' ngày';
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   NHẬT KÝ TRUY CẬP — ĐƠN VỊ DÒNG LÀ MỘT PHIÊN XEM, KHÔNG PHẢI MỘT CÚ BẤM
+   ★ Một log ghi «đã bấm vào camera X» không nói lên điều gì.
+     Một log ghi «xem camera hành lang tầng 3 liên tục 47 phút lúc 22h»
+     thì nói lên rất nhiều.
+   ══════════════════════════════════════════════════════════════════ */
+let MP=0;
+const PHIEN=[];
+function themPhien(o){PHIEN.push({id:'P-'+p2(++MP),...o})}
+const gioCua=luc=>+luc.slice(11,13);
+(function seedPhien(){
+ const d=[
+  /* bắt đầu, phút, ai, loại, đích, ip */
+  ['2026-12-28 07:12',9,'nam','grid','NH-01','10.10.1.24'],
+  ['2026-12-28 07:41',4,'huy','grid','NH-01','10.10.1.8'],
+  ['2026-12-28 08:05',2,'nam','single','CAM-01','10.10.1.24'],
+  ['2026-12-27 06:55',12,'nam','grid','NH-01','10.10.1.24'],
+  ['2026-12-27 11:20',6,'huong','grid','NH-02','10.10.1.15'],
+  ['2026-12-27 14:02',3,'son','single','CAM-07','10.10.1.31'],
+  ['2026-12-27 22:38',47,'tuan','single','CAM-04','10.10.1.26'],
+  ['2026-12-26 19:10',18,'tuan','grid','NH-03','10.10.1.26'],
+  ['2026-12-26 09:33',5,'kien','grid','NH-04','10.10.2.19'],
+  ['2026-12-26 21:44',8,'tuan','single','CAM-11','10.10.1.26'],
+  ['2026-12-25 08:12',7,'nam','grid','NH-01','10.10.1.24'],
+  ['2026-12-25 13:50',4,'huy','single','CAM-09','10.10.1.8'],
+  ['2026-12-24 02:15',22,'tuan','grid','NH-01','203.113.44.7'],
+  ['2026-12-24 07:30',10,'nam','grid','NH-01','10.10.1.24'],
+  ['2026-12-23 16:05',3,'huong','single','CAM-03','10.10.1.15'],
+  ['2026-12-23 10:41',6,'khoa','single','CAM-10','10.10.1.5'],
+  ['2026-12-22 15:28',15,'huy','grid','NH-02','10.10.1.8'],
+  ['2026-12-22 08:02',11,'nam','grid','NH-01','10.10.1.24']
+ ];
+ d.forEach(([bd,phut,ai,loai,dich,ip])=>{
+  const t=k2d(bd.slice(0,10)); const [g,p]=bd.slice(11).split(':').map(Number);
+  const end=new Date(t.getFullYear(),t.getMonth(),t.getDate(),g,p+phut);
+  themPhien({batDau:bd,ketThuc:d2k(end)+' '+p2(end.getHours())+':'+p2(end.getMinutes()),
+   phut,ai,loai,dich,ip,daRa:false});
+ });
+})();
+const phienDangMo=()=>PHIEN.filter(p=>!p.ketThuc);
+function camCuaPhien(p){
+ return p.loai==='single'?[p.dich]:(nhomById(p.dich)?nhomById(p.dich).cams:[]);
+}
+const tenDich=p=>p.loai==='single'
+ ?(camById(p.dich)?camById(p.dich).ten+' — '+DT[camById(p.dich).dt]:p.dich)
+ :(nhomById(p.dich)?nhomById(p.dich).ten:p.dich);
+
+/* ══════════════════════════════════════════════════════════════════
+   ★★ DẤU HIỆU CẦN RÀ — số DẪN XUẤT từ nhật ký
+   Ghi log mà không ai đọc thì log chỉ là chỗ tốn ổ cứng. Máy phải tự
+   nhặt ra những phiên đáng nhìn, rồi NGƯỜI xác nhận đã rà.
+   Cùng mẫu MÁY ĐẾM / NGƯỜI XÁC NHẬN đã dùng khắp cụm.
+   ══════════════════════════════════════════════════════════════════ */
+function dauHieu(p){
+ const out=[];
+ const g=gioCua(p.batDau);
+ if(g<CFG.gioHC[0]||g>=CFG.gioHC[1]){
+  /* bảo vệ ca đêm xem ban đêm là ĐÚNG VIỆC — không phải dấu hiệu */
+  const pc=pcCua(p.ai);
+  const trongCa=pc&&(pc.ca[0]>pc.ca[1]?(g>=pc.ca[0]||g<pc.ca[1]):(g>=pc.ca[0]&&g<pc.ca[1]));
+  if(!trongCa) out.push(['Xem ngoài giờ hành chính','lúc '+p.batDau.slice(11)]);
+ }
+ if(p.phut>=CFG.phienDai) out.push(['Phiên xem dài bất thường',p.phut+' phút liên tục']);
+ const pc=pcCua(p.ai);
+ if(pc){
+  const ngoai=camCuaPhien(p).filter(c=>!pc.cams.includes(c));
+  if(ngoai.length) out.push(['Camera ngoài phân công',
+   ngoai.map(c=>camById(c)?camById(c).ten:c).join(', ')]);
+ }
+ if(!/^10\.10\./.test(p.ip)) out.push(['Truy cập từ ngoài mạng trường','IP '+p.ip]);
+ return out;
+}
+const phienCanRa=()=>PHIEN.filter(p=>dauHieu(p).length&&!p.daRa);
+function phienTrongPhamVi(){
+ const r=R();
+ if(!can('audit')) return [];
+ const d=dtHieuLuc();
+ if(d==='ALL') return PHIEN.slice();
+ return PHIEN.filter(p=>camCuaPhien(p).some(c=>camById(c)&&camById(c).dt===d));
+}
+
+/* ── ảnh chụp màn hình ── */
+const CHUP=[
+ {luc:'2026-12-27 22:41',ai:'tuan',cam:'CAM-04',ly:'Ghi nhận người lạ đi lại hành lang tầng 2 ngoài giờ'},
+ {luc:'2026-12-24 07:33',ai:'nam',cam:'CAM-01',ly:'Xe máy đỗ chắn cổng, gửi tổ bảo vệ nhắc'}
+];
+
+/* ── phiên xem của chính mình ──
+   ★ MỘT PHIÊN = MỘT LƯỢT Ở LẠI MÀN HÌNH XEM, không phải một cú bấm.
+   Đổi nhóm hay bấm vào một ô để xem đơn là THAO TÁC TRONG CÙNG MỘT PHIÊN —
+   nếu mỗi lần đổi lại mở một phiên mới thì nhật ký đầy những dòng 1 phút
+   và không ai đọc nổi. Phiên chỉ đóng khi RỜI màn hình xem. */
+let PHIEN_MO=null;
+function batDauXem(loai,dich){
+ if(!PHIEN_MO) PHIEN_MO={batDau:Date.now(),gio:hhmm(),ai:toiLa(),dich:[],loai};
+ const k=loai+'|'+dich;
+ if(!PHIEN_MO.dich.includes(k)) PHIEN_MO.dich.push(k);
+ PHIEN_MO.loai=loai; PHIEN_MO.cuoi=dich;
+}
+function ketThucXem(){
+ if(!PHIEN_MO) return;
+ const phut=Math.max(1,Math.round((Date.now()-PHIEN_MO.batDau)/60000));
+ themPhien({batDau:HOMNAY+' '+PHIEN_MO.gio,ketThuc:hhmm(),phut,ai:PHIEN_MO.ai,
+  loai:PHIEN_MO.loai,dich:PHIEN_MO.cuoi,soDich:PHIEN_MO.dich.length,
+  ip:'10.10.1.'+(40+PHIEN.length%20),daRa:false});
+ PHIEN_MO=null;
+}
+const phutDangXem=()=>PHIEN_MO?Math.max(0,Math.round((Date.now()-PHIEN_MO.batDau)/60000)):0;
+
+/* ── ghi vết ── */
+function ghiLS(o,viec,boi){(o.ls=o.ls||[]).push([HOMNAY,viec,boi||toiLa()])}
+const tenLS=m=>m==='_may'?'Hệ thống':tenNS(m);
+
+
+/* ══════════════════════════════════════════════════════════════════
+   KHUNG MÀN HÌNH
+   ══════════════════════════════════════════════════════════════════ */
+function rolebar(){
+ $('#rolebar').innerHTML='<b>Vai trò:</b>'+Object.keys(ROLES).map(k=>
+  '<button class="rb'+(k===role?' on':'')+'" data-r="'+k+'">'+esc(ROLES[k].cd)+'</button>').join('')
+ +'<span class="simw">Hôm nay (mô phỏng): <b style="color:#e2e8f0">'+kThu(HOMNAY)+' '+k2s(HOMNAY)+'</b></span>'
+ +'<button class="ntg" id="btnNote">💡 Ghi chú thiết kế: TẮT</button>';
+}
+const NAV=[['🏫 Vận hành &amp; Dịch vụ',[['M6.1','Bán trú',0],['M6.2','Học ngoại khóa',0],
+  ['M6.3','Hoạt động Đoàn — Đội',0],['M6.4','Danh mục &amp; Kiểm kê CSVC',0],['M6.5','Yêu cầu CSVC',0],
+  ['M6.6','Y tế học đường',0],['M6.7','Camera an ninh',1],['M6.8','Sự kiện trường học',0]]],
+ ['🗄 Hệ thống',[['M10.1','Hồ sơ năm học',0],['M10.7','Nhật ký hệ thống',0]]]];
+function sidebar(){
+ const n=viecCanLam();
+ $('#side').innerHTML=NAV.map(([g,it])=>'<div class="sgrp">'+g+'</div>'+it.map(([c,t,on])=>
+  '<a class="snav'+(on?' on':' off')+'">'+(on?'📹':'▫')+' '+t+(on&&n?'<span class="nb">'+n+'</span>':'')+'</a>').join('')).join('');
+}
+function viecCanLam(){
+ let n=0;
+ if(can('audit')) n+=phienCanRa().length;
+ if(can('quantri')) n+=camTrongPhamVi().filter(c=>ttCam(c)==='offline').length
+   +camTrongPhamVi().filter(c=>!c.bienBao).length;
+ return n;
+}
+function header(){
+ const r=R();
+ $('#ava').textContent=tenNS(r.ma).split(' ').slice(-2).map(x=>x[0]).join('');
+ const khoa=r.sc!=='School';
+ $('#hdt').innerHTML=(r.sc==='School'?'<option value="ALL">Tất cả điểm trường</option>':'')
+  +Object.keys(DT).map(d=>'<option value="'+d+'">'+DT[d]+'</option>').join('');
+ $('#hdt').value=khoa?(r.dt||'A'):ST.dt; $('#hdt').disabled=khoa;
+ $('#dtlock').textContent=r.sc==='PhanCong'?'🔒 khóa theo phân công'
+  :r.sc==='None'?'🔒 không có quyền':khoa?'🔒 khóa theo phạm vi Branch':'';
+ const n=viecCanLam();
+ $('#ndot').textContent=n||''; $('#ndot').style.display=n?'grid':'none';
+ $('#topact').innerHTML=PHIEN_MO
+  ?'<span class="tg r">● Đang xem — phiên '+phutDangXem()+" phút, hệ thống đang ghi nhật ký</span>":'';
+}
+function tabsOK(){
+ const out=[];
+ if(!can('xem')) return out;
+ out.push(['live','1 · Xem trực tiếp',null]);
+ if(can('quantri')||can('xemAll')){
+  const nx=camTrongPhamVi().filter(c=>ttCam(c)==='offline').length;
+  out.push(['cam','2 · Danh sách camera',nx||null]);
+ }
+ if(can('nhom')) out.push(['nhom','3 · Nhóm camera',null]);
+ if(can('phancong')) out.push(['pc','4 · Phân công bảo vệ',null]);
+ if(can('audit')) out.push(['log','5 · Nhật ký truy cập',phienCanRa().length||null]);
+ if(can('cauhinh')) out.push(['cfg','6 · ⚙ Cấu hình',null]);
+ return out;
+}
+/* ★ Tab mặc định theo VIỆC CỦA VAI, không theo một quy tắc chung:
+   Hiệu trưởng mở menu là để RÀ nhật ký; quản trị là để xem camera nào hỏng;
+   còn bảo vệ và PHT mở menu là để NHÌN. */
+function tabMacDinh(t){
+ if(role==='FULL') return 'live';   /* vai rà soát: mở thẳng vào tường video */
+ if(can('duyetRa')&&phienCanRa().length) return 'log';
+ if(can('quantri')&&camTrongPhamVi().some(c=>ttCam(c)==='offline'||!c.bienBao)) return 'cam';
+ return t[0][0];
+}
+function tabs(){
+ const t=tabsOK();
+ if(!t.length){$('#tabs').innerHTML=''; ST.tab=null; return}
+ if(!t.find(x=>x[0]===ST.tab)) ST.tab=tabMacDinh(t);
+ $('#tabs').innerHTML=t.map(([k,n,b])=>'<button class="tab1'+(k===ST.tab?' on':'')+'" data-t="'+k+'">'+n
+  +(b?'<span class="b r">'+b+'</span>':'')+'</button>').join('');
+}
+function scopeBar(extra){
+ const r=R();
+ const pv = r.sc==='PhanCong' ? 'Theo phân công — '+camTrongPhamVi().length+' camera được giao'
+   : r.sc==='School' ? (ST.dt==='ALL'?'School — toàn trường':'School (đang lọc '+DT[ST.dt]+')')
+   : 'Branch — '+DT[r.dt];
+ return '<div class="scope"><span>📹</span><span class="sp">Vai <b>'+esc(r.cd)+'</b> — '+esc(tenNS(r.ma))
+  +'. Phạm vi: <b>'+pv+'</b>. Thấy <b>'+camTrongPhamVi().length+'/'+CAMERA.length+' camera</b>.'
+  +(r.sc==='PhanCong'?' Camera ngoài phân công <b>không có trong kết quả trả về</b> — kể cả camera cùng điểm trường.':'')
+  +(r.sc==='Branch'?' Camera điểm trường khác <b>không có trong kết quả trả về</b>.':'')
+  +(extra?' '+extra:'')+'</span></div>';
+}
+function dnote(html){return '<div class="dnote">💡 <b>Ghi chú thiết kế.</b> '+html+'</div>'}
+const rolnk=t=>'<span class="rolnk">'+t+'</span>';
+const bannerRT=()=>'<div class="warn">🔒 <b>Camera quay trẻ em.</b> Hình ảnh cá nhân là <b>thông tin về đời sống '
+ +'riêng tư</b> — <b>Bộ luật Dân sự 2015 Đ.32</b> và <b>Luật Trẻ em 2016</b>. '
+ +'<b>Mọi phiên xem đều ghi nhật ký</b> kèm thời lượng, và <b>Hiệu trưởng rà định kỳ</b> — xem tab 5.</div>';
+
+/* ══════════════════════════════════════════════════════════════════
+   MÀN HÌNH TỪ CHỐI — vai không có quyền
+   ★ Yêu cầu «các vai khác: không có quyền» phải NHÌN THẤY ĐƯỢC,
+     nếu không thì không ai kiểm chứng được là nó có thật.
+   ══════════════════════════════════════════════════════════════════ */
+function veKhongQuyen(){
+ return '<div class="nono"><div style="font-size:44px">🔒</div>'
+  +'<h2 style="margin:10px 0 6px;font-size:19px">Vai của bạn không có quyền xem camera</h2>'
+  +'<p style="color:var(--ink2);font-size:13.5px;line-height:1.75">'
+  +'Camera an ninh chỉ mở cho <b>Hiệu trưởng · Phó hiệu trưởng · Quản trị hệ thống · Bảo vệ được phân công</b>. '
+  +'Giáo viên, nhân viên và mọi vai khác <b>không có quyền</b>, và <b>phụ huynh không có menu này trong App</b>.</p>'
+  +'<div class="warn" style="text-align:left;margin-top:14px">Đây <b>không phải nút bị ẩn</b>. '
+  +'Danh sách camera <b>không được trả về</b> cho vai của bạn — mở công cụ nào cũng không thấy.<br>'
+  +'Lý do: camera quay <b>trẻ em</b>. Càng nhiều người xem được thì càng khó trả lời câu '
+  +'<i>«ai đã xem gì, lúc nào»</i> khi có việc.</div>'
+  +'<div class="ro" style="text-align:left">Cần xem vì lý do công việc? <b>Đề nghị Hiệu trưởng phân công</b> — '
+  +'phân công là dữ liệu, có tên người, có phạm vi camera và có ca trực.</div></div>';
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   TAB 1 — XEM TRỰC TIẾP
+   ══════════════════════════════════════════════════════════════════ */
+const LAYS={'1x1':1,'2x2':4,'3x3':9,'4x4':16};
+function oCam(c,big){
+ const song=camSong(c), tt=ttCam(c);
+ if(!song) return '<div class="ctile off'+(big?' big':'')+'" data-cam="'+c.id+'">'
+  +'<div class="offmsg">'+(tt==='baotri'?'🛠️ <b>Đang bảo trì</b>':'⚠️ <b>Mất kết nối</b>')
+  +'<br>'+esc(c.ten)+'<br><span style="font-size:11px">'
+  +(tt==='baotri'?'Người quản trị đánh dấu bảo trì':'Không phản hồi '+moTaTre(c))+'</span></div></div>';
+ return '<div class="ctile'+(big?' big':'')+(ST.cam===c.id?' on':'')+'" data-cam="'+c.id+'">'
+  +'<div class="vid"></div><div class="glow"></div><div class="mv"></div>'
+  +'<div class="ov"><div class="ovt"><span class="live"><i></i>LIVE</span>'
+  +'<b style="font-size:12px">'+esc(c.ten)+'</b></div>'
+  +'<div class="ovb"><span>'+esc(VITRI[c.vt][0])+' · '+DT[c.dt]+'</span>'
+  +'<span>'+k2s(HOMNAY)+' '+hhmmss()+'</span></div></div></div>';
+}
+function veLive(){
+ const cams=camTrongPhamVi(), nhs=nhomTrongPhamVi();
+ let h=scopeBar()+bannerRT();
+ if(!cams.length) return h+'<div class="info">Không có camera nào trong phạm vi của bạn.</div>';
+
+ /* chọn nguồn hiển thị */
+ if(ST.cam&&!xemDuoc(ST.cam)) ST.cam=null;
+ if(!ST.cam&&!ST.nhom) ST.nhom=nhs.length?nhs[0].id:'_all';
+ const dsNhom=ST.cam?[camById(ST.cam)]
+  :(ST.nhom==='_all'?cams:(nhomById(ST.nhom)?nhomById(ST.nhom).cams.map(camById).filter(c=>c&&xemDuoc(c.id)):cams));
+
+ if(ST.cam) batDauXem('single',ST.cam); else batDauXem('grid',ST.nhom);
+
+ h+='<div class="wallbar">';
+ if(nhs.length) h+='<select class="sel" id="chonNhom">'
+   +'<option value="_all"'+(ST.nhom==='_all'?' selected':'')+'>Tất cả camera trong phạm vi ('+cams.length+')</option>'
+   +nhs.map(n=>'<option value="'+n.id+'"'+(ST.nhom===n.id?' selected':'')+'>'+esc(n.ten)+' ('+n.cams.length+')</option>').join('')
+   +'</select>';
+ else h+='<span class="fs">Camera được phân công cho bạn ('+cams.length+')</span>';
+ h+='<span class="sp"></span>';
+ if(!ST.cam) h+=Object.keys(LAYS).slice(1).map(k=>'<button class="lay'+(ST.lay===k?' on':'')+'" data-lay="'+k+'">'+k+'</button>').join('');
+ if(ST.cam) h+='<button class="btn" data-thoat="1">◀ Về lưới</button>'
+   +(can('chup')?'<button class="btn" data-chup="'+ST.cam+'">📷 Chụp màn hình</button>':'');
+ h+='</div>';
+
+ if(ST.cam){
+  const c=camById(ST.cam);
+  h+='<div style="max-width:900px">'+oCam(c,true)+'</div>';
+  h+='<div class="tbw" style="margin-top:11px"><table>'
+   +'<tr><th style="width:150px">Camera</th><td><b>'+esc(c.ten)+'</b> <span class="pill">'+c.id+'</span></td></tr>'
+   +'<tr><th>Vị trí</th><td>'+esc(VITRI[c.vt][0])+' — '+DT[c.dt]+'</td></tr>'
+   +'<tr><th>Bảng thông báo</th><td>'+(c.bienBao
+     ?'<span class="tg o">đã có bảng «Khu vực có camera giám sát»</span>'
+     :'<span class="tg r">CHƯA có bảng thông báo</span>')+'</td></tr>'
+   +'<tr><th>Độ trễ</th><td>1–3 giây <span class="xs">(đặc tính của RTSP, không phải lỗi)</span></td></tr>'
+   +'</table></div>';
+ }else{
+  const n=LAYS[ST.lay], col=+ST.lay[0];
+  const show=dsNhom.slice(0,n);
+  h+='<div class="cwall" style="grid-template-columns:repeat('+col+',1fr)">'
+   +show.map(c=>oCam(c)).join('')
+   +Array.from({length:Math.max(0,n-show.length)},()=>'<div class="ctile off"><div class="offmsg" style="opacity:.4">ô trống</div></div>').join('')
+   +'</div>';
+  if(dsNhom.length>n) h+='<div class="info" style="margin-top:9px">Nhóm này có <b>'+dsNhom.length
+   +' camera</b> nhưng bố cục <b>'+ST.lay+'</b> chỉ hiện được <b>'+n+'</b>. Chọn bố cục lớn hơn để thấy hết.</div>';
+ }
+ h+='<div class="lgd" style="margin-top:10px">'
+  +'<span class="chip">Bấm một ô để <b>xem đơn</b></span>'
+  +'<span class="chip">Ô mất kết nối <b>vẫn hiện</b> — biến mất thì không ai biết camera đang hỏng</span>'
+  +'<span class="chip simw2">Demo <b>mô phỏng luồng video</b>; bản thật đọc RTSP từ camera của trường</span></div>';
+
+ h+='<div class="'+(PHIEN_MO?'warn':'info')+'" style="margin-top:11px">'
+  +'<b>● Phiên xem đang mở</b> — bắt đầu '+(PHIEN_MO?PHIEN_MO.gio:'—')
+  +', đã <b>'+phutDangXem()+' phút</b>. Hệ thống ghi <b>ai · xem gì · từ lúc nào đến lúc nào · từ IP nào</b>, '
+  +'và tự đóng phiên sau <b>'+CFG.timeout+' phút</b> không thao tác.</div>';
+
+ h+=dnote('Đơn vị của nhật ký là <b>MỘT PHIÊN XEM</b>, không phải một cú bấm. '
+  +'Một dòng ghi «đã mở camera X» không nói lên điều gì; một dòng ghi '
+  +'<b>«xem camera hành lang tầng 3 liên tục 47 phút lúc 22h38»</b> thì nói lên rất nhiều — '
+  +'và đó chính là thứ tab 5 nhặt ra.<br>'
+  +'Bố cục lưới <b>không tự nhảy sang bố cục lớn hơn</b> khi nhóm có nhiều camera: người xem cần biết '
+  +'mình <b>đang không thấy gì</b>, chứ không phải được lấp đầy màn hình một cách êm ái.');
+ return h;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   TAB 2 — DANH SÁCH CAMERA
+   ══════════════════════════════════════════════════════════════════ */
+function veDanhSach(){
+ const ds=camTrongPhamVi();
+ const off=ds.filter(c=>ttCam(c)==='offline'), khongBien=ds.filter(c=>!c.bienBao);
+ let h=scopeBar();
+ if(off.length) h+='<div class="danger"><b>⚠️ '+off.length+' camera mất kết nối.</b> '
+  +off.map(c=>esc(c.ten)+' <span class="pill">'+DT[c.dt]+'</span> — không phản hồi '+moTaTre(c)).join(' · ')
+  +'<br>Trạng thái này là <b>số dẫn xuất</b> từ lần kết nối gần nhất — không ai phải đánh dấu, '
+  +'và cũng <b>không tắt được</b> bằng cách sửa dòng.</div>';
+ if(khongBien.length) h+='<div class="warn"><b>📋 '+khongBien.length+' camera ở khu vực CHƯA có bảng thông báo.</b> '
+  +khongBien.map(c=>esc(c.ten)+' — '+esc(VITRI[c.vt][0])).join(' · ')
+  +'<br>Khu vực có camera giám sát <b>phải có bảng thông báo</b> để người bị quay biết mình đang bị quay. '
+  +'Đây là điều kiện để việc giám sát là <b>minh bạch</b>, không phải một thủ tục hình thức.</div>';
+
+ h+='<div class="bar">'+(can('quantri')?'<button class="btn p" id="themCam">➕ Thêm camera</button>':'')
+  +'<span class="sp"></span><span class="xs">đơn vị dòng: <b>một camera</b></span></div>';
+
+ h+='<div class="tbw"><div class="ch">Camera đã kết nối <span class="tg b">'+ds.length+'</span></div><div class="tbx"><table>'
+  +'<tr><th>Mã</th><th>Tên · vị trí</th><th>Điểm trường</th><th>Thiết bị</th><th>Kết nối</th>'
+  +'<th>Bảng thông báo</th><th>Trạng thái</th>'+(can('quantri')?'<th></th>':'')+'</tr>';
+ const gom=(rows)=>{
+  if(dtHieuLuc()!=='ALL') return rows.map(ve).join('');
+  const g={}; rows.forEach(c=>{(g[c.dt]=g[c.dt]||[]).push(c)});
+  return Object.keys(g).sort().map(k=>'<tr class="hdrow2"><td colspan="'+(can('quantri')?8:7)+'">'
+   +'<b>'+DT[k]+'</b> <span class="pill">'+g[k].length+' camera</span></td></tr>'+g[k].map(ve).join('')).join('');
+ };
+ function ve(c){
+  const tt=ttCam(c);
+  return '<tr class="rw'+(tt==='offline'?' badrow':tt==='baotri'?' warnrow':'')+'" data-cam2="'+c.id+'">'
+   +'<td><b>'+c.id+'</b></td>'
+   +'<td><b>'+esc(c.ten)+'</b><br><span class="xs">'+esc(VITRI[c.vt][0])+'</span></td>'
+   +'<td>'+DT[c.dt]+'</td><td style="font-size:11.5px">'+esc(c.hang)+'</td>'
+   +'<td style="font-size:11px;font-family:ui-monospace,monospace">'+esc(urlKhongAuth(c))+'</td>'
+   +'<td>'+(c.bienBao?'<span class="tg o">đã có</span>':'<span class="tg r">chưa có</span>')+'</td>'
+   +'<td><span class="tg '+TT_CAM[tt][1]+'">'+TT_CAM[tt][0]+'</span>'
+    +(tt==='offline'?'<div class="xs">'+moTaTre(c)+'</div>':'')+'</td>'
+   +(can('quantri')?'<td><button class="btn xs" data-sua="'+c.id+'">Sửa</button> '
+     +'<button class="btn xs" data-test="'+c.id+'">Test</button></td>':'')+'</tr>';
+ }
+ h+=(ds.length?gom(ds):'<tr><td colspan="8" class="empty">Không có camera nào trong phạm vi.</td></tr>')
+  +'</table></div><div class="lgd">'
+  +'<span class="chip">Cột <b>Kết nối</b> hiện <b>KHÔNG có tài khoản và mật khẩu</b> — xem ghi chú bên dưới</span>'
+  +'<span class="chip">Camera <b>không xóa</b> — chuyển <b>Bảo trì</b> khi tháo tạm, và bản ghi vẫn còn</span></div></div>';
+
+ h+=dnote('<b>★ URL RTSP không lưu thành một chuỗi có nhúng mật khẩu.</b> Tài liệu nguồn mô tả '
+  +'<code>rtsp://username:password@ip:port/path</code> — lưu nguyên chuỗi đó thì mật khẩu camera '
+  +'sẽ hiện ra ở <b>mọi chỗ có hiển thị URL</b>: bảng danh sách, thông báo lỗi, log kỹ thuật, '
+  +'và cả ảnh chụp màn hình người dùng gửi cho nhau khi báo lỗi.<br>'
+  +'Nên tách <b>host · cổng · đường dẫn · tài khoản · mật khẩu</b> thành các trường riêng, '
+  +'và <b>giao diện không bao giờ hiển thị lại mật khẩu</b> — chỉ có nút đổi.<br>'
+  +'<b>Trạng thái «mất kết nối» là dẫn xuất</b> từ lần kết nối gần nhất; <b>«bảo trì»</b> thì khác — '
+  +'đó là <b>người tuyên bố</b>, và nó đè lên suy luận của máy.');
+ return h;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   TAB 3 — NHÓM CAMERA
+   ══════════════════════════════════════════════════════════════════ */
+function veNhom(){
+ const ds=nhomTrongPhamVi();
+ let h=scopeBar();
+ h+='<div class="bar">'+(can('nhom')?'<button class="btn p" id="themNhom">➕ Tạo nhóm</button>':'')
+  +'<span class="sp"></span><span class="xs">đơn vị dòng: <b>một nhóm</b></span></div>';
+ h+='<div class="tbw"><div class="ch">Nhóm camera <span class="tg b">'+ds.length+'</span></div><div class="tbx"><table>'
+  +'<tr><th>Mã</th><th>Tên nhóm</th><th>Điểm trường</th><th class="num">Số camera</th>'
+  +'<th>Bố cục mặc định</th><th>Camera trong nhóm</th><th></th></tr>'
+  +(ds.length?ds.map(n=>{
+    const cs=n.cams.map(camById).filter(Boolean);
+    const off=cs.filter(c=>ttCam(c)==='offline').length;
+    const thua=cs.length>LAYS[n.lay];
+    return '<tr class="rw'+(thua?' warnrow':'')+'"><td><b>'+n.id+'</b></td><td>'+esc(n.ten)+'</td>'
+     +'<td>'+DT[n.dt]+'</td><td class="num"><b>'+cs.length+'</b>'
+      +(off?'<div class="xs" style="color:var(--red)">'+off+' mất kết nối</div>':'')+'</td>'
+     +'<td>'+n.lay+' <span class="xs">('+LAYS[n.lay]+' ô)</span>'
+      +(thua?'<div class="xs" style="color:var(--amber)">thiếu '+(cs.length-LAYS[n.lay])+' ô</div>':'')+'</td>'
+     +'<td style="font-size:11.5px">'+cs.map(c=>esc(c.ten)).join(' · ')+'</td>'
+     +'<td><button class="btn xs p" data-xemnhom="'+n.id+'">▶ Xem</button></td></tr>'}).join('')
+   :'<tr><td colspan="7" class="empty">Chưa có nhóm nào.</td></tr>')
+  +'</table></div></div>';
+ h+=dnote('Nhóm hiện <b>cảnh báo khi số camera vượt bố cục mặc định</b> — nhóm 5 camera mà bố cục 2×2 '
+  +'thì <b>một camera không bao giờ được nhìn tới</b>, và người xem không biết điều đó. '
+  +'Hệ thống <b>không tự nâng bố cục</b>: nó nói ra để người cấu hình quyết định.');
+ return h;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   TAB 4 — PHÂN CÔNG BẢO VỆ
+   ★ Phân công là DỮ LIỆU: có tên người, có phạm vi camera, có CA TRỰC.
+   ══════════════════════════════════════════════════════════════════ */
+function vePhanCong(){
+ const d=dtHieuLuc();
+ const ds=PHANCONG.filter(p=>d==='ALL'||p.dt===d);
+ let h=scopeBar();
+ h+='<div class="info">Bảo vệ <b>không thấy toàn bộ camera của điểm trường</b> — chỉ thấy đúng '
+  +'những camera được giao. Camera ngoài phân công <b>không có trong kết quả trả về</b>.<br>'
+  +'<b>Ca trực</b> không chặn việc xem, nhưng xem <b>ngoài ca của mình</b> là một <b>dấu hiệu</b> '
+  +'nổi lên ở tab 5 để Hiệu trưởng rà.</div>';
+ h+='<div class="bar">'+(can('phancong')?'<button class="btn p" id="themPC">➕ Phân công</button>':'')+'</div>';
+ h+='<div class="tbw"><div class="ch">Phân công xem camera <span class="tg b">'+ds.length+'</span>'
+  +'<span class="sp"></span><span class="xs">đơn vị dòng: <b>một người được phân công</b></span></div>'
+  +'<div class="tbx"><table><tr><th>Người</th><th>Điểm trường</th><th>Ca trực</th>'
+  +'<th class="num">Số camera</th><th>Camera được giao</th><th>Ghi chú</th></tr>'
+  +(ds.length?ds.map(p=>'<tr><td><b>'+esc(tenNS(p.ai))+'</b><br><span class="xs">'+esc(cdNS(p.ai))+'</span></td>'
+    +'<td>'+DT[p.dt]+'</td>'
+    +'<td><b>'+p2(p.ca[0])+':00 – '+p2(p.ca[1])+':00</b>'+(p.ca[0]>p.ca[1]?'<div class="xs">qua đêm</div>':'')+'</td>'
+    +'<td class="num"><b>'+p.cams.length+'</b></td>'
+    +'<td style="font-size:11.5px">'+p.cams.map(c=>camById(c)?esc(camById(c).ten):c).join(' · ')+'</td>'
+    +'<td style="font-size:11.5px">'+esc(p.ghi)+'</td></tr>').join('')
+   :'<tr><td colspan="6" class="empty">Chưa phân công cho ai.</td></tr>')
+  +'</table></div></div>';
+ /* camera chưa ai được giao */
+ const daGiao=new Set(); PHANCONG.forEach(p=>p.cams.forEach(c=>daGiao.add(c)));
+ const chua=CAMERA.filter(c=>(d==='ALL'||c.dt===d)&&!daGiao.has(c.id));
+ if(chua.length) h+='<div class="warn"><b>'+chua.length+' camera chưa giao cho bảo vệ nào.</b> '
+  +chua.map(c=>esc(c.ten)+' <span class="pill">'+DT[c.dt]+'</span>').join(' · ')
+  +'<br>Không sai — Hiệu trưởng và quản trị vẫn xem được. Nhưng <b>ngoài giờ hành chính thì không ai trông</b> '
+  +'những camera này, và đó là điều nên biết trước khi cần tới.</div>';
+ h+=dnote('Phân công có <b>ca trực</b> vì đó là thứ phân biệt <b>đúng việc</b> với <b>tò mò</b>: '
+  +'bảo vệ ca đêm xem camera lúc 22h là <b>đang làm việc</b>; bảo vệ ca ngày xem camera lúc 22h '
+  +'thì đáng để hỏi một câu. Hệ thống <b>không chặn</b> — nó <b>ghi lại và nêu ra</b>.');
+ return h;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   TAB 5 — NHẬT KÝ TRUY CẬP
+   ★★ Ghi log mà không ai đọc thì log chỉ là chỗ tốn ổ cứng.
+     Máy nhặt ra phiên đáng nhìn, NGƯỜI xác nhận đã rà.
+   ══════════════════════════════════════════════════════════════════ */
+function veNhatKy(){
+ const ds0=phienTrongPhamVi().slice().sort((a,b)=>b.batDau.localeCompare(a.batDau));
+ const canRa=ds0.filter(p=>dauHieu(p).length&&!p.daRa);
+ let ds=ds0;
+ if(ST.chipLog==='ra') ds=canRa;
+ else if(ST.chipLog==='dai') ds=ds0.filter(p=>p.phut>=CFG.phienDai);
+ else if(ST.chipLog==='ngoai') ds=ds0.filter(p=>dauHieu(p).some(x=>/ngoài giờ/i.test(x[0])));
+ const q=kd(ST.timLog||'');
+ if(q) ds=ds.filter(p=>kd(tenNS(p.ai)).includes(q)||kd(tenDich(p)).includes(q));
+
+ let h=scopeBar();
+ if(canRa.length) h+='<div class="danger"><b>🔎 '+canRa.length+' phiên xem có dấu hiệu cần rà.</b> '
+  +'Đây là <b>số dẫn xuất</b> từ chính nhật ký — máy nhặt ra, <b>Hiệu trưởng xác nhận đã rà</b>. '
+  +'Một nhật ký không ai đọc thì không bảo vệ được ai.</div>';
+ else h+='<div class="okbox"><b>✅ Không có phiên nào cần rà.</b> Mọi phiên trong phạm vi đều '
+  +'trong giờ, trong phân công, trong mạng trường và không kéo dài bất thường.</div>';
+
+ h+='<div class="frow" style="margin-bottom:11px">'
+  +[['Tổng số phiên',ds0.length,'c'],
+    ['Tổng thời lượng',ds0.reduce((a,p)=>a+p.phut,0)+"'",'b'],
+    ['Phiên có dấu hiệu',ds0.filter(p=>dauHieu(p).length).length,'w'],
+    ['Chưa rà',canRa.length,canRa.length?'r':'o']]
+   .map(([a,b,c])=>'<div class="card"><div class="cb"><div class="xs">'+a+'</div>'
+    +'<div class="num '+c+'" style="font-size:22px;font-weight:800">'+b+'</div></div></div>').join('')+'</div>';
+
+ h+='<div class="bar"><input class="inp" id="timLog" value="'+esc(ST.timLog||'')
+  +'" placeholder="Tìm theo người xem hoặc camera…"><span class="sp"></span>'
+  +'<button class="btn" id="xuatLog">📤 Xuất nhật ký</button></div>';
+ h+='<div class="filter">'+[['all','Tất cả',ds0.length],['ra','🔎 Cần rà',canRa.length],
+   ['dai','⏱ Phiên dài',ds0.filter(p=>p.phut>=CFG.phienDai).length],
+   ['ngoai','🌙 Ngoài giờ',ds0.filter(p=>dauHieu(p).some(x=>/ngoài giờ/i.test(x[0]))).length]]
+  .map(([k,n,c])=>'<button class="chip'+((ST.chipLog||'all')===k?' on':'')+'" data-chlog="'+k+'">'+n+' <b>'+c+'</b></button>').join('')
+  +'</div>';
+
+ h+='<div class="tbw"><div class="ch">Phiên xem camera <span class="tg b">'+ds.length+'</span>'
+  +'<span class="sp"></span><span class="xs">đơn vị dòng: <b>một phiên xem</b>, không phải một cú bấm</span></div>'
+  +'<div class="tbx"><table><tr><th>Mã</th><th>Bắt đầu</th><th class="num">Thời lượng</th><th>Người xem</th>'
+  +'<th>Xem gì</th><th>IP</th><th>Dấu hiệu</th>'+(can('duyetRa')?'<th></th>':'')+'</tr>'
+  +(ds.length?ds.map(p=>{const dh=dauHieu(p);
+    return '<tr'+(dh.length&&!p.daRa?' class="badrow"':p.daRa?' class="okrow"':'')+'>'
+     +'<td><b>'+p.id+'</b></td>'
+     +'<td>'+k2s(p.batDau.slice(0,10))+'<br><span class="xs">'+p.batDau.slice(11)+'</span></td>'
+     +'<td class="num"><b>'+p.phut+"'</b></td>"
+     +'<td>'+esc(tenNS(p.ai))+'<br><span class="xs">'+esc(cdNS(p.ai))+'</span></td>'
+     +'<td style="font-size:11.5px">'+(p.loai==='grid'?'<span class="tg c">lưới</span> ':'<span class="tg b">đơn</span> ')
+      +esc(tenDich(p))
+      +(p.soDich>1?'<div class="xs">và '+(p.soDich-1)+' mục khác trong cùng phiên</div>':'')+'</td>'
+     +'<td style="font-size:11px;font-family:ui-monospace,monospace">'+esc(p.ip)+'</td>'
+     +'<td style="font-size:11.5px">'+(dh.length
+       ?dh.map(([a,b])=>'<b style="color:var(--red)">'+a+'</b><div class="xs">'+esc(b)+'</div>').join('')
+       :'<span class="tg o">bình thường</span>')+'</td>'
+     +(can('duyetRa')?'<td>'+(dh.length?(p.daRa?'<span class="tg o">đã rà</span>'
+       :'<button class="btn xs p" data-ra="'+p.id+'">✓ Đã rà</button>'):'')+'</td>':'')
+     +'</tr>'}).join('')
+   :'<tr><td colspan="8" class="empty">Không có phiên nào khớp bộ lọc.</td></tr>')
+  +'</table></div><div class="lgd">'
+  +'<span class="chip">Nhật ký <b>không xóa được</b>, kể cả bởi vai đủ quyền</span>'
+  +'<span class="chip">Bảo vệ <b>ca đêm</b> xem ban đêm <b>không</b> bị coi là dấu hiệu — đó là đúng việc</span></div></div>';
+
+ if(CHUP.length){
+  h+='<div class="tbw" style="margin-top:12px"><div class="ch">Ảnh chụp màn hình '
+   +'<span class="tg w">'+CHUP.length+'</span></div><table>'
+   +'<tr><th style="width:150px">Lúc</th><th>Người chụp</th><th>Camera</th><th>Lý do</th></tr>'
+   +CHUP.map(c=>'<tr class="warnrow"><td>'+esc(c.luc)+'</td><td>'+esc(tenNS(c.ai))+'</td>'
+     +'<td>'+(camById(c.cam)?esc(camById(c.cam).ten):c.cam)+'</td>'
+     +'<td style="font-size:11.5px">'+esc(c.ly)+'</td></tr>').join('')
+   +'</table><div class="lgd"><span class="chip">Chụp màn hình là <b>đưa hình ảnh trẻ em ra khỏi hệ thống</b> — '
+   +'nên nó <b>ghi nhật ký riêng</b> và <b>bắt buộc nêu lý do</b></span></div></div>';
+ }
+ h+=dnote('<b>Không có PLAYBACK trong MVP</b> — chỉ xem trực tiếp, không xem lại quá khứ. '
+  +'Đây là chốt phạm vi, và màn hình <b>nói ra</b> để không ai đi tìm.<br>'
+  +'Khi có playback ở bản sau, nó <b>phải khó hơn xem trực tiếp</b>: xem lại một đoạn quá khứ có '
+  +'học sinh và giáo viên là việc cần <b>lý do và người duyệt</b>, không phải một cú bấm.');
+ return h;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   TAB 6 — CẤU HÌNH
+   ══════════════════════════════════════════════════════════════════ */
+function veCauHinh(){
+ let h=scopeBar();
+ h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">1 · Tham số vận hành</div><table>'
+  +'<tr><th style="width:250px">Tham số</th><th style="width:190px">Giá trị</th><th>Ảnh hưởng</th></tr>'
+  +'<tr><td><b>Tự đóng phiên xem sau</b></td>'
+  +'<td><select class="fs" id="cfTO">'+[5,10,15,30].map(v=>'<option value="'+v+'"'+(CFG.timeout===v?' selected':'')
+    +'>'+v+' phút</option>').join('')+'</select></td>'
+  +'<td>Không thao tác quá mốc này thì <b>ngắt luồng</b> — tránh một màn hình bỏ quên vẫn đang phát</td></tr>'
+  +'<tr><td><b>Mốc coi là phiên dài bất thường</b></td>'
+  +'<td><select class="fs" id="cfDai">'+[15,30,60,120].map(v=>'<option value="'+v+'"'+(CFG.phienDai===v?' selected':'')
+    +'>'+v+' phút</option>').join('')+'</select></td>'
+  +'<td>Chip <b>⏱ Phiên dài</b> ở tab 5 là <b>số dẫn xuất</b> — đổi mốc thì danh sách tính lại ngay</td></tr>'
+  +'<tr><td>Giờ hành chính</td>'
+  +'<td><b>'+p2(CFG.gioHC[0])+':00 – '+p2(CFG.gioHC[1])+':00</b></td>'
+  +'<td>Xem ngoài khoảng này là <b>dấu hiệu</b> — trừ bảo vệ đang trong ca của mình</td></tr>'
+  +'<tr><td><b>Chụp màn hình phải nêu lý do</b></td>'
+  +'<td><select class="fs" id="cfChup"><option value="1"'+(CFG.chupCanLyDo?' selected':'')+'>Bắt buộc</option>'
+   +'<option value="0"'+(CFG.chupCanLyDo?'':' selected')+'>Không bắt buộc</option></select></td>'
+  +'<td>Chụp màn hình là <b>đưa hình ảnh trẻ em ra khỏi hệ thống</b></td></tr>'
+  +'</table></div>';
+
+ h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">2 · Vị trí được phép lắp camera '
+  +'<span class="tg r">ràng buộc pháp lý</span></div><div class="tbx"><table>'
+  +'<tr><th>Vị trí</th><th>Cho phép</th><th class="num">Đang có</th><th>Ghi chú</th></tr>'
+  +Object.keys(VITRI).map(k=>{const n=CAMERA.filter(c=>c.vt===k).length, cam=viCam(k);
+    return '<tr'+(cam?' class="badrow"':'')+'><td><b>'+VITRI[k][0]+'</b></td>'
+     +'<td>'+(cam?'<span class="tg r">KHÔNG</span>':'<span class="tg o">được</span>')+'</td>'
+     +'<td class="num">'+(n||'—')+'</td>'
+     +'<td style="font-size:11.5px">'+(cam?esc(LYDO_CAM[k]||''):'Khu vực chung — lắp để bảo đảm an toàn')+'</td></tr>'}).join('')
+  +'</table></div><div class="lgd">'
+  +'<span class="chip">Chủ trương: <b>khuyến khích lắp ở cổng, hành lang, góc khuất, sân</b>; '
+  +'<b>không lắp trong từng lớp học</b></span>'
+  +'<span class="chip">Danh sách này <b>chặn cứng</b> ở bước thêm camera — không phải một lời khuyên</span></div></div>';
+
+ h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">3 · Điều kiện triển khai tại trường</div><table>'
+  +'<tr><th style="width:250px">Yêu cầu</th><th>Nội dung</th></tr>'
+  +'<tr><td><b>Văn bản thống nhất với Ban đại diện cha mẹ học sinh</b></td>'
+  +'<td><b>Nghị quyết số 04/NQ-BĐDCMHS ngày 05/9/2026</b> — thống nhất lắp camera ở khu vực chung. '
+  +'<span class="xs">Việc lắp camera trong trường cần có sự thống nhất giữa nhà trường và ban đại diện cha mẹ học sinh.</span></td></tr>'
+  +'<tr><td>Camera hỗ trợ RTSP</td><td>IP camera, hoặc camera analog có đầu ghi NVR/DVR hỗ trợ RTSP</td></tr>'
+  +'<tr><td>Tài khoản riêng cho hệ thống</td><td>Tạo tài khoản <b>chỉ xem</b> trên camera — <b>không dùng tài khoản admin</b></td></tr>'
+  +'<tr><td>Đường truyền</td><td>Mỗi camera sub-HD ~1–2 Mbps; 16 camera cùng lúc ~64 Mbps</td></tr>'
+  +'<tr><td>Kết nối</td><td>Hệ thống trong LAN trường: trực tiếp. Hệ thống trên cloud: cần <b>VPN</b> — <b>không khuyến nghị mở port ra Internet</b></td></tr>'
+  +'<tr><td>HTTPS</td><td>Bắt buộc</td></tr>'
+  +'</table></div>';
+
+ h+='<div class="tbw"><div class="ch">4 · Ranh giới — cố ý KHÔNG có trong MVP</div><table>'
+  +'<tr><th style="width:270px">Chức năng</th><th>Vì sao chưa có</th></tr>'
+  +'<tr class="warnrow"><td><b>Xem lại video đã ghi (playback)</b></td>'
+  +'<td>Cần SDK riêng của từng hãng. Và quan trọng hơn: xem lại quá khứ có học sinh, giáo viên '
+  +'<b>phải khó hơn xem trực tiếp</b> — cần <b>lý do và người duyệt</b></td></tr>'
+  +'<tr><td>Xuất clip</td><td>Đi kèm playback</td></tr>'
+  +'<tr><td>Điều khiển PTZ (xoay · zoom)</td><td>Ngoài MVP</td></tr>'
+  +'<tr><td>AI nhận diện khuôn mặt · đếm người</td><td>Ngoài MVP. Nhận diện khuôn mặt trẻ em là <b>dữ liệu sinh trắc</b> — mức bảo vệ khác hẳn</td></tr>'
+  +'<tr><td>Ghi hình lưu trên cloud của hệ thống</td><td>Ngoài MVP — hệ thống <b>chỉ xem, không lưu</b></td></tr>'
+  +'<tr class="warnrow"><td><b>Camera trong App phụ huynh</b></td>'
+  +'<td><b>Không có, và không nên có.</b> Cho hàng nghìn phụ huynh xem lớp con mình là cho họ xem <b>con người khác</b></td></tr>'
+  +'</table></div>';
+ h+=dnote('Menu này <b>chỉ xem trực tiếp, không lưu gì cả</b>. Video không đi qua ổ cứng của hệ thống, '
+  +'nên thứ duy nhất hệ thống giữ là <b>nhật ký ai đã xem gì</b> — và đó đúng là thứ cần giữ.');
+ return h;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   HỘP THOẠI
+   ══════════════════════════════════════════════════════════════════ */
+/* ★★ Thêm camera — CHẶN CỨNG vị trí không được phép */
+function moThemCam(preId){
+ const c=preId?camById(preId):null;
+ ST.f=c?{sua:c.id,ten:c.ten,dt:c.dt,vt:c.vt,host:c.host,port:c.port,path:c.path,hang:c.hang,
+   user:c.user,pass:'',bien:c.bienBao}
+  :{sua:null,ten:'',dt:dtThuc(),vt:'cong',host:'',port:554,path:'/Streaming/Channels/101',
+    hang:'',user:'viewer',pass:'',bien:false};
+ veThemCam();
+}
+function veThemCam(){
+ const f=ST.f, cam=viCam(f.vt);
+ let b='';
+ b+='<label class="lbl">Tên camera <span style="color:var(--red)">*</span></label>'
+  +'<input class="fldi" id="cTen" value="'+esc(f.ten)+'" placeholder="VD: Camera cổng chính">';
+ b+='<div class="frow"><div><label class="lbl">Điểm trường</label><select class="fldi" id="cDT">'
+  +Object.keys(DT).map(k=>'<option value="'+k+'"'+(f.dt===k?' selected':'')+'>'+DT[k]+'</option>').join('')+'</select></div>'
+  +'<div><label class="lbl">Vị trí lắp <span style="color:var(--red)">*</span></label><select class="fldi" id="cVT">'
+  +'<optgroup label="Khu vực chung — được lắp">'
+  +Object.keys(VITRI).filter(k=>!viCam(k)).map(k=>'<option value="'+k+'"'+(f.vt===k?' selected':'')+'>'+VITRI[k][0]+'</option>').join('')
+  +'</optgroup><optgroup label="⛔ Không được lắp">'
+  +Object.keys(VITRI).filter(viCam).map(k=>'<option value="'+k+'"'+(f.vt===k?' selected':'')+'>'+VITRI[k][0]+'</option>').join('')
+  +'</optgroup></select></div></div>';
+ if(cam) b+='<div class="danger"><b>⛔ Không lắp camera ở vị trí này.</b><br>'+esc(LYDO_CAM[f.vt]||'')
+  +'<br><span class="xs">Căn cứ: <b>Bộ luật Dân sự 2015 Đ.32</b> (quyền của cá nhân đối với hình ảnh) · '
+  +'<b>Luật Trẻ em 2016</b> (hình ảnh cá nhân là thông tin về đời sống riêng tư). '
+  +'Chủ trương hiện hành khuyến khích lắp ở <b>cổng, hành lang, góc khuất, sân</b>.</span></div>';
+
+ b+='<div class="ro">Nhập <b>từng phần</b> của địa chỉ, <b>không dán nguyên chuỗi</b> '
+  +'<code>rtsp://user:pass@ip/path</code> — chuỗi đó nhúng mật khẩu và sẽ lộ ở mọi chỗ hiển thị URL.</div>';
+ b+='<div class="frow"><div><label class="lbl">Địa chỉ IP <span style="color:var(--red)">*</span></label>'
+  +'<input class="fldi" id="cHost" value="'+esc(f.host)+'" placeholder="192.168.10.11"></div>'
+  +'<div style="max-width:110px"><label class="lbl">Cổng</label>'
+  +'<input class="fldi" type="number" id="cPort" value="'+f.port+'"></div></div>';
+ b+='<label class="lbl">Đường dẫn luồng</label>'
+  +'<input class="fldi" id="cPath" value="'+esc(f.path)+'" placeholder="/Streaming/Channels/101">';
+ b+='<label class="lbl">Thiết bị</label><input class="fldi" id="cHang" value="'+esc(f.hang)+'" placeholder="Hikvision DS-2CD2143">';
+ b+='<div class="frow"><div><label class="lbl">Tài khoản xem</label>'
+  +'<input class="fldi" id="cUser" value="'+esc(f.user)+'"></div>'
+  +'<div><label class="lbl">Mật khẩu'+(f.sua?' <span style="font-weight:400;color:var(--ink3)">— để trống nếu không đổi</span>':'')+'</label>'
+  +'<input class="fldi" type="password" id="cPass" value="" placeholder="'+(f.sua?'••••••':'')+'"></div></div>';
+ b+='<div class="ro">Dùng <b>tài khoản chỉ xem</b> tạo riêng trên camera — <b>không dùng tài khoản admin</b>. '
+  +'Mật khẩu được <b>mã hóa khi lưu</b> và <b>giao diện không bao giờ hiển thị lại</b>.</div>';
+ b+='<label class="kchk" style="margin-top:9px"><input type="checkbox" id="cBien"'+(f.bien?' checked':'')
+  +'> Khu vực đã có <b>bảng thông báo «Khu vực có camera giám sát»</b></label>';
+ if(!f.bien) b+='<div class="warn">Chưa có bảng thông báo thì <b>người bị quay không biết mình đang bị quay</b>. '
+  +'Vẫn lưu được, nhưng camera sẽ nằm trong danh sách cảnh báo ở tab 2 cho tới khi gắn bảng.</div>';
+
+ const ok=!cam&&f.ten.trim()&&f.host.trim();
+ modal((f.sua?'✏️ Sửa camera — '+f.sua:'➕ Thêm camera'),b,
+  '<button class="btn" data-mb="close">Hủy</button>'
+  +'<button class="btn'+(ok?'':' off')+'" data-mb="TestKN"'+(ok?'':' disabled')+'>🔌 Test kết nối</button>'
+  +'<button class="btn p'+(ok?'':' off')+'" data-mb="LuuCam"'+(ok?'':' disabled')+'>'+(f.sua?'Lưu':'Thêm camera')+'</button>');
+ const g=(id,k,num)=>{const el=$(id); if(!el) return;
+  el.oninput=()=>{ST.f[k]=num?+el.value:el.value; const bt=$('[data-mb="LuuCam"]');
+   if(bt){const o=!viCam(ST.f.vt)&&ST.f.ten.trim()&&ST.f.host.trim();
+    bt.disabled=!o; bt.classList.toggle('off',!o);
+    const b2=$('[data-mb="TestKN"]'); if(b2){b2.disabled=!o; b2.classList.toggle('off',!o)}}}};
+ g('#cTen','ten'); g('#cHost','host'); g('#cPath','path'); g('#cHang','hang');
+ g('#cUser','user'); g('#cPass','pass'); g('#cPort','port',1);
+ const vt=$('#cVT'); if(vt) vt.onchange=()=>{ST.f.vt=vt.value; veThemCam()};
+ const dt=$('#cDT'); if(dt) dt.onchange=()=>{ST.f.dt=dt.value};
+ const bi=$('#cBien'); if(bi) bi.onchange=()=>{ST.f.bien=bi.checked; veThemCam()};
+}
+mfns.bTestKN=()=>{
+ const f=ST.f;
+ const ok=/^\d+\.\d+\.\d+\.\d+$/.test(f.host.trim());
+ toast(ok?'🔌 Kết nối thành công tới <b>'+esc(f.host)+':'+f.port+'</b> — nhận được luồng video.'
+  :'⛔ <b>Sai định dạng địa chỉ IP.</b> Kiểm tra lại — thông báo lỗi này <b>không chứa mật khẩu</b>.');
+};
+mfns.bLuuCam=()=>{
+ const f=ST.f;
+ if(viCam(f.vt)){toast('⛔ Không lắp camera ở vị trí này.'); return}
+ if(f.sua){const c=camById(f.sua);
+  Object.assign(c,{ten:f.ten.trim(),dt:f.dt,vt:f.vt,host:f.host.trim(),port:f.port,path:f.path,
+   hang:f.hang,user:f.user,bienBao:f.bien});
+  if(f.pass) c.passSet=true;
+  closeM(); render(); toast('Đã lưu camera <b>'+c.id+'</b>.'+(f.pass?' Mật khẩu <b>đã đổi và mã hóa</b>.':''));
+ }else{
+  themCam({ten:f.ten.trim(),dt:f.dt,vt:f.vt,host:f.host.trim(),port:f.port,path:f.path,
+   hang:f.hang||'Không rõ',tt:'hoatdong',bienBao:f.bien,user:f.user,passSet:!!f.pass,
+   loai:'live',ngayTao:HOMNAY,boi:toiLa(),treKN:0});
+  closeM(); ST.tab='cam'; render();
+  toast('➕ Đã thêm <b>'+CAMERA[CAMERA.length-1].id+'</b>.'
+   +(f.bien?'':' ⚠️ Khu vực <b>chưa có bảng thông báo</b> — camera nằm trong danh sách cảnh báo.'));
+ }
+};
+function testKN(id){
+ const c=camById(id), tt=ttCam(c);
+ modal('🔌 Test kết nối — '+c.id,
+  '<div class="kv"><div style="flex:1 1 100%"><span>Camera</span><b>'+esc(c.ten)+'</b> — '+esc(VITRI[c.vt][0])+'</div>'
+  +'<div style="flex:1 1 100%"><span>Địa chỉ</span><b style="font-family:ui-monospace,monospace">'+esc(urlKhongAuth(c))+'</b></div>'
+  +'<div><span>Tài khoản</span><b>'+esc(c.user)+'</b></div>'
+  +'<div><span>Mật khẩu</span><b>••••••</b> <span class="xs">đã mã hóa, không hiển thị lại</span></div>'
+  +'<div style="flex:1 1 100%"><span>Chuỗi hệ thống dùng để kết nối</span>'
+   +'<b style="font-family:ui-monospace,monospace;font-size:11.5px">'+esc(urlHien(c))+'</b>'
+   +'<div class="xs">Mật khẩu <b>không bao giờ hiện ra</b> — kể cả ở đây, kể cả trong thông báo lỗi</div></div></div>'
+  +(tt==='hoatdong'
+    ?'<div class="okbox"><b>✅ Kết nối thành công.</b> Nhận được luồng video, độ trễ ~2 giây.</div>'
+    :tt==='baotri'?'<div class="warn"><b>🛠️ Camera đang được đánh dấu BẢO TRÌ.</b> '
+      +'Trạng thái này do <b>người quản trị đặt</b> và <b>đè lên suy luận của máy</b> — bỏ đánh dấu thì hệ thống tự suy lại.</div>'
+    :'<div class="danger"><b>⛔ Không kết nối được.</b> Không phản hồi <b>'+moTaTre(c)+'</b>.<br>'
+      +'Nguyên nhân thường gặp: camera mất điện · đổi IP · đổi mật khẩu · switch mạng hỏng.<br>'
+      +'<span class="xs">Thông báo lỗi <b>không chứa mật khẩu</b> — đó là chỗ rò rỉ hay bị bỏ qua nhất.</span></div>'),
+  '<button class="btn" data-mb="close">Đóng</button>'
+  +(can('quantri')?'<button class="btn'+(tt==='baotri'?' p':'')+'" data-mb="DoiBT">'
+    +(tt==='baotri'?'Bỏ đánh dấu bảo trì':'Đánh dấu bảo trì')+'</button>':''));
+ mfns.bDoiBT=()=>{c.tt=c.tt==='baotri'?'hoatdong':'baotri'; closeM(); render();
+  toast(c.tt==='baotri'?'Đã đánh dấu <b>bảo trì</b>.':'Đã bỏ đánh dấu — hệ thống <b>tự suy lại</b> trạng thái.')};
+}
+function moChup(id){
+ const c=camById(id);
+ modal('📷 Chụp màn hình — '+esc(c.ten),
+  '<div class="warn">Chụp màn hình là <b>đưa hình ảnh trẻ em ra khỏi hệ thống</b> về máy cá nhân. '
+  +'Ảnh đó nằm ngoài tầm kiểm soát của nhà trường ngay khi được lưu.<br>'
+  +'Lượt chụp <b>ghi nhật ký riêng</b> và hiện ở tab 5.</div>'
+  +(CFG.chupCanLyDo
+    ?'<label class="lbl">Lý do chụp <span style="color:var(--red)">*</span></label>'
+     +'<textarea class="fldi" id="chLy" rows="2" placeholder="VD: ghi nhận người lạ đi lại hành lang ngoài giờ"></textarea>'
+    :'<div class="ro">Cấu hình đang <b>không bắt buộc nêu lý do</b> — bật lại ở tab 6.</div>'),
+  '<button class="btn" data-mb="close">Hủy</button>'
+  +'<button class="btn p'+(CFG.chupCanLyDo?' off':'')+'" data-mb="ChupOK"'+(CFG.chupCanLyDo?' disabled':'')+'>Chụp và ghi nhật ký</button>');
+ const el=$('#chLy'); if(el) el.oninput=()=>{const b=$('[data-mb="ChupOK"]');
+  b.disabled=!el.value.trim(); b.classList.toggle('off',!el.value.trim())};
+ mfns.bChupOK=()=>{
+  CHUP.unshift({luc:k2s(HOMNAY)+' '+hhmm(),ai:toiLa(),cam:id,
+   ly:el?el.value.trim():'(không bắt buộc nêu lý do)'});
+  closeM(); render(); toast('📷 Đã chụp và <b>ghi nhật ký</b> — hiện ở tab 5.');
+ };
+}
+function moThemNhom(){
+ const d=dtThuc(), cams=CAMERA.filter(c=>c.dt===d);
+ ST.f={ten:'',dt:d,lay:'2x2',cams:[]};
+ const ve=()=>{
+  const f=ST.f, thua=f.cams.length>LAYS[f.lay];
+  let b='<label class="lbl">Tên nhóm <span style="color:var(--red)">*</span></label>'
+   +'<input class="fldi" id="nTen" value="'+esc(f.ten)+'" placeholder="VD: Cổng và sảnh — Điểm trường A">';
+  b+='<label class="lbl">Bố cục mặc định</label><select class="fldi" id="nLay">'
+   +Object.keys(LAYS).map(k=>'<option value="'+k+'"'+(f.lay===k?' selected':'')+'>'+k+' — '+LAYS[k]+' ô</option>').join('')+'</select>';
+  b+='<label class="lbl">Camera trong nhóm — đã chọn <b>'+f.cams.length+'</b></label>'
+   +'<div class="lichpick"><div class="lprow">'+cams.map(c=>'<label class="lpt" style="min-width:200px">'
+    +'<input type="checkbox" data-nc="'+c.id+'"'+(f.cams.includes(c.id)?' checked':'')+'> '
+    +'<b>'+esc(c.ten)+'</b><span class="xs">'+esc(VITRI[c.vt][0])+'</span></label>').join('')+'</div></div>';
+  if(thua) b+='<div class="warn"><b>Nhóm có '+f.cams.length+' camera nhưng bố cục '+f.lay+' chỉ hiện '
+   +LAYS[f.lay]+' ô.</b> '+(f.cams.length-LAYS[f.lay])+' camera sẽ <b>không bao giờ được nhìn tới</b> '
+   +'khi mở nhóm này. Vẫn lưu được — nhưng nên biết.</div>';
+  const ok=f.ten.trim()&&f.cams.length;
+  modal('➕ Tạo nhóm camera',b,'<button class="btn" data-mb="close">Hủy</button>'
+   +'<button class="btn p'+(ok?'':' off')+'" data-mb="LuuNhom"'+(ok?'':' disabled')+'>Tạo nhóm</button>');
+  const t=$('#nTen'); if(t) t.oninput=()=>{ST.f.ten=t.value; const b2=$('[data-mb="LuuNhom"]');
+   const o=ST.f.ten.trim()&&ST.f.cams.length; b2.disabled=!o; b2.classList.toggle('off',!o)};
+  const l=$('#nLay'); if(l) l.onchange=()=>{ST.f.lay=l.value; ve()};
+  $$('[data-nc]').forEach(el=>el.onchange=()=>{const id=el.dataset.nc;
+   ST.f.cams=el.checked?[...ST.f.cams,id]:ST.f.cams.filter(x=>x!==id); ve()});
+ };
+ mfns.bLuuNhom=()=>{
+  NHOM.push({id:'NH-'+p2(NHOM.length+1),ten:ST.f.ten.trim(),dt:ST.f.dt,lay:ST.f.lay,cams:ST.f.cams.slice()});
+  closeM(); render(); toast('➕ Đã tạo nhóm <b>'+NHOM[NHOM.length-1].id+'</b>.');
+ };
+ ve();
+}
+function moThemPC(){
+ const d=dtThuc(), cams=CAMERA.filter(c=>c.dt===d);
+ const nguoi=Object.keys(NS).filter(m=>/Bảo vệ/.test(cdNS(m))&&dtNS(m)===d&&!pcCua(m));
+ ST.f={ai:nguoi[0]||'',cams:[],ca:[6,18],ghi:''};
+ const ve=()=>{
+  const f=ST.f;
+  let b=nguoi.length
+   ?'<label class="lbl">Người được phân công</label><select class="fldi" id="pAi">'
+    +nguoi.map(m=>'<option value="'+m+'"'+(f.ai===m?' selected':'')+'>'+esc(tenDu(m))+'</option>').join('')+'</select>'
+   :'<div class="warn"><b>Mọi bảo vệ của '+DT[d]+' đều đã được phân công.</b> '
+    +'Sửa phân công hiện có thay vì tạo mới.</div>';
+  b+='<div class="frow"><div><label class="lbl">Ca trực từ</label>'
+   +'<select class="fldi" id="pTu">'+Array.from({length:24},(_,i)=>'<option value="'+i+'"'+(f.ca[0]===i?' selected':'')+'>'+p2(i)+':00</option>').join('')+'</select></div>'
+   +'<div><label class="lbl">đến</label><select class="fldi" id="pDen">'
+   +Array.from({length:24},(_,i)=>'<option value="'+i+'"'+(f.ca[1]===i?' selected':'')+'>'+p2(i)+':00</option>').join('')+'</select></div></div>';
+  if(f.ca[0]>f.ca[1]) b+='<div class="info">Ca <b>qua đêm</b> — từ '+p2(f.ca[0])+':00 hôm nay tới '+p2(f.ca[1])+':00 hôm sau.</div>';
+  b+='<label class="lbl">Camera được giao — đã chọn <b>'+f.cams.length+'</b></label>'
+   +'<div class="lichpick"><div class="lprow">'+cams.map(c=>'<label class="lpt" style="min-width:200px">'
+    +'<input type="checkbox" data-pc="'+c.id+'"'+(f.cams.includes(c.id)?' checked':'')+'> '
+    +'<b>'+esc(c.ten)+'</b><span class="xs">'+esc(VITRI[c.vt][0])+'</span></label>').join('')+'</div></div>';
+  b+='<label class="lbl">Ghi chú</label><input class="fldi" id="pGhi" value="'+esc(f.ghi)+'">';
+  b+='<div class="ro"><b>Ca trực không chặn việc xem.</b> Nó là mốc để hệ thống nhận ra '
+   +'<b>xem ngoài ca</b> và nêu lên ở nhật ký — phân biệt <b>đúng việc</b> với <b>tò mò</b>.</div>';
+  const ok=f.ai&&f.cams.length;
+  modal('➕ Phân công xem camera',b,'<button class="btn" data-mb="close">Hủy</button>'
+   +'<button class="btn p'+(ok?'':' off')+'" data-mb="LuuPC"'+(ok?'':' disabled')+'>Phân công</button>');
+  const a=$('#pAi'); if(a) a.onchange=()=>{ST.f.ai=a.value; ve()};
+  const t1=$('#pTu'), t2=$('#pDen');
+  if(t1) t1.onchange=()=>{ST.f.ca[0]=+t1.value; ve()};
+  if(t2) t2.onchange=()=>{ST.f.ca[1]=+t2.value; ve()};
+  const g=$('#pGhi'); if(g) g.oninput=()=>{ST.f.ghi=g.value};
+  $$('[data-pc]').forEach(el=>el.onchange=()=>{const id=el.dataset.pc;
+   ST.f.cams=el.checked?[...ST.f.cams,id]:ST.f.cams.filter(x=>x!==id); ve()});
+ };
+ mfns.bLuuPC=()=>{
+  PHANCONG.push({ai:ST.f.ai,dt:dtThuc(),cams:ST.f.cams.slice(),ca:ST.f.ca.slice(),
+   ghi:ST.f.ghi.trim()||'—'});
+  closeM(); render(); toast('➕ Đã phân công cho <b>'+esc(tenNS(ST.f.ai))+'</b>.');
+ };
+ ve();
+}
+function xuatLog(){
+ modal('📤 Xuất nhật ký truy cập camera',
+  '<div class="warn">Nhật ký cho biết <b>ai đã xem gì, lúc nào, bao lâu</b>. Đây là dữ liệu về '
+  +'<b>hành vi của người lao động</b> — xuất ra thì cân nhắc người nhận.</div>'
+  +'<label class="lbl">Kỳ xuất</label><select class="fldi"><option>Tuần này</option>'
+  +'<option>Tháng 12/2026</option><option>Học kỳ 1 — năm học 2026-2027</option></select>'
+  +'<label class="lbl">Nội dung</label><select class="fldi">'
+  +'<option>Chỉ phiên có dấu hiệu cần rà</option><option>Toàn bộ phiên xem</option>'
+  +'<option>Tổng hợp theo người xem — không có chi tiết từng phiên</option></select>'
+  +'<label class="lbl">Mục đích sử dụng <span style="color:var(--red)">*</span></label>'
+  +'<select class="fldi"><option>Rà soát định kỳ của Hiệu trưởng</option>'
+  +'<option>Phục vụ xác minh một sự việc cụ thể</option>'
+  +'<option>Báo cáo cơ quan quản lý</option></select>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="close">Xuất và ghi audit</button>');
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RENDER + SỰ KIỆN
+   ══════════════════════════════════════════════════════════════════ */
+let TICK=null;
+function render(){
+ rolebar(); header(); sidebar(); tabs();
+ const c=$('#content'); $('#crumb').innerHTML='';
+ if(!can('xem')){c.innerHTML=veKhongQuyen(); ketThucXem();}
+ else if(ST.tab==='live') c.innerHTML=veLive();
+ else{
+  ketThucXem();
+  if(ST.tab==='cam')      c.innerHTML=veDanhSach();
+  else if(ST.tab==='nhom')c.innerHTML=veNhom();
+  else if(ST.tab==='pc')  c.innerHTML=vePhanCong();
+  else if(ST.tab==='log') c.innerHTML=veNhatKy();
+  else                   {c.innerHTML=veCauHinh(); gCfg();}
+ }
+ const nn=document.body.classList.contains('nn');
+ $('#btnNote').classList.toggle('on',!nn);
+ $('#btnNote').textContent='💡 Ghi chú thiết kế: '+(nn?'TẮT':'BẬT');
+ const cn=$('#chonNhom'); if(cn) cn.onchange=()=>{ST.nhom=cn.value; ST.cam=null; render()};
+ const tl=$('#timLog'); if(tl) tl.oninput=()=>{ST.timLog=tl.value; render();
+  const e=$('#timLog'); if(e){e.focus(); e.setSelectionRange(e.value.length,e.value.length)}};
+ /* đồng hồ trên ô camera chạy thật — để thấy đây là luồng trực tiếp */
+ clearInterval(TICK);
+ if(ST.tab==='live'&&can('xem')) TICK=setInterval(()=>{
+  const t=k2s(HOMNAY)+' '+hhmmss();
+  $$('.ctile .ovb span:last-child').forEach(e=>e.textContent=t);
+ },1000);
+}
+function doiTab(t){ST.tab=t; ST.cam=null}
+function gCfg(){
+ const g=(id,f)=>{const el=$(id); if(el) el.onchange=()=>{f(el.value); render();
+  toast('⚙️ Đã đổi tham số — <b>số liệu liên quan tính lại ngay</b>.')}};
+ g('#cfTO',v=>CFG.timeout=+v); g('#cfDai',v=>CFG.phienDai=+v); g('#cfChup',v=>CFG.chupCanLyDo=v==='1');
+}
+document.addEventListener('click',e=>{
+ const t=e.target;
+ const mb=t.closest('[data-mb]'); if(mb){const f=mfns['b'+mb.dataset.mb]; f?f():closeM(); return}
+ if(t===$('#mask')){closeM(); return}
+ const rb=t.closest('.rb'); if(rb){ketThucXem(); role=rb.dataset.r; doiTab(null); ST.nhom=null;
+  ST.dt=R().sc==='School'?'ALL':(R().dt||'A'); render(); return}
+ if(t.id==='btnNote'){document.body.classList.toggle('nn'); render(); return}
+ const tb=t.closest('#tabs [data-t]'); if(tb){doiTab(tb.dataset.t); render(); return}
+ const ly=t.closest('[data-lay]'); if(ly){ST.lay=ly.dataset.lay; render(); return}
+ if(t.closest('[data-thoat]')){ST.cam=null; render(); return}
+ const ch=t.closest('[data-chup]'); if(ch){moChup(ch.dataset.chup); return}
+ const c1=t.closest('.ctile[data-cam]'); if(c1){ST.cam=c1.dataset.cam; render(); return}
+ const c2=t.closest('[data-cam2]'); if(c2&&!t.closest('button')){ST.tab='live'; ST.cam=c2.dataset.cam2; render(); return}
+ const su=t.closest('[data-sua]'); if(su){moThemCam(su.dataset.sua); return}
+ const te=t.closest('[data-test]'); if(te){testKN(te.dataset.test); return}
+ const xn=t.closest('[data-xemnhom]'); if(xn){ST.tab='live'; ST.nhom=xn.dataset.xemnhom; ST.cam=null;
+  const n=nhomById(ST.nhom); if(n) ST.lay=n.lay; render(); return}
+ const cl=t.closest('[data-chlog]'); if(cl){ST.chipLog=cl.dataset.chlog; render(); return}
+ const ra=t.closest('[data-ra]'); if(ra){const p=PHIEN.find(x=>x.id===ra.dataset.ra);
+  p.daRa={boi:toiLa(),ngay:HOMNAY}; render();
+  toast('✓ Đã đánh dấu <b>'+p.id+'</b> là đã rà — dòng chuyển xanh, <b>bản ghi vẫn còn</b>.'); return}
+ if(t.id==='themCam'){moThemCam(null); return}
+ if(t.id==='themNhom'){moThemNhom(); return}
+ if(t.id==='themPC'){moThemPC(); return}
+ if(t.id==='xuatLog'){xuatLog(); return}
+});
+$('#hdt').addEventListener('change',()=>{ketThucXem(); ST.dt=$('#hdt').value; ST.nhom=null; ST.cam=null; render()});
+render();
+
+</script>
+</body>
+</html>

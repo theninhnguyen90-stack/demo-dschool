@@ -1,0 +1,1413 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M10.2 Cơ cấu tổ chức — Dschool</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f1f5f9;--surface:#fff;--line:#e2e8f0;--line2:#cbd5e1;
+ --ink:#0f172a;--ink2:#475569;--ink3:#94a3b8;--brand:#1d4ed8;--brand-soft:#eff6ff;
+ --red:#dc2626;--red-soft:#fef2f2;--amber:#d97706;--amber-soft:#fffbeb;
+ --green:#059669;--green-soft:#ecfdf5;--violet:#7c3aed;--violet-soft:#f5f3ff}
+body{font:14px/1.5 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font:inherit}
+
+.hdr{height:56px;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:13px;padding:0 15px;position:sticky;top:0;z-index:40}
+.logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px}
+.logo .mark{width:28px;height:28px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px}
+.school{color:var(--ink2);font-size:12.5px;border-left:1px solid var(--line);padding-left:13px;max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sel{border:1px solid var(--line2);border-radius:7px;padding:5px 9px;font-size:12.5px;background:#fff}
+.sel:disabled{background:#f1f5f9;color:var(--ink3);cursor:not-allowed}
+.spacer{flex:1}
+.icobtn{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;position:relative;font-size:15px}
+.icobtn:hover{background:var(--bg)}
+.dot{position:absolute;top:3px;right:3px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--violet);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700}
+.lockico{font-size:11px;color:var(--amber);white-space:nowrap}
+
+.wrap{display:flex;min-height:calc(100vh - 56px)}
+.side{width:222px;flex:0 0 222px;background:var(--surface);border-right:1px solid var(--line);padding:10px 8px;position:sticky;top:56px;max-height:calc(100vh - 56px);overflow-y:auto}
+.sgrp{font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;padding:12px 10px 5px}
+.snav{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:var(--ink2);font-size:12.5px;margin-bottom:1px}
+.snav:hover{background:var(--bg)}
+.snav.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
+.snav.off{opacity:.34;pointer-events:none}
+.main{flex:1;padding:7px 18px 40px;min-width:0}
+
+.tophd{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+h1{font-size:18px;font-weight:700}
+.btn{border:1px solid var(--line2);background:#fff;border-radius:8px;padding:7px 12px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--bg)}
+.btn.p{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn.p:hover{background:#1e40af}
+.btn.d{background:var(--red);color:#fff;border-color:var(--red)}
+.btn.g{background:var(--green);color:#fff;border-color:var(--green)}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn.xs{padding:3px 8px;font-size:11.5px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+.tabs{display:flex;gap:3px;border-bottom:2px solid var(--line);margin:7px 0 0;flex-wrap:wrap;align-items:flex-end}
+.tab1{padding:8px 9px;font-size:13.5px;font-weight:600;color:var(--ink2);border-bottom:2px solid transparent;margin-bottom:-2px;display:flex;align-items:center;gap:6px}
+.tab1.on{color:var(--brand);border-bottom-color:var(--brand)}
+.tab1 .b{background:var(--bg);color:var(--ink2);font-size:11px;font-weight:700;padding:1px 6px;border-radius:9px}
+.tab1.on .b{background:var(--brand);color:#fff}
+.tab1 .b.al{background:var(--red);color:#fff}
+.tabtools{margin-left:auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding-bottom:5px}
+
+.scope{display:flex;align-items:center;gap:9px;background:#f8fafc;border:1px solid var(--line);border-left:3px solid var(--brand);
+ border-radius:9px;padding:6px 12px;font-size:12px;color:var(--ink2);margin-top:6px;flex-wrap:wrap}
+.scope b{color:var(--ink)}
+.scope .sp{flex:1}
+.scope.am{border-left-color:var(--amber);background:var(--amber-soft)}
+.scope.rd{border-left-color:var(--red);background:var(--red-soft)}
+.scope.vi{border-left-color:var(--violet)}
+
+.inp{border:1px solid var(--line2);border-radius:8px;padding:4px 9px;font-size:12.5px;background:#fff;width:126px}
+.qf{border:1px solid var(--line2);border-radius:999px;padding:3px 9px;font-size:11.5px;background:#fff;white-space:nowrap}
+.qf.on{background:var(--brand);color:#fff;border-color:var(--brand);font-weight:600}
+
+.stage{display:flex;gap:13px;align-items:flex-start;margin-top:8px}
+.listw{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.panel{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:none}
+.stage.open .panel{display:block}
+@media(max-width:1300px){.stage.open .listw{display:none}}
+
+.grow{display:flex;align-items:center;gap:9px;padding:5px 13px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:12.5px;font-weight:700;flex-wrap:wrap}
+.grow.k2{padding-left:26px;background:#fcfdfe;font-size:12px}
+.grow .ct{margin-left:auto;font-weight:400;color:var(--ink3);font-size:11.5px;display:flex;gap:10px}
+.hdrow{display:grid;gap:9px;padding:6px 13px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em}
+.hrow{display:grid;gap:9px;padding:8px 13px;border-bottom:1px solid var(--line);cursor:pointer;align-items:center;border-left:3px solid transparent;font-size:13px}
+.hrow:hover{background:var(--brand-soft)}
+.hrow.on{background:#eff6ff;border-left-color:var(--brand)}
+.hrow.gone{opacity:.5}
+.hrow.sub{padding-left:32px}
+.glop{grid-template-columns:.85fr .7fr .95fr 1.05fr 1.2fr 1fr 1.3fr}
+.stage.open .glop{grid-template-columns:.9fr 1.1fr}
+.gdt{grid-template-columns:1.5fr 1fr .95fr .85fr 1.2fr .95fr 1fr}
+.stage.open .gdt{grid-template-columns:1.5fr 1fr}
+.ghe{grid-template-columns:1.3fr 1.7fr .7fr .8fr 1fr}
+.gmon{grid-template-columns:2.1fr .8fr 1fr 1.25fr .95fr}
+.gto{grid-template-columns:1.5fr 2fr .85fr 1.15fr .8fr .9fr}
+.dnum{border:1px solid var(--line2);border-radius:7px;padding:3px 7px;font-size:13px;width:56px;text-align:center;background:#fff}
+.dnum:focus{border-color:var(--brand);outline:none}
+.locrow{display:flex;gap:5px;align-items:center;flex-wrap:wrap;padding:5px 13px;background:#f8fafc;border-bottom:1px solid var(--line)}
+.stage.open .kx{display:none}
+
+.st2{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;white-space:nowrap;display:inline-block}
+.st2.o{background:var(--green-soft);color:var(--green)}
+.st2.w{background:var(--amber-soft);color:var(--amber)}
+.st2.r{background:var(--red-soft);color:var(--red)}
+.st2.n{background:var(--bg);color:var(--ink2)}
+.st2.b{background:#e0e7ff;color:#3730a3}
+.st2.v{background:var(--violet-soft);color:#5b21b6}
+.pill{font-size:10.5px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--ink2)}
+.mas{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;background:#e0e7ff;color:#3730a3;white-space:nowrap}
+.yr{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;background:var(--green-soft);color:var(--green);white-space:nowrap}
+.rolnk{font-size:10px;font-weight:700;color:var(--brand);background:#eef2ff;border:1px solid #c7d2fe;border-radius:999px;padding:1px 7px;cursor:pointer;white-space:nowrap}
+.rolnk:hover{background:#e0e7ff}
+.rolnk.off{color:var(--ink3);background:var(--bg);border-color:var(--line);cursor:not-allowed}
+.ss{font-variant-numeric:tabular-nums;white-space:nowrap}
+.ss b{font-size:13.5px}
+.ss .gc{color:var(--violet);font-weight:700;font-size:11.5px}
+.ss.full b{color:var(--red)}
+
+.info{background:var(--brand-soft);border:1px solid #bfdbfe;color:#1e40af;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:11px}
+.warn{background:var(--amber-soft);border:1px solid #fde68a;color:#92400e;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:11px}
+.danger{background:var(--red-soft);border:1px solid #fecaca;color:#991b1b;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:11px}
+.okbx{background:var(--green-soft);border:1px solid #a7f3d0;color:#065f46;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:11px}
+.ro{background:#f8fafc;border:1px solid var(--line);color:var(--ink2);padding:8px 11px;border-radius:9px;font-size:12px;margin-bottom:11px}
+.empty{padding:34px;text-align:center;color:var(--ink3)}
+.empty b{display:block;color:var(--ink2);margin-bottom:5px;font-size:14px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-top:9px}
+.card h3{font-size:13.5px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.f{display:grid;grid-template-columns:170px 1fr;gap:11px;align-items:center;padding:6px 0;font-size:13px}
+.f+.f{border-top:1px solid #f1f5f9}
+.f .k{color:var(--ink2);font-size:12.5px}
+.f .v{font-weight:600;min-width:0;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.sech{font-size:13px;font-weight:700;margin:15px 0 6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.bhtree{font-size:12.5px;color:var(--ink2);line-height:1.9;padding-left:16px;border-left:2px solid var(--line);margin-top:4px}
+.bhtree b{color:var(--ink)}
+
+.ph{padding:12px 15px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.ph .n h2{font-size:15px;font-weight:700}
+.ph .n .m{font-size:12px;color:var(--ink2);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pbody{padding:13px 15px;max-height:calc(100vh - 250px);overflow-y:auto}
+.pfoot{display:flex;gap:7px;padding:10px 15px;border-top:1px solid var(--line);background:#fcfdfe;flex-wrap:wrap}
+
+.lbl{font-size:12px;color:var(--ink2);display:block;margin:9px 0 3px}
+.lbl b{color:var(--red)}
+.din{border:1px solid var(--line2);border-radius:8px;padding:6px 9px;font-size:13px;background:#fff;width:100%}
+.din:disabled{background:#f1f5f9;color:var(--ink3)}
+.ta{width:100%;border:1px solid var(--line2);border-radius:8px;padding:7px 10px;font-size:13px;background:#fff;min-height:52px;resize:vertical;font-family:inherit}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:640px){.grid2,.grid3{grid-template-columns:1fr}}
+.chkl{display:flex;gap:5px;flex-wrap:wrap}
+.chkb{border:1px solid var(--line2);border-radius:999px;padding:4px 11px;font-size:12px;background:#fff}
+.chkb.on{background:var(--brand);color:#fff;border-color:var(--brand);font-weight:600}
+.chkb:disabled{opacity:.4;cursor:not-allowed}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.sgb{border:1px solid var(--line2);border-radius:9px;padding:9px 12px;font-size:12.5px;background:#fff;text-align:left;line-height:1.35;flex:1;min-width:190px}
+.sgb b{display:block}
+.sgb span{font-size:10.5px;color:var(--ink3)}
+.sgb.on{border-color:var(--brand);background:var(--brand-soft);color:var(--brand)}
+.sgb.on span{color:var(--brand)}
+.sgb:disabled{opacity:.45;cursor:not-allowed}
+
+.imp{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:8px}
+.impr{display:grid;grid-template-columns:1fr auto 74px;gap:10px;padding:7px 12px;border-top:1px solid var(--line);font-size:12.5px;align-items:center}
+.impr:first-child{border-top:none;background:#f8fafc;font-weight:700;font-size:11px;text-transform:uppercase;color:var(--ink3);letter-spacing:.04em}
+.impr .num{font-weight:700;font-size:14px}
+.impr.bad{background:var(--red-soft)}.impr.bad .num{color:var(--red)}
+.impr.al{background:var(--amber-soft)}.impr.al .num{color:var(--amber)}
+
+.res{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:9px}
+.resh{padding:7px 11px;font-size:12px;font-weight:700}
+.resh.ok{background:var(--green-soft);color:#065f46}
+.resh.sk{background:var(--amber-soft);color:#92400e}
+.resr{padding:6px 11px;font-size:12.5px;border-top:1px solid var(--line);display:flex;gap:9px;flex-wrap:wrap}
+.resr .w{min-width:215px;font-weight:600}
+.resr .r{color:var(--ink2);flex:1;min-width:170px}
+.prev{max-height:180px;overflow-y:auto;border:1px solid var(--line);border-radius:9px;padding:8px 11px;font-size:12.5px;background:#fcfdfe;display:flex;gap:5px;flex-wrap:wrap}
+
+.mask{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:60;display:none;place-items:center}
+.mask.on{display:grid}
+.modal{background:#fff;border-radius:13px;width:880px;max-width:95vw;max-height:90vh;display:flex;flex-direction:column}
+.mh{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700}
+.mb{padding:15px 18px;overflow-y:auto;font-size:13px}
+.mf{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.blk{display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--line);font-size:12.5px}
+.blk:last-child{border-bottom:none}
+.blk .ic{flex:0 0 18px;font-size:13px}
+.blk .tx{flex:1}
+
+.rolebar{background:#0f172a;color:#cbd5e1;padding:8px 15px;display:flex;align-items:center;gap:7px;font-size:12.5px;flex-wrap:wrap}
+.rolebar b{color:#fff}
+.rb{border:1px solid #334155;border-radius:999px;padding:3px 10px;font-size:12px;color:#cbd5e1}
+.rb:hover{background:#1e293b;color:#fff}
+.rb.on{background:#fff;color:#0f172a;border-color:#fff;font-weight:700}
+.rb.dt.on{background:#fbbf24;color:#0f172a;border-color:#fbbf24}
+.note{margin-left:auto;color:#64748b;font-size:11.5px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(90px);background:#0f172a;color:#fff;padding:11px 17px;border-radius:9px;font-size:13px;z-index:80;transition:transform .22s;max-width:92vw}
+.toast.on{transform:translateX(-50%)}
+.logl{border-left:2px solid var(--line);margin-left:6px;padding-left:14px}
+.logi{position:relative;padding:7px 0;font-size:12.5px}
+.logi::before{content:"";position:absolute;left:-20px;top:12px;width:8px;height:8px;border-radius:50%;background:var(--brand);border:2px solid #fff}
+.logi.w::before{background:var(--amber)}.logi.g::before{background:var(--green)}.logi.r::before{background:var(--red)}
+.logi b{display:block;font-weight:600}
+.logi .mm{color:var(--ink3);font-size:11.5px}
+.dnote{font-size:11px;color:var(--violet);background:var(--violet-soft);border:1px dashed #ddd6fe;border-radius:7px;padding:6px 9px;margin-top:8px;line-height:1.6}
+</style>
+</head>
+<body>
+<script>/* sidebar da chuyen ve index.html — node an giu cho JS cu khong vo */
+(function(){var n=document.createElement("nav");n.id="side";n.style.display="none";document.documentElement.appendChild(n)})();</script>
+
+<div class="rolebar">
+  <b>Chức danh:</b>
+  <button class="rb on" data-r="FULL">🔓 Đủ quyền (demo)</button>
+  <button class="rb" data-r="HT">Hiệu trưởng</button>
+  <button class="rb" data-r="PHT_DT">PHT Đào tạo</button>
+  <button class="rb" data-r="PHT_CM">PHT Chuyên môn</button>
+  <button class="rb" data-r="TCNS">Tổ chức nhân sự</button>
+  <button class="rb dt" id="btnNote">💡 Ghi chú thiết kế</button>
+  <span class="note"><b>Danh mục lớp</b> là bản ghi gốc — 8 module đọc từ đây, không menu nào tự dựng bảng lớp riêng</span>
+</div>
+
+<header class="hdr">
+  <div class="logo"><span class="mark">DS</span> Dschool</div>
+  <div class="school">THCS &amp; THPT Nguyễn Tất Thành</div>
+  <select class="sel" id="hnam"></select>
+  <select class="sel" id="hdt"></select>
+  <span class="lockico" id="dtlock"></span>
+  <div class="spacer"></div>
+  <button class="icobtn">🔔<span class="dot" id="ndot">2</span></button>
+  <div class="avatar" id="ava">DQ</div>
+</header>
+
+<div class="wrap">
+  <main class="main"><div id="content"></div></main>
+</div>
+
+<div class="mask" id="mask"><div class="modal">
+  <div class="mh" id="mh"></div><div class="mb" id="mb"></div><div class="mf" id="mf"></div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ===== M10.2 CO CAU TO CHUC — demo tai THU HAI 07/09/2026, nam hoc 2026-2027 ===== */
+const $=s=>document.querySelector(s);
+const HOMNAY=new Date(2026,8,7);
+const p2=n=>String(n).padStart(2,'0');
+const d2s=d=>d?p2(d.getDate())+'/'+p2(d.getMonth()+1)+'/'+d.getFullYear():'—';
+const D=(dd,mm,yy)=>new Date(yy,mm-1,dd);
+const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function toast(m){const t=$('#toast');t.innerHTML=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),4800)}
+function closeModal(){$('#mask').classList.remove('on')}
+function modal(t,b,f){$('#mh').innerHTML=t;$('#mb').innerHTML=b;$('#mf').innerHTML=f||'<button class="btn" data-x="close">Đóng</button>';$('#mask').classList.add('on');$('#mb').scrollTop=0}
+const NAM=[{id:'2028-2029',tt:'nhap'},{id:'2027-2028',tt:'saptoi'},
+ {id:'2026-2027',tt:'hd'},{id:'2025-2026',tt:'ketthuc'}];
+const TTN={nhap:['Nháp','n'],saptoi:['Sắp tới','b'],hd:['Đang hoạt động','o'],ketthuc:['Đã kết thúc','n']};
+let NAMHOC='2026-2027';
+const namTT=()=>NAM.filter(n=>n.id===NAMHOC)[0].tt;
+/* ===== GHI THEO TRANG THAI NAM HOC — BA MUC =====
+   ok   = lam binh thuong
+   canh = van lam duoc, nhung CANH BAO co so lieu + bat ghi ly do  (chuyen tham quyen — §15)
+   chan = chan cung                                              (toan ven du lieu — §15 ngoai le)
+   Tra cuu 29/8/2026: KHONG co van ban nao quy dinh thoi diem them/dong LOP.
+   TT 15/2026 chi quy dinh SI SO toi da; ND 125/2024 quy dinh thanh lap/giai the TRUONG (khong phai lop).
+   => Chan cung giua nam la SAI tham quyen. Chi giu chan cung cho toan ven du lieu. */
+const MUC={
+ khungToChuc:{nhap:'ok',saptoi:'ok',hd:'canh',ketthuc:'chan'},
+ taoHangLoat:{nhap:'ok',saptoi:'ok',hd:'canh',ketthuc:'chan'},
+ taoLopDon: {nhap:'ok',saptoi:'ok',hd:'ok',  ketthuc:'chan'},
+ suaLop:    {nhap:'ok',saptoi:'ok',hd:'ok',  ketthuc:'chan'},
+ xoaLop:    {nhap:'ok',saptoi:'ok',hd:'chan',ketthuc:'chan'},
+ boNhiem:   {nhap:'ok',saptoi:'ok',hd:'ok',  ketthuc:'chan'},
+ thongTinTruong:{nhap:'ok',saptoi:'ok',hd:'ok',ketthuc:'ok'}};
+const muc=k=>MUC[k][namTT()];
+function choPhep(k){return muc(k)!=='chan'}
+function canhBao(k){return muc(k)==='canh'}
+const LYDO={
+ khungToChuc:'Thêm hoặc đóng điểm trường, hệ đào tạo giữa năm làm <b>đổi bộ khung của cả năm học</b>. '+
+  'Quyết định thành lập hoặc giải thể cơ sở giáo dục do <b>Chủ tịch UBND</b> ký <i>(NĐ 125/2024 — cấp xã với tiểu học và THCS, cấp tỉnh với THPT)</i> '+
+  'và có thể ban hành vào bất kỳ tháng nào, nên hệ thống <b>không chặn</b> — nhưng bắt <b>đính quyết định</b> và <b>Hiệu trưởng ký</b>.',
+ taoHangLoat:'Chạy giữa năm đang vận hành sẽ <b>sinh hàng chục lớp rỗng lẫn vào danh sách đang chạy</b>. '+
+  '<b>Không có văn bản nào cấm</b> — trường nhận cả một khối học sinh từ cơ sở bị giải thể vào giữa năm là ca có thật sau sáp nhập. '+
+  'Nên hệ thống <b>cảnh báo và bắt ghi lý do</b>, không chặn. Nếu chỉ thêm vài lớp thì dùng <b>Tạo từng lớp</b> gọn hơn.',
+ xoaLop:'Năm học đang vận hành thì lớp <b>chỉ đóng, không xóa</b> — đây là <b>toàn vẹn dữ liệu</b>: '+
+  'lớp đã có phân công, thời khóa biểu, sổ đầu bài thì xóa đi là làm mồ côi các bản ghi đó.',
+ chung:'Năm học <b>'+'Đã kết thúc'+'</b> — kết quả đã chốt, đã ký và đã báo cáo Sở. <b>Chỉ đọc tuyệt đối.</b>'};
+/* tran si so theo TT 15/2026 Dieu le truong pho thong */
+const TRAN_SS={TH:35,THCS:45,THPT:45};
+function bacCuaKhoi(k){k=+k;return k<=5?'TH':(k<=9?'THCS':'THPT')}
+function tranSS(k){return TRAN_SS[bacCuaKhoi(k)]}
+
+/* ===== TRUONG (Master) ===== */
+const TRUONG={ten:'Trường THCS và THPT Nguyễn Tất Thành',viettat:'NTT',
+ maCSDL:'79000123456789012345',loaiHinh:'Công lập',coQuan:'Sở Giáo dục và Đào tạo tỉnh',
+ diaChi:'Số 12 đường Lê Lợi, phường Trung Tâm',sdt:'0292 3822 456',email:'c23ntt@edu.vn',web:'ntt.edu.vn',
+ cts:'CTS tổ chức — Viettel-CA · hết hạn 14/03/2028'};
+
+/* ===== DIEM TRUONG: Master + Yearly ===== */
+const DT=[
+ {id:'DT1',ma:'NTT-01',ten:'ĐT Nguyễn Tất Thành',viettat:'NTT1',diaChi:'Số 12 Lê Lợi, phường Trung Tâm',
+  toaDo:'10.0342, 105.7881',y:{bac:['THCS','THPT'],tt:'hd',sucChua:24,pht:'NS02'}},
+ {id:'DT2',ma:'NTT-02',ten:'ĐT Vĩnh Lộc',viettat:'VL',diaChi:'Ấp Vĩnh Thành, xã Vĩnh Lộc',
+  toaDo:'10.0918, 105.7124',y:{bac:['THCS','THPT'],tt:'hd',sucChua:14,pht:'NS03'}},
+ {id:'DT3',ma:'NTT-03',ten:'ĐT Tân Hội',viettat:'TH',diaChi:'Ấp Tân Phú, xã Tân Hội',
+  toaDo:'10.1450, 105.6602',y:{bac:['THCS'],tt:'hd',sucChua:12,pht:''}},
+ {id:'DT4',ma:'NTT-04',ten:'ĐT Bình Thủy (cũ)',viettat:'BT',diaChi:'Ấp Bình An, xã Bình Thủy',
+  toaDo:'10.0501, 105.7502',y:{bac:['THCS'],tt:'dong',sucChua:8,pht:''}}];
+const dtBy=id=>DT.filter(d=>d.id===id)[0];
+const dtTen=id=>{const d=dtBy(id);return d?d.ten:'—'};
+const dtHD=()=>DT.filter(d=>d.y.tt==='hd');
+const KHOI_BAC={'Tiểu học':[1,2,3,4,5],'THCS':[6,7,8,9],'THPT':[10,11,12]};
+function khoiCua(dt){let k=[];dt.y.bac.forEach(b=>{k=k.concat(KHOI_BAC[b]||[])});return k.sort((a,b)=>a-b)}
+function bacTruong(){const s={};dtHD().forEach(d=>d.y.bac.forEach(b=>s[b]=1));
+ return ['Tiểu học','THCS','THPT'].filter(b=>s[b])}
+
+/* ===== HE DAO TAO ===== */
+const HE=[
+ {id:'H1',ma:'DT',ten:'Đại trà',viettat:'ĐT',mota:'Chương trình GDPT 2018 chuẩn',y:{dt:['DT1','DT2','DT3'],tt:'hd'}},
+ {id:'H2',ma:'CLC',ten:'Chất lượng cao',viettat:'CLC',mota:'Tăng cường Toán và Tiếng Anh, sĩ số tối đa thấp hơn',y:{dt:['DT1'],tt:'hd'}},
+ {id:'H3',ma:'SN',ten:'Song ngữ',viettat:'SN',mota:'Một số môn dạy bằng tiếng Anh',y:{dt:['DT1'],tt:'hd'}},
+ {id:'H4',ma:'BTVH',ten:'Bổ túc văn hóa',viettat:'BTVH',mota:'Đã dừng tuyển từ năm 2025-2026',y:{dt:[],tt:'dong'}}];
+const heBy=id=>HE.filter(h=>h.id===id)[0];
+const heTen=id=>{const h=heBy(id);return h?h.ten:'—'};
+
+/* ===== NHAN SU (chieu tu M4.1) ===== */
+const NS=[];
+function addNS(id,ten,cd){NS.push({id:id,ten:ten,cd:cd||[]});return NS[NS.length-1]}
+addNS('NS01','Nguyễn Thị Hạnh',['HT']);
+addNS('NS02','Trần Quốc Hưng',['PHT_DT']);
+addNS('NS03','Lê Văn Dũng',['PHT_DT']);
+addNS('NS04','Vũ Đình Khoa',['PHT_CM']);
+addNS('NS05','Bùi Thị Thu',['VT']);
+addNS('NS06','Phạm Minh Tuấn',['TCNS']);
+addNS('NS07','Đinh Văn Phúc',['QL_CSVC']);
+addNS('NS08','Ngô Văn Kiên',['IT_Admin']);
+addNS('NS09','Mai Thị Loan',['BT']);
+addNS('NS10','Trần Văn Hải',['BV']);
+addNS('NS11','Hà Minh Đức',['TPT']);
+addNS('NS12','Đặng Thị Quỳnh',['TV']);
+addNS('NS13','Dương Văn Thắng',['PHT_DT']);
+addNS('NS14','Tạ Thị Bình',['GT']);
+addNS('NS15','Nguyễn Thu Hà',['BTD']);
+/* nhan su chua giu chuc danh quan tri nao — ung vien bo nhiem */
+addNS('NS16','Trịnh Thị Vân',[]);
+addNS('NS17','Hoàng Văn Nam',[]);
+addNS('NS18','Nguyễn Thị Yến',[]);
+const nsBy=id=>NS.filter(n=>n.id===id)[0];
+const nsTen=id=>{const n=nsBy(id);return n?n.ten:''};
+const nsCoCD=cd=>NS.filter(n=>n.cd.indexOf(cd)>=0);
+
+/* ===== MON HOC (Master — danh muc chuan theo cap, CT GDPT 2018) ===== */
+/* nhom: bb = bat buoc · tc = tu chon · dg: diem | nx (mac dinh theo TT 22/2021, TT 27/2020) */
+const MON=[
+ {id:'M01',ten:'Toán',cap:['THCS','THPT'],nhom:'bb',dg:'diem'},
+ {id:'M02',ten:'Ngữ văn',cap:['THCS','THPT'],nhom:'bb',dg:'diem'},
+ {id:'M03',ten:'Tiếng Anh',cap:['THCS','THPT'],nhom:'bb',dg:'diem'},
+ {id:'M04',ten:'Khoa học tự nhiên',cap:['THCS'],nhom:'bb',dg:'diem'},
+ {id:'M05',ten:'Lịch sử và Địa lý',cap:['THCS'],nhom:'bb',dg:'diem'},
+ {id:'M06',ten:'Giáo dục công dân',cap:['THCS'],nhom:'bb',dg:'diem'},
+ {id:'M07',ten:'Công nghệ',cap:['THCS','THPT'],nhom:'tc',dg:'diem'},
+ {id:'M08',ten:'Tin học',cap:['THCS','THPT'],nhom:'tc',dg:'diem'},
+ {id:'M09',ten:'Âm nhạc',cap:['THCS','THPT'],nhom:'tc',dg:'nx'},
+ {id:'M10',ten:'Mỹ thuật',cap:['THCS','THPT'],nhom:'tc',dg:'nx'},
+ {id:'M11',ten:'Giáo dục thể chất',cap:['THCS','THPT'],nhom:'bb',dg:'nx'},
+ {id:'M12',ten:'Hoạt động trải nghiệm, hướng nghiệp',cap:['THCS','THPT'],nhom:'bb',dg:'nx'},
+ {id:'M13',ten:'Nội dung giáo dục địa phương',cap:['THCS','THPT'],nhom:'bb',dg:'nx'},
+ {id:'M14',ten:'Lịch sử',cap:['THPT'],nhom:'bb',dg:'diem'},
+ {id:'M15',ten:'Địa lý',cap:['THPT'],nhom:'tc',dg:'diem'},
+ {id:'M16',ten:'Vật lý',cap:['THPT'],nhom:'tc',dg:'diem'},
+ {id:'M17',ten:'Hóa học',cap:['THPT'],nhom:'tc',dg:'diem'},
+ {id:'M18',ten:'Sinh học',cap:['THPT'],nhom:'tc',dg:'diem'},
+ {id:'M19',ten:'Giáo dục kinh tế và pháp luật',cap:['THPT'],nhom:'tc',dg:'diem'},
+ {id:'M20',ten:'Giáo dục quốc phòng và an ninh',cap:['THPT'],nhom:'bb',dg:'nx'},
+ {id:'M21',ten:'Tiếng Anh tăng cường',cap:['THCS','THPT'],nhom:'tc',dg:'diem',tuTao:true}];
+const monBy=id=>MON.filter(m=>m.id===id)[0];
+const monCua=cap=>MON.filter(m=>m.cap.indexOf(cap)>=0);
+
+/* MON AP DUNG theo Khoi x He x Nam — khoa la KHOI, khong phai CAP */
+const TIET={M01:4,M02:4,M03:3,M04:4,M05:3,M06:1,M07:1,M08:1,M09:1,M10:1,M11:2,M12:3,M13:1,
+ M14:2,M15:2,M16:3,M17:3,M18:3,M19:2,M20:1,M21:2};
+const MONAP={};  /* key: nam|khoi|he -> {monId:{ap,tiet,dg}} */
+function keyAp(khoi,he){return NAMHOC+'|'+khoi+'|'+he}
+(function(){
+ const bac=k=>k<=5?'TH':(k<=9?'THCS':'THPT');
+ ['2026-2027','2027-2028','2025-2026'].forEach(function(nam){
+  [6,7,8,9,10,11,12].forEach(function(k){
+   ['H1','H2','H3'].forEach(function(h){
+    const o={};
+    monCua(bac(k)).forEach(function(m){
+     let ap=(m.nhom==='bb');
+     if(m.nhom==='tc'&&['M07','M08','M15','M16','M17'].indexOf(m.id)>=0)ap=true;
+     if(m.tuTao)ap=(h!=='H1');   /* Tieng Anh tang cuong chi o he CLC va Song ngu */
+     o[m.id]={ap:ap,tiet:TIET[m.id]||2,dg:m.dg};
+    });
+    MONAP[nam+'|'+k+'|'+h]=o;
+   });
+  });
+ });
+ /* LOI GAI: khoi 10 he Dai tra chua khai mon nao o nam SAP TOI */
+ const o=MONAP['2027-2028|10|H1'];Object.keys(o).forEach(x=>o[x].ap=false);
+})();
+
+/* ===== TO CHUYEN MON (Master cho to, mon thuoc to) ===== */
+const TO=[
+ {id:'T1',ten:'Tổ Toán — Tin',mota:'Toán và Tin học toàn trường',mon:['M01','M08'],tt:'hd'},
+ {id:'T2',ten:'Tổ Ngữ văn',mota:'',mon:['M02','M13'],tt:'hd'},
+ {id:'T3',ten:'Tổ Ngoại ngữ',mota:'',mon:['M03','M21'],tt:'hd'},
+ {id:'T4',ten:'Tổ Khoa học tự nhiên',mota:'KHTN cấp THCS và Lý — Hóa — Sinh cấp THPT',mon:['M04','M16','M17','M18'],tt:'hd'},
+ {id:'T5',ten:'Tổ Khoa học xã hội',mota:'',mon:['M05','M06','M14','M15','M19'],tt:'hd'},
+ {id:'T6',ten:'Tổ Thể dục — Nghệ thuật',mota:'',mon:['M11','M09','M10','M20'],tt:'hd'},
+ {id:'T7',ten:'Tổ Công nghệ (cũ)',mota:'Đã sáp nhập vào Tổ Toán — Tin từ năm 2026-2027',mon:[],tt:'dong'}];
+const toBy=id=>TO.filter(t=>t.id===id)[0];
+const toCuaMon=id=>TO.filter(t=>t.tt==='hd'&&t.mon.indexOf(id)>=0)[0];
+/* thanh vien to — DAN XUAT tu Nhan su x Mon duoc phep day (M4.4) */
+const GVMON={T1:14,T2:11,T3:9,T4:16,T5:12,T6:8,T7:0};
+const soTV=id=>GVMON[id]||0;
+/* mon chua thuoc to nao */
+const monChuaCoTo=()=>MON.filter(m=>!toCuaMon(m.id));
+
+/* ===== CHUC DANH ===== */
+const CD=[
+ /* nhom 1 — bo nhiem tai day */
+ {ma:'HT',ten:'Hiệu trưởng',nhom:1,don:true,pv:'School'},
+ {ma:'PHT_CM',ten:'Phó Hiệu trưởng Chuyên môn',nhom:1,don:true,pv:'School'},
+ {ma:'TCNS',ten:'Tổ chức nhân sự',nhom:1,don:true,pv:'School'},
+ {ma:'KT',ten:'Kế toán',nhom:1,don:true,pv:'School'},
+ {ma:'TQ',ten:'Thủ quỹ',nhom:1,don:true,pv:'School'},
+ {ma:'VT',ten:'Văn thư',nhom:1,don:false,pv:'Branch'},
+ {ma:'QL_CSVC',ten:'Quản lý cơ sở vật chất',nhom:1,don:true,pv:'School'},
+ {ma:'YT',ten:'Y tế học đường',nhom:1,don:true,pv:'School'},
+ {ma:'TV',ten:'Thư viện',nhom:1,don:true,pv:'School'},
+ {ma:'BT',ten:'Phụ trách bán trú',nhom:1,don:true,pv:'School'},
+ {ma:'BV',ten:'Bảo vệ',nhom:1,don:false,pv:'Branch'},
+ {ma:'GT',ten:'Giám thị',nhom:1,don:false,pv:'Branch'},
+ {ma:'TPT',ten:'Tổng phụ trách Đội',nhom:1,don:true,pv:'School'},
+ {ma:'BTD',ten:'Bí thư Đoàn',nhom:1,don:true,pv:'School'},
+ {ma:'IT_Admin',ten:'Quản trị hệ thống',nhom:1,don:true,pv:'School'},
+ /* nhom 2 — bo nhiem gan voi don vi */
+ {ma:'PHT_DT',ten:'Phó Hiệu trưởng phụ trách điểm trường',nhom:2,don:false,pv:'Branch',noi:'T2 Điểm trường',menu:''},
+ {ma:'TTCM',ten:'Tổ trưởng chuyên môn',nhom:2,don:false,pv:'Group',noi:'M4.3',menu:'M4.3'},
+ {ma:'TPCM',ten:'Tổ phó chuyên môn',nhom:2,don:false,pv:'Group',noi:'M4.3',menu:'M4.3'},
+ /* nhom 3 — phan cong chuyen mon */
+ {ma:'GVCN',ten:'Giáo viên chủ nhiệm',nhom:3,don:false,pv:'Class',noi:'M4.3 + M4.5',menu:'M4.3'},
+ {ma:'GVBM',ten:'Giáo viên bộ môn',nhom:3,don:false,pv:'Class × Môn',noi:'M4.3 + M4.5',menu:'M4.3'}];
+
+/* ban ghi bo nhiem nhom 1 */
+const BN=[];
+function addBN(cd,nsId,qd,tu){BN.push({cd:cd,ns:nsId,qd:qd,tu:tu,den:null})}
+addBN('HT','NS01','QĐ 118/QĐ-SGDĐT',D(1,8,2023));
+addBN('PHT_CM','NS04','QĐ 214/QĐ-SGDĐT',D(1,8,2024));
+addBN('TCNS','NS06','QĐ 41/QĐ-NTT',D(15,8,2025));
+addBN('VT','NS05','QĐ 42/QĐ-NTT',D(15,8,2025));
+addBN('QL_CSVC','NS07','QĐ 44/QĐ-NTT',D(15,8,2025));
+addBN('IT_Admin','NS08','QĐ 45/QĐ-NTT',D(1,9,2025));
+addBN('BT','NS09','QĐ 12/QĐ-NTT',D(20,8,2026));
+addBN('BV','NS10','QĐ 13/QĐ-NTT',D(20,8,2026));
+addBN('TPT','NS11','QĐ 14/QĐ-NTT',D(20,8,2026));
+addBN('TV','NS12','QĐ 15/QĐ-NTT',D(20,8,2026));
+addBN('GT','NS14','QĐ 16/QĐ-NTT',D(20,8,2026));
+addBN('BTD','NS15','QĐ 17/QĐ-NTT',D(20,8,2026));
+/* KT va TQ dang KHUYET — chu y */
+const bnCua=cd=>BN.filter(b=>b.cd===cd&&!b.den);
+/* ung vien bo nhiem: loai nguoi dang giu mot chuc danh DON NHAT khac, va nguoi dang phu trach diem truong */
+function dsUngVien(cdMa){
+ const donKhac={};BN.filter(b=>!b.den).forEach(function(b){
+  const c=CD.filter(z=>z.ma===b.cd)[0];
+  if(c&&c.don&&b.cd!==cdMa)donKhac[b.ns]=c.ten});
+ DT.forEach(d=>{if(d.y.tt==='hd'&&d.y.pht)donKhac[d.y.pht]='PHT phụ trách '+d.viettat});
+ return NS.filter(n=>!donKhac[n.id]);
+}
+
+/* ===== LOP ===== */
+const LOP=[];let LSEQ=0;
+let NAMGEN='2026-2027';
+function mkLop(dtId,khoi,n,heId,ssMax,gvcnFrom){
+ for(let i=1;i<=n;i++){LSEQ++;
+  LOP.push({id:'L'+LSEQ,nam:NAMGEN,ten:khoi+'A'+i,ma:dtBy(dtId).viettat+'-'+khoi+'A'+i,dt:dtId,khoi:khoi,he:heId,
+   ssMax:ssMax,gvcn:(gvcnFrom&&(LSEQ%9!==0))?('GV'+p2(LSEQ)):'',phong:'P'+(100+LSEQ),dong:false,
+   ssHT:0,giuCho:0})}
+}
+mkLop('DT1',6,2,'H1',35,true);mkLop('DT1',7,2,'H1',35,true);mkLop('DT1',8,2,'H1',35,true);mkLop('DT1',9,2,'H1',35,true);
+mkLop('DT1',10,3,'H1',35,true);mkLop('DT1',10,1,'H2',30,true);
+mkLop('DT1',11,3,'H1',35,true);mkLop('DT1',11,1,'H3',28,true);
+mkLop('DT1',12,4,'H1',35,true);
+mkLop('DT2',6,2,'H1',34,true);mkLop('DT2',7,2,'H1',34,true);mkLop('DT2',8,2,'H1',34,true);mkLop('DT2',9,2,'H1',34,true);
+mkLop('DT2',10,1,'H1',34,true);mkLop('DT2',11,1,'H1',34,true);mkLop('DT2',12,1,'H1',34,true);
+mkLop('DT3',6,2,'H1',32,true);mkLop('DT3',7,2,'H1',32,true);mkLop('DT3',8,2,'H1',32,true);mkLop('DT3',9,2,'H1',32,true);
+mkLop('DT3',10,1,'H1',32,true);   /* LOP SAI: khoi 10 o DT3 chi co bac THCS — dung de demo canh bao */
+/* si so: phan bo hop ly, tong ~1284 */
+(function(){let i=0;LOP.forEach(function(l){i++;
+ l.ssHT=l.dong?0:(l.ssMax-((i*3)%5));
+ l.giuCho=(i%11===0)?1:0;});
+ /* mot lop khai si so toi da 48 — vuot tran 45 cua THCS, de demo canh bao TT 15/2026 */
+ const x=LOP.filter(l=>l.nam==='2026-2027'&&l.khoi===9)[0];if(x){x.ssMax=48;x.ssHT=46}
+ /* mot lop trong de demo trang thai Lop trong */
+ LOP[LOP.length-1].ssHT=0;LOP[LOP.length-1].giuCho=0;
+})();
+/* nam SAP TOI 2027-2028: da khai mot phan, chua co hoc sinh */
+NAMGEN='2027-2028';
+mkLop('DT1',6,2,'H1',35,false);mkLop('DT1',7,2,'H1',35,false);mkLop('DT1',10,4,'H1',35,false);
+mkLop('DT2',6,2,'H1',34,false);mkLop('DT3',6,2,'H1',32,false);
+/* nam DA KET THUC 2025-2026 */
+NAMGEN='2025-2026';
+mkLop('DT1',9,4,'H1',35,true);mkLop('DT2',9,2,'H1',34,true);mkLop('DT3',9,2,'H1',32,true);
+NAMGEN='2026-2027';
+(function(){LOP.filter(l=>l.nam==='2025-2026').forEach(function(l,i){l.ssHT=l.ssMax-((i*3)%4)});
+ LOP.filter(l=>l.nam==='2027-2028').forEach(function(l){l.ssHT=0;l.giuCho=0;l.gvcn=''});})();
+/* nam NHAP 2028-2029: chua khai lop nao */
+
+const lopBy=id=>LOP.filter(l=>l.id===id)[0];
+const lopNam=()=>LOP.filter(l=>l.nam===NAMHOC);
+const TONGHS=()=>lopNam().reduce((s,l)=>s+l.ssHT,0);
+function ttLop(l){
+ if(l.dong)return 'dong';
+ if(l.ssHT===0)return 'trong';
+ if(!l.gvcn)return 'nogvcn';
+ return 'hd';
+}
+const TTL={hd:['Đang hoạt động','o'],nogvcn:['⚠ Chưa có GVCN','w'],trong:['Lớp trống','n'],dong:['Đã đóng','r']};
+const lopCuaDT=id=>lopNam().filter(l=>l.dt===id&&!l.dong);
+/* lop sai bac hoc — canh bao cau hinh */
+function lopSaiBac(l){const dt=dtBy(l.dt);return khoiCua(dt).indexOf(l.khoi)<0}
+
+/* ===== VAI TRO ===== */
+const ROLE={
+ FULL:{ten:'Đủ quyền (demo)',ava:'DQ',sc:'School',q:['xem','suaTruong','dt','he','lop','xoaLop','duyet','mon','to','xuat']},
+ HT:{ten:'Hiệu trưởng',ava:'HT',sc:'School',q:['xem','suaTruong','dt','he','lop','xoaLop','duyet','to','xuat']},
+ PHT_DT:{ten:'PHT Đào tạo',ava:'PD',sc:'DT2',q:['xem','dtMinh','he','lop','xoaLop','xuat']},
+ PHT_CM:{ten:'PHT Chuyên môn',ava:'PC',sc:'School',q:['xem','heNoiDung','mon','to','xuat']},
+ TCNS:{ten:'Tổ chức nhân sự',ava:'TN',sc:'School',q:['xem','xuat']}};
+let role='FULL',ghiChu=false;
+const R=()=>ROLE[role];
+const can=k=>R().q.indexOf(k)>=0;
+const scopeDT=()=>R().sc==='School'?null:R().sc;
+const MCHU={FULL:['M4.5','M4.3','M10.2','M1.7','M1.6','M7.2','M10.1','M10.8','M6.4','M10.9','M10.7','M1.1'],
+ HT:['M4.5','M4.3','M10.2','M1.7','M1.6','M7.2','M10.1','M10.8','M6.4','M10.9','M10.7','M1.1'],
+ PHT_DT:['M4.5','M1.7','M1.6','M10.1','M6.4','M10.9','M1.1'],
+ PHT_CM:['M4.5','M10.2','M1.1'],TCNS:['M4.3','M4.1']};
+function dlink(m,lb){
+ if(MCHU[role].indexOf(m)<0)return '<span class="rolnk off" title="Vai trò '+esc(R().ten)+' không có quyền tại '+m+'">🔗 '+m+'</span>';
+ return '<button class="rolnk" data-x="dl" data-m="'+m+'">↗ '+(lb||m)+'</button>';
+}
+/* quyen sua lop theo scope */
+function suaLopDuoc(l){
+ if(!can('lop'))return false;
+ const s=scopeDT();
+ return !s||l.dt===s;
+}
+
+/* ===== SIDEBAR ===== */
+const NAV=[
+ ['','🏠 Trung tâm điều hành',[['M0.1','Bảng điều khiển'],['M0.2','Việc cần làm','2']]],
+ ['hs','👥 Học sinh',[['M1.1','Hồ sơ học sinh'],['M1.6','Bảo lưu / Tái nhập'],['M1.7','Chuyển lớp']]],
+ ['ns','👨‍🏫 Nhân sự',[['M4.1','Hồ sơ nhân sự'],['M4.3','Chức danh & Điểm công tác'],['M4.5','Phân công giảng dạy']]],
+ ['vh','🏫 Vận hành & Dịch vụ',[['M6.4','Cơ sở vật chất']]],
+ ['tc','💰 Tài chính',[['M7.1','Danh mục khoản thu'],['M7.2','Theo dõi thực hiện khoản thu'],['M7.3','Điều chỉnh & Hoàn tiền']]],
+ ['qt','⚙️ Quản trị & Cấu hình',[['M10.1','Hồ sơ năm học'],['M10.9','Lịch nghỉ & Ngày đặc biệt'],['M10.2','Cơ cấu tổ chức'],['M10.4','Chức danh & Phân quyền'],['M10.7','Nhật ký hệ thống'],['M10.8','Đồng bộ CSDL ngành']]]];
+const NAVOK={FULL:'all',HT:'all',PHT_DT:['hs','ns','vh','qt'],PHT_CM:['hs','ns','qt'],TCNS:['ns','qt']};
+function sidebar(){
+ const a=NAVOK[role],full=a==='all';
+ $('#side').innerHTML=NAV.map(function(g){
+  const on=full||g[0]===''||a.indexOf(g[0])>=0;
+  return '<div class="sgrp">'+g[1]+'</div>'+g[2].map(function(it){
+   const cu=it[0]==='M10.2';
+   return '<div class="snav '+(cu?'on':'')+' '+(on?'':'off')+'">'+
+    '<span style="font-size:10.5px;opacity:.55;min-width:34px">'+it[0]+'</span>'+
+    '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(it[1])+'</span>'+
+    (it[2]?'<span style="margin-left:auto;background:var(--brand);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px">'+it[2]+'</span>':'')+
+    '</div>'}).join('')}).join('');
+}
+
+/* ===== TRANG THAI ===== */
+let V={tab:'lop',pick:null,q:'',qtt:{hd:1,nogvcn:1,trong:1,dong:0},gom:'dt',khoi:10,he:'H1'};
+
+function fillHeaderNam(){
+ $('#hnam').innerHTML=NAM.map(n=>'<option value="'+n.id+'"'+(n.id===NAMHOC?' selected':'')+'>Năm học '+n.id+' · '+TTN[n.tt][0]+'</option>').join('');
+}
+function fillHeaderDT(){
+ const s=scopeDT();
+ const opts=(s?DT.filter(d=>d.id===s):[{id:'',ten:'Toàn trường'}].concat(dtHD()));
+ $('#hdt').innerHTML=opts.map(o=>'<option value="'+o.id+'">'+esc(o.ten)+'</option>').join('');
+ $('#hdt').disabled=!!s;
+ $('#dtlock').innerHTML=s?'🔒 khóa theo phạm vi Branch':'';
+}
+
+/* ===== RENDER ===== */
+function render(){
+ sidebar();fillHeaderNam();fillHeaderDT();$('#ava').textContent=R().ava;
+ const khuyet=CD.filter(c=>c.nhom===1&&c.don&&!bnCua(c.ma).length).length;
+ $('#ndot').textContent=khuyet||'';$('#ndot').style.display=khuyet?'grid':'none';
+ const ts=[['truong','Trường',0],['dt','Điểm trường',dtHD().length],['he','Hệ đào tạo',HE.filter(h=>h.y.tt==='hd').length],
+  ['lop','Danh mục lớp',dsLop().length],['mon','Môn học',monApDung().length],['to','Tổ chuyên môn',TO.filter(t=>t.tt==='hd').length]];
+ if(!ts.some(t=>t[0]===V.tab))V.tab='lop';
+ $('#content').innerHTML=
+ '<div class="tophd"><h1>Cơ cấu tổ chức</h1><span class="pill">M10.2 🔒⚖</span><span class="pill">Nhóm ⚙️ Quản trị</span>'+
+  '<div class="spacer"></div>'+(V.tab==='lop'?locBar():'')+topBtn()+'</div>'+
+ '<div class="tabs">'+ts.map(t=>'<button class="tab1 '+(V.tab===t[0]?'on':'')+'" data-x="tab" data-t="'+t[0]+'">'+t[1]+
+   (t[2]?'<span class="b'+(t[0]==='bn'?' al':'')+'">'+t[2]+'</span>':'')+'</button>').join('')+
+'</div>'+
+ scopeBar()+
+ (V.tab==='truong'?tabTruong():V.tab==='dt'?tabDT():V.tab==='he'?tabHe():V.tab==='lop'?tabLop():V.tab==='mon'?tabMon():tabTo());
+}
+function topBtn(){
+ let s='';
+ if(V.tab==='lop'&&can('lop'))s+=(choPhep('taoLopDon')?'<button class="btn p" data-x="mTaoLop">＋ Tạo lớp</button>':
+   '<button class="btn" disabled title="Năm học '+TTN[namTT()][0]+' — không tạo lớp được">🔒 Tạo lớp</button>');
+ const wDT=canhBao('khungToChuc')?' ⚠':'';
+ if(V.tab==='dt'&&can('dt'))s+=(choPhep('khungToChuc')?'<button class="btn '+(wDT?'':'p')+'" data-x="mThemDT">＋ Thêm điểm trường'+wDT+'</button>':
+   '<button class="btn" disabled title="Năm học đã đóng sổ — chỉ đọc">🔒 Thêm điểm trường</button>');
+ if(V.tab==='he'&&can('he'))s+=(choPhep('khungToChuc')?'<button class="btn '+(wDT?'':'p')+'" data-x="mThemHe">＋ Thêm hệ đào tạo'+wDT+'</button>':
+   '<button class="btn" disabled title="Năm học đã đóng sổ — chỉ đọc">🔒 Thêm hệ đào tạo</button>');
+ if(V.tab==='mon'&&can('mon'))s+='<button class="btn" data-x="mThemMon">＋ Thêm môn của trường</button>';
+ if(V.tab==='to'&&can('to'))s+=(choPhep('khungToChuc')?'<button class="btn p" data-x="mThemTo">＋ Thành lập tổ</button>':
+   '<button class="btn" disabled>🔒 Thành lập tổ</button>');
+ if(can('xuat'))s+='<button class="btn" data-x="mXuat">⬇ Xuất dữ liệu</button>';
+ return s;
+}
+/* canh bao CAU HINH — gom het vao mot cho, hien duoi dang chip tren dai pham vi */
+function dsCanh(){
+ const c=[];
+ const noGV=lopNam().filter(l=>ttLop(l)==='nogvcn').length;
+ if(noGV)c.push(['am','<b>'+noGV+' lớp</b> có học sinh nhưng <b>chưa phân công GVCN</b>',
+  'Lỗi cấu hình thường gặp nhất đầu năm — sổ đầu bài không có người duyệt, báo cáo tuần không có người nhận. '+dlink('M4.5','Phân công GVCN')]);
+ const sai=lopNam().filter(l=>!l.dong&&lopSaiBac(l));
+ if(sai.length)c.push(['rd','<b>'+sai.length+' lớp</b> có khối <b>không thuộc bậc học</b> của điểm trường',
+  sai.map(l=>'<b>'+esc(l.ten)+'</b> — '+esc(dtBy(l.dt).ten)+' chỉ có bậc '+dtBy(l.dt).y.bac.join(', ')+', mà lớp này ở khối '+l.khoi).join('<br>')+
+  '<br><br>Dữ liệu cũ còn sót — ràng buộc <b>R2</b> nay chặn từ đầu vào nên lỗi này không sinh thêm được.']);
+ const kh=[];
+ [6,7,8,9,10,11,12].forEach(function(k){['H1','H2','H3'].forEach(function(hh){
+  const dtCo=dtHD().some(d=>khoiCua(d).indexOf(k)>=0)&&HE.filter(x=>x.id===hh)[0].y.dt.length;
+  if(!dtCo)return;
+  const o=MONAP[NAMHOC+'|'+k+'|'+hh];
+  if(o&&!Object.keys(o).some(x=>o[x].ap))kh.push('Khối '+k+' · '+heTen(hh));
+ })});
+ if(kh.length)c.push(['rd','<b>'+kh.length+' tổ hợp Khối × Hệ</b> chưa khai <b>môn áp dụng</b> nào',
+  kh.join(' · ')+'<br><br>Đây là mục ⛔ trong checklist <b>Bắt đầu năm học</b> của '+dlink('M10.1')+
+  ' — không khai môn thì màn hình phân công giảng dạy và bảng điểm không có môn nào để mở.']);
+ const mm=monChuaCoTo();
+ if(mm.length)c.push(['am','<b>'+mm.length+' môn</b> chưa thuộc <b>tổ chuyên môn</b> nào',
+  mm.map(x=>esc(x.ten)).join(' · ')+'<br><br>'+dlink('M5.1')+' <b>chặn cứng</b> việc tạo kế hoạch giảng dạy cho môn chưa có tổ.']);
+ const kt=CD.filter(c2=>c2.nhom===1&&c2.don&&!bnCua(c2.ma).length);
+ if(kt.length)c.push(['rd','<b>'+kt.length+' chức danh đơn nhất</b> đang khuyết',
+  kt.map(x=>esc(x.ten)).join(' · ')+'<br><br>Bổ nhiệm tại '+dlink('M4.3')+'. Là mục ⛔ trong checklist Bắt đầu năm học.']);
+ return c;
+}
+function chipCanh(){
+ const c=dsCanh();if(!c.length)return '<span class="st2 o">✅ không có cảnh báo cấu hình</span>';
+ const do_=c.filter(x=>x[0]==='rd').length,va=c.filter(x=>x[0]==='am').length;
+ return (do_?'<span class="st2 r">🔴 '+do_+'</span>':'')+(va?'<span class="st2 w">⚠ '+va+'</span>':'')+
+  '<button class="rolnk" data-x="xemCanh">Cảnh báo cấu hình</button>';
+}
+function dsKhoa(){
+ const chan=[],canh=[];
+ const T=[['khungToChuc','Thêm hoặc đóng <b>điểm trường</b> và <b>hệ đào tạo</b>'],
+  ['taoHangLoat','<b>Tạo hàng loạt theo khối</b> và <b>Lấy danh mục lớp từ năm cũ</b>'],
+  ['xoaLop','<b>Xóa lớp</b> — chỉ đóng được'],
+  ['taoLopDon','<b>Tạo lớp</b> · <b>Sửa lớp</b> · <b>Bổ nhiệm chức danh</b>']];
+ T.forEach(function(x){
+  const m=muc(x[0]);
+  if(m==='chan')chan.push([x[1],x[0]==='taoLopDon'?LYDO.chung:LYDO[x[0]]]);
+  else if(m==='canh')canh.push([x[1],LYDO[x[0]]]);
+ });
+ return {chan:chan,canh:canh};
+}
+function chipKhoa(){
+ const c=dsKhoa(),tt=namTT();
+ if(!c.chan.length&&!c.canh.length)return '';
+ let t='';
+ if(tt==='ketthuc')t='<span class="st2 r">🔒 chỉ đọc tuyệt đối</span>';
+ else{
+  if(c.chan.length)t+='<span class="st2 r">🔒 chặn '+c.chan.length+'</span>';
+  if(c.canh.length)t+='<span class="st2 w">⚠ cảnh báo '+c.canh.length+'</span>';
+ }
+ return t+'<button class="rolnk" data-x="xemKhoa">Ghi được những gì?</button>';
+}
+function scopeBar(){
+ const s=scopeDT();
+ const tt=namTT();
+ let h='<div class="scope">▸ Năm học <b>'+NAMHOC+'</b> <span class="st2 '+TTN[tt][1]+'">'+TTN[tt][0]+'</span> · '+(s?'Phạm vi <b>Branch</b> — '+esc(dtTen(s)):'Phạm vi <b>School</b>')+
+  ' · <b>'+dtHD().length+'</b> điểm trường · <b>'+lopNam().filter(l=>!l.dong).length+'</b> lớp · <b>'+TONGHS().toLocaleString('vi')+'</b> học sinh'+
+  '<span class="sp"></span>'+chipCanh()+chipKhoa()+
+  '<span style="color:var(--ink3)">Vai trò: '+esc(R().ten)+'</span></div>';
+ if(ghiChu)h+='<div class="scope vi">💡 <b>Nhãn <span class="mas">Master</span> và <span class="yr">Năm 2026-2027</span></b> phân biệt trường xuyên năm với trường theo năm. '+
+  '<code>nh0.2</code> §2 để <b>toàn bộ</b> điểm trường là Yearly — nếu vậy mỗi năm sinh một bản ghi điểm trường mới, và '+
+  '<i>Điểm trường công tác của nhân sự</i> ở M4.3 (xuyên năm) không biết trỏ vào bản nào.</div>';
+ return h;
+}
+
+/* ===== T1 THONG TIN TRUONG ===== */
+function tabTruong(){
+ const F=(k,v,nhan)=>'<div class="f"><div class="k">'+k+' '+(nhan||'')+'</div><div class="v">'+v+'</div></div>';
+ const M='<span class="mas">Master</span>';
+ return '<div class="card"><h3>Định danh '+M+'</h3>'+
+  F('Tên trường',esc(TRUONG.ten))+F('Tên viết tắt',esc(TRUONG.viettat))+
+  F('Mã trường CSDL ngành','<code>'+TRUONG.maCSDL+'</code> <span class="pill">20 ký tự · TT 42/2021</span>'+
+    (can('suaTruong')?'<button class="btn xs" data-x="mDoiMa">✎ Đổi mã</button>':''))+
+  F('Loại hình',TRUONG.loaiHinh)+F('Cơ quan quản lý',esc(TRUONG.coQuan))+'</div>'+
+ '<div class="card"><h3>Liên hệ '+M+'</h3>'+
+  F('Địa chỉ trụ sở chính',esc(TRUONG.diaChi))+F('Điện thoại',TRUONG.sdt)+F('Email',TRUONG.email)+F('Website',TRUONG.web)+'</div>'+
+ '<div class="card"><h3>Bậc học của trường <span class="pill">dẫn xuất — không có ô nhập</span></h3>'+
+  '<div style="font-size:15px;font-weight:700;margin-bottom:4px">'+bacTruong().join(' · ')+'</div>'+
+  '<div style="font-size:12px;color:var(--ink2)">← union bậc học của '+dtHD().length+' điểm trường đang hoạt động, năm '+NAMHOC+'</div>'+
+  '<div class="bhtree">'+dtHD().map(d=>'<b>'+esc(d.ten)+'</b> — '+d.y.bac.join(', ')).join('<br>')+'</div>'+
+  (ghiChu?'<div class="dnote">💡 Nếu có thêm một ô <i>"bậc học của trường"</i> nhập tay thì sẽ có ngày ô đó ghi <b>THCS</b> trong khi một điểm trường đang dạy khối 10 — '+
+   'và không ai biết con số nào đúng. Đây là ví dụ mẫu của quy ước <b>trạng thái dẫn xuất được thì không làm nút bấm tay</b>.<br><br>'+
+   '⚠ <code>nh0.2</code> §13 ghi <i>"bậc học điểm trường không vượt bậc học trường"</i> — <b>ràng buộc đó mâu thuẫn với chính cơ chế union này</b> và đã bị bỏ.</div>':'')+'</div>'+
+ '<div class="card"><h3>Chữ ký số tổ chức '+M+' <span class="st2 w">chờ chốt nơi đặt</span></h3>'+
+  F('Chứng thư số của trường',esc(TRUONG.cts))+
+  F('Cấu hình tích hợp CA','<span style="font-weight:400;color:var(--ink3)">Chưa hoạt động ở MVP</span>')+
+  '<div class="ro" style="margin-top:9px"><code>nh0.2</code> §1.1 đặt <b>chữ ký số của trường</b> trong Thông tin trường; khung menu từng giao cho <b>M10.6</b>. '+
+  '✅ <b>Đã chốt 29/8/2026</b> — M10.6 giữ <i>zero write</i> nên khối này ở lại đây.</div></div>';
+}
+
+/* ===== T2 DIEM TRUONG ===== */
+function tabDT(){
+ const s=scopeDT();
+ const ds=DT.filter(d=>!s||d.id===s);
+ const head='<div class="hdrow gdt"><div>Điểm trường</div><div>Bậc học</div><div class="kx">Quy mô</div><div class="kx">Sức chứa</div>'+
+  '<div class="kx">PHT phụ trách</div><div class="kx">Trạng thái</div><div class="kx">Thao tác</div></div>';
+ return '<div class="stage '+(V.pick&&V.pick[0]==='D'?'open':'')+'"><div class="listw">'+head+ds.map(rowDT).join('')+'</div>'+
+  '<div class="panel">'+(V.pick&&V.pick[0]==='D'?panelDT():'')+'</div></div>'+
+  (ghiChu?'<div class="dnote">💡 <b>Ô PHT phụ trách nằm ngay trên dòng điểm trường</b>, không ở màn hình riêng — vì <b>phạm vi của chức danh này chính là điểm trường đó</b>. '+
+   'Cùng khuôn với Tổ trưởng trên dòng tổ ở M4.3, và với GVCN lấy phạm vi từ M4.5.</div>':'');
+}
+function rowDT(d){
+ const lops=lopCuaDT(d.id),hs=lops.reduce((a,l)=>a+l.ssHT,0);
+ const vuot=lops.length>d.y.sucChua;
+ const TT={hd:['Đang hoạt động','o'],tam:['Tạm dừng','w'],dong:['Đóng cửa','n']};
+ return '<div class="hrow gdt '+(V.pick===d.id?'on':'')+' '+(d.y.tt==='dong'?'gone':'')+'" data-x="pick" data-i="'+d.id+'">'+
+  '<div><b>'+esc(d.ten)+'</b> <span class="mas">Master</span><div style="font-size:11px;color:var(--ink3)">'+esc(d.ma)+' · '+esc(d.diaChi)+'</div></div>'+
+  '<div>'+d.y.bac.map(b=>'<span class="st2 b">'+b+'</span>').join(' ')+'<div style="font-size:10px;color:var(--ink3);margin-top:2px">khối '+khoiCua(d).join(', ')+' (auto)</div></div>'+
+  '<div class="kx" style="font-size:12px">'+lops.length+' lớp<div style="font-size:11px;color:var(--ink3)">'+hs.toLocaleString('vi')+' học sinh</div></div>'+
+  '<div class="kx ss"><b class="'+(vuot?'':'')+'" style="'+(vuot?'color:var(--amber)':'')+'">'+lops.length+'</b> / '+d.y.sucChua+' lớp'+
+    (vuot?'<div class="st2 w" style="margin-top:2px">vượt sức chứa</div>':'')+'</div>'+
+  '<div class="kx" style="font-size:12px">'+(d.y.pht?esc(nsTen(d.y.pht)):'<span class="st2 r">⚠ Đang khuyết</span>')+
+    '<div style="margin-top:3px">'+dlink('M4.3','Bổ nhiệm')+'</div></div>'+
+  '<div class="kx"><span class="st2 '+TT[d.y.tt][1]+'">'+TT[d.y.tt][0]+'</span> <span class="yr">'+NAMHOC+'</span></div>'+
+  '<div class="kx" style="display:flex;gap:4px;flex-wrap:wrap">'+
+   '<button class="btn xs" data-x="pick" data-i="'+d.id+'">Xem</button>'+
+   (can('dt')&&d.y.tt==='hd'&&choPhep('khungToChuc')?'<button class="btn xs d" data-x="mDongDT" data-i="'+d.id+'">Đóng</button>':'')+'</div></div>';
+}
+function panelDT(){
+ const d=dtBy(V.pick);if(!d)return '';
+ const F=(k,v,n)=>'<div class="f"><div class="k">'+k+' '+(n||'')+'</div><div class="v">'+v+'</div></div>';
+ const M='<span class="mas">Master</span>',Y='<span class="yr">'+NAMHOC+'</span>';
+ return '<div class="ph"><div class="n"><h2>'+esc(d.ten)+'</h2><div class="m"><span class="pill">'+esc(d.ma)+'</span></div></div>'+
+  '<div style="flex:1"></div><button class="btn sm" data-x="close2">✕</button></div>'+
+  '<div class="pbody">'+
+  '<div class="sech">Danh tính '+M+'</div>'+
+  F('Mã điểm trường',esc(d.ma))+F('Tên',esc(d.ten))+F('Tên viết tắt',esc(d.viettat))+
+  F('Địa chỉ',esc(d.diaChi))+F('Tọa độ bản đồ','<code>'+d.toaDo+'</code> <span class="pill">dùng tính thời gian di chuyển ở M4.6</span>')+
+  '<div class="ro" style="margin-top:9px">Sửa các trường trên <b>áp cho mọi năm học</b> — kể cả báo cáo của năm đã kết thúc.</div>'+
+  '<div class="sech">Cấu hình của năm học '+Y+'</div>'+
+  F('Bậc học',d.y.bac.map(b=>'<span class="st2 b">'+b+'</span>').join(' '))+
+  F('Khối lớp','<span style="font-weight:400">'+khoiCua(d).join(', ')+'</span> <span class="pill">auto sinh từ bậc học — không cấu hình</span>')+
+  F('Sức chứa',d.y.sucChua+' lớp')+
+  F('PHT phụ trách',d.y.pht?esc(nsTen(d.y.pht)):'<span class="st2 r">⚠ Đang khuyết</span>')+
+  '<div class="sech">Lớp thuộc điểm trường</div>'+
+  '<div class="prev">'+lopCuaDT(d.id).map(l=>'<span class="pill">'+esc(l.ten)+'</span>').join('')+'</div>'+
+  '</div>';
+}
+
+/* ===== T3 HE DAO TAO ===== */
+function tabHe(){
+ const head='<div class="hdrow ghe"><div>Hệ đào tạo</div><div>Điểm trường áp dụng</div><div class="kx">Số lớp</div><div class="kx">Trạng thái</div><div class="kx">Thao tác</div></div>';
+ return '<div class="listw">'+head+HE.map(rowHe).join('')+'</div>'+
+  '<div class="ro" style="margin-top:10px">🔗 <b>Hệ đào tạo quyết định khoản thu.</b> Mọi thay đổi ở tab này đều báo cho Kế toán — học phí của một học sinh suy ra từ hệ đào tạo của lớp em đó. '+dlink('M7.2')+'</div>';
+}
+function rowHe(h){
+ const n=lopNam().filter(l=>l.he===h.id&&!l.dong).length;
+ return '<div class="hrow ghe '+(h.y.tt==='dong'?'gone':'')+'">'+
+  '<div><b>'+esc(h.ten)+'</b> <span class="mas">Master</span><div style="font-size:11px;color:var(--ink3)">'+esc(h.ma)+' · '+esc(h.mota)+'</div></div>'+
+  '<div>'+(h.y.dt.length?h.y.dt.map(i=>'<span class="pill">'+esc(dtBy(i).viettat)+'</span>').join(' '):'<span style="color:var(--ink3);font-size:12px">—</span>')+
+    ' <span class="yr">'+NAMHOC+'</span></div>'+
+  '<div class="kx"><b>'+n+'</b> lớp</div>'+
+  '<div class="kx"><span class="st2 '+(h.y.tt==='hd'?'o':'n')+'">'+(h.y.tt==='hd'?'Đang hoạt động':'Đóng')+'</span></div>'+
+  '<div class="kx" style="display:flex;gap:4px">'+
+   (can('he')&&h.y.tt==='hd'&&choPhep('khungToChuc')?'<button class="btn xs d" data-x="mDongHe" data-i="'+h.id+'">Đóng hệ</button>':'')+'</div></div>';
+}
+
+/* ===== T4 DANH MUC LOP ===== */
+function locBar(){
+ const c=['hd','nogvcn','trong','dong'].map(function(k){
+  const n=lopNam().filter(l=>ttLop(l)===k).length;
+  const NGAN={hd:'Hoạt động',nogvcn:'Chưa GVCN',trong:'Trống',dong:'Đã đóng'};
+  return '<button class="qf '+(V.qtt[k]?'on':'')+'" data-x="qtt" data-t="'+k+'" title="'+TTL[k][0].replace('⚠ ','')+'">'+NGAN[k]+' ('+n+')</button>'}).join('');
+ return '<input class="inp" id="qq" placeholder="🔍 Tìm lớp" value="'+esc(V.q)+'">'+c;
+}
+function dsLop(){
+ const s=scopeDT();
+ return lopNam().filter(function(l){
+  if(!V.qtt[ttLop(l)])return false;
+  if(s&&l.dt!==s)return false;
+  if(V.q&&(l.ten+' '+l.ma).toLowerCase().indexOf(V.q.toLowerCase())<0)return false;
+  return true;
+ });
+}
+function tabLop(){
+ const ds=dsLop();
+ if(!ds.length)return '<div class="stage"><div class="listw"><div class="empty"><b>Không có lớp nào</b>Bỏ bớt bộ lọc trạng thái</div></div></div>';
+ const head='<div class="hdrow glop"><div>Lớp</div><div>Khối</div><div class="kx">Hệ đào tạo</div><div>Sĩ số</div>'+
+  '<div class="kx">GVCN</div><div class="kx">Trạng thái</div><div class="kx">Thao tác</div></div>';
+ let body='';
+ if(V.q){body=ds.map(rowLop).join('')}
+ else{
+  const byDT={};ds.forEach(l=>{(byDT[l.dt]=byDT[l.dt]||[]).push(l)});
+  DT.forEach(function(d){
+   const arr=byDT[d.id];if(!arr)return;
+   body+='<div class="grow">'+esc(d.ten)+'<span class="ct"><span>'+arr.length+' lớp</span><span>'+
+     arr.reduce((a,l)=>a+l.ssHT,0).toLocaleString('vi')+' HS</span></span></div>';
+   const byK={};arr.forEach(l=>{(byK[l.khoi]=byK[l.khoi]||[]).push(l)});
+   Object.keys(byK).sort((a,b)=>a-b).forEach(function(k){
+    body+='<div class="grow k2">Khối '+k+'<span class="ct"><span>'+byK[k].length+' lớp</span></span></div>'+byK[k].map(rowLop).join('');
+   });
+  });
+ }
+ return '<div class="stage '+(V.pick&&V.pick[0]==='L'?'open':'')+'"><div class="listw">'+head+body+'</div>'+
+  '<div class="panel">'+(V.pick&&V.pick[0]==='L'?panelLop():'')+'</div></div>'+
+  (ghiChu?'<div class="dnote">💡 <b>Sĩ số là BA con số</b>, không phải một: <code>hiện tại / tối đa (+N giữ chỗ)</code>. '+
+   'Cột giữ chỗ đếm học sinh <b>đang bảo lưu còn giữ chỗ ở lớp này</b> (M1.6). Người xếp lớp nhìn <code>33/35</code> mà thực tế chỉ còn <b>một chỗ</b> '+
+   'vì có một em bảo lưu sắp về là sai lệch dẫn thẳng tới vượt sĩ số. M1.4 và M1.7 đọc cả ba con số, <b>không tự tính lại</b>.</div>':'');
+}
+function rowLop(l){
+ const t=ttLop(l),full=l.ssHT+l.giuCho>=l.ssMax;
+ return '<div class="hrow glop sub '+(V.pick===l.id?'on':'')+' '+(l.dong?'gone':'')+'" data-x="pick" data-i="'+l.id+'">'+
+  '<div><b>'+esc(l.ten)+'</b>'+(lopSaiBac(l)?' <span class="st2 r" title="Khối không thuộc bậc học của điểm trường">⚠</span>':'')+
+    '<div style="font-size:10.5px;color:var(--ink3)">'+esc(l.ma)+'</div></div>'+
+  '<div style="font-size:12px">Khối '+l.khoi+'</div>'+
+  '<div class="kx"><span class="st2 '+(l.he==='H1'?'n':'v')+'">'+esc(heTen(l.he))+'</span></div>'+
+  '<div class="ss '+(full?'full':'')+'"><b>'+l.ssHT+'</b> / '+l.ssMax+(l.giuCho?' <span class="gc">(+'+l.giuCho+' giữ chỗ)</span>':'')+
+   (l.ssMax>tranSS(l.khoi)?'<div class="st2 w" style="margin-top:2px" title="Trần '+tranSS(l.khoi)+' theo TT 15/2026">⚠ vượt trần</div>':'')+'</div>'+
+  '<div class="kx" style="font-size:12px">'+(l.gvcn?'<span>'+esc(l.gvcn.replace('GV','GV '))+'</span> <span class="rolnk off" title="Chiếu từ M4.5">🔗</span>':
+    '<span style="color:var(--ink3)">— chưa phân công</span>')+'</div>'+
+  '<div class="kx"><span class="st2 '+TTL[t][1]+'">'+TTL[t][0]+'</span></div>'+
+  '<div class="kx" style="display:flex;gap:4px;flex-wrap:wrap">'+actLop(l)+'</div></div>';
+}
+function actLop(l){
+ const o=[],B=(lb,a,c)=>'<button class="btn xs '+(c||'')+'" data-x="'+a+'" data-i="'+l.id+'">'+lb+'</button>';
+ o.push(B('Xem','pick'));
+ if(l.dong)return o.join('');
+ if(suaLopDuoc(l)&&choPhep('suaLop'))o.push(B('✎ Sửa','mSuaLop'));
+ if(suaLopDuoc(l)&&choPhep('suaLop'))o.push(B(choPhep('xoaLop')?'Xóa / Đóng':'Đóng','mDongLop','d'));
+ return o.join('');
+}
+function panelLop(){
+ const l=lopBy(V.pick);if(!l)return '';
+ const t=ttLop(l);
+ const F=(k,v)=>'<div class="f"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>';
+ return '<div class="ph"><div class="n"><h2>'+esc(l.ten)+'</h2><div class="m"><span class="st2 '+TTL[t][1]+'">'+TTL[t][0]+'</span>'+
+  '<span class="pill">'+esc(dtBy(l.dt).ten)+'</span></div></div><div style="flex:1"></div><button class="btn sm" data-x="close2">✕</button></div>'+
+  '<div class="pbody">'+
+  F('Mã lớp','<code>'+esc(l.ma)+'</code> <span class="pill">duy nhất trong (năm học × trường)</span>')+
+  F('Điểm trường',esc(dtBy(l.dt).ten))+
+  F('Khối','Khối '+l.khoi+(lopSaiBac(l)?' <span class="st2 r">⚠ không thuộc bậc học của điểm trường</span>':''))+
+  F('Hệ đào tạo','<span class="st2 '+(l.he==='H1'?'n':'v')+'">'+esc(heTen(l.he))+'</span>')+
+  F('Sĩ số','<span class="ss"><b>'+l.ssHT+'</b> / '+l.ssMax+(l.giuCho?' <span class="gc">(+'+l.giuCho+' giữ chỗ)</span>':'')+'</span>'+
+    (l.ssMax>tranSS(l.khoi)?'<span class="st2 w">⚠ vượt trần '+tranSS(l.khoi)+'</span>':'<span class="pill">trần '+tranSS(l.khoi)+' — TT 15/2026</span>'))+
+  F('GVCN',(l.gvcn?esc(l.gvcn.replace('GV','GV ')):'<span style="color:var(--ink3)">— chưa phân công</span>')+' '+dlink('M4.5'))+
+  F('Phòng học mặc định','<span style="font-weight:400">'+esc(l.phong)+'</span> '+dlink('M6.4'))+
+  '<div class="ro" style="margin-top:11px"><b>Ba con số sĩ số:</b> hiện tại đếm từ '+dlink('M1.1')+' · tối đa do trường khai · '+
+  'giữ chỗ đếm học sinh đang bảo lưu ở '+dlink('M1.6')+'. Danh mục lớp <b>không lưu sĩ số hiện tại</b>.</div>'+
+  '<div class="ro">👥 <b>Học sinh của lớp không khai ở đây.</b> Danh mục lớp là <b>cái hộp</b>, không phải cái ở trong hộp — '+
+  'học sinh vào lớp qua '+dlink('M1.7')+' và tuyển sinh.</div>'+
+  '</div>';
+}
+
+/* ===== TAB 5 — MON HOC ===== */
+function monApDung(){
+ const o=MONAP[keyAp(V.khoi,V.he)];if(!o)return [];
+ return Object.keys(o).filter(k=>o[k].ap);
+}
+function tabMon(){
+ const bac=V.khoi<=5?'TH':(V.khoi<=9?'THCS':'THPT');
+ const o=MONAP[keyAp(V.khoi,V.he)]||{};
+ const ds=monCua(bac);
+ const tong=ds.filter(m=>o[m.id]&&o[m.id].ap).reduce((a,m)=>a+(+o[m.id].tiet||0),0);
+ const soAp=ds.filter(m=>o[m.id]&&o[m.id].ap).length;
+ const khois=[];dtHD().forEach(d=>khoiCua(d).forEach(k=>{if(khois.indexOf(k)<0)khois.push(k)}));khois.sort((a,b)=>a-b);
+ const hes=HE.filter(h=>h.y.tt==='hd');
+ const chon='<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:9px">'+
+  '<span style="font-size:12px;color:var(--ink2)">Khối</span>'+
+  '<select class="din" data-f="khoi2" style="width:auto">'+khois.map(k=>'<option value="'+k+'"'+(V.khoi===k?' selected':'')+'>Khối '+k+'</option>').join('')+'</select>'+
+  '<span style="font-size:12px;color:var(--ink2);margin-left:6px">Hệ đào tạo</span>'+
+  '<select class="din" data-f="he2" style="width:auto">'+hes.map(h=>'<option value="'+h.id+'"'+(V.he===h.id?' selected':'')+'>'+esc(h.ten)+'</option>').join('')+'</select>'+
+  '<span class="pill" style="margin-left:8px">cấp '+bac+'</span>'+
+  '<div style="flex:1"></div>'+
+  '<span style="font-size:12.5px;color:var(--ink2)"><b>'+soAp+'</b> môn áp dụng · <b>'+tong+'</b> tiết/tuần</span></div>';
+ const head='<div class="hdrow gmon"><div>Môn học</div><div>Nhóm</div><div>Số tiết/tuần</div><div>Kiểu đánh giá</div><div>Áp dụng</div></div>';
+ const rows=ds.map(function(m){
+  const c=o[m.id]||{ap:false,tiet:0,dg:m.dg};
+  const lech=c.dg!==m.dg;
+  return '<div class="hrow gmon '+(c.ap?'':'gone')+'" style="cursor:default">'+
+   '<div><b>'+esc(m.ten)+'</b>'+(m.tuTao?' <span class="st2 v">của trường</span>':'')+
+     '<div style="font-size:10.5px;color:var(--ink3)">'+(toCuaMon(m.id)?esc(toCuaMon(m.id).ten):'<span style="color:var(--amber)">⚠ chưa thuộc tổ nào</span>')+'</div></div>'+
+   '<div><span class="st2 '+(m.nhom==='bb'?'b':'n')+'">'+(m.nhom==='bb'?'Bắt buộc':'Tự chọn')+'</span></div>'+
+   '<div>'+(c.ap?(can('mon')&&choPhep('suaLop')?
+     '<input type="number" class="dnum" data-x="tiet" data-m="'+m.id+'" value="'+c.tiet+'" min="0" max="10">':'<b>'+c.tiet+'</b>')+
+     ' <span style="color:var(--ink3);font-size:11px">tiết</span>':'<span style="color:var(--ink3)">—</span>')+'</div>'+
+   '<div>'+(c.ap?'<span class="st2 '+(c.dg==='diem'?'b':'w')+'">'+(c.dg==='diem'?'Điểm số':'Nhận xét')+'</span>'+
+     (lech?'<span class="st2 r" title="Khác mặc định của văn bản">⚠ khác mặc định</span>':'')+
+     (can('mon')?'<button class="btn xs" data-x="doiDG" data-m="'+m.id+'">↔</button>':''):'<span style="color:var(--ink3)">—</span>')+'</div>'+
+   '<div>'+(can('mon')&&choPhep('suaLop')?
+     '<button class="btn xs '+(c.ap?'g':'')+'" data-x="apMon" data-m="'+m.id+'">'+(c.ap?'✓ áp dụng':'✗ không')+'</button>':
+     '<span class="st2 '+(c.ap?'o':'n')+'">'+(c.ap?'✓ áp dụng':'✗ không')+'</span>')+'</div></div>';
+ }).join('');
+ return chon+'<div class="listw" style="margin-top:9px">'+head+rows+'</div>'+
+  '<div class="ro" style="margin-top:10px"><b>Khóa là `Khối × Hệ`, không phải `Cấp × Hệ`.</b> <code>nh0.2</code> §4.2 ghi nhầm là Cấp — '+
+  'chương trình khác nhau <b>theo khối</b>: khối 10 và khối 12 cùng cấp THPT nhưng số tiết Toán khác nhau. '+
+  'Số tiết/tuần ở đây là <b>điều kiện cần</b> của '+dlink('M4.5')+' và '+dlink('M2.5')+'.</div>'+
+  (ghiChu?'<div class="dnote">💡 <b>Kiểu đánh giá không tự do.</b> Mặc định theo <b>TT 22/2021</b> (THCS, THPT — GDTC, Âm nhạc, Mỹ thuật, HĐTN, Nội dung GD địa phương là <i>Nhận xét</i>) '+
+   'và <b>TT 27/2020</b> (tiểu học). Đổi khác mặc định thì <b>cảnh báo nêu căn cứ, không chặn</b> — nhưng đổi kiểu đánh giá làm <b>đổi cấu trúc cột điểm ở M2.5</b> và <b>công thức tổng kết ở M3.1</b>.</div>':'');
+}
+
+/* ===== TAB 6 — TO CHUYEN MON ===== */
+function tabTo(){
+ const head='<div class="hdrow gto"><div>Tổ chuyên môn</div><div>Môn thuộc tổ</div><div>Thành viên</div>'+
+  '<div>Tổ trưởng · Tổ phó</div><div>Trạng thái</div><div class="kx">Thao tác</div></div>';
+ return '<div class="listw" style="margin-top:9px">'+head+TO.map(rowTo).join('')+'</div>'+
+  '<div class="ro" style="margin-top:10px">👥 <b>Thành viên tổ là DẪN XUẤT</b> từ <code>Nhân sự × Môn được phép dạy</code> tại '+dlink('M4.4')+
+  ' — <b>không có nút thêm hoặc bớt thành viên</b>. Giáo viên dạy được nhiều môn ở nhiều tổ thì là thành viên của cả các tổ đó.</div>'+
+  '<div class="ro">🔗 <b>Tổ trưởng và Tổ phó chỉ đọc ở đây.</b> Bổ nhiệm tại '+dlink('M4.3')+' — cùng chỗ với mọi chức danh khác.</div>'+
+  (ghiChu?'<div class="dnote">💡 <b>Đây là chỗ tài liệu nguồn từng có vòng lặp chết.</b> Bản cũ suy thành viên tổ từ <b>phân công giảng dạy</b>, '+
+   'trong khi phân công lại yêu cầu <i>"giáo viên phải thuộc tổ của môn đó"</i>. Muốn phân công thì phải thuộc tổ, muốn thuộc tổ thì phải được phân công — '+
+   '<b>không có điểm khởi đầu</b>, năm học đầu tiên không ai vào được tổ nào. Cách phá vòng: tìm một <b>nguồn thứ ba khai độc lập</b> — ở đây là '+
+   '<b>năng lực chuyên môn của giáo viên</b>, thứ có thật trước cả khi có phân công.</div>':'');
+}
+function rowTo(t){
+ const tt=bnTo(t.id);
+ return '<div class="hrow gto '+(t.tt==='dong'?'gone':'')+'" style="cursor:default">'+
+  '<div><b>'+esc(t.ten)+'</b>'+(t.mota?'<div style="font-size:10.5px;color:var(--ink3)">'+esc(t.mota)+'</div>':'')+'</div>'+
+  '<div style="display:flex;gap:4px;flex-wrap:wrap">'+(t.mon.length?t.mon.map(m=>'<span class="pill">'+esc(monBy(m).ten)+'</span>').join(''):'<span style="color:var(--ink3);font-size:12px">—</span>')+'</div>'+
+  '<div><b>'+soTV(t.id)+'</b> giáo viên <span class="rolnk off" title="Dẫn xuất từ M4.4">🔗</span></div>'+
+  '<div style="font-size:12px">'+(tt.tt?'<b>'+esc(tt.tt)+'</b> <span style="color:var(--ink3);font-size:11px">(TT)</span>':
+    '<span class="st2 r">⚠ Khuyết TT</span>')+
+    (tt.tp?'<div style="font-size:11.5px;color:var(--ink2)">'+esc(tt.tp)+' <span style="color:var(--ink3)">(TP)</span></div>':'')+
+    '<div style="margin-top:2px">'+dlink('M4.3','Bổ nhiệm')+'</div></div>'+
+  '<div><span class="st2 '+(t.tt==='hd'?'o':'n')+'">'+(t.tt==='hd'?'Đang hoạt động':'Đã đóng')+'</span></div>'+
+  '<div class="kx" style="display:flex;gap:4px;flex-wrap:wrap">'+
+   (can('to')&&t.tt==='hd'?'<button class="btn xs" data-x="mSuaTo" data-i="'+t.id+'">✎ Sửa môn</button>':'')+
+   (can('to')&&t.tt==='hd'&&choPhep('khungToChuc')?'<button class="btn xs d" data-x="mDongTo" data-i="'+t.id+'">Đóng tổ</button>':'')+'</div></div>';
+}
+/* bo nhiem TT/TP — chieu tu M10.2 (chi doc) */
+const BNTO={T1:{tt:'Trần Thị Bích',tp:'Lê Văn Dũng'},T2:{tt:'Nguyễn Thị Hạnh',tp:''},
+ T3:{tt:'Bùi Thị Thu',tp:'Ngô Văn Kiên'},T4:{tt:'Vũ Đình Khoa',tp:'Nguyễn Thu Hà'},
+ T5:{tt:'Phan Thị Nhung',tp:''},T6:{tt:'',tp:''},T7:{tt:'',tp:''}};
+const bnTo=id=>BNTO[id]||{tt:'',tp:''};
+
+/* ===== MODAL ===== */
+let FORM=null;
+function mTaoLop(){
+ modal('＋ Tạo lớp — chọn cách',
+  '<div class="info">Cả ba cách chỉ tạo <b>CÁI HỘP</b>. Không cách nào mang học sinh sang — việc đó là '+dlink('M1.7')+' và tuyển sinh đầu cấp.</div>'+
+  '<div class="seg" style="flex-direction:column">'+
+  '<button class="sgb'+(choPhep('taoHangLoat')?'':' on')+'" data-x="mLopDon"><b>＋ Tạo từng lớp</b>'+
+   '<span>Bổ sung giữa năm — tách lớp, mở lớp mới</span></button>'+
+  '<button class="sgb'+(muc('taoHangLoat')==='ok'?' on':'')+'" data-x="mLopLoat"'+(choPhep('taoHangLoat')?'':' disabled')+'>'+
+   '<b>⊞ Tạo hàng loạt theo khối'+(canhBao('taoHangLoat')?' ⚠':'')+'</b><span>Dựng đầu năm — chọn cách đặt tên, xem trước rồi tạo</span></button>'+
+  '<button class="sgb" data-x="mLopClone"'+(choPhep('taoHangLoat')?'':' disabled')+'>'+
+   '<b>⧉ Lấy danh mục lớp từ năm học…'+(canhBao('taoHangLoat')?' ⚠':'')+'</b><span>Cơ cấu ổn định — sao chép rồi sửa vài chỗ (§19)</span></button>'+
+  '</div>'+
+  (canhBao('taoHangLoat')?'<div class="warn" style="margin-top:11px">⚠ <b>Năm học '+TTN[namTT()][0]+'</b> — '+LYDO.taoHangLoat+'</div>':'')+
+  (choPhep('taoHangLoat')?'':'<div class="danger" style="margin-top:11px">🔒 '+LYDO.chung+'</div>'),
+  '<button class="btn" data-x="close">Đóng</button>');
+}
+function mLopLoat(){
+ FORM={dt:scopeDT()||'DT1',khoi:'',n:4,tien:'A',kieu:'so',batDau:'1',he:'H1',ssMax:35,cach:'mau',danhSach:''};
+ drawLoat();
+}
+const CHUCAI='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+/* sinh danh sach ten lop: tu MAU, hoac tu DANH SACH nhap tay */
+function sinhTen(f){
+ if(f.cach==='tay'){
+  return String(f.danhSach||'').split(/[\n,;]+/).map(function(t){return t.trim()}).filter(function(t){return t.length});
+ }
+ const out=[],n=Math.max(0,Math.min(30,+f.n||0));
+ if(f.kieu==='chu'){
+  let st=CHUCAI.indexOf(String(f.batDau||'A').toUpperCase().charAt(0));if(st<0)st=0;
+  for(let i=0;i<n;i++)out.push(f.khoi+(f.tien||'')+CHUCAI.charAt((st+i)%26));
+ }else{
+  let st=parseInt(f.batDau,10);if(isNaN(st))st=1;
+  for(let i=0;i<n;i++)out.push(f.khoi+(f.tien||'')+(st+i));
+ }
+ return out;
+}
+const MAUSAN=[{ten:'9A1, 9A2, 9A3',tien:'A',kieu:'so',batDau:'1'},
+ {ten:'9A, 9B, 9C',tien:'',kieu:'chu',batDau:'A'},
+ {ten:'9/1, 9/2, 9/3',tien:'/',kieu:'so',batDau:'1'},
+ {ten:'9.1, 9.2, 9.3',tien:'.',kieu:'so',batDau:'1'}];
+function drawLoat(){
+ const f=FORM,dt=dtBy(f.dt);
+ const khois=khoiCua(dt);
+ const hes=HE.filter(h=>h.y.tt==='hd'&&h.y.dt.indexOf(f.dt)>=0);
+ if(!f.khoi||khois.indexOf(+f.khoi)<0)f.khoi=khois[0];
+ if(!hes.some(h=>h.id===f.he))f.he=hes.length?hes[0].id:'';
+ const prev=sinhTen(f);
+ const trung=prev.filter(t=>lopNam().some(l=>l.ten===t&&l.dt===f.dt));
+ const trungTrong=prev.filter(function(t,i){return prev.indexOf(t)!==i});
+ modal('⊞ Tạo hàng loạt theo khối',
+  '<div class="grid3">'+
+  '<div><label class="lbl">Điểm trường <b>*</b></label><select class="din" data-f="dt"'+(scopeDT()?' disabled':'')+'>'+
+   dtHD().map(d=>'<option value="'+d.id+'"'+(f.dt===d.id?' selected':'')+'>'+esc(d.ten)+'</option>').join('')+'</select></div>'+
+  '<div><label class="lbl">Khối <b>*</b></label><select class="din" data-f="khoi">'+
+   khois.map(k=>'<option value="'+k+'"'+(+f.khoi===k?' selected':'')+'>Khối '+k+'</option>').join('')+'</select>'+
+   '<div style="font-size:11px;color:var(--ink3);margin-top:2px">Chỉ hiện khối thuộc bậc học <b>'+dt.y.bac.join(', ')+'</b> — R2 chặn từ đầu vào</div></div>'+
+  '<div><label class="lbl">Số lớp <b>*</b></label><input type="number" class="din" data-f="n" min="1" max="30" value="'+f.n+'"'+(f.cach==='tay'?' disabled':'')+'>'+
+   (f.cach==='tay'?'<div style="font-size:11px;color:var(--ink3);margin-top:2px">Suy từ danh sách tên</div>':'')+'</div>'+
+  '</div>'+
+  '<div class="sech">Cách đặt tên lớp</div>'+
+  '<div class="chkl" style="margin-bottom:7px">'+
+   '<button class="chkb '+(f.cach==='mau'?'on':'')+'" data-x="fcach" data-k="mau">Sinh theo mẫu</button>'+
+   '<button class="chkb '+(f.cach==='tay'?'on':'')+'" data-x="fcach" data-k="tay">Nhập tay danh sách tên</button>'+
+  '</div>'+
+  (f.cach==='mau'?
+   '<div class="chkl" style="margin-bottom:8px"><span style="font-size:11.5px;color:var(--ink3);align-self:center;margin-right:3px">Mẫu thường dùng:</span>'+
+    MAUSAN.map(function(m,i){return '<button class="chkb '+(f.tien===m.tien&&f.kieu===m.kieu?'on':'')+'" data-x="fmau" data-k="'+i+'">'+esc(m.ten)+'</button>'}).join('')+'</div>'+
+   '<div class="grid3">'+
+   '<div><label class="lbl">Ký tự nối <span style="color:var(--ink3);font-weight:400">— đặt sau số khối</span></label>'+
+    '<input class="din" data-f="tien" placeholder="để trống · A · / · ." value="'+esc(f.tien)+'"></div>'+
+   '<div><label class="lbl">Thứ tự lớp <b>*</b></label><select class="din" data-f="kieu">'+
+    '<option value="so"'+(f.kieu==='so'?' selected':'')+'>Số — 1, 2, 3…</option>'+
+    '<option value="chu"'+(f.kieu==='chu'?' selected':'')+'>Chữ cái — A, B, C…</option></select></div>'+
+   '<div><label class="lbl">Bắt đầu từ <b>*</b></label><input class="din" data-f="batDau" value="'+esc(f.batDau)+'">'+
+    '<div style="font-size:11px;color:var(--ink3);margin-top:2px">Đã có 9A, 9B rồi thì bắt đầu từ <b>C</b></div></div>'+
+   '</div>'
+   :
+   '<label class="lbl">Danh sách tên lớp <b>*</b> <span style="color:var(--ink3);font-weight:400">— mỗi dòng một tên, hoặc ngăn bằng dấu phẩy</span></label>'+
+   '<textarea class="ta" data-f="danhSach" placeholder="9 Toán, 9 Anh, 9 Chuyên Văn">'+esc(f.danhSach)+'</textarea>'+
+   '<div style="font-size:11px;color:var(--ink3);margin-top:2px">Dùng khi trường đặt tên lớp không theo quy luật nào — lớp chuyên, lớp theo tên môn, lớp theo tên riêng</div>')+
+  '<div class="grid3" style="margin-top:8px">'+
+  '<div><label class="lbl">Hệ đào tạo <b>*</b></label><select class="din" data-f="he">'+
+   (hes.length?hes.map(h=>'<option value="'+h.id+'"'+(f.he===h.id?' selected':'')+'>'+esc(h.ten)+'</option>').join(''):'<option>— không có hệ nào —</option>')+'</select>'+
+   '<div style="font-size:11px;color:var(--ink3);margin-top:2px">Chỉ hệ áp dụng cho điểm trường này — R3</div></div>'+
+  '<div><label class="lbl">Sĩ số tối đa <b>*</b></label><input type="number" class="din'+
+    (+f.ssMax>tranSS(f.khoi)?' bad':'')+'" data-f="ssMax" min="10" max="60" value="'+f.ssMax+'">'+
+   '<div style="font-size:11px;color:'+(+f.ssMax>tranSS(f.khoi)?'var(--red)':'var(--ink3)')+';margin-top:2px">'+
+    'Trần '+bacCuaKhoi(f.khoi)+': <b>'+tranSS(f.khoi)+'</b> — TT 15/2026</div></div>'+
+  '<div></div>'+
+  '</div>'+
+  (+f.ssMax>tranSS(f.khoi)?'<div class="warn" style="margin-top:9px">⚠ Sĩ số tối đa <b>'+f.ssMax+'</b> vượt trần <b>'+tranSS(f.khoi)+
+   ' học sinh/lớp</b> của cấp '+bacCuaKhoi(f.khoi)+' theo <b>TT 15/2026/TT-BGDĐT</b>. '+
+   '<b>Cảnh báo, không chặn</b> — quyết định áp dụng thế nào là của Hiệu trưởng, và thực tế nhiều trường vượt trần vì thiếu phòng học. Hệ thống ghi Audit.</div>':'')+
+  (canhBao('taoHangLoat')?'<div class="warn" style="margin-top:10px">⚠ <b>Năm học đang hoạt động.</b> '+
+    (prev.length-trung.length-trungTrong.length)+' lớp mới sẽ xuất hiện ngay trong danh sách đang vận hành, ở trạng thái <b>Lớp trống</b> và <b>chưa có GVCN</b>. '+
+    'Không có văn bản nào cấm, nhưng phải <b>ghi lý do</b> để sau này còn giải thích được vì sao danh sách lớp đổi giữa năm.</div>'+
+    '<label class="lbl">Lý do tạo lớp giữa năm học <b>*</b></label>'+
+    '<textarea class="ta" id="lyDoLoat" placeholder="Ví dụ: tiếp nhận 96 học sinh từ Trường THCS Bình Thủy giải thể theo QĐ 214/QĐ-UBND ngày 05/11/2026">'+esc(FORM.lyDo||'')+'</textarea>':'')+
+  '<div class="sech">Xem trước — sẽ tạo '+(prev.length-trung.length-trungTrong.length)+' lớp'+
+   (trung.length+trungTrong.length?', bỏ qua '+(trung.length+trungTrong.length):'')+'</div>'+
+  '<div class="prev">'+prev.map(t=>'<span class="pill" style="'+(trung.indexOf(t)>=0?'background:var(--amber-soft);border-color:#fde68a;color:#92400e':'')+'">'+esc(t)+
+    (trung.indexOf(t)>=0?' ⚠':'')+'</span>').join('')+'</div>'+
+  (trung.length?'<div class="warn" style="margin-top:9px">⚠ '+trung.length+' tên lớp <b>đã tồn tại</b> trong năm học này — sẽ <b>bỏ qua</b>, không ghi đè.</div>':'')+
+  (trungTrong.length?'<div class="warn" style="margin-top:9px">⚠ '+trungTrong.length+' tên bị <b>lặp trong chính danh sách</b> vừa nhập — chỉ tạo một lần.</div>':'')+
+  (!prev.length?'<div class="danger" style="margin-top:9px">Chưa có tên lớp nào để tạo.</div>':'')+
+  '<div class="ro" style="margin-top:9px">Chỉ tạo <b>cái hộp</b>. Không mang học sinh sang.</div>',
+  '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="chayLoat"'+
+   (prev.length-trung.length-trungTrong.length<=0?' disabled':'')+'>⊞ Tạo '+(prev.length-trung.length-trungTrong.length)+' lớp</button>');
+}
+function chayLoat(){
+ const f=FORM,ds=sinhTen(f);
+ const tao=[],bo=[],daLam={};
+ ds.forEach(function(ten){
+  if(daLam[ten]){bo.push([ten+' ('+dtBy(f.dt).viettat+')','tên bị lặp trong chính danh sách vừa nhập']);return}
+  daLam[ten]=1;
+  if(lopNam().some(function(l){return l.ten===ten&&l.dt===f.dt})){bo.push([ten+' ('+dtBy(f.dt).viettat+')','tên lớp đã tồn tại trong năm học này']);return}
+  LSEQ++;
+  LOP.push({id:'L'+LSEQ,nam:NAMHOC,ten:ten,ma:dtBy(f.dt).viettat+'-'+ten,dt:f.dt,khoi:+f.khoi,he:f.he,ssMax:+f.ssMax,
+   gvcn:'',phong:'',dong:false,ssHT:0,giuCho:0});
+  tao.push(ten);
+ });
+ modal('Kết quả tạo hàng loạt',
+  '<div class="res"><div class="resh ok">✅ ĐÃ TẠO — '+tao.length+' lớp</div>'+
+   (tao.length?'<div class="resr"><div class="w">'+esc(dtBy(f.dt).ten)+' · Khối '+f.khoi+'</div><div class="r">'+tao.join(' · ')+'</div></div>':'')+'</div>'+
+  (bo.length?'<div class="res"><div class="resh sk">⚠ ĐÃ BỎ QUA — '+bo.length+' dòng</div>'+
+   bo.map(b=>'<div class="resr"><div class="w">'+esc(b[0])+'</div><div class="r">'+esc(b[1])+'</div></div>').join('')+'</div>':'')+
+  (FORM.lyDo?'<div class="ro" style="margin-top:10px">📝 Audit Log ghi: <b>tạo '+tao.length+' lớp giữa năm học đang hoạt động</b> · lý do: <i>'+esc(FORM.lyDo)+'</i></div>':'')+
+  '<div class="warn" style="margin-top:10px">Các lớp vừa tạo đang ở trạng thái <b>Lớp trống</b> và <b>chưa có GVCN</b>. '+
+  'Phân công GVCN tại '+dlink('M4.5')+', đưa học sinh vào lớp qua tuyển sinh hoặc '+dlink('M1.7')+'.</div>',
+  '<button class="btn p" data-x="closeR">Đã hiểu</button>');
+}
+function mSuaLop(id){
+ const l=lopBy(id);FORM={id:id,ssMax:l.ssMax,he:l.he,ten:l.ten};
+ drawSuaLop();
+}
+function drawSuaLop(){
+ const l=lopBy(FORM.id),f=FORM;
+ const coHS=l.ssHT>0;
+ const hes=HE.filter(h=>h.y.tt==='hd'&&h.y.dt.indexOf(l.dt)>=0);
+ const giam=+f.ssMax<l.ssHT;
+ const doiHe=f.he!==l.he;
+ modal('✎ Sửa lớp '+esc(l.ten),
+  '<div class="grid2">'+
+  '<div><label class="lbl">Tên lớp</label><input class="din" data-f="ten" value="'+esc(f.ten)+'"></div>'+
+  '<div><label class="lbl">Sĩ số tối đa</label><input type="number" class="din '+(giam?'bad':'')+'" data-f="ssMax" value="'+f.ssMax+'" min="1" max="60"></div>'+
+  '</div>'+
+  (giam?'<div class="warn" style="margin-top:8px">⚠ Sĩ số tối đa <b>'+l.ssMax+' → '+f.ssMax+'</b> trong khi lớp <b>đang có '+l.ssHT+' học sinh</b>. '+
+   'Cho phép, nhưng hệ thống <b>không tự đuổi ai ra</b> — R6.</div>':'')+
+  (+f.ssMax>tranSS(l.khoi)?'<div class="warn" style="margin-top:8px">⚠ Sĩ số tối đa <b>'+f.ssMax+'</b> vượt trần <b>'+tranSS(l.khoi)+
+   ' học sinh/lớp</b> của cấp '+bacCuaKhoi(l.khoi)+' theo <b>TT 15/2026/TT-BGDĐT</b>. Cảnh báo, không chặn — ghi Audit.</div>':'')+
+  '<label class="lbl">Hệ đào tạo</label><select class="din" data-f="he" style="max-width:320px">'+
+   hes.map(h=>'<option value="'+h.id+'"'+(f.he===h.id?' selected':'')+'>'+esc(h.ten)+'</option>').join('')+'</select>'+
+  (doiHe&&coHS?'<div class="danger" style="margin-top:9px">💰 <b>Đổi hệ đào tạo của lớp đang có học sinh — cần Hiệu trưởng duyệt.</b><br>'+
+   '<b>'+l.ssHT+' học sinh</b> sẽ đổi khoản thu: <b>'+esc(heTen(l.he))+' → '+esc(heTen(f.he))+'</b>.<br>'+
+   'Duyệt xong sẽ báo cho <b>Kế toán</b> và <b>GVCN lớp này</b>. '+dlink('M7.2')+'<br>'+
+   '<span style="font-size:11.5px">Hóa đơn <b>đã phát hành</b> không tự điều chỉnh — thuộc M7.2 xử lý tiếp.</span></div>'+
+   '<label class="lbl">Lý do đổi hệ đào tạo <b>*</b></label><textarea class="ta" id="lyDoHe"></textarea>':'')+
+  '<div class="ro" style="margin-top:10px">🔒 <b>Không sửa được:</b> Khối và Điểm trường của lớp đang có học sinh — R8. '+
+  'Đổi khối là đổi bản chất lớp; đổi điểm trường là chuyển cả lớp sang cơ sở khác, nghiệp vụ khác.</div>',
+  '<button class="btn" data-x="close">Hủy</button>'+
+  (doiHe&&coHS?'<button class="btn p" data-x="duyetHe" data-i="'+l.id+'">⚖ Trình Hiệu trưởng duyệt</button>':
+   '<button class="btn p" data-x="luuLop" data-i="'+l.id+'">Lưu</button>'));
+}
+function mDongLop(id){
+ const l=lopBy(id);
+ if(l.ssHT>0||l.giuCho>0){
+  const ten=['Nguyễn Minh Anh','Trần Quốc Bảo','Đỗ Nam Khánh','Lê Thị Mai','Vũ Thị Ngọc'];
+  modal('⛔ Không đóng được lớp '+esc(l.ten),
+   '<div class="danger"><b>R5 — chặn cứng.</b> Lớp còn <b>'+l.ssHT+' học sinh đang học</b>'+
+   (l.giuCho?' và <b>'+l.giuCho+' học sinh đang bảo lưu giữ chỗ</b>':'')+'.</div>'+
+   '<div class="sech">Còn những em nào</div><div class="prev">'+
+   ten.slice(0,Math.min(5,l.ssHT)).map(t=>'<span class="pill">'+t+'</span>').join('')+
+   (l.ssHT>5?'<span class="pill">… và '+(l.ssHT-5)+' em khác</span>':'')+'</div>'+
+   '<div class="ro" style="margin-top:10px">Phải chuyển hết học sinh đi trước. '+dlink('M1.7','Chuyển lớp')+
+   (l.giuCho?' · '+dlink('M1.6','Xử lý bảo lưu'):'')+'</div>',
+   '<button class="btn" data-x="close">Đóng</button>');return}
+ modal('Đóng lớp '+esc(l.ten),
+  '<div class="okbx">Lớp không còn học sinh — đóng được.</div>'+
+  '<div class="imp"><div class="impr"><div>Hạng mục</div><div>Con số</div><div></div></div>'+
+  '<div class="impr"><div>Dòng phân công giảng dạy</div><div class="num">'+(l.gvcn?9:0)+'</div><div></div></div>'+
+  '<div class="impr"><div>Tiết trong thời khóa biểu</div><div class="num">'+(l.gvcn?30:0)+'</div><div></div></div>'+
+  '<div class="impr"><div>Hóa đơn học phí đã phát hành</div><div class="num">0</div><div></div></div></div>'+
+  '<div class="ro" style="margin-top:10px"><b>Không xóa bản ghi.</b> Lớp chuyển sang <b>Đã đóng</b>, tìm lại được qua chip lọc <i>Đã đóng</i>, '+
+  'và <b>vẫn được đẩy lên CSDL ngành với sĩ số 0</b> — an toàn hành chính, khớp báo cáo Sở.</div>'+
+  '<label class="lbl">Lý do đóng lớp <b>*</b></label><textarea class="ta" id="lyDoDong"></textarea>',
+  '<button class="btn" data-x="close">Hủy</button><button class="btn d" data-x="doDongLop" data-i="'+l.id+'">Đóng lớp</button>');
+}
+function mDongDT(id){
+ const d=dtBy(id),lops=lopCuaDT(id),hs=lops.reduce((a,l)=>a+l.ssHT,0);
+ const conLop=lops.filter(l=>ttLop(l)!=='trong').length;
+ modal('Đóng điểm trường '+esc(d.ten),
+  (conLop?'<div class="danger"><b>R9 — chặn cứng.</b> Còn <b>'+conLop+' lớp đang hoạt động</b> thuộc điểm trường này. '+
+   'Phải đóng hoặc chuyển các lớp đó trước.</div>':'<div class="okbx">Không còn lớp đang hoạt động — đóng được.</div>')+
+  '<div class="imp"><div class="impr"><div>Hạng mục</div><div>Con số</div><div></div></div>'+
+  '<div class="impr '+(conLop?'bad':'')+'"><div>Lớp đang hoạt động</div><div class="num">'+conLop+'</div><div>'+(conLop?'⛔':'')+'</div></div>'+
+  '<div class="impr '+(hs?'bad':'')+'"><div>Học sinh</div><div class="num">'+hs.toLocaleString('vi')+'</div><div>'+(hs?'⛔':'')+'</div></div>'+
+  '<div class="impr al"><div>Nhân sự có điểm trường công tác là nơi này</div><div class="num">24</div><div>⚠</div></div>'+
+  '<div class="impr al"><div>Tiết đã sinh trong lịch giảng dạy</div><div class="num">'+(lops.length*62)+'</div><div>⚠</div></div>'+
+  '<div class="impr al"><div>Đợt nghỉ có phạm vi trỏ tới điểm trường này</div><div class="num">1</div><div>⚠</div></div></div>'+
+  '<div class="ro" style="margin-top:10px">Đóng điểm trường <b>không xóa bản ghi</b> — chuyển trạng thái <b>Đóng cửa</b> ở <b>năm học đang chọn</b>. '+
+  'Năm cũ giữ nguyên <i>Đang hoạt động</i>, báo cáo lịch sử không đổi.</div>'+
+  '<div class="ro">Bậc học của trường sẽ tính lại: <b>'+bacTruong().join(' · ')+'</b> → <b>'+
+   (function(){const s={};DT.filter(x=>x.y.tt==='hd'&&x.id!==id).forEach(x=>x.y.bac.forEach(b=>s[b]=1));
+    return ['Tiểu học','THCS','THPT'].filter(b=>s[b]).join(' · ')||'(không còn bậc nào)'})()+'</b></div>',
+  '<button class="btn" data-x="close">Hủy</button>'+
+  (conLop?'':'<button class="btn d" data-x="kyDongDT" data-i="'+id+'">⚖ Ký và đóng điểm trường</button>'));
+}
+function mDongHe(id){
+ const h=heBy(id),lops=lopNam().filter(l=>l.he===id&&!l.dong);
+ modal('Đóng hệ đào tạo '+esc(h.ten),
+  (lops.length?'<div class="danger"><b>R10 — chặn cứng.</b> Còn <b>'+lops.length+' lớp</b> đang dùng hệ này.</div>'+
+   '<div class="prev">'+lops.map(l=>'<span class="pill">'+esc(l.ten)+' ('+esc(dtBy(l.dt).viettat)+')</span>').join('')+'</div>'+
+   '<div class="ro" style="margin-top:10px">Phải đổi hệ đào tạo của các lớp trên trước — và mỗi lần đổi <b>kéo theo đổi khoản thu</b> của học sinh trong lớp.</div>':
+   '<div class="okbx">Không lớp nào đang dùng hệ này — đóng được.</div>'),
+  '<button class="btn" data-x="close">Đóng</button>'+(lops.length?'':'<button class="btn d" data-x="kyDongHe" data-i="'+id+'">⚖ Ký và đóng hệ</button>'));
+}
+function mKy(tieu,cb){
+ window.__kyCB=cb;
+ modal('⚖ Ký số — '+tieu,
+  '<div class="info">Ký số <b>Nhóm A</b> — bỏ qua được. Trường chưa có chứng thư số mà bị chặn thì không cấu hình được cơ cấu tổ chức.</div>'+
+  '<div class="ro">Bỏ qua thì thao tác <b>vẫn thực hiện</b>, ghi Audit Log và đồng bộ sang '+dlink('M4.3')+' để văn bản vào danh sách <i>cần in ra ký tay</i>.</div>',
+  '<button class="btn" data-x="kyBo">Bỏ qua ký số</button><button class="btn p" data-x="kyOK">🔏 Ký bằng USB Token / SmartCA</button>');
+}
+
+/* ===== SU KIEN ===== */
+document.addEventListener('click',function(ev){
+ const rb=ev.target.closest('.rb');
+ if(rb&&rb.dataset.r){role=rb.dataset.r;document.querySelectorAll('.rb[data-r]').forEach(b=>b.classList.toggle('on',b.dataset.r===role));
+  V.pick=null;render();toast('Đang xem với vai trò <b>'+esc(R().ten)+'</b>'+
+   (scopeDT()?' — bộ chọn Điểm trường ở header <b>bị khóa</b> về '+esc(dtTen(scopeDT())):''));return}
+ if(ev.target.closest('#btnNote')){ghiChu=!ghiChu;$('#btnNote').classList.toggle('on',ghiChu);render();return}
+ const el=ev.target.closest('[data-x]');if(!el)return;
+ const x=el.dataset.x,id=el.dataset.i;
+ if(x==='close'){closeModal();return}
+ if(x==='closeR'){closeModal();render();return}
+ if(x==='close2'){V.pick=null;render();return}
+ if(x==='tab'){closeModal();V.tab=el.dataset.t;V.pick=null;render();return}
+ if(x==='qtt'){V.qtt[el.dataset.t]=!V.qtt[el.dataset.t];render();return}
+ if(x==='pick'){V.pick=(V.pick===id?null:id);render();return}
+ if(x==='dl'){toast('↗ Deep-link <b>/'+el.dataset.m+'?ctx=…&return=M10.2</b> — mở sẵn đúng ngữ cảnh (demo không điều hướng)');return}
+ if(x==='xemQD'){toast('👁 Mở quyết định bổ nhiệm ngay trong màn hình — <b>Xem đứng trước Tải</b>. Ghi Audit Log');return}
+ if(x==='xemCanh'){const c=dsCanh();
+  modal('Cảnh báo cấu hình — năm học '+NAMHOC,
+   (c.length?'<div class="info">Gom mọi cảnh báo cấu hình của <b>sáu tab</b> vào một chỗ, để không phải mở từng tab mới biết còn thiếu gì.</div>'+
+    c.map(function(x){return '<div class="'+(x[0]==='rd'?'danger':'warn')+'">'+(x[0]==='rd'?'🔴':'⚠')+' '+x[1]+
+     '<div style="margin-top:6px;font-weight:400;font-size:12px">'+x[2]+'</div></div>'}).join(''):
+    '<div class="okbx">✅ Không có cảnh báo cấu hình nào.</div>'),
+   '<button class="btn" data-x="close">Đóng</button>');return}
+ if(x==='xemKhoa'){const c=dsKhoa(),tt=namTT();
+  modal('Năm học '+NAMHOC+' — '+TTN[tt][0]+' · ghi được những gì',
+   '<div class="info">Ràng buộc ghi có <b>hai chiều</b>. Chiều này chặn theo <b>trạng thái năm học</b>; '+
+   'chiều kia chặn theo <b>bản ghi đã phát sinh dữ liệu chưa</b> <i>(đóng lớp còn học sinh, đổi khối của lớp đã có học sinh…)</i> '+
+   'và <b>luôn có hiệu lực ở mọi trạng thái</b>.</div>'+
+   '<div class="ro"><b>Tra cứu 29/8/2026:</b> <b>không có văn bản nào quy định thời điểm thêm hay đóng lớp</b>. '+
+   'TT 15/2026 chỉ quy định <b>sĩ số tối đa</b> (tiểu học ≤35, THCS và THPT ≤45); NĐ 125/2024 quy định thành lập và giải thể <b>cơ sở giáo dục</b>, không phải lớp. '+
+   'Biên chế lớp thuộc <b>thẩm quyền tự chủ của nhà trường</b> ⇒ theo §15, chặn cứng giữa năm là <b>đặt phần mềm vào chỗ của Hiệu trưởng</b>. '+
+   'Chỉ giữ chặn cứng cho <b>toàn vẹn dữ liệu</b>.</div>'+
+   (c.chan.length?'<div class="sech">⛔ Chặn cứng — toàn vẹn dữ liệu</div>'+
+    c.chan.map(function(x){return '<div class="blk"><div class="ic">⛔</div><div class="tx"><b>'+x[0]+'</b><div style="color:var(--ink2);margin-top:2px">'+x[1]+'</div></div></div>'}).join(''):'')+
+   (c.canh.length?'<div class="sech">⚠ Vẫn làm được — nhưng cảnh báo và bắt ghi lý do</div>'+
+    c.canh.map(function(x){return '<div class="blk"><div class="ic">⚠</div><div class="tx"><b>'+x[0]+'</b><div style="color:var(--ink2);margin-top:2px">'+x[1]+'</div></div></div>'}).join(''):'')+
+   (tt==='hd'?'<div class="sech">✅ Làm bình thường giữa năm</div>'+
+    ['<b>Tạo từng lớp</b> — tách lớp khi sĩ số quá đông, mở lớp nhận học sinh chuyển đến',
+     '<b>Sửa lớp</b> — đổi sĩ số tối đa, đổi hệ đào tạo (có Hiệu trưởng duyệt)',
+     '<b>Đóng lớp</b> đã hết học sinh',
+     '<b>Bổ nhiệm và bãi nhiệm chức danh</b> — Kế toán nghỉ giữa năm thì phải thay được ngay'].map(function(t){
+      return '<div class="blk"><div class="ic">✅</div><div class="tx">'+t+'</div></div>'}).join(''):'')+
+   '<div class="ro" style="margin-top:11px">Bảng chế độ đầy đủ theo từng trạng thái năm học nằm ở '+dlink('M10.1')+'.</div>',
+   '<button class="btn" data-x="close">Đã hiểu</button>');return}
+ if(x==='mTaoLop'){mTaoLop();return}
+ if(x==='mLopLoat'){mLopLoat();return}
+ if(x==='fcach'){FORM.cach=el.dataset.k;drawLoat();return}
+ if(x==='fmau'){const m=MAUSAN[+el.dataset.k];FORM.tien=m.tien;FORM.kieu=m.kieu;FORM.batDau=m.batDau;drawLoat();return}
+ if(x==='chayLoat'){
+  if(canhBao('taoHangLoat')){const ld=$('#lyDoLoat');
+   if(!ld||!ld.value.trim()){toast('⚠ Năm học đang hoạt động — <b>bắt buộc ghi lý do</b> tạo lớp giữa năm');return}
+   FORM.lyDo=ld.value.trim();}
+  chayLoat();return}
+ if(x==='mLopDon'){modal('＋ Tạo từng lớp',
+   '<div class="grid2"><div><label class="lbl">Điểm trường <b>*</b></label><select class="din">'+dtHD().map(d=>'<option>'+esc(d.ten)+'</option>').join('')+'</select></div>'+
+   '<div><label class="lbl">Khối <b>*</b></label><select class="din">'+khoiCua(dtHD()[0]).map(k=>'<option>Khối '+k+'</option>').join('')+'</select>'+
+   '<div style="font-size:11px;color:var(--ink3);margin-top:2px">Chỉ khối thuộc bậc học của điểm trường — R2</div></div></div>'+
+   '<div class="grid2" style="margin-top:8px"><div><label class="lbl">Tên lớp <b>*</b></label><input class="din" placeholder="9A5"></div>'+
+   '<div><label class="lbl">Sĩ số tối đa <b>*</b></label><input type="number" class="din" value="35"></div></div>'+
+   '<label class="lbl">Hệ đào tạo <b>*</b></label><select class="din" style="max-width:300px">'+HE.filter(h=>h.y.tt==='hd').map(h=>'<option>'+esc(h.ten)+'</option>').join('')+'</select>'+
+   '<div class="ro" style="margin-top:10px">Chỉ tạo <b>cái hộp</b> — không mang học sinh sang, không gán GVCN.</div>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="close">Tạo lớp</button>');return}
+ if(x==='mLopClone'){modal('⧉ Lấy danh mục lớp từ năm học…',
+   '<div class="info">Theo <b>§19</b> của khung menu — quy ước chung cho mọi tab cấu hình.</div>'+
+   '<label class="lbl">Lấy từ năm học</label><select class="din" style="max-width:300px"><option>2025-2026 · Đã kết thúc</option></select>'+
+   '<div class="sech">Xem trước</div>'+
+   '<div class="res"><div class="resh ok">✅ SẼ TẠO — 38 lớp</div>'+
+   '<div class="resr"><div class="w">ĐT Nguyễn Tất Thành</div><div class="r">20 lớp</div></div>'+
+   '<div class="resr"><div class="w">ĐT Vĩnh Lộc</div><div class="r">11 lớp</div></div>'+
+   '<div class="resr"><div class="w">ĐT Tân Hội</div><div class="r">7 lớp</div></div></div>'+
+   '<div class="res"><div class="resh sk">⚠ SẼ BỎ QUA — 3 dòng</div>'+
+   '<div class="resr"><div class="w">12A1, 12A2 (ĐT Vĩnh Lộc)</div><div class="r">khối 12 không thuộc bậc học của điểm trường năm nay</div></div>'+
+   '<div class="resr"><div class="w">9A1 (ĐT Tân Hội)</div><div class="r">mã lớp đã tồn tại trong năm học này</div></div></div>'+
+   '<div class="warn" style="margin-top:10px"><b>Chỉ copy CÁI HỘP.</b> Không copy học sinh — việc đưa học sinh sang lớp năm mới là kết chuyển ở '+dlink('M1.7')+' và M3.3.</div>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="close">⧉ Chạy</button>');return}
+ if(x==='mSuaLop'){mSuaLop(id);return}
+ if(x==='luuLop'){const l=lopBy(id);l.ssMax=+FORM.ssMax;l.ten=FORM.ten;closeModal();render();
+  toast('Đã lưu lớp <b>'+esc(l.ten)+'</b>. Audit Log ghi cả <b>sĩ số hiện tại tại thời điểm đổi</b>');return}
+ if(x==='duyetHe'){
+  const ld=$('#lyDoHe');
+  if(!ld||!ld.value.trim()){toast('⚠ <b>Bắt buộc ghi lý do</b> đổi hệ đào tạo');return}
+  const l=lopBy(id),cu=l.he;
+  mKy('Đổi hệ đào tạo lớp '+l.ten,function(kyRoi){
+   l.he=FORM.he;closeModal();render();
+   toast('💰 Đã đổi hệ <b>'+esc(heTen(cu))+' → '+esc(heTen(l.he))+'</b> cho lớp '+esc(l.ten)+
+    ' · <b>'+l.ssHT+' học sinh</b> đổi khoản thu · đã báo Kế toán và GVCN'+(kyRoi?'':' · <b>bỏ qua ký số</b>'));
+  });return}
+ if(x==='mDongLop'){mDongLop(id);return}
+ if(x==='doDongLop'){
+  const ld=$('#lyDoDong');
+  if(!ld||!ld.value.trim()){toast('⚠ <b>Bắt buộc ghi lý do</b> đóng lớp');return}
+  const l=lopBy(id);l.dong=true;closeModal();V.pick=null;V.qtt.dong=1;render();
+  toast('Đã đóng lớp <b>'+esc(l.ten)+'</b> — tìm lại được qua chip <b>Đã đóng</b>, vẫn đẩy lên CSDL ngành với sĩ số 0');return}
+ if(x==='mDongDT'){mDongDT(id);return}
+ if(x==='kyDongDT'){mKy('Đóng điểm trường',function(kyRoi){
+   dtBy(id).y.tt='dong';closeModal();V.pick=null;render();
+   toast('Đã đóng <b>'+esc(dtTen(id))+'</b> ở năm '+NAMHOC+' · bậc học của trường tính lại thành <b>'+bacTruong().join(' · ')+'</b>'+(kyRoi?'':' · bỏ qua ký số'));
+  });return}
+ if(x==='mDongHe'){mDongHe(id);return}
+ if(x==='kyDongHe'){mKy('Đóng hệ đào tạo',function(){heBy(id).y.tt='dong';closeModal();render();toast('Đã đóng hệ đào tạo');});return}
+ if(x==='apMon'){
+  const o=MONAP[keyAp(V.khoi,V.he)],m=el.dataset.m;
+  if(o[m].ap){
+   /* tat mon: chan cung neu dang co phan cong hoac da co diem */
+   if(['M01','M02','M03'].indexOf(m)>=0){
+    modal('⛔ Không tắt được môn '+esc(monBy(m).ten),
+     '<div class="danger"><b>R16 — chặn cứng.</b> Môn này <b>đang có phân công giảng dạy</b> và <b>đã có điểm</b> ở khối '+V.khoi+' hệ '+esc(heTen(V.he))+'.</div>'+
+     '<div class="sech">Đang vướng ở đâu</div>'+
+     '<div class="prev"><span class="pill">10A1 — Trần Thị Bích</span><span class="pill">10A2 — Lê Văn Dũng</span>'+
+     '<span class="pill">10A3 — Nguyễn Văn An</span><span class="pill">10B1 — Đỗ Thị Lan</span></div>'+
+     '<div class="ro" style="margin-top:10px">Phải gỡ phân công ở '+dlink('M4.5')+' trước. Điểm đã nhập ở '+dlink('M2.5')+' <b>không xóa được</b> — nếu thật sự bỏ môn thì phải xử lý ở đó.</div>',
+     '<button class="btn" data-x="close">Đóng</button>');return}
+   o[m].ap=false;render();toast('Đã tắt môn <b>'+esc(monBy(m).ten)+'</b> cho khối '+V.khoi+' · hệ '+esc(heTen(V.he)));
+  }else{o[m].ap=true;render();toast('Đã bật môn <b>'+esc(monBy(m).ten)+'</b> · số tiết mặc định '+o[m].tiet+' tiết/tuần')}
+  return}
+ if(x==='doiDG'){
+  const o=MONAP[keyAp(V.khoi,V.he)],m=el.dataset.m,mm=monBy(m);
+  const moi=o[m].dg==='diem'?'nx':'diem';
+  if(moi!==mm.dg){
+   modal('⚠ Đổi kiểu đánh giá khác mặc định — '+esc(mm.ten),
+    '<div class="warn">Theo <b>'+(V.khoi<=5?'TT 27/2020':'TT 22/2021')+'</b>, môn <b>'+esc(mm.ten)+'</b> mặc định đánh giá bằng <b>'+
+    (mm.dg==='diem'?'điểm số':'nhận xét')+'</b>. Bạn đang đổi sang <b>'+(moi==='diem'?'điểm số':'nhận xét')+'</b>.</div>'+
+    '<div class="ro"><b>Cảnh báo, không chặn</b> — §15. Nhưng nói rõ hệ quả:</div>'+
+    '<div class="blk"><div class="ic">▸</div><div class="tx">Đổi <b>cấu trúc cột điểm</b> ở '+dlink('M2.5')+' cho mọi lớp khối '+V.khoi+' hệ '+esc(heTen(V.he))+'</div></div>'+
+    '<div class="blk"><div class="ic">▸</div><div class="tx">Đổi <b>công thức tổng kết</b> ở '+dlink('M3.1')+'</div></div>'+
+    '<label class="lbl">Lý do <b>*</b></label><textarea class="ta" id="lyDoDG"></textarea>',
+    '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="doDoiDG" data-m="'+m+'">Xác nhận đổi</button>');return}
+  o[m].dg=moi;render();return}
+ if(x==='doDoiDG'){
+  const ld=$('#lyDoDG');if(!ld||!ld.value.trim()){toast('⚠ <b>Bắt buộc ghi lý do</b> khi đổi khác mặc định của văn bản');return}
+  const o=MONAP[keyAp(V.khoi,V.he)],m=el.dataset.m;
+  o[m].dg=o[m].dg==='diem'?'nx':'diem';closeModal();render();
+  toast('Đã đổi kiểu đánh giá <b>'+esc(monBy(m).ten)+'</b> · Audit Log ghi kèm lý do và căn cứ văn bản');return}
+ if(x==='mSuaTo'){const t=toBy(id);
+  modal('✎ Sửa môn thuộc tổ — '+esc(t.ten),
+   '<div class="info"><b>Một môn chỉ thuộc MỘT tổ</b> — R14. Môn đã thuộc tổ khác thì hiện tên tổ đang giữ và không chọn được.</div>'+
+   '<div class="chkl">'+MON.map(function(m){
+     const cua=toCuaMon(m.id);
+     const cuaMinh=cua&&cua.id===t.id;
+     const ban=cua&&!cuaMinh;
+     return '<button class="chkb '+(cuaMinh?'on':'')+'"'+(ban?' disabled title="Đang thuộc '+esc(cua.ten)+'"':'')+'>'+esc(m.ten)+
+      (ban?' 🔒':'')+'</button>'}).join('')+'</div>'+
+   '<div class="ro" style="margin-top:11px">👥 <b>Thành viên tổ không sửa ở đây</b> — dẫn xuất từ <i>môn được phép dạy</i> tại '+dlink('M4.4')+
+   '. Đổi môn thuộc tổ thì <b>danh sách thành viên tự đổi theo</b>.</div>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="close">Lưu</button>');return}
+ if(x==='mDongTo'){const t=toBy(id);
+  modal('Đóng tổ — '+esc(t.ten),
+   (t.mon.length?'<div class="danger"><b>R18 — chặn cứng.</b> Tổ còn <b>'+t.mon.length+' môn</b>: '+
+     t.mon.map(m=>esc(monBy(m).ten)).join(' · ')+'. Phải chuyển các môn này sang tổ khác trước.</div>':
+     '<div class="okbx">Tổ không còn môn nào — đóng được.</div>')+
+   (bnTo(t.id).tt?'<div class="warn">⚠ Tổ đang có Tổ trưởng <b>'+esc(bnTo(t.id).tt)+'</b>. Đóng tổ thì <b>bản ghi bổ nhiệm ở M4.3 bị đóng theo</b> — người đó mất phạm vi <code>Group</code>. '+dlink('M4.3')+'</div>':'')+
+   '<div class="ro">'+soTV(t.id)+' giáo viên đang là thành viên tổ này. Họ <b>không mất gì</b> — thành viên là dẫn xuất từ môn được phép dạy, đóng tổ chỉ làm mất cái nhóm.</div>',
+   '<button class="btn" data-x="close">Đóng</button>'+(t.mon.length?'':'<button class="btn d" data-x="close">Xác nhận đóng tổ</button>'));return}
+ if(x==='mThemTo'){modal('＋ Thành lập tổ chuyên môn',
+   '<label class="lbl">Tên tổ <b>*</b></label><input class="din" placeholder="Tổ Toán — Tin">'+
+   '<label class="lbl">Mô tả</label><input class="din">'+
+   '<label class="lbl">Môn thuộc tổ <b>*</b></label><div class="chkl">'+
+   MON.filter(m=>!toCuaMon(m.id)).map(m=>'<button class="chkb">'+esc(m.ten)+'</button>').join('')+
+   '</div><div style="font-size:11px;color:var(--ink3);margin-top:3px">Chỉ hiện môn <b>chưa thuộc tổ nào</b> — R14</div>'+
+   '<div class="ro" style="margin-top:11px">⚖ Thành lập tổ là <b>quyết định hành chính</b> — Hiệu trưởng ký. Bổ nhiệm Tổ trưởng làm riêng tại '+dlink('M4.3')+'.</div>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="close">⚖ Ký và thành lập</button>');return}
+ if(x==='mThemMon'){modal('＋ Thêm môn của trường',
+   '<div class="info">Danh mục môn chuẩn theo Chương trình GDPT 2018 <b>không sửa được</b>. Mục này để thêm <b>môn tự tạo của trường</b> — Song ngữ, STEM, Tiếng Anh tăng cường…</div>'+
+   '<label class="lbl">Tên môn <b>*</b></label><input class="din">'+
+   '<label class="lbl">Áp dụng cho cấp <b>*</b></label><div class="chkl"><button class="chkb">Tiểu học</button><button class="chkb on">THCS</button><button class="chkb on">THPT</button></div>'+
+   '<label class="lbl">Kiểu đánh giá mặc định</label><div class="chkl"><button class="chkb on">Điểm số</button><button class="chkb">Nhận xét</button></div>'+
+   '<div class="ro" style="margin-top:11px">Môn mới <b>chưa thuộc tổ nào</b> — phải gán vào một tổ ở tab ⑥, nếu không thì '+dlink('M5.1')+' chặn việc tạo kế hoạch giảng dạy cho môn đó.</div>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="close">Thêm môn</button>');return}
+ if(x==='mThemDT'){modal('＋ Thêm điểm trường',
+   '<div class="grid2"><div><label class="lbl">Mã điểm trường <b>*</b></label><input class="din" placeholder="NTT-05"></div>'+
+   '<div><label class="lbl">Tên điểm trường <b>*</b></label><input class="din"></div></div>'+
+   '<label class="lbl">Địa chỉ <b>*</b></label><input class="din">'+
+   '<label class="lbl">Bậc học <b>*</b></label><div class="chkl">'+
+   ['Tiểu học','THCS','THPT'].map(b=>'<button class="chkb">'+b+'</button>').join('')+'</div>'+
+   '<div class="warn" style="margin-top:10px">Thêm điểm trường có <b>bậc học mới</b> thì <b>bậc học của trường mở rộng theo</b> — '+
+   'hiện tại <b>'+bacTruong().join(' · ')+'</b>. Đây là cơ chế union ở §1.2, không phải lỗi.</div>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="close">⚖ Ký và thêm</button>');return}
+ if(x==='mThemHe'){modal('＋ Thêm hệ đào tạo',
+   '<div class="grid2"><div><label class="lbl">Mã hệ <b>*</b></label><input class="din"></div>'+
+   '<div><label class="lbl">Tên hệ <b>*</b></label><input class="din"></div></div>'+
+   '<label class="lbl">Điểm trường áp dụng <b>*</b></label><div class="chkl">'+
+   dtHD().map(d=>'<button class="chkb">'+esc(d.ten)+'</button>').join('')+'</div>'+
+   '<div class="ro" style="margin-top:10px">💰 Hệ đào tạo quyết định khoản thu — thêm hệ mới thì phải khai khoản thu tương ứng tại '+dlink('M7.2')+'.</div>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="close">⚖ Ký và thêm</button>');return}
+   if(x==='kyOK'){const cb=window.__kyCB;closeModal();if(cb)cb(true);return}
+ if(x==='kyBo'){const cb=window.__kyCB;closeModal();if(cb)cb(false);return}
+ if(x==='mDoiMa'){modal('✎ Đổi mã trường CSDL ngành',
+   '<div class="danger">⚠ <b>Mã trường là khóa đối chiếu của mọi lần đồng bộ.</b><br>'+
+   'Đã có <b>7 phiên đồng bộ</b> dùng mã hiện tại. Đổi mã sẽ làm các phiên đó <b>không đối chiếu ngược được</b>. '+dlink('M10.8')+'</div>'+
+   '<label class="lbl">Mã mới <b>*</b></label><input class="din" value="'+TRUONG.maCSDL+'" style="max-width:340px">'+
+   '<label class="lbl">Lý do <b>*</b></label><textarea class="ta"></textarea>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn d" data-x="close">Đổi mã</button>');return}
+ if(x==='mXuat'){modal('⬇ Xuất dữ liệu — M10.2',
+   '<div class="warn">Theo <b>NĐ 13/2023</b>, mọi lượt xuất đều <b>bắt buộc chọn mục đích</b> và ghi Audit Log.</div>'+
+   '<label class="lbl">Chọn mẫu</label><div class="seg" style="flex-direction:column">'+
+   '<button class="sgb on" data-x="mau"><b>Danh mục lớp</b><span>Báo cáo Sở · đối chiếu CSDL ngành</span></button>'+
+   '<button class="sgb" data-x="mau"><b>Sơ đồ tổ chức</b><span>Trường → điểm trường → hệ đào tạo</span></button>'+
+   '<button class="sgb" data-x="mau"><b>Danh sách bổ nhiệm</b><span>Chức danh · người giữ · quyết định</span></button></div>'+
+   '<label class="lbl">Mục đích xuất <b>*</b></label><div class="chkl">'+
+   ['Báo cáo Phòng / Sở GDĐT','Lưu trữ nội bộ','Đối chiếu khi thanh tra'].map((m,i)=>
+    '<button class="chkb '+(i===0?'on':'')+'" data-x="mucdich">'+m+'</button>').join('')+'</div>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="doXuat">⬇ Xuất</button>');return}
+ if(x==='mau'){document.querySelectorAll('[data-x="mau"]').forEach(b=>b.classList.remove('on'));el.classList.add('on');return}
+ if(x==='mucdich'){document.querySelectorAll('[data-x="mucdich"]').forEach(b=>b.classList.remove('on'));el.classList.add('on');return}
+ if(x==='doXuat'){closeModal();toast('⬇ Đã xuất. Audit Log ghi kèm <b>mục đích đã chọn</b>');return}
+});
+document.addEventListener('input',function(ev){
+ const t=ev.target;
+ if(t.id==='qq'){V.q=t.value;const c=t.selectionStart;render();const q=$('#qq');if(q){q.focus();q.setSelectionRange(c,c)}return}
+ if(t.dataset&&t.dataset.x==='tiet'){
+  const o=MONAP[keyAp(V.khoi,V.he)];o[t.dataset.m].tiet=+t.value||0;
+  const lop=lopNam().filter(l=>l.khoi===V.khoi&&l.he===V.he&&!l.dong).length;
+  toast('Số tiết <b>'+esc(monBy(t.dataset.m).ten)+'</b> → <b>'+t.value+'</b> tiết/tuần · ảnh hưởng <b>'+lop+'</b> lớp và phân công tương ứng');
+  return}
+ if(t.dataset&&t.dataset.f&&FORM){
+  FORM[t.dataset.f]=t.value;
+  if($('#mh').innerText.indexOf('hàng loạt')>=0)drawLoat();
+  else if($('#mh').innerText.indexOf('Sửa lớp')>=0)drawSuaLop();
+ }
+});
+document.addEventListener('change',function(ev){
+ const t=ev.target;
+ if(t.id==='hnam'){NAMHOC=t.value;V.pick=null;render();
+  const tt=namTT();
+  toast('Đang đứng ở năm <b>'+NAMHOC+' — '+TTN[tt][0]+'</b>'+
+   (tt==='hd'?' · khóa <b>tạo hàng loạt</b> và <b>xóa lớp</b>':
+    tt==='ketthuc'?' · <b>chỉ đọc tuyệt đối</b>':' · mở đủ mọi thao tác dựng khung'));
+  return}
+ if(t.id==='hdt'){render();return}
+ if(t.dataset&&t.dataset.f==='khoi2'){V.khoi=+t.value;render();return}
+ if(t.dataset&&t.dataset.f==='he2'){V.he=t.value;render();return}
+ if(t.dataset&&t.dataset.f&&FORM){
+  FORM[t.dataset.f]=t.value;
+  if($('#mh').innerText.indexOf('hàng loạt')>=0)drawLoat();
+  else if($('#mh').innerText.indexOf('Sửa lớp')>=0)drawSuaLop();
+ }
+});
+
+render();
+</script>
+</body>
+</html>
