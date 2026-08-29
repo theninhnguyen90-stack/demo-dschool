@@ -1,0 +1,1229 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M1.8 Đồng bộ & Nhập/Xuất dữ liệu HS — Dschool</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f1f5f9;--surface:#fff;--line:#e2e8f0;--line2:#cbd5e1;
+ --ink:#0f172a;--ink2:#475569;--ink3:#94a3b8;--brand:#1d4ed8;--brand-soft:#eff6ff;
+ --red:#dc2626;--red-soft:#fef2f2;--amber:#d97706;--amber-soft:#fffbeb;
+ --green:#059669;--green-soft:#ecfdf5;--violet:#7c3aed}
+body{font:14px/1.5 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font:inherit}
+
+.hdr{height:56px;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 15px;position:sticky;top:0;z-index:40}
+.logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px}
+.logo .mark{width:28px;height:28px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px}
+.school{color:var(--ink2);font-size:12.5px;border-left:1px solid var(--line);padding-left:12px;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sel{border:1px solid var(--line2);border-radius:7px;padding:5px 9px;font-size:12.5px;background:#fff}
+.sel:disabled{background:var(--bg);color:var(--ink2)}
+.spacer{flex:1}
+.icobtn{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;position:relative;font-size:15px}
+.dot{position:absolute;top:3px;right:3px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--violet);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700}
+
+.wrap{display:flex;min-height:calc(100vh - 56px)}
+.side{width:206px;flex:0 0 206px;background:var(--surface);border-right:1px solid var(--line);padding:10px 8px;position:sticky;top:56px;max-height:calc(100vh - 56px);overflow-y:auto}
+.sgrp{font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;padding:12px 10px 5px}
+.snav{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:var(--ink2);font-size:12.5px;margin-bottom:1px}
+.snav:hover{background:var(--bg)}
+.snav.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
+.snav .nb{margin-left:auto;flex:0 0 auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;min-width:18px;text-align:center;line-height:15px}
+.snav.off{opacity:.34;pointer-events:none}
+.main{flex:1;padding:15px 18px 40px;min-width:0}
+
+.tophd{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+h1{font-size:19px;font-weight:700}
+.btn{border:1px solid var(--line2);background:#fff;border-radius:8px;padding:7px 12px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--bg)}
+.btn.p{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn.d{background:var(--red);color:#fff;border-color:var(--red)}
+.btn.g{background:var(--green);color:#fff;border-color:var(--green)}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn.xs{padding:3px 8px;font-size:11.5px}
+.btn:disabled{opacity:.42;cursor:not-allowed}
+.tabs{display:flex;gap:3px;border-bottom:2px solid var(--line);margin:12px 0 0;overflow-x:auto}
+.tab1{padding:9px 15px;font-size:13.5px;font-weight:600;color:var(--ink2);border-bottom:2px solid transparent;margin-bottom:-2px;display:flex;align-items:center;gap:7px;white-space:nowrap}
+.tab1.on{color:var(--brand);border-bottom-color:var(--brand)}
+.tab1 .b{background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:1px 7px;border-radius:9px;margin-left:2px}
+
+.bar{display:flex;gap:7px;align-items:center;flex-wrap:wrap;padding:11px 0}
+.inp{border:1px solid var(--line2);border-radius:8px;padding:7px 11px;font-size:13px;background:#fff;min-width:290px}
+.fs{border:1px solid var(--line2);border-radius:8px;padding:7px 9px;font-size:12.5px;background:#fff}
+.sum{display:flex;gap:13px;font-size:12px;color:var(--ink2);margin-left:auto;flex-wrap:wrap;align-items:center}
+.sum b{color:var(--ink)}
+.chip{border:1px solid var(--line2);border-radius:999px;padding:5px 12px;font-size:12.5px;background:#fff;white-space:nowrap}
+.chip.on{background:var(--brand-soft);border-color:var(--brand);color:var(--brand);font-weight:700}
+.chip .cb{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:5px}
+.scopebar{background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;padding:8px 12px;border-radius:9px;font-size:12.5px;margin-bottom:11px;display:flex;gap:8px;align-items:flex-start}
+
+.stage{display:flex;gap:13px;align-items:flex-start}
+.listw{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.panel{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:none}
+.stage.open .panel{display:block}
+.stage.open .hcol{display:none}
+@media(max-width:1180px){.stage.open .listw{display:none}}
+
+.grow{display:flex;align-items:center;gap:9px;padding:9px 13px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:12.5px;font-weight:700;cursor:pointer}
+.grow:hover{background:#eef2f7}
+.grow .ar{color:var(--ink3);font-size:10px;width:12px}
+.grow .ct{margin-left:auto;font-weight:400;color:var(--ink3);font-size:11.5px}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:8px 9px;border-bottom:1px solid var(--line);background:#f8fafc;white-space:nowrap}
+td{padding:9px;border-bottom:1px solid var(--line);vertical-align:top}
+tr.tr:hover td{background:var(--brand-soft);cursor:pointer}
+tr.tr.on td{background:#eff6ff}
+tr:last-child td{border-bottom:none}
+.wrapx{overflow-x:auto}
+
+.st2{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;white-space:nowrap;display:inline-block}
+.st2.o{background:var(--green-soft);color:var(--green)}
+.st2.w{background:var(--amber-soft);color:var(--amber)}
+.st2.r{background:var(--red-soft);color:var(--red)}
+.st2.n{background:var(--bg);color:var(--ink2)}
+.st2.b{background:#e0e7ff;color:#3730a3}
+.st2.v{background:#ede9fe;color:#5b21b6}
+
+.ph{padding:12px 15px;border-bottom:1px solid var(--line);display:flex;gap:13px;align-items:center;flex-wrap:wrap}
+.ph h2{font-size:16px;font-weight:700}
+.ph .m{font-size:12px;color:var(--ink2);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pill{font-size:10.5px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--ink2)}
+.pbody{padding:14px 15px;max-height:calc(100vh - 210px);overflow-y:auto}
+
+.info{background:var(--brand-soft);border:1px solid #bfdbfe;color:#1e40af;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:12px}
+.warn{background:var(--amber-soft);border:1px solid #fde68a;color:#92400e;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:12px}
+.danger{background:var(--red-soft);border:1px solid #fecaca;color:#991b1b;padding:10px 13px;border-radius:9px;font-size:12.5px;line-height:1.65;margin-bottom:12px}
+.ro{background:#f8fafc;border:1px solid var(--line);color:var(--ink2);padding:8px 11px;border-radius:9px;font-size:12px;margin-bottom:12px;line-height:1.6}
+.ok{background:var(--green-soft);border:1px solid #a7f3d0;color:#065f46;padding:9px 12px;border-radius:9px;font-size:12.5px;margin-bottom:12px;line-height:1.6}
+.rolnk{font-size:10px;font-weight:700;color:var(--brand);background:#eef2ff;border:1px solid #c7d2fe;border-radius:999px;padding:1px 7px;cursor:pointer;white-space:nowrap;margin-left:5px}
+.rolnk.off{color:var(--ink3);background:var(--bg);border-color:var(--line);cursor:default}
+
+.hb{border:1px solid var(--line);border-radius:11px;overflow:hidden;margin-bottom:13px}
+.lbh{padding:9px 12px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:12px;font-weight:700;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.lbh .sp{flex:1}
+.f2{display:grid;grid-template-columns:158px 1fr;gap:10px;padding:7px 12px;font-size:12.5px}
+.f2+.f2{border-top:1px solid #f1f5f9}
+.f2 .k{color:var(--ink2)}
+.f2 .v{font-weight:600}
+
+.tl{border-left:2px solid var(--line);margin-left:9px;padding-left:17px}
+.tli{position:relative;padding:8px 0;font-size:12.5px}
+.tli::before{content:"";position:absolute;left:-23px;top:14px;width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid #fff}
+.tli.now::before{background:var(--amber);box-shadow:0 0 0 3px #fef3c7}
+.tli.wait::before{background:var(--line2)}
+.tli.no::before{background:var(--red)}
+.tli.now{background:var(--amber-soft);border-radius:8px;padding:8px 10px;margin-left:-10px}
+.tli b{display:block}
+.tli span{color:var(--ink3);font-size:11.5px}
+
+.ck{display:flex;gap:10px;align-items:flex-start;padding:9px 11px;border:1px solid var(--line);border-radius:9px;margin-bottom:7px;background:#fff}
+.ck.done{background:var(--green-soft);border-color:#a7f3d0}
+.ck .ic{font-size:15px;flex:0 0 20px;text-align:center}
+.ck .bd{flex:1;min-width:0}
+.ck .bd b{display:block;font-size:12.5px}
+.xnrow{display:flex;gap:11px;align-items:flex-start;cursor:pointer;user-select:none}
+.xnrow.off{cursor:not-allowed;opacity:.72}
+.xnrow:not(.off):hover .bd b{color:var(--brand)}
+.xncb{width:19px;height:19px;flex:0 0 19px;margin-top:2px;cursor:pointer;accent-color:var(--green)}
+.xncb:disabled{cursor:not-allowed}
+.ck .bd span{font-size:11.5px;color:var(--ink3)}
+.who{font-size:10px;font-weight:700;padding:1px 6px;border-radius:5px;white-space:nowrap}
+.who.may{background:#e0e7ff;color:#3730a3}
+.who.ng{background:#fef3c7;color:#92400e}
+
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);border-radius:9px;overflow:hidden;font-size:12.5px}
+.cmp .h{background:#f8fafc;padding:7px 10px;font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;border-bottom:1px solid var(--line)}
+.cmp .c{padding:7px 10px;border-bottom:1px solid #f1f5f9}
+.cmp .c.bad{background:var(--red-soft);color:#991b1b;font-weight:700}
+.cmp .lb{font-size:10.5px;color:var(--ink3);display:block;font-weight:400}
+
+.mask{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:60;display:none;place-items:center}
+.mask.on{display:grid}
+.modal{background:#fff;border-radius:13px;width:880px;max-width:95vw;max-height:88vh;display:flex;flex-direction:column}
+.modal.sm{width:620px}
+.mh{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700}
+.mb{padding:15px 18px;overflow-y:auto;font-size:13px}
+.mf{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.fldi{width:100%;border:1px solid var(--line2);border-radius:8px;padding:8px 10px;margin-top:4px}
+.drop{border:2px dashed var(--line2);border-radius:10px;padding:18px;text-align:center;color:var(--ink3);font-size:12.5px;margin-top:4px;cursor:pointer}
+.drop:hover{border-color:var(--brand);color:var(--brand)}
+
+.rolebar{background:#0f172a;color:#cbd5e1;padding:8px 15px;display:flex;align-items:center;gap:7px;font-size:12.5px;flex-wrap:wrap}
+.rolebar b{color:#fff}
+.rb{border:1px solid #334155;border-radius:999px;padding:3px 10px;font-size:12px;color:#cbd5e1}
+.rb:hover{background:#1e293b;color:#fff}
+.rb.on{background:#fff;color:#0f172a;border-color:#fff;font-weight:700}
+.note{margin-left:auto;color:#64748b;font-size:11.5px}
+.ai{display:inline-block;margin-left:6px;padding:0 6px;border-radius:5px;font-size:9.5px;font-weight:700;
+ letter-spacing:.03em;background:rgba(0,0,0,.09);color:inherit;opacity:.85;vertical-align:middle;white-space:nowrap}
+.btn.p .ai,.btn.d .ai,.btn.g .ai{background:rgba(255,255,255,.26)}
+.hintline .ai{background:#e0e7ff;color:#3730a3;opacity:1}
+.ck .bd b .ai{background:#e0e7ff;color:#3730a3}
+.hintline{background:var(--bg);border:1px dashed var(--line2);color:var(--ink2);
+ padding:7px 11px;border-radius:8px;font-size:12px;margin-bottom:11px}
+.hint{background:var(--amber-soft);border:1px solid #fde68a;color:#92400e;padding:7px 11px;border-radius:8px;font-size:12px;margin:9px 0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(90px);background:#0f172a;color:#fff;padding:11px 17px;border-radius:9px;font-size:13px;z-index:80;transition:transform .22s;max-width:92vw}
+.toast.on{transform:translateX(-50%)}
+.empty{padding:36px;text-align:center;color:var(--ink3)}
+.noacc{padding:50px 30px;text-align:center}
+.noacc .ic{font-size:38px;margin-bottom:12px}
+.wk{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;display:flex;gap:11px;align-items:flex-start;cursor:pointer;background:#fff}
+.wk:hover{border-color:var(--brand);background:var(--brand-soft)}
+.wk.on{border-color:var(--brand);background:#eff6ff}
+.wk .ic{font-size:17px;flex:0 0 24px}
+.wk .bd{flex:1;min-width:0}
+.wk .bd b{display:block;font-size:13px}
+.wk .bd span{font-size:11.5px;color:var(--ink3)}
+.cols{display:flex;gap:13px;align-items:flex-start}
+.colL{flex:0 0 340px;max-width:340px}
+.colR{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+@media(max-width:1100px){.cols{flex-direction:column}.colL{flex:1;max-width:none;width:100%}}
+.chip .cb{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;margin-left:5px}
+.tab1 .b{margin-left:2px}
+.actbar{position:sticky;top:0;z-index:5;display:flex;gap:7px;flex-wrap:wrap;align-items:center;
+ padding:10px 15px;background:#f8fafc;border-bottom:1px solid var(--line)}
+.syncbar{display:flex;gap:11px;align-items:center;flex-wrap:wrap;background:#eef2ff;border:1px solid #c7d2fe;
+ color:#3730a3;padding:9px 12px;border-radius:9px;font-size:12.5px;margin-bottom:12px}
+.gtrow{border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin-bottom:9px;background:#fff}
+.gtrow .drop{padding:12px}
+.hslist{border:1px solid var(--line);border-radius:9px;max-height:200px;overflow-y:auto;margin-top:7px}
+.hsr{display:flex;align-items:center;gap:9px;padding:8px 11px;border-bottom:1px solid #f1f5f9;cursor:pointer;font-size:12.5px}
+.hsr:last-child{border-bottom:none}
+.hsr:hover{background:var(--brand-soft)}
+.hsr.on{background:#eff6ff}
+.hsr>div{flex:1;min-width:0}
+.hsr b{display:block}
+.hsr span.lbl,.hsr div span{display:block;font-size:11px;color:var(--ink3)}
+.ck{display:flex;gap:10px;align-items:flex-start;padding:9px 11px;border:1px solid var(--line);border-radius:9px;margin-bottom:7px;background:#fff}
+.ck.done{background:var(--green-soft);border-color:#a7f3d0}
+.ck .ic{font-size:15px;flex:0 0 20px;text-align:center}
+.ck .bd{flex:1;min-width:0}
+.ck .bd b{display:block;font-size:12.5px}
+.ck .bd span{font-size:11.5px;color:var(--ink3)}
+.who{font-size:10px;font-weight:700;padding:1px 6px;border-radius:5px;white-space:nowrap}
+.who.may{background:#e0e7ff;color:#3730a3}
+.who.ng{background:#fef3c7;color:#92400e}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);border-radius:9px;overflow:hidden;font-size:12.5px}
+.cmp .h{background:#f8fafc;padding:7px 10px;font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;border-bottom:1px solid var(--line)}
+.cmp .c{padding:7px 10px;border-bottom:1px solid #f1f5f9}
+.cmp .c.bad{background:var(--red-soft);color:#991b1b;font-weight:700}
+.cmp .lb{font-size:10.5px;color:var(--ink3);display:block;font-weight:400}
+.tli.no::before{background:var(--red)}
+.pbody{max-height:calc(100vh - 250px)}
+</style>
+</head>
+<body>
+<script>/* sidebar da chuyen ve index.html — node an giu cho JS cu khong vo */
+(function(){var n=document.createElement("nav");n.id="side";n.style.display="none";document.documentElement.appendChild(n)})();</script>
+<div style="background:#fef2f2;border-bottom:3px solid #ef4444;color:#991b1b;padding:11px 16px;font:13px/1.5 'Segoe UI',Arial,sans-serif;position:relative;z-index:999"><b style="font-size:14px">⚠ MENU NÀY ĐÃ BỊ THAY THẾ — mở <code>M10.8-Dong-bo-CSDL-nganh.html</code></b><br>M1.8 gộp vào <b>M10.8 Đồng bộ CSDL ngành</b> ngày 29/8/2026. Mã <code>M1.8</code> không dùng lại.<br><b>Mô hình xử lý lệch dữ liệu đã đổi hẳn:</b> bản này phân xử theo <i>bảng nguồn sự thật từng nhóm trường</i>; M10.8 chốt <b>CHIỀU THAO TÁC quyết định thẩm quyền</b> — kéo về thì CSDL ngành thắng, đẩy lên thì hệ thống thắng, và độ mịn kiểm soát là <b>nhóm dữ liệu</b> chứ không phải trường. Tab <code>Xung đột chờ xử lý</code> đã bị bỏ.<br><span style="font-size:12px;opacity:.85">Giữ lại làm vết đối chiếu — <b>không dựng theo bản này</b>.</span></div>
+
+
+<div class="rolebar">
+  <b>Chức danh:</b>
+  <button class="rb" data-r="VT">Văn thư · ĐT A</button>
+  <button class="rb" data-r="VTT">Văn thư cấp trường</button>
+  <button class="rb" data-r="PHT_A">PHT_ĐT · Điểm trường A</button>
+  <button class="rb" data-r="PHT_B">PHT_ĐT · Điểm trường B</button>
+  <button class="rb" data-r="IT">IT_Admin</button>
+  <button class="rb on" data-r="HT">Hiệu trưởng</button>
+  <span class="note">Công cụ kỹ thuật của bộ phận hành chính — không có GVCN, GVBM, phụ huynh</span>
+</div>
+
+<header class="hdr">
+  <div class="logo"><span class="mark">DS</span> Dschool</div>
+  <div class="school">THCS &amp; THPT Nguyễn Tất Thành</div>
+  <select class="sel" id="nam"><option>Năm học 2026-2027</option><option>Năm học 2025-2026</option></select>
+  <select class="sel" id="hdt"></select>
+  <div class="spacer"></div>
+  <button class="icobtn">🔔<span class="dot" id="bell">0</span></button>
+  <div class="avatar" id="ava">HT</div>
+</header>
+
+<div class="wrap">
+  <main class="main">
+    <div class="tophd"><h1>Đồng bộ & Nhập/Xuất dữ liệu HS</h1>
+      <span class="pill" style="background:var(--green-soft);color:#065f46;font-weight:700;border:1px solid #6ee7b7">v1.0 · 27/8/2026</span>
+      <span class="pill">Công cụ kỹ thuật — ghi hàng loạt vào dữ liệu của menu khác</span></div>
+    <div class="tabs" id="tabs"></div>
+    <div id="content"></div>
+  </main>
+</div>
+
+<div class="mask" id="mask"><div class="modal" id="mdl">
+  <div class="mh" id="mh"></div><div class="mb" id="mb"></div><div class="mf" id="mf"></div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+
+<script>
+const $=s=>document.querySelector(s);
+const kd=x=>(x||'').toString().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d');
+const NGAY3='27/8/2026';
+
+const NAV=[
+ ['','🏠 Trung tâm điều hành',[['M0.1','Bảng điều khiển'],['M0.2','Việc cần làm','!'],['M0.3','Thông báo'],['M0.4','Trang cá nhân']]],
+ ['hs','👥 Học sinh',[['M1.1','Hồ sơ học sinh'],['M1.2','Đối tượng ưu tiên'],['M1.3','Học bạ điện tử'],
+   ['M1.4','Tuyển sinh đầu cấp'],['M1.5','Chuyển trường'],['M1.6','Bảo lưu / Tái nhập'],
+   ['M1.7','Chuyển lớp'],['M1.8','Đồng bộ & Nhập/Xuất dữ liệu HS','x']]],
+ ['kq','🎓 Kết quả học tập',[['M3.4','Xét duyệt tốt nghiệp']]],
+ ['vb','📄 Văn bản',[['M4.11','Văn bản đi']]],
+ ['ht','⚙ Hệ thống',[['M10.1','Hồ sơ năm học'],['M10.2','Cơ cấu tổ chức']]],
+];
+
+const ROLE={
+ VT:{n:'Văn thư Điểm trường A',sc:'branch',dt:'Điểm trường A',menu:['hs'],av:'VT',xungdot:1},
+ VTT:{n:'Văn thư cấp trường',sc:'school',menu:['hs','ht'],av:'VC',phien:1,xungdot:1,day:1,xuat:1},
+ PHT_A:{n:'PHT Điểm trường A',sc:'branch',dt:'Điểm trường A',menu:['hs'],av:'PA',xungdot:1,phuctap:1},
+ PHT_B:{n:'PHT Điểm trường B',sc:'branch',dt:'Điểm trường B',menu:['hs'],av:'PB',xungdot:1,phuctap:1},
+ IT:{n:'IT_Admin',sc:'school',menu:['ht'],av:'IT',phien:1,kythuat:1},
+ HT:{n:'Hiệu trưởng',sc:'school',menu:'all',av:'HT',phien:1,xungdot:1,phuctap:1,day:1,duyet:1,xuat:1,nhaycam:1,hoantac:1},
+};
+let role='HT', tab='nhap', cur=null, qTim='', fTT='Tất cả';
+const R=()=>ROLE[role];
+
+/* ===== DEMO HIỆN MỌI CHỨC NĂNG — gắn thẻ chức danh sở hữu ===== */
+const CHUDS={
+ taophien:'VT cấp trường',pull:'VT cấp trường',napfile:'VT cấp trường',template:'VT',
+ apdung:'VT cấp trường',hoantac:'HT',huyphien:'VT cấp trường / HT',xemphien:'VT / HT',
+ nhan:'VT / PHT_ĐT',giu:'VT / PHT_ĐT',hoan:'VT / PHT_ĐT',lonhan:'VT / PHT_ĐT',
+ thulai:'VT / PHT_ĐT',boqua:'HT',veqnguon:'VT / PHT_ĐT',
+ daylo:'VT lập · HT duyệt',duyetday:'HT',
+ xuat:'VT / PHT_ĐT / HT',batnhaycam:'HT'};
+function theAi(a){const c=CHUDS[a];if(!c)return '';
+ return '<span class="ai" title="Trong sản phẩm thật, thao tác này thuộc '+c+'">'+c+'</span>'}
+function ghiChuDemo(){
+ return '<div class="hintline">🧪 <b>Demo hiển thị mọi chức năng của menu</b>, không ẩn theo chức danh. '+
+  'Mỗi thao tác gắn thẻ <span class="ai">VT</span> <span class="ai">PHT_ĐT</span> <span class="ai">HT</span> ghi rõ <b>chức danh sở hữu</b> trong sản phẩm thật. '+
+  'Nút vẫn <b>đổi theo trạng thái</b>. Phạm vi dữ liệu <b>vẫn theo vai trò</b>.</div>'}
+
+/* ================= CẤU HÌNH ĐỌC TỪ M10.2 ================= */
+let KETNOI={api:0, mapping:'truong', maTruong:'79012345678', mota:'1 trường ↔ 1 mã trường'};
+const chayPhienDuoc=()=>KETNOI.mapping==='truong'?['school']:['branch','school'];
+
+/* ================= DỮ LIỆU ================= */
+const HS=[
+ {ma:'HS-2026-0418',n:'Trần Quốc Bảo',ns:'03/09/2011',gt:'Nam',lop:'9A1',dt:'Điểm trường A',mdd:'',dt2:'Kinh'},
+ {ma:'HS-2026-0425',n:'Nguyễn Khánh Vy',ns:'17/04/2011',gt:'Nữ',lop:'9A2',dt:'Điểm trường A',mdd:'79011122233344455566',dt2:'Kinh'},
+ {ma:'HS-2026-0389',n:'Phạm Văn Đức',ns:'22/11/2011',gt:'Nam',lop:'9A1',dt:'Điểm trường A',mdd:'79011122233344455577',dt2:'Kinh'},
+ {ma:'HS-2026-0530',n:'Lê Nhật Minh',ns:'05/07/2012',gt:'Nam',lop:'8B1',dt:'Điểm trường B',mdd:'79011122233344455588',dt2:'Tày'},
+ {ma:'HS-2026-0561',n:'Bùi Phương Linh',ns:'30/01/2011',gt:'Nữ',lop:'9A1',dt:'Điểm trường A',mdd:'79011122233344455599',dt2:'Kinh'},
+ {ma:'HS-2026-0577',n:'Đinh Hải Nam',ns:'14/06/2011',gt:'Nam',lop:'9B1',dt:'Điểm trường B',mdd:'PENDING-2026-0031',dt2:'Kinh'},
+ {ma:'HS-2026-0602',n:'Vũ Thanh Hà',ns:'09/03/2012',gt:'Nữ',lop:'8A1',dt:'Điểm trường A',mdd:'PENDING-2026-0044',dt2:'Kinh'},
+ {ma:'HS-2026-0611',n:'Hoàng Gia Huy',ns:'25/12/2011',gt:'Nam',lop:'9A2',dt:'Điểm trường A',mdd:'79011122233344455611',dt2:'Kinh'},
+];
+const hsOf=m=>HS.find(h=>h.ma===m)||{n:'—',lop:'',dt:''};
+
+/* ---- Nhóm trường dữ liệu và nguồn sự thật (§6.2 mô tả giao diện) ---- */
+const NHOM={
+ so   :{t:'Sở cấp',       c:'v', ng:'CSDL ngành',  md:'nhan', vs:'Trường không tự đặt được mã — Sở là nơi cấp'},
+ truong:{t:'Trường vận hành',c:'b', ng:'Trường',    md:'giu',  vs:'Sở cập nhật chậm hơn thực tế vài tuần'},
+ phaply:{t:'Pháp lý',     c:'r', ng:'Giấy tờ gốc', md:'',     vs:'Lệch nghĩa là MỘT TRONG HAI BÊN đang sai giấy tờ — phần mềm không có tư cách đoán bên nào'},
+ lienhe:{t:'Liên hệ',     c:'n', ng:'Trường',      md:'giu',  vs:'Gia đình cập nhật qua App nên trường mới nhất; trường trống thì nhận của Sở'},
+};
+const TRUONG={
+ 'Mã định danh CSDL ngành':'so',
+ 'Họ và tên':'phaply','Ngày sinh':'phaply','Giới tính':'phaply','Dân tộc':'phaply','Nơi sinh':'phaply','Số định danh cá nhân':'phaply',
+ 'Lớp':'truong','Điểm trường':'truong','Trạng thái học sinh':'truong','Hệ đào tạo':'truong',
+ 'Số điện thoại mẹ':'lienhe','Số điện thoại cha':'lienhe','Địa chỉ thường trú':'lienhe','Email liên hệ':'lienhe',
+};
+const nhomCua=t=>NHOM[TRUONG[t]||'phaply'];
+
+/* ---- Phiên nhập ---- */
+let P=[
+ {id:'PN-2026-0014',nguon:'excel',ten:'DS_HS_sapnhap_dot2.xlsx',tt:'xong',
+  tao:'20/8/2026 09:12',boi:'Văn thư cấp trường',ap:'20/8/2026 09:40',apBoi:'Văn thư cấp trường',
+  tong:412,khop:351,lech:23,moi:38,chi:0,htHan:7-7,
+  log:[['20/8/2026 09:12','Văn thư cấp trường','Tạo phiên · nguồn File Excel','DS_HS_sapnhap_dot2.xlsx · 412 dòng'],
+       ['20/8/2026 09:19','Hệ thống','Đối chiếu xong','351 khớp · 23 lệch trường · 38 chỉ có ở nguồn · 0 chỉ có ở trường'],
+       ['20/8/2026 09:40','Văn thư cấp trường','ÁP DỤNG phiên','Tạo 38 hồ sơ mới · nhận 402 mã định danh · 23 điểm lệch đẩy vào hàng đợi xung đột']]},
+
+ {id:'PN-2026-0015',nguon:'excel',ten:'DS_HS_khoi9_Socap.xlsx',tt:'doichieu',
+  tao:'27/8/2026 08:05',boi:'Văn thư cấp trường',ap:'',apBoi:'',
+  tong:6,khop:1,lech:3,moi:1,chi:1,
+  log:[['27/8/2026 08:05','Văn thư cấp trường','Tạo phiên · nguồn File Excel','DS_HS_khoi9_Socap.xlsx · 6 dòng'],
+       ['27/8/2026 08:07','Hệ thống','Kiểm tra định dạng: ĐẠT','6/6 dòng đúng định dạng'],
+       ['27/8/2026 08:07','Hệ thống','Đối chiếu xong — CHƯA GHI GÌ VÀO HỆ THỐNG','1 khớp · 3 lệch trường · 1 chỉ có ở nguồn · 1 chỉ có ở trường']]},
+
+ {id:'PN-2026-0016',nguon:'excel',ten:'DS_HS_sapnhap_dot2.xlsx',tt:'huy',
+  tao:'26/8/2026 15:22',boi:'Văn thư cấp trường',ap:'',apBoi:'',tong:412,khop:0,lech:0,moi:0,chi:0,
+  huyLy:'Phát hiện đây đúng là file đã nhập ở phiên PN-2026-0014 ngày 20/8. Hủy để tránh nhập trùng.',
+  log:[['26/8/2026 15:22','Văn thư cấp trường','Tạo phiên · nguồn File Excel','DS_HS_sapnhap_dot2.xlsx'],
+       ['26/8/2026 15:23','Hệ thống','CẢNH BÁO nhập trùng','Tên file, kích thước và số dòng trùng phiên PN-2026-0014 (20/8/2026)'],
+       ['26/8/2026 15:25','Văn thư cấp trường','Hủy phiên','Không ghi gì vào hệ thống']]},
+
+ {id:'PN-2026-0013',nguon:'csdl',ten:'Pull CSDL ngành',tt:'hoantac',
+  tao:'12/8/2026 14:01',boi:'Văn thư cấp trường',ap:'12/8/2026 14:30',apBoi:'Văn thư cấp trường',
+  tong:38,khop:12,lech:26,moi:0,chi:0,htBoi:'Hiệu trưởng',htNgay:'13/8/2026 08:15',
+  htTra:15,htBoQua:11,
+  log:[['12/8/2026 14:01','Văn thư cấp trường','Tạo phiên · nguồn CSDL ngành (bản thử nghiệm)',''],
+       ['12/8/2026 14:30','Văn thư cấp trường','ÁP DỤNG phiên','26 trường bị ghi đè'],
+       ['13/8/2026 08:15','Hiệu trưởng','HOÀN TÁC phiên','Đã trả về 15 hồ sơ · BỎ QUA 11 hồ sơ đã bị sửa tay sau khi áp dụng']]},
+];
+const PTT={nhap:['Nháp — chưa nạp dữ liệu','n'],doichieu:['Đã đối chiếu — chưa ghi gì','v'],
+ xong:['Đã áp dụng','o'],hoantac:['Đã hoàn tác','w'],huy:['Đã hủy','n']};
+const pOf=id=>P.find(x=>x.id===id);
+const conHT=p=>p.tt==='xong'&&p.htHan!==0;   /* điểm hoàn tác còn hạn */
+
+/* ---- Chi tiết đối chiếu của phiên đang mở (PN-2026-0015) ---- */
+let DC=[
+ {ma:'HS-2026-0418',loai:'lech',dong:2,
+  f:[['Họ và tên','Trần Quốc Bảo','Trần Quốc Bảo'],
+     ['Ngày sinh','03/09/2011','30/09/2011'],
+     ['Mã định danh CSDL ngành','','79011122233344455522'],
+     ['Lớp','9A1','9A2'],
+     ['Số điện thoại mẹ','0968 220 411','']]},
+ {ma:'HS-2026-0389',loai:'lech',dong:3,
+  f:[['Họ và tên','Phạm Văn Đức','Phạm Văn Đức'],
+     ['Ngày sinh','22/11/2011','22/11/2011'],
+     ['Dân tộc','Kinh','Nùng'],
+     ['Mã định danh CSDL ngành','79011122233344455577','79011122233344455577'],
+     ['Trạng thái học sinh','Đang học','Đã chuyển đi']]},
+ {ma:'HS-2026-0530',loai:'lech',dong:4,
+  f:[['Họ và tên','Lê Nhật Minh','Lê Nhật Minh'],
+     ['Ngày sinh','05/07/2012','05/07/2012'],
+     ['Số định danh cá nhân','','079212000456'],
+     ['Địa chỉ thường trú','','12 Nguyễn Huệ, P. Bến Nghé']]},
+ {ma:'HS-2026-0425',loai:'khop',dong:5,
+  f:[['Họ và tên','Nguyễn Khánh Vy','Nguyễn Khánh Vy'],
+     ['Ngày sinh','17/04/2011','17/04/2011'],
+     ['Mã định danh CSDL ngành','79011122233344455566','79011122233344455566']]},
+ {ma:'',loai:'moi',dong:6,ten:'Ngô Bảo Châu',
+  f:[['Họ và tên','—','Ngô Bảo Châu'],
+     ['Ngày sinh','—','11/02/2011'],
+     ['Giới tính','—','Nam'],
+     ['Mã định danh CSDL ngành','—','79011122233344455633'],
+     ['Lớp','—','9A3']]},
+ {ma:'HS-2026-0611',loai:'chi',dong:0,
+  f:[['Họ và tên','Hoàng Gia Huy','—'],
+     ['Mã định danh CSDL ngành','79011122233344455611','—']]},
+];
+const LOAI={khop:['✓ Khớp hoàn toàn','o'],lech:['✎ Lệch trường','w'],
+ moi:['➕ Chỉ có ở nguồn','v'],chi:['➖ Chỉ có ở trường','b']};
+let chonMoi={};   /* tick chọn tạo hồ sơ mới */
+
+/* ---- Hàng đợi xung đột ---- */
+let XD=[
+ {id:'XD-101',ma:'HS-2026-0418',truong:'Ngày sinh',ht:'03/09/2011',ng:'30/09/2011',tt:'cho',phien:'PN-2026-0014'},
+ {id:'XD-102',ma:'HS-2026-0418',truong:'Mã định danh CSDL ngành',ht:'',ng:'79011122233344455522',tt:'cho',phien:'PN-2026-0014'},
+ {id:'XD-103',ma:'HS-2026-0418',truong:'Lớp',ht:'9A1',ng:'9A2',tt:'cho',phien:'PN-2026-0014'},
+ {id:'XD-104',ma:'HS-2026-0389',truong:'Dân tộc',ht:'Kinh',ng:'Nùng',tt:'hoan',phien:'PN-2026-0014',
+  hoanLy:'Đã gọi gia đình 25/8, gia đình mang giấy khai sinh lên trường thứ Hai tuần sau để đối chiếu.'},
+ {id:'XD-105',ma:'HS-2026-0389',truong:'Trạng thái học sinh',ht:'Đang học',ng:'Đã chuyển đi',tt:'cho',phien:'PN-2026-0014'},
+ {id:'XD-106',ma:'HS-2026-0561',truong:'Mã định danh CSDL ngành',ht:'79011122233344455599',ng:'79011122233344455590',tt:'cho',phien:'PN-2026-0014'},
+ {id:'XD-107',ma:'HS-2026-0530',truong:'Số định danh cá nhân',ht:'',ng:'079212000456',tt:'cho',phien:'PN-2026-0014'},
+ {id:'XD-108',ma:'HS-2026-0611',truong:'Họ và tên',ht:'Hoàng Gia Huy',ng:'Hoàng Gia Hui',tt:'cho',phien:'PN-2026-0014',
+  moKhop:1},
+];
+const XDTT={cho:['Chờ xử lý','v'],hoan:['Đã hoãn','w'],nhan:['Đã nhận của nguồn','o'],giu:['Đã giữ của trường','b']};
+/* mã tạm PENDING- là loại xung đột riêng, sinh từ HS chứ không từ phiên */
+const dsPending=()=>HS.filter(h=>(h.mdd||'').startsWith('PENDING-'));
+
+/* ---- Hàng đợi chưa lên Sở ---- */
+let HD=[
+ {id:'HD-01',ma:'HS-2026-0577',sk:'Tiếp nhận HS chuyển đến',menu:'M1.5',vs:'thieuma',lan:0,ngay:'—'},
+ {id:'HD-02',ma:'HS-2026-0602',sk:'Tiếp nhận HS chuyển đến',menu:'M1.5',vs:'thieuma',lan:0,ngay:'—'},
+ {id:'HD-03',ma:'HS-2026-0389',sk:'Chuyển đi — đẩy hồ sơ sang trường mới',menu:'M1.5',vs:'chuaketnoi',lan:3,ngay:'26/8/2026 16:40'},
+ {id:'HD-04',ma:'HS-2026-0425',sk:'Đổi thông tin pháp lý (ngày sinh)',menu:'M1.1',vs:'chuaketnoi',lan:2,ngay:'26/8/2026 16:40'},
+ {id:'HD-05',ma:'HS-2026-0611',sk:'Hồ sơ học sinh mới',menu:'M1.4',vs:'soloi',lan:5,ngay:'27/8/2026 06:15',
+  loi:'Mã định danh 79011122233344455611 đã tồn tại ở trường khác (mã 79098765432). Đề nghị liên hệ Phòng GDĐT.'},
+];
+const VISAO={
+ thieuma:{t:'Thiếu mã định danh CSDL ngành',c:'r',
+  cach:'Hồ sơ đang mang mã tạm <code>PENDING-</code>. Nhập mã thật tại M1.1 rồi thử lại.',go:'M1.1'},
+ chuaketnoi:{t:'Chưa kết nối API CSDL ngành',c:'w',
+  cach:'Không phải lỗi dữ liệu. Mục này tự lên Sở ngay khi kết nối được. Cấu hình tại M10.2.',go:'M10.2'},
+ soloi:{t:'Sở trả về lỗi',c:'r',cach:'Đọc nguyên văn lỗi ở dưới rồi xử lý theo hướng dẫn.',go:''},
+};
+
+/* ---- Lịch sử đẩy lô ---- */
+let DAY=[];
+
+/* ---- Lịch sử xuất ---- */
+let XU=[
+ {id:'XU-2026-0022',ngay:'26/8/2026 10:31',boi:'Văn thư Điểm trường A',so:214,
+  mucDich:'Bàn giao nội bộ',mota:'Danh sách HS khối 9 ĐT A gửi tổ chủ nhiệm họp đầu năm',
+  truong:['Họ và tên','Ngày sinh','Giới tính','Lớp','Số điện thoại mẹ'],nhaycam:0},
+ {id:'XU-2026-0021',ngay:'22/8/2026 14:02',boi:'Hiệu trưởng',so:412,
+  mucDich:'Báo cáo Sở',mota:'Báo cáo sĩ số đầu năm học 2026-2027 theo công văn 1842/SGDĐT',
+  truong:['Họ và tên','Ngày sinh','Giới tính','Dân tộc','Lớp','Mã định danh CSDL ngành'],nhaycam:0},
+ {id:'XU-2026-0019',ngay:'14/8/2026 09:47',boi:'Hiệu trưởng',so:37,
+  mucDich:'Đối chiếu tuyển sinh',mota:'Đối chiếu diện chính sách với Phòng GDĐT',
+  truong:['Họ và tên','Ngày sinh','Lớp','Diện chính sách','Hoàn cảnh gia đình'],nhaycam:1,
+  nhaycamLy:'Phòng GDĐT yêu cầu bản kê diện chính sách kèm hoàn cảnh để xét miễn giảm học phí.'},
+];
+const MUCDICH=['Báo cáo Sở','Bàn giao nội bộ','Đối chiếu tuyển sinh','Lưu trữ','Khác'];
+const TRUONG_XUAT=[
+ ['Cơ bản',['Họ và tên','Ngày sinh','Giới tính','Lớp','Điểm trường'],0],
+ ['Định danh',['Mã định danh CSDL ngành','Số định danh cá nhân','Dân tộc','Nơi sinh'],0],
+ ['Liên hệ',['Số điện thoại mẹ','Số điện thoại cha','Địa chỉ thường trú','Email liên hệ'],0],
+ ['⚠ Nhạy cảm',['Thông tin y tế','Giấy khám bệnh','Hoàn cảnh gia đình','Diện chính sách'],1],
+];
+
+/* ================= PHẠM VI ================= */
+const inScopeHS=m=>{const r=R(), h=hsOf(m);
+ if(r.sc==='branch')return h.dt===r.dt;
+ return true};
+const inScopeXD=x=>inScopeHS(x.ma);
+const inScopeHD=x=>inScopeHS(x.ma);
+const xdCho=()=>XD.filter(x=>inScopeXD(x)&&x.tt==='cho').length;
+const hdCho=()=>HD.filter(inScopeHD).length;
+const viecCua=()=>xdCho()+hdCho();
+
+/* ================= KHUNG ================= */
+function sideNav(){
+ const r=R();
+ $('#side').innerHTML=NAV.map(([g,ten,items])=>{
+  const on=r.menu==='all'||r.menu.includes(g)||g==='';
+  return '<div class="sgrp">'+ten+'</div>'+items.map(([m,t,f])=>
+   '<div class="snav'+(f==='x'?' on':'')+(on?'':' off')+'">'+m+' · '+t+
+   (f==='!'?'<span class="nb">'+viecCua()+'</span>':'')+'</div>').join('')}).join('')}
+
+function tabsBar(){
+ const A=[['nhap','📥 Nhập dữ liệu về',P.length,0],
+          ['day','📤 Đẩy lên CSDL ngành',hdCho(),hdCho()],
+          ['xd','⚠ Xung đột chờ xử lý',XD.filter(inScopeXD).length,xdCho()],
+          ['xuat','📦 Xuất dữ liệu',XU.length,0]];
+ $('#tabs').innerHTML=A.map(([k,l,c,n])=>
+  '<button class="tab1'+(tab===k?' on':'')+'" data-tab="'+k+'">'+l+
+  '<span style="color:var(--ink3);font-weight:400">'+c+'</span>'+
+  (n?'<span class="b">'+n+'</span>':'')+'</button>').join('')}
+
+function hdrBar(){
+ const r=R();
+ $('#ava').textContent=r.av;
+ $('#bell').textContent=viecCua();
+ const s=$('#hdt');
+ if(r.sc==='school'){s.disabled=false;s.innerHTML='<option>Toàn trường</option><option>Điểm trường A</option><option>Điểm trường B</option>'}
+ else{s.disabled=true;s.innerHTML='<option>🔒 '+(r.dt||'—')+'</option>'}}
+
+/* ---- thanh trạng thái kết nối — đứng đầu MỌI tab ---- */
+function thanhKN(){
+ const cuoi=P.filter(p=>p.tt==='xong').slice(-1)[0];
+ return '<div class="hb" style="margin-bottom:13px"><div class="lbh">🔌 Trạng thái kết nối và mapping'+
+  '<span class="sp"></span>'+(KETNOI.api?'<span class="st2 o">🟢 Đã kết nối</span>':'<span class="st2 r">🔴 Chưa kết nối API CSDL ngành</span>')+
+  '</div><div style="padding:11px 13px">'+
+  '<div class="wrapx"><table style="font-size:12.5px">'+
+  '<tr><td style="width:190px"><b>Chế độ mapping</b></td><td>'+KETNOI.mota+' · mã trường <code>'+KETNOI.maTruong+'</code> '+
+   '<span class="rolnk" data-go="M10.2">→ cấu hình M10.2</span></td></tr>'+
+  '<tr><td><b>Lần nhập gần nhất</b></td><td>'+(cuoi?cuoi.id+' · '+cuoi.ap+' · nguồn '+(cuoi.nguon==='csdl'?'CSDL ngành':'File Excel')+' · <b>'+cuoi.tong+'</b> hồ sơ':'<i>Chưa có phiên nào được áp dụng</i>')+'</td></tr>'+
+  '<tr><td><b>Lần đẩy gần nhất</b></td><td>'+(DAY.length?DAY[DAY.length-1].ngay:'<i>Chưa từng đẩy</i>')+'</td></tr>'+
+  '<tr><td><b>Đang tồn</b></td><td>'+
+   '<span class="rolnk" data-tab2="xd"><b>'+xdCho()+'</b> xung đột chờ xử lý</span> · '+
+   '<span class="rolnk" data-tab2="day"><b>'+hdCho()+'</b> mục chưa lên Sở</span> · '+
+   '<span class="rolnk" data-tab2="xd"><b>'+dsPending().length+'</b> hồ sơ mang mã tạm</span></td></tr>'+
+  '</table></div>'+
+  (KETNOI.api?'<div class="ok" style="margin:9px 0 0"><b>Đã kết nối API.</b> Nạp từ CSDL ngành và đẩy lên Sở dùng được. Đường Excel <b>vẫn còn dùng</b> — nhận danh sách từ trường khác, từ Cổng tuyển sinh Sở, sau sáp nhập.</div>'
+   :'<div class="warn" style="margin:9px 0 0"><b>MVP chưa có API CSDL ngành.</b> Toàn bộ giao diện dựng đủ để chạy nghiệp vụ; '+
+    'đường vào dữ liệu hiện tại là <b>File Excel</b>. Nút <i>Nạp từ CSDL ngành</i> vô hiệu hóa và <b>nói rõ vì sao</b> thay vì im lặng.</div>')+
+  '<div class="hintline" style="margin:9px 0 0">🧪 <b>Công tắc của demo</b> — không có trong sản phẩm thật. '+
+   'MVP chưa có API nên luồng <i>Nạp từ CSDL ngành</i> và <i>Đẩy lên Sở</i> bị chặn. Bật công tắc để rà soát đủ hai luồng đó. '+
+   '<button class="btn xs '+(KETNOI.api?'d':'p')+'" data-x="toggleapi" style="margin-left:7px">'+(KETNOI.api?'🔴 Tắt kết nối API':'🟢 Bật kết nối API')+'</button></div>'+
+  '</div></div>'}
+
+function scopeBar(){
+ const r=R(), ok=chayPhienDuoc().includes(r.sc);
+ if(r.sc==='branch')
+  return '<div class="scopebar"><span>🔒</span><div><b>Phạm vi Branch — '+r.dt+'.</b> '+
+   'Xử lý <b>xung đột</b> và <b>hàng đợi</b> của học sinh thuộc điểm trường mình — việc này luôn làm được ở cấp điểm trường.<br>'+
+   '<b>Không chạy được phiên đồng bộ</b>: chế độ mapping đang là <i>'+KETNOI.mota+'</i>, nên một phiên luôn chạy trên <b>toàn trường</b>. '+
+   'Nếu trường chuyển sang chế độ <i>Legacy (1 điểm trường ↔ 1 mã)</i> thì vai trò này chạy phiên được.</div></div>';
+ if(role==='IT')
+  return '<div class="scopebar"><span>🛠</span><div><b>IT_Admin — hỗ trợ kỹ thuật.</b> Chạy được phiên và xem được mọi thứ, '+
+   'nhưng <b>không quyết nghiệp vụ</b>: không duyệt đẩy, không quyết xung đột, không hoàn tác.</div></div>';
+ return '<div class="scopebar"><span>🏫</span><div><b>Phạm vi School.</b> '+(ok?'<b>Chạy được phiên đồng bộ</b> — mapping <i>'+KETNOI.mota+'</i> nên phiên chạy trên toàn trường.':'')+
+  (role==='HT'?' Hiệu trưởng <b>duyệt trước mỗi lần đẩy lô</b>, <b>hoàn tác phiên</b> và <b>bật trường nhạy cảm khi xuất</b>.':'')+'</div></div>'}
+
+function oTim(ph){
+ return '<input class="inp" id="qtim" placeholder="🔍 '+(ph||'Họ tên, mã HS…')+'" value="'+qTim.replace(/"/g,'&quot;')+'">'+
+  (qTim?'<button class="btn sm" data-x="xoatim">✕ Xóa tìm</button>':'')}
+
+/* ================= TAB 1 — NHẬP DỮ LIỆU VỀ ================= */
+function viewNhap(){
+ const r=R(), ok=chayPhienDuoc().includes(r.sc);
+ const p0=cur?pOf(cur):null;
+ return scopeBar()+thanhKN()+
+ '<div class="bar">'+
+  '<div class="sum"><span>Hiển thị <b>'+P.length+'</b> phiên</span>'+
+  '<button class="btn sm p" data-x="taophien">+ Tạo phiên nhập'+theAi('taophien')+'</button>'+
+  '<button class="btn sm" data-x="template">⬇ Tải template Excel'+theAi('template')+'</button></div></div>'+
+ ghiChuDemo()+
+ '<div class="ro"><b>Menu này không sở hữu dữ liệu nào.</b> Nó ghi vào hồ sơ do <b>M1.1</b> sở hữu, hàng trăm bản ghi một lượt. Vì thế ba nguyên tắc chi phối toàn bộ tab:<br>'+
+ '① <b>Không bao giờ ghi mù</b> — mọi phiên phải qua <code>Đã đối chiếu</code> trước khi <code>Đã áp dụng</code>.<br>'+
+ '② <b>Đối chiếu theo TRƯỜNG, không theo BẢN GHI</b> — hồ sơ có ~40 trường, CSDL ngành chỉ có 12; ghi đè nguyên bản ghi là <b>xóa 28 trường đang đúng</b>.<br>'+
+ '③ <b>Ghi đè hàng loạt thì phải hoàn tác được</b> — đây là chỗ duy nhất trong hệ thống mà <i>undo</i> là nghĩa vụ.</div>'+
+ '<div class="ro"><b>Pull CSDL ngành và Import Excel dùng CHUNG một chuỗi</b>, chỉ khác bước nạp. Nguồn là <b>thuộc tính của phiên</b>, không phải một tab riêng — '+
+ 'dựng hai tab song song là nhân đôi màn hình đối chiếu, chỗ khó và dễ sai nhất của menu.</div>'+
+ '<div class="stage'+(p0?' open':'')+'"><div class="listw">'+
+ '<div class="wrapx"><table><tr><th>Phiên</th><th>Nguồn</th><th class="hcol">Người tạo</th><th>Kết quả đối chiếu</th><th>Trạng thái</th></tr>'+
+ P.slice().reverse().map(p=>rowP(p)).join('')+'</table></div>'+
+ '</div>'+(p0?panelP(p0):'')+'</div>'}
+
+function rowP(p){
+ const [l,c]=PTT[p.tt];
+ return '<tr class="tr'+(cur===p.id?' on':'')+'" data-t="'+p.id+'">'+
+  '<td><b>'+p.id+'</b><br><span style="color:var(--ink3);font-size:11px">'+p.tao+'</span></td>'+
+  '<td>'+(p.nguon==='csdl'?'<span class="st2 v">CSDL ngành</span>':'<span class="st2 b">File Excel</span>')+
+   '<div style="font-size:11px;color:var(--ink3);margin-top:3px">'+p.ten+'</div></td>'+
+  '<td class="hcol" style="font-size:11.5px">'+p.boi+'</td>'+
+  '<td style="font-size:11.5px">'+(['huy','nhap'].includes(p.tt)?'<i style="color:var(--ink3)">chưa đối chiếu</i>'
+   :'<b>'+p.tong+'</b> dòng · <span class="st2 o">'+p.khop+' khớp</span> '+
+    (p.lech?'<span class="st2 w">'+p.lech+' lệch</span> ':'')+
+    (p.moi?'<span class="st2 v">'+p.moi+' mới</span> ':'')+
+    (p.chi?'<span class="st2 b">'+p.chi+' chỉ ở trường</span>':''))+'</td>'+
+  '<td><span class="st2 '+c+'">'+l+'</span>'+
+   (conHT(p)?'<div style="font-size:11px;color:var(--green);margin-top:3px">hoàn tác được '+p.htHan+' ngày nữa</div>':'')+
+   (p.tt==='xong'&&p.htHan===0?'<div style="font-size:11px;color:var(--ink3);margin-top:3px">hết hạn hoàn tác</div>':'')+
+  '</td></tr>'}
+
+function nutP(p){
+ const r=R(), B=[];
+ if(p.tt==='nhap')B.push([r.phien?'p':'p','⬆ Nạp dữ liệu','nap'],['d','⊘ Hủy phiên','huyphien']);
+ if(p.tt==='doichieu')B.push(['g','✓ Áp dụng phiên','apdung'],['d','⊘ Hủy phiên','huyphien']);
+ if(conHT(p))B.push(['d','↩ Hoàn tác phiên','hoantac']);
+ return B}
+
+function panelP(p){
+ const [l,c]=PTT[p.tt];
+ const B=nutP(p);
+ return '<div class="panel"><div class="ph"><div style="flex:1;min-width:0">'+
+  '<h2>'+p.id+' <span style="font-weight:400;color:var(--ink3);font-size:13px">'+p.ten+'</span></h2>'+
+  '<div class="m"><span class="pill">'+(p.nguon==='csdl'?'Nguồn: CSDL ngành':'Nguồn: File Excel')+'</span>'+
+  '<span class="st2 '+c+'">'+l+'</span></div></div>'+
+  '<button class="btn sm" data-x="dong">✕ Đóng</button></div>'+
+  (B.length?'<div class="actbar">'+B.map(([cl,lb,a])=>'<button class="btn sm '+cl+'" data-x="'+a+'" data-t="'+p.id+'">'+lb+theAi(a)+'</button>').join('')+'</div>':'')+
+  '<div class="pbody">'+bodyP(p)+nhatKy(p.log)+'</div></div>'}
+
+function bodyP(p){
+ let s='';
+ /* trạng thái quan trọng nhất */
+ if(p.tt==='doichieu')
+  s+='<div class="hb"><div class="lbh">⏸ Đã đối chiếu — CHƯA GHI GÌ</div><div style="padding:11px 13px">'+
+   '<div class="ok" style="margin:0"><b>Đây là trạng thái quan trọng nhất của menu.</b> Hệ thống <b>đã biết hết</b> mà <b>chưa đổi gì</b>. '+
+   'Mọi quyết định xảy ra ở đây; bấm <i>Áp dụng</i> mới là lúc dữ liệu thật bị ghi.</div></div></div>';
+ if(p.tt==='huy')
+  s+='<div class="hb"><div class="lbh">⊘ Đã hủy</div><div style="padding:11px 13px">'+
+   '<div class="danger" style="margin:0"><b>Không ghi gì vào hệ thống.</b><div style="margin-top:5px">'+(p.huyLy||'')+'</div>'+
+   '<div style="margin-top:7px;font-size:11.5px">Phiên <b>giữ vĩnh viễn</b> — tìm lại bằng chip <i>Đã đóng</i>. Bản ghi của một lần suýt nhập trùng cũng là bằng chứng cần giữ.</div></div></div></div>';
+ if(p.tt==='hoantac')
+  s+='<div class="hb"><div class="lbh">↩ Đã hoàn tác</div><div style="padding:11px 13px">'+
+   '<div class="warn" style="margin:0"><b>'+p.htBoi+'</b> hoàn tác lúc '+p.htNgay+'.'+
+   '<div style="margin-top:7px">✓ Đã trả về <b>'+p.htTra+'</b> hồ sơ &nbsp;·&nbsp; ⚠ <b>BỎ QUA '+p.htBoQua+'</b> hồ sơ đã bị sửa tay sau khi áp dụng '+
+   '<span class="rolnk" data-x="dsboqua">xem danh sách</span></div>'+
+   '<div style="margin-top:7px;font-size:11.5px">Hoàn tác <b>không mù quáng ghi ngược</b>: bản ghi ai đó đã sửa có chủ đích sau phiên thì <b>giữ nguyên</b>. '+
+   'Một nút hoàn tác im lặng bỏ qua '+p.htBoQua+' hồ sơ là <b>tệ hơn không có nút nào</b> — người dùng tưởng đã sạch.</div></div></div></div>';
+ if(conHT(p))
+  s+='<div class="hb"><div class="lbh">↩ Điểm hoàn tác</div><div style="padding:11px 13px">'+
+   '<div class="ok" style="margin:0">Phiên này còn <b>'+p.htHan+' ngày</b> hoàn tác được. Sau đó điểm hoàn tác bị xóa.'+
+   '<div style="margin-top:5px;font-size:11.5px">7 ngày là con số đề xuất: dài hơn thì điểm hoàn tác càng lệch với thao tác tay về sau; ngắn hơn thì phát hiện sai vào tuần sau là hết cứu.</div></div></div></div>';
+
+ /* bảng đối chiếu chi tiết — chỉ phiên đang đối chiếu */
+ if(p.tt==='doichieu')s+=khoiDC(p);
+
+ /* tóm tắt */
+ if(!['nhap','huy'].includes(p.tt))
+  s+='<div class="hb"><div class="lbh">📊 Kết quả đối chiếu</div><div style="padding:11px 13px">'+
+   '<div class="wrapx"><table style="font-size:12.5px"><tr><th>Nhóm</th><th>Số dòng</th><th>Xử lý</th></tr>'+
+   [['✓ Khớp hoàn toàn',p.khop,'o','Không làm gì'],
+    ['✎ Lệch trường',p.lech,'w','<b>Vào hàng đợi xung đột</b> — quyết theo bảng nguồn sự thật'],
+    ['➕ Chỉ có ở nguồn',p.moi,'v','<b>Tạo hồ sơ mới — phải tick chọn từng em.</b> Có thể là em đã chuyển đi mà Sở chưa cập nhật'],
+    ['➖ Chỉ có ở trường',p.chi,'b','<b>KHÔNG xóa gì.</b> Nghĩa thật gần như luôn là trường chưa đẩy em đó lên Sở → đưa sang tab Đẩy lên']]
+   .map(x=>'<tr><td><span class="st2 '+x[2]+'">'+x[0]+'</span></td><td><b>'+x[1]+'</b></td><td>'+x[3]+'</td></tr>').join('')+
+   '</table></div>'+
+   '<div class="ro" style="margin:9px 0 0"><b>Một công cụ đồng bộ mà dám xóa học sinh vì Sở không thấy là công cụ nguy hiểm.</b> '+
+   'Vì thế <i>chỉ có ở trường</i> không bao giờ được hiểu là xóa, và <i>chỉ có ở nguồn</i> không bao giờ tự tạo.</div></div></div>';
+ return s}
+
+/* ---- bảng so sánh theo từng TRƯỜNG ---- */
+function kqF(f,loai){
+ const [t,ht,ng]=f;
+ if(loai==='moi')return ['v','➕ nhận'];
+ if(loai==='chi')return ['b','🔒 giữ'];
+ if(ht===ng)return ['o','✓ khớp'];
+ if(!ht&&ng&&ng!=='—')return ['v','➕ nhận'];
+ const nh=nhomCua(t);
+ if(nh.md==='nhan')return ['v','➕ nhận'];
+ if(nh.md==='giu')return ['b','🔒 giữ'];
+ return ['r','⚠ LỆCH → hàng đợi'];
+}
+function khoiDC(p){
+ return '<div class="hb"><div class="lbh">🔍 Xem trước — so sánh theo TỪNG TRƯỜNG<span class="sp"></span>'+
+  '<span class="st2 n">'+DC.length+' dòng</span></div><div style="padding:11px 13px">'+
+  '<div class="ro">Bốn ký hiệu, và chỉ bốn: <span class="st2 o">✓ khớp</span> <span class="st2 r">⚠ LỆCH</span> <span class="st2 v">➕ nhận</span> <span class="st2 b">🔒 giữ</span>.<br>'+
+  'Mỗi dòng <b>phải nói kết quả cuối cùng</b>. Một bảng chỉ bày hai cột rồi im lặng là đẩy việc suy luận sang người — và người sẽ suy sai lúc mệt.</div>'+
+  DC.map(d=>theDC(d)).join('')+'</div></div>'}
+
+function theDC(d){
+ const [ln,lc]=LOAI[d.loai];
+ const ten=d.ma?hsOf(d.ma).n:d.ten;
+ return '<div class="hb" style="margin-bottom:9px"><div class="lbh" style="font-size:12px">'+
+  (d.dong?'Dòng '+d.dong+' · ':'')+'<b>'+ten+'</b>'+(d.ma?' · '+d.ma:'')+
+  '<span class="sp"></span><span class="st2 '+lc+'">'+ln+'</span>'+
+  (d.loai==='moi'?'<label style="margin-left:8px;font-size:11.5px;font-weight:600;display:inline-flex;align-items:center;gap:5px">'+
+    '<input type="checkbox" class="xncb" data-moi="'+d.dong+'"'+(chonMoi[d.dong]?' checked':'')+'> Tạo hồ sơ</label>':'')+
+  '</div><div style="padding:0">'+
+  '<div class="wrapx"><table style="font-size:12px">'+
+  '<tr><th style="width:34%">Trường dữ liệu</th><th style="width:24%">Hệ thống</th><th style="width:24%">Nguồn</th><th>Kết quả</th></tr>'+
+  d.f.map(f=>{const [c,l]=kqF(f,d.loai), nh=nhomCua(f[0]);
+   return '<tr><td>'+f[0]+' <span class="st2 '+nh.c+'" style="font-size:9.5px">'+nh.t+'</span></td>'+
+   '<td>'+(f[1]===''?'<i style="color:var(--ink3)">(trống)</i>':f[1])+'</td>'+
+   '<td>'+(f[2]===''?'<i style="color:var(--ink3)">(trống)</i>':f[2])+'</td>'+
+   '<td><span class="st2 '+c+'">'+l+'</span></td></tr>'}).join('')+
+  '</table></div>'+
+  (d.loai==='chi'?'<div style="padding:8px 12px;font-size:11.5px;color:var(--ink2);border-top:1px solid var(--line)">'+
+    '<b>Sở không thấy em này.</b> Không xóa. Đưa sang <span class="rolnk" data-tab2="day">tab Đẩy lên</span> để trường đẩy em lên Sở.</div>':'')+
+  (d.loai==='moi'?'<div style="padding:8px 12px;font-size:11.5px;color:var(--ink2);border-top:1px solid var(--line)">'+
+    '<b>Không tự tạo.</b> Phải tick chọn — có thể là em đã chuyển đi mà Sở chưa cập nhật.</div>':'')+
+  '</div></div>'}
+
+function nhatKy(L){
+ return '<div class="hb" style="margin-bottom:0"><div class="lbh">🕘 Nhật ký (audit)</div><div style="padding:11px 13px"><div class="tl">'+
+  L.slice().reverse().map(x=>'<div class="tli"><b>'+x[2]+'</b><span>'+x[1]+' · '+x[0]+(x[3]?' — '+x[3]:'')+'</span></div>').join('')+
+  '</div><div class="ro" style="margin:11px 0 0">Audit của một phiên ghi <b>từng trường đã đổi của từng em</b>, không chỉ ghi <i>"đã áp dụng phiên"</i>. '+
+  'Lưu <b>họ tên và chức danh tại thời điểm thao tác</b>.</div></div></div>'}
+
+/* ================= TAB 2 — ĐẨY LÊN CSDL NGÀNH ================= */
+function viewDay(){
+ const L=HD.filter(inScopeHD);
+ return scopeBar()+thanhKN()+ghiChuDemo()+
+ '<div class="ro"><b>M1.8 sở hữu HÀNG ĐỢI, không sở hữu SỰ KIỆN.</b> Đây là ranh giới quan trọng nhất của tab này.<br>'+
+ '• <b>Đẩy sự kiện</b> — ký quyết định chuyển đi thì đẩy ngay — là việc của <b>menu chủ</b>: '+
+ '<span class="rolnk" data-go="M1.5">M1.5</span> · <span class="rolnk" data-go="M1.6">M1.6</span> · <span class="rolnk" data-go="M3.4">M3.4</span>.<br>'+
+ '• <b>Sự kiện đẩy HỎNG</b> — mất mạng, Sở lỗi, thiếu mã — <b>rơi vào hàng đợi ở đây</b>.<br>'+
+ '• <b>Đẩy lô theo kỳ</b> — chốt đầu năm, cuối năm, báo cáo Sở — cũng ở đây.<br>'+
+ 'Nếu M1.8 cũng đẩy sự kiện thì có <b>hai nơi cùng đẩy một việc</b>, và không ai biết cái nào đã chạy. '+
+ '<b>M1.8 là nơi nhìn thấy mọi thứ chưa lên được Sở</b> — đó là giá trị của nó.</div>'+
+
+ '<div class="hb"><div class="lbh">① Hàng đợi — chưa lên được Sở<span class="sp"></span>'+
+  (L.length?'<span class="st2 r">'+L.length+' mục</span>':'<span class="st2 o">✓ Trống</span>')+'</div>'+
+  '<div style="padding:11px 13px">'+
+  (L.length?'<div style="margin-bottom:9px"><button class="btn sm p" data-x="thulaiall">⟳ Thử lại cả lô'+theAi('thulai')+'</button></div>'+
+   '<div class="wrapx"><table><tr><th>Học sinh</th><th>Sự kiện</th><th class="hcol">Menu nguồn</th><th>Vì sao chưa lên</th><th>Thao tác</th></tr>'+
+   L.map(x=>rowHD(x)).join('')+'</table></div>'
+  :'<div class="empty">Không có mục nào chờ đẩy trong phạm vi của bạn</div>')+
+  '<div class="ro" style="margin:9px 0 0"><b>Cột "Vì sao chưa lên" phải là câu người đọc hiểu được</b>, kèm cách sửa và deep-link — '+
+  'chứ không phải <code>ERR_SYNC_400</code>. Người ngồi ở phòng văn thư không tra được mã lỗi.</div>'+
+  '</div></div>'+
+
+ '<div class="hb"><div class="lbh">② Đẩy lô theo kỳ</div><div style="padding:11px 13px">'+
+  '<div class="ro"><b>Hiệu trưởng duyệt trước mỗi lần đẩy</b> — theo <code>nh0.1 §7</code>. '+
+  'Ở đây là <b>duyệt</b>, <b>không sinh quyết định và không ký số</b>: đây là thao tác kỹ thuật với hệ thống Bộ, không phải văn bản hành chính phát hành ra ngoài.<br>'+
+  '<i>Ký số Nhóm B bắt buộc</i> vẫn áp dụng cho <b>chuyển trường</b> và <b>tốt nghiệp</b> — nhưng ký ở <b>M1.5</b> và <b>M3.4</b>, không ký ở đây.</div>'+
+  '<div style="margin:9px 0"><button class="btn sm '+(KETNOI.api?'p':'')+'" data-x="daylo"'+(KETNOI.api?'':' disabled')+'>📤 Đẩy lô theo kỳ'+theAi('daylo')+'</button>'+
+   (KETNOI.api?'':'<span class="hint" style="margin-left:9px;color:var(--red);font-size:11.5px"><b>Chưa kết nối API CSDL ngành</b> — không đẩy được. Cấu hình tại <span class="rolnk" data-go="M10.2">M10.2</span>.</span>')+'</div>'+
+  khoiDK_day()+
+  (DAY.length?'<div class="wrapx" style="margin-top:11px"><table style="font-size:12.5px"><tr><th>Lần đẩy</th><th>Phạm vi</th><th>Duyệt bởi</th></tr>'+
+    DAY.map(d=>'<tr><td>'+d.ngay+'</td><td>'+d.pv+' · <b>'+d.so+'</b> hồ sơ</td><td>'+d.duyet+'</td></tr>').join('')+'</table></div>':'')+
+  '</div></div>'}
+
+function rowHD(x){
+ const h=hsOf(x.ma), v=VISAO[x.vs];
+ return '<tr><td><b>'+h.n+'</b><br><span style="color:var(--ink3);font-size:11px">'+x.ma+' · '+h.lop+'</span></td>'+
+  '<td style="font-size:12px">'+x.sk+'</td>'+
+  '<td class="hcol"><span class="rolnk" data-go="'+x.menu+'">'+x.menu+'</span></td>'+
+  '<td><span class="st2 '+v.c+'">'+v.t+'</span>'+
+   '<div style="font-size:11.5px;color:var(--ink2);margin-top:4px">'+v.cach+
+    (v.go?' <span class="rolnk" data-go="'+v.go+'">→ '+v.go+'</span>':'')+'</div>'+
+   (x.loi?'<div class="danger" style="margin:6px 0 0;padding:6px 9px;font-size:11.5px"><b>Sở trả về:</b> '+x.loi+'</div>':'')+
+   (x.lan?'<div style="font-size:11px;color:var(--ink3);margin-top:4px">Đã thử <b>'+x.lan+'</b> lần · gần nhất '+x.ngay+'</div>':'')+'</td>'+
+  '<td><button class="btn xs" data-x="thulai" data-k="'+x.id+'">⟳ Thử lại'+theAi('thulai')+'</button>'+
+   '<div style="margin-top:4px"><button class="btn xs d" data-x="boqua" data-k="'+x.id+'">⊘ Bỏ khỏi hàng đợi'+theAi('boqua')+'</button></div></td></tr>'}
+
+function dkDay(){
+ const O=[], nam='Đang hoạt động';
+ O.push({c:KETNOI.api?'o':'r',l:'Kết nối API CSDL ngành',v:KETNOI.api?'Đã kết nối':'CHƯA kết nối — chặn',go:KETNOI.api?'':'M10.2'});
+ O.push({c:'o',l:'Trạng thái hồ sơ năm học',v:nam+' — đẩy được (nh0.1 §6.2)'});
+ const pd=dsPending();
+ O.push({c:pd.length?'w':'o',l:'Hồ sơ mang mã tạm PENDING-',
+  v:pd.length?pd.length+' em: '+pd.map(h=>h.n).join(' · ')+' — KHÔNG lên Sở cho tới khi có mã thật':'Không có',
+  s:pd.length?'Không chặn cả lô — chỉ loại những em này ra khỏi lần đẩy. Học sinh vẫn học bình thường; cái chưa xong là nghĩa vụ báo cáo.':''});
+ const n=xdCho();
+ O.push({c:n?'w':'o',l:'Xung đột chưa xử lý',v:n?n+' điểm lệch chưa quyết':'Không có',
+  s:n?'Không chặn — nhưng đẩy lên khi còn lệch nghĩa là báo cáo Sở một bản chưa đối chiếu xong.':''});
+ return O}
+function khoiDK_day(){
+ const D=dkDay();
+ return '<div style="margin-top:9px">'+D.map(d=>'<div class="'+(d.c==='o'?'ok':d.c==='w'?'warn':'danger')+'" style="margin-bottom:7px;padding:7px 10px">'+
+  '<b>'+d.l+':</b> '+d.v+(d.s?'<div style="margin-top:4px;font-size:11.5px">'+d.s+'</div>':'')+
+  (d.go?' <span class="rolnk" data-go="'+d.go+'">→ '+d.go+'</span>':'')+'</div>').join('')+'</div>'}
+
+/* ================= TAB 3 — XUNG ĐỘT ================= */
+function chipsXD(){
+ const C=['Tất cả','Chờ xử lý','Đã hoãn','🏷 Chờ mã chính thức','Đã đóng (đã quyết)'];
+ return C.map(c=>'<button class="chip'+(fTT===c?' on':'')+'" data-f="'+c+'">'+c+
+  (c==='Chờ xử lý'&&xdCho()?'<span class="cb">'+xdCho()+'</span>':'')+
+  (c==='🏷 Chờ mã chính thức'&&dsPending().length?'<span class="cb">'+dsPending().length+'</span>':'')+'</button>').join('')}
+
+function viewXD(){
+ if(fTT==='🏷 Chờ mã chính thức')return scopeBar()+thanhKN()+
+  '<div class="bar">'+oTim()+chipsXD()+'</div>'+ghiChuDemo()+khoiPending();
+ let L=XD.filter(x=>inScopeXD(x)&&khopXD(x));
+ if(fTT==='Chờ xử lý')L=L.filter(x=>x.tt==='cho');
+ else if(fTT==='Đã hoãn')L=L.filter(x=>x.tt==='hoan');
+ else if(fTT==='Đã đóng (đã quyết)')L=L.filter(x=>['nhan','giu'].includes(x.tt));
+ else L=L.filter(x=>['cho','hoan'].includes(x.tt));
+ /* gom nhóm theo học sinh */
+ const G={};L.forEach(x=>{(G[x.ma]=G[x.ma]||[]).push(x)});
+ const ks=Object.keys(G);
+ return scopeBar()+thanhKN()+
+ '<div class="bar">'+oTim()+chipsXD()+
+  '<div class="sum"><span>Hiển thị <b>'+L.length+'</b> điểm lệch của <b>'+ks.length+'</b> học sinh</span></div></div>'+
+ ghiChuDemo()+
+ '<div class="ro"><b>Dòng chính ở đây là MỘT TRƯỜNG, không phải một học sinh.</b> Một em lệch 3 trường = <b>3 dòng</b>, '+
+ 'vì ba trường được giải quyết bằng ba cách khác nhau, có thể vào ba ngày khác nhau, do hai người khác nhau. '+
+ 'Màn hình vẫn <b>gom nhóm theo học sinh</b> để nhìn được toàn cảnh, nhưng <b>quyết định thì từng trường</b>.<br>'+
+ 'Xung đột <b>sống lâu hơn phiên sinh ra nó</b> — văn thư phải gọi hỏi gia đình, đối chiếu giấy khai sinh, chờ Sở sửa. Vì thế nó có màn hình riêng.</div>'+
+ khoiNguon()+
+ (ks.length?ks.map(m=>nhomXD(m,G[m])).join(''):'<div class="empty">Không có xung đột nào khớp bộ lọc</div>')}
+
+function khopXD(x){
+ if(!qTim.trim())return true;
+ const q=kd(qTim).trim(), h=hsOf(x.ma);
+ return kd(h.n).includes(q)||kd(x.ma).includes(q)||kd(x.truong).includes(q)}
+
+function khoiNguon(){
+ return '<div class="hb"><div class="lbh">📐 Bảng nguồn sự thật — thứ giữ cho menu này không thành chỗ cãi nhau</div>'+
+  '<div style="padding:11px 13px">'+
+  '<div class="wrapx"><table style="font-size:12.5px"><tr><th>Nhóm</th><th>Trường dữ liệu</th><th>Nguồn sự thật</th><th>Mặc định khi lệch</th></tr>'+
+  Object.keys(NHOM).map(k=>{const n=NHOM[k];
+   const fs=Object.keys(TRUONG).filter(t=>TRUONG[t]===k);
+   return '<tr><td><span class="st2 '+n.c+'">'+n.t+'</span></td>'+
+    '<td style="font-size:11.5px">'+fs.join(' · ')+'</td>'+
+    '<td><b>'+n.ng+'</b></td>'+
+    '<td>'+(n.md==='nhan'?'<span class="st2 v">➕ Nhận của Sở</span>':n.md==='giu'?'<span class="st2 b">🔒 Giữ của trường</span>'
+      :'<span class="st2 r">KHÔNG có mặc định</span>')+
+    '<div style="font-size:11px;color:var(--ink2);margin-top:4px">'+n.vs+'</div></td></tr>'}).join('')+
+  '</table></div>'+
+  '<div class="ro" style="margin:9px 0 0"><b>Nhóm Pháp lý là nhóm duy nhất không có mặc định, và đó là chủ ý.</b> '+
+  'Ngày sinh lệch không phải lỗi đồng bộ — nó là <b>một trong hai bên đang sai giấy tờ</b>, và phần mềm không có tư cách đoán bên nào.<br>'+
+  'Ba nhóm còn lại có mặc định để văn thư không phải quyết 400 lần cho cùng một loại việc. <b>Mặc định vẫn hiện ra và vẫn sửa được</b>, không tự chạy ngầm.</div>'+
+  '</div></div>'}
+
+function nhomXD(ma,L){
+ const h=hsOf(ma);
+ return '<div class="hb"><div class="lbh">👤 <b>'+h.n+'</b> · '+ma+' · '+h.lop+' · '+h.dt+
+  '<span class="sp"></span><span class="st2 n">'+L.length+' điểm lệch</span></div>'+
+  '<div style="padding:0">'+L.map(x=>rowXD(x)).join('')+'</div></div>'}
+
+function rowXD(x){
+ const nh=nhomCua(x.truong), [l,c]=XDTT[x.tt];
+ const md=nh.md;
+ return '<div style="padding:10px 13px;border-bottom:1px solid var(--line)">'+
+  '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:7px">'+
+   '<b>'+x.truong+'</b><span class="st2 '+nh.c+'">'+nh.t+'</span><span class="st2 '+c+'">'+l+'</span>'+
+   '<span style="margin-left:auto;font-size:11px;color:var(--ink3)">từ '+x.phien+'</span></div>'+
+  (x.moKhop?'<div class="danger" style="margin:0 0 7px;padding:7px 10px;font-size:11.5px">'+
+    '<b>Đối khớp GẦN ĐÚNG</b> — ghép bằng họ tên + ngày sinh + giới tính, không có mã định danh. '+
+    '<b>Không bao giờ tự áp dụng.</b> Ghép nhầm hai em là lỗi <b>không phát hiện được bằng mắt về sau</b> — điểm của em này chạy sang hồ sơ em kia.</div>':'')+
+  '<div class="wrapx"><table style="font-size:12px"><tr><th style="width:50%">Hệ thống</th><th>Nguồn (CSDL ngành / file)</th></tr>'+
+   '<tr><td>'+(x.ht===''?'<i style="color:var(--ink3)">(trống)</i>':'<b>'+x.ht+'</b>')+'</td>'+
+   '<td>'+(x.ng===''?'<i style="color:var(--ink3)">(trống)</i>':'<b>'+x.ng+'</b>')+'</td></tr></table></div>'+
+  (x.tt==='hoan'?'<div class="warn" style="margin:7px 0 0;padding:7px 10px;font-size:11.5px"><b>Đã hoãn:</b> '+x.hoanLy+'</div>':'')+
+  (['cho','hoan'].includes(x.tt)?
+   '<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">'+
+   '<button class="btn xs '+(md==='nhan'?'p':'')+'" data-x="nhan" data-k="'+x.id+'">➕ Nhận của nguồn'+theAi('nhan')+'</button>'+
+   '<button class="btn xs '+(md==='giu'?'p':'')+'" data-x="giu" data-k="'+x.id+'">🔒 Giữ của trường'+theAi('giu')+'</button>'+
+   '<button class="btn xs" data-x="hoan" data-k="'+x.id+'">⏸ Hoãn'+theAi('hoan')+'</button>'+
+   (md?'<span style="font-size:11px;color:var(--ink2)">mặc định: <b>'+(md==='nhan'?'nhận của nguồn':'giữ của trường')+'</b></span>'
+     :'<span style="font-size:11px;color:var(--red);font-weight:600">nhóm Pháp lý — không có mặc định, người phải quyết</span>')+
+   '</div>'+
+   (md?'<div style="margin-top:6px"><button class="btn xs" data-x="lonhan" data-k="'+x.truong+'">'+
+     '⚡ Áp cho tất cả trường «'+x.truong+'» đang chờ'+theAi('lonhan')+'</button>'+
+     '<span style="font-size:11px;color:var(--ink2);margin-left:7px">Xử lý hàng loạt <b>chỉ trong cùng một trường dữ liệu</b>. '+
+     'Nút <i>"nhận hết mọi thứ của Sở"</i> thì <b>không có</b> — đó chính là cái nút phá hỏng cả cơ sở dữ liệu trong một cú bấm lúc 5 giờ chiều.</span></div>':'')
+   :'')+
+  '</div>'}
+
+function khoiPending(){
+ const L=dsPending().filter(inScopeHS_h);
+ return '<div class="ro"><b>Mã tạm <code>PENDING-</code> là một loại xung đột đặc biệt.</b> Nó <b>không phải lệch giá trị</b> — bên trường <b>không có gì để so</b>. '+
+ 'Nó là <b>nghĩa vụ báo cáo chưa xong</b>, không phải lỗi dữ liệu. Và nó <b>chặn học sinh đó khỏi mọi lần đẩy lên Sở</b> cho tới khi có mã thật.<br>'+
+ '<code>M1.5 §5.5</code> đã đặt hàng ở đây: <i>hàng đợi đồng bộ tại M1.8 <b>giữ lại</b> cho đến khi có mã thật</i>.</div>'+
+ '<div class="hb"><div class="lbh">🏷 Hồ sơ đang mang mã tạm<span class="sp"></span><span class="st2 w">'+L.length+' em</span></div>'+
+ '<div style="padding:11px 13px">'+
+ (L.length?'<div class="wrapx"><table><tr><th>Học sinh</th><th>Lớp</th><th>Mã tạm</th><th>Xử lý</th></tr>'+
+  L.map(h=>'<tr><td><b>'+h.n+'</b><br><span style="color:var(--ink3);font-size:11px">'+h.ma+'</span></td>'+
+   '<td>'+h.lop+'<br><span style="color:var(--ink3);font-size:11px">'+h.dt+'</span></td>'+
+   '<td><code>'+h.mdd+'</code></td>'+
+   '<td><span class="rolnk" data-go="M1.1">→ M1.1 nhập mã thật</span><div style="font-size:11px;color:var(--ink2);margin-top:3px">'+
+   'Học sinh <b>vẫn học bình thường</b>. Cái chưa xong là nghĩa vụ báo cáo của trường.</div></td></tr>').join('')+'</table></div>'
+ :'<div class="empty">Không có hồ sơ nào mang mã tạm trong phạm vi của bạn</div>')+
+ '</div></div>'}
+const inScopeHS_h=h=>{const r=R();return r.sc==='branch'?h.dt===r.dt:true};
+
+/* ================= TAB 4 — XUẤT DỮ LIỆU ================= */
+function viewXuat(){
+ return scopeBar()+thanhKN()+
+ '<div class="bar">'+
+  '<div class="sum"><span><b>'+XU.length+'</b> lần xuất đã ghi nhận</span>'+
+  '<button class="btn sm p" data-x="xuat">📦 Xuất dữ liệu học sinh'+theAi('xuat')+'</button></div></div>'+
+ ghiChuDemo()+
+ '<div class="danger"><b>Xuất là hành vi chịu NĐ 13/2023/NĐ-CP.</b> Xuất một file 400 học sinh là <b>đưa dữ liệu cá nhân của 400 người ra khỏi phạm vi kiểm soát của hệ thống</b>. '+
+ 'File đó đi đâu, ai mở, lưu ở USB nào — hệ thống không biết nữa.<br>'+
+ 'Vì thế: <b>bắt buộc nêu mục đích</b> · <b>chọn từng nhóm trường</b>, không xuất mặc định toàn bộ · <b>trường nhạy cảm mặc định TẮT</b>, bật cần Hiệu trưởng duyệt · <b>file được đóng dấu</b>.</div>'+
+ '<div class="ro"><b>Đóng dấu file là thứ rẻ nhất và hữu ích nhất.</b> Tên file và một dòng đầu file ghi: trường · người xuất · thời điểm · mục đích. '+
+ 'Khi một file danh sách học sinh xuất hiện ở nơi không nên có, dòng đó cho biết nó ra khỏi hệ thống lúc nào và qua tay ai.<br>'+
+ '<b>Tải PDF hồ sơ MỘT em là việc của <span class="rolnk" data-go="M1.1">M1.1</span>.</b> Tab này chỉ làm <b>xuất lô</b> — từ 2 học sinh trở lên.</div>'+
+ '<div class="hb"><div class="lbh">🕘 Lịch sử xuất — audit NĐ 13</div><div style="padding:11px 13px">'+
+ '<div class="wrapx"><table><tr><th>Lần xuất</th><th>Người xuất</th><th>Mục đích</th><th>Bản ghi</th><th>Trường đã xuất</th></tr>'+
+ XU.slice().reverse().map(x=>'<tr>'+
+  '<td><b>'+x.id+'</b><br><span style="color:var(--ink3);font-size:11px">'+x.ngay+'</span></td>'+
+  '<td style="font-size:11.5px">'+x.boi+'</td>'+
+  '<td><b>'+x.mucDich+'</b><div style="font-size:11px;color:var(--ink2);margin-top:3px">'+x.mota+'</div></td>'+
+  '<td><b>'+x.so+'</b></td>'+
+  '<td style="font-size:11px">'+x.truong.join(' · ')+
+   (x.nhaycam?'<div class="danger" style="margin:5px 0 0;padding:5px 8px;font-size:11px"><b>⚠ Có trường nhạy cảm</b> — HT duyệt: '+x.nhaycamLy+'</div>':'')+'</td></tr>').join('')+
+ '</table></div>'+
+ '<div class="ro" style="margin:9px 0 0">Audit ghi <b>ai · lúc nào · bao nhiêu bản ghi · những trường nào · mục đích</b>, kèm <b>họ tên và chức danh tại thời điểm xuất</b>. '+
+ 'Lịch sử xuất <b>không xóa được</b> — đó là bằng chứng tuân thủ.</div>'+
+ '</div></div>'}
+
+/* ================= RENDER ================= */
+function render(){
+ hdrBar();sideNav();tabsBar();
+ $('#content').innerHTML=tab==='nhap'?viewNhap():tab==='day'?viewDay():tab==='xd'?viewXD():viewXuat();
+}
+
+/* ================= MODAL ================= */
+function modal(h,b,f){
+ $('#mh').innerHTML=h;$('#mb').innerHTML=b;
+ const F=(f||[]).filter(Boolean);
+ $('#mf').innerHTML=F.map(([l,fn,c],i)=>'<button class="btn '+(c||(fn?'p':''))+'" data-mf="'+i+'">'+l+'</button>').join('');
+ window.__mf=F.map(x=>x[1]);
+ $('#mask').classList.add('on')}
+const closeM=()=>{$('#mask').classList.remove('on');$('#mdl').classList.remove('sm')};
+let tmr;const toast=m=>{const e=$('#toast');e.textContent=m;e.classList.add('on');clearTimeout(tmr);tmr=setTimeout(()=>e.classList.remove('on'),4200)};
+
+/* ================= BIND ================= */
+document.body.addEventListener('click',e=>{
+ const g=id=>e.target.closest('['+id+']');
+ let x;
+ if(x=g('data-r')){role=x.dataset.r;cur=null;fTT='Tất cả';render();return}
+ if(x=g('data-tab')){tab=x.dataset.tab;cur=null;fTT='Tất cả';qTim='';render();return}
+ if(x=g('data-tab2')){tab=x.dataset.tab2;cur=null;fTT='Tất cả';render();return}
+ if(x=g('data-f')){fTT=x.dataset.f;cur=null;render();return}
+ if(x=g('data-mf')){const fn=window.__mf[+x.dataset.mf];closeM();if(fn)fn();return}
+ if(x=g('data-moi')){const k=x.dataset.moi;chonMoi[k]=!chonMoi[k];
+   toast(chonMoi[k]?'Đã tick tạo hồ sơ cho dòng '+k:'Bỏ tick dòng '+k);render();return}
+ if(x=g('data-go')){toast('Deep-link sang '+x.dataset.go+' — mang theo ngữ cảnh, có đường quay lại M1.8');return}
+ if(x=g('data-x')){act(x.dataset.x,x.dataset);return}
+ if(x=g('data-t')){cur=cur===x.dataset.t?null:x.dataset.t;render();return}
+ if(e.target.id==='mask')closeM();
+});
+document.body.addEventListener('input',e=>{
+ if(e.target.id==='qtim'){const p=e.target.selectionStart;qTim=e.target.value;cur=null;render();
+  const q=$('#qtim');if(q){q.focus();q.setSelectionRange(p,p)}}
+});
+document.body.addEventListener('change',e=>{
+ if(e.target.dataset&&e.target.dataset.nc!==undefined)veNhayCam();
+});
+
+/* ================= THAO TÁC ================= */
+function lg(ai,vc,y){return [NGAY3+' '+new Date().toTimeString().slice(0,5),ai,vc,y||'']}
+
+function act(a,d){
+ const p=d.t?pOf(d.t):null;
+ if(a==='xoatim'){qTim='';cur=null;render();return}
+ if(a==='dong'){cur=null;render();return}
+
+ /* ---------- TẠO PHIÊN ---------- */
+ if(a==='taophien'){
+  const ok=chayPhienDuoc().includes(R().sc);
+  $('#mdl').classList.remove('sm');
+  modal('📥 Tạo phiên nhập dữ liệu',
+   '<div class="ro"><b>Nguồn là thuộc tính của phiên, không phải một tab riêng.</b> Pull CSDL ngành và Import Excel cho ra cùng một thứ: '+
+   '<b>một lô dữ liệu vào cần đối chiếu</b>. Chỉ bước nạp là khác.</div>'+
+   (ok?'':'<div class="danger"><b>Vai trò hiện tại không chạy được phiên.</b> Chế độ mapping đang là <i>'+KETNOI.mota+'</i> nên phiên chạy trên <b>toàn trường</b> — cần scope School. '+
+     'Demo vẫn cho bấm để anh xem đủ luồng.</div>')+
+   '<div style="font-weight:700;font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px">Chọn nguồn</div>'+
+   '<div class="hb" style="margin-bottom:9px"><div style="padding:11px 13px">'+
+    '<label style="display:flex;gap:9px;align-items:flex-start;opacity:'+(KETNOI.api?'1':'.5')+'">'+
+    '<input type="radio" name="fng" value="csdl"'+(KETNOI.api?'':' disabled')+'>'+
+    '<div><b>⟳ Nạp từ CSDL ngành (Pull)</b>'+
+    (KETNOI.api?'':'<div class="danger" style="margin:5px 0 0;padding:6px 9px;font-size:11.5px"><b>Chưa kết nối API CSDL ngành — không dùng được.</b> '+
+      'Dùng đường Excel ở dưới. Cấu hình kết nối tại <span class="rolnk" data-go="M10.2">M10.2</span>.<br>'+
+      'Nút vô hiệu hóa <b>phải nói vì sao</b> — đây là chỗ dễ để người dùng ngồi chờ một nút không bao giờ sáng.</div>')+'</div></label>'+
+   '</div></div>'+
+   '<div class="hb"><div style="padding:11px 13px">'+
+    '<label style="display:flex;gap:9px;align-items:flex-start">'+
+    '<input type="radio" name="fng" value="excel" checked>'+
+    '<div><b>📄 Nạp từ File Excel</b>'+
+    '<div style="font-size:11.5px;color:var(--ink2);margin-top:5px">Ba thứ bắt buộc: <b>template chuẩn tải được ngay trên màn hình</b> · '+
+    '<b>kiểm tra định dạng trước khi đối chiếu</b>, sai thì báo <b>đích danh dòng và cột</b> · <b>chặn nhập trùng file</b>.</div>'+
+    '<div style="margin-top:8px"><button class="btn xs" data-x="template">⬇ Tải template Excel chuẩn</button></div>'+
+    '<input class="fldi" id="ffile" style="margin-top:8px" value="DS_HS_khoi9_bosung.xlsx">'+
+    '</div></label>'+
+   '</div></div>',
+   [['Hủy',0],['💾 Tạo phiên',()=>{
+     const ng=(document.querySelector('input[name="fng"]:checked')||{}).value||'excel';
+     const ten=ng==='csdl'?'Pull CSDL ngành':($('#ffile')?$('#ffile').value.trim():'file.xlsx');
+     const trung=P.find(z=>z.ten===ten&&z.tt==='xong');
+     const id='PN-2026-'+String(17+P.length).padStart(4,'0');
+     P.push({id:id,nguon:ng,ten:ten,tt:'nhap',tao:NGAY3+' '+new Date().toTimeString().slice(0,5),
+      boi:R().n,ap:'',apBoi:'',tong:0,khop:0,lech:0,moi:0,chi:0,trung:trung?trung.id:'',
+      log:[lg(R().n,'Tạo phiên · nguồn '+(ng==='csdl'?'CSDL ngành':'File Excel'),ten)]});
+     cur=id;tab='nhap';
+     if(trung)toast('Đã tạo '+id+' · ⚠ CẢNH BÁO: file này đã nhập ở phiên '+trung.id);
+     else toast('Đã tạo '+id+' · bấm «Nạp dữ liệu» để đối chiếu');
+     render()},'p']]);return}
+
+ if(a==='toggleapi'){KETNOI.api=KETNOI.api?0:1;
+  toast(KETNOI.api?'Demo: đã BẬT kết nối API — luồng Pull và Đẩy lên Sở mở ra':'Demo: đã TẮT kết nối API — về đúng trạng thái MVP');render();return}
+ if(a==='template'){toast('Demo: tải template Excel chuẩn — đúng thứ tự cột và định dạng ngày của CSDL ngành');return}
+
+ /* ---------- NẠP ---------- */
+ if(a==='nap'){
+  if(p.trung){
+   $('#mdl').classList.add('sm');
+   modal('⚠ File này đã được nhập rồi',
+    '<div class="danger"><b>Trùng với phiên '+p.trung+'.</b> So khớp <b>tên file · kích thước · số dòng · mã hồ sơ</b> — cả bốn đều trùng.<br>'+
+    'Nhập lại lần nữa sẽ <b>ghi đè lần thứ hai</b> lên chính những hồ sơ đã cập nhật, và <b>làm hỏng điểm hoàn tác</b> của phiên trước.</div>'+
+    '<div class="ro">Chặn nhập trùng không phải là cấm — trường có ca nhập lại có chủ đích (file đã được Sở sửa và gửi lại cùng tên). '+
+    'Nhưng phải là <b>một lựa chọn có ý thức</b>, không phải bấm nhầm.</div>',
+    [['Không nạp',0],['Vẫn nạp — tôi biết mình đang làm gì',()=>{p.trung='';act('nap',{t:p.id})},'d']]);return}
+  p.tt='doichieu';p.tong=DC.length;
+  p.khop=DC.filter(x=>x.loai==='khop').length;
+  p.lech=DC.filter(x=>x.loai==='lech').length;
+  p.moi=DC.filter(x=>x.loai==='moi').length;
+  p.chi=DC.filter(x=>x.loai==='chi').length;
+  p.log.push(lg('Hệ thống','Kiểm tra định dạng: ĐẠT',p.tong+'/'+p.tong+' dòng đúng định dạng'));
+  p.log.push(lg('Hệ thống','Đối chiếu xong — CHƯA GHI GÌ VÀO HỆ THỐNG',
+   p.khop+' khớp · '+p.lech+' lệch trường · '+p.moi+' chỉ có ở nguồn · '+p.chi+' chỉ có ở trường'));
+  toast('Đã đối chiếu · CHƯA ghi gì vào hệ thống — xem trước rồi mới áp dụng');render();return}
+
+ /* ---------- ÁP DỤNG ---------- */
+ if(a==='apdung'){
+  const nMoi=Object.keys(chonMoi).filter(k=>chonMoi[k]).length;
+  const nLech=DC.filter(x=>x.loai==='lech').length;
+  const nNhan=DC.reduce((s,x)=>s+(x.loai==='lech'?x.f.filter(f=>kqF(f,x.loai)[1]==='➕ nhận').length:0),0);
+  const nLechF=DC.reduce((s,x)=>s+(x.loai==='lech'?x.f.filter(f=>kqF(f,x.loai)[0]==='r').length:0),0);
+  $('#mdl').classList.remove('sm');
+  modal('✓ Áp dụng phiên '+p.id,
+   '<div class="warn"><b>Đây là lúc dữ liệu thật bị ghi.</b> Trước bước này hệ thống chưa đổi gì.</div>'+
+   '<div class="wrapx"><table style="font-size:12.5px"><tr><th>Việc</th><th>Số lượng</th></tr>'+
+   '<tr><td><b>➕ Nhận giá trị từ nguồn</b> <span style="font-size:11px;color:var(--ink2)">(trường đang trống, hoặc nhóm «Sở cấp»)</span></td><td><b>'+nNhan+'</b> trường</td></tr>'+
+   '<tr><td><b>⚠ Đẩy vào hàng đợi xung đột</b> <span style="font-size:11px;color:var(--ink2)">(không tự quyết)</span></td><td><b>'+nLechF+'</b> trường</td></tr>'+
+   '<tr><td><b>➕ Tạo hồ sơ mới</b> <span style="font-size:11px;color:var(--ink2)">(chỉ những dòng đã tick)</span></td><td><b>'+nMoi+'</b> hồ sơ</td></tr>'+
+   '<tr><td><b>🔒 Giữ nguyên của trường</b></td><td>còn lại</td></tr>'+
+   '<tr><td><b>➖ Chỉ có ở trường</b> → đưa sang tab Đẩy lên, <b>KHÔNG xóa</b></td><td><b>'+p.chi+'</b> hồ sơ</td></tr>'+
+   '</table></div>'+
+   (nMoi===0&&p.moi>0?'<div class="warn" style="margin-top:9px"><b>Chưa tick chọn hồ sơ mới nào.</b> '+p.moi+' dòng «chỉ có ở nguồn» sẽ <b>không được tạo</b>. '+
+     'Hệ thống không tự tạo — có thể là em đã chuyển đi mà Sở chưa cập nhật.</div>':'')+
+   '<div class="ok" style="margin-top:9px"><b>Phiên tạo một điểm hoàn tác sống 7 ngày.</b> Nếu phát hiện sai, Hiệu trưởng hoàn tác được.</div>',
+   [['Hủy',0],['✓ Áp dụng — ghi vào dữ liệu thật',()=>{
+     p.tt='xong';p.ap=NGAY3+' '+new Date().toTimeString().slice(0,5);p.apBoi=R().n;p.htHan=7;
+     p.log.push(lg(R().n,'ÁP DỤNG phiên',
+      'Nhận '+nNhan+' trường · tạo '+nMoi+' hồ sơ mới · đẩy '+nLechF+' điểm lệch vào hàng đợi xung đột · giữ nguyên '+p.chi+' hồ sơ chỉ có ở trường'));
+     /* sinh xung đột thật từ các trường LỆCH */
+     let n=0;
+     DC.filter(x=>x.loai==='lech').forEach(x=>x.f.forEach(f=>{
+      if(kqF(f,x.loai)[0]==='r'){n++;
+       XD.push({id:'XD-2'+(200+XD.length),ma:x.ma,truong:f[0],ht:f[1],ng:f[2],tt:'cho',phien:p.id})}}));
+     p.log.push(lg('Hệ thống','Sinh '+n+' mục trong hàng đợi xung đột','Nhóm Pháp lý không có mặc định — người phải quyết'));
+     toast('Đã áp dụng '+p.id+' · sinh '+n+' xung đột · hoàn tác được 7 ngày');render()},'g']]);return}
+
+ /* ---------- HOÀN TÁC ---------- */
+ if(a==='hoantac'){
+  $('#mdl').classList.remove('sm');
+  const tra=Math.max(0,p.tong-3), bq=Math.min(3,p.tong);
+  modal('↩ Hoàn tác phiên '+p.id,
+   '<div class="danger"><b>Hoàn tác KHÔNG mù quáng ghi ngược.</b> Bản ghi ai đó đã sửa tay sau phiên thì <b>giữ nguyên</b> — người ta sửa có chủ đích, hoàn tác là xóa việc của họ.</div>'+
+   '<div class="wrapx"><table style="font-size:12.5px"><tr><th>Tình huống</th><th>Xử lý</th></tr>'+
+   '<tr><td>Bản ghi <b>không ai đụng</b> kể từ khi áp dụng</td><td><span class="st2 o">Trả về giá trị cũ</span> — <b>'+tra+'</b> hồ sơ</td></tr>'+
+   '<tr><td>Bản ghi <b>đã bị sửa tay sau đó</b></td><td><span class="st2 w">BỎ QUA, nêu đích danh</span> — <b>'+bq+'</b> hồ sơ</td></tr>'+
+   '<tr><td>Hồ sơ <b>mới tạo</b>, chưa phát sinh dữ liệu</td><td><span class="st2 n">Xóa</span></td></tr>'+
+   '<tr><td>Hồ sơ <b>mới tạo</b>, <b>đã có điểm / đã có hóa đơn</b></td><td><span class="st2 r">KHÔNG xóa</span> — giữ lại, nêu đích danh</td></tr>'+
+   '</table></div>'+
+   '<div class="ro" style="margin-top:9px">Báo cáo hoàn tác nói rõ số bỏ qua và <b>danh sách cụ thể</b>. '+
+   'Một nút hoàn tác im lặng bỏ qua '+bq+' hồ sơ là <b>tệ hơn không có nút nào</b> — người dùng tưởng đã sạch, thực tế còn '+bq+' chỗ lệch không ai biết.</div>',
+   [['Không hoàn tác',0],['↩ Hoàn tác',()=>{
+     p.tt='hoantac';p.htBoi=R().n;p.htNgay=NGAY3+' '+new Date().toTimeString().slice(0,5);
+     p.htTra=tra;p.htBoQua=bq;
+     XD=XD.filter(x=>x.phien!==p.id);
+     p.log.push(lg(R().n,'HOÀN TÁC phiên','Đã trả về '+tra+' hồ sơ · BỎ QUA '+bq+' hồ sơ đã bị sửa tay sau khi áp dụng'));
+     toast('Đã hoàn tác · trả về '+tra+' · BỎ QUA '+bq+' hồ sơ đã sửa tay');render()},'d']]);return}
+
+ if(a==='dsboqua'){$('#mdl').classList.add('sm');
+  modal('Danh sách hồ sơ bị BỎ QUA khi hoàn tác',
+   '<div class="warn"><b>Những hồ sơ này đã bị sửa tay sau khi phiên áp dụng.</b> Hoàn tác giữ nguyên chúng.</div>'+
+   '<div class="wrapx"><table style="font-size:12.5px"><tr><th>Học sinh</th><th>Ai sửa · lúc nào</th></tr>'+
+   [['Nguyễn Khánh Vy','Văn thư ĐT A · 12/8 16:20 — sửa số điện thoại mẹ'],
+    ['Phạm Văn Đức','Văn thư ĐT A · 13/8 07:45 — nhập mã định danh từ học bạ'],
+    ['Lê Nhật Minh','PHT Điểm trường B · 12/8 17:02 — sửa nơi sinh theo giấy khai sinh']]
+   .map(x=>'<tr><td><b>'+x[0]+'</b></td><td style="font-size:11.5px">'+x[1]+'</td></tr>').join('')+'</table></div>'+
+   '<div class="ro">Ba người này đã làm đúng việc của họ. Hoàn tác đè lên là <b>xóa công của người khác</b>.</div>',
+   [['Đóng',0]]);return}
+
+ if(a==='huyphien'){$('#mdl').classList.add('sm');
+  modal('⊘ Hủy phiên '+p.id,
+   '<div class="ro"><b>Hủy phiên không ghi gì vào hệ thống.</b> Phiên <b>giữ vĩnh viễn</b> — bản ghi của một lần suýt nhập trùng cũng là bằng chứng cần giữ.</div>'+
+   '<div><b>Lý do</b> <span style="color:var(--red)">*bắt buộc</span><textarea class="fldi" id="fly" rows="2"></textarea></div>',
+   [['Không hủy',0],['⊘ Hủy phiên',()=>{const v=$('#fly').value.trim();
+     if(!v){toast('Phải nêu lý do');return}
+     p.tt='huy';p.huyLy=v;p.log.push(lg(R().n,'Hủy phiên',v));
+     toast('Đã hủy '+p.id+' · không ghi gì vào hệ thống');render()},'d']]);return}
+ tiepTuc(a,d);
+}
+
+function tiepTuc(a,d){
+ const xd=d.k?XD.find(x=>x.id===d.k):null;
+
+ /* ---------- XUNG ĐỘT ---------- */
+ if(a==='nhan'||a==='giu'){
+  const nh=nhomCua(xd.truong), lam=a==='nhan'?'Nhận của nguồn':'Giữ của trường';
+  const phaply=!nh.md;
+  $('#mdl').classList.add('sm');
+  modal((a==='nhan'?'➕ ':'🔒 ')+lam,
+   '<div class="ro"><b>'+hsOf(xd.ma).n+'</b> · trường <b>'+xd.truong+'</b> <span class="st2 '+nh.c+'">'+nh.t+'</span></div>'+
+   '<div class="wrapx"><table style="font-size:12.5px"><tr><th>Hệ thống</th><th>Nguồn</th></tr>'+
+   '<tr><td>'+(xd.ht||'<i>(trống)</i>')+'</td><td>'+(xd.ng||'<i>(trống)</i>')+'</td></tr></table></div>'+
+   (phaply?'<div class="danger" style="margin-top:9px"><b>Nhóm Pháp lý — không có mặc định.</b> '+nh.vs+'.<br>'+
+     'Xác nhận anh đã <b>đối chiếu giấy tờ gốc</b> trước khi quyết.</div>'
+    :'<div class="info" style="margin-top:9px"><b>Nguồn sự thật của nhóm này: '+nh.ng+'.</b> '+nh.vs+'.</div>')+
+   (a==='giu'?'<div class="ok" style="margin-top:9px"><b>Giữ của trường ≠ bỏ qua.</b> Giá trị của trường được <b>đánh dấu để đẩy lên Sở</b> → mục này sang tab <i>Đẩy lên</i>.</div>':'')+
+   '<div style="margin-top:9px"><b>Ghi chú</b> '+(phaply?'<span style="color:var(--red)">*bắt buộc với nhóm Pháp lý</span>':'')+
+   '<textarea class="fldi" id="fgc" rows="2" placeholder="'+(phaply?'VD: đã đối chiếu giấy khai sinh bản gốc ngày 27/8':'tùy chọn')+'"></textarea></div>',
+   [['Hủy',0],[(a==='nhan'?'➕ Nhận của nguồn':'🔒 Giữ của trường'),()=>{
+     const gc=$('#fgc').value.trim();
+     if(phaply&&!gc){toast('Nhóm Pháp lý bắt buộc ghi chú — anh đã đối chiếu giấy tờ nào?');return}
+     xd.tt=a==='nhan'?'nhan':'giu';xd.gc=gc;xd.boi=R().n;
+     if(a==='nhan'){const h=hsOf(xd.ma);
+      if(xd.truong==='Mã định danh CSDL ngành')h.mdd=xd.ng;
+      if(xd.truong==='Ngày sinh')h.ns=xd.ng;
+      if(xd.truong==='Dân tộc')h.dt2=xd.ng;
+      if(xd.truong==='Lớp')h.lop=xd.ng}
+     if(a==='giu')HD.push({id:'HD-'+(90+HD.length),ma:xd.ma,sk:'Đẩy giá trị của trường: '+xd.truong,
+       menu:'M1.8',vs:KETNOI.api?'soloi':'chuaketnoi',lan:0,ngay:'—'});
+     toast('Đã '+lam.toLowerCase()+' · '+xd.truong+(a==='giu'?' — đã đưa sang tab Đẩy lên':''));render()},a==='nhan'?'p':'']]);return}
+
+ if(a==='hoan'){$('#mdl').classList.add('sm');
+  modal('⏸ Hoãn xử lý',
+   '<div class="ro"><b>Hoãn không phải bỏ qua.</b> Mục ở lại hàng đợi và <b>bắt buộc ghi lý do</b> — để người khác mở lên biết đang chờ cái gì, '+
+   'và để chính mình tuần sau nhớ ra.</div>'+
+   '<div><b>Đang chờ gì</b> <span style="color:var(--red)">*bắt buộc</span>'+
+   '<textarea class="fldi" id="fly" rows="2" placeholder="VD: đã gọi gia đình 27/8, hẹn mang giấy khai sinh lên thứ Hai"></textarea></div>',
+   [['Hủy',0],['⏸ Hoãn',()=>{const v=$('#fly').value.trim();
+     if(!v){toast('Phải ghi đang chờ gì');return}
+     xd.tt='hoan';xd.hoanLy=v;toast('Đã hoãn · vẫn ở trong hàng đợi');render()},'']]);return}
+
+ if(a==='lonhan'){
+  const tr=d.k, nh=nhomCua(tr);
+  const L=XD.filter(x=>inScopeXD(x)&&x.truong===tr&&['cho','hoan'].includes(x.tt));
+  $('#mdl').classList.add('sm');
+  modal('⚡ Áp hàng loạt cho trường «'+tr+'»',
+   '<div class="ro">Có <b>'+L.length+'</b> mục đang chờ ở trường này. Mặc định của nhóm <b>'+nh.t+'</b>: '+
+   '<b>'+(nh.md==='nhan'?'Nhận của nguồn':'Giữ của trường')+'</b>.</div>'+
+   '<div class="warn"><b>Xử lý hàng loạt CHỈ trong cùng một trường dữ liệu.</b><br>'+
+   'Một nút <i>"nhận hết mọi thứ của Sở"</i> thì <b>không có</b> — đó chính là cái nút phá hỏng cả cơ sở dữ liệu trong một cú bấm lúc 5 giờ chiều.</div>'+
+   '<div class="wrapx"><table style="font-size:12px"><tr><th>Học sinh</th><th>Hệ thống</th><th>Nguồn</th></tr>'+
+   L.map(x=>'<tr><td>'+hsOf(x.ma).n+'</td><td>'+(x.ht||'<i>(trống)</i>')+'</td><td>'+(x.ng||'<i>(trống)</i>')+'</td></tr>').join('')+'</table></div>',
+   [['Hủy',0],['⚡ Áp cho cả '+L.length+' mục',()=>{
+     L.forEach(x=>{x.tt=nh.md==='nhan'?'nhan':'giu';x.boi=R().n;
+      if(nh.md==='nhan'){const h=hsOf(x.ma);
+       if(x.truong==='Mã định danh CSDL ngành')h.mdd=x.ng;
+       if(x.truong==='Lớp')h.lop=x.ng}});
+     toast('Đã áp '+(nh.md==='nhan'?'nhận của nguồn':'giữ của trường')+' cho '+L.length+' mục · chỉ trường «'+tr+'»');render()},'p']]);return}
+
+ /* ---------- HÀNG ĐỢI ĐẨY ---------- */
+ if(a==='thulai'||a==='thulaiall'){
+  const L=a==='thulaiall'?HD.filter(inScopeHD):[HD.find(x=>x.id===d.k)];
+  const chan=L.filter(x=>x.vs==='thieuma'), duoc=L.filter(x=>x.vs!=='thieuma');
+  $('#mdl').classList.add('sm');
+  modal('⟳ Thử lại '+(a==='thulaiall'?'cả lô — '+L.length+' mục':''),
+   (chan.length?'<div class="danger"><b>'+chan.length+' mục KHÔNG thử lại được:</b> thiếu mã định danh CSDL ngành.<br>'+
+     chan.map(x=>'• '+hsOf(x.ma).n+' — đang mang mã tạm <code>'+hsOf(x.ma).mdd+'</code>').join('<br>')+
+     '<div style="margin-top:6px">Đây không phải lỗi mạng — <b>thử lại bao nhiêu lần cũng hỏng</b>. Phải nhập mã thật tại <span class="rolnk" data-go="M1.1">M1.1</span> trước.</div></div>':'')+
+   (duoc.length?'<div class="'+(KETNOI.api?'ok':'warn')+'"><b>'+duoc.length+' mục sẽ được thử lại.</b>'+
+     (KETNOI.api?'':'<br>Nhưng <b>API chưa kết nối</b> nên lần thử này cũng hỏng. Chúng sẽ <b>tự lên Sở ngay khi kết nối được</b> — không cần ai bấm lại.')+'</div>':'')+
+   '<div class="ro">Nút thử lại phải <b>phân biệt được lỗi tạm thời và lỗi dữ liệu</b>. Cho người dùng bấm thử lại một mục thiếu mã định danh là <b>để họ bấm mãi mà không bao giờ xong</b>.</div>',
+   [['Đóng',0],duoc.length?['⟳ Thử lại '+duoc.length+' mục',()=>{
+     duoc.forEach(x=>{x.lan++;x.ngay=NGAY3+' '+new Date().toTimeString().slice(0,5)});
+     toast(KETNOI.api?'Đã đẩy '+duoc.length+' mục':'Đã thử lại '+duoc.length+' mục · vẫn hỏng vì chưa kết nối API');render()},'p']:0]);return}
+
+ if(a==='boqua'){const x=HD.find(z=>z.id===d.k);
+  $('#mdl').classList.add('sm');
+  modal('⊘ Bỏ khỏi hàng đợi',
+   '<div class="danger"><b>Bỏ khỏi hàng đợi nghĩa là trường CHẤP NHẬN không báo cáo việc này lên Sở.</b> '+
+   'Đây là quyết định về <b>nghĩa vụ hành chính</b>, không phải thao tác kỹ thuật — vì thế chỉ Hiệu trưởng làm được và <b>bắt buộc nêu lý do</b>.</div>'+
+   '<div class="ro"><b>'+hsOf(x.ma).n+'</b> · '+x.sk+'</div>'+
+   '<div><b>Lý do</b> <span style="color:var(--red)">*bắt buộc</span><textarea class="fldi" id="fly" rows="2"></textarea></div>',
+   [['Không bỏ',0],['⊘ Bỏ khỏi hàng đợi',()=>{const v=$('#fly').value.trim();
+     if(!v){toast('Phải nêu lý do');return}
+     HD=HD.filter(z=>z.id!==x.id);
+     toast('Đã bỏ khỏi hàng đợi · audit ghi lý do và người quyết');render()},'d']]);return}
+
+ /* ---------- ĐẨY LÔ ---------- */
+ if(a==='daylo'){
+  $('#mdl').classList.remove('sm');
+  const pd=dsPending();
+  modal('📤 Đẩy lô theo kỳ',
+   '<div class="ro"><b>Đây là DUYỆT, không phải ký số.</b> Thao tác kỹ thuật với hệ thống Bộ, không phải văn bản hành chính phát hành ra ngoài.</div>'+
+   '<div><b>Phạm vi</b><select class="fldi" id="fpv">'+
+    ['Toàn trường','Khối 9','Khối 8','Chỉ HS đang học','Chỉ HS đã chuyển đi / tốt nghiệp'].map(x=>'<option>'+x+'</option>').join('')+'</select></div>'+
+   '<div style="margin-top:9px"><b>Nội dung đẩy</b> <span style="font-size:11px;color:var(--ink2)">(nh0.1 §6.2)</span>'+
+   ['Danh sách HS kèm trạng thái','Kết quả học tập cả năm','Học bạ điện tử','Báo cáo thống kê']
+    .map((x,i)=>'<label style="display:flex;gap:7px;align-items:center;margin-top:5px;font-size:12.5px">'+
+     '<input type="checkbox" class="xncb"'+(i===0?' checked':'')+'> '+x+'</label>').join('')+'</div>'+
+   '<div style="font-weight:700;font-size:11px;color:var(--ink3);text-transform:uppercase;margin:13px 0 6px">Kiểm tra điều kiện</div>'+
+   khoiDK_day()+
+   (pd.length?'<div class="warn"><b>'+pd.length+' em bị LOẠI khỏi lần đẩy này</b> vì mang mã tạm: '+pd.map(h=>h.n).join(' · ')+'</div>':'')+
+   '<div class="info" style="margin-top:9px"><b>Xem trước danh sách sẽ đẩy</b> là bắt buộc trước khi đẩy — <code>nh0.1 §6.2</code>.</div>',
+   [['Hủy',0],['👁 Xem trước danh sách',()=>toast('Demo: mở bảng danh sách sẽ đẩy để rà soát trước'),''],
+    ['✓ Trình Hiệu trưởng duyệt',()=>{toast('Demo: chưa kết nối API nên dừng ở đây')},'p']]);return}
+
+ /* ---------- XUẤT ---------- */
+ if(a==='xuat'){
+  $('#mdl').classList.remove('sm');
+  modal('📦 Xuất dữ liệu học sinh',
+   '<div class="danger"><b>Xuất là hành vi chịu NĐ 13/2023.</b> File ra khỏi hệ thống thì hệ thống không kiểm soát được nữa — nó đi đâu, ai mở, lưu ở USB nào.</div>'+
+   '<div style="font-weight:700;font-size:11px;color:var(--ink3);text-transform:uppercase;margin-bottom:6px">1. Mục đích <span style="color:var(--red)">*bắt buộc</span></div>'+
+   '<select class="fldi" id="fmd">'+MUCDICH.map(x=>'<option>'+x+'</option>').join('')+'</select>'+
+   '<textarea class="fldi" id="fmt" rows="2" style="margin-top:7px" placeholder="Mô tả cụ thể — VD: báo cáo sĩ số theo công văn 1842/SGDĐT"></textarea>'+
+   '<div style="font-weight:700;font-size:11px;color:var(--ink3);text-transform:uppercase;margin:13px 0 6px">2. Phạm vi</div>'+
+   '<select class="fldi" id="fpv2">'+['Toàn trường (412 HS)','Điểm trường A (268 HS)','Điểm trường B (144 HS)','Khối 9 (98 HS)'].map(x=>'<option>'+x+'</option>').join('')+'</select>'+
+   '<div style="font-weight:700;font-size:11px;color:var(--ink3);text-transform:uppercase;margin:13px 0 6px">3. Chọn trường xuất — KHÔNG mặc định toàn bộ</div>'+
+   TRUONG_XUAT.map((g,gi)=>'<div class="hb" style="margin-bottom:7px"><div class="lbh" style="font-size:11.5px">'+g[0]+
+     (g[2]?'<span class="sp"></span><span class="st2 r">mặc định TẮT · cần HT duyệt</span>':'')+'</div>'+
+     '<div style="padding:8px 12px">'+g[1].map((f,fi)=>
+      '<label style="display:inline-flex;gap:5px;align-items:center;margin:0 12px 5px 0;font-size:12px'+(g[2]?';opacity:.55':'')+'">'+
+      '<input type="checkbox" class="xncb" data-nc="'+(g[2]?1:0)+'"'+(gi===0&&fi<4?' checked':'')+(g[2]?' disabled':'')+'> '+f+'</label>').join('')+
+     (g[2]?'<div style="margin-top:6px"><button class="btn xs d" data-x="batnhaycam">🔓 Bật trường nhạy cảm'+theAi('batnhaycam')+'</button>'+
+       '<span style="font-size:11px;color:var(--ink2);margin-left:7px">Cần Hiệu trưởng duyệt và <b>lý do riêng</b>, không dùng chung mục đích ở trên</span></div>':'')+
+     '</div></div>').join('')+
+   '<div class="ok"><b>File sẽ được đóng dấu.</b> Tên file và dòng đầu file ghi: trường · người xuất · thời điểm · mục đích.<br>'+
+   '<code style="font-size:11px">Dschool_HS_20260827_HieuTruong_BaoCaoSo.xlsx</code></div>',
+   [['Hủy',0],['📦 Xuất file',()=>{
+     const mt=$('#fmt').value.trim();
+     if(!mt){toast('Phải mô tả cụ thể mục đích — NĐ 13 yêu cầu nêu rõ mục đích xử lý dữ liệu');return}
+     const n=document.querySelectorAll('#mb input.xncb:checked').length;
+     if(!n){toast('Chưa chọn trường nào để xuất');return}
+     XU.push({id:'XU-2026-00'+(23+XU.length),ngay:NGAY3+' '+new Date().toTimeString().slice(0,5),
+      boi:R().n,so:412,mucDich:$('#fmd').value,mota:mt,
+      truong:[...document.querySelectorAll('#mb input.xncb:checked')].map(c=>c.parentElement.textContent.trim()),nhaycam:0});
+     toast('Đã xuất · audit ghi ai · lúc nào · '+n+' trường · mục đích');render()},'p']]);return}
+
+ if(a==='batnhaycam'){$('#mdl').classList.add('sm');
+  modal('🔓 Bật trường nhạy cảm',
+   '<div class="danger"><b>Thông tin y tế · giấy khám bệnh · hoàn cảnh gia đình · diện chính sách</b> là <b>dữ liệu cá nhân nhạy cảm</b> theo NĐ 13/2023. '+
+   'Xuất ra file là chuyển chúng ra ngoài phạm vi kiểm soát.</div>'+
+   '<div class="ro">Cần <b>Hiệu trưởng duyệt</b> và <b>lý do riêng</b> — không dùng chung mục đích của lần xuất.</div>'+
+   '<div><b>Lý do xuất trường nhạy cảm</b> <span style="color:var(--red)">*bắt buộc</span>'+
+   '<textarea class="fldi" id="fly" rows="2" placeholder="VD: Phòng GDĐT yêu cầu bản kê diện chính sách để xét miễn giảm học phí, công văn 220/PGD"></textarea></div>',
+   [['Không bật',0],['🔓 Bật — Hiệu trưởng chịu trách nhiệm',()=>{
+     const v=$('#fly').value.trim();
+     if(!v){toast('Phải nêu lý do riêng cho trường nhạy cảm');return}
+     document.querySelectorAll('#mb input[data-nc="1"]').forEach(c=>c.disabled=false);
+     document.querySelectorAll('#mb label').forEach(l=>{if(l.style.opacity)l.style.opacity=1});
+     toast('Đã bật trường nhạy cảm · audit ghi HT duyệt kèm lý do');},'d']]);return}
+
+ toast('Thao tác demo');
+}
+function veNhayCam(){}
+render();
+
+</script>
+</body>
+</html>

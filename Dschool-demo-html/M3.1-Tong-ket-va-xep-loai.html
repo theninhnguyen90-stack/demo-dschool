@@ -1,0 +1,1457 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M3.1 Tổng kết và xếp loại — Dschool</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f1f5f9;--surface:#fff;--line:#e2e8f0;--line2:#cbd5e1;
+ --ink:#0f172a;--ink2:#475569;--ink3:#94a3b8;--brand:#1d4ed8;--brand-soft:#eff6ff;
+ --red:#dc2626;--red-soft:#fef2f2;--amber:#d97706;--amber-soft:#fffbeb;
+ --green:#059669;--green-soft:#ecfdf5;--violet:#7c3aed}
+body{font:14px/1.5 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font:inherit}
+
+.hdr{height:56px;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 15px;position:sticky;top:0;z-index:40}
+.logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px}
+.logo .mark{width:28px;height:28px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px}
+.school{color:var(--ink2);font-size:12.5px;border-left:1px solid var(--line);padding-left:12px;max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sel{border:1px solid var(--line2);border-radius:7px;padding:5px 9px;font-size:12.5px;background:#fff}
+.sel:disabled{background:var(--bg);color:var(--ink2)}
+.spacer{flex:1}
+.icobtn{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;position:relative;font-size:15px}
+.dot{position:absolute;top:3px;right:3px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--violet);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:700}
+
+.wrap{display:flex;min-height:calc(100vh - 56px)}
+.side{width:216px;flex:0 0 216px;background:var(--surface);border-right:1px solid var(--line);padding:10px 8px;position:sticky;top:56px;max-height:calc(100vh - 56px);overflow-y:auto}
+.sgrp{font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;padding:12px 10px 5px}
+.snav{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:var(--ink2);font-size:12.5px;margin-bottom:1px}
+.snav:hover{background:var(--bg)}
+.snav.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
+.snav .nb{margin-left:auto;flex:0 0 auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;min-width:18px;text-align:center;line-height:15px}
+.snav.off{opacity:.34;pointer-events:none}
+.main{flex:1;padding:15px 18px 40px;min-width:0}
+
+.tophd{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+h1{font-size:19px;font-weight:700}
+.crumb{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2);margin-bottom:4px}
+.crumb button{color:var(--brand);font-weight:600}
+.btn{border:1px solid var(--line2);background:#fff;border-radius:8px;padding:7px 12px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--bg)}
+.btn.p{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn.g{background:var(--green);color:#fff;border-color:var(--green)}
+.btn.d{background:var(--red);color:#fff;border-color:var(--red)}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn.xs{padding:3px 8px;font-size:11.5px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.tabs{display:flex;gap:3px;border-bottom:2px solid var(--line);margin:12px 0 0;overflow-x:auto}
+.tab1{padding:9px 14px;font-size:13.5px;font-weight:600;color:var(--ink2);border-bottom:2px solid transparent;margin-bottom:-2px;display:flex;align-items:center;gap:7px;white-space:nowrap}
+.tab1.on{color:var(--brand);border-bottom-color:var(--brand)}
+.tab1 .b{background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:1px 7px;border-radius:9px}
+.tab1 .c{background:var(--bg);color:var(--ink2);font-size:11px;font-weight:700;padding:1px 7px;border-radius:9px}
+.tab1.on .c{background:var(--brand);color:#fff}
+
+.bar{display:flex;gap:7px;align-items:center;flex-wrap:wrap;padding:11px 0}
+.inp{border:1px solid var(--line2);border-radius:8px;padding:7px 11px;font-size:13px;background:#fff;min-width:250px}
+.fs{border:1px solid var(--line2);border-radius:8px;padding:7px 9px;font-size:12.5px;background:#fff}
+.sum{display:flex;gap:9px;font-size:12px;color:var(--ink2);margin-left:auto;flex-wrap:wrap;align-items:center}
+.sum b{color:var(--ink)}
+.chip{border:1px solid var(--line2);border-radius:999px;padding:5px 12px;font-size:12.5px;background:#fff;white-space:nowrap}
+.chip.on{background:var(--brand-soft);border-color:var(--brand);color:var(--brand);font-weight:700}
+.scopebar{background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;padding:8px 12px;border-radius:9px;font-size:12.5px;margin-bottom:11px;display:flex;gap:8px;align-items:flex-start}
+
+.listw{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.stage{display:flex;gap:13px;align-items:flex-start}
+.stage .listw{flex:1;min-width:0}
+.panel{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:none}
+.stage.open .panel{display:block}
+@media(max-width:1180px){.stage.open .listw{display:none}.stage.open .panel{flex:1}}
+
+.grph{padding:7px 13px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:11.5px;font-weight:700;color:var(--ink2);letter-spacing:.03em}
+.row{border-bottom:1px solid var(--line);padding:11px 13px;cursor:pointer}
+.row:hover{background:var(--brand-soft)}
+.row.on{background:#eff6ff}
+.rh{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.rh b{font-size:14px}
+.rmeta{font-size:11.5px;color:var(--ink3);margin-top:3px;display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+.prog{height:5px;border-radius:3px;background:var(--line);overflow:hidden;width:96px;display:inline-block;vertical-align:middle}
+.prog i{display:block;height:100%;background:var(--green)}
+.prog.bad i{background:var(--red)}
+.prog.warn i{background:var(--amber)}
+.cap{font-size:10px;font-weight:800;padding:2px 7px;border-radius:5px;white-space:nowrap}
+.cap.TH{background:#ccfbf1;color:#115e59}
+.cap.THCS{background:#dbeafe;color:#1e40af}
+.cap.THPT{background:#ede9fe;color:#5b21b6}
+.flags{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.fl{font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px;border:1px solid}
+.fl.r{background:var(--red-soft);color:#991b1b;border-color:#fecaca}
+.fl.w{background:var(--amber-soft);color:#92400e;border-color:#fde68a}
+.fl.b{background:#eef2ff;color:#3730a3;border-color:#c7d2fe}
+.pl4{display:flex;gap:7px;flex-wrap:wrap;margin-top:7px;font-size:11.5px;color:var(--ink2)}
+.pl4 span{background:var(--bg);border-radius:6px;padding:2px 8px}
+.ract{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:8px 9px;border-bottom:1px solid var(--line);background:#f8fafc;white-space:nowrap}
+td{padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+.wrapx{overflow-x:auto}
+.gtb th,.gtb td{padding:5px 6px;text-align:center;font-size:12px}
+.gtb th:nth-child(-n+2),.gtb td:nth-child(-n+2){text-align:left}
+.gtb tbody tr:hover{background:#f8fafc}
+.dz{color:var(--amber);font-weight:700}
+.dl{color:var(--red);font-weight:800;background:var(--red-soft)}
+.mienc{color:var(--ink3);background:#f1f5f9;font-size:11px;font-weight:600}
+.nx{font-weight:700;font-size:11.5px}
+.stick{position:sticky;left:0;background:#fff;z-index:2}
+th.stick{background:#f8fafc}
+tr:hover td.stick{background:#f8fafc}
+
+.st2{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;white-space:nowrap;display:inline-block}
+.st2.o{background:var(--green-soft);color:var(--green)}
+.st2.w{background:var(--amber-soft);color:var(--amber)}
+.st2.r{background:var(--red-soft);color:var(--red)}
+.st2.n{background:var(--bg);color:var(--ink2)}
+.st2.b{background:#e0e7ff;color:#3730a3}
+.st2.v{background:#ede9fe;color:#5b21b6}
+
+.ph{padding:12px 15px;border-bottom:1px solid var(--line);display:flex;gap:13px;align-items:center;flex-wrap:wrap}
+.ph h2{font-size:16px;font-weight:700}
+.ph .m{font-size:12px;color:var(--ink2);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pill{font-size:10.5px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--ink2)}
+.pbody{padding:14px 15px;max-height:calc(100vh - 220px);overflow-y:auto}
+
+.info{background:var(--brand-soft);border:1px solid #bfdbfe;color:#1e40af;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:12px}
+.warn{background:var(--amber-soft);border:1px solid #fde68a;color:#92400e;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:12px}
+.danger{background:var(--red-soft);border:1px solid #fecaca;color:#991b1b;padding:10px 13px;border-radius:9px;font-size:12.5px;line-height:1.65;margin-bottom:12px}
+.ro{background:#f8fafc;border:1px solid var(--line);color:var(--ink2);padding:8px 11px;border-radius:9px;font-size:12px;margin-bottom:12px}
+.ok{background:var(--green-soft);border:1px solid #a7f3d0;color:#065f46;padding:9px 12px;border-radius:9px;font-size:12.5px;margin-bottom:12px}
+.rolnk{font-size:10px;font-weight:700;color:var(--brand);background:#eef2ff;border:1px solid #c7d2fe;border-radius:999px;padding:1px 7px;cursor:pointer;white-space:nowrap;margin-left:5px}
+.ct2{font-size:11px;color:var(--ink3);font-family:ui-monospace,monospace;background:var(--bg);padding:2px 6px;border-radius:5px;display:inline-block}
+.wk{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:9px;display:flex;gap:11px;align-items:flex-start;cursor:pointer;background:#fff}
+.wk:hover{border-color:var(--brand);background:var(--brand-soft)}
+.wk.on{border-color:var(--brand);background:#eff6ff}
+.wk .ic{font-size:19px;flex:0 0 26px}
+.wk .bd{flex:1;min-width:0}
+.wk .bd b{display:block;font-size:13.5px}
+
+.nh4{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:11px}
+.nbox{border:1px solid var(--line);border-radius:11px;padding:11px 13px;background:var(--surface)}
+.nbox .v{font-size:26px;font-weight:800;line-height:1.1}
+.nbox .l{font-size:11.5px;color:var(--ink2);font-weight:600;min-height:32px}
+.nbox .s{font-size:10.5px;color:var(--ink3);margin-top:5px}
+.nbox.n1{background:var(--green-soft);border-color:#a7f3d0}
+.nbox.n2{background:#eff6ff;border-color:#bfdbfe}
+.nbox.n3{background:var(--amber-soft);border-color:#fde68a}
+.nbox.n4{background:var(--red-soft);border-color:#fecaca}
+.nbox.n5{background:#f8fafc}
+
+.stepl{display:flex;gap:0;margin:10px 0 14px;flex-wrap:wrap}
+.stp{flex:1;min-width:130px;border:1px solid var(--line);padding:8px 11px;font-size:12px;background:#fff}
+.stp:first-child{border-radius:9px 0 0 9px}
+.stp:last-child{border-radius:0 9px 9px 0}
+.stp+.stp{border-left:none}
+.stp b{display:block;font-size:12.5px}
+.stp.done{background:var(--green-soft);border-color:#a7f3d0;color:#065f46}
+.stp.now{background:var(--brand-soft);border-color:#bfdbfe;color:#1e40af}
+.stp .n{font-size:10.5px;color:var(--ink3)}
+
+.tl{border-left:2px solid var(--line);margin-left:7px;padding-left:15px}
+.tli{position:relative;padding:8px 0;font-size:12.5px}
+.tli::before{content:"";position:absolute;left:-21px;top:13px;width:9px;height:9px;border-radius:50%;background:var(--brand);border:2px solid #fff}
+.tli.w::before{background:var(--amber)}.tli.r::before{background:var(--red)}.tli.g::before{background:var(--green)}
+.tli b{display:block;font-weight:600}
+.tli .mm{color:var(--ink3);font-size:11.5px}
+
+.mask{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:60;display:none;place-items:center}
+.mask.on{display:grid}
+.modal{background:#fff;border-radius:13px;width:940px;max-width:95vw;max-height:88vh;display:flex;flex-direction:column}
+.modal.sm{width:660px}
+.mh{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700}
+.mb{padding:15px 18px;overflow-y:auto;font-size:13px}
+.mf{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.fldi{width:100%;border:1px solid var(--line2);border-radius:8px;padding:8px 10px;margin-top:4px}
+.res{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:10px}
+.resh{padding:8px 12px;font-size:12.5px;font-weight:700;border-bottom:1px solid var(--line)}
+.resh.ok{background:var(--green-soft);color:#065f46;margin:0;border-radius:0}
+.resh.skip{background:var(--amber-soft);color:#92400e;margin:0;border-radius:0;border-top:1px solid var(--line)}
+.resb{padding:8px 12px;font-size:12.5px}
+.resb .rr{padding:4px 0;border-bottom:1px dashed var(--line);display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.resb .rr:last-child{border-bottom:none}
+.resb .rr b{min-width:56px}
+.blk{background:var(--red-soft);border:1px solid #fecaca;border-radius:10px;padding:11px 13px;font-size:12.5px;margin-bottom:12px}
+.blk b{color:#991b1b}
+.blk .li{display:flex;gap:8px;align-items:baseline;padding:4px 0;color:#991b1b}
+.blk .li .x{flex:0 0 14px}
+.inpage{background:#fff;border:1px solid var(--line2);border-radius:6px;padding:22px 26px;font-size:12px;line-height:1.7;color:#0f172a}
+.inpage h3{text-align:center;font-size:14px;font-weight:800;margin:0}
+.inpage .qh2{text-align:center;font-size:11.5px;margin-bottom:14px}
+.sig2{display:flex;justify-content:space-between;margin-top:22px;font-size:11.5px;text-align:center}
+.evd{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:11px}
+.evd .er{display:grid;grid-template-columns:120px 1fr auto;gap:9px;padding:7px 11px;font-size:12.5px;align-items:center}
+.evd .er+.er{border-top:1px solid #f1f5f9}
+.evd .er .k{color:var(--ink3);font-size:11.5px}
+.rlpick{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.rlpick .b2{border:1px solid var(--line2);border-radius:8px;padding:6px 13px;font-size:12.5px;background:#fff;font-weight:600}
+.rlpick .b2.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.selm{border:1px solid var(--line2);border-radius:6px;padding:2px 4px;font-size:11.5px;background:#fff;width:78px}
+.selm.none{border-color:var(--amber);background:var(--amber-soft)}
+.kv{display:grid;grid-template-columns:145px 1fr;gap:6px 11px;font-size:12.5px;margin-bottom:12px}
+.kv .k{color:var(--ink3)}
+.fitem{display:flex;gap:9px;align-items:center;padding:7px 10px;border:1px solid var(--line);border-radius:9px;margin-bottom:6px;font-size:12.5px}
+.fitem .nm{flex:1;min-width:0}
+.rolebar{background:#0f172a;color:#cbd5e1;padding:8px 15px;display:flex;align-items:center;gap:7px;font-size:12.5px;flex-wrap:wrap}
+.rolebar b{color:#fff}
+.rb{border:1px solid #334155;border-radius:999px;padding:3px 10px;font-size:12px;color:#cbd5e1}
+.rb:hover{background:#1e293b;color:#fff}
+.rb.on{background:#fff;color:#0f172a;border-color:#fff;font-weight:700}
+.note{margin-left:auto;color:#64748b;font-size:11.5px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(90px);background:#0f172a;color:#fff;padding:11px 17px;border-radius:9px;font-size:13px;z-index:80;transition:transform .22s;max-width:92vw}
+.toast.on{transform:translateX(-50%)}
+.empty{padding:36px;text-align:center;color:var(--ink3)}
+.brow{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.glop{display:flex;align-items:center;gap:9px;padding:9px 13px;border-bottom:1px solid var(--line);
+ background:#f8fafc;cursor:pointer;font-size:12.5px;flex-wrap:wrap}
+.glop:hover{background:var(--brand-soft)}
+.glop.mo{background:#eff6ff}
+.glop .ar{color:var(--ink3);width:11px;font-size:11px}
+.glop .gsum{font-size:11.5px;color:var(--ink2);margin-right:3px}
+.row.inlop{padding-left:31px;background:#fff}
+.dhbig{background:linear-gradient(135deg,#ede9fe,#eff6ff);border:1px solid #ddd6fe;border-radius:11px;padding:13px;margin-bottom:12px}
+.dhbig .t{font-size:18px;font-weight:800;color:#5b21b6}
+.dhbig .c{font-size:11.5px;color:var(--ink2);margin-top:3px}
+.lgd{display:flex;gap:14px;font-size:11.5px;color:var(--ink3);padding:9px 13px;border-top:1px solid var(--line);flex-wrap:wrap;align-items:center}
+.rlmeta{font-size:10px;color:var(--ink3);margin-top:2px;line-height:1.35}
+.bulk{font-size:9px;font-weight:800;background:#fef3c7;color:#92400e;padding:0 4px;border-radius:3px}
+.gtb th{white-space:normal;text-transform:none;font-size:11px;line-height:1.3;min-width:82px;max-width:118px;
+ vertical-align:bottom;padding:6px 5px;letter-spacing:0}
+.gtb th.stick{min-width:158px;max-width:none;text-align:left}
+.gtb thead tr.hgrp th{background:#eef2ff;color:#3730a3;font-size:10.5px;font-weight:800;text-align:center;
+ letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--line2);padding:5px 6px;min-width:0;max-width:none}
+.gtb th.sep,.gtb td.sep{border-left:2px solid var(--line2)}
+.gtb th .gv{display:block;font-weight:400;color:var(--ink3);font-size:9.5px;margin-top:1px;line-height:1.2}
+.gvw{display:flex;gap:7px;overflow-x:auto;padding:9px 11px;background:var(--surface);border:1px solid var(--line);border-radius:11px;margin-bottom:11px}
+.gvi{flex:0 0 auto;min-width:118px;border:1px solid var(--line);border-radius:9px;padding:6px 9px;font-size:11.5px;cursor:pointer;background:#fff}
+.gvi:hover{border-color:var(--brand);background:var(--brand-soft)}
+.gvi .m{font-weight:700;font-size:12px}
+.gvi .g{color:var(--ink2);font-size:11px;margin:1px 0 3px}
+.gvi.ok{background:var(--green-soft);border-color:#a7f3d0}
+.gvi.no{background:var(--amber-soft);border-color:#fde68a}
+.gvi.yc{background:var(--red-soft);border-color:#fecaca}
+.gvi.cn{background:#ede9fe;border-color:#ddd6fe}
+.colst{font-size:9px;font-weight:800;display:block;margin-top:2px;letter-spacing:0}
+.colst.ok{color:var(--green)}.colst.no{color:var(--amber)}.colst.yc{color:var(--red)}
+.th-yc{cursor:pointer}
+.mtag{font-size:8.5px;font-weight:800;background:#e0e7ff;color:#3730a3;padding:0 3px;border-radius:3px;vertical-align:super}
+.ycbox{border:1px solid #fecaca;background:var(--red-soft);border-radius:9px;padding:8px 11px;margin-top:7px;font-size:12px;line-height:1.6}
+.ycbox b{color:#991b1b}
+.ycbox .act{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap}
+.kqgrid{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+.kqi{background:var(--bg);border-radius:7px;padding:3px 9px;font-size:11.5px}
+.kqi b{font-size:13px}
+.frm{background:#f8fafc;border:1px solid var(--line);border-radius:9px;padding:8px 12px;font-size:11.5px;color:var(--ink2);font-family:ui-monospace,monospace;margin-bottom:11px}
+</style>
+</head>
+<body>
+<script>/* sidebar da chuyen ve index.html — node an giu cho JS cu khong vo */
+(function(){var n=document.createElement("nav");n.id="side";n.style.display="none";document.documentElement.appendChild(n)})();</script>
+
+<div class="rolebar">
+  <b>Chức danh:</b>
+  <button class="rb" data-r="GVCN9A">GVCN 9A</button>
+  <button class="rb" data-r="GVCN4A">GVCN 4A · Tiểu học</button>
+  <button class="rb" data-r="GVBM">GVBM Toán</button>
+  <button class="rb" data-r="PHT_A">PHT_ĐT · A</button>
+  <button class="rb" data-r="PHT_B">PHT_ĐT · B</button>
+  <button class="rb" data-r="PHT_CM">PHT_CM</button>
+  <button class="rb on" data-r="HT">HT — đầy đủ quyền</button>
+  <span class="note">Demo mở mặc định ở vai trò <b>Hiệu trưởng — đầy đủ quyền</b> để thao tác mọi chức năng. Khác biệt hiển thị theo vai trò xem tài liệu §2.3 và §8.</span>
+</div>
+
+<header class="hdr">
+  <div class="logo"><span class="mark">DS</span> Dschool</div>
+  <div class="school">TH, THCS &amp; THPT Nguyễn Tất Thành</div>
+  <select class="sel" id="nam"><option>2025-2026</option><option>2024-2025</option></select>
+  <select class="sel" id="hdt"><option>Toàn trường</option><option>Điểm trường A</option><option>Điểm trường B</option></select>
+  <div class="spacer"></div>
+  <button class="icobtn">🔔<span class="dot">5</span></button>
+  <div class="avatar" id="ava">LV</div>
+</header>
+
+<div class="wrap">
+  <main class="main">
+    <div id="head"></div>
+    <div class="tabs" id="tabs"></div>
+    <div id="content"></div>
+  </main>
+</div>
+
+<div class="mask" id="mask"><div class="modal" id="mdl">
+  <div class="mh" id="mh"></div><div class="mb" id="mb"></div><div class="mf" id="mf"></div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const opt=(cur,v)=>`<option ${cur===v?'selected':''}>${v}</option>`;
+const HOM='27/08/2026';
+
+const NAV=[
+ ['dh','🏠 Trung tâm điều hành',[['M0.1','Bảng điều khiển'],['M0.2','Việc cần làm'],['M0.3','Thông báo'],['M0.4','Trang cá nhân']]],
+ ['hs','👥 Học sinh',[['M1.1','Hồ sơ học sinh'],['M1.2','Đối tượng ưu tiên'],['M1.3','Học bạ điện tử'],['M1.7','Lớp học &amp; Chuyển lớp']]],
+ ['lh','📚 Lớp học hàng ngày',[['M2.5','Nhập điểm thường xuyên'],['M2.6','Bảng điểm môn'],['M2.8','Kỳ thi định kỳ'],['M2.9','Không gian lớp học']]],
+ ['kq','🎓 Kết quả &amp; Cuối năm',[['M3.1','Tổng kết và xếp loại','x'],['M3.2','Rèn luyện hè'],['M3.3','Xét duyệt lên lớp'],['M3.4','Xét duyệt tốt nghiệp']]],
+ ['qt','⚙️ Quản trị',[['M10.1','Hồ sơ năm học']]],
+];
+const ROLE={
+ HT:{n:'Lê Quang Vinh — Hiệu trưởng',av:'LV',sc:'school',
+   tabs:['lop','danhhieu','duyet'],
+   moPHT:1,moHT:1,kyChot:1,chotDH:1,binhbau:1,ycxl:1,moc:1,menu:'all'},
+ PHT_CM:{n:'Trần Văn Sơn — PHT Chuyên môn',av:'TS',sc:'school',
+   tabs:['lop','danhhieu','duyet'],
+   moPHT:1,kyChot:1,chotDH:1,ycxl:1,moc:1,
+   menu:['M0.1','M0.2','M0.3','M0.4','M1.1','M1.2','M1.3','M2.5','M2.6','M2.8','M2.9','M3.1','M3.2','M3.3','M3.4','M10.1']},
+ PHT_A:{n:'Trần Thị Hoa — PHT Điểm trường A',av:'TH',sc:'branch',dt:'Điểm trường A',
+   tabs:['lop','danhhieu','duyet'],moPHT:1,batch:1,ycxl:1,moc:1,
+   menu:['M0.1','M0.2','M0.3','M0.4','M1.1','M1.3','M1.7','M2.9','M3.1','M3.2','M3.3','M10.1']},
+ GVCN9A:{n:'Nguyễn Thị Mai — GVCN 9A',av:'NM',sc:'class',lop:'9A',dt:'Điểm trường A',
+   tabs:['lop','danhhieu','duyet'],gvcn:1,binhbau:1,
+   menu:['M0.1','M0.2','M0.3','M0.4','M1.1','M1.3','M2.5','M2.6','M2.9','M3.1','M3.2','M3.3']},
+ GVCN4A:{n:'Phạm Thu Hà — GVCN 4A',av:'PH',sc:'class',lop:'4A',dt:'Điểm trường A',
+   tabs:['lop','danhhieu','duyet'],gvcn:1,binhbau:1,
+   menu:['M0.1','M0.2','M0.3','M0.4','M1.1','M1.3','M2.5','M2.6','M2.9','M3.1','M3.3']},
+ PHT_B:{n:'Ngô Văn Kiên — PHT Điểm trường B',av:'NK',sc:'branch',dt:'Điểm trường B',
+   tabs:['lop','danhhieu','duyet'],moPHT:1,batch:1,ycxl:1,moc:1,
+   menu:['M0.1','M0.2','M0.3','M0.4','M1.1','M1.3','M1.7','M2.9','M3.1','M3.2','M3.3','M10.1']},
+ /* GVBM khong con tab nao o M3.1 sau khi bo Tra cuu — viec cua ho o M2.6.
+    Giu vai tro trong thanh demo de thay ro dieu do. */
+ GVBM:{n:'Nguyễn Văn Hùng — GVBM Toán',av:'NH',sc:'class',mon:'Toán',lops:['6A','9A','9B','7A'],dt:'Điểm trường A',
+   tabs:[],gvbm:1,
+   menu:['M0.1','M0.2','M0.3','M0.4','M2.5','M2.6','M3.2']},
+};
+const TABN={lop:'📌 Chốt tổng kết theo lớp',danhhieu:'🏅 Xét danh hiệu khen thưởng',duyet:'🖊 Chờ tôi duyệt'};
+
+/* ===== danh muc ===== */
+const MON_D=['Toán','Ngữ văn','Ngoại ngữ 1','GDCD','Lịch sử và Địa lí','KHTN','Công nghệ','Tin học'];
+const MON_N=['Giáo dục thể chất','Nghệ thuật','HĐ trải nghiệm, HN','GD địa phương'];
+const MON_TH=['Tiếng Việt','Toán','Ngoại ngữ 1','Đạo đức','Khoa học','Lịch sử và Địa lí','Tin học và Công nghệ','Giáo dục thể chất','Nghệ thuật','HĐ trải nghiệm'];
+const PC=['Yêu nước','Nhân ái','Chăm chỉ','Trung thực','Trách nhiệm'];
+const NLC=['Tự chủ &amp; tự học','Giao tiếp &amp; hợp tác','GQVĐ &amp; sáng tạo'];
+const NLD=['Ngôn ngữ','Tính toán','Khoa học','Công nghệ','Tin học','Thẩm mĩ','Thể chất'];
+const RL4=['Tốt','Khá','Đạt','Chưa đạt'];
+/* giao vien bo mon theo mon — dung chung moi lop cho gon */
+const GVBM_MAP={'Toán':'Nguyễn Văn Hùng','Ngữ văn':'Lê Thu Trang','Ngoại ngữ 1':'Phạm Thị Nga','GDCD':'Trần Văn Long',
+ 'Lịch sử và Địa lí':'Đỗ Minh Châu','KHTN':'Vũ Thị Bình','Công nghệ':'Hoàng Anh Tú','Tin học':'Ngô Thu Hà',
+ 'Giáo dục thể chất':'Bùi Văn Khoa','Nghệ thuật':'Lý Thị Vân','HĐ trải nghiệm, HN':'Phan Đức Dũng','GD địa phương':'Dương Thị Lan'};
+const GVTH_MAP={'Tiếng Việt':'Phạm Thu Hà','Toán':'Phạm Thu Hà','Ngoại ngữ 1':'Trịnh Mai Anh','Đạo đức':'Phạm Thu Hà',
+ 'Khoa học':'Phạm Thu Hà','Lịch sử và Địa lí':'Phạm Thu Hà','Tin học và Công nghệ':'Đinh Văn Sơn',
+ 'Giáo dục thể chất':'Bùi Văn Khoa','Nghệ thuật':'Lý Thị Vân','HĐ trải nghiệm':'Phạm Thu Hà'};
+function monCua(L){return L.cap==='TH'?MON_TH:MON_D.concat(MON_N)}
+function gvCua(L,m){return L.cap==='TH'?(GVTH_MAP[m]||L.gvcn):(GVBM_MAP[m]||'—')}
+
+/* ===== lop ===== */
+let LOP=[
+ {id:'4A',dt:'Điểm trường A',khoi:'Khối 4',cap:'TH',gvcn:'Phạm Thu Hà',ss:38,
+  chuaChot:['Tin học và Công nghệ'],chotRL:false,daTinh:false,kyChot:null,hb:null,laiThoi:false,
+  sp:[{i:4,ten:'Nguyễn Gia Hân',monC:['Toán']}]},
+ {id:'4B',dt:'Điểm trường A',khoi:'Khối 4',cap:'TH',gvcn:'Lê Thị Nga',ss:36,
+  chuaChot:[],chotRL:true,daTinh:true,kyChot:null,hb:null,laiThoi:false,
+  sp:[{i:7,ten:'Phạm Đức Duy',monC:['Tiếng Việt']}]},
+ {id:'6A',dt:'Điểm trường A',khoi:'Khối 6',cap:'THCS',gvcn:'Trần Văn Long',ss:42,
+  chuaChot:['Ngữ văn','Tin học'],chotRL:false,daTinh:false,kyChot:null,hb:null,laiThoi:false,
+  sp:[{i:9,ten:'Ngô Văn Tài',nghi:48,rl:'Đạt'}]},
+ {id:'9A',dt:'Điểm trường A',khoi:'Khối 9',cap:'THCS',gvcn:'Nguyễn Thị Mai',ss:42,
+  chuaChot:[],chotRL:true,daTinh:true,kyChot:null,hb:'chot',laiThoi:false,
+  sp:[{i:3,ten:'Trần Minh Quân',fix:{'Toán':3.2,'KHTN':4.8},rl:'Đạt',nghi:12,nghiKP:3},
+      {i:11,ten:'Lê Hoài Nam',rl:'Chưa đạt',nghi:9},
+      {i:20,ten:'Vũ Thị Hồng',rl:'Chưa đạt',nghi:6}]},
+ {id:'9B',dt:'Điểm trường A',khoi:'Khối 9',cap:'THCS',gvcn:'Đỗ Thị Hạnh',ss:40,
+  chuaChot:[],chotRL:true,daTinh:false,kyChot:null,hb:null,laiThoi:false,
+  sp:[{i:5,ten:'Đỗ Thị Ngân',fix:{'Ngữ văn':4.6,'Lịch sử và Địa lí':4.4,'GDCD':4.9},rl:'Đạt',nghi:6}]},
+ {id:'5B',dt:'Điểm trường B',khoi:'Khối 5',cap:'TH',gvcn:'Trịnh Mai Anh',ss:35,
+  chuaChot:[],chotRL:true,daTinh:true,kyChot:{by:'Lê Quang Vinh (HT)',at:'20/08/2026 08:40',m:'Ký số USB Token'},hb:null,laiThoi:false,
+  sp:[{i:12,ten:'Đặng Khánh Ngọc',monC:['Toán']}]},
+ {id:'7A',dt:'Điểm trường B',khoi:'Khối 7',cap:'THCS',gvcn:'Vũ Minh Tuấn',ss:41,
+  chuaChot:[],chotRL:true,daTinh:true,kyChot:{by:'Lê Quang Vinh (HT)',at:'20/08/2026 09:12',m:'Ký số USB Token'},hb:null,laiThoi:false,
+  sp:[{i:14,ten:'Bùi Quang Huy',fix:{'Toán':4.5,'Tin học':3.1},rl:'Chưa đạt',nghi:15}]},
+ {id:'10A',dt:'Điểm trường B',khoi:'Khối 10',cap:'THPT',gvcn:'Bùi Thị Lan',ss:44,
+  chuaChot:[],chotRL:true,daTinh:true,kyChot:{by:'Lê Quang Vinh (HT)',at:'20/08/2026 10:30',m:'Ký số USB Token'},hb:'chot',laiThoi:false,
+  sp:[{i:6,ten:'Vũ Thị Hồng',fix:{'Toán':3.4,'Tin học':4.5},rl:'Đạt',nghi:4},
+      {i:21,ten:'Lý Thị Diệp',nghi:52,rl:'Đạt'},
+      {i:30,ten:'Ngô Bảo Lâm',rl:'Chưa đạt',nghi:5}]},
+ {id:'12A',dt:'Điểm trường B',khoi:'Khối 12',cap:'THPT',gvcn:'Hoàng Văn Nam',ss:43,
+  chuaChot:[],chotRL:true,daTinh:true,kyChot:{by:'Lê Quang Vinh (HT)',at:'19/08/2026 15:40',m:'Bỏ qua ký số — chưa cấp chứng thư'},hb:'chot',laiThoi:false,
+  sp:[{i:8,ten:'Hoàng Minh Khang',rl:'Chưa đạt',nghi:7}]},
+];
+let MOC=[
+ {ky:'HK1',dt:'Điểm trường A',han:'05/01/2026 17:00',qua:1},
+ {ky:'HK1',dt:'Điểm trường B',han:'05/01/2026 17:00',qua:1},
+ {ky:'HK2',dt:'Điểm trường A',han:'25/05/2026 17:00',qua:1},
+ {ky:'HK2',dt:'Điểm trường B',han:'28/05/2026 17:00',qua:1},
+];
+/* ===== yeu cau mo khoa — gui tu M2.6 / M2.9-T7 ===== */
+let YEUCAU=[
+ {id:'YC-001',loai:'diem',lop:'9A',mon:'Toán',dt:'Điểm trường A',nguon:'M2.6',
+  boi:'Nguyễn Văn Hùng (GVBM Toán)',ngay:'26/08/2026',hs:'Trần Minh Quân',ma:'9A-04',cu:'3,2',dk:'5,4',
+  canCu:'Bai kiem tra cuoi ky 2 - ban goc.pdf',
+  ly:'Nhập lệch dòng khi vào điểm cuối kỳ 2 — điểm 3,2 là của học sinh liền kề. Đã đối chiếu bài làm gốc và sổ điểm cá nhân.',tt:'cho'},
+ {id:'YC-002',loai:'ren',lop:'12A',dt:'Điểm trường B',nguon:'M2.9/T7',
+  boi:'Hoàng Văn Nam (GVCN 12A)',ngay:'25/08/2026',hs:'Đặng Thu Hà',ma:'12A-23',cu:'Khá',dk:'Tốt',
+  ly:'Bỏ sót thành tích đội tuyển học sinh giỏi cấp tỉnh và công tác Đoàn học kỳ 2.',tt:'cho'},
+ {id:'YC-003',loai:'diem',lop:'12A',mon:'Ngữ văn',dt:'Điểm trường B',nguon:'M2.6',
+  boi:'Lê Thu Trang (GVBM Ngữ văn)',ngay:'03/08/2026',hs:'Hoàng Minh Khang',ma:'12A-09',cu:'6,5',dk:'7,1',
+  ly:'Gia đình đề nghị xem lại bài kiểm tra cuối kỳ.',tt:'tuchoi',
+  ldTC:'Không có căn cứ chấm lại; bài đã qua thời hiệu phúc khảo nội bộ. Đây là đề nghị của gia đình, không phải sai sót nhập liệu.'},
+];
+let ycSeq=4;
+/* ===== mien phan thuc hanh GDTC / GDQP-AN — CHI DOC, van tinh binh thuong ===== */
+let MIEN=[
+ {ma:'9A-07',hs:'Lê Gia Bảo',lop:'9A',mon:'Giáo dục thể chất',ly:'Hen phế quản mạn tính',
+  canCu:'Bệnh án BV Nhi Trung ương · 18/09/2025',hieuLuc:'Cả cấp học',qd:'QĐ 41/QĐ-NTT · 12/10/2025'},
+ {ma:'9A-19',hs:'Trần Thị Ngọc',lop:'9A',mon:'Giáo dục thể chất',ly:'Chấn thương dây chằng gối, phẫu thuật 01/2026',
+  canCu:'Giấy ra viện BV Việt Đức · 22/01/2026',hieuLuc:'Năm học 2025-2026',qd:'QĐ 58/QĐ-NTT · 25/01/2026'},
+ {ma:'10A-12',hs:'Phạm Minh Đức',lop:'10A',mon:'Giáo dục thể chất',ly:'Khuyết tật vận động',
+  canCu:'Giấy xác nhận khuyết tật · 03/09/2024',hieuLuc:'Cả cấp học',qd:'QĐ 12/QĐ-NTT · 10/09/2024'},
+];
+/* ===== danh hieu khen thuong ===== */
+let MOLOP={};        /* lop dang expand o tab danh hieu — MAC DINH DONG */
+let BB={};           /* lop -> {ngay, ok:{ma:1}, by} — binh bau tap the lop, chi Tieu hoc */
+let DHCHOT=null;     /* {by,at,n} — chot danh sach dat danh hieu */
+let DHBG=null;       /* {at,n} — ban giao M2.7 */
+let YCXL=[];         /* yeu cau xem lai — BGH sinh viec, khong ghi du lieu */
+
+/* ===== trang thai runtime ===== */
+let role='HT', tab='lop', ky='cn', curLop=null, curHS=null, curDH=null, curWk=null;
+let q='', fTT='Tất cả', fDH='Tất cả', selL=new Set();
+const R=()=>ROLE[role];
+
+/* ===== sinh du lieu hoc sinh ===== */
+const HO=['Nguyễn','Trần','Lê','Phạm','Hoàng','Vũ','Đặng','Bùi','Đỗ','Hồ','Ngô','Dương','Lý','Phan','Võ'];
+const DEM=['Văn','Thị','Minh','Hoài','Thu','Quang','Đức','Ngọc','Anh','Bảo','Gia','Khánh','Hữu','Thanh'];
+const TEN=['An','Bình','Chi','Dũng','Giang','Hà','Hải','Hạnh','Hiếu','Hoa','Huy','Khoa','Lan','Linh','Long','Mai',
+ 'Nam','Nga','Ngân','Phong','Quân','Quỳnh','Sơn','Thảo','Trang','Tuấn','Vy','Yến','Đạt','Kiên','Nhung','Phúc',
+ 'Tâm','Uyên','Việt','Xuân','Diệp','Duy','Hùng','Khang','Lâm','My','Ánh','Bảo'];
+function rnd(s){const x=Math.sin(s*127.1+311.7)*43758.5453;return x-Math.floor(x)}
+function r1(v){return Math.round(v*10)/10}
+let HS={};
+function buildHS(){
+ HS={};
+ LOP.forEach((L,li)=>{
+  const arr=[], spMap={}; (L.sp||[]).forEach(s=>spMap[s.i]=s);
+  for(let i=0;i<L.ss;i++){
+   const sd=li*1000+i*7+3, sp=spMap[i]||{};
+   const ten=sp.ten||(HO[Math.floor(rnd(sd)*HO.length)]+' '+DEM[Math.floor(rnd(sd+1)*DEM.length)]+' '+TEN[Math.floor(rnd(sd+2)*TEN.length)]);
+   const ab=5.9+3.6*rnd(sd+5);
+   const h={ma:L.id+'-'+String(i+1).padStart(2,'0'),n:ten,lop:L.id,cap:L.cap,idx:i,
+     nghi:sp.nghi!==undefined?sp.nghi:Math.floor(rnd(sd+9)*9),nghiKP:sp.nghiKP||0,
+     pdt:{},  /* mien phan thuc hanh: mon -> true */
+     sdt:'09'+String(Math.floor(rnd(sd+11)*90000000)+10000000),
+     ph:(rnd(sd+12)>0.5?'Ông ':'Bà ')+HO[Math.floor(rnd(sd+13)*HO.length)]+' '+TEN[Math.floor(rnd(sd+14)*TEN.length)],
+     dc:'Số '+(1+Math.floor(rnd(sd+15)*180))+' đường '+['Trần Phú','Lê Lợi','Nguyễn Trãi','Hùng Vương','Quang Trung'][Math.floor(rnd(sd+16)*5)]+', phường '+(1+Math.floor(rnd(sd+17)*12))};
+   if(L.cap==='TH'){
+    /* phan tang truoc roi moi sinh chi tiet — de ti le 'Hoan thanh tot' sat thuc te (~35%),
+       neu sinh ngau nhien tung o thi xac suat ca 10 mon deu T gan nhu bang 0 */
+    const gioi=rnd(sd+21)<0.35;
+    h.mon={}; MON_TH.forEach((m,mi)=>{const v=rnd(sd+30+mi);
+      h.mon[m]=(sp.monC&&sp.monC.indexOf(m)>=0)?'C':(gioi?'T':(v>0.55?'T':'H'))});
+    h.pc={};PC.forEach((p,pi)=>h.pc[p]=L.chotRL?(gioi||rnd(sd+50+pi)>0.5?'Tốt':'Đạt'):null);
+    h.nlc={};NLC.forEach((p,pi)=>h.nlc[p]=L.chotRL?(gioi||rnd(sd+60+pi)>0.45?'Tốt':'Đạt'):null);
+    h.nld={};NLD.forEach((p,pi)=>h.nld[p]=L.chotRL?(gioi||rnd(sd+70+pi)>0.5?'Tốt':'Đạt'):null);
+    if(sp.monC)PC.forEach(p=>{if(h.pc[p])h.pc[p]='Đạt'});
+   }else{
+    h.mon={};MON_D.forEach((m,mi)=>{
+      let v=r1(Math.max(5.0,Math.min(9.9,ab+(rnd(sd+30+mi)-0.5)*2.6)));
+      if(sp.fix&&sp.fix[m]!==undefined)v=sp.fix[m];
+      h.mon[m]=v});
+    h.monN={};MON_N.forEach(m=>h.monN[m]='Đạt');
+    h.rl=sp.rl||(L.chotRL?(ab>8.1?'Tốt':ab>6.8?'Khá':'Đạt'):null);
+   }
+   arr.push(h);
+  }
+  HS[L.id]=arr;
+ });
+ /* gan mien phan thuc hanh */
+ MIEN.forEach(m=>{const h=(HS[m.lop]||[]).find(x=>x.ma===m.ma); if(h)h.pdt[m.mon]=true});
+}
+buildHS();
+
+/* ===== TT 22/2021 Dieu 9 khoan 2 ===== */
+function kqHocTap(h){
+ const ds=MON_D.map(m=>h.mon[m]);
+ const nxCD=MON_N.filter(m=>h.monN[m]!=='Đạt').length;
+ const n65=ds.filter(v=>v>=6.5).length,n80=ds.filter(v=>v>=8.0).length;
+ const n50=ds.filter(v=>v>=5.0).length,duoi35=ds.some(v=>v<3.5);
+ if(nxCD===0&&n65===ds.length&&n80>=6)return 'Tốt';
+ if(nxCD===0&&n50===ds.length&&n65>=6)return 'Khá';
+ if(nxCD<=1&&n50>=6&&!duoi35)return 'Đạt';
+ return 'Chưa đạt';
+}
+function kqTieuHoc(h){
+ const mv=MON_TH.map(m=>h.mon[m]);
+ const pcv=[...PC.map(p=>h.pc[p]),...NLC.map(p=>h.nlc[p]),...NLD.map(p=>h.nld[p])];
+ if(pcv.some(v=>!v))return null;
+ if(mv.indexOf('C')>=0||pcv.indexOf('Cần cố gắng')>=0)return 'Chưa hoàn thành';
+ const allT=mv.every(v=>v==='T'),allTot=pcv.every(v=>v==='Tốt');
+ if(allT&&allTot&&h.idx%9===0)return 'Hoàn thành xuất sắc';
+ if(allT&&allTot)return 'Hoàn thành tốt';
+ return 'Hoàn thành';
+}
+/* ket qua ren luyen trong nam hoc. M3.1 KHONG doc ket qua he —
+   ket qua sau he thuoc M3.2, va noi hop nhat hai nguon la M3.3. */
+function rlHienHanh(h){return h.rl}
+function nhanh(h){
+ if(h.cap==='TH'){const k=kqTieuHoc(h); if(!k)return {id:0,t:'Chưa phân loại được'};
+  if(k==='Chưa hoàn thành')return {id:5,t:'Đánh giá bổ sung (Tiểu học)'};
+  return {id:1,t:'Đủ điều kiện lên lớp'}}
+ const rl=rlHienHanh(h); if(!rl)return {id:0,t:'Chưa phân loại được'};
+ const ht=kqHocTap(h);
+ if(h.nghi>45)return {id:4,t:'Không đủ điều kiện lên lớp'};
+ if(rl==='Chưa đạt'&&ht==='Chưa đạt')return {id:23,t:'Rèn luyện hè + Đánh giá lại môn'};
+ if(rl==='Chưa đạt')return {id:3,t:'Rèn luyện trong hè (Đ.13)'};
+ if(ht==='Chưa đạt')return {id:2,t:'Đánh giá lại môn (Đ.14)'};
+ return {id:1,t:'Đủ điều kiện lên lớp'};
+}
+function monYeu(h){return MON_D.filter(m=>h.mon[m]<5.0)}
+function nhBadge(nh){
+ const m={1:['o','✅ Đủ ĐK lên lớp'],2:['b','📚 Đánh giá lại môn'],3:['w','☀️ Rèn luyện hè'],
+  23:['w','📚☀️ Rèn luyện hè + đánh giá lại'],4:['r','⛔ Không đủ ĐK'],5:['b','📗 Đánh giá bổ sung'],0:['w','? Chưa phân loại']};
+ const x=m[nh.id];return `<span class="st2 ${x[0]}">${x[1]}</span>`;
+}
+/* ===== pham vi ===== */
+function inScope(L){
+ const r=R();
+ if(r.gvbm)return r.lops.indexOf(L.id)>=0;
+ if(r.sc==='class')return L.id===r.lop;
+ if(r.sc==='branch')return L.dt===r.dt;
+ const h=$('#hdt').value;return h==='Toàn trường'||L.dt===h;
+}
+function lopVisible(){return LOP.filter(inScope)}
+function kyName(k){return k==='hk1'?'Học kỳ 1':k==='hk2'?'Học kỳ 2':'Cả năm'}
+function mocOf(L){return MOC.find(m=>m.ky===(ky==='hk1'?'HK1':'HK2')&&m.dt===L.dt)}
+function capMo(L){return L.hb==='chot'?'HT':'PHT'}
+function moDuoc(L,r){const c=capMo(L);return (c==='HT'&&r.moHT)||(c==='PHT'&&r.moPHT)}
+function ycCho(lop){return YEUCAU.filter(y=>y.lop===lop&&y.tt==='cho')}
+function monChot(L,m){return L.chuaChot.indexOf(m)<0}
+
+/* trang thai chot so cua mot lop */
+function ttLop(L){
+ if(L.chuaChot.length||!L.chotRL)return {k:'chuachot',t:'Chưa hoàn thành chốt sổ',c:'r'};
+ if(L.laiThoi)return {k:'laithoi',t:'Kết quả lỗi thời — cần chạy tính lại',c:'r'};
+ if(!L.daTinh)return {k:'chuatinh',t:'Chưa chạy tính tổng kết',c:'w'};
+ if(L.kyChot)return {k:'daky',t:'Đã ký chốt kết quả tổng kết',c:'o'};
+ return {k:'chotky',t:'Đã chạy tính — chờ ký chốt',c:'b'};
+}
+function thongKe(L){
+ const c={ht:{},rl:{},nh:{1:0,2:0,3:0,23:0,4:0,5:0,0:0}};
+ HS[L.id].forEach(h=>{
+  if(L.cap==='TH'){const k=kqTieuHoc(h)||'Chưa đủ đánh giá';c.ht[k]=(c.ht[k]||0)+1}
+  else{const k=kqHocTap(h);c.ht[k]=(c.ht[k]||0)+1;
+   const r=rlHienHanh(h)||'Chưa có';c.rl[r]=(c.rl[r]||0)+1}
+  c.nh[nhanh(h).id]++;
+ });
+ return c;
+}
+/* HS can ban giao sang M3.2 de xu ly trong he — chi tu lop DA KY CHOT.
+   M3.1 chi DEM va BAN GIAO; moi thao tac trong he thuoc M3.2. */
+function dsBanGiaoHe(){
+ const out=[];
+ lopVisible().forEach(L=>{ if(!L.kyChot)return;
+  HS[L.id].forEach(h=>{const k=nhanh(h);
+   if(k.id===2||k.id===3||k.id===23)out.push({h:h,L:L,nh:k})});
+ });
+ return out;
+}
+
+/* ================= F1 — Chot tong ket theo lop ================= */
+function scopeText(){
+ const r=R();
+ if(r.gvbm)return `Bạn là <b>giáo viên bộ môn ${r.mon}</b> — chỉ thấy tab <b>Tra cứu</b> và chỉ thấy <b>cột môn ${r.mon}</b>. Việc ký chốt điểm và gửi yêu cầu mở khóa ở <b>M2.6</b>.`;
+ if(r.sc==='class')return `Bạn là <b>GVCN lớp ${r.lop}</b>. Nhập kết quả rèn luyện và ký chốt ở <b>M2.9/T7</b>. Ở đây bạn rà bảng lớp, chạy tính, và <b>ghi nhận bình bầu của lớp</b> cho danh hiệu Tiêu biểu (Tiểu học).`;
+ if(r.sc==='branch')return `Scope <span class="ct2">Branch</span> — chỉ lớp thuộc <b>${r.dt}</b>. Bạn mở khóa được khi <b>học bạ chưa vào Phiên ký</b>; lớp đã ký chốt học bạ thì cấp mở là <b>HT</b>.`;
+ return `Scope <span class="ct2">School</span> — toàn trường, 3 cấp học. Bảng tổng kết <b>đổi cấu trúc cột theo cấp học</b>: TT 27/2020 cho Tiểu học, TT 22/2021 cho THCS · THPT.`;
+}
+function tabLop(){
+ const r=R(),L0=lopVisible();
+ let h=`<div class="scopebar"><span>📍</span><div>${scopeText()}</div></div>`;
+ /* dai tong hop — pho xep loai va danh hieu. KHONG hien ket luan len lop: viec cua M3.3 */
+ {
+  const daKy=L0.filter(L=>L.kyChot),chua=L0.filter(L=>!L.kyChot);
+  const ht={},rl={};let tong=0,dh=0,che=0;
+  daKy.forEach(L=>{const t=thongKe(L);tong+=L.ss;
+   Object.keys(t.ht).forEach(k=>ht[k]=(ht[k]||0)+t.ht[k]);
+   Object.keys(t.rl).forEach(k=>rl[k]=(rl[k]||0)+t.rl[k]);
+   HS[L.id].forEach(x=>{if(dhCua(x,L))dh++})});
+  che=dsBanGiaoHe().length;
+  const dist=o=>{const ks=Object.keys(o);if(!ks.length)return '<span style="color:var(--ink3);font-size:11.5px">chưa có số liệu</span>';
+   return ks.map(k=>`<div style="display:flex;gap:7px;font-size:11.5px;line-height:1.7"><span style="flex:1;min-width:0;color:var(--ink2)">${k}</span><b>${o[k]}</b></div>`).join('')};
+  h+=`<div class="nh4">
+   <div class="nbox n5"><div class="v">${tong}</div><div class="l">Học sinh đã có kết quả<br><span style="font-weight:400">từ ${daKy.length}/${L0.length} lớp đã ký chốt</span></div></div>
+   <div class="nbox"><div class="l" style="min-height:0;margin-bottom:4px">📊 Xếp loại học tập</div>${dist(ht)}</div>
+   <div class="nbox"><div class="l" style="min-height:0;margin-bottom:4px">🧭 Kết quả rèn luyện<br><span style="font-weight:400;font-size:10.5px">chỉ THCS · THPT</span></div>${dist(rl)}</div>
+   ${ky==='cn'?`<div class="nbox n1"><div class="v">${dh}</div><div class="l">🏅 Dự kiến đạt danh hiệu<br><span style="font-weight:400">Xuất sắc · Giỏi · Tiêu biểu</span></div>
+     <div class="s"><button class="btn xs p" data-goto="danhhieu">→ Tab Xét danh hiệu</button></div></div>
+   <div class="nbox n3"><div class="v">${che}</div><div class="l">☀️📚 Cần xử lý trong hè<br><span style="font-weight:400">rèn luyện hè Đ.13 · đánh giá lại môn Đ.14</span></div>
+     <div class="s"><button class="btn xs" data-x="giaohe">→ Bàn giao M3.2</button></div></div>`:''}
+  </div>`;
+  if(ky==='cn')h+=`<div class="ro">🎯 Menu này trả lời <b>"trong năm học em đó ra sao"</b> — nên dải trên là <b>phổ xếp loại và danh hiệu</b>,
+    <b>không phải</b> "bao nhiêu em đủ điều kiện lên lớp". Con số lên lớp chỉ đúng <b>sau khi có kết quả hè</b>,
+    và nơi công bố nó là <b>M3.3 Xét duyệt lên lớp</b>. Hiện hai chỗ là hai nguồn sự thật.
+    <button class="btn xs" data-go="M3.3?action=tao&return=M3.1">↗ Mở M3.3</button></div>`;
+  if(chua.length)h+=`<div class="warn">⚠ Số liệu trên <b>chỉ đếm từ ${daKy.length} lớp đã ký chốt kết quả tổng kết</b>.
+    Còn <b>${chua.length} lớp chưa ký chốt</b> — ${chua.map(L=>L.id).join(', ')} — nên học sinh của các lớp đó <b>chưa vào số và chưa bàn giao được</b>.</div>`;
+ }
+ {const mm=MOC.filter(m=>r.sc==='branch'?m.dt===r.dt:true).filter(m=>m.ky===(ky==='hk1'?'HK1':'HK2'));
+  if(mm.length)h+=`<div class="ro">📅 <b>Mốc chốt điểm ${ky==='hk1'?'HK1':ky==='hk2'?'HK2':'kỳ'}:</b>
+    ${mm.map(m=>`${m.dt} — <b>${m.han}</b> <span class="st2 ${m.qua?'n':'b'}">${m.qua?'đã qua hạn':'chưa tới hạn'}</span>`).join(' · ')}
+    <button class="btn xs" data-x="xemmoc">👁 Chi tiết</button>
+    <span style="color:var(--ink3)">— mốc là lịch của năm học, cấu hình tại <b>M10.1</b>, không sửa ở đây.</span></div>`;}
+ h+=`<div class="bar">
+   <b style="font-size:12.5px">Kỳ:</b>
+   ${['hk1','hk2','cn'].map(k=>`<button class="chip ${ky===k?'on':''}" data-ky="${k}">${kyName(k)}</button>`).join('')}
+   <span style="width:10px"></span>
+   <input class="inp" id="q" placeholder="Tìm lớp hoặc giáo viên chủ nhiệm…" value="${q}">
+   <select class="fs" id="ftt">${opt(fTT,'Tất cả')}${opt(fTT,'Chưa chốt sổ')}${opt(fTT,'Chưa chạy tính')}${opt(fTT,'Chờ ký chốt')}${opt(fTT,'Đã ký chốt')}${opt(fTT,'Có yêu cầu mở khóa')}${opt(fTT,'Kết quả lỗi thời')}</select>
+   <div class="sum"><b>${L0.length}</b> lớp</div>
+ </div>`;
+ if(r.batch&&selL.size)h+=`<div class="info"><b>Đã chọn ${selL.size} lớp.</b>
+   <button class="btn sm p" data-x="batch">⟳ Chạy tính hàng loạt</button>
+   <button class="btn sm" data-x="clrsel">Bỏ chọn</button></div>`;
+ let rows=L0.filter(L=>{
+  if(q&&!(L.id+' '+L.gvcn).toLowerCase().includes(q.toLowerCase()))return false;
+  const t=ttLop(L);
+  if(fTT==='Chưa chốt sổ')return t.k==='chuachot';
+  if(fTT==='Chưa chạy tính')return t.k==='chuatinh';
+  if(fTT==='Chờ ký chốt')return t.k==='chotky';
+  if(fTT==='Đã ký chốt')return t.k==='daky';
+  if(fTT==='Có yêu cầu mở khóa')return ycCho(L.id).length>0;
+  if(fTT==='Kết quả lỗi thời')return L.laiThoi;
+  return true});
+ h+='<div class="listw">';
+ if(!rows.length)h+='<div class="empty">Không có lớp nào khớp bộ lọc.</div>';
+ let cg='';
+ rows.forEach(L=>{
+  const g=L.dt+' · '+L.khoi;
+  if(g!==cg&&!q){cg=g;h+=`<div class="grph">${g}</div>`}
+  h+=theLop(L);
+ });
+ return h+'</div>';
+}
+function theLop(L){
+ const r=R(),t=ttLop(L),moc=mocOf(L),yc=ycCho(L.id),mine=r.gvcn&&r.lop===L.id;
+ let h=`<div class="row ${curLop===L.id?'on':''}" data-lop="${L.id}">
+  <div class="rh">
+   ${r.batch?`<input type="checkbox" data-lsel="${L.id}" ${selL.has(L.id)?'checked':''} onclick="event.stopPropagation()">`:''}
+   <b>${L.id}</b><span class="cap ${L.cap}">${L.cap}</span>
+   <span class="st2 ${t.c}">${t.t}</span>
+   <div class="spacer"></div>
+   ${L.kyChot?`<span class="st2 o">✔ ${L.kyChot.m.startsWith('Bỏ qua')?'Ký nghiệp vụ':'Ký số'}</span>`:''}
+  </div>
+  <div class="rmeta">GVCN ${L.gvcn} · ${L.ss} học sinh${moc?' · mốc chốt '+moc.han.split(' ')[0]+(moc.qua?' <b style="color:var(--amber)">đã qua hạn</b>':''):''}</div>`;
+ /* trang thai chot so */
+ if(t.k==='chuachot'){
+  h+=`<div class="flags">`;
+  if(L.chuaChot.length)h+=`<span class="fl r" data-x="thieumon" data-lop="${L.id}">⚠ ${L.chuaChot.length} môn chưa chốt điểm</span>`;
+  if(!L.chotRL)h+=`<span class="fl r">⚠ Chưa chốt ${L.cap==='TH'?'đánh giá phẩm chất — năng lực':'đánh giá rèn luyện'}</span>`;
+  h+=`</div>`;
+ }else if(t.k==='chuatinh'){
+  h+=`<div class="flags"><span class="fl w">Chưa chạy tính tổng kết</span></div>`;
+ }else if(t.k==='laithoi'){
+  h+=`<div class="flags"><span class="fl r">⚠ Kết quả lỗi thời — có mục vừa chốt lại sau lần tính</span></div>`;
+ }else{
+  const c=thongKe(L);
+  h+=`<div class="kqgrid">`;
+  Object.keys(c.ht).forEach(k=>h+=`<span class="kqi">${k}: <b>${c.ht[k]}</b></span>`);
+  h+=`</div>`;
+  if(L.cap!=='TH'){h+=`<div class="kqgrid" style="margin-top:4px"><span style="font-size:11px;color:var(--ink3);align-self:center">Rèn luyện:</span>`;
+   Object.keys(c.rl).forEach(k=>h+=`<span class="kqi">${k}: <b>${c.rl[k]}</b></span>`);h+=`</div>`}
+  if(ky==='cn'){h+=`<div class="pl4">
+    <span>✅ ${c.nh[1]} lên lớp</span>
+    ${c.nh[2]?`<span>📚 ${c.nh[2]} đánh giá lại môn</span>`:''}
+    ${c.nh[3]?`<span>☀️ ${c.nh[3]} rèn luyện hè</span>`:''}
+    ${c.nh[23]?`<span>📚☀️ ${c.nh[23]} cả hai</span>`:''}
+    ${c.nh[5]?`<span>📗 ${c.nh[5]} đánh giá bổ sung</span>`:''}
+    ${c.nh[4]?`<span style="background:var(--red-soft);color:#991b1b">⛔ ${c.nh[4]} không đủ ĐK</span>`:''}
+    ${c.nh[0]?`<span style="background:var(--amber-soft);color:#92400e">? ${c.nh[0]} chưa phân loại</span>`:''}</div>`}
+  if(L.kyChot)h+=`<div class="rmeta" style="color:var(--green)">✔ Đã ký chốt · ${L.kyChot.by} · ${L.kyChot.at} · ${L.kyChot.m}</div>`;
+ }
+ /* yeu cau mo khoa — TANG 1 CHI THONG BAO, khong thao tac */
+ if(yc.length){
+  h+=`<div class="ycbox" onclick="event.stopPropagation()">
+   <b>🔔 ${yc.length} yêu cầu mở khóa đang chờ xử lý</b>
+   ${yc.map(y=>`<div style="margin-top:3px">• <b>${y.loai==='diem'?'Điểm môn '+y.mon:'Đánh giá rèn luyện'}</b>
+     — ${y.boi} · gửi từ ${y.nguon} · ${y.ngay}</div>`).join('')}
+   <div style="margin-top:5px;color:var(--ink2);font-size:11.5px">
+    Xem chi tiết và xử lý trong <b>bảng tổng kết lớp</b> — quyết định gỡ chữ ký cần nhìn đủ ngữ cảnh, không quyết từ danh sách.</div>
+  </div>`;
+ }
+ /* nut thao tac */
+ const b=[];
+ if(yc.length)b.push(`<button class="btn xs p" data-lop="${L.id}">🔔 Vào bảng lớp để xử lý ${yc.length} yêu cầu</button>`);
+ else b.push(`<button class="btn xs" data-lop="${L.id}">👁 ${t.k==='chuachot'?'Xem bảng lớp':'Vào bảng lớp'}</button>`);
+ if(t.k==='chuachot'){
+  if(L.chuaChot.length)b.push(`<button class="btn xs" data-x="nhacbm" data-lop="${L.id}">🔔 Nhắc GVBM</button>`);
+  if(!L.chotRL)b.push(mine?`<button class="btn xs p" data-go="M2.9?tab=T7&ctx=${L.id}&action=ky">↗ M2.9/T7 để chốt</button>`
+    :`<button class="btn xs" data-x="nhaccn" data-lop="${L.id}">🔔 Nhắc GVCN</button>`);
+ }else if(t.k==='chuatinh'||t.k==='laithoi'){
+  b.push(`<button class="btn xs p" data-x="tinh" data-lop="${L.id}">⟳ Chạy tính tổng kết</button>`);
+ }else if(t.k==='chotky'){
+  b.push(`<button class="btn xs" data-x="tinh" data-lop="${L.id}">⟳ Chạy tính lại</button>`);
+  if(r.kyChot)b.push(`<button class="btn xs p" data-x="rasoat" data-lop="${L.id}">🖊 Rà soát và ký chốt</button>`);
+ }else{
+  b.push(`<button class="btn xs" data-x="pdf" data-lop="${L.id}">⬇ Xuất PDF</button>`);
+  if(r.menu==='all'||r.menu.indexOf('M1.3')>=0)b.push(`<button class="btn xs" data-go="M1.3?ctx=${L.id}">↗ Học bạ lớp</button>`);
+ }
+ h+=`<div class="ract">${b.join('')}</div>`;
+ return h+'</div>';
+}
+
+/* ================= F2 — Bang tong ket lop ================= */
+function bangLop(){
+ const L=LOP.find(x=>x.id===curLop),r=R(),t=ttLop(L),moc=mocOf(L),yc=ycCho(L.id);
+ let h='';
+ /* widget giao vien */
+ h+=`<div class="gvw">
+  <div class="gvi cn" data-x="noop"><div class="m">👤 GVCN</div><div class="g">${L.gvcn}</div>
+   <span class="colst ${L.chotRL?'ok':'no'}">${L.chotRL?'✔ đã chốt đánh giá':'⚠ CHƯA CHỐT'}</span></div>
+  ${monCua(L).map(m=>{
+   const chot=monChot(L,m),co=yc.some(y=>y.loai==='diem'&&y.mon===m);
+   return `<div class="gvi ${co?'yc':chot?'ok':'no'}" data-col="${m}"><div class="m">${m}</div>
+    <div class="g">${gvCua(L,m)}</div>
+    <span class="colst ${co?'yc':chot?'ok':'no'}">${co?'🔔 xin mở khóa':chot?'✔ đã chốt':'⚠ CHƯA CHỐT'}</span></div>`}).join('')}
+ </div>`;
+ /* dai trang thai */
+ h+=`<div class="${t.k==='chuachot'||t.k==='laithoi'?'warn':L.kyChot?'ok':'ro'}" style="line-height:1.9">
+  📅 <b>Mốc chốt điểm:</b> ${moc?moc.han:'—'} — ${moc&&moc.qua?'<b>đã qua hạn, điểm đã khóa</b>':'chưa tới hạn'}<br>
+  📋 <b>Chốt sổ:</b> ${monCua(L).length-L.chuaChot.length}/${monCua(L).length} môn đã chốt điểm ·
+   ${L.cap==='TH'?'phẩm chất — năng lực':'đánh giá rèn luyện'} ${L.chotRL?'<b style="color:var(--green)">đã chốt</b>':'<b style="color:var(--red)">chưa chốt</b>'}<br>
+  ⟳ <b>Chạy tính:</b> ${L.daTinh?'28/05/2026 09:14 — kết quả <b>'+(moc&&moc.qua?'Chính thức':'Tạm tính')+'</b>':'<b>chưa chạy tính</b>'}
+   ${L.laiThoi?' · <b style="color:var(--red)">⚠ LỖI THỜI — có mục vừa chốt lại sau lần tính</b>':''}<br>
+  🖊 <b>Ký chốt kết quả tổng kết lớp:</b> ${L.kyChot?`<b style="color:var(--green)">đã ký</b> · ${L.kyChot.by} · ${L.kyChot.at} · ${L.kyChot.m}`:'<b>chưa ký</b>'}
+ </div>`;
+ /* yeu cau mo khoa */
+ yc.forEach(y=>h+=`<div class="ycbox">
+   <b>🔔 Yêu cầu mở khóa · ${y.loai==='diem'?'Điểm môn '+y.mon:'Đánh giá rèn luyện'}</b> · ${y.boi} · gửi từ ${y.nguon} · ${y.ngay}<br>
+   ${y.hs}: <b>${y.cu}</b> → dự kiến <b style="color:var(--violet)">${y.dk}</b><br>Lý do: ${y.ly}
+   ${y.canCu?`<br>📄 ${y.canCu} <button class="btn xs" data-x="xemfile" data-f="${y.canCu}">👁 Xem</button>`:''}
+   <div class="act">${moDuoc(L,r)
+     ?`<button class="btn xs g" data-x="ycok" data-yc="${y.id}">✓ Đồng ý mở khóa</button>
+       <button class="btn xs d" data-x="ycno" data-yc="${y.id}">✕ Từ chối mở khóa</button>`
+     :`<span style="color:var(--ink3);font-size:11.5px">Chờ <b>${capMo(L)}</b> xử lý</span>`}</div></div>`);
+ h+=`<div class="frm">${L.cap==='TH'
+   ?'TT 27/2020 · Môn học: Hoàn thành tốt (T) / Hoàn thành (H) / Chưa hoàn thành (C) · Phẩm chất &amp; năng lực: Tốt / Đạt / Cần cố gắng'
+   :'TT 22/2021 · ĐTBmHK = (ĐGtx TB + 2×ĐGgk + 3×ĐGck)/6 · ĐTBmCN = (HK1 + 2×HK2)/3 · Cấu hình tại M10.1'}</div>`;
+ /* thanh thao tac */
+ h+=`<div class="bar" style="padding-top:0">
+  ${['hk1','hk2','cn'].map(k=>`<button class="chip ${ky===k?'on':''}" data-ky="${k}">${kyName(k)}</button>`).join('')}
+  <div class="spacer"></div>
+  ${t.k!=='chuachot'?`<button class="btn sm" data-x="tinh" data-lop="${L.id}">⟳ Chạy tính tổng kết</button>`:''}
+  ${t.k==='chotky'&&r.kyChot?`<button class="btn sm p" data-x="rasoat" data-lop="${L.id}">🖊 Rà soát và ký chốt kết quả tổng kết</button>`:''}
+  ${t.k==='chuachot'?`<button class="btn sm" data-x="chanky" data-lop="${L.id}">🖊 Ký chốt kết quả tổng kết</button>`:''}
+  <button class="btn sm" data-x="pdf" data-lop="${L.id}">⬇ Xuất PDF</button>
+  <button class="btn sm" data-x="lichsu" data-lop="${L.id}">🕘 Lịch sử thao tác</button>
+ </div>`;
+ h+=`<div class="listw"><div class="wrapx">`;
+ h+= L.cap==='TH'?tblTH(L):tblTHCS(L);
+ h+=`</div><div class="lgd">
+   ${L.cap==='TH'
+    ?`<span><b style="color:var(--green)">T</b> = Hoàn thành tốt</span><span><b>H</b> = Hoàn thành</span><span><b style="color:var(--red)">C</b> = Chưa hoàn thành</span>
+      <span style="border-left:1px solid var(--line);padding-left:14px">Phẩm chất &amp; năng lực: <b style="color:var(--green)">Tốt</b> · <b>Đạt</b> · <b style="color:var(--amber)">Cần cố gắng</b></span>`
+    :`<span><b style="color:var(--red)">Nền đỏ</b> = dưới 3,5 → kết quả học tập Chưa đạt bất kể môn khác</span>
+      <span><b style="color:var(--amber)">Cam</b> = dưới 5,0</span>`}
+   <span style="border-left:1px solid var(--line);padding-left:14px"><span class="mtag">TH</span> = được miễn phần thực hành, kết quả đến từ bài lý thuyết thay thế — <b>vẫn tính bình thường</b></span>
+ </div></div>`;
+ /* danh sach mien phan thuc hanh */
+ const mien=MIEN.filter(m=>m.lop===L.id);
+ h+=`<div class="listw" style="margin-top:13px"><div class="ph"><div><h2>Học sinh được miễn phần thực hành</h2>
+   <div class="m">TT 22/2021 — chỉ miễn <b>phần thực hành</b> Giáo dục thể chất và GDQP-AN, <b>không có chế định miễn cả môn</b></div></div></div>
+  <div class="ro" style="margin:11px 13px">Học sinh được miễn <b>vẫn được kiểm tra, đánh giá thay thế bằng nội dung lý thuyết</b> để đủ số lần kiểm tra —
+   <b>kết quả môn vẫn có và vẫn tính bình thường</b>. Đây là danh sách chỉ đọc; xét duyệt đơn xin miễn ở
+   <button class="btn xs" data-go="M1.2?tab=mien">↗ M1.2</button></div>`;
+ h+= mien.length?`<div class="wrapx"><table><thead><tr><th>Học sinh</th><th>Phần thực hành môn</th><th>Lý do</th><th>Căn cứ y tế</th><th>Hiệu lực</th><th>Quyết định</th></tr></thead><tbody>
+   ${mien.map(m=>`<tr><td><b>${m.hs}</b><br><span style="color:var(--ink3);font-size:11px">${m.ma}</span></td>
+    <td>${m.mon}</td><td>${m.ly}</td><td>${m.canCu}</td>
+    <td><span class="st2 ${m.hieuLuc.indexOf('cấp học')>=0?'v':'n'}">${m.hieuLuc}</span></td><td>${m.qd}</td></tr>`).join('')}
+   </tbody></table></div>`:'<div class="empty">Lớp này không có học sinh nào được miễn phần thực hành.</div>';
+ return h+'</div>';
+}
+function tblTHCS(L){
+ const yc=ycCho(L.id);
+ const ycRen=yc.some(y=>y.loai==='ren');
+ let h=`<table class="gtb"><thead>
+  <tr class="hgrp">
+   <th class="stick" rowspan="2">Học sinh</th><th rowspan="2">Mã học sinh</th>
+   <th colspan="${MON_D.length}">Môn học đánh giá bằng nhận xét kết hợp điểm số</th>
+   <th colspan="${MON_N.length}" class="sep">Môn học đánh giá bằng nhận xét</th>
+   <th colspan="${ky==='cn'?4:3}" class="sep">Tổng hợp cuối ${ky==='cn'?'năm':'kỳ'}</th>
+  </tr>
+  <tr>
+   ${MON_D.map(m=>{const chot=monChot(L,m),co=yc.some(y=>y.loai==='diem'&&y.mon===m);
+    return `<th class="${co?'th-yc':''}" ${co?'data-x="ycxem" data-mon="'+m+'" data-lop="'+L.id+'"':''}>${m}
+     <span class="gv">${gvCua(L,m)}</span>
+     <span class="colst ${co?'yc':chot?'ok':'no'}">${co?'🔔 xin mở khóa':chot?'✔ đã chốt điểm':'⚠ chưa chốt điểm'}</span></th>`}).join('')}
+   ${MON_N.map((m,k)=>{const chot=monChot(L,m);
+    return `<th class="${k===0?'sep':''}">${m}<span class="gv">${gvCua(L,m)}</span>
+     <span class="colst ${chot?'ok':'no'}">${chot?'✔ đã chốt':'⚠ chưa chốt'}</span></th>`}).join('')}
+   <th class="sep">Kết quả học tập<span class="gv">TT 22 Điều 9</span></th>
+   <th class="${ycRen?'th-yc':''}" ${ycRen?'data-x="ycxem" data-ren="1" data-lop="'+L.id+'"':''}>Kết quả rèn luyện
+    <span class="gv">GVCN ${L.gvcn}</span>
+    <span class="colst ${ycRen?'yc':L.chotRL?'ok':'no'}">${ycRen?'🔔 xin mở khóa':L.chotRL?'✔ đã chốt':'⚠ chưa chốt'}</span></th>
+   <th>Số buổi nghỉ<span class="gv">tối đa 45</span></th>
+   ${ky==='cn'?'<th>Kết luận cuối năm</th>':''}
+  </tr></thead><tbody>`;
+ HS[L.id].forEach(h2=>{
+  const ht=kqHocTap(h2),rl=rlHienHanh(h2);
+  h+=`<tr><td class="stick"><b>${h2.n}</b></td><td style="color:var(--ink3)">${h2.ma}</td>
+   ${MON_D.map(m=>{const v=h2.mon[m];
+     return `<td class="${v<3.5?'dl':v<5?'dz':''}">${v.toFixed(1).replace('.',',')}</td>`}).join('')}
+   ${MON_N.map((m,k)=>`<td class="nx ${k===0?'sep':''}" style="color:var(--green)">Đạt${h2.pdt[m]?'<span class="mtag">TH</span>':''}</td>`).join('')}
+   <td class="sep"><span class="st2 ${ht==='Chưa đạt'?'r':ht==='Đạt'?'n':'o'}">${ht}</span></td>
+   <td>${rl?`<span class="st2 ${rl==='Chưa đạt'?'r':rl==='Đạt'?'n':'o'}">${rl}</span>`:'<span class="st2 w">chưa có</span>'}</td>
+   <td style="${h2.nghi>45?'color:var(--red);font-weight:800':''}">${h2.nghi}</td>
+   ${ky==='cn'?`<td>${nhBadge(nhanh(h2))}</td>`:''}</tr>`;
+ });
+ return h+'</tbody></table>';
+}
+function tblTH(L){
+ let h=`<table class="gtb"><thead>
+  <tr class="hgrp">
+   <th class="stick" rowspan="2">Học sinh</th>
+   <th colspan="${MON_TH.length}">Môn học và hoạt động giáo dục</th>
+   <th colspan="${PC.length}" class="sep">Phẩm chất chủ yếu</th>
+   <th colspan="${NLC.length}" class="sep">Năng lực chung</th>
+   ${ky==='cn'?'<th rowspan="2" class="sep">Kết quả giáo dục</th>':''}
+  </tr>
+  <tr>
+   ${MON_TH.map(m=>{const chot=monChot(L,m);
+    return `<th>${m}<span class="gv">${gvCua(L,m)}</span>
+     <span class="colst ${chot?'ok':'no'}">${chot?'✔ đã chốt':'⚠ chưa chốt'}</span></th>`}).join('')}
+   ${PC.map((p,k)=>`<th class="${k===0?'sep':''}">${p}</th>`).join('')}
+   ${NLC.map((p,k)=>`<th class="${k===0?'sep':''}">${p.replace(/&amp;/g,'và')}</th>`).join('')}
+  </tr></thead><tbody>`;
+ HS[L.id].forEach(h2=>{
+  const k=kqTieuHoc(h2);
+  h+=`<tr><td class="stick"><b>${h2.n}</b></td>
+   ${MON_TH.map(m=>{const v=h2.mon[m];
+     return `<td class="nx" style="color:${v==='C'?'var(--red)':v==='T'?'var(--green)':'var(--ink2)'}"
+       title="${v==='T'?'Hoàn thành tốt':v==='H'?'Hoàn thành':'Chưa hoàn thành'}">${v}${h2.pdt[m]?'<span class="mtag">TH</span>':''}</td>`}).join('')}
+   ${PC.map((p,i2)=>cellPC(h2,'pc',p,i2===0)).join('')}
+   ${NLC.map((p,i2)=>cellPC(h2,'nlc',p,i2===0)).join('')}
+   ${ky==='cn'?`<td class="sep">${k?`<span class="st2 ${k==='Chưa hoàn thành'?'r':k==='Hoàn thành'?'n':'o'}">${k}</span>`:'<span class="st2 w">chưa đủ đánh giá</span>'}</td>`:''}</tr>`;
+ });
+ return h+'</tbody></table>';
+}
+function cellPC(h2,grp,p,sep){const v=h2[grp][p];
+ return `<td class="nx ${sep?'sep':''}" title="${p.replace(/&amp;/g,'và')}: ${v||'chưa đánh giá'}"
+   style="color:${!v?'var(--amber)':v==='Tốt'?'var(--green)':'var(--ink2)'}">${v?v:'—'}</td>`}
+
+/* ================= F5 — Xet danh hieu khen thuong ================= */
+/* TT 22/2021 D.15 (THCS·THPT) · TT 27/2020 D.13 (Tieu hoc).
+   TT 19/2025 D.21 chi thay the TT 08/TT 1988 — KHONG bo danh hieu cua hai thong tu tren. */
+function sdOf(h){let s=0;for(let i=0;i<h.ma.length;i++)s+=h.ma.charCodeAt(i)*(i+3);return s}
+function xsMonCua(h){const s=sdOf(h);return MON_TH.filter((m,mi)=>h.mon[m]==='T'&&rnd(s+mi*7+5)>0.86)}
+function tienBoCua(h){const s=sdOf(h),all=PC.concat(NLC);return all.filter((p,i)=>rnd(s+i*11+41)>0.90)}
+function dhCua(h,L){
+ if(L.cap==='TH'){
+  const k=kqTieuHoc(h); if(!k)return null;
+  if(k==='Hoàn thành xuất sắc')return {k:'xs',t:'🏆 Học sinh Xuất sắc',cs:'TT 27/2020 Điều 13 khoản 1',
+    cc:'Kết quả giáo dục cuối năm mức <b>Hoàn thành xuất sắc</b>'};
+  if(k==='Hoàn thành tốt'){
+   const xm=xsMonCua(h),tb=tienBoCua(h);
+   if(!xm.length&&!tb.length)return null;
+   return {k:'tb',t:'🥈 Học sinh Tiêu biểu',cs:'TT 27/2020 Điều 13 khoản 2',bb:1,
+     cc:'Mức <b>Hoàn thành tốt</b> · '+(xm.length?'thành tích xuất sắc môn <b>'+xm.join(', ')+'</b>':'tiến bộ rõ rệt về <b>'+tb.join(', ').replace(/&amp;/g,'và')+'</b>')};
+  }
+  return null;
+ }
+ const rl=rlHienHanh(h); if(!rl)return null;
+ const ht=kqHocTap(h);
+ if(rl!=='Tốt'||ht!=='Tốt')return null;
+ const n9=MON_D.filter(m=>h.mon[m]>=9.0);
+ if(n9.length>=6)return {k:'xs',t:'🏆 Học sinh Xuất sắc',cs:'TT 22/2021 Điều 15 khoản 1',
+   cc:`Rèn luyện <b>Tốt</b> · học tập <b>Tốt</b> · <b>${n9.length} môn</b> ĐTBmcn ≥ 9,0`,n9:n9};
+ return {k:'gioi',t:'🥇 Học sinh Giỏi',cs:'TT 22/2021 Điều 15 khoản 1',
+   cc:`Rèn luyện <b>Tốt</b> · học tập <b>Tốt</b> · ${n9.length} môn ≥ 9,0 <span style="color:var(--ink3)">(cần 6 môn mới lên Xuất sắc)</span>`,n9:n9};
+}
+function dsDH(){const out=[];
+ lopVisible().forEach(L=>{ if(!L.kyChot)return;
+  HS[L.id].forEach(h=>{const d=dhCua(h,L); if(d)out.push({h:h,L:L,d:d})})});
+ return out;
+}
+function bbTT(it){ if(!it.d.bb)return null;
+ const b=BB[it.L.id];
+ if(!b)return {k:'cho',t:'Chưa bình bầu',c:'w'};
+ return b.ok[it.h.ma]?{k:'ok',t:'Được công nhận '+b.ngay,c:'o'}:{k:'no',t:'Lớp không công nhận',c:'n'};
+}
+/* lop Tieu hoc co HS du DK xet Tieu bieu ma chua binh bau */
+function lopChuaBB(){const s={};
+ dsDH().forEach(it=>{if(it.d.bb&&!BB[it.L.id])s[it.L.id]=1});
+ return Object.keys(s);
+}
+function tabDanhHieu(){
+ const r=R(),ds=dsDH(),L0=lopVisible(),daKy=L0.filter(L=>L.kyChot),chua=L0.filter(L=>!L.kyChot);
+ let h=`<div class="scopebar"><span>🏅</span><div>${scopeText()}</div></div>`;
+ if(ky!=='cn'){
+  return h+`<div class="warn"><b>Danh hiệu chỉ xét cuối năm học.</b> TT 22/2021 Điều 15 và TT 27/2020 Điều 13 đều gắn danh hiệu với
+   <b>kết quả cuối năm học</b>, không có danh hiệu theo học kỳ. Bạn đang xem <b>${kyName(ky)}</b> —
+   chuyển bộ chọn kỳ sang <b>Cả năm</b> để xét.<br><br>
+   Trường vẫn khen thưởng học kỳ được, nhưng đó là <b>đợt khen thưởng của M2.7</b> theo TT 19/2025, không phải danh hiệu.
+   <div style="margin-top:8px"><button class="btn sm p" data-ky="cn">→ Chuyển sang Cả năm</button>
+   <button class="btn sm" data-go="M2.7?action=dot-khen-thuong&return=M3.1">↗ Mở M2.7</button></div></div>`;
+ }
+ const c={xs:0,gioi:0,tbOk:0,tbCho:0,tbNo:0};
+ ds.forEach(it=>{ if(it.d.k==='xs')c.xs++; else if(it.d.k==='gioi')c.gioi++;
+  else{const b=bbTT(it);c[b.k==='ok'?'tbOk':b.k==='cho'?'tbCho':'tbNo']++}});
+ h+=`<div class="nh4">
+  <div class="nbox n1"><div class="v">${c.xs}</div><div class="l">🏆 Học sinh Xuất sắc</div>
+    <div class="s">TT 22 Đ.15 · TT 27 Đ.13 — dẫn xuất hoàn toàn</div></div>
+  <div class="nbox n2"><div class="v">${c.gioi}</div><div class="l">🥇 Học sinh Giỏi<br><span style="font-weight:400">chỉ THCS · THPT</span></div>
+    <div class="s">Rèn luyện Tốt + học tập Tốt</div></div>
+  <div class="nbox n3"><div class="v">${c.tbOk+c.tbCho+c.tbNo}</div><div class="l">🥈 Đủ ĐK xét Tiêu biểu<br><span style="font-weight:400">chỉ Tiểu học</span></div>
+    <div class="s">Đã bình bầu <b>${c.tbOk}</b> · lớp không công nhận <b>${c.tbNo}</b> · <b style="color:var(--amber)">chờ bình bầu ${c.tbCho}</b></div></div>
+  <div class="nbox n5"><div class="v" style="font-size:15px;padding-top:7px">${DHBG?'📤 Đã bàn giao':DHCHOT?'🔒 Đã chốt':'✎ Dự kiến'}</div>
+    <div class="l">Trạng thái danh sách</div>
+    <div class="s">${DHBG?'M2.7 · '+DHBG.at:DHCHOT?DHCHOT.by+' · '+DHCHOT.at:'Chưa chốt — số liệu còn thay đổi được'}</div></div>
+ </div>`;
+ h+=`<div class="ro">🤖 <b>Máy đếm, người kết luận.</b> Xuất sắc và Giỏi <b>dẫn xuất hoàn toàn</b> từ kết quả tổng kết — không có nút gán tay.
+   Riêng <b>Tiêu biểu</b> của Tiểu học đòi thêm <i>"được tập thể lớp công nhận"</i> (TT 27 Đ.13 k.2) nên hệ thống chỉ lọc ra
+   <b>danh sách đủ điều kiện</b>, còn <b>GVCN ghi nhận kết quả bình bầu</b> của lớp.</div>`;
+ if(chua.length)h+=`<div class="warn">⚠ Chỉ đếm từ <b>${daKy.length} lớp đã ký chốt kết quả tổng kết</b>.
+   Còn <b>${chua.length} lớp chưa ký chốt</b> — ${chua.map(L=>L.id).join(', ')} — học sinh các lớp đó <b>chưa vào danh sách xét</b>.</div>`;
+ h+=`<div class="bar">
+   <input class="inp" id="q" placeholder="Tìm tên hoặc mã học sinh — gõ để phẳng hóa nhóm…" value="${q}">
+   <select class="fs" id="fdh">${opt(fDH,'Tất cả')}${opt(fDH,'🏆 Xuất sắc')}${opt(fDH,'🥇 Giỏi')}${opt(fDH,'🥈 Tiêu biểu')}${opt(fDH,'Chờ lớp bình bầu')}${opt(fDH,'Lớp không công nhận')}</select>
+   <div class="spacer"></div>
+   ${r.binhbau&&!DHCHOT&&c.tbCho+c.tbOk+c.tbNo>0?`<button class="btn sm" data-x="binhbau">✍ Ghi nhận bình bầu của lớp</button>`:''}
+   ${r.chotDH&&!DHCHOT?`<button class="btn sm p" data-x="chotdh">🔒 Chốt danh sách đạt danh hiệu</button>`:''}
+   ${r.chotDH&&DHCHOT&&!DHBG?`<button class="btn sm p" data-x="bangiao">📤 Bàn giao M2.7 ban hành quyết định</button>`:''}
+   <div class="sum"><b>${ds.length}</b> học sinh</div>
+ </div>`;
+ if(!q)h+=`<div class="ro" style="display:flex;align-items:center;gap:8px">
+   <span style="flex:1;min-width:0">Danh sách gom theo <b>Điểm trường → Lớp</b>, <b>mặc định đóng</b> —
+   mỗi lớp đã mang sẵn số liệu nên thường không cần mở. Gõ vào ô tìm kiếm thì danh sách <b>tự phẳng hóa</b>.</span>
+   <button class="btn xs" data-x="motat">▾ Mở tất cả</button>
+   <button class="btn xs" data-x="dongtat">▸ Đóng tất cả</button></div>`;
+ if(DHCHOT&&!DHBG)h+=`<div class="ok">🔒 <b>Danh sách đã chốt</b> · ${DHCHOT.by} · ${DHCHOT.at} — không sửa được nữa.
+   Bước còn lại là <b>bàn giao sang M2.7</b> để ban hành quyết định khen thưởng theo TT 19/2025.</div>`;
+ if(DHBG)h+=`<div class="ok">📤 <b>Đã bàn giao M2.7</b> · ${DHBG.at} · ${DHBG.n} học sinh.
+   M3.1 <b>không in giấy khen và không ban hành quyết định</b> — đó là việc của M2.7.
+   <button class="btn xs" data-go="M2.7?ctx=${$('#nam').value}&return=M3.1">↗ Mở M2.7</button></div>`;
+ if(q)h+=`<div class="ro">🔎 Đang tìm kiếm — <b>đã phẳng hóa</b>, bỏ tầng gom nhóm.</div>`;
+ let rows=ds.filter(it=>{
+  if(q&&!(it.h.n+' '+it.h.ma).toLowerCase().includes(q.toLowerCase()))return false;
+  const b=bbTT(it);
+  if(fDH==='🏆 Xuất sắc')return it.d.k==='xs';
+  if(fDH==='🥇 Giỏi')return it.d.k==='gioi';
+  if(fDH==='🥈 Tiêu biểu')return it.d.k==='tb'&&b&&b.k==='ok';
+  if(fDH==='Chờ lớp bình bầu')return b&&b.k==='cho';
+  if(fDH==='Lớp không công nhận')return b&&b.k==='no';
+  return true});
+ h+=`<div class="stage ${curDH?'open':''}"><div class="listw">`;
+ if(!rows.length)h+='<div class="empty">Không có học sinh nào khớp bộ lọc.</div>';
+ else if(q){
+  /* dang tim kiem -> PHANG HOA, bo tang gom nhom */
+  rows.forEach(it=>h+=dongDH(it,1));
+ }else{
+  /* gom nhom Diem truong -> Lop, MAC DINH DONG. Moi lop mang so lieu tong ket cua chinh no,
+     de nguoi dung khong phai mo tung lop moi biet lop do ra sao. */
+  const gr={};
+  rows.forEach(it=>{const k=it.L.dt+'||'+it.L.id;(gr[k]=gr[k]||[]).push(it)});
+  let cdt='';
+  Object.keys(gr).forEach(k=>{
+   const dt=k.split('||')[0],lid=k.split('||')[1],items=gr[k],L=items[0].L,mo=!!MOLOP[lid];
+   if(dt!==cdt){cdt=dt;
+    const tong=Object.keys(gr).filter(z=>z.split('||')[0]===dt).reduce((a,z)=>a+gr[z].length,0);
+    h+=`<div class="grph">${dt} <span style="font-weight:400">· ${tong} học sinh đủ điều kiện xét</span></div>`}
+   const c={xs:0,gioi:0,tbOk:0,tbCho:0,tbNo:0};
+   items.forEach(it=>{ if(it.d.k==='xs')c.xs++; else if(it.d.k==='gioi')c.gioi++;
+    else{const b=bbTT(it);c[b.k==='ok'?'tbOk':b.k==='cho'?'tbCho':'tbNo']++}});
+   h+=`<div class="glop ${mo?'mo':''}" data-glop="${lid}">
+     <span class="ar">${mo?'▾':'▸'}</span>
+     <b>Lớp ${L.id}</b><span class="cap ${L.cap}">${L.cap}</span>
+     <span style="font-size:11.5px;color:var(--ink3)">GVCN ${L.gvcn}</span>
+     <div class="spacer"></div>
+     <span class="gsum">${items.length} em đủ ĐK xét</span>
+     ${c.xs?`<span class="st2 v">🏆 ${c.xs}</span>`:''}
+     ${c.gioi?`<span class="st2 b">🥇 ${c.gioi}</span>`:''}
+     ${c.tbOk?`<span class="st2 o">🥈 ${c.tbOk}</span>`:''}
+     ${c.tbCho?`<span class="st2 w">⏳ chờ bình bầu ${c.tbCho}</span>`:''}
+     ${c.tbNo?`<span class="st2 n">lớp không công nhận ${c.tbNo}</span>`:''}
+   </div>`;
+   if(mo)items.forEach(it=>h+=dongDH(it,0));
+  });
+ }
+ h+=`</div><div class="panel">${curDH?panelDH():''}</div></div>`;
+ return h;
+}
+function dongDH(it,phang){
+ const x=it.h,b=bbTT(it);
+ return `<div class="row ${phang?'':'inlop'} ${curDH===x.ma?'on':''}" data-dh="${x.ma}">
+   <div style="display:flex;align-items:center;gap:9px">
+    <div style="flex:1;min-width:0"><b>${x.n}</b> <span style="color:var(--ink3);font-size:11.5px">${x.ma}${phang?' · '+it.L.id+' · '+it.L.dt:''}</span>
+     <div style="font-size:11.5px;color:var(--ink2);margin-top:2px">${it.d.cc}</div></div>
+    <span class="st2 ${it.d.k==='xs'?'v':it.d.k==='gioi'?'b':'n'}">${it.d.t}</span>
+    ${b?`<span class="st2 ${b.c}">${b.t}</span>`:''}
+   </div></div>`;
+}
+function panelDH(){
+ const it=dsDH().find(z=>z.h.ma===curDH); if(!it)return '';
+ const x=it.h,L=it.L,d=it.d,b=bbTT(it),r=R();
+ let h=`<div class="ph"><div><h2>${x.n}</h2><div class="m">${x.ma} · Lớp ${L.id} · ${L.cap} · ${L.dt}</div></div>
+  <div class="spacer"></div><button class="btn sm" id="pclose">✕ Đóng</button></div><div style="padding:13px">`;
+ h+=`<div class="dhbig"><div class="t">${d.t}</div><div class="c">${d.cs}</div></div>`;
+ h+=`<div class="frm"><b>Căn cứ</b><br>${d.cc}</div>`;
+ if(L.cap!=='TH'){
+  h+=`<div class="kv"><div class="k">Kết quả rèn luyện</div><div><b>${rlHienHanh(x)}</b></div>
+    <div class="k">Kết quả học tập</div><div><b>${kqHocTap(x)}</b></div>
+    <div class="k">Môn ĐTBmcn ≥ 9,0</div><div>${d.n9.length?d.n9.map(m=>`<span class="st2 v" style="margin:1px">${m} ${r1(x.mon[m]).toFixed(1)}</span>`).join(' '):'<i style="color:var(--ink3)">không có</i>'}</div>
+    <div class="k">Nghỉ học</div><div>${x.nghi} buổi</div></div>`;
+ }else{
+  h+=`<div class="kv"><div class="k">Kết quả giáo dục</div><div><b>${kqTieuHoc(x)}</b></div>
+    <div class="k">Môn xuất sắc</div><div>${xsMonCua(x).length?xsMonCua(x).join(', '):'<i style="color:var(--ink3)">không có</i>'}</div>
+    <div class="k">Tiến bộ rõ rệt</div><div>${tienBoCua(x).length?tienBoCua(x).join(', ').replace(/&amp;/g,'và'):'<i style="color:var(--ink3)">không có</i>'}</div></div>`;
+ }
+ if(b){
+  h+=`<div class="${b.k==='ok'?'ok':b.k==='cho'?'warn':'ro'}" style="margin-top:11px">
+   <b>Bình bầu của tập thể lớp — ${b.t}</b><br>
+   ${b.k==='cho'?`TT 27 Đ.13 k.2 đòi <i>"được tập thể lớp công nhận"</i>. <b>Chưa có kết quả bình bầu của lớp ${L.id}</b> nên
+     em này <b>chưa kết luận được danh hiệu</b>. Hệ thống <b>không tự gán</b>.`
+    :b.k==='no'?`Lớp đã bình bầu ngày ${BB[L.id].ngay} và <b>không công nhận</b> em này.
+     Bản ghi <b>vẫn giữ trong danh sách</b> với nhãn này — không xóa, lọc lại được bằng bộ lọc <i>Lớp không công nhận</i>.`
+    :`Lớp ${L.id} bình bầu ngày <b>${BB[L.id].ngay}</b> · GVCN ${L.gvcn} ghi nhận.`}
+   ${r.binhbau&&!DHCHOT?`<div style="margin-top:7px"><button class="btn xs" data-x="binhbau" data-lop="${L.id}">✍ ${BB[L.id]?'Sửa':'Ghi nhận'} bình bầu lớp ${L.id}</button></div>`:''}
+  </div>`;
+ }
+ h+=`<div class="ro" style="margin-top:11px">Danh hiệu là <b>dẫn xuất</b> từ kết quả tổng kết đã ký chốt
+   (${L.kyChot?L.kyChot.by+' · '+L.kyChot.at:'—'}). Muốn đổi danh hiệu thì phải <b>mở khóa và đính chính kết quả</b>
+   ở tab <i>Chốt tổng kết theo lớp</i>, không sửa được trực tiếp tại đây.</div>`;
+ h+=`<div class="brow"><button class="btn sm" data-go="M1.1?ctx=${x.ma}">↗ M1.1 Hồ sơ học sinh</button>
+   <button class="btn sm" data-go="M1.3?ctx=${x.ma}">↗ M1.3 Học bạ</button>
+   <button class="btn sm" data-x="pdfhs">⬇ Xuất PDF</button></div>`;
+ return h+'</div>';
+}
+function viec(){
+ const r=R(),v=[];
+ lopVisible().forEach(L=>{const t=ttLop(L);
+  ycCho(L.id).forEach(y=>{ if(moDuoc(L,r))
+    v.push({id:'yc|'+y.id,ic:'🔔',t:`Yêu cầu mở khóa — ${L.id} · ${y.loai==='diem'?'Điểm môn '+y.mon:'Đánh giá rèn luyện'}`,
+      s:`${y.boi} · ${y.hs}: ${y.cu} → ${y.dk} · cấp ${capMo(L)} — mở bảng tổng kết lớp để xử lý`,lop:L.id})});
+  if(r.kyChot&&t.k==='chotky')v.push({id:'kc|'+L.id,ic:'🖊',t:`Lớp ${L.id} chờ ký chốt kết quả tổng kết`,
+    s:`Đã chốt sổ và đã chạy tính · ${L.ss} học sinh`,lop:L.id});
+  if(r.moc&&t.k==='chuachot'){const m=mocOf(L);
+   if(m&&m.qua)v.push({id:'mc|'+L.id,ic:'⏰',t:`Lớp ${L.id} quá mốc chốt mà chưa chốt sổ`,
+     s:(L.chuaChot.length?L.chuaChot.length+' môn chưa chốt điểm':'')+(!L.chotRL?' · chưa chốt đánh giá rèn luyện':''),lop:L.id})}
+  if(r.moc&&t.k==='chuatinh')v.push({id:'ct|'+L.id,ic:'⟳',t:`Lớp ${L.id} chốt sổ xong mà chưa chạy tính`,s:`GVCN ${L.gvcn}`,lop:L.id});
+  if(L.laiThoi)v.push({id:'lt|'+L.id,ic:'⚠',t:`Lớp ${L.id} có kết quả lỗi thời`,s:'Có mục vừa chốt lại sau lần tính — cần chạy tính lại',lop:L.id});
+ });
+ if(ky==='cn'&&!DHCHOT){
+  const cb=lopChuaBB().filter(id=>r.sc==='class'?id===r.lop:true);
+  cb.forEach(id=>{const L=LOP.find(x=>x.id===id),k=dsDH().filter(it=>it.L.id===id&&it.d.bb).length;
+   if(r.binhbau)v.push({id:'bb|'+id,ic:'✍',t:`Lớp ${id} chưa bình bầu danh hiệu Học sinh Tiêu biểu`,
+     s:`${k} em đủ điều kiện xét · TT 27 Đ.13 k.2 đòi tập thể lớp công nhận · GVCN ${L.gvcn}`,bb:id})});
+  if(r.chotDH){const nd=dsDH().length;
+   if(nd&&!lopVisible().some(L=>!L.kyChot)&&!cb.length)
+    v.push({id:'cd',ic:'🏅',t:`${nd} học sinh đủ điều kiện — danh sách danh hiệu chờ chốt`,
+      s:'Mọi lớp đã ký chốt và đã bình bầu xong — chốt được danh sách',dh:1})}
+ }
+ if(ky==='cn'&&DHCHOT&&!DHBG&&r.chotDH)
+  v.push({id:'bg',ic:'📤',t:`Danh sách ${DHCHOT.n} học sinh đạt danh hiệu chờ bàn giao M2.7`,
+    s:'M3.1 không ban hành quyết định khen thưởng — M2.7 làm việc đó theo TT 19/2025',dh:1});
+ YCXL.filter(y=>!y.tl&&(r.sc==='class'?y.lop===r.lop:r.gvbm)).forEach(y=>
+   v.push({id:'yx|'+y.id,ic:'🔔',t:`Yêu cầu xem lại — ${y.hs} (${y.lop})`,s:`${y.boi} · ${y.ngay} · ${y.ly}`,ycxl:y.id}));
+ return v;
+}
+function tabDuyet(){
+ const v=viec();
+ let h=`<div class="scopebar"><span>🖊</span><div>Gom mọi việc chờ <b>chính vai trò này</b>. Bấm một việc thì mở thẳng nơi xử lý.</div></div>
+ <div class="listw"><div style="padding:11px">`;
+ if(!v.length)h+='<div class="empty">Không có việc nào chờ bạn.</div>';
+ v.forEach(w=>h+=`<div class="wk" data-wk="${w.id}"><div class="ic">${w.ic}</div>
+   <div class="bd"><b>${w.t}</b><span style="color:var(--ink2);font-size:12px">${w.s}</span></div></div>`);
+ return h+'</div></div>';
+}
+
+/* ================= Sidebar + render + modal ================= */
+function sidebar(){
+ const r=R();let h='';
+ NAV.forEach(g=>{h+=`<div class="sgrp">${g[1]}</div>`;
+  g[2].forEach(m=>{const ok=r.menu==='all'||r.menu.indexOf(m[0])>=0,on=m[2]==='x';
+   const b=(m[0]==='M0.2')?viec().length:0;
+   h+=`<div class="snav ${on?'on':''} ${ok?'':'off'}"><span>${m[0]}</span><span style="flex:1;min-width:0">${m[1]}</span>${b?`<span class="nb">${b}</span>`:''}</div>`})});
+ $('#side').innerHTML=h;
+}
+function render(){
+ const r=R();
+ $('#ava').textContent=r.av;
+ const hdt=$('#hdt');
+ if(r.sc==='branch'||r.sc==='class'){hdt.value=r.dt;hdt.disabled=true}
+ else{if(hdt.disabled)hdt.value='Toàn trường';hdt.disabled=false}
+ sidebar();
+ if(curLop&&tab==='lop'){
+  const L=LOP.find(x=>x.id===curLop);
+  if(!L||!inScope(L)){curLop=null;return render()}
+  $('#head').innerHTML=`<div class="crumb"><button data-x="back">← Chốt tổng kết theo lớp</button><span>›</span>
+    <span><b>Lớp ${L.id}</b> · ${$('#nam').value} · ${kyName(ky)}</span></div>
+   <div class="tophd"><h1>Bảng tổng kết lớp ${L.id}</h1><span class="cap ${L.cap}">${L.cap}</span>
+    <span class="pill">GVCN ${L.gvcn}</span><span class="pill">${L.ss} học sinh</span><span class="pill">${L.dt}</span></div>`;
+  $('#tabs').innerHTML='';$('#content').innerHTML=bangLop();return;
+ }
+ curLop=null;
+ $('#head').innerHTML=`<div class="tophd"><h1>Tổng kết và xếp loại</h1>
+   <span class="pill">M3.1 · 🎓 Kết quả &amp; Cuối năm</span><div class="spacer"></div>
+   <span style="font-size:12px;color:var(--ink3)">${r.n}</span></div>`;
+ let T=r.tabs.slice();
+ const nv=viec().length;
+ if(!nv)T=T.filter(x=>x!=='duyet');
+ if(!T.includes(tab))tab=T[0];
+ $('#tabs').innerHTML=T.map(t=>`<button class="tab1 ${tab===t?'on':''}" data-t1="${t}">${TABN[t]}
+   ${t==='duyet'&&nv?`<span class="b">${nv}</span>`:''}</button>`).join('');
+ if(!T.length){$('#content').innerHTML=`<div class="listw"><div class="empty">
+   <b>Bạn không có việc nào tại M3.1.</b><br><br>Giáo viên bộ môn nhập điểm và ký chốt điểm môn tại <b>M2.6</b>;
+   tra cứu kết quả của một học sinh tại <b>M1.3 Học bạ điện tử</b>.
+   <div style="margin-top:11px"><button class="btn sm p" data-go="M2.6?return=M3.1">↗ Mở M2.6</button></div></div></div>`;return}
+ $('#content').innerHTML= tab==='lop'?tabLop():tab==='danhhieu'?tabDanhHieu():tabDuyet();
+}
+function modal(t,body,btns,sm){
+ $('#mdl').className='modal'+(sm?' sm':'');
+ $('#mh').innerHTML=t;$('#mb').innerHTML=body;$('#mf').innerHTML='';
+ btns.forEach(b=>{if(!b)return;const [lb,fn,cls]=b;
+  const el=document.createElement('button');el.className='btn '+(cls||(fn?'p':''));el.innerHTML=lb;
+  el.onclick=()=>{$('#mask').classList.remove('on');if(fn)fn()};$('#mf').appendChild(el)});
+ $('#mask').classList.add('on');
+}
+let tt2;function toast(m){$('#toast').innerHTML=m;$('#toast').classList.add('on');
+ clearTimeout(tt2);tt2=setTimeout(()=>$('#toast').classList.remove('on'),4800)}
+function resTable(okT,okL,skT,skL){
+ return `<div class="res"><div class="resh ok">✅ ${okT} — ${okL.length}</div>
+  <div class="resb">${okL.length?okL.map(x=>`<div class="rr">${x}</div>`).join(''):'<i style="color:var(--ink3)">không có</i>'}</div>
+  <div class="resh skip">⏭ ${skT} — ${skL.length}</div>
+  <div class="resb">${skL.length?skL.map(x=>`<div class="rr">${x}</div>`).join(''):'<i style="color:var(--ink3)">không có</i>'}</div></div>`;
+}
+
+/* ================= Thao tac ================= */
+function act(a,d){
+ d=d||{};const r=R();
+ if(a==='back'){curLop=null;render();return}
+ if(a==='noop')return;
+ if(a==='clrsel'){selL.clear();render();return}
+ if(a==='thieumon'){const L=LOP.find(x=>x.id===d.lop);
+  modal('Môn chưa chốt điểm — lớp '+L.id,
+   `<div class="ro">Chưa chốt điểm nghĩa là <b>giáo viên bộ môn chưa ký chốt</b> tại M2.6. Chưa chốt hết thì <b>không chạy tính được</b>.</div>
+    ${L.chuaChot.map(m=>`<div class="fitem"><span class="nm"><b>${m}</b> · GVBM ${gvCua(L,m)}</span>
+      <button class="btn xs" data-go="M2.6?ctx=${L.id}|${m}">↗ M2.6</button>
+      <button class="btn xs" data-x="nhacbm" data-lop="${L.id}">🔔 Nhắc</button></div>`).join('')}`,
+   [['Đóng',null,'']],1);return}
+ if(a==='nhacbm'){const L=LOP.find(x=>x.id===d.lop);toast('Đã nhắc giáo viên bộ môn của '+L.chuaChot.join(', ')+' — lớp '+L.id);return}
+ if(a==='nhaccn'){const L=LOP.find(x=>x.id===d.lop);toast('Đã nhắc '+L.gvcn+' chốt đánh giá rèn luyện lớp '+L.id);return}
+ if(a==='tinh'){const L=LOP.find(x=>x.id===d.lop);
+  if(L.chuaChot.length||!L.chotRL){modal('Chưa chạy tính được',
+   `<div class="blk"><b>Lớp ${L.id} chưa hoàn thành chốt sổ</b>
+     ${L.chuaChot.map(m=>`<div class="li"><span class="x">✗</span><span>${m} — GVBM ${gvCua(L,m)} chưa ký chốt điểm</span>
+       <span class="spacer"></span><button class="btn xs" data-go="M2.6?ctx=${L.id}|${m}">↗ M2.6</button></div>`).join('')}
+     ${!L.chotRL?`<div class="li"><span class="x">✗</span><span>Chưa chốt ${L.cap==='TH'?'đánh giá phẩm chất — năng lực':'đánh giá rèn luyện'} — GVCN ${L.gvcn}</span>
+       <span class="spacer"></span><button class="btn xs" data-go="M2.9?tab=T7&ctx=${L.id}">↗ M2.9/T7</button></div>`:''}</div>`,
+   [['Đóng',null,'']],1);return}
+  L.daTinh=true;L.laiThoi=false;
+  const moc=mocOf(L);
+  toast(`Đã chạy tính tổng kết lớp ${L.id} — kết quả ${moc&&moc.qua?'Chính thức':'Tạm tính'} · ghi audit`);
+  render();return}
+ if(a==='batch'){const ok=[],sk=[];
+  [...selL].forEach(id=>{const L=LOP.find(x=>x.id===id);
+   if(L.chuaChot.length||!L.chotRL)sk.push(`<b>${id}</b> · chưa chốt sổ: ${L.chuaChot.join(', ')||''}${!L.chotRL?(L.chuaChot.length?' · ':'')+'chưa chốt đánh giá rèn luyện':''} <span class="spacer"></span><button class="btn xs" data-lop="${id}">↗ mở</button>`);
+   else{L.daTinh=true;L.laiThoi=false;ok.push(`<b>${id}</b> · ${L.ss} học sinh`)}});
+  modal(`Đã chạy tính ${selL.size} lớp`,
+   `<div class="ro">Thao tác hàng loạt luôn tách rõ <b>dòng thành công</b> và <b>dòng bị bỏ qua kèm lý do</b>.</div>`+resTable('Thành công',ok,'Bỏ qua',sk),
+   [['Đóng',null,'']]);selL.clear();render();return}
+ /* --- yeu cau mo khoa --- */
+ if(a==='ycxem'){
+  const y=YEUCAU.find(z=>z.lop===d.lop&&z.tt==='cho'&&(d.ren?z.loai==='ren':z.mon===d.mon));
+  if(!y)return;
+  if(curLop!==d.lop){curLop=d.lop;tab='lop';render()}
+  act('ycpop',{yc:y.id});return}
+ if(a==='ycpop'){const y=YEUCAU.find(z=>z.id===d.yc),L=LOP.find(x=>x.id===y.lop);
+  modal('🔔 Yêu cầu mở khóa — '+(y.loai==='diem'?'Điểm môn '+y.mon:'Đánh giá rèn luyện')+' · '+y.lop,
+   ycBody(y,L),moDuoc(L,R())
+    ?[['Đóng',null,''],['✕ Từ chối mở khóa',()=>act('ycno',{yc:y.id}),'d'],['✓ Đồng ý mở khóa',()=>act('ycok',{yc:y.id}),'g']]
+    :[['Đóng',null,'']]);return}
+ if(a==='ycok'){const y=YEUCAU.find(z=>z.id===d.yc),L=LOP.find(x=>x.id===y.lop);
+  modal('Đồng ý mở khóa — xác nhận hệ quả',
+   `<div class="danger"><b>Sau khi đồng ý:</b>
+     <div class="li"><span class="x">→</span><span>${y.loai==='diem'?'Môn <b>'+y.mon+'</b>':'<b>Đánh giá rèn luyện</b>'} của lớp ${y.lop} <b>tính là CHƯA CHỐT</b></span></div>
+     <div class="li"><span class="x">→</span><span>Lớp quay về trạng thái <b>Chưa hoàn thành chốt sổ</b></span></div>
+     ${L.kyChot?`<div class="li"><span class="x">→</span><span><b>Chữ ký chốt kết quả tổng kết lớp mất hiệu lực</b> — phải ký lại sau khi chốt lại</span></div>`:''}
+     ${L.hb==='chot'?`<div class="li"><span class="x">→</span><span>Học bạ đã ký chốt → sinh việc <b>bản đính chính tại M1.3</b></span></div>`:''}
+     <div class="li"><span class="x">→</span><span>${y.boi} sửa và <b>ký chốt lại</b> tại ${y.nguon}</span></div></div>
+    ${L.hb==='chot'?`<div class="warn">Học bạ lớp ${y.lop} đã HT ký chốt — cấp mở khóa là <b>HT</b>, áp <b>Ký số Option Nhóm A</b>.</div>`:''}`,
+   L.hb==='chot'
+    ?[['Hủy',null,''],['Bỏ qua ký số và mở',()=>doMo(y,0),''],['🔐 Ký số và mở khóa',()=>doMo(y,1),'g']]
+    :[['Hủy',null,''],['✓ Mở khóa',()=>doMo(y,0),'g']]);
+  return}
+ if(a==='ycno'){const y=YEUCAU.find(z=>z.id===d.yc);
+  modal('Từ chối mở khóa — '+y.hs,
+   `<b style="font-size:12.5px">Lý do (bắt buộc)</b>
+    <textarea class="fldi" id="ltc" rows="3">Không đủ căn cứ cho thấy có sai sót nhập liệu.</textarea>
+    <div class="ro">Lý do <b>về tới màn hình của giáo viên</b> tại ${y.nguon}. Yêu cầu bị từ chối <b>giữ lại</b>, tra cứu trong Lịch sử thao tác của lớp.</div>`,
+   [['Hủy',null,''],['✕ Từ chối',()=>{y.tt='tuchoi';y.ldTC=($('#ltc')&&$('#ltc').value)||'';
+     toast('Đã từ chối · lý do đã gửi về '+y.nguon+' cho '+y.boi);render()},'d']],1);return}
+ /* --- ky chot ket qua tong ket lop --- */
+ if(a==='chanky'){const L=LOP.find(x=>x.id===d.lop);
+  const li=[];
+  L.chuaChot.forEach(m=>li.push(`<div class="li"><span class="x">✗</span><span>${m} chưa chốt điểm — GVBM ${gvCua(L,m)}</span><span class="spacer"></span><button class="btn xs" data-go="M2.6?ctx=${L.id}|${m}">↗ M2.6</button></div>`));
+  if(!L.chotRL)li.push(`<div class="li"><span class="x">✗</span><span>Chưa chốt đánh giá rèn luyện — GVCN ${L.gvcn}</span><span class="spacer"></span><button class="btn xs" data-go="M2.9?tab=T7&ctx=${L.id}">↗ M2.9/T7</button></div>`);
+  if(ycCho(L.id).length)li.push(`<div class="li"><span class="x">✗</span><span>${ycCho(L.id).length} yêu cầu mở khóa đang chờ xử lý</span></div>`);
+  if(!L.daTinh)li.push(`<div class="li"><span class="x">✗</span><span>Chưa chạy tính tổng kết</span></div>`);
+  if(L.laiThoi)li.push(`<div class="li"><span class="x">✗</span><span>Kết quả lỗi thời — cần chạy tính lại</span></div>`);
+  modal('Chưa ký chốt được',`<div class="blk"><b>Còn ${li.length} việc chưa xong</b>${li.join('')}</div>`,[['Đóng',null,'']],1);return}
+ if(a==='rasoat'){const L=LOP.find(x=>x.id===d.lop);
+  if(L.chuaChot.length||!L.chotRL||ycCho(L.id).length||!L.daTinh||L.laiThoi)return act('chanky',d);
+  const risky=HS[L.id].filter(h=>[2,3,4,23,5].indexOf(nhanh(h).id)>=0);
+  modal(`Rà soát trước khi ký chốt — lớp ${L.id} · ${L.ss} học sinh`,
+   `<div class="info">Ký một chữ ký phủ <b>${L.ss} học sinh</b> thì phải nhìn đủ ${L.ss} em một lần.</div>
+    ${risky.length?`<div class="warn"><b>${risky.length} học sinh cần đọc kỹ:</b> ${risky.map(h=>h.n+' — '+nhanh(h).t).join(' · ')}</div>`:''}
+    <div class="wrapx" style="max-height:340px;overflow-y:auto"><table class="gtb"><thead><tr>
+     <th class="stick">Học sinh</th>${L.cap==='TH'?'<th>Môn Chưa hoàn thành</th>':'<th>KQ học tập</th><th>KQ rèn luyện</th>'}<th>Nghỉ</th><th>Kết luận</th></tr></thead><tbody>
+     ${HS[L.id].map(h=>`<tr><td class="stick">${h.n}</td>
+      ${L.cap==='TH'?`<td>${MON_TH.filter(m=>h.mon[m]==='C').join(', ')||'—'}</td>`
+        :`<td><span class="st2 ${kqHocTap(h)==='Chưa đạt'?'r':'n'}">${kqHocTap(h)}</span></td><td>${rlHienHanh(h)}</td>`}
+      <td style="${h.nghi>45?'color:var(--red);font-weight:800':''}">${h.nghi}</td><td>${nhBadge(nhanh(h))}</td></tr>`).join('')}
+    </tbody></table></div>`,
+   [['Quay lại',null,''],['🖊 Ký chốt kết quả tổng kết lớp',()=>act('kyso',{lop:L.id})]]);return}
+ if(a==='kyso'){const L=LOP.find(x=>x.id===d.lop);
+  modal('Ký chốt kết quả tổng kết lớp '+L.id,
+   `<div class="info"><b>Ký số Option — Nhóm A.</b> Bỏ qua thì vẫn ghi nhận chữ ký nghiệp vụ, ghi audit lý do và đồng bộ M4.11.</div>
+    <div class="kv"><div class="k">Đơn vị ký</div><div><b>Lớp ${L.id} × ${kyName(ky)}</b> — một chữ ký phủ ${L.ss} học sinh</div>
+     <div class="k">Đây KHÔNG phải chữ ký học bạ</div><div>Học bạ ký theo <b>Phiên ký cấp lớp tại M1.3</b>. Chữ ký này phủ <b>bảng kết quả tổng kết của lớp</b> — cổng chặn cho mọi nghiệp vụ cuối năm</div>
+     <div class="k">Sau khi ký</div><div>Kết quả có hiệu lực · đẩy vào M1.3 · học sinh nhánh 3 xuất hiện ở tab <b>Đăng ký rèn luyện hè</b> · bàn giao được M3.2 và M3.3</div></div>`,
+   [['Hủy',null,''],
+    ['Bỏ qua ký số',()=>doKy(L,'Bỏ qua ký số — chưa cấp chứng thư'),''],
+    ['🔐 Ký bằng USB Token / SmartCA',()=>doKy(L,'Ký số USB Token')]]);return}
+ actB(a,d);
+}
+function ycBody(y,L){
+ return `<div class="kv">
+   <div class="k">Người gửi</div><div><b>${y.boi}</b> · ${y.ngay} · gửi từ <b>${y.nguon}</b></div>
+   <div class="k">Học sinh</div><div><b>${y.hs}</b> · hiện <b>${y.cu}</b> → dự kiến <b style="color:var(--violet)">${y.dk}</b></div>
+   <div class="k">Lý do</div><div>${y.ly}</div>
+   ${y.canCu?`<div class="k">Căn cứ</div><div>📄 ${y.canCu} <button class="btn xs p" data-x="xemfile" data-f="${y.canCu}">👁 Xem</button></div>`:''}
+   <div class="k">Cấp mở khóa</div><div><b>${capMo(L)}</b> — ${L.hb==='chot'?'học bạ đã HT ký chốt (tầng 4)':'học bạ chưa vào Phiên ký'}</div></div>`;
+}
+function doMo(y,ks){
+ const L=LOP.find(x=>x.id===y.lop);
+ if(y.loai==='diem'){if(L.chuaChot.indexOf(y.mon)<0)L.chuaChot.push(y.mon)}
+ else L.chotRL=false;
+ L.daTinh=false;L.laiThoi=false;
+ const mat=!!L.kyChot; L.kyChot=null;
+ y.tt='daMo';y.moNgay=HOM;y.moBoi=R().n.split('—')[0].trim();y.ks=ks?'Ký số USB Token':(L.hb==='chot'?'Bỏ qua ký số':'');
+ toast(`Đã mở khóa · ${y.loai==='diem'?'môn '+y.mon:'đánh giá rèn luyện'} lớp ${y.lop} nay tính là CHƯA CHỐT`+
+   (mat?' · chữ ký chốt kết quả tổng kết MẤT HIỆU LỰC':'')+
+   (L.hb==='chot'?' · đã tạo việc bản đính chính ở M1.3':'')+` · ${y.boi} sửa và ký lại tại ${y.nguon}`);
+ render();
+}
+function doKy(L,m){
+ L.kyChot={by:R().n.split('—')[0].trim()+' ('+(role==='HT'?'HT':'PHT_CM')+')',at:HOM+' 09:30',m:m};
+ toast('Đã ký chốt kết quả tổng kết lớp '+L.id+' · kết quả có hiệu lực · học sinh đủ tiêu chuẩn đã vào tab Xét danh hiệu · bàn giao được sang M3.2 và M3.3');
+ render();
+}
+
+/* ===== thao tac ren luyen he + phu tro ===== */
+/* ===== thao tac danh hieu khen thuong + phu tro ===== */
+function actB(a,d){
+ const r=R();
+ if(a==='binhbau'){
+  if(DHCHOT){toast('Danh sách đã chốt — không ghi nhận bình bầu được nữa');return}
+  const lops={};dsDH().forEach(it=>{if(it.d.bb)lops[it.L.id]=it.L});
+  const ids=Object.keys(lops);
+  if(!ids.length){toast('Không có lớp Tiểu học nào có học sinh đủ điều kiện xét danh hiệu Tiêu biểu');return}
+  const lid=d.lop&&lops[d.lop]?d.lop:(lopChuaBB()[0]||ids[0]);
+  const L=lops[lid],cand=dsDH().filter(it=>it.L.id===lid&&it.d.bb),b=BB[lid];
+  modal(`✍ Ghi nhận bình bầu của tập thể lớp ${lid}`,
+   `<div class="info">TT 27/2020 Điều 13 khoản 2 — danh hiệu <b>Học sinh Tiêu biểu</b> đòi <i>"được tập thể lớp công nhận"</i>.
+     Đây là <b>một sự kiện có thật ngoài đời</b>: lớp họp và bình bầu. Màn hình này chỉ <b>ghi nhận lại kết quả đó</b>,
+     không phải nút gán danh hiệu — vì vậy hệ thống lọc sẵn danh sách đủ điều kiện, còn ai được công nhận thì lớp quyết.</div>
+    ${ids.length>1?`<div class="fitem"><span class="nm">Lớp đang ghi nhận</span>
+      ${ids.map(i=>`<button class="btn xs ${i===lid?'p':''}" data-x="binhbau" data-lop="${i}">${i}${BB[i]?' ✔':''}</button>`).join('')}</div>`:''}
+    <div class="fitem"><span class="nm">Ngày họp lớp bình bầu</span>
+      <input class="inp" id="bbngay" style="max-width:150px" value="${b?b.ngay:'25/05/2026'}"></div>
+    <div style="font-size:12.5px;font-weight:700;margin:11px 0 5px">Học sinh đủ điều kiện xét — ${cand.length} em · tích những em <b>lớp đã công nhận</b></div>
+    ${cand.map(it=>`<div class="fitem"><input type="checkbox" id="bb_${it.h.ma}" ${b&&b.ok[it.h.ma]?'checked':''}>
+      <span class="nm"><b>${it.h.n}</b> <span style="color:var(--ink3)">${it.h.ma}</span><br>
+      <span style="font-size:11px;color:var(--ink2)">${it.d.cc}</span></span></div>`).join('')}
+    <div class="ro" style="margin-top:9px">Em <b>không được lớp công nhận</b> vẫn <b>giữ nguyên trong danh sách</b> với nhãn
+      <i>Lớp không công nhận</i> — không bị xóa, và lọc lại được bằng bộ lọc cùng tên.</div>`,
+   [['Hủy',null,''],['✔ Ghi nhận kết quả bình bầu',()=>{
+     const ok={};cand.forEach(it=>{const el=$('#bb_'+it.h.ma);if(el&&el.checked)ok[it.h.ma]=1});
+     BB[lid]={ngay:$('#bbngay').value,ok:ok,by:L.gvcn};
+     const n=Object.keys(ok).length;
+     toast(`Đã ghi nhận bình bầu lớp ${lid} · ${n}/${cand.length} em được tập thể lớp công nhận`);render()}]]);
+  return}
+ if(a==='chotdh'){
+  const ds=dsDH(),chuaKy=lopVisible().filter(L=>!L.kyChot),chuaBB=lopChuaBB();
+  if(chuaKy.length){
+   modal('⛔ Chưa chốt danh sách được',
+    `<div class="warn">Còn <b>${chuaKy.length} lớp chưa ký chốt kết quả tổng kết</b>. Danh hiệu là <b>dẫn xuất</b> từ kết quả đã ký chốt —
+      chốt danh sách khi kết quả còn sửa được thì danh sách sẽ sai ngay hôm sau.</div>
+     ${chuaKy.map(L=>`<div class="fitem"><span class="nm"><b>Lớp ${L.id}</b> · ${L.dt} · GVCN ${L.gvcn} —
+       ${ttLop(L).t}</span><button class="btn xs" data-x="opnlop" data-lop="${L.id}">→ Mở bảng lớp</button></div>`).join('')}
+     <div class="ro" style="margin-top:9px">Danh sách danh hiệu chốt <b>theo phạm vi đang xem</b>. Bộ chọn
+      <b>Điểm trường</b> ở header đang là <b>${$('#hdt').value}</b> — chọn một điểm trường đã chốt xong thì chốt được
+      danh sách của riêng điểm trường đó.</div>`,
+    [['Đóng',null,'']],1);return}
+  if(chuaBB.length){
+   modal('⛔ Chưa chốt danh sách được',
+    `<div class="warn">Còn <b>${chuaBB.length} lớp Tiểu học chưa có kết quả bình bầu</b> của tập thể lớp.
+      Danh hiệu <b>Tiêu biểu</b> không kết luận được nếu thiếu bước này (TT 27 Đ.13 k.2), và hệ thống <b>không tự gán thay lớp</b>.</div>
+     ${chuaBB.map(id=>{const L=LOP.find(x=>x.id===id);
+       const n=dsDH().filter(it=>it.L.id===id&&it.d.bb).length;
+       return `<div class="fitem"><span class="nm"><b>Lớp ${id}</b> · GVCN ${L.gvcn} · <b>${n}</b> em đủ điều kiện xét</span>
+        <button class="btn xs" data-x="nhacbb" data-lop="${id}">🔔 Nhắc GVCN</button>
+        <button class="btn xs p" data-x="binhbau" data-lop="${id}">✍ Ghi nhận</button></div>`}).join('')}`,
+    [['Đóng',null,'']],1);return}
+  const c={xs:0,gioi:0,tb:0};
+  ds.forEach(it=>{const b=bbTT(it);
+   if(it.d.k==='xs')c.xs++;else if(it.d.k==='gioi')c.gioi++;else if(b&&b.k==='ok')c.tb++});
+  modal('🔒 Chốt danh sách đạt danh hiệu khen thưởng',
+   `<div class="info">Chốt xong thì danh sách <b>khóa lại</b>: không ghi nhận bình bầu, không đổi danh hiệu.
+     Muốn đổi thì phải <b>mở khóa và đính chính kết quả tổng kết</b> ở tab <i>Chốt tổng kết theo lớp</i> — danh hiệu tự tính lại theo.</div>
+    <table><thead><tr><th>Danh hiệu</th><th>Căn cứ</th><th style="text-align:right">Số học sinh</th></tr></thead><tbody>
+    <tr><td><b>🏆 Học sinh Xuất sắc</b></td><td>TT 22 Đ.15 k.1 · TT 27 Đ.13 k.1</td><td style="text-align:right"><b>${c.xs}</b></td></tr>
+    <tr><td><b>🥇 Học sinh Giỏi</b></td><td>TT 22 Đ.15 k.1 — chỉ THCS · THPT</td><td style="text-align:right"><b>${c.gioi}</b></td></tr>
+    <tr><td><b>🥈 Học sinh Tiêu biểu</b></td><td>TT 27 Đ.13 k.2 — có bình bầu của lớp</td><td style="text-align:right"><b>${c.tb}</b></td></tr>
+    </tbody></table>
+    <div class="ro">M3.1 <b>chỉ chốt ai đạt danh hiệu gì</b>. Việc <b>khen bằng hình thức nào</b> — giấy khen Hiệu trưởng, tuyên dương, thư khen —
+     là của <b>M2.7</b> theo TT 19/2025.</div>`,
+   [['Hủy',null,''],['🔒 Chốt danh sách',()=>{
+     DHCHOT={by:r.n.split('—')[0].trim()+' ('+(role==='HT'?'HT':'PHT_CM')+')',at:HOM+' 15:20',n:c.xs+c.gioi+c.tb};
+     toast(`Đã chốt danh sách đạt danh hiệu · ${DHCHOT.n} học sinh · danh sách khóa lại`);render()}]]);
+  return}
+ if(a==='bangiao'){
+  if(!DHCHOT){toast('Phải chốt danh sách trước khi bàn giao');return}
+  modal('📤 Bàn giao M2.7 để ban hành quyết định khen thưởng',
+   `<div class="info">Deep-link <code>/M2.7?action=dot-khen-thuong&ctx=${$('#nam').value}&return=M3.1</code>.
+     M2.7 sở hữu <b>quyết định khen thưởng</b>; M3.1 sở hữu <b>danh hiệu</b>. Hai thực thể khác nhau, mỗi cái một menu ghi.</div>
+    <div class="kv"><div class="k">Danh sách</div><div><b>${DHCHOT.n}</b> học sinh đạt danh hiệu</div>
+     <div class="k">Đã chốt bởi</div><div>${DHCHOT.by} · ${DHCHOT.at}</div>
+     <div class="k">Nơi nhận</div><div><b>M2.7 Khen thưởng &amp; Kỷ luật học sinh</b></div></div>
+    <div class="ro">Sau khi bàn giao, nếu <b>đính chính kết quả</b> làm danh hiệu đổi thì M3.1 <b>gắn cờ và báo sang M2.7</b>,
+     <b>không tự sửa quyết định đã ban hành</b> — thu hồi giấy khen là việc của người, không phải của máy. Xem §9.33.</div>`,
+   [['Hủy',null,''],['📤 Bàn giao',()=>{DHBG={at:HOM+' 15:41',n:DHCHOT.n};
+     toast('Đã bàn giao danh sách sang M2.7 · '+DHBG.n+' học sinh');render()}]]);
+  return}
+ if(a==='giaohe'){
+  const ds=dsBanGiaoHe(),chua=lopVisible().filter(L=>!L.kyChot);
+  if(!ds.length){toast('Không có học sinh nào cần xử lý trong hè'+(chua.length?' trong '+(lopVisible().length-chua.length)+' lớp đã ký chốt':''));return}
+  const d13=ds.filter(x=>x.nh.id===3||x.nh.id===23),d14=ds.filter(x=>x.nh.id===2||x.nh.id===23);
+  modal('📤 Bàn giao M3.2 Rèn luyện hè',
+   `<div class="info">Deep-link <code>/M3.2?action=tao&ctx=${$('#nam').value}&return=M3.1</code>.
+     <b>Mọi thao tác trong hè thuộc M3.2</b> — giao nhiệm vụ, thu báo cáo, tổ chức kỳ đánh giá lại, nhập kết quả, ký chốt.
+     M3.1 chỉ <b>chỉ ra ai thuộc diện</b> và bàn giao.</div>
+    <div class="kv"><div class="k">☀️ Rèn luyện hè — Đ.13</div><div><b>${d13.length}</b> học sinh · rèn luyện cả năm <b>Chưa đạt</b> · <b>nghĩa vụ</b>, im lặng là tham gia</div>
+     <div class="k">📚 Đánh giá lại môn — Đ.14</div><div><b>${d14.length}</b> học sinh · học tập cả năm <b>Chưa đạt</b> · <b>quyền</b>, có đăng ký</div>
+     <div class="k">Thuộc cả hai</div><div><b>${ds.filter(x=>x.nh.id===23).length}</b> học sinh — làm song song trong hè</div></div>
+    <div style="font-size:12.5px;font-weight:700;margin:11px 0 5px">Danh sách bàn giao — ${ds.length} học sinh</div>
+    <table><thead><tr><th>Học sinh</th><th>Lớp</th><th>Rèn luyện</th><th>Học tập</th><th>Thuộc diện</th></tr></thead><tbody>
+    ${ds.map(x=>`<tr><td><b>${x.h.n}</b> <span style="color:var(--ink3)">${x.h.ma}</span></td><td>${x.L.id}</td>
+      <td>${x.L.cap==='TH'?'—':rlHienHanh(x.h)||'—'}</td><td>${x.L.cap==='TH'?kqTieuHoc(x.h):kqHocTap(x.h)}</td>
+      <td>${nhBadge(x.nh)}</td></tr>`).join('')}
+    </tbody></table>
+    ${chua.length?`<div class="warn">⚠ Còn <b>${chua.length} lớp chưa ký chốt</b> — ${chua.map(L=>L.id).join(', ')} — học sinh các lớp đó
+      <b>chưa nằm trong danh sách này</b>. Ký chốt xong phải bàn giao bổ sung.</div>`:''}`,
+   [['Đóng',null,''],['📤 Bàn giao sang M3.2',()=>toast('Đã bàn giao '+ds.length+' học sinh sang M3.2 Rèn luyện hè · deep-link /M3.2?action=tao&return=M3.1')]]);
+  return}
+ if(a==='motat'){dsDH().forEach(it=>MOLOP[it.L.id]=1);render();return}
+ if(a==='dongtat'){MOLOP={};render();return}
+ if(a==='nhacbb'){toast('Đã nhắc GVCN lớp '+d.lop+' tổ chức bình bầu và ghi nhận kết quả');return}
+ if(a==='opnlop'){tab='lop';curLop=d.lop;$('#mask').classList.remove('on');render();return}
+ /* --- phu tro --- */
+ /* --- phu tro --- */
+ if(a==='pdf'||a==='pdfhs'){modal('Xuất PDF',
+   `<div class="ro">Dữ liệu cá nhân trẻ em — NĐ 13/2023. <b>Bắt buộc chọn mục đích</b>; lượt xuất ghi audit kèm mục đích.</div>
+    <select class="fldi"><option>Lưu hồ sơ nội bộ của trường</option><option>Gửi Phòng / Sở Giáo dục</option><option>Cung cấp cho gia đình theo yêu cầu</option><option>Phục vụ thanh tra, kiểm tra</option></select>`,
+   [['Hủy',null,''],['⬇ Xuất PDF',()=>toast('Đã xuất PDF · ghi audit: người xuất, phạm vi, mục đích')]],1);return}
+ if(a==='xemfile'){modal('👁 '+d.f,
+   `<div class="ro">Xem ngay trong màn hình — không bắt tải về rồi mở phần mềm khác. Lượt xem này <b>đã ghi audit</b>.</div>
+    <div class="inpage"><h3>${d.f.indexOf('bao cao')>=0||d.f.indexOf('Bao cao')>=0?'BÁO CÁO RÈN LUYỆN TRONG KÌ NGHỈ HÈ':'TÀI LIỆU ĐÍNH KÈM'}</h3>
+     <div class="qh2">(bản chụp tệp — dựng minh họa)</div><p>Tệp: <b>${d.f}</b></p>
+     <p>Nội dung tệp hiển thị tại đây bằng trình xem nhúng của hệ thống.</p>
+     <div class="sig2"><div>Giáo viên chủ nhiệm<br><b>(đã ký)</b></div><div>Cha mẹ học sinh<br><b>(đã ký xác nhận)</b></div></div></div>`,
+   [['Đóng',null,''],['⬇ Tải về',()=>toast('Đã tải · ghi audit')]]);return}
+ if(a==='taifile'){toast('Đã tải '+d.f+' · ghi audit');return}
+ if(a==='xemmoc'){
+  modal('📅 Mốc chốt điểm kỳ — chỉ đọc',
+   `<div class="info"><b>Mốc chốt điểm kỳ là lịch của năm học, không phải cấu hình của menu tổng kết.</b>
+     Nó khóa màn hình nhập điểm của giáo viên bộ môn ở <b>M2.5</b>, ảnh hưởng cả những menu không liên quan gì tới tổng kết —
+     nên nó thuộc <b>M10.1 Hồ sơ năm học</b>, cùng chỗ với ngày khai giảng, mốc kết thúc học kỳ và các mốc khác.
+     M3.1 chỉ <b>đọc</b> để biết vì sao lớp chưa chốt được điểm.</div>
+    <table><thead><tr><th>Kỳ</th><th>Điểm trường</th><th>Hạn nhập điểm</th><th>Trạng thái</th></tr></thead><tbody>
+    ${MOC.map(m=>`<tr><td><b>${m.ky}</b></td><td>${m.dt}</td><td>${m.han}</td>
+      <td><span class="st2 ${m.qua?'n':'b'}">${m.qua?'Đã qua hạn — điểm đã khóa':'Chưa tới hạn'}</span></td></tr>`).join('')}
+    </tbody></table>
+    <div class="ro">Công thức tính và ngưỡng xếp loại cũng chỉ đọc tại đây — cấu hình ở <b>M10.1</b> theo
+     <span class="ct2">Cấp × Hệ đào tạo × Năm học</span>.</div>`,
+   [['Đóng',null,''],['↗ Mở M10.1 để sửa',()=>toast('Deep-link → /M10.1?tab=moc-chot&return=M3.1')]]);return}
+ if(a==='lichsu'){const L=LOP.find(x=>x.id===d.lop);
+  modal('Lịch sử thao tác — lớp '+L.id,
+   `<div class="ro">Lịch sử <b>hợp nhất ba menu</b>, mỗi dòng ghi rõ xảy ra ở đâu. Truy được vết kể cả khi người thực hiện đã nghỉ việc.</div>
+    <div class="tl">
+     ${monCua(L).filter(m=>monChot(L,m)).slice(0,3).map(m=>`<div class="tli g"><b><span class="ct2">M2.6</span> GVBM ký chốt điểm (${L.id} × ${m})</b><div class="mm">${gvCua(L,m)} · 27/05/2026</div></div>`).join('')}
+     ${L.chotRL?`<div class="tli g"><b><span class="ct2">M2.9/T7</span> GVCN ký chốt đánh giá rèn luyện (${L.id} × Năm)</b><div class="mm">${L.gvcn} · 28/05/2026</div></div>`:''}
+     ${L.daTinh?`<div class="tli"><b><span class="ct2">M3.1</span> Chạy tính tổng kết cả năm</b><div class="mm">28/05/2026 09:14 · kết quả Chính thức</div></div>`:''}
+     ${YEUCAU.filter(y=>y.lop===L.id).map(y=>`<div class="tli ${y.tt==='tuchoi'?'r':y.tt==='daMo'?'w':''}"><b><span class="ct2">${y.nguon}</span> Yêu cầu mở khóa ${y.loai==='diem'?'điểm môn '+y.mon:'đánh giá rèn luyện'} — ${y.tt==='cho'?'chờ xử lý':y.tt==='daMo'?'ĐÃ MỞ KHÓA':'BỊ TỪ CHỐI'}</b><div class="mm">${y.boi} · ${y.ngay} · ${y.hs}: ${y.cu} → ${y.dk}${y.moBoi?' · mở bởi '+y.moBoi+' '+y.moNgay+(y.ks?' · '+y.ks:''):''}${y.ldTC?' · lý do từ chối: '+y.ldTC:''}</div></div>`).join('')}
+     ${L.kyChot?`<div class="tli g"><b><span class="ct2">M3.1</span> Ký chốt kết quả tổng kết lớp (Lớp × Kỳ)</b><div class="mm">${L.kyChot.by} · ${L.kyChot.at} · ${L.kyChot.m}</div></div>`:''}
+     <div class="tli"><b><span class="ct2">M3.1</span> Xuất PDF tổng kết lớp</b><div class="mm">30/05/2026 10:11 · Lê Thu Hằng (NS-0088) · mục đích: Lưu hồ sơ nội bộ</div></div>
+    </div>`,[['Đóng',null,'']]);return}
+}
+
+/* ================= Su kien ================= */
+document.body.addEventListener('click',e=>{
+ const rb=e.target.closest('[data-r]');
+ if(rb){role=rb.dataset.r;curLop=curHS=curDH=curWk=null;tab=ROLE[role].tabs[0];
+  q='';fTT='Tất cả';fDH='Tất cả';selL.clear();
+  document.querySelectorAll('.rb').forEach(x=>x.classList.remove('on'));rb.classList.add('on');render();return}
+ const gt=e.target.closest('[data-goto]');
+ if(gt){e.stopPropagation();tab=gt.dataset.goto;curLop=curHS=curDH=null;render();return}
+ const t1=e.target.closest('[data-t1]');
+ if(t1){tab=t1.dataset.t1;curHS=curDH=curWk=curLop=null;q='';fTT='Tất cả';fDH='Tất cả';$('#mask').classList.remove('on');render();return}
+ const kb=e.target.closest('[data-ky]');
+ if(kb){ky=kb.dataset.ky;$('#mask').classList.remove('on');render();return}
+ const go=e.target.closest('[data-go]');
+ if(go){e.stopPropagation();toast('Deep-link → /'+go.dataset.go+(go.dataset.go.includes('return')?'':'&return=M3.1'));return}
+ if(e.target.closest('#pclose')){curHS=curDH=curWk=null;render();return}
+ const x=e.target.closest('[data-x]');
+ if(x){e.stopPropagation();act(x.dataset.x,x.dataset);return}
+ const col=e.target.closest('[data-col]');
+ if(col){e.stopPropagation();toast('Cuộn tới cột '+col.dataset.col);return}
+ const wk=e.target.closest('[data-wk]');
+ if(wk){const v=viec(),w=v.find(z=>z.id===wk.dataset.wk); if(!w)return;
+  if(w.lop){curLop=w.lop;tab='lop'}
+  else if(w.bb){tab='danhhieu';setTimeout(()=>act('binhbau',{lop:w.bb}),0)}
+  else if(w.dh){tab='danhhieu'}
+  else if(w.ycxl){tab='lop'}
+  render();return}
+ const gl=e.target.closest('[data-glop]');
+ if(gl){const id=gl.dataset.glop;MOLOP[id]?delete MOLOP[id]:MOLOP[id]=1;render();return}
+ const dh=e.target.closest('[data-dh]');
+ if(dh){curDH=dh.dataset.dh;render();return}
+ const hs=e.target.closest('[data-hs]');
+ if(hs){curHS=hs.dataset.hs;render();return}
+ const lp=e.target.closest('[data-lop]');
+ if(lp){$('#mask').classList.remove('on');curLop=lp.dataset.lop;tab='lop';curWk=null;render();return}
+});
+document.body.addEventListener('change',e=>{
+ if(e.target.id==='hdt'||e.target.id==='nam'){curLop=curHS=curDH=null;render();return}
+ if(e.target.id==='ftt'){fTT=e.target.value;render();return}
+ if(e.target.id==='fdh'){fDH=e.target.value;curDH=null;render();return}
+ const ls=e.target.closest('[data-lsel]');
+ if(ls){const id=ls.dataset.lsel;selL.has(id)?selL.delete(id):selL.add(id);render();return}
+});
+document.body.addEventListener('input',e=>{
+ if(e.target.id==='q'){q=e.target.value;const pos=e.target.selectionStart;render();
+  const el=$('#q');if(el){el.focus();try{el.setSelectionRange(pos,pos)}catch(_){}}}
+});
+$('#mask').addEventListener('click',e=>{if(e.target.id==='mask')$('#mask').classList.remove('on')});
+render();
+</script>
+</body>
+</html>
