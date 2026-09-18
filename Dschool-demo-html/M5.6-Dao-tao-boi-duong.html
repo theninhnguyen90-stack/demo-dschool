@@ -393,7 +393,8 @@ addNS('Nguyễn Thị Yến','Tổ Sử — Địa — GDCD','II','');
 const nsBy=id=>NS.filter(n=>n.id===id)[0];
 const nsTen=t=>NS.filter(n=>n.ten===t)[0];
 const dauTo={};TO.forEach(function(t){const x=NS.filter(n=>n.to===t&&n.cv==='Tổ trưởng')[0];if(x)dauTo[t]=x.ten});
-/* nghi phep da duyet (M4.8) */
+/* don nghi CO HIEU LUC (M4.8) — YKNP 17/9/2026: doc coHieuLuc(don, ngay) theo ngay, khong doc 'da duyet'.
+   Demo chua mo hinh hoa ngay da rut. */
 /* M4.8 NGHI PHEP — don ngan ngay, dung cho DIEM DANH tung buoi (R3) */
 const NGHIPHEP=[{ten:'Ngô Văn Kiên',tu:D(17,4),den:D(19,4),ld:'Nghỉ phép việc riêng',don:'NP-2027-091'},
  {ten:'Trịnh Văn Sơn',tu:D(7,3),den:D(8,3),ld:'Nghỉ ốm',don:'NP-2027-066'}];
@@ -535,22 +536,22 @@ function soDaGhi(d){let c=0;dsDuThat(d).forEach(function(t){const n=nsTen(t);
 
 /* ===== VAI TRO ===== */
 const CAP={
- FULL:['xem','dot','taodot','duyetdk','ketqua','xuat','dangky'],
- GVBM:['xem','dot','xuat','dangky'],
- TTCM:['xem','dot','xuat','dangky'],
- TOCHUC:['xem','dot','ketqua','xuat','dangky'],
- TCNS:['xem','dot','taodot','duyetdk','ketqua','xuat'],
- PHT_CM:['xem','dot','taodot','duyetdk','ketqua','xuat','dangky'],
- HT:['xem','dot','duyetdk','xuat']};
+ FULL:['xem','dot','taodot','duyetdk','ketqua','xuat','dangky','minhchung'],
+ GVBM:['xem','dot','xuat','dangky','minhchung'],
+ TTCM:['xem','dot','xuat','dangky','minhchung'],
+ TOCHUC:['xem','dot','ketqua','xuat','dangky','minhchung'],
+ TCNS:['xem','dot','taodot','duyetdk','ketqua','xuat','minhchung'],
+ PHT_CM:['xem','dot','taodot','duyetdk','ketqua','xuat','dangky','minhchung'],
+ HT:['xem','dot','duyetdk','xuat','minhchung']};
 const ROLE={
  FULL:{n:'Đủ quyền — rà luồng nghiệp vụ',ava:'DQ',me:'Trần Thị Bích',sc:'Mọi thao tác',
   mchu:['M4.1','M4.3','M4.8','M5.5','M5.6']},
  GVBM:{n:'Nguyễn Văn An — Giáo viên bộ môn',ava:'NA',me:'Nguyễn Văn An',
   sc:'Own — kế hoạch và tiến độ của mình · đăng ký đợt',mchu:['M4.1','M5.5']},
  TTCM:{n:'Phan Thị Nhung — Tổ trưởng Tổ Sử — Địa — GDCD',ava:'PN',me:'Phan Thị Nhung',
-  sc:'Group — duyệt kế hoạch và theo dõi tổ mình',mchu:['M4.1','M4.3','M4.8','M5.5']},
+  sc:'Group — duyệt kế hoạch và theo dõi tổ mình',mchu:['M4.1','M4.3','M5.5']}, /* YKNP 17/9: TTCM roi M4.8 */
  TOCHUC:{n:'Hoàng Văn Nam — Người tổ chức đợt (chức danh phụ theo TỪNG ĐỢT)',ava:'HN',me:'Hoàng Văn Nam',
-  sc:'assigned — chỉ đợt được giao tổ chức',mchu:['M4.1','M4.8']},
+  sc:'assigned — chỉ đợt được giao tổ chức',mchu:['M4.1']}, /* YKNP 17/9: TCDT khong co X o M4.8 v2.0 */
  TCNS:{n:'Tổ chức — Nhân sự',ava:'NS',me:'Cán bộ TCNS',
   sc:'School — tạo đợt, duyệt đăng ký, ghi nhận chứng chỉ',mchu:['M4.1','M4.3','M4.8','M5.6']},
  PHT_CM:{n:'Phó Hiệu trưởng Chuyên môn',ava:'PC',me:'Phó HT Chuyên môn',
@@ -648,6 +649,23 @@ function render(){
 }
 
 /* ===== TAB 1 — DAO TAO CUA TOI ===== */
+
+/* ===== NOP MINH CHUNG CUA CHINH MINH (chot 7/9/2026 — M5.6 §6.1 · R12) =====
+   O `S` HEP tren dong Own: CHI ghi duoc vao muc "Tep dinh kem" cua ban ghi MANG TEN CHINH MINH.
+   KHONG cham: So tiet · Ket qua · Diem · Hinh thuc danh gia · Don vi danh gia.
+   KHONG xoa, KHONG thay tep da nop. Chan that o API — day chi la demo cua giao dien. */
+function mcMoDuoc(d){return ['Đã kết thúc','Đã ghi nhận kết quả'].indexOf(ttDot(d))>=0}
+function mcMo(id){const d=dotBy(id),n=meNS();
+ modal('📎 Nộp minh chứng — '+esc(d.ten),
+  '<div class="ro"><b>'+esc(n.ten)+'</b> · '+esc(d.ten)+' · '+d2s(d.tu)+'</div>'+
+  '<div class="okbox" style="margin-top:9px">✅ Bạn đang nộp vào <b>bản ghi kết quả của chính mình</b> — quyền <code>S</code> hẹp trên dòng <code>Own</code> '+
+  '<i>(M5.6 §6.1, bổ sung 7/9/2026)</i>.</div>'+
+  '<div class="warn" style="margin-top:9px">🛑 Ô này <b>chỉ thêm được TỆP</b>. Không sửa được <b>Số tiết · Kết quả · Điểm · Hình thức đánh giá · Đơn vị đánh giá</b> — '+
+  'đó là <b>kết luận của người đánh giá</b>. Cũng <b>không xóa, không thay</b> tệp đã nộp (R12).</div>'+
+  '<div class="sech">Chọn loại minh chứng</div>'+
+  '<div>'+LOAITEP.map(x=>'<button class="chp" data-x="mcNop" data-i="'+d.id+'" data-k="'+esc(x)+'">+ '+esc(x)+'</button>').join(' ')+'</div>'+
+  '<div class="ro" style="margin-top:10px">Ảnh chụp hoặc PDF. Mọi lượt xem và tải đều <b>ghi Audit Log</b> — dữ liệu cá nhân, Luật BVDLCN 91/2025.</div>',
+  '<button class="btn" data-x="close">Đóng</button>')}
 function tabToi(){
  const n=meNS();
  if(!n)return '<div class="empty" style="margin-top:14px"><b>Vai trò này không có trong danh sách nhân sự mẫu</b>'+
@@ -667,9 +685,15 @@ function tabToi(){
     '<div class="kx"><b>'+(dm&&dm.tiet!=null?dm.tiet:tietDat(d,n.ten))+'</b>/'+d.tiet+'</div>'+
     '<div class="kx">'+(d.noiBo?tl+'%':'—')+'</div>'+
     '<div>'+(dm&&dm.kq?'<span class="st2 '+KQ[dm.kq].c+'">'+KQ[dm.kq].t+'</span>':'<span class="st2 n">chưa ghi nhận</span>')+
-     (dm&&dm.tep&&dm.tep.length?'<div style="margin-top:2px;font-size:10.5px;color:var(--ink3)">📎 '+dm.tep.length+' tệp</div>':'')+'</div></div>'}).join('')
+     (dm&&dm.tep&&dm.tep.length?'<div style="margin-top:2px;font-size:10.5px;color:var(--ink3)">📎 '+dm.tep.length+' tệp</div>':'')+
+     (can('minhchung')&&mcMoDuoc(d)
+      ?'<div style="margin-top:4px"><button class="btn xs" data-x="mcMo" data-i="'+d.id+'">＋ Nộp minh chứng</button></div>'
+      :(dm&&dm.kq==='dat'&&!(dm.tep&&dm.tep.length)?'<div style="margin-top:4px;font-size:10.5px;color:var(--amber)">⚠ chưa có minh chứng</div>':''))+'</div></div>'}).join('')
    :'<div class="empty"><b>Chưa tham gia đợt nào trong năm học này</b></div>')+
-  '</div><div class="ro" style="margin-top:9px">📎 Kết quả và <b>tệp đính kèm</b> được <b>lưu vào hồ sơ nhân sự</b> '+
+  '</div><div class="okbox" style="margin-top:9px">✅ <b>Nộp minh chứng của chính mình</b> — quyền <code>S</code> hẹp trên dòng <code>Own</code>, bổ sung <b>7/9/2026</b> (§6.1 · <b>R12</b>). '+
+  'Giấy chứng nhận nhận được từ đơn vị tổ chức thì <b>chụp ảnh nộp ngay</b>, không phải chờ người tổ chức nhập hộ. '+
+  '🛑 Chỉ thêm <b>tệp</b>, vào <b>bản ghi mang tên chính mình</b>; không sửa kết quả/điểm/số tiết, không xóa tệp đã nộp.</div>'+
+  '<div class="ro" style="margin-top:9px">📎 Kết quả và <b>tệp đính kèm</b> được <b>lưu vào hồ sơ nhân sự</b> '+
   dlink('M4.1','M4.1','ho-so')+'. ⛔ Menu này <b>KHÔNG cấp chứng chỉ, KHÔNG cấp giấy</b> — chỉ ghi nhận và lưu trữ (R5).</div></div>';
 }
 
@@ -804,7 +828,7 @@ function manDiemDanh(){
   '<div style="flex:1"></div>'+
   '<button class="btn p sm" data-x="luuDD" data-i="'+d.id+'">Lưu kết quả</button></div>';
  if(d.noiBo)h+='<div class="ro" style="margin-top:11px">🏫 Đợt do <b>nhà trường tổ chức</b> ⇒ điểm danh từng buổi, '+
-  '<b>số tiết tính theo buổi CÓ MẶT</b> (R10). Người có đơn nghỉ đã duyệt ở M4.8 điền sẵn <b>Vắng có phép</b> (R7).</div>';
+  '<b>số tiết tính theo buổi CÓ MẶT</b> (R10). Người có đơn nghỉ có hiệu lực ở M4.8 vào ngày của buổi điền sẵn <b>Vắng có phép</b> (R3).</div>';
  else h+='<div class="ro" style="margin-top:11px">🏛 Đợt do <b>'+esc(d.donVi)+'</b> tổ chức ⇒ trường <b>không điểm danh</b>, '+
   'chỉ <b>ghi nhận</b> số tiết thực tế tham gia và kết quả do đơn vị tổ chức đánh giá, kèm giấy tờ.</div>';
  h+='<div class="listw" style="margin-top:11px">';
@@ -873,7 +897,7 @@ function dlgXuat(mine){XK=mine?1:3;
 function xuatKind(v){XK=v;
  Array.prototype.forEach.call(document.querySelectorAll('#xks .sgb'),function(b,i){b.classList.toggle('on',i===v-1)});
  $('#xmd').innerHTML=(v>1)
-  ?'<div class="warn" style="margin-top:11px">⚖ Loại này <b>gắn tên người với kết quả đào tạo</b> — dữ liệu cá nhân theo <b>NĐ 13/2023</b>. <b>Bắt buộc chọn mục đích xuất</b> (R14).</div>'+
+  ?'<div class="warn" style="margin-top:11px">⚖ Loại này <b>gắn tên người với kết quả đào tạo</b> — dữ liệu cá nhân theo <b>Luật BVDLCN 91/2025</b>. <b>Bắt buộc chọn mục đích xuất</b> (R14).</div>'+
    '<label class="lbl">Mục đích xuất <b style="color:var(--red)">*</b></label><select class="fs" id="mdich" style="width:100%">'+
    '<option value="">— Chọn mục đích —</option><option>Báo cáo Sở / Phòng GD</option><option>Hồ sơ xếp loại viên chức cuối năm</option>'+
    '<option>Hồ sơ thanh tra chuyên môn</option><option>Lưu hồ sơ nhân sự</option><option>Khác — ghi rõ</option></select>'
@@ -932,6 +956,15 @@ document.addEventListener('click',function(e){
    hutKQ(d);
    KQD[n.id][d.id]=KQD[n.id][d.id]||{tiet:null,kq:'chua',d:null,htdg:'',donVi:'',tep:[],gc:''};
    KQD[n.id][d.id].kq=v;render();break}
+  case 'mcMo':{const d=dotBy(id);
+   if(!mcMoDuoc(d)){toast('⚠ <b>Chưa có bản ghi kết quả</b> — đợt phải <b>Đã kết thúc</b> trở đi mới nộp được minh chứng');break}
+   mcMo(id);break}
+  case 'mcNop':{const d=dotBy(id),n=meNS();
+   if(!mcMoDuoc(d)){toast('⚠ Chưa có bản ghi kết quả');break}
+   KQD[n.id][d.id]=KQD[n.id][d.id]||{tiet:null,kq:'chua',d:null,htdg:'',donVi:'',tep:[],gc:''};
+   KQD[n.id][d.id].tep.push({ten:k.replace(/[ \/]/g,'-')+'-'+n.ten.split(' ').pop()+'-'+d.id+'.jpg',loai:k,tuToi:1});
+   closeModal();render();
+   toast('📎 Đã nộp <b>'+esc(k)+'</b> vào bản ghi của chính mình · audit ghi người nộp và thời điểm');break}
   case 'themTep':{const d=dotBy(id),p2=k.split('|'),ten=p2[0],loai=p2[1],n=nsTen(ten);
    hutKQ(d);
    KQD[n.id][d.id]=KQD[n.id][d.id]||{tiet:null,kq:'chua',d:null,htdg:'',donVi:'',tep:[],gc:''};
@@ -1006,7 +1039,7 @@ document.addEventListener('click',function(e){
   case 'xuat':case 'xuat1':dlgXuat(a==='xuat1'&&V.tab==='toi');break;
   case 'xk':XK=+k;xuatKind(XK);break;
   case 'doXuat':{
-   if(XK>1&&(!$('#mdich')||!$('#mdich').value)){toast('⚠ Bắt buộc chọn <b>mục đích</b> — dữ liệu cá nhân theo NĐ 13/2023 (R14)');break}
+   if(XK>1&&(!$('#mdich')||!$('#mdich').value)){toast('⚠ Bắt buộc chọn <b>mục đích</b> — dữ liệu cá nhân theo Luật BVDLCN 91/2025 (R14)');break}
    const T={1:'danh sách đợt đào tạo của chính mình',2:'hồ sơ một đợt đào tạo',3:'bảng tổng hợp đào tạo toàn trường'};
    closeModal();toast('⬇ Đã xuất <b>'+T[XK]+'</b> · ghi Audit Log'+(XK>1?', kèm mục đích':''));break}
  }

@@ -390,8 +390,8 @@ const CHISO={
  KQ_LOP_PHU_TRACH:{t:'Kết quả học tập lớp phụ trách',m:'M2.5',dv:'%',mo:'Tỉ lệ học sinh đạt yêu cầu ở môn mình dạy',nh:'Chất lượng giảng dạy'},
  CHAM_CONG_DU:{t:'Tỉ lệ ngày công đủ',m:'M4.9',dv:'%',mo:'Số ngày công đủ / tổng số ngày làm việc trong kỳ',nh:'Chuyên cần và kỷ luật lao động'},
  DI_MUON:{t:'Số lần đi muộn, về sớm',m:'M4.9',dv:'lần',mo:'Đếm từ dữ liệu chấm công — càng ít càng tốt',nguoc:true,nh:'Chuyên cần và kỷ luật lao động'},
- NGHI_KHONG_PHEP:{t:'Số ngày nghỉ KHÔNG phép',m:'M4.8',dv:'ngày',mo:'Ngày vắng mà không có đơn nghỉ được duyệt — càng ít càng tốt',nguoc:true,nh:'Chuyên cần và kỷ luật lao động'},
- NGHI_CO_PHEP:{t:'Số ngày nghỉ CÓ phép',m:'M4.8',dv:'ngày',mo:'Ngày nghỉ có đơn đã duyệt (ốm, thai sản, việc riêng…)',nguoc:true,canh:'nghi',nh:'Chuyên cần và kỷ luật lao động'},
+ NGHI_KHONG_PHEP:{t:'Số ngày nghỉ KHÔNG phép',m:'M4.9',dv:'ngày',mo:'Số ngày công "Vắng không phép" đã kết luận ở M4.9 (nửa ngày tính 0,5; ngày còn "Vắng chưa có đơn" chưa đóng thì chưa đếm) — càng ít càng tốt',nguoc:true,nh:'Chuyên cần và kỷ luật lao động'},
+ NGHI_CO_PHEP:{t:'Số ngày nghỉ CÓ phép',m:'M4.8',dv:'ngày',mo:'Ngày có hiệu lực của đơn nghỉ (ốm, thai sản, việc riêng…) — đọc theo từng ngày, ngày đã rút không tính',nguoc:true,canh:'nghi',nh:'Chuyên cần và kỷ luật lao động'},
  KHEN_THUONG:{t:'Số lần được khen thưởng trong năm',m:'M4.10',dv:'lần',mo:'Quyết định khen thưởng các cấp trong năm học',nh:'Thành tích và đóng góp'},
  KY_LUAT:{t:'Bị kỷ luật trong năm',m:'M4.10',dv:'lần',mo:'Quyết định kỷ luật còn trong thời hiệu — càng ít càng tốt',nguoc:true,nh:'Chuyên cần và kỷ luật lao động'},
  COI_CHAM_THI:{t:'Hoàn thành nhiệm vụ coi, chấm thi',m:'M2.8',dv:'%',mo:'Số buổi coi/chấm thi đã hoàn thành / số buổi được phân công',nh:'Thành tích và đóng góp'}};
@@ -402,7 +402,7 @@ const CANHBAO={
  dg:'⚠ <b>TT 15/2026 không quy định giáo viên phải dự giờ hay dạy thao giảng</b>, và đã bỏ sổ dự giờ khỏi hồ sơ bắt buộc. '+
   'Đưa số tiết dự giờ vào KPI nghĩa là <b>trường tự đặt ra một nghĩa vụ mà pháp luật không đặt</b>. Trường được quyền làm, '+
   'nhưng nên cân nhắc <b>trọng số thấp</b>, hoặc đặt là tiêu chí <b>khuyến khích cộng điểm</b> thay vì tiêu chí trừ điểm.',
- nghi:'⛔ <b>Nghỉ phép đã được duyệt là QUYỀN của người lao động</b> — nghỉ ốm, thai sản, nghỉ chế độ đều có căn cứ pháp luật. '+
+ nghi:'⛔ <b>Nghỉ có phép (đơn nghỉ có hiệu lực) là QUYỀN của người lao động</b> — nghỉ ốm, thai sản, nghỉ chế độ đều có căn cứ pháp luật. '+
   '<b>Trừ điểm KPI vì nghỉ có phép là trái pháp luật lao động</b>, và trực tiếp gây bất lợi cho lao động nữ nghỉ thai sản. '+
   'Nếu vẫn muốn dùng chỉ số này, chỉ nên dùng để <b>điều chỉnh mẫu số</b> (người nghỉ dài thì giảm chỉ tiêu tương ứng), '+
   '<b>KHÔNG dùng để trừ điểm</b>. Cân nhắc dùng <b>Số ngày nghỉ KHÔNG phép</b> thay thế.',
@@ -518,10 +518,10 @@ GV.forEach(function(g){MAY[g.id]={};
    /* Ba chuong trinh CT01/CT02/CT03 tinh RIENG, khong bu tru => lay MIN. Mau so theo dinh muc RIENG cua tung nguoi o M5.6 (R15). */
    BDTX_HOAN_THANH:{so:nghi?cl(base+j()+6):cl(base+j()+6),ct:nghi?'Định mức riêng 60 tiết (nghỉ ốm dài ngày — duyệt ở M5.6) · CT01 20/20 · CT02 20/20 · CT03 18/20 → lấy min = 90%':'Định mức 120 tiết · CT01 40/40 · CT02 38/40 · CT03 40/40 → lấy min (ba chương trình không bù trừ)'},
    KQ_LOP_PHU_TRACH:{so:cl(base+j()),ct:'Tỉ lệ học sinh đạt yêu cầu môn mình dạy'},
-   CHAM_CONG_DU:{so:nghi?68:cl(96+Math.round(rnd()*4)),ct:nghi?'Nghỉ ốm dài ngày — có đơn duyệt ở M4.8':'Ngày công đủ / ngày làm việc'},
+   CHAM_CONG_DU:{so:nghi?68:cl(96+Math.round(rnd()*4)),ct:nghi?'Nghỉ ốm dài ngày — có đơn nghỉ có hiệu lực ở M4.8':'Ngày công đủ / ngày làm việc'},
    DI_MUON:{so:tot?0:(yeu?4:1),ct:'Lần đi muộn hoặc về sớm (M4.9)'},
-   NGHI_KHONG_PHEP:{so:yeu?2:0,ct:'Ngày vắng không có đơn duyệt'},
-   NGHI_CO_PHEP:{so:nghi?22:(tot?0:2),ct:nghi?'Nghỉ ốm dài ngày có đơn duyệt':'Ngày nghỉ có đơn duyệt'},
+   NGHI_KHONG_PHEP:{so:yeu?2:0,ct:'Ngày công Vắng không phép đã kết luận (M4.9)'},
+   NGHI_CO_PHEP:{so:nghi?22:(tot?0:2),ct:nghi?'Nghỉ ốm dài ngày — ngày có hiệu lực của đơn nghỉ':'Ngày có hiệu lực của đơn nghỉ'},
    KHEN_THUONG:{so:tot?2:(yeu?0:1),ct:'Quyết định khen thưởng trong năm học'},
    KY_LUAT:{so:0,ct:'Không có quyết định kỷ luật còn thời hiệu'},
    COI_CHAM_THI:{so:cl(base+j()+8),ct:'Buổi coi/chấm thi đã hoàn thành / được phân công'}};
@@ -1048,7 +1048,7 @@ function dlgXuat(mine){XK=mine?1:2;
 function xuatKind(v){XK=v;
  Array.prototype.forEach.call(document.querySelectorAll('#xks .sgb'),function(b,i){b.classList.toggle('on',i===v-1)});
  $('#xmd').innerHTML=(v===2||v===3)
-  ?'<div class="warn" style="margin-top:11px">⚖ Bảng này <b>gắn tên giáo viên với điểm KPI</b> — dữ liệu cá nhân theo <b>NĐ 13/2023</b>. <b>Bắt buộc chọn mục đích xuất</b> (R12).</div>'+
+  ?'<div class="warn" style="margin-top:11px">⚖ Bảng này <b>gắn tên giáo viên với điểm KPI</b> — dữ liệu cá nhân theo <b>Luật BVDLCN 91/2025</b>. <b>Bắt buộc chọn mục đích xuất</b> (R12).</div>'+
    '<label class="lbl">Mục đích xuất <b style="color:var(--red)">*</b></label><select class="fs" id="mdich" style="width:100%">'+
    '<option value="">— Chọn mục đích —</option><option>Họp chuyên môn của trường</option><option>Hồ sơ xếp loại viên chức cuối năm</option>'+
    '<option>Báo cáo Sở / Phòng GD</option><option>Khác — ghi rõ</option></select>'
@@ -1213,7 +1213,7 @@ document.addEventListener('click',function(e){
   case 'xuat':case 'xuat1':dlgXuat(a==='xuat1'||role==='GVBM');break;
   case 'xk':XK=+k;xuatKind(XK);break;
   case 'doXuat':{
-   if((XK===2||XK===3)&&(!$('#mdich')||!$('#mdich').value)){toast('⚠ Bắt buộc chọn <b>mục đích</b> — dữ liệu cá nhân theo NĐ 13/2023 (R12)');break}
+   if((XK===2||XK===3)&&(!$('#mdich')||!$('#mdich').value)){toast('⚠ Bắt buộc chọn <b>mục đích</b> — dữ liệu cá nhân theo Luật BVDLCN 91/2025 (R12)');break}
    const T={1:'KPI của chính tôi',2:'bảng KPI theo giáo viên',3:'bảng KPI theo tổ chuyên môn',4:'cấu trúc bộ KPI'};
    closeModal();toast('⬇ Đã xuất <b>'+T[XK]+'</b> · ghi Audit Log'+((XK===2||XK===3)?', kèm mục đích':''));break}
  }

@@ -112,7 +112,8 @@ h1{font-size:17px;font-weight:700}
 .cb{width:21px;height:21px;border-radius:6px;border:1px solid var(--line2);background:#fff;display:grid;place-items:center;font-size:11px;color:var(--ink3)}
 .cb:hover{border-color:var(--brand)}
 .cb.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:700}
-.cb.lk{background:#fef2f2;border-color:#fecaca;color:#b91c1c;cursor:help}
+.qdw{font-size:9px;color:#d97706;vertical-align:super;font-weight:700}
+.cb.lk{background:#fffbeb;border-color:#fcd34d;color:#92400e}  /* 7/9/2026: o LECH quy dinh phap luat — canh bao, van bam duoc */
 .cb.ch{box-shadow:0 0 0 2px #fde68a}
 .mxsel{border:1px solid var(--line2);border-radius:6px;padding:3px 5px;font-size:11px;background:#fff;width:94px;margin:0 4px}
 .mxsel:disabled{background:#f8fafc;color:var(--ink3);cursor:not-allowed}
@@ -242,7 +243,7 @@ function modal(t,b,f){$('#mh').innerHTML=t;$('#mb').innerHTML=b;$('#mf').innerHT
 function dlink(m,l){return '<button class="rolnk" data-x="dl" data-m="'+m+'">↗ '+(l||m)+'</button>'}
 
 const NAV=[['NHÂN SỰ',[['M4.1','Hồ sơ nhân sự'],['M4.3','Chức danh & Điểm công tác'],['M4.5','Phân công giảng dạy']]],
- ['QUẢN TRỊ',[['M10.1','Hồ sơ năm học'],['M10.2','Cơ cấu tổ chức'],['M10.4','Chức danh & Phân quyền'],
+ ['QUẢN TRỊ',[['M10.1','Hồ sơ năm học'],['M10.2','Thông tin trường'],['M10.4','Chức danh & Phân quyền'],
  ['M10.5','Tài khoản & Bảo mật'],['M10.7','Nhật ký hệ thống'],['M10.8','Đồng bộ CSDL ngành']]]];
 
 /* ===== 7 QUYỀN ===== */
@@ -252,15 +253,47 @@ const Q7=[['x','X','Xem'],['t','T','Tạo'],['s','S','Sửa'],['xo','XO','Xóa']
 const NG=[['cn','🙋 Cá nhân'],['hs','👤 Học sinh'],['ht','📚 Học tập & Kết quả'],['ns','👨‍🏫 Nhân sự'],
  ['cm','🎓 Chuyên môn'],['dv','🍱 Dịch vụ'],['tc','💰 Tài chính'],['ll','💬 Liên lạc'],['qt','⚙️ Quản trị']];
 const ngTen=k=>(NG.filter(x=>x[0]===k)[0]||['','?'])[1];
+/* ↑ NG = 9 CỤM GIEO của `G` (ng:{…}) — không phải nhóm hiển thị. Nhóm hiển thị: NHOMSB. */
+/* ===== NHÓM MENU THEO SIDEBAR — cây ba tầng Nhóm → Menu → Tab (Đợt 1, 14/9/2026) =====
+   Bảng §2.1 PROMPT-DOT1-00-TONG-QUAN. Thứ tự menu trong nhóm = thứ tự trên sidebar index.html.
+   Nhóm lối tắt «Lớp tôi chủ nhiệm» KHÔNG có ở đây — lối tắt không sinh Feature (quyền là của M2.9/Tn). */
+const NHOMSB=[
+ ['dh','🏠 Trung tâm điều hành',['M0.1','M0.2','M0.3','M0.4','M0.5']],
+ ['hs','👥 Học sinh',['M1.1','M1.2','M1.3','M1.4','M1.5','M1.6','M1.7','M2.4','M2.10','M2.7','M1.11']],
+ ['gd','📚 Giảng dạy hằng ngày',['M2.1','M2.2','M2.3','M2.5','M2.9']],
+ ['kq','🎓 Kết quả & cuối năm',['M2.8','M3.1','M3.2','M3.3','M3.4']],
+ ['ns','👨‍🏫 Nhân sự',['M4.1','M4.2','M4.3','M4.8','M4.9','M4.10','M4.11','M6.18']],   /* M6.18 sang Nhân sự — PZ3 15/9/2026 (cột ng của m6.18.* GIỮ 'dv' — cụm gieo) */
+ ['cm','📖 Chuyên môn',['M4.4','M4.5','M4.6','M4.7','M5.1','M5.2','M5.3','M5.4','M5.5','M4.12','M5.6','M5.7']],
+ ['hl','🗃 Học liệu số hóa',['M12.1','M12.7','M12.2','M12.3','M12.5','M12.6','M12.4']],   /* nhóm mới — HL-Z 16/9/2026; thứ tự theo tần suất dùng (PHIEU-HL-Z mục A2) */
+ ['ol','🏆 Ôn luyện & bồi dưỡng',['M11.1','M11.2','M11.3','M11.4']],
+ ['vh','🏫 Vận hành & dịch vụ',['M6.1','M6.2','M6.6','M6.7','M6.8','M6.10','M6.19']],   /* M6.19 Quản lý thư viện — PZ4 15/9/2026 */
+ ['cs','🧰 Quản lý CSVC & thiết bị',['M6.4','M6.11','M6.5']],
+ ['vt','🗂 Văn thư & lưu trữ',['M6.9','M6.12']],
+ ['dd','🎖 Hoạt động Đoàn - Đội',['M6.15','M6.3','M6.13','M6.16','M6.14','M6.17']],
+ ['tc','💰 Tài chính',['M7.1','M7.2','M7.3','M7.4','M7.5','M7.6']],
+ ['gt','💬 Giao tiếp',['M8.1','M8.2','M8.3','M8.4','M8.5']],
+ ['bc','📊 Báo cáo & thống kê',['M9.1']],
+ ['qt','⚙️ Quản trị & cấu hình',['M10.1','M10.2','M10.4','M10.5','M10.6','M10.7','M10.8','M10.9','M10.10','M10.11']]];
+const MNHOM={},MTT={};NHOMSB.forEach(function(g){g[2].forEach(function(m,i){MNHOM[m]=g[0];MTT[m]=i})});
+const nhOf=m=>MNHOM[m]||'?';
+const nhTen=k=>(NHOMSB.filter(x=>x[0]===k)[0]||['','?'])[1];
+const theoTT=(a,b)=>(MTT[a]===undefined?99:MTT[a])-(MTT[b]===undefined?99:MTT[b]);
+
 
 /* ===== FEATURE CATALOG =====
    nc: mức nhạy cảm 1..4 · ks: nhóm ký số · fc: bộ lọc cấu hình được · sc: scope hợp lệ */
+/* ĐỢT 1 (PZ 14/9/2026) — gom 31 phiếu PHIEU-DOT1-*. Menu GIỮ MÃ khi đổi nhóm (Q1 A); Feature bị tách giữ mã, chỉ đổi cột
+   menu (vd m6.4.dieu_chuyen_giua_diem_truong nay ở M6.11). Cột 5 `ng` KHÔNG còn là nhóm hiển thị — chỉ còn là khóa gieo
+   theo cụm của `G`. Nhóm hiển thị (cây ba tầng) lấy từ MNHOM bên dưới = bảng §2.1 PROMPT-DOT1-00, không suy từ tiền tố mã.
+   Cột 6 `nc` của Feature mới: lấy từ phiếu nếu phiếu đề xuất (P3 · P8 · P10 · P12 · P9B · P14), còn lại PZ đặt theo dữ liệu tab chạm. */
 const F=[
  ['m0.1.bang_dieu_khien','Bảng điều khiển','M0.1','Bảng điều khiển','cn',1,'',0],
  ['m0.2.cho_toi_duyet','Chờ tôi duyệt','M0.2','Việc cần làm','cn',2,'',0],
  ['m0.2.viec_cua_toi','Việc của tôi','M0.2','Việc cần làm','cn',1,'',0],
  ['m0.3.thong_bao_cua_toi','Thông báo của tôi','M0.3','Thông báo của tôi','cn',1,'',0],
  ['m0.4.trang_ca_nhan_cua_toi','Trang cá nhân của tôi','M0.4','Trang cá nhân của tôi','cn',1,'',0],
+ ['m0.4.don_nghi_cua_toi','Đơn nghỉ phép của tôi','M0.4','Trang cá nhân của tôi','cn',3,'',1],   /* YKNP (3Z 17/9/2026): F6 của M0.4 v2.0 — thay m4.8.don_cua_toi (YK03-9 · YK03-10); nc 3 vì hồ sơ sức khỏe đính kèm; fc 1 (authored) */
+ ['m0.5.dot_uy_quyen','Đợt ủy quyền','M0.5','Ủy quyền','cn',3,'',0],
  ['m1.1.danh_sach_hoc_sinh','Danh sách học sinh','M1.1','Hồ sơ học sinh','hs',4,'Mã định danh CSDL ngành — bất biến, M10.8 không bao giờ ghi đè',1],
  ['m1.1.duyet_yeu_cau_cap_nhat','Duyệt yêu cầu cập nhật','M1.1','Hồ sơ học sinh','hs',3,'',1],
  ['m1.2.hoc_sinh_thuoc_dien','Học sinh thuộc diện','M1.2','Đối tượng ưu tiên & chính sách','hs',4,'Diện ưu tiên — đầu vào trực tiếp của miễn giảm M7.4',1],
@@ -273,12 +306,16 @@ const F=[
  ['m1.4.thong_ke','Thống kê','M1.4','Tuyển sinh đầu cấp','hs',4,'',0],
  ['m1.4.cho_toi_duyet','Chờ tôi duyệt','M1.4','Tuyển sinh đầu cấp','hs',4,'A',0],
  ['m1.5.chuyen_di','📤 Chuyển đi','M1.5','Chuyển trường','hs',4,'',0],
- ['m1.5.chi_hai_trang_thai_noi_bo',' — **chỉ hai trạng thái nội bộ**. ','M1.5','Chuyển trường','hs',4,'',0],
- ['m1.6.yeu_cau_bao_luu','📝 Yêu cầu bảo lưu','M1.6','Bảo lưu / Tái nhập học','hs',4,'',0],
- ['m1.6.hs_dang_bao_luu','👥 HS đang bảo lưu','M1.6','Bảo lưu / Tái nhập học','hs',4,'',0],
- ['m1.6.yeu_cau_tai_nhap','↩ Yêu cầu tái nhập','M1.6','Bảo lưu / Tái nhập học','hs',4,'',0],
+ ['m1.5.chuyen_den','📥 Chuyển đến','M1.5','Chuyển trường','hs',4,'',0],
+ ['m1.6.yeu_cau_bao_luu','📝 Yêu cầu bảo lưu','M1.6','Bảo lưu / Tái nhập / Thôi học','hs',4,'',0],
+ ['m1.6.hs_dang_bao_luu','👥 HS đang bảo lưu','M1.6','Bảo lưu / Tái nhập / Thôi học','hs',4,'',0],
+ ['m1.6.yeu_cau_tai_nhap','↩ Yêu cầu tái nhập','M1.6','Bảo lưu / Tái nhập / Thôi học','hs',4,'',0],
+ ['m1.6.thoi_hoc','✕ Thôi học','M1.6','Bảo lưu / Tái nhập / Thôi học','hs',4,'Quyết định thôi học — căn cứ pháp lý; loại Có đơn / Bỏ học suy ra, nguồn của HS.12',0],
  ['m1.7.yeu_cau_chuyen_lop','🔄 Yêu cầu chuyển lớp','M1.7','Chuyển lớp','hs',4,'',0],
  ['m1.7.lich_su_chuyen_lop','🕘 Lịch sử chuyển lớp','M1.7','Chuyển lớp','hs',4,'',0],
+ ['m1.11.dot_xet','Đợt xét học bổng','M1.11','Xét duyệt học bổng','hs',4,'A',1],
+ ['m1.11.hoc_sinh_nhan','Học sinh nhận học bổng','M1.11','Xét duyệt học bổng','hs',3,'',1],
+ ['m1.11.hang_muc','Hạng mục & tiêu chí','M1.11','Xét duyệt học bổng','hs',3,'',0],
  ['m2.1.lich_day_cua_toi','Lịch dạy của tôi','M2.1','Lịch dạy & học','ht',2,'',1],
  ['m2.1.lich_toan_canh','Lịch toàn cảnh','M2.1','Lịch dạy & học','ht',2,'',1],
  ['m2.2.ghi_so_tiet_cua_toi','Ghi sổ tiết của tôi','M2.2','Sổ đầu bài','ht',2,'',1],
@@ -287,27 +324,40 @@ const F=[
  ['m2.2.cau_hinh','⚙ Cấu hình','M2.2','Sổ đầu bài','ht',2,'',1],
  ['m2.3.bai_toi_da_giao','Bài tôi đã giao','M2.3','Bài tập về nhà','ht',1,'',0],
  ['m2.3.cho_toi_cham','Chờ tôi chấm','M2.3','Bài tập về nhà','ht',2,'',0],
+ ['m2.3.theo_doi_nop_bai','Theo dõi tình hình nộp bài','M2.3','Bài tập về nhà','ht',2,'',1],
+ ['m2.3.chinh_sach_btvn','⚙ Chính sách BTVN','M2.3','Bài tập về nhà','ht',2,'',0],
  ['m2.4.hs_xin_nghi_ngan_ngay_n','HS xin nghỉ ngắn ngày (≤ N)','M2.4','Đơn xin nghỉ của HS','ht',2,'',1],
  ['m2.4.hs_xin_nghi_dai_ngay_n','HS xin nghỉ dài ngày (> N)','M2.4','Đơn xin nghỉ của HS','ht',2,'',1],
  ['m2.4.tong_hop_don_nghi','Tổng hợp đơn nghỉ','M2.4','Đơn xin nghỉ của HS','ht',2,'',1],
  ['m2.4.cau_hinh','⚙ Cấu hình','M2.4','Đơn xin nghỉ của HS','ht',2,'',1],
- ['m2.5.bang_diem_mon','Bảng điểm môn','M2.5','Bảng điểm môn học','ht',4,'Sửa điểm đã chốt — 4 mắt, bắt buộc lý do, audit riêng',1],
- ['m2.5.luot_kiem_tra_thuong_xuyen','Lượt kiểm tra thường xuyên','M2.5','Bảng điểm môn học','ht',3,'',1],
- ['m2.7.khen_thuong','Khen thưởng','M2.7','Khen thưởng & Kỷ luật học sinh','ht',3,'',1],
- ['m2.7.ky_luat','Kỷ luật','M2.7','Khen thưởng & Kỷ luật học sinh','ht',4,'Kỷ luật học sinh — hồ sơ theo em suốt cấp học, HT ký quyết định',1],
- ['m2.7.thong_ke','Thống kê','M2.7','Khen thưởng & Kỷ luật học sinh','ht',2,'',1],
- ['m2.7.danh_muc','⚙ Danh mục','M2.7','Khen thưởng & Kỷ luật học sinh','ht',3,'',0],
+ ['m2.5.bang_diem_mon','Bảng điểm môn','M2.5','Bảng điểm môn học','ht',4,'Sửa điểm đã chốt — 4 mắt, bắt buộc lý do, audit riêng',1],  /* M2.5 v3.2 (PZ3 15/9/2026): tab Lượt gộp vào — bỏ m2.5.luot_kiem_tra_thuong_xuyen */
+ ['m2.7.khen_thuong','Khen thưởng','M2.10','Khen thưởng học sinh','ht',3,'',1],
+ ['m2.7.ky_luat','Kỷ luật','M2.7','Kỷ luật học sinh','ht',4,'Kỷ luật học sinh — hồ sơ theo em suốt cấp học, HT ký quyết định',1],
+ ['m2.7.thong_ke','Thống kê','M2.10','Khen thưởng học sinh','ht',2,'',1],
+ ['m2.7.danh_muc','⚙ Danh mục','M2.7','Kỷ luật học sinh','ht',3,'',0],
+ ['m2.10.danh_muc','⚙ Danh mục','M2.10','Khen thưởng học sinh','ht',2,'',0],
  ['m2.8.ky_thi','Kỳ thi','M2.8','Kỳ thi định kỳ','ht',3,'',1],
  ['m2.8.viec_cua_toi','Việc của tôi','M2.8','Kỳ thi định kỳ','ht',1,'',0],
  ['m2.8.mau_huong_dan','Mẫu & hướng dẫn','M2.8','Kỳ thi định kỳ','ht',2,'',0],
- ['m2.9.tab_1','Tab 1','M2.9','Không gian lớp học','ht',2,'',1],
- ['m2.9.tab_2','Tab 2','M2.9','Không gian lớp học','ht',2,'',1],
- ['m2.9.tab_3','Tab 3','M2.9','Không gian lớp học','ht',2,'',1],
- ['m2.9.tab_4','Tab 4','M2.9','Không gian lớp học','ht',2,'',1],
- ['m2.9.tab_5','Tab 5','M2.9','Không gian lớp học','ht',2,'',1],
- ['m2.9.tab_6','Tab 6','M2.9','Không gian lớp học','ht',2,'',1],
- ['m2.9.tab_7','Tab 7','M2.9','Không gian lớp học','ht',2,'',1],
- ['m2.9.tab_8','Tab 8','M2.9','Không gian lớp học','ht',2,'',1],
+ /* M2.9 — 9 tab theo `M2.9-Khong-gian-lop-hoc.md` §2. Sửa 13/9/2026: tám dòng trước ghi
+    `m2.9.tab_1…8` / "Tab 1…8" — tên rác do bộ trích rút bám vào tiêu đề markdown — và THIẾU T9
+    (bổ sung ở tài liệu 9/9). ✅ Đợt 1 (P7 · P7B): demo có T9, thêm ⚙ Cấu hình (tầng 1) và ✅ Nội dung chờ duyệt. `nc` của tám dòng
+    cũ GIỮ NGUYÊN, chưa rà lại.
+    ⚠ Cột 7 là `ks` — NHÓM KÝ SỐ ('' | 'A' | 'B'), KHÔNG phải ghi chú: chuỗi bất kỳ ở đây làm
+    `canDuyet()` bật quyền Duyệt và hiện nhãn "Ký số nhóm …". Ghi chú để ở comment này:
+      T1 · T3 · T4 · T5 · T8 là BẢN CHIẾU chỉ đọc — menu chủ M1.1 · M2.2 · M2.3 · M2.5+M2.8 · M2.7.
+      T9 Họp phụ huynh — mọi lượt xem phản hồi và xuất ghi audit; chỉ GVCN tạo lượt mời. */
+ ['m2.9.hs_cua_lop','Học sinh của lớp','M2.9','Danh sách lớp học','ht',2,'',1],
+ ['m2.9.diem_danh','Điểm danh','M2.9','Danh sách lớp học','ht',2,'',1],
+ ['m2.9.so_dau_bai','Sổ đầu bài','M2.9','Danh sách lớp học','ht',2,'',1],
+ ['m2.9.bai_tap_ve_nha','Bài tập về nhà','M2.9','Danh sách lớp học','ht',2,'',1],
+ ['m2.9.bang_diem_lop','Bảng điểm lớp','M2.9','Danh sách lớp học','ht',2,'',1],
+ ['m2.9.bao_cao_tuan','Báo cáo học tập tuần','M2.9','Danh sách lớp học','ht',2,'',1],
+ ['m2.9.tong_ket_ky_hoc_ba','Tổng kết & Ký học bạ','M2.9','Danh sách lớp học','ht',2,'',1],
+ ['m2.9.khen_thuong_ky_luat','Khen thưởng & Kỷ luật','M2.9','Danh sách lớp học','ht',2,'',1],
+ ['m2.9.hop_phu_huynh','Họp phụ huynh','M2.9','Danh sách lớp học','ht',3,'',1],
+ ['m2.9.cho_duyet','✅ Nội dung chờ duyệt','M2.9','Danh sách lớp học','ht',3,'A',0],
+ ['m2.9.cau_hinh','⚙ Cấu hình','M2.9','Danh sách lớp học','ht',2,'',0],
  ['m3.1.chot_tong_ket_theo_lop','Chốt tổng kết theo lớp','M3.1','Tổng kết và xếp loại','ht',2,'B',0],
  ['m3.1.xet_danh_hieu_khen_thuong','Xét danh hiệu khen thưởng','M3.1','Tổng kết và xếp loại','ht',2,'A',0],
  ['m3.1.cho_toi_duyet','Chờ tôi duyệt','M3.1','Tổng kết và xếp loại','ht',2,'A',0],
@@ -319,7 +369,7 @@ const F=[
  ['m3.4.xet_tot_nghiep_thcs','Xét tốt nghiệp THCS','M3.4','Xét duyệt tốt nghiệp','ht',4,'B',0],
  ['m3.4.xet_dieu_kien_thi_tot_nghi','Xét điều kiện thi tốt nghiệp THPT','M3.4','Xét duyệt tốt nghiệp','ht',4,'B',0],
  ['m3.4.ket_qua_thi_tot_nghiep_thp','Kết quả thi tốt nghiệp THPT','M3.4','Xét duyệt tốt nghiệp','ht',4,'B',0],
- ['m4.1.danh_sach_nhan_su','Danh sách nhân sự','M4.1','Hồ sơ nhân sự','ns',4,'Hồ sơ nhân sự — dữ liệu cá nhân, NĐ 13/2023',1],
+ ['m4.1.danh_sach_nhan_su','Danh sách nhân sự','M4.1','Hồ sơ nhân sự','ns',4,'Hồ sơ nhân sự — dữ liệu cá nhân, Luật BVDLCN 91/2025',1],
  ['m4.1.duyet_yeu_cau_cap_nhat','Duyệt yêu cầu cập nhật','M4.1','Hồ sơ nhân sự','ns',3,'',1],
  ['m4.1.duyet_hop_dong_lao_dong','Duyệt hợp đồng lao động','M4.1','Hồ sơ nhân sự','ns',4,'Hợp đồng lao động — HT ký, Nhóm A',1],
  ['m4.1.ho_so_can_hoan_thien','Hồ sơ cần hoàn thiện','M4.1','Hồ sơ nhân sự','ns',2,'',1],
@@ -345,46 +395,59 @@ const F=[
  ['m4.5.nhat_ky_dieu_chinh','Nhật ký điều chỉnh','M4.5','Phân công giảng dạy','ns',2,'Chỉ đọc',1],
  ['m4.6.tkb_dang_ap_dung','TKB đang áp dụng','M4.6','Thời khóa biểu','ns',3,'',1],
  ['m4.6.quan_ly_tkb','Quản lý TKB','M4.6','Thời khóa biểu','ns',3,'',1],
- ['m4.6.ngay_tiet','Ngày × Tiết','M4.6','Thời khóa biểu','ns',3,'',1],
+ ['m4.6.khung_tiet_rang_buoc','Khung tiết và ràng buộc','M4.6','Thời khóa biểu','ns',3,'',1],
  ['m4.7.lich_giang_day','Lịch giảng dạy','M4.7','Lịch giảng dạy & Dạy thay','ns',3,'',1],
  ['m4.7.viec_can_xu_ly','Việc cần xử lý','M4.7','Lịch giảng dạy & Dạy thay','ns',3,'',1],
+ ['m4.7.giao_vien_vang','Giáo viên vắng','M4.7','Lịch giảng dạy & Dạy thay','ns',3,'',1],   /* YKNP (3Z 17/9/2026): tab T4 của M4.7 v2.0 — đứng ngay sau Việc cần xử lý (NP-5) */
  ['m4.7.lich_nghi','Lịch nghỉ','M4.7','Lịch giảng dạy & Dạy thay','ns',3,'',1],
- ['m4.8.don_cua_toi','Đơn của tôi','M4.8','Nghỉ phép','ns',3,'',1],
- ['m4.8.nghi_phep_nam','Nghỉ phép năm','M4.8','Nghỉ phép','ns',3,'',1],
- ['m4.8.tab_3','Tab 3','M4.8','Nghỉ phép','ns',3,'',1],
- ['m4.8.tab_4','Tab 4','M4.8','Nghỉ phép','ns',3,'',1],
+ /* 13/9/2026 — sáu menu M4.8 · M4.9 · M4.12 · M5.3 · M5.4 · M5.5 DỰNG LẠI từ nhãn tab đọc trên DOM
+    demo (vai Đủ quyền) và đối chiếu bảng tab trong tài liệu từng menu. Bản trước có 13/22 dòng rác
+    do bộ trích rút bám vào markdown: "Tab 3/4" · "người × ngày" (đơn vị dòng) · ")* · " ·
+    " *(**mọi viên chức**, Scope " · "Group" · "School" (tên scope) · "Nghỉ phép năm" · "Đánh giá" ·
+    "Đột xuất" · "Bộ → Nhóm → Tiêu chí" (không phải tab). Số dòng mỗi menu KHÔNG đổi (4·4·5·3·3·3).
+    Cột ký số đặt theo tài liệu: M4.8 §10 · M4.9 §6.2 · M4.12 §0 — Nhóm B; M5.4 F4 ký biên bản —
+    Ký số Option = Nhóm A; M5.3 điểm #7 — không ký số.
+    Cùng đợt, rà tên tab của cả 71 menu so với DOM, sửa thêm 8 dòng rác ngoài sáu menu trên:
+    M1.5 (→ Chuyển đến) · M4.10 ×2 (→ Kỷ luật — Nhóm B theo M4.10 §2.6; ⚙ Cấu hình) ·
+    M5.1 (→ Tiến độ theo tuần) · M8.1 ×2 (→ Thông báo của tôi; Mẫu thông báo) ·
+    M8.3 ×2 (→ Khóa chat; ⚙ Quy tắc chat); và đổi tên M4.6 "Ngày × Tiết" → "Khung tiết và ràng buộc". */
+ /* YKNP (3Z 17/9/2026): ĐÃ GỠ ['m4.8.don_cua_toi','Đơn của tôi','M4.8',…] — «Đơn của tôi» về M0.4 (m0.4.don_nghi_cua_toi). Giữ mã cũ thì GQ cấp quyền theo menu ⇒ sidebar hiện M4.8 cho mọi người ⇒ lỗi N4 */
+ ['m4.8.cho_toi_duyet','Đơn nghỉ cần xử lý','M4.8','Nghỉ phép','ns',3,'B',1],   /* YKNP: mã giữ, chỉ đổi nhãn — lệch nghĩa có chủ ý (bản chốt §7 điểm 8) */
+ ['m4.8.tong_hop_don_nghi','Tổng hợp đơn nghỉ','M4.8','Nghỉ phép','ns',3,'',1],
+ ['m4.8.cau_hinh','⚙ Loại nghỉ','M4.8','Nghỉ phép','ns',3,'',1],
  ['m4.9.cham_cong_cua_toi','Chấm công của tôi','M4.9','Chấm công nhân sự','ns',3,'',0],
- ['m4.9.bang_cong_thang','Bảng công tháng','M4.9','Chấm công nhân sự','ns',3,'',0],
- ['m4.9.nguoi_ngay','người × ngày','M4.9','Chấm công nhân sự','ns',3,'',0],
+ ['m4.9.bang_cong_thang','Bảng công tháng','M4.9','Chấm công nhân sự','ns',3,'B',0],
+ ['m4.9.cham_cong_tiet_day','Chấm công tiết dạy','M4.9','Chấm công nhân sự','ns',4,'',0],   /* YK-01 (YK01-Z2 17/9/2026): tab 3 của M4.9 v2.0 — nc 4 vì panel mở ảnh nhận diện (sinh trắc); fc 0 như ba tab chấm công khác */
  ['m4.9.viec_can_xu_ly','Việc cần xử lý','M4.9','Chấm công nhân sự','ns',3,'',0],
+ ['m4.9.cau_hinh','⚙ Cấu hình chấm công','M4.9','Chấm công nhân sự','ns',3,'',0],
  ['m4.10.khen_thuong_cho_duyet','Khen thưởng chờ duyệt','M4.10','Khen thưởng & Kỷ luật nhân sự','ns',4,'A',0],
  ['m4.10.khen_thuong','Khen thưởng','M4.10','Khen thưởng & Kỷ luật nhân sự','ns',4,'',0],
- ['m4.10.theo_quyet_dinh','Theo quyết định','M4.10','Khen thưởng & Kỷ luật nhân sự','ns',4,'B',0],
- ['m4.10.theo_nhan_su','Theo nhân sự','M4.10','Khen thưởng & Kỷ luật nhân sự','ns',4,'',0],
+ ['m4.10.ky_luat','Kỷ luật','M4.10','Khen thưởng & Kỷ luật nhân sự','ns',4,'B',0],
+ ['m4.10.cau_hinh','⚙ Cấu hình','M4.10','Khen thưởng & Kỷ luật nhân sự','ns',4,'',0],
  ['m4.11.so_dang_ky_chung_thu','Sổ đăng ký chứng thư','M4.11','Chứng thư số','ns',4,'Chứng thư số — hết hạn thì chặn mọi luồng ký Nhóm A/B',1],
  ['m4.11.van_ban_chua_ky','Văn bản chưa ký','M4.11','Chứng thư số','ns',3,'',1],
  ['m4.11.nhat_ky_ky_so','Nhật ký ký số','M4.11','Chứng thư số','ns',4,'Audit ký số — MỨC ③ BẢO VỆ CAO ở M10.7, chỉ đọc',1],
  ['m4.11.uy_quyen_chung_thu_to_chuc','Ủy quyền chứng thư tổ chức','M4.11','Chứng thư số','ns',4,'Ủy quyền CTS tổ chức — chỉ HT cấp được',0],
- ['m4.12.dot_xep_loai','Đợt xếp loại','M4.12','Xếp loại chất lượng viên chức','ns',3,'',0],
- ['m4.12.chinh',')* · ','M4.12','Xếp loại chất lượng viên chức','ns',3,'',0],
- ['m4.12.moi_vien_chuc_scope',' *(**mọi viên chức**, Scope ','M4.12','Xếp loại chất lượng viên chức','ns',3,'',0],
- ['m4.12.nhan_xet_cua_toi','Nhận xét của tôi','M4.12','Xếp loại chất lượng viên chức','ns',3,'A',0],
- ['m4.12.group','Group','M4.12','Xếp loại chất lượng viên chức','ns',3,'',0],
- ['m5.1.bai_hoc_so_tiet_yeu_cau_ca','Bài học · Số tiết · **Yêu cầu cần đạt**','M5.1','Kế hoạch giảng dạy','cm',2,'',1],
+ ['m4.12.dot_xep_loai','Đợt xếp loại','M4.12','Xếp loại chất lượng viên chức','ns',3,'B',0],
+ ['m4.12.theo_doi_dinh_ky','Theo dõi định kỳ','M4.12','Xếp loại chất lượng viên chức','ns',3,'',0],
+ ['m4.12.phieu_cua_toi','Phiếu của tôi','M4.12','Xếp loại chất lượng viên chức','ns',3,'',0],
+ ['m4.12.nhan_xet_cua_toi','Nhận xét của tôi','M4.12','Xếp loại chất lượng viên chức','ns',3,'',0],
+ ['m4.12.bo_tieu_chi','⚙ Bộ tiêu chí','M4.12','Xếp loại chất lượng viên chức','ns',3,'',0],
  ['m5.1.ke_hoach_giang_day','Kế hoạch giảng dạy','M5.1','Kế hoạch giảng dạy','cm',2,'',1],
  ['m5.1.ra_soat_lop_thieu_ke_hoach','Rà soát lớp thiếu kế hoạch','M5.1','Kế hoạch giảng dạy','cm',2,'',1],
+ ['m5.1.tien_do_theo_tuan','Tiến độ theo tuần','M5.1','Kế hoạch giảng dạy','cm',2,'',1],
  ['m5.2.giao_an_cua_toi','Giáo án của tôi','M5.2','Giáo án','cm',2,'',1],
  ['m5.2.theo_doi_giao_an_to','Theo dõi giáo án của tổ','M5.2','Giáo án','cm',2,'',1],
  ['m5.2.kho_giao_an_mau','Kho giáo án mẫu','M5.2','Giáo án','cm',2,'',0],
- ['m5.3.danh_gia','Đánh giá','M5.3','Dự giờ','cm',2,'',1],
- ['m5.3.school','School','M5.3','Dự giờ','cm',2,'',1],
  ['m5.3.lich_du_gio','Lịch dự giờ','M5.3','Dự giờ','cm',2,'',1],
- ['m5.4.dot_xuat','Đột xuất','M5.4','Sinh hoạt chuyên môn','cm',2,'',0],
- ['m5.4.so_ghi_chep_cua_to','Sổ ghi chép của tổ','M5.4','Sinh hoạt chuyên môn','cm',2,'',0],
- ['m5.4.tab_3','Tab 3','M5.4','Sinh hoạt chuyên môn','cm',2,'',0],
- ['m5.5.bo_nhom_tieu_chi','Bộ → Nhóm → Tiêu chí','M5.5','Bộ KPI giáo viên','cm',2,'',0],
+ ['m5.3.viec_cua_toi','Việc của tôi','M5.3','Dự giờ','cm',2,'',1],
+ ['m5.3.thong_ke_du_gio','Thống kê dự giờ','M5.3','Dự giờ','cm',2,'',1],
+ ['m5.4.so_ghi_chep_cua_to','Sổ ghi chép của tổ','M5.4','Sinh hoạt chuyên môn','cm',2,'A',0],
+ ['m5.4.nghien_cuu_bai_hoc','Nghiên cứu bài học','M5.4','Sinh hoạt chuyên môn','cm',2,'',0],
+ ['m5.4.viec_cua_toi','Việc của tôi','M5.4','Sinh hoạt chuyên môn','cm',2,'',0],
  ['m5.5.bo_kpi_cua_truong','Bộ KPI của trường','M5.5','Bộ KPI giáo viên','cm',2,'',0],
- ['m5.5.tab_3','Tab 3','M5.5','Bộ KPI giáo viên','cm',2,'',0],
+ ['m5.5.ket_qua_giao_vien','Kết quả giáo viên','M5.5','Bộ KPI giáo viên','cm',2,'',0],
+ ['m5.5.theo_doi_theo_ky','Theo dõi theo kỳ','M5.5','Bộ KPI giáo viên','cm',2,'',0],
  ['m5.6.dao_tao_cua_toi','Đào tạo của tôi','M5.6','Đào tạo, bồi dưỡng','cm',1,'',0],
  ['m5.6.dot_dao_tao','Đợt đào tạo','M5.6','Đào tạo, bồi dưỡng','cm',2,'',1],
  ['m5.6.cho_toi_xu_ly','Chờ tôi xử lý','M5.6','Đào tạo, bồi dưỡng','cm',2,'',0],
@@ -392,6 +455,26 @@ const F=[
  ['m5.7.dot_bdtx','Đợt BDTX','M5.7','Bồi dưỡng thường xuyên (BDTX)','cm',2,'',1],
  ['m5.7.theo_doi_bdtx','Theo dõi BDTX','M5.7','Bồi dưỡng thường xuyên (BDTX)','cm',3,'Kết quả BDTX vào đánh giá chuẩn nghề nghiệp',1],
  ['m5.7.cho_toi_xu_ly','Chờ tôi xử lý','M5.7','Bồi dưỡng thường xuyên (BDTX)','cm',2,'',0],
+ ['m11.1.lop_on_luyen','Lớp ôn luyện','M11.1','Ôn luyện thi tốt nghiệp','ht',3,'',1],
+ ['m11.1.dang_ky_mon_on','Đăng ký môn ôn','M11.1','Ôn luyện thi tốt nghiệp','ht',3,'',1],
+ ['m11.1.chia_lop','Chia lớp theo môn','M11.1','Ôn luyện thi tốt nghiệp','ht',2,'',1],
+ ['m11.1.xep_lich','Xếp lịch buổi học','M11.1','Ôn luyện thi tốt nghiệp','ht',2,'',1],
+ ['m11.1.bao_cao','Báo cáo kết quả','M11.1','Ôn luyện thi tốt nghiệp','ht',3,'',1],
+ ['m11.1.cau_hinh','⚙ Cấu hình','M11.1','Ôn luyện thi tốt nghiệp','ht',2,'',0],
+ ['m11.2.lop_boi_duong','Lớp bồi dưỡng','M11.2','Bồi dưỡng HSG','ht',3,'',1],
+ ['m11.2.thi_dau_vao','Thi đầu vào','M11.2','Bồi dưỡng HSG','ht',3,'',1],
+ ['m11.2.xep_lich','Xếp lịch buổi học','M11.2','Bồi dưỡng HSG','ht',2,'',1],
+ ['m11.2.bao_cao','Báo cáo kết quả','M11.2','Bồi dưỡng HSG','ht',3,'',1],
+ ['m11.2.cau_hinh','⚙ Cấu hình','M11.2','Bồi dưỡng HSG','ht',2,'',0],
+ ['m11.3.lop_dao_tao','Lớp đào tạo','M11.3','Đào tạo HSG tỉnh','ht',3,'',1],
+ ['m11.3.khai_bao_tv','Khai báo thành viên tham gia','M11.3','Đào tạo HSG tỉnh','ht',4,'',1],
+ ['m11.3.xep_lich','Xếp lịch buổi học','M11.3','Đào tạo HSG tỉnh','ht',2,'',1],
+ ['m11.3.bao_cao','Báo cáo kết quả','M11.3','Đào tạo HSG tỉnh','ht',3,'',1],
+ ['m11.3.cau_hinh','⚙ Cấu hình','M11.3','Đào tạo HSG tỉnh','ht',2,'',0],
+ ['m11.4.doi_tuyen','Đội tuyển dự thi','M11.4','Kết quả thi HSG','ht',3,'B',1],
+ ['m11.4.thanh_tich','Ghi nhận thành tích','M11.4','Kết quả thi HSG','ht',3,'',1],
+ ['m11.4.thong_ke','Thống kê thành tích','M11.4','Kết quả thi HSG','ht',2,'',1],
+ ['m11.4.cau_hinh','⚙ Cấu hình','M11.4','Kết quả thi HSG','ht',2,'',0],
  ['m6.1.cho_toi_duyet','Chờ tôi duyệt','M6.1','Bán trú','dv',2,'',1],
  ['m6.1.dang_ky_ban_tru','Đăng ký bán trú','M6.1','Bán trú','dv',2,'',1],
  ['m6.1.thuc_don_bua_an','Thực đơn & bữa ăn','M6.1','Bán trú','dv',2,'',0],
@@ -403,27 +486,29 @@ const F=[
  ['m6.2.diem_danh_hom_nay','Điểm danh hôm nay','M6.2','Học ngoại khóa','dv',2,'',1],
  ['m6.2.tong_ket_bao_cao','Tổng kết & báo cáo','M6.2','Học ngoại khóa','dv',2,'',0],
  ['m6.2.cau_hinh','⚙ Cấu hình','M6.2','Học ngoại khóa','dv',3,'',0],
- ['m6.3.cham_sao_do','Chấm sao đỏ','M6.3','Hoạt động Đoàn - Đội','dv',2,'',1],
- ['m6.3.xep_hang_thi_dua','Xếp hạng thi đua','M6.3','Hoạt động Đoàn - Đội','dv',2,'',0],
- ['m6.3.dang_ky_ung_vien','Đăng ký ứng viên','M6.3','Hoạt động Đoàn - Đội','dv',2,'',1],
- ['m6.3.xet_duyet_ket_nap','Xét duyệt & kết nạp','M6.3','Hoạt động Đoàn - Đội','dv',3,'',1],
- ['m6.3.doan_vien_doi_vien','Đoàn viên — Đội viên','M6.3','Hoạt động Đoàn - Đội','dv',2,'',1],
- ['m6.3.phong_trao_hinh_anh','Phong trào & hình ảnh','M6.3','Hoạt động Đoàn - Đội','dv',2,'',0],
- ['m6.3.cau_hinh','⚙ Cấu hình','M6.3','Hoạt động Đoàn - Đội','dv',3,'',0],
- ['m6.4.phong_thiet_bi_theo_phong','Phòng & thiết bị theo phòng','M6.4','Danh mục & Kiểm kê CSVC','dv',2,'',1],
- ['m6.4.tai_san_thiet_bi','Tài sản & thiết bị','M6.4','Danh mục & Kiểm kê CSVC','dv',2,'',1],
- ['m6.4.dieu_chuyen_giua_diem_truong','Điều chuyển giữa điểm trường','M6.4','Danh mục & Kiểm kê CSVC','dv',3,'',1],
- ['m6.4.kiem_ke_tai_san','Kiểm kê tài sản','M6.4','Danh mục & Kiểm kê CSVC','dv',3,'',0],
- ['m6.4.sua_chua_thay_the','Sửa chữa & thay thế','M6.4','Danh mục & Kiểm kê CSVC','dv',2,'',1],
- ['m6.4.cau_hinh','⚙ Cấu hình','M6.4','Danh mục & Kiểm kê CSVC','dv',3,'',0],
- ['m6.5.cua_toi','Của tôi','M6.5','Yêu cầu CSVC','dv',1,'',0],
- ['m6.5.cho_toi_duyet','Chờ tôi duyệt','M6.5','Yêu cầu CSVC','dv',2,'',1],
- ['m6.5.lich_muon_phong','Lịch mượn phòng','M6.5','Yêu cầu CSVC','dv',2,'',1],
- ['m6.5.thiet_bi_dang_cho_muon','Thiết bị đang cho mượn','M6.5','Yêu cầu CSVC','dv',2,'',1],
- ['m6.5.dot_mua_sam','Đợt mua sắm','M6.5','Yêu cầu CSVC','dv',3,'',0],
- ['m6.5.cau_hinh','⚙ Cấu hình','M6.5','Yêu cầu CSVC','dv',3,'',0],
+ ['m6.3.cham_sao_do','Chấm nền nếp','M6.13','Theo dõi thi đua','dv',2,'',1],   /* YKDD-1A §Q: nhãn «Chấm sao đỏ» → «Chấm nền nếp» — MÃ GIỮ (Đội Sao đỏ chỉ là một trong hai lực lượng; Đoàn dùng Ban nền nếp) */
+ ['m6.3.xep_hang_thi_dua','Xếp hạng thi đua','M6.13','Theo dõi thi đua','dv',2,'',0],
+ ['m6.3.dang_ky_ung_vien','Đăng ký ứng viên','M6.3','Hồ sơ HS thành viên','dv',2,'',1],
+ ['m6.3.xet_duyet_ket_nap','Xét duyệt & Kết nạp','M6.3','Hồ sơ HS thành viên','dv',3,'',1],
+ ['m6.3.doan_vien_doi_vien','Đoàn viên - Đội viên','M6.3','Hồ sơ HS thành viên','dv',2,'',1],
+ ['m6.3.danh_gia_xep_loai','Đánh giá xếp loại','M6.3','Hồ sơ HS thành viên','dv',3,'',1],   /* YKDD-1D: tab 4 mới — đợt đánh giá · đề xuất · công nhận · đề nghị khen; nc 3 vì là đánh giá cá nhân đoàn viên kèm kỷ luật Đoàn; fc 1 (trục tổ chức tc=Đoàn + assigned của GVCN) */
+ ['m6.3.phong_trao_hinh_anh','Sự kiện phong trào','M6.14','Hoạt động & sự kiện','dv',2,'',0],
+ ['m6.3.cau_hinh','⚙ Cấu hình','M6.13','Theo dõi thi đua','dv',3,'',0],
+ ['m6.13.lich_truc_luc_luong','Lịch trực & lực lượng nền nếp','M6.13','Theo dõi thi đua','dv',2,'',1],   /* YKDD-1A: tab 3 mới — MÃ m6.13.* ĐẦU TIÊN của menu (ba tab cũ vẫn mang tiền tố m6.3.*, L10); fc 1 (bộ lọc tc theo tổ chức) */
+ ['m6.4.phong_thiet_bi_theo_phong','Phòng & thiết bị theo phòng','M6.4','Danh mục & Kiểm kê','dv',2,'',1],
+ ['m6.4.tai_san_thiet_bi','Tài sản & thiết bị','M6.4','Danh mục & Kiểm kê','dv',2,'',1],
+ ['m6.4.dieu_chuyen_giua_diem_truong','Điều chuyển giữa điểm trường','M6.11','Luân chuyển & Sửa chữa','dv',3,'',1],
+ ['m6.4.kiem_ke_tai_san','Kiểm kê tài sản','M6.4','Danh mục & Kiểm kê','dv',3,'',0],
+ ['m6.4.sua_chua_thay_the','Sửa chữa & thay thế','M6.11','Luân chuyển & Sửa chữa','dv',2,'',1],
+ ['m6.4.cau_hinh','⚙ Cấu hình','M6.4','Danh mục & Kiểm kê','dv',3,'',0],
+ ['m6.5.cua_toi','Của tôi','M6.5','Mượn phòng & thiết bị','dv',1,'',0],
+ ['m6.5.cho_toi_duyet','Chờ tôi duyệt','M6.5','Mượn phòng & thiết bị','dv',2,'',1],
+ ['m6.5.lich_muon_phong','Lịch mượn phòng','M6.5','Mượn phòng & thiết bị','dv',2,'',1],
+ ['m6.5.thiet_bi_dang_cho_muon','Thiết bị đang cho mượn','M6.5','Mượn phòng & thiết bị','dv',2,'',1],
+ ['m6.5.dot_mua_sam','Đợt mua sắm','M6.4','Danh mục & Kiểm kê','dv',3,'',0],
+ ['m6.5.cau_hinh','⚙ Cấu hình','M6.5','Mượn phòng & thiết bị','dv',3,'',0],
  ['m6.6.so_y_te','Sổ y tế','M6.6','Y tế học đường','dv',3,'',1],
- ['m6.6.ho_so_suc_khoe','Hồ sơ sức khỏe','M6.6','Y tế học đường','dv',4,'Xem hồ sơ sức khỏe HS · dữ liệu sức khỏe trẻ em, NĐ 13/2023 — xem ghi audit',1],
+ ['m6.6.ho_so_suc_khoe','Hồ sơ sức khỏe','M6.6','Y tế học đường','dv',4,'Xem hồ sơ sức khỏe HS · dữ liệu sức khỏe trẻ em, Luật BVDLCN 91/2025 — xem ghi audit',1],
  ['m6.6.dot_kham_suc_khoe','Đợt khám sức khỏe','M6.6','Y tế học đường','dv',3,'',1],
  ['m6.6.tu_thuoc','Tủ thuốc','M6.6','Y tế học đường','dv',2,'',0],
  ['m6.6.phong_chong_dich','Phòng chống dịch','M6.6','Y tế học đường','dv',3,'',1],
@@ -439,12 +524,44 @@ const F=[
  ['m6.8.lich_su_kien','Lịch sự kiện','M6.8','Sự kiện trường học','dv',1,'',0],
  ['m6.8.bao_cao','Báo cáo','M6.8','Sự kiện trường học','dv',2,'',0],
  ['m6.8.cau_hinh','⚙ Cấu hình','M6.8','Sự kiện trường học','dv',3,'',0],
- ['m6.9.viec_cua_toi','Việc của tôi','M6.9','Văn thư — Công văn','dv',1,'',0],
- ['m6.9.so_cong_van_den','Sổ công văn Đến','M6.9','Văn thư — Công văn','dv',3,'',1],
- ['m6.9.so_cong_van_di','Sổ công văn Đi','M6.9','Văn thư — Công văn','dv',3,'',1],
- ['m6.9.tra_cuu','Tra cứu','M6.9','Văn thư — Công văn','dv',2,'',1],
- ['m6.9.uy_quyen_ky','Ủy quyền ký','M6.9','Văn thư — Công văn','dv',4,'Ủy quyền ký — chỉ Hiệu trưởng cấp được, không ủy quyền tiếp',0],
- ['m6.9.cau_hinh','⚙ Cấu hình','M6.9','Văn thư — Công văn','dv',3,'',0],
+ ['m6.9.viec_cua_toi','Việc của tôi','M6.9','Công văn','dv',1,'',0],
+ ['m6.9.so_cong_van_den','Sổ công văn Đến','M6.9','Công văn','dv',3,'',1],
+ ['m6.9.so_cong_van_di','Sổ công văn Đi','M6.9','Công văn','dv',3,'',1],
+ ['m6.9.tra_cuu','Tra cứu','M6.9','Công văn','dv',2,'',1],
+ ['m6.9.uy_quyen_ky','Ủy quyền ký','M6.9','Công văn','dv',4,'Ủy quyền ký — chỉ Hiệu trưởng cấp được, không ủy quyền tiếp',0],
+ ['m6.9.cau_hinh','⚙ Cấu hình','M6.9','Công văn','dv',3,'',0],
+ ['m6.10.cho_toi_duyet','Chờ tôi duyệt','M6.10','Ký túc xá','dv',2,'',0],
+ ['m6.10.diem_danh_toi','Điểm danh tối','M6.10','Ký túc xá','dv',4,'Bản ghi chính thức về việc HS có mặt trong KTX ban đêm — căn cứ giải trình với gia đình',1],
+ ['m6.10.ra_ngoai_ve_nha','Ra ngoài và về nhà','M6.10','Ký túc xá','dv',3,'',1],
+ ['m6.10.so_su_kien','Sổ sự kiện KTX','M6.10','Ký túc xá','dv',4,'Nhật ký sự cố ban đêm — hồ sơ giải trình, không xóa được',1],
+ ['m6.10.dang_ky_noi_tru','Đăng ký ở nội trú','M6.10','Ký túc xá','dv',3,'Gồm yêu cầu về chỗ ở và hồ sơ tạm trú nộp công an xã',1],
+ ['m6.10.phong_o_so_do','Phòng ở và sơ đồ chỗ','M6.10','Ký túc xá','dv',2,'',1],
+ /* Theo dõi ăn — mô hình tính ăn KTX, độc lập với bán trú M6.1; căn cứ khoản thu Ăn KTX là số buổi
+    đã ăn. Chốt tháng một bước, KHÔNG ký số (M6.10 §14 #17 ⏳) ⇒ ks rỗng. */
+ ['m6.10.theo_doi_an','Theo dõi ăn','M6.10','Ký túc xá','dv',3,'',1],
+ ['m6.10.cau_hinh','⚙ Cấu hình','M6.10','Ký túc xá','dv',4,'Chứa cấu hình thiết bị cửa — chọn nhận diện khuôn mặt là chạm dữ liệu sinh trắc của trẻ em',0],
+ ['m6.12.kho_tai_lieu','🗂 Kho tài liệu','M6.12','Tài liệu lưu trữ','dv',2,'',1],
+ ['m6.12.thung_rac','🗑 Thùng rác','M6.12','Tài liệu lưu trữ','dv',2,'',1],
+ ['m6.12.cau_hinh','⚙ Cấu hình','M6.12','Tài liệu lưu trữ','dv',1,'',0],
+ ['m6.14.to_chuc_hoat_dong','Tổ chức hoạt động','M6.14','Hoạt động & sự kiện','dv',2,'',1],
+ ['m6.15.co_cau_to_chuc','Cơ cấu tổ chức','M6.15','Tổ chức & Ban chấp hành','dv',3,'',1],
+ ['m6.15.can_bo','Cán bộ Đoàn - Đội','M6.15','Tổ chức & Ban chấp hành','dv',2,'',1],
+ ['m6.15.cau_hinh','⚙ Cấu hình','M6.15','Tổ chức & Ban chấp hành','dv',2,'',0],
+ ['m6.16.danh_sach_clb','Danh sách CLB','M6.16','CLB, đội, nhóm','dv',2,'',1],
+ ['m6.16.danh_gia_clb','Đánh giá hoạt động CLB','M6.16','CLB, đội, nhóm','dv',2,'',1],
+ ['m6.16.cau_hinh_danh_gia','⚙ Cấu hình đánh giá CLB','M6.16','CLB, đội, nhóm','dv',2,'',0],
+ ['m6.17.so_quy','Sổ quỹ','M6.17','Quỹ hoạt động','dv',3,'',1],
+ ['m6.17.khoa_so_bao_cao','Khóa sổ & báo cáo','M6.17','Quỹ hoạt động','dv',3,'',1],
+ ['m6.18.lich_hop','Lịch họp','M6.18','Lịch họp','dv',2,'',1],
+ ['m6.18.cuoc_hop','Cuộc họp','M6.18','Lịch họp','dv',2,'',1],
+ ['m6.18.cau_hinh','⚙ Cấu hình','M6.18','Lịch họp','dv',2,'',0],
+ /* PZ4 15/9/2026 — M6.19 Quản lý thư viện (PHIEU-M6.19 mục A · tên tab từ DOM demo). nc PZ đặt theo dữ liệu tab chạm: lượt mượn mang tên bạn đọc HS (BVDLCN) 3 ·
+    thanh lọc = loại khỏi kho, HT duyệt, hồ sơ ≥ 5 năm 3 · thống kê không tên HS 1. Không ký số (ks ''). */
+ ['m6.19.muon_tra','Mượn – trả','M6.19','Quản lý thư viện','dv',3,'',0],
+ ['m6.19.kho_sach','Kho sách','M6.19','Quản lý thư viện','dv',2,'',0],
+ ['m6.19.kiem_ke_thanh_loc','Kiểm kê & thanh lọc','M6.19','Quản lý thư viện','dv',3,'',0],
+ ['m6.19.thong_ke','Thống kê','M6.19','Quản lý thư viện','dv',1,'',0],
+ ['m6.19.cau_hinh','⚙ Cấu hình','M6.19','Quản lý thư viện','dv',2,'',0],
  ['m7.1.khoan_thu_nam_hoc','Khoản thu năm học','M7.1','Danh mục khoản thu','tc',4,'Ban hành khoản thu — HT duyệt, Nhóm A ký số',1],
  ['m7.1.lich_cong_bo_hang_thang','Lịch công bố hàng tháng','M7.1','Danh mục khoản thu','tc',3,'',1],
  ['m7.1.cho_toi_duyet','Chờ tôi duyệt','M7.1','Danh mục khoản thu','tc',3,'',0],
@@ -464,39 +581,40 @@ const F=[
  ['m7.6.xuat_tep_doi_chieu','Xuất tệp & Đối chiếu','M7.6','Dữ liệu chấm công & KPI cho tính lương','tc',3,'',1],
  ['m7.6.template_xuat','⚙ Template xuất','M7.6','Dữ liệu chấm công & KPI cho tính lương','tc',3,'',0],
  ['m8.1.cho_toi_duyet','⏳ Chờ tôi duyệt','M8.1','Thông báo chủ động','ll',2,'A',0],
- ['m8.1.va_hang_doi_khac_rong',' VÀ hàng đợi khác rỗng)* · ','M8.1','Thông báo chủ động','ll',2,'',0],
+ ['m8.1.thong_bao_cua_toi','Thông báo của tôi','M8.1','Thông báo chủ động','ll',2,'',0],
  ['m8.1.lich_phat_tan','Lịch phát tán','M8.1','Thông báo chủ động','ll',2,'',0],
- ['m8.1.sap_toi','Sắp tới','M8.1','Thông báo chủ động','ll',2,'',0],
+ ['m8.1.mau_thong_bao','Mẫu thông báo','M8.1','Thông báo chủ động','ll',2,'',0],
  ['m8.2.cuoc_tro_chuyen','Cuộc trò chuyện','M8.2','Nhắn tin','ll',2,'',1],
  ['m8.2.danh_ba','Danh bạ','M8.2','Nhắn tin','ll',2,'',1],
  ['m8.2.nhom_lop_nam_cu','Nhóm lớp năm cũ','M8.2','Nhắn tin','ll',2,'',1],
  ['m8.2.cai_dat_chat_cua_toi','⚙ Cài đặt chat của tôi','M8.2','Nhắn tin','ll',2,'',1],
  ['m8.3.bao_cao_vi_pham','Báo cáo vi phạm','M8.3','Xử lý vi phạm chat','ll',2,'',0],
- ['m8.3.chua_xu_ly','Chưa xử lý','M8.3','Xử lý vi phạm chat','ll',2,'',0],
- ['m8.3.cho_toi_xu_ly','Chờ tôi xử lý','M8.3','Xử lý vi phạm chat','ll',2,'',0],
+ ['m8.3.khoa_chat','Khóa chat','M8.3','Xử lý vi phạm chat','ll',2,'',0],
+ ['m8.3.quy_tac_chat','⚙ Quy tắc chat','M8.3','Xử lý vi phạm chat','ll',2,'',0],
+ ['m8.4.can_xu_ly','Cần xử lý','M8.4','Khiếu nại và phản ánh','ll',3,'Chốt Đã xử lý chỉ PHT_ĐT và HT — mốc kết thúc duy nhất của vòng đời. Không vai nào có XO',1],
+ ['m8.4.tat_ca','Tất cả','M8.4','Khiếu nại và phản ánh','ll',3,'ghi_chu_xu_ly NỘI BỘ TUYỆT ĐỐI — không bao giờ trả về App PH-HS. Ảnh KN-HA: Luật BVDLCN 91/2025',0],
+ ['m8.5.cho_toi_duyet','⏳ Chờ tôi duyệt','M8.5','Trang web trường','ll',3,'',0],
+ ['m8.5.bai_cua_toi','Bài của tôi','M8.5','Trang web trường','ll',2,'',0],
+ ['m8.5.bai_tren_web','Bài trên web','M8.5','Trang web trường','ll',2,'',1],
+ ['m8.5.cong_khai','📋 Công khai bắt buộc','M8.5','Trang web trường','ll',3,'',0],
+ ['m8.5.cau_hinh','⚙ Chuyên mục & nơi đăng','M8.5','Trang web trường','ll',2,'',0],
  ['m9.1.hoc_sinh','Học sinh','M9.1','Báo cáo tổng hợp','qt',3,'Chỉ X và XD — Nhóm 9 không ghi gì (D2)',1],
  ['m9.1.bien_dong_hoc_sinh','Biến động học sinh','M9.1','Báo cáo tổng hợp','qt',3,'',1],
  ['m9.1.ket_qua_chuyen_can','Kết quả & Chuyên cần','M9.1','Báo cáo tổng hợp','qt',3,'',1],
- ['m9.1.nhan_su','Nhân sự','M9.1','Báo cáo tổng hợp','qt',4,'Số liệu nhân sự — NĐ 13/2023, xuất bắt buộc chọn mục đích',1],
+ ['m9.1.nhan_su','Nhân sự','M9.1','Báo cáo tổng hợp','qt',4,'Số liệu nhân sự — Luật BVDLCN 91/2025, xuất bắt buộc chọn mục đích',1],
  ['m9.1.tai_chinh','Tài chính','M9.1','Báo cáo tổng hợp','qt',4,'Số liệu tài chính toàn trường',1],
- ['m9.2.bao_cao_hoc_tap_ket_qua','Báo cáo Học tập & Kết quả','M9.2','Báo cáo Học tập & Kết quả ⏳','qt',3,'⏳ MENU CHƯA DỰNG — số tab là TẠM (1). Feature thật sinh ra khi dựng menu, theo nguyên tắc dẫn xuất §2.1',0],
- ['m9.3.bao_cao_chuyen_can_ne_nep','Báo cáo Chuyên cần & Nề nếp','M9.3','Báo cáo Chuyên cần & Nề nếp ⏳','qt',3,'⏳ MENU CHƯA DỰNG — số tab là TẠM (1). Feature thật sinh ra khi dựng menu, theo nguyên tắc dẫn xuất §2.1',0],
- ['m9.4.bao_cao_nhan_su_cham_cong','Báo cáo Nhân sự & Chấm công','M9.4','Báo cáo Nhân sự & Chấm công ⏳','qt',3,'⏳ MENU CHƯA DỰNG — số tab là TẠM (1). Feature thật sinh ra khi dựng menu, theo nguyên tắc dẫn xuất §2.1',0],
- ['m9.5.bao_cao_chuyen_mon','Báo cáo Chuyên môn','M9.5','Báo cáo Chuyên môn ⏳','qt',3,'⏳ MENU CHƯA DỰNG — số tab là TẠM (1). Feature thật sinh ra khi dựng menu, theo nguyên tắc dẫn xuất §2.1',0],
- ['m9.6.bao_cao_van_hanh','Báo cáo Vận hành','M9.6','Báo cáo Vận hành ⏳','qt',3,'⏳ MENU CHƯA DỰNG — số tab là TẠM (1). Feature thật sinh ra khi dựng menu, theo nguyên tắc dẫn xuất §2.1',0],
- ['m9.7.bao_cao_tai_chinh','Báo cáo Tài chính','M9.7','Báo cáo Tài chính ⏳','qt',3,'⏳ MENU CHƯA DỰNG — số tab là TẠM (1). Feature thật sinh ra khi dựng menu, theo nguyên tắc dẫn xuất §2.1',0],
- ['m9.8.bao_cao_tuyen_sinh_dau_cuo','Báo cáo Tuyển sinh & Đầu-cuối cấp','M9.8','Báo cáo Tuyển sinh & Đầu-cuối cấp ⏳','qt',3,'⏳ MENU CHƯA DỰNG — số tab là TẠM (1). Feature thật sinh ra khi dựng menu, theo nguyên tắc dẫn xuất §2.1',0],
- ['m9.9.bao_cao_gui_so_phong_gd','Báo cáo gửi Sở / Phòng GD','M9.9','Báo cáo gửi Sở / Phòng GD ⏳','qt',3,'⏳ MENU CHƯA DỰNG — số tab là TẠM (1). Feature thật sinh ra khi dựng menu, theo nguyên tắc dẫn xuất §2.1',0],
- ['m9.10.xuat_du_lieu_cho_phan_mem_','Xuất dữ liệu cho phần mềm kế toán','M9.10','Xuất dữ liệu cho phần mềm kế toán ⏳','qt',3,'⏳ MENU CHƯA DỰNG — số tab là TẠM (1). Feature thật sinh ra khi dựng menu, theo nguyên tắc dẫn xuất §2.1',0],
+ ['m9.1.doan_doi','Đoàn - Đội','M9.1','Báo cáo tổng hợp','qt',3,'Chỉ X · XD — trục tổ chức; khối đoàn phí / sổ Liên đội / xếp loại theo quyền ở M6.17 · M6.3',1],   /* YKDD-2B: tab 6 mới */
  ['m10.1.ho_so_nam_hoc','Hồ sơ năm học','M10.1','Hồ sơ năm học','qt',4,'Kết chuyển năm học — HT ký, không hoàn tác được',1],
  ['m10.1.chuyen_giao_nam_hoc','Chuyển giao năm học','M10.1','Hồ sơ năm học','qt',4,'',0],
  ['m10.1.che_do_truy_cap_theo_trang_thai','Chế độ truy cập theo trạng thái','M10.1','Hồ sơ năm học','qt',3,'',0],
- ['m10.2.truong','Trường','M10.2','Cơ cấu tổ chức','qt',4,'Đổi mã trường CSDL ngành — cảnh báo mạnh, kèm số phiên đồng bộ đã dùng mã cũ',0],
- ['m10.2.diem_truong','Điểm trường','M10.2','Cơ cấu tổ chức','qt',4,'',1],
- ['m10.2.he_dao_tao','Hệ đào tạo','M10.2','Cơ cấu tổ chức','qt',3,'',1],
- ['m10.2.danh_muc_lop','Danh mục lớp','M10.2','Cơ cấu tổ chức','qt',4,'',1],
- ['m10.2.mon_hoc','Môn học','M10.2','Cơ cấu tổ chức','qt',3,'',1],
- ['m10.2.to_chuyen_mon','Tổ chuyên môn','M10.2','Cơ cấu tổ chức','qt',3,'',1],
+ ['m10.2.truong','Thông tin trường','M10.2','Thông tin trường','qt',4,'Đổi mã trường CSDL ngành — cảnh báo mạnh, kèm số phiên đồng bộ đã dùng mã cũ',0],
+ ['m10.2.danh_muc_mon','Danh mục môn','M10.2','Thông tin trường','qt',3,'',0],
+ ['m10.2.diem_truong','Điểm trường & hệ đào tạo','M10.1','Hồ sơ năm học','qt',4,'',1],
+ /* Đợt 1 (PZ 14/9/2026): BỎ m10.2.he_dao_tao — gộp vào m10.2.diem_truong (Q2: hệ khai cùng bước điểm trường; phiếu P9A · P9B) */
+ ['m10.2.danh_muc_lop','Lớp học','M10.1','Hồ sơ năm học','qt',4,'',1],
+ ['m10.2.mon_hoc','Môn học của trường','M10.1','Hồ sơ năm học','qt',3,'',1],
+ ['m10.2.to_chuyen_mon','Tổ bộ môn','M10.1','Hồ sơ năm học','qt',3,'',1],
+ ['m10.1.mon_hoc_cho_lop','Môn học cho lớp','M10.1','Hồ sơ năm học','qt',3,'',1],
  ['m10.4.cau_hinh_quyen','Cấu hình quyền','M10.4','Chức danh & Phân quyền','qt',4,'Tự mở quyền cho chức danh mình đang giữ — KHÔNG chặn, gắn cờ ⚑ tự mở quyền ở M10.7',1],
  ['m10.4.ai_truy_cap_duoc_gi','Ai truy cập được gì','M10.4','Chức danh & Phân quyền','qt',3,'',1],
  ['m10.5.tai_khoan_nhan_su','Tài khoản nhân sự','M10.5','Tài khoản & Bảo mật','qt',4,'Khóa / mở khóa tài khoản — 4 mắt, người đề xuất ≠ người duyệt',1],
@@ -511,11 +629,42 @@ const F=[
  ['m10.8.day_len','📤 Đẩy lên','M10.8','Đồng bộ CSDL ngành','qt',4,'Đẩy lên CSDL ngành — HT DUYỆT (không ký số), 4 mắt',1],
  ['m10.8.viec_chua_xong','Việc chưa xong','M10.8','Đồng bộ CSDL ngành','qt',3,'',1],
  ['m10.8.lich_su','Lịch sử','M10.8','Đồng bộ CSDL ngành','qt',3,'Chỉ đọc — audit từng bản ghi ở M10.7',1],
- ['m10.8.xuat_du_lieu','Xuất dữ liệu','M10.8','Đồng bộ CSDL ngành','qt',4,'Xuất chịu NĐ 13/2023 — bắt buộc chọn mục đích, trường nhạy cảm mặc định TẮT',1],
+ ['m10.8.xuat_du_lieu','Xuất dữ liệu','M10.8','Đồng bộ CSDL ngành','qt',4,'Xuất chịu Luật BVDLCN 91/2025 — bắt buộc chọn mục đích, trường nhạy cảm mặc định TẮT',1],
  ['m10.9.dot_nghi','Đợt nghỉ','M10.9','Lịch nghỉ & Ngày đặc biệt','qt',3,'',1],
  ['m10.9.lich_nam_hoc','Lịch năm học','M10.9','Lịch nghỉ & Ngày đặc biệt','qt',2,'',0],
- ['m10.9.so_ngay_thuc_hoc','Số ngày thực học','M10.9','Lịch nghỉ & Ngày đặc biệt','qt',3,'',0]];
-const FE=F.map(function(a){return {ma:a[0],ten:a[1],menu:a[2],mten:a[3],ng:a[4],nc:a[5],ks:a[6],fc:a[7]}});
+ ['m10.9.so_ngay_thuc_hoc','Số ngày thực học','M10.9','Lịch nghỉ & Ngày đặc biệt','qt',3,'',0],
+ ['m10.10.dich_vu_app','Dịch vụ trên App PH-HS','M10.10','Dịch vụ trên App PH-HS','qt',3,'',0],
+ /* M10.11 Quản lý lưu trữ hệ thống — tích hợp 16/9/2026 (PHIEU-M10.11 mục A). ks='' (không ký số); tra_cuu_tep và
+    luot_giai_phong nc=4: một bên là siêu dữ liệu tệp toàn trường kèm lớp nhạy cảm, một bên là hủy nội dung tệp vĩnh viễn. */
+ ['m10.11.tong_quan_dung_luong','Tổng quan dung lượng','M10.11','Quản lý lưu trữ hệ thống','qt',2,'',0],
+ ['m10.11.tra_cuu_tep','Tra cứu tệp','M10.11','Quản lý lưu trữ hệ thống','qt',4,'',0],
+ ['m10.11.luot_giai_phong','Lượt giải phóng','M10.11','Quản lý lưu trữ hệ thống','qt',4,'',0],
+ ['m10.11.cau_hinh','⚙ Cấu hình','M10.11','Quản lý lưu trữ hệ thống','qt',3,'',0],
+ /* 🗃 HỌC LIỆU SỐ HÓA — nhóm mới, tích hợp 16/9/2026 (PHIEU-HL-Z mục A; tên tab quét từ DOM bảy demo).
+    ks='' cả 20 — nhóm KHÔNG có ký số, cột D chỉ nghĩa «duyệt kiểm định nội dung».
+    Cột 5 `ng`='cm' — chỉ là khóa gieo cũ của G (G không còn Feature nào dùng); nhóm hiển thị lấy từ NHOMSB ('hl').
+    nc=4: m12.2.ngan_hang_de (đề bảo mật) · m12.7.luot_giao (mã làm bài của trẻ em) · m12.7.nhom_lam_bai (khách ngoài trường). */
+ ['m12.1.kho_cua_toi','Kho của tôi','M12.1','Kho tài liệu','cm',3,'',0],
+ ['m12.1.thung_rac','Thùng rác','M12.1','Kho tài liệu','cm',3,'',0],
+ ['m12.1.cau_hinh','⚙ Cấu hình','M12.1','Kho tài liệu','cm',2,'',0],
+ ['m12.2.ngan_hang_de','Ngân hàng đề','M12.2','Ngân hàng đề bài','cm',4,'Đề 🔒 bảo mật — chỉ tác giả và người được chia sẻ đích danh; mọi lượt mở ghi nhật ký',1],
+ ['m12.2.nhap_tu_word','Nhập đề từ tệp Word','M12.2','Ngân hàng đề bài','cm',3,'',0],
+ ['m12.2.cau_hinh','⚙ Cấu hình','M12.2','Ngân hàng đề bài','cm',2,'',0],
+ ['m12.3.ma_tran','Ma trận đề','M12.3','Ma trận đề bài','cm',2,'',1],
+ ['m12.3.cau_hinh','⚙ Cấu hình','M12.3','Ma trận đề bài','cm',2,'',0],
+ ['m12.4.cay_bo_sach','Cây Bộ sách','M12.4','Tổ chức kiến thức','cm',1,'',0],
+ ['m12.4.cay_mach_kien_thuc','Cây Mạch kiến thức','M12.4','Tổ chức kiến thức','cm',1,'',0],
+ ['m12.4.de_xuat','Đề xuất sửa cây','M12.4','Tổ chức kiến thức','cm',1,'',1],
+ ['m12.5.ngan_hang_cau_hoi','Ngân hàng câu hỏi','M12.5','Ngân hàng câu hỏi','cm',3,'',1],
+ ['m12.5.cho_duyet','Chờ tôi duyệt','M12.5','Ngân hàng câu hỏi','cm',2,'',0],
+ ['m12.5.cau_hinh','⚙ Cấu hình','M12.5','Ngân hàng câu hỏi','cm',2,'',0],
+ ['m12.6.ngan_hang_nhom_cau','Ngân hàng nhóm câu hỏi','M12.6','Ngân hàng nhóm câu hỏi','cm',3,'',1],
+ ['m12.6.cho_duyet','Chờ tôi duyệt','M12.6','Ngân hàng nhóm câu hỏi','cm',2,'',0],
+ ['m12.7.luot_giao','Lượt giao bài','M12.7','Quản lý giao bài','cm',4,'Mã làm bài là thông tin đăng nhập vào bài của một trẻ em — lưu mã hóa, xem / in / xuất đều ghi audit',1],
+ ['m12.7.cho_cham','Chờ tôi chấm','M12.7','Quản lý giao bài','cm',3,'',0],
+ ['m12.7.nhom_lam_bai','Nhóm làm bài','M12.7','Quản lý giao bài','cm',4,'Khách ngoài trường: họ tên · ngày sinh · trường — dữ liệu trẻ em, tự xóa sau N tháng (Luật BVDLCN 91/2025)',1],
+ ['m12.7.cau_hinh','⚙ Cấu hình','M12.7','Quản lý giao bài','cm',3,'',0]];
+const FE=F.map(function(a){return {ma:a[0],ten:a[1],menu:a[2],mten:a[3],ng:a[4],nc:a[5],ks:a[6],fc:a[7],nh:nhOf(a[2])}});
 const feBy=m=>FE.filter(f=>f.ma===m)[0];
 const NCTEN=['','Thấp','TB','Cao','Rất cao'];
 /* KHUNG ĐỀU: mọi Feature có đủ 7 quyền. Một tab có thể không có thao tác tương ứng
@@ -534,7 +683,7 @@ const CD=[
  {ma:'VT',    ten:'Văn thư',                  nhom:1,sc:'Branch',ps:'Văn phòng',giu:3},
  {ma:'QLCSVC',ten:'Quản lý cơ sở vật chất',   nhom:1,sc:'School',ps:'Văn phòng',giu:1},
  {ma:'YT',    ten:'Y tế học đường',           nhom:1,sc:'School',ps:'Nhân viên',giu:0},
- {ma:'TV',    ten:'Thư viện',                 nhom:1,sc:'School',ps:'Nhân viên',giu:1},
+ {ma:'TV',    ten:'Thư viện',                 nhom:1,sc:'Branch',ps:'Thư viện',giu:2},   /* PZ4 15/9/2026 — M6.19: Branch, nhiều người theo điểm trường (M4.3 §2.2); preset riêng Thư viện (thay Nhân viên) */
  {ma:'BT',    ten:'Bảo trì thiết bị',         nhom:1,sc:'School',ps:'Nhân viên',giu:1},
  {ma:'BV',    ten:'Bảo vệ',                   nhom:1,sc:'Branch',ps:'Nhân viên',giu:3},
  {ma:'GT',    ten:'Giám thị',                 nhom:1,sc:'Branch',ps:'Giám thị',giu:2},
@@ -543,18 +692,27 @@ const CD=[
  {ma:'IT',    ten:'Quản trị hệ thống',        nhom:1,sc:'School',ps:'Quản trị hệ thống',giu:1},
  {ma:'TTCM',  ten:'Tổ trưởng chuyên môn',     nhom:2,sc:'Group', ps:'Tổ chuyên môn',giu:5},
  {ma:'TPCM',  ten:'Tổ phó chuyên môn',        nhom:2,sc:'Group', ps:'Tổ chuyên môn',giu:5},
+ {ma:'TTVP',  ten:'Tổ trưởng tổ văn phòng',   nhom:2,sc:'Group', ps:'Văn phòng',giu:1},
  {ma:'GVCN',  ten:'Giáo viên chủ nhiệm',      nhom:3,sc:'Class', ps:'Giáo viên',giu:28},
  {ma:'GVBM',  ten:'Giáo viên bộ môn',         nhom:3,sc:'Class', ps:'Giáo viên',giu:74},
- {ma:'DMCM',  ten:'Đầu mối chuyên môn tại điểm trường',nhom:4,sc:'Branch',ps:'Tổ chuyên môn',giu:2,phu:1},
- {ma:'UQGA',  ten:'Ủy quyền phê duyệt giáo án',nhom:4,sc:'Group',ps:'Tổ chuyên môn',giu:1,phu:1},
+ {ma:'DMCM',  ten:'Đầu mối chuyên môn tại điểm trường',nhom:4,sc:'Branch',ps:'Tổ chuyên môn',giu:2,phu:1,ngung:1},
+ {ma:'UQGA',  ten:'Ủy quyền phê duyệt giáo án',nhom:4,sc:'Group',ps:'Tổ chuyên môn',giu:1,phu:1,ngung:1},
  {ma:'TKHD',  ten:'Thư ký hội đồng',          nhom:4,sc:'School',ps:'Văn phòng',giu:1,phu:1},
- {ma:'CTCD',  ten:'Chủ tịch Công đoàn',       nhom:4,sc:'School',ps:'Nhân viên',giu:0,phu:1,ngung:1}];
+ {ma:'CTCD',  ten:'Chủ tịch Công đoàn',       nhom:4,sc:'School',ps:'Nhân viên',giu:0,phu:1,ngung:1},
+ /* 15/9/2026 — phiên bổ sung chức danh: 4 mẫu phụ cho vai các menu đã viết ma trận mà chưa có chức danh (M10.4 §3.5) */
+ {ma:'NVBT',  ten:'Nhân viên bán trú',        nhom:4,sc:'Branch',ps:'Nhân viên',giu:3,phu:1},
+ {ma:'QLKTX', ten:'Quản lý ký túc xá',        nhom:4,sc:'Branch',ps:'Nhân viên',giu:1,phu:1},
+ {ma:'QS',    ten:'Quản sinh',                nhom:4,sc:'Branch',ps:'Nhân viên',giu:3,phu:1},
+ {ma:'TCDT',  ten:'Tổ chức đợt đào tạo',      nhom:4,sc:'Own',ps:'Nhân viên',giu:1,phu:1},
+ /* 17/9/2026 — YK01-Z2: mẫu phụ thứ 9 (✅ YK01-1). Người phụ trách chấm công theo điểm trường — M4.9 §9.1 · M6.11 §10 */
+ {ma:'NVCC',  ten:'Nhân viên chấm công',      nhom:4,sc:'Branch',ps:'Nhân viên',giu:2,phu:1}];
 const cdBy=m=>CD.filter(c=>c.ma===m)[0];
 const NHOMTEN={1:'① Toàn trường',2:'② Gắn đơn vị',3:'③ Phân công chuyên môn',4:'④ Chức danh phụ của trường'};
 
 /* ===== GIEO MA TRẬN =====
    ng: theo nhóm nghiệp vụ · mn: đè theo Menu · fe: đè theo TỪNG TAB
    Chuỗi 'xtso@Own' — phần sau @ là Scope RIÊNG của tab đó. */
+/* 15/9 — rà soát quyền: GQ phủ cả 317 Feature ⇒ G KHÔNG CÒN Feature nào dùng. Giữ nguyên văn để tra lịch sử gieo (và cho bản chụp M0.5). */
 const G={
  HT:    {ng:{cn:'xts',hs:'xtsodie',ht:'xtsodie',ns:'xtsodie',cm:'xde',dv:'xde',tc:'xde',ll:'xtde',qt:'xtsdie'}},
  PHT_CM:{ng:{cn:'xts',ht:'xtsde',cm:'xtsode',ns:'xtse',hs:'xe',dv:'x',qt:'x',ll:'xt'},
@@ -570,12 +728,12 @@ const G={
          mn:{'M1.1':'xte','M1.5':'xt','M1.6':'xt','M4.1':'x','M4.8':'xts','M10.1':'x','M10.2':'x','M10.9':'x'}},
  QLCSVC:{ng:{cn:'xts'},mn:{'M10.2':'x','M6.8':'xt','M4.8':'xts','M8.2':'xt'}},
  YT:    {ng:{cn:'xts'},mn:{'M1.1':'x','M6.1':'xts','M2.9':'x','M4.8':'xts','M8.2':'xt'}},
- TV:    {ng:{cn:'xts'},mn:{'M4.8':'xts','M8.2':'xt'}},
+ TV:    {ng:{cn:'xts'},mn:{'M4.8':'xts','M8.2':'xt'}},   /* preset Thư viện (PZ4) = nền này + 5 Feature M6.19 — gieo ở GQ theo mục Q, không gõ ở đây */
  BT:    {ng:{cn:'xts'},mn:{'M4.8':'xts','M8.2':'xt'}},
  BV:    {ng:{cn:'xts'},mn:{'M4.8':'xts','M8.2':'xt'}},
  GT:    {ng:{cn:'xts'},mn:{'M1.1':'x','M2.2':'xts','M2.9':'x','M4.8':'xts','M8.2':'xt','M8.3':'xt'}},
- TPT:   {ng:{cn:'xts'},mn:{'M1.1':'x','M2.7':'xts','M2.9':'x','M6.2':'xts','M6.8':'xts','M8.1':'xt','M8.2':'xt','M4.8':'xts'}},
- BTD:   {ng:{cn:'xts'},mn:{'M1.1':'x','M2.7':'xts','M6.2':'xts','M6.8':'xts','M8.1':'xt','M8.2':'xt','M4.8':'xts'}},
+ TPT:   {ng:{cn:'xts'},mn:{'M1.1':'x','M2.9':'x','M6.2':'xts','M6.8':'xts','M8.1':'xt','M8.2':'xt','M4.8':'xts'}},
+ BTD:   {ng:{cn:'xts'},mn:{'M1.1':'x','M6.2':'xts','M6.8':'xts','M8.1':'xt','M8.2':'xt','M4.8':'xts'}},
  IT:    {ng:{cn:'xts',qt:'xtsodie'},mn:{'M4.8':'xts','M8.2':'xt'}},
  TTCM:  {ng:{cn:'xts',cm:'xtsde'},
          fe:{'m5.2.giao_an_cua_toi':'',
@@ -603,17 +761,400 @@ const G={
  DMCM:  {ng:{cn:'xts',cm:'xts'},mn:{'M4.4':'x','M2.1':'x','M8.2':'xt','M4.8':'xts','M10.2':'x'}},
  UQGA:  {ng:{cn:'xts'},mn:{'M5.2':'xd','M5.1':'x','M8.2':'xt','M4.8':'xts'}},
  TKHD:  {ng:{cn:'xts'},mn:{'M3.3':'xts','M3.4':'xts','M1.1':'x','M8.2':'xt','M4.8':'xts'}},
- CTCD:  {ng:{cn:'xts'},mn:{'M4.8':'xts','M8.2':'xt'}}};
+ CTCD:  {ng:{cn:'xts'},mn:{'M4.8':'xts','M8.2':'xt'}},
+ /* 15/9/2026 — 5 chức danh mới: CHỈ dòng nền của preset (tab cá nhân · M4.8 · M8.2), chép khuôn BV/TV.
+    Quyền nghiệp vụ của chúng KHÔNG gõ ở đây — ở lớp GQB dưới, lấy từ §Ma trận quyền của menu nguồn. */
+ TTVP:  {ng:{cn:'xts'},mn:{'M4.8':'xts','M8.2':'xt'}},
+ NVBT:  {ng:{cn:'xts'},mn:{'M4.8':'xts','M8.2':'xt'}},
+ QLKTX: {ng:{cn:'xts'},mn:{'M4.8':'xts','M8.2':'xt'}},
+ QS:    {ng:{cn:'xts'},mn:{'M4.8':'xts','M8.2':'xt'}},
+ TCDT:  {ng:{cn:'xts'},mn:{'M4.8':'xts','M8.2':'xt'}},
+ NVCC:  {ng:{cn:'xts'},mn:{'M4.8':'xts','M8.2':'xt'}}};   /* 17/9 — dòng nền preset, chép khuôn TCDT; quyền nghiệp vụ ở GQ (bảng chuẩn) */
+
+
+/* ===== GIEO THEO BẢNG CHUẨN (rà soát quyền theo chức danh — câu 3, anh Ninh chốt 15/9/2026) =====
+   SINH BẰNG SCRIPT — tools/tai-lieu-tong-hop/sinh_gq_tu_chuan.py, đọc ma-tran-quyen-chuan-hoa.csv (TL2 = §Ma trận quyền
+   của từng menu + mục Q phiếu). KHÔNG GÕ TAY: sửa ma trận ở tài liệu menu → python chuan_hoa_quyen.py → python sinh_gq_tu_chuan.py.
+   Phủ CẢ 317 Feature ⇒ gieo thô G (theo cụm/menu) không còn Feature nào dùng. Luật cũ giữ: Feature có trong GQ thì GQ thay hẳn;
+   chức danh vắng dòng = KHÔNG quyền. Chuỗi 'xtsodie@Phạm vi#Bộ lọc' (vắng # = all).
+   Trước 15/9: GQ 110 Feature từ mục Q phiếu Đợt 1 (PZ 14/9) + lớp GQB cho 5 chức danh mới — nay đều nằm trong bảng chuẩn. */
+const GQ={
+ 'm0.1.bang_dieu_khien':{HT:'xs@School',PHT_CM:'xs@School',PHT_DT:'xs@Branch',TCNS:'xs@School',KT:'xs@School',TQ:'xs@School',VT:'xs@Branch',QLCSVC:'xs@School',YT:'xs@School',TV:'xs@Branch',BT:'xs@School',BV:'xs@Branch',GT:'xs@Branch',TPT:'xs@School',BTD:'xs@School',IT:'xs@School',TTCM:'xs@Group',TPCM:'xs@Group',TTVP:'xs@Group',GVCN:'xs@Class',GVBM:'xs@Class',NVBT:'xs@Branch',QLKTX:'xs@Branch',QS:'xs@Branch'},
+ 'm0.2.cho_toi_duyet':{HT:'xd@School#assigned',PHT_CM:'xd@School#assigned',PHT_DT:'xd@Branch#assigned',TCNS:'xd@School#assigned',KT:'xd@School#assigned',TQ:'xd@School#assigned',VT:'xd@Branch#assigned',QLCSVC:'xd@School#assigned',YT:'xd@School#assigned',TV:'xd@Branch#assigned',BT:'xd@School#assigned',BV:'xd@Branch#assigned',GT:'xd@Branch#assigned',TPT:'xd@School#assigned',BTD:'xd@School#assigned',IT:'xd@School#assigned',TTCM:'xd@Group#assigned',TPCM:'xd@Group#assigned',TTVP:'xd@Group#assigned',GVCN:'xd@Class#assigned',GVBM:'xd@Class#assigned',TKHD:'xd@School#assigned',NVBT:'xd@Branch#assigned',QLKTX:'xd@Branch#assigned',QS:'xd@Branch#assigned'},
+ 'm0.2.viec_cua_toi':{HT:'xe@School#authored',PHT_CM:'xe@School#authored',PHT_DT:'xe@Branch#authored',TCNS:'xe@School#authored',KT:'xe@School#authored',TQ:'xe@School#authored',VT:'xe@Branch#authored',QLCSVC:'xe@School#authored',YT:'xe@School#authored',TV:'xe@Branch#authored',BT:'xe@School#authored',BV:'xe@Branch#authored',GT:'xe@Branch#authored',TPT:'xe@School#authored',BTD:'xe@School#authored',IT:'xe@School#authored',TTCM:'xe@Group#authored',TPCM:'xe@Group#authored',TTVP:'xe@Group#authored',GVCN:'xe@Class#authored',GVBM:'xe@Class#authored',NVBT:'xe@Branch#authored',QLKTX:'xe@Branch#authored',QS:'xe@Branch#authored'},
+ 'm0.3.thong_bao_cua_toi':{HT:'xse@School#authored',PHT_CM:'xse@School#authored',PHT_DT:'xse@Branch#authored',TCNS:'xse@School#authored',KT:'xse@School#authored',TQ:'xse@School#authored',VT:'xse@Branch#authored',QLCSVC:'xse@School#authored',YT:'xse@School#authored',TV:'xse@Branch#authored',BT:'xse@School#authored',BV:'xse@Branch#authored',GT:'xse@Branch#authored',TPT:'xse@School#authored',BTD:'xse@School#authored',IT:'xse@School#authored',TTCM:'xse@Group#authored',TPCM:'xse@Group#authored',TTVP:'xse@Group#authored',GVCN:'xse@Class#authored',GVBM:'xse@Class#authored',NVBT:'xse@Branch#authored',QLKTX:'xse@Branch#authored',QS:'xse@Branch#authored'},
+ 'm0.4.trang_ca_nhan_cua_toi':{HT:'xtsoe@Own',PHT_CM:'xtsoe@Own',PHT_DT:'xtsoe@Own',TCNS:'xtsoe@Own',KT:'xtsoe@Own',TQ:'xtsoe@Own',VT:'xtsoe@Own',QLCSVC:'xtsoe@Own',YT:'xtsoe@Own',TV:'xtsoe@Own',BT:'xtsoe@Own',BV:'xtsoe@Own',GT:'xtsoe@Own',TPT:'xtsoe@Own',BTD:'xtsoe@Own',IT:'xtsoe@Own',TTCM:'xtsoe@Own',TPCM:'xtsoe@Own',TTVP:'xtsoe@Own',GVCN:'xtsoe@Own',GVBM:'xtsoe@Own',NVBT:'xtsoe@Own',QLKTX:'xtsoe@Own',QS:'xtsoe@Own'},
+ 'm0.4.don_nghi_cua_toi':{HT:'xtsoe@Own#authored',PHT_CM:'xtsoe@Own#authored',PHT_DT:'xtsoe@Own#authored',TCNS:'xtsoe@Own#authored',KT:'xtsoe@Own#authored',TQ:'xtsoe@Own#authored',VT:'xtsoe@Own#authored',QLCSVC:'xtsoe@Own#authored',YT:'xtsoe@Own#authored',TV:'xtsoe@Own#authored',BT:'xtsoe@Own#authored',BV:'xtsoe@Own#authored',GT:'xtsoe@Own#authored',TPT:'xtsoe@Own#authored',BTD:'xtsoe@Own#authored',IT:'xtsoe@Own#authored',TTCM:'xtsoe@Own#authored',TPCM:'xtsoe@Own#authored',TTVP:'xtsoe@Own#authored',GVCN:'xtsoe@Own#authored',GVBM:'xtsoe@Own#authored',NVBT:'xtsoe@Own#authored',QLKTX:'xtsoe@Own#authored',QS:'xtsoe@Own#authored',TCDT:'xtsoe@Own#authored',NVCC:'xtsoe@Own#authored'},
+ 'm0.5.dot_uy_quyen':{HT:'xtse@School',PHT_CM:'xtse@Own',PHT_DT:'xtse@Own',TCNS:'xtse@Own',KT:'xtse@Own',TQ:'xtse@Own',VT:'xtse@Own',QLCSVC:'xtse@Own',YT:'xtse@Own',TV:'xtse@Own',BT:'xtse@Own',BV:'xtse@Own',GT:'xtse@Own',TPT:'xtse@Own',BTD:'xtse@Own',IT:'xtse@Own',TTCM:'xtse@Own',TPCM:'xtse@Own',TTVP:'xtse@Own',GVCN:'xtse@Own',GVBM:'xtse@Own',DMCM:'xtse@Own',UQGA:'xtse@Own',TKHD:'xtse@Own',NVBT:'xtse@Own',QLKTX:'xtse@Own',QS:'xtse@Own',TCDT:'xtse@Own'},
+ 'm1.1.danh_sach_hoc_sinh':{HT:'xe@School',PHT_DT:'xe@Branch',KT:'xe@School',VT:'xtsde@Branch',YT:'x@Branch',GVCN:'xte@Class',GVBM:'x@Class#assigned',NVBT:'x@Branch'},
+ 'm1.1.duyet_yeu_cau_cap_nhat':{VT:'xde@Branch',GVCN:'xd@Class'},
+ 'm1.2.hoc_sinh_thuoc_dien':{HT:'xe@School',PHT_DT:'xe@Branch',KT:'xe@School',VT:'xtsde@Branch',GVCN:'xte@Class'},
+ 'm1.2.de_xuat_cho_xac_nhan':{VT:'xtsde@Branch',GVCN:'xt@Class#authored'},
+ 'm1.3.tra_cuu_hoc_ba':{HT:'xe@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch',VT:'xe@Branch',GVCN:'xte@Class'},
+ 'm1.3.chot_hoc_ba_theo_nam':{HT:'xe@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch',VT:'xe@Branch',GVCN:'xe@Class'},
+ 'm1.3.cho_toi_duyet':{HT:'xtd@School',PHT_CM:'xtd@School',PHT_DT:'xtd@Branch'},
+ 'm1.4.dot_tuyen_sinh':{HT:'xde@School',PHT_CM:'xtse@School',PHT_DT:'xde@Branch',VT:'xtsdie@Branch'},
+ 'm1.4.phan_lop_hs_moi':{HT:'xde@School',PHT_DT:'xde@Branch',VT:'xtse@Branch'},
+ 'm1.4.thong_ke':{HT:'xe@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch',KT:'xe@Branch',VT:'xe@Branch'},
+ 'm1.4.cho_toi_duyet':{HT:'xd@School',PHT_CM:'xd@School',PHT_DT:'xd@Branch'},
+ 'm1.5.chuyen_di':{HT:'xsde@School',PHT_DT:'xse@Branch',KT:'xe@Branch',VT:'xtsoe@Branch',GVCN:'xe@Class'},
+ 'm1.5.chuyen_den':{HT:'xtsde@School',PHT_DT:'xtsde@Branch',VT:'xtsoie@Branch'},
+ 'm1.6.yeu_cau_bao_luu':{HT:'xsde@School',PHT_DT:'xse@Branch',KT:'xe@Branch',VT:'xtsoe@Branch',GVCN:'xe@Class'},
+ 'm1.6.hs_dang_bao_luu':{HT:'xtsde@School',PHT_DT:'xtde@Branch',KT:'xe@Branch',VT:'xtsoe@Branch',GVCN:'xt@Class'},
+ 'm1.6.yeu_cau_tai_nhap':{HT:'xsde@School',PHT_DT:'xse@Branch',VT:'xtso@Branch'},
+ 'm1.6.thoi_hoc':{HT:'xtsde@School',PHT_DT:'xtse@Branch',KT:'xe@Branch',VT:'xtsoe@Branch',GVCN:'xte@Class'},
+ 'm1.7.yeu_cau_chuyen_lop':{HT:'xsde@School',PHT_DT:'xtsode@Branch',GVCN:'xtso@Class'},
+ 'm1.7.lich_su_chuyen_lop':{HT:'xe@School',PHT_DT:'xe@Branch',VT:'xe@Branch',GVCN:'xe@Class'},
+ 'm1.11.dot_xet':{HT:'xde@School',PHT_DT:'xe@Branch',KT:'xe@School',VT:'xtse@School',GVCN:'xts@Class'},
+ 'm1.11.hoc_sinh_nhan':{HT:'xe@School',PHT_DT:'xe@Branch',KT:'xe@School',VT:'xe@School',GVCN:'x@Class'},
+ 'm1.11.hang_muc':{HT:'xtsd@School',PHT_DT:'x@School',KT:'x@School',VT:'xts@School',GVCN:'x@School'},
+ 'm2.1.lich_day_cua_toi':{TTCM:'xe@Group#assigned',GVCN:'xe@Class#assigned',GVBM:'xe@Class#assigned'},
+ 'm2.1.lich_toan_canh':{HT:'xe@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch',VT:'xe@Branch',TTCM:'xe@Group',GVCN:'xe@Class'},
+ 'm2.2.ghi_so_tiet_cua_toi':{PHT_DT:'xtse@Branch',GT:'xts@Branch#assigned',TTCM:'xe@Group#assigned',GVCN:'xe@Class#assigned',GVBM:'xtse@Class#assigned'},
+ 'm2.2.theo_doi_ne_nep_lop':{HT:'xe@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch',GT:'xe@Branch',TTCM:'xe@Group',GVCN:'xe@Class'},
+ 'm2.2.cho_toi_duyet':{HT:'xd@School',PHT_CM:'xd@School'},
+ 'm2.2.cau_hinh':{HT:'xd@School',PHT_CM:'xts@School'},
+ 'm2.3.bai_toi_da_giao':{HT:'xe@School',PHT_CM:'xe@School',TTCM:'xtsoe@Group#assigned',GVCN:'xtsoe@Class',GVBM:'xtsoe@Class#assigned'},
+ 'm2.3.cho_toi_cham':{PHT_CM:'x@School',TTCM:'xs@Own#authored',GVCN:'x@Class',GVBM:'xs@Own#authored'},
+ 'm2.3.theo_doi_nop_bai':{HT:'xe@School',PHT_CM:'xe@School',GVCN:'xe@Class'},
+ 'm2.3.chinh_sach_btvn':{HT:'xde@School',PHT_CM:'xtse@School'},
+ 'm2.4.hs_xin_nghi_ngan_ngay_n':{HT:'xde@School',PHT_CM:'xe@School',PHT_DT:'xde@Branch',GVCN:'xtde@Class'},
+ 'm2.4.hs_xin_nghi_dai_ngay_n':{HT:'xde@School',PHT_CM:'xe@School',PHT_DT:'xde@Branch',GVCN:'xtse@Class'},
+ 'm2.4.tong_hop_don_nghi':{HT:'xe@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch',GVCN:'xe@Class'},
+ 'm2.4.cau_hinh':{HT:'xd@School'},
+ 'm2.5.bang_diem_mon':{HT:'xde@School',PHT_CM:'xde@School',TTCM:'xde@Group',GVCN:'xe@Class',GVBM:'xtsodie@Class#assigned'},
+ 'm2.7.khen_thuong':{HT:'xtsde@School',PHT_CM:'xte@School',PHT_DT:'xtde@Branch',VT:'xte@Branch',GVCN:'xts@Class#assigned',GVBM:'xts@Class#assigned'},
+ 'm2.7.ky_luat':{HT:'xtsde@School',PHT_DT:'xe@Branch',GVCN:'xts@Class#assigned'},
+ 'm2.7.thong_ke':{HT:'xe@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch',VT:'xe@Branch',GVCN:'x@Class#assigned',GVBM:'x@Class#assigned'},
+ 'm2.7.danh_muc':{HT:'xtsd@School',VT:'xts@School'},
+ 'm2.10.danh_muc':{HT:'xtso@School',VT:'xts@School'},
+ 'm2.8.ky_thi':{HT:'xde@School',PHT_CM:'xtsode@School',VT:'xsdi@School#assigned',TTCM:'xts@Group',GVCN:'xe@Class',GVBM:'xsdi@School#assigned'},
+ 'm2.8.viec_cua_toi':{HT:'x@School#assigned',PHT_CM:'x@School#assigned',VT:'xs@School#assigned',TTCM:'xs@Group#assigned',GVBM:'xs@School#assigned'},
+ 'm2.8.mau_huong_dan':{HT:'xde@School',PHT_CM:'xtse@School',VT:'xe@School',TTCM:'xe@Group',GVBM:'xe@School'},
+ 'm2.9.hs_cua_lop':{HT:'xe@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch',VT:'x@Branch',GT:'xe@Branch',GVCN:'xtse@Class',GVBM:'x@Class#assigned'},
+ 'm2.9.diem_danh':{HT:'xe@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch',GT:'xe@Branch',GVCN:'xtse@Class',GVBM:'x@Class#assigned'},
+ 'm2.9.so_dau_bai':{HT:'x@School',PHT_CM:'x@School',PHT_DT:'x@Branch',GT:'x@Branch',GVCN:'x@Class',GVBM:'x@Class#assigned'},
+ 'm2.9.bai_tap_ve_nha':{HT:'xe@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch',GVCN:'xe@Class',GVBM:'x@Class#assigned'},
+ 'm2.9.bang_diem_lop':{HT:'x@School',PHT_CM:'x@School',PHT_DT:'x@Branch',GVCN:'x@Class',GVBM:'x@Class#assigned'},
+ 'm2.9.bao_cao_tuan':{HT:'x@School',PHT_CM:'x@School',PHT_DT:'x@Branch',GVCN:'xtsd@Class'},
+ 'm2.9.tong_ket_ky_hoc_ba':{HT:'x@School',PHT_CM:'x@School',PHT_DT:'x@Branch',GVCN:'xtsd@Class'},
+ 'm2.9.khen_thuong_ky_luat':{HT:'x@School',PHT_CM:'x@School',PHT_DT:'x@Branch',GT:'x@Branch',GVCN:'x@Class'},
+ 'm2.9.hop_phu_huynh':{HT:'x@School',PHT_CM:'x@School',PHT_DT:'x@Branch',GVCN:'xtso@Class'},
+ 'm2.9.cho_duyet':{HT:'xd@School#assigned',PHT_CM:'xd@School#assigned',PHT_DT:'xd@Branch#assigned',GVCN:'x@Class#assigned'},
+ 'm2.9.cau_hinh':{HT:'xs@School',PHT_CM:'x@School',PHT_DT:'x@Branch'},
+ 'm3.1.chot_tong_ket_theo_lop':{HT:'xtde@School',PHT_CM:'xtde@School',PHT_DT:'xtde@Branch',GVCN:'xte@Class#assigned'},
+ 'm3.1.xet_danh_hieu_khen_thuong':{HT:'xde@School',PHT_CM:'xde@School',PHT_DT:'xe@Branch',GVCN:'xse@Class#assigned'},
+ 'm3.1.cho_toi_duyet':{HT:'xd@School#assigned',PHT_CM:'xd@School#assigned',PHT_DT:'xd@Branch#assigned'},
+ 'm3.2.ren_luyen_he':{HT:'xtsodie@School',PHT_CM:'xtsoie@School',PHT_DT:'xe@Branch',GVCN:'xtsoie@Class',GVBM:'xtsoie@Class#assigned'},
+ 'm3.3.xet_duyet_theo_lop':{HT:'xtsode@School',PHT_CM:'xtde@School',PHT_DT:'xte@Branch',VT:'xe@Branch',GVCN:'xde@Class#assigned',TKHD:'xtse@School'},
+ 'm3.3.ket_chuyen_sang_nam_sau':{HT:'xtse@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch',VT:'xtse@Branch'},
+ 'm3.3.cho_toi_duyet':{HT:'xd@School#assigned',PHT_CM:'xd@School#assigned',GVCN:'xd@Class#assigned'},
+ 'm3.4.xet_tot_nghiep_tieu_hoc':{HT:'xtde@School',PHT_CM:'xte@School',VT:'xe@School'},
+ 'm3.4.xet_tot_nghiep_thcs':{HT:'xtsode@School',PHT_CM:'xtde@School',VT:'xte@School',GVCN:'xde@Class#assigned',TKHD:'xtse@School'},
+ 'm3.4.xet_dieu_kien_thi_tot_nghi':{HT:'xtsde@School',PHT_CM:'xtsde@School',VT:'xse@School',GVCN:'xse@Class#assigned'},
+ 'm3.4.ket_qua_thi_tot_nghiep_thp':{HT:'xtsdie@School',PHT_CM:'xtse@School',VT:'xtsie@School',GVCN:'xe@Class'},
+ 'm4.1.danh_sach_nhan_su':{HT:'xde@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch',TCNS:'xtsoie@School',KT:'xe@School',TTCM:'x@Group'},
+ 'm4.1.duyet_yeu_cau_cap_nhat':{TCNS:'xde@School'},
+ 'm4.1.duyet_hop_dong_lao_dong':{HT:'xde@School'},
+ 'm4.1.ho_so_can_hoan_thien':{HT:'xe@School',PHT_DT:'xte@Branch',TCNS:'xtse@School'},
+ 'm4.1.kho_quyet_dinh':{HT:'xe@School',TCNS:'xtsie@School'},
+ 'm4.1.chuc_danh_theo_nam_hoc':{HT:'xe@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch',TCNS:'xe@School',TTCM:'x@Group'},
+ 'm4.2.tuyen_dung':{HT:'xde@School',PHT_CM:'xde@School',PHT_DT:'xsde@Branch',TCNS:'xtsdie@School',KT:'xde@School'},
+ 'm4.2.chuyen_di':{HT:'xtsode@School',PHT_CM:'xtsode@School',PHT_DT:'xtsode@Branch',TCNS:'xtsodie@School',KT:'xtsode@School',TQ:'xtso@Own#authored',VT:'xtso@Own#authored',QLCSVC:'xtso@Own#authored',YT:'xtso@Own#authored',TV:'xtso@Own#authored',BT:'xtso@Own#authored',BV:'xtso@Own#authored',GT:'xtso@Own#authored',TPT:'xtso@Own#authored',BTD:'xtso@Own#authored',IT:'xtso@Own#authored',TTCM:'xtso@Own#authored',TPCM:'xtso@Own#authored',TTVP:'xtso@Own#authored',GVCN:'xtso@Own#authored',GVBM:'xtso@Own#authored',NVBT:'xtso@Own#authored',QLKTX:'xtso@Own#authored',QS:'xtso@Own#authored'},
+ 'm4.2.tiep_nhan':{HT:'xde@School',PHT_CM:'xde@School',PHT_DT:'xsde@Branch',TCNS:'xtsdie@School',KT:'xde@School'},
+ 'm4.2.tam_nghi_tro_lai':{HT:'xtsode@School',PHT_CM:'xtsode@School',PHT_DT:'xtsode@Branch',TCNS:'xtsodie@School',KT:'xtsode@School',TQ:'xtso@Own#authored',VT:'xtso@Own#authored',QLCSVC:'xtso@Own#authored',YT:'xtso@Own#authored',TV:'xtso@Own#authored',BT:'xtso@Own#authored',BV:'xtso@Own#authored',GT:'xtso@Own#authored',TPT:'xtso@Own#authored',BTD:'xtso@Own#authored',IT:'xtso@Own#authored',TTCM:'xtso@Own#authored',TPCM:'xtso@Own#authored',TTVP:'xtso@Own#authored',GVCN:'xtso@Own#authored',GVBM:'xtso@Own#authored',NVBT:'xtso@Own#authored',QLKTX:'xtso@Own#authored',QS:'xtso@Own#authored'},
+ 'm4.2.nghi_han':{HT:'xtsode@School',PHT_CM:'xtsode@School',PHT_DT:'xtsode@Branch',TCNS:'xtsodie@School',KT:'xtsode@School',TQ:'xtso@Own#authored',VT:'xtso@Own#authored',QLCSVC:'xtso@Own#authored',YT:'xtso@Own#authored',TV:'xtso@Own#authored',BT:'xtso@Own#authored',BV:'xtso@Own#authored',GT:'xtso@Own#authored',TPT:'xtso@Own#authored',BTD:'xtso@Own#authored',IT:'xtso@Own#authored',TTCM:'xtso@Own#authored',TPCM:'xtso@Own#authored',TTVP:'xtso@Own#authored',GVCN:'xtso@Own#authored',GVBM:'xtso@Own#authored',NVBT:'xtso@Own#authored',QLKTX:'xtso@Own#authored',QS:'xtso@Own#authored'},
+ 'm4.2.chuyen_dien_lam_viec':{HT:'xde@School',PHT_CM:'xde@School',PHT_DT:'xsde@Branch',TCNS:'xtsdie@School',KT:'xde@School'},
+ 'm4.3.quan_ly_chuc_danh':{HT:'xtse@School',PHT_CM:'xe@School',PHT_DT:'x@Branch',TCNS:'xtse@School',TTCM:'x@Group'},
+ 'm4.3.diem_truong_cong_tac':{HT:'xtse@School',PHT_CM:'x@School',PHT_DT:'x@Branch',TCNS:'xtse@School',TTCM:'x@Group'},
+ 'm4.3.ra_soat_bo_may':{HT:'xtse@School',PHT_CM:'xe@School',PHT_DT:'x@Branch',TCNS:'xtse@School'},
+ 'm4.4.mon_duoc_phep_day':{HT:'xde@School',PHT_CM:'xtsoie@School',TCNS:'xe@School',TTCM:'xtse@Group',GVBM:'x@Own#authored'},
+ 'm4.4.dinh_muc_giang_day':{HT:'xtsode@School',PHT_CM:'xtsie@School',TTCM:'xe@Group#authored',GVBM:'x@Own#authored'},
+ 'm4.4.khung_chuan_va_template':{HT:'xtsode@School',PHT_CM:'xtsie@School',TCNS:'xe@School',TTCM:'xe@Group',GVBM:'x@Class'},
+ 'm4.5.phan_cong_giang_day':{HT:'xde@School',PHT_CM:'xtsode@School',PHT_DT:'xtse@Branch',TTCM:'xtsoe@Group',GVCN:'x@Own#authored',GVBM:'x@Own#authored'},
+ 'm4.5.phan_cong_chu_nhiem':{HT:'xde@School',PHT_CM:'xse@School',PHT_DT:'xtse@Branch',GVCN:'x@Own#authored'},
+ 'm4.5.khoi_lop_phu_trach':{HT:'xde@School',PHT_CM:'xtsode@School',PHT_DT:'xtse@Branch',TTCM:'xtsoe@Group',GVCN:'x@Own#authored',GVBM:'x@Own#authored'},
+ 'm4.5.tong_quan_phan_cong':{HT:'xe@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch',TTCM:'xe@Group',GVCN:'xe@Own#authored',GVBM:'xe@Own#authored'},
+ 'm4.5.can_doi_dinh_muc':{HT:'xe@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch',TTCM:'xe@Group',GVCN:'x@Own#authored',GVBM:'x@Own#authored'},
+ 'm4.5.nhat_ky_dieu_chinh':{HT:'xde@School',PHT_CM:'xtsde@School',TTCM:'xtse@Group'},
+ 'm4.6.tkb_dang_ap_dung':{HT:'xe@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch',VT:'xe@Branch',QLCSVC:'xe@Branch',TTCM:'xe@Group',GVCN:'xe@Class',GVBM:'xe@Own'},
+ 'm4.6.quan_ly_tkb':{HT:'xsde@School',PHT_CM:'xtse@School',PHT_DT:'xtsode@Branch',VT:'xtsoe@Branch',GVCN:'xe@Class',GVBM:'xe@Own'},
+ 'm4.6.khung_tiet_rang_buoc':{HT:'xtsode@School',PHT_CM:'xtsoe@School',PHT_DT:'xtsoe@Branch',QLCSVC:'xtse@Branch',IT:'xtso@School'},
+ 'm4.7.lich_giang_day':{HT:'xe@School',PHT_CM:'xtsode@School',PHT_DT:'xtsode@Branch',VT:'xtse@Branch',TTCM:'xtse@Group',GVCN:'xe@Class',GVBM:'xe@Own'},
+ 'm4.7.viec_can_xu_ly':{HT:'xe@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch',TTCM:'xe@Group'},
+ 'm4.7.giao_vien_vang':{HT:'xe@School',PHT_CM:'xtse@School',PHT_DT:'xte@Branch',VT:'xte@Branch',TTCM:'xte@Group'},
+ 'm4.7.lich_nghi':{HT:'xe@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch',VT:'xe@Branch',TTCM:'xe@Group',GVCN:'xe@Class',GVBM:'xe@Class'},
+ 'm4.8.cho_toi_duyet':{HT:'xde@School',PHT_DT:'xde@Branch',TCNS:'xse@School'},
+ 'm4.8.tong_hop_don_nghi':{HT:'xe@School',PHT_CM:'xe@School',PHT_DT:'xtse@Branch',TCNS:'xtse@School',VT:'xts@Branch#authored'},
+ 'm4.8.cau_hinh':{HT:'xd@School',TCNS:'xts@School'},
+ 'm4.9.cham_cong_cua_toi':{HT:'xtse@School',PHT_CM:'xtse@Own',PHT_DT:'xtse@Branch',TCNS:'xtse@School',KT:'xtse@Own',TQ:'xtse@Own',VT:'xtse@Own',QLCSVC:'xtse@Own',YT:'xtse@Own',TV:'xtse@Own',BT:'xtse@Own',BV:'xtse@Own',GT:'xtse@Own',TPT:'xtse@Own',BTD:'xtse@Own',IT:'xtse@Own',TTCM:'xtse@Own',TPCM:'xtse@Own',TTVP:'xtse@Own',GVCN:'xtse@Own',GVBM:'xtse@Own',NVBT:'xtse@Own',QLKTX:'xtse@Own',QS:'xtse@Own'},
+ 'm4.9.bang_cong_thang':{HT:'xde@School',PHT_DT:'xde@Branch',TCNS:'xtsdie@School',TTCM:'xtsde@Group',TTVP:'xtsde@Group',NVCC:'xs@Branch'},
+ 'm4.9.cham_cong_tiet_day':{HT:'xe@School',PHT_DT:'xe@Branch',TCNS:'xsdie@School',TTCM:'xe@Group',NVCC:'xsde@Branch'},
+ 'm4.9.viec_can_xu_ly':{HT:'xde@School',PHT_CM:'x@Own',PHT_DT:'xe@Branch',TCNS:'xde@School',KT:'x@Own',TQ:'x@Own',VT:'x@Own',QLCSVC:'x@Own',YT:'x@Own',TV:'x@Own',BT:'x@Own',BV:'x@Own',GT:'x@Own',TPT:'x@Own',BTD:'x@Own',IT:'x@Own',TTCM:'xe@Group',TPCM:'x@Own',TTVP:'xe@Group',GVCN:'x@Own',GVBM:'x@Own',NVBT:'x@Own',QLKTX:'x@Own',QS:'x@Own',NVCC:'xde@Branch'},
+ 'm4.9.cau_hinh':{HT:'xd@School',TCNS:'xts@School'},
+ 'm4.10.khen_thuong_cho_duyet':{HT:'xdie@School',PHT_CM:'xde@Own',PHT_DT:'xde@Own',TCNS:'xdie@School',TTCM:'xde@Own'},
+ 'm4.10.khen_thuong':{HT:'xtsdie@School',PHT_CM:'xte@School',PHT_DT:'xte@School',TCNS:'xtsoie@School'},
+ 'm4.10.ky_luat':{HT:'xtsdie@School',TCNS:'xtsdie@School'},
+ 'm4.10.cau_hinh':{HT:'xd@School',TCNS:'xts@School'},
+ 'm4.11.so_dang_ky_chung_thu':{HT:'xtse@School',PHT_CM:'xts@Own#authored',PHT_DT:'xts@Own#authored',TCNS:'xtsde@School',KT:'xts@Own#authored',TQ:'xts@Own#authored',VT:'xtse@Branch#authored',QLCSVC:'xts@Own#authored',YT:'xts@Own#authored',TV:'xts@Own#authored',BT:'xts@Own#authored',BV:'xts@Own#authored',GT:'xts@Own#authored',TPT:'xts@Own#authored',BTD:'xts@Own#authored',IT:'xtse@School',TTCM:'xts@Own#authored',TPCM:'xts@Own#authored',TTVP:'xts@Own#authored',GVCN:'xts@Own#authored',GVBM:'xts@Own#authored',NVBT:'xts@Own#authored',QLKTX:'xts@Own#authored',QS:'xts@Own#authored'},
+ 'm4.11.van_ban_chua_ky':{HT:'xde@School',PHT_CM:'xd@Own#authored',PHT_DT:'xd@Own#authored',TCNS:'xsde@School',KT:'xd@Own#authored',TQ:'xd@Own#authored',VT:'xsde@Branch',QLCSVC:'xd@Own#authored',YT:'xd@Own#authored',TV:'xd@Own#authored',BT:'xd@Own#authored',BV:'xd@Own#authored',GT:'xd@Own#authored',TPT:'xd@Own#authored',BTD:'xd@Own#authored',IT:'xd@Own#authored',TTCM:'xd@Own#authored',TPCM:'xd@Own#authored',TTVP:'xd@Own#authored',GVCN:'xd@Own#authored',GVBM:'xd@Own#authored',NVBT:'xd@Own#authored',QLKTX:'xd@Own#authored',QS:'xd@Own#authored'},
+ 'm4.11.nhat_ky_ky_so':{HT:'xe@School',PHT_CM:'xe@Own#authored',PHT_DT:'xe@Own#authored',TCNS:'xe@School',KT:'xe@Own#authored',TQ:'xe@Own#authored',VT:'xe@Branch#authored',QLCSVC:'xe@Own#authored',YT:'xe@Own#authored',TV:'xe@Own#authored',BT:'xe@Own#authored',BV:'xe@Own#authored',GT:'xe@Own#authored',TPT:'xe@Own#authored',BTD:'xe@Own#authored',IT:'xe@School',TTCM:'xe@Own#authored',TPCM:'xe@Own#authored',TTVP:'xe@Own#authored',GVCN:'xe@Own#authored',GVBM:'xe@Own#authored',NVBT:'xe@Own#authored',QLKTX:'xe@Own#authored',QS:'xe@Own#authored'},
+ 'm4.11.uy_quyen_chung_thu_to_chuc':{HT:'xtsode@School',TCNS:'xe@School',IT:'xe@School'},
+ 'm4.12.dot_xep_loai':{HT:'xtsodie@School',PHT_CM:'x@School',PHT_DT:'x@School',TCNS:'xtsoe@School'},
+ 'm4.12.theo_doi_dinh_ky':{HT:'xtsdie@School',TCNS:'xtse@School'},
+ 'm4.12.phieu_cua_toi':{HT:'xtsoe@School',PHT_CM:'xtso@Own',PHT_DT:'xtso@Own',TCNS:'xtsoe@School',KT:'xtso@Own',TQ:'xtso@Own',VT:'xtso@Own',QLCSVC:'xtso@Own',YT:'xtso@Own',TV:'xtso@Own',BT:'xtso@Own',BV:'xtso@Own',GT:'xtso@Own',TPT:'xtso@Own',BTD:'xtso@Own',IT:'xtso@Own',TTCM:'xtso@Own',TPCM:'xtso@Own',TTVP:'xtso@Own',GVCN:'xtso@Own',GVBM:'xtso@Own',NVBT:'xtso@Own',QLKTX:'xtso@Own',QS:'xtso@Own'},
+ 'm4.12.nhan_xet_cua_toi':{HT:'xtse@School',PHT_CM:'xts@Group',PHT_DT:'xts@Group',TTCM:'xts@Group',TTVP:'xts@Group'},
+ 'm4.12.bo_tieu_chi':{HT:'xde@School',TCNS:'xtsoe@School'},
+ 'm5.1.ke_hoach_giang_day':{HT:'xe@School',PHT_CM:'xtsoie@School',VT:'xtsi@School',TTCM:'xtsoie@Group',TPCM:'xtsie@Group',GVBM:'xe@Group'},
+ 'm5.1.ra_soat_lop_thieu_ke_hoach':{HT:'xe@School',PHT_CM:'xe@School',VT:'x@School',TTCM:'xe@Group',TPCM:'xe@Group',GVBM:'xe@Group'},
+ 'm5.1.tien_do_theo_tuan':{HT:'xe@School',PHT_CM:'xe@School',VT:'x@School',TTCM:'xe@Group',TPCM:'xe@Group',GVBM:'xe@Group'},
+ 'm5.2.giao_an_cua_toi':{GVBM:'xtsoe@Own#authored'},
+ 'm5.2.theo_doi_giao_an_to':{HT:'xe@School',PHT_CM:'xe@School',TTCM:'xe@Group',TPCM:'xe@Group'},
+ 'm5.2.kho_giao_an_mau':{HT:'xe@School',PHT_CM:'xe@School',TTCM:'xtsoie@Group',TPCM:'xtse@Group',GVBM:'xe@Group'},
+ 'm5.3.lich_du_gio':{HT:'xtse@School',PHT_CM:'xtse@School',TTCM:'xtsoe@Group',TPCM:'xtse@Group',GVBM:'xte@Group'},
+ 'm5.3.viec_cua_toi':{PHT_CM:'xts@School',TTCM:'xtsd@Group',TPCM:'xts@Group',GVBM:'xts@Own#authored'},
+ 'm5.3.thong_ke_du_gio':{HT:'xe@School',PHT_CM:'xe@School',TTCM:'xe@Group',TPCM:'xe@Group'},
+ 'm5.4.so_ghi_chep_cua_to':{HT:'xe@School',PHT_CM:'xte@School',TTCM:'xtsode@Group',TPCM:'xtsde@Group',GVBM:'xse@Group'},
+ 'm5.4.nghien_cuu_bai_hoc':{HT:'x@School',PHT_CM:'x@School',TTCM:'xts@Group',TPCM:'xts@Group',GVBM:'xts@Own#authored'},
+ 'm5.4.viec_cua_toi':{TTCM:'xtsd@Group',TPCM:'xtsd@Group',GVBM:'xts@Own#authored'},
+ 'm5.5.bo_kpi_cua_truong':{HT:'xde@School',PHT_CM:'xtsoe@School',TTCM:'x@Group',TPCM:'x@Group',GVBM:'x@Own'},
+ 'm5.5.ket_qua_giao_vien':{HT:'xe@School',PHT_CM:'xtse@School',TTCM:'xtse@Group',TPCM:'xtse@Group',GVBM:'xe@Own#authored'},
+ 'm5.5.theo_doi_theo_ky':{PHT_CM:'xte@School'},
+ 'm5.6.dao_tao_cua_toi':{HT:'xse@Own#authored',PHT_CM:'xse@Own#authored',PHT_DT:'xse@Own#authored',TCNS:'xse@Own#authored',KT:'xse@Own#authored',TQ:'xse@Own#authored',VT:'xse@Own#authored',QLCSVC:'xse@Own#authored',YT:'xse@Own#authored',TV:'xse@Own#authored',BT:'xse@Own#authored',BV:'xse@Own#authored',GT:'xse@Own#authored',TPT:'xse@Own#authored',BTD:'xse@Own#authored',IT:'xse@Own#authored',TTCM:'xse@Own#authored',TPCM:'xse@Own#authored',TTVP:'xse@Own#authored',GVCN:'xse@Own#authored',GVBM:'xse@Own#authored',NVBT:'xse@Own#authored',QLKTX:'xse@Own#authored',QS:'xse@Own#authored'},
+ 'm5.6.dot_dao_tao':{HT:'xte@School#authored',PHT_CM:'xtsoe@School#authored',PHT_DT:'xt@Own#authored',TCNS:'xtse@School#authored',KT:'xt@Own#authored',TQ:'xt@Own#authored',VT:'xt@Own#authored',QLCSVC:'xt@Own#authored',YT:'xt@Own#authored',TV:'xt@Own#authored',BT:'xt@Own#authored',BV:'xt@Own#authored',GT:'xt@Own#authored',TPT:'xt@Own#authored',BTD:'xt@Own#authored',IT:'xt@Own#authored',TTCM:'xte@Group#authored',TPCM:'xte@Group#authored',TTVP:'xt@Own#authored',GVCN:'xt@Own#authored',GVBM:'xt@Own#authored',NVBT:'xt@Own#authored',QLKTX:'xt@Own#authored',QS:'xt@Own#authored',TCDT:'xtse@Own#assigned'},
+ 'm5.6.cho_toi_xu_ly':{HT:'xd@School',PHT_CM:'xd@School',TCNS:'xd@School'},
+ 'm5.7.bdtx_cua_toi':{GVBM:'xtse@Own#authored'},
+ 'm5.7.dot_bdtx':{HT:'xte@School',PHT_CM:'xtsoe@School',TCNS:'xtse@School',TTCM:'xt@Group',TPCM:'xt@Group',GVBM:'xt@Own#authored',TCDT:'xtse@Own#assigned'},
+ 'm5.7.theo_doi_bdtx':{HT:'xtse@School',PHT_CM:'xtse@School',TCNS:'xtse@School',TTCM:'xe@Group',TPCM:'xe@Group'},
+ 'm5.7.cho_toi_xu_ly':{HT:'xd@School',PHT_CM:'xd@School',TCNS:'xd@School',TTCM:'xd@Group',TPCM:'x@Group'},
+ 'm11.1.lop_on_luyen':{HT:'xe@School',PHT_CM:'xtsoe@School',VT:'x@Branch',TTCM:'xtse@Group',GVCN:'x@Class',GVBM:'xtse@School#assigned'},
+ 'm11.1.dang_ky_mon_on':{HT:'xe@School',PHT_CM:'xsie@School',VT:'xi@Branch',TTCM:'x@Group',GVCN:'xs@Class',GVBM:'x@School#assigned'},
+ 'm11.1.chia_lop':{HT:'x@School',PHT_CM:'xtsde@School',TTCM:'xtsd@Group',GVBM:'x@School#assigned'},
+ 'm11.1.xep_lich':{HT:'x@School',PHT_CM:'xtse@School',VT:'x@Branch',TTCM:'xts@Group',GVCN:'x@Class',GVBM:'xts@School#assigned'},
+ 'm11.1.bao_cao':{HT:'xe@School',PHT_CM:'xde@School',KT:'xe@School',TTCM:'xe@Group',GVCN:'x@Class',GVBM:'x@School#assigned'},
+ 'm11.1.cau_hinh':{HT:'xs@School',PHT_CM:'xts@School',TTCM:'xs@Group',GVBM:'xs@School#assigned'},
+ 'm11.2.lop_boi_duong':{HT:'xe@School',PHT_CM:'xtsoe@School',VT:'x@Branch',TTCM:'xtse@Group',GVCN:'x@Class',GVBM:'xtse@School#assigned'},
+ 'm11.2.thi_dau_vao':{HT:'xe@School',PHT_CM:'xtsodie@School',VT:'xti@Branch',TTCM:'xtsde@Group',GVCN:'xt@Class',GVBM:'xtsde@School#assigned'},
+ 'm11.2.xep_lich':{HT:'x@School',PHT_CM:'xtse@School',VT:'x@Branch',TTCM:'xts@Group',GVCN:'x@Class',GVBM:'xts@School#assigned'},
+ 'm11.2.bao_cao':{HT:'xe@School',PHT_CM:'xde@School',KT:'xe@School',TTCM:'xe@Group',GVBM:'x@School#assigned'},
+ 'm11.2.cau_hinh':{HT:'xs@School',PHT_CM:'xts@School',TTCM:'xs@Group',GVBM:'xs@School#assigned'},
+ 'm11.3.lop_dao_tao':{HT:'xe@School',PHT_CM:'xtsoe@School',VT:'x@Branch',TTCM:'xtse@Group',GVBM:'xtse@School#assigned'},
+ 'm11.3.khai_bao_tv':{HT:'xe@School',PHT_CM:'xtsoie@School',KT:'x@School',VT:'xtsi@Branch',TTCM:'xtse@Group',GVBM:'x@School#assigned'},
+ 'm11.3.xep_lich':{HT:'x@School',PHT_CM:'xtse@School',VT:'x@Branch',TTCM:'xts@Group',GVBM:'xts@School#assigned'},
+ 'm11.3.bao_cao':{HT:'xe@School',PHT_CM:'xde@School',KT:'xe@School',TTCM:'xe@Group',GVBM:'x@School#assigned'},
+ 'm11.3.cau_hinh':{HT:'xs@School',PHT_CM:'xts@School',TTCM:'xs@Group',GVBM:'xs@School#assigned'},
+ 'm11.4.doi_tuyen':{HT:'xde@School',PHT_CM:'xtse@School',VT:'x@School',TTCM:'xts@Group',GVCN:'x@Class',GVBM:'xts@School#assigned'},
+ 'm11.4.thanh_tich':{HT:'xde@School',PHT_CM:'xtsdie@School',VT:'xti@School',TTCM:'xt@Group',GVCN:'x@Class',GVBM:'xt@School#assigned'},
+ 'm11.4.thong_ke':{HT:'xe@School',PHT_CM:'xe@School',VT:'x@School',TTCM:'xe@Group',GVCN:'x@Class',GVBM:'x@School#assigned'},
+ 'm11.4.cau_hinh':{HT:'xs@School',PHT_CM:'xs@School',TTCM:'x@Group'},
+ 'm6.1.cho_toi_duyet':{HT:'xd@School#assigned',PHT_DT:'xd@Branch#assigned',NVBT:'xd@Branch#assigned'},
+ 'm6.1.dang_ky_ban_tru':{HT:'xe@School',PHT_DT:'xde@Branch',KT:'xe@School',VT:'xtsie@Branch',GVCN:'x@Class#assigned',NVBT:'xtsodie@Branch'},
+ 'm6.1.thuc_don_bua_an':{HT:'xe@School',PHT_DT:'xtse@Branch',KT:'xe@School',VT:'xt@Branch',YT:'x@School',GVCN:'xe@Class',NVBT:'xtsoe@Branch'},
+ 'm6.1.cham_an':{HT:'xde@School',PHT_DT:'xde@Branch',GVCN:'xts@Class#assigned',NVBT:'xtse@Branch'},
+ 'm6.1.chot_so_thang':{HT:'xde@School',PHT_DT:'xde@Branch',KT:'xe@School',NVBT:'xtsdie@Branch'},
+ 'm6.1.cau_hinh':{HT:'xts@School',PHT_DT:'xts@Branch',NVBT:'xts@Branch'},
+ 'm6.2.khoa_hoc':{HT:'xtsoe@School',PHT_DT:'xtsoe@Branch',KT:'xe@School',VT:'xe@Branch',GVCN:'x@Class#assigned',GVBM:'x@Own#assigned'},
+ 'm6.2.dang_ky_xet_duyet':{HT:'xtsode@School',PHT_DT:'xtsode@Branch',VT:'xtsodie@Branch'},
+ 'm6.2.diem_danh_hom_nay':{HT:'xtsde@School',PHT_DT:'xtsde@Branch',VT:'xtse@Branch',GVBM:'xts@Own#assigned'},
+ 'm6.2.tong_ket_bao_cao':{HT:'xe@School',PHT_DT:'xe@Branch',KT:'xe@School',VT:'xe@Branch'},
+ 'm6.2.cau_hinh':{HT:'xts@School',PHT_DT:'xts@Branch'},
+ 'm6.3.cham_sao_do':{HT:'xde@School',PHT_DT:'xde@Branch',VT:'xtse@Branch',TPT:'xtsde@School#assigned',BTD:'xtsde@School#assigned',GVCN:'x@Class#assigned'},
+ 'm6.3.xep_hang_thi_dua':{HT:'xe@School',PHT_DT:'xe@Branch',VT:'xe@Branch',TPT:'xe@School#assigned',BTD:'xe@School#assigned',GVCN:'x@Class#assigned'},
+ 'm6.3.dang_ky_ung_vien':{VT:'xtsi@Branch',TPT:'xtsi@School#assigned',BTD:'xtsi@School#assigned',GVCN:'xtsi@Class#assigned'},
+ 'm6.3.xet_duyet_ket_nap':{HT:'xde@School',PHT_DT:'xde@Branch',VT:'xe@Branch',TPT:'xtsode@School#assigned',BTD:'xtsode@School#assigned'},
+ 'm6.3.doan_vien_doi_vien':{HT:'xe@School',PHT_DT:'xe@Branch',VT:'xe@Branch',TPT:'xse@School#assigned',BTD:'xse@School#assigned',GVCN:'xs@Class#assigned'},
+ 'm6.3.danh_gia_xep_loai':{HT:'xe@School',PHT_DT:'xe@Branch',BTD:'xtsde@School#assigned',GVCN:'xts@Class#assigned'},
+ 'm6.3.phong_trao_hinh_anh':{HT:'xd@School',PHT_DT:'xd@Branch',VT:'x@Branch',TPT:'xtsd@School#assigned',BTD:'xtsd@School#assigned'},
+ 'm6.3.cau_hinh':{TPT:'xts@School',BTD:'xts@School'},
+ 'm6.13.lich_truc_luc_luong':{HT:'x@School',PHT_DT:'x@Branch',VT:'x@Branch',TPT:'xtse@School#assigned',BTD:'xtse@School#assigned',GVCN:'x@Class#assigned'},
+ 'm6.4.phong_thiet_bi_theo_phong':{HT:'xe@School',PHT_DT:'xe@Branch',KT:'xe@School',QLCSVC:'xtsoe@Branch'},
+ 'm6.4.tai_san_thiet_bi':{HT:'xe@School',PHT_DT:'xe@Branch',KT:'xe@School',QLCSVC:'xtsoie@Branch',BT:'x@School'},
+ 'm6.4.dieu_chuyen_giua_diem_truong':{HT:'xde@School',PHT_DT:'xe@Branch',KT:'xe@School',QLCSVC:'xtse@Branch'},
+ 'm6.4.kiem_ke_tai_san':{HT:'xde@School',PHT_DT:'xe@Branch',KT:'xsde@School',QLCSVC:'xtse@Branch'},
+ 'm6.4.sua_chua_thay_the':{HT:'xe@School',PHT_DT:'xe@Branch',TCNS:'xt@School#authored',KT:'xe@School',QLCSVC:'xtse@Branch',BT:'xs@School#assigned',NVCC:'xt@Branch#authored'},
+ 'm6.4.cau_hinh':{QLCSVC:'xts@Branch'},
+ 'm6.5.cua_toi':{HT:'xtso@School#authored',PHT_CM:'xtso@Own#authored',PHT_DT:'xtso@Branch#authored',TCNS:'xtso@Own#authored',KT:'xtsoe@School#authored',TQ:'xtso@Own#authored',VT:'xtso@Own#authored',QLCSVC:'xtsode@Branch#authored',YT:'xtso@Own#authored',TV:'xtso@Own#authored',BT:'xtso@Own#authored',BV:'xtso@Own#authored',GT:'xtso@Own#authored',TPT:'xtso@Own#authored',BTD:'xtso@Own#authored',IT:'xtso@Own#authored',TTCM:'xtso@Own#authored',TPCM:'xtso@Own#authored',TTVP:'xtso@Own#authored',GVCN:'xtso@Own#authored',GVBM:'xtso@Own#authored',NVBT:'xtso@Own#authored',QLKTX:'xtso@Own#authored',QS:'xtso@Own#authored'},
+ 'm6.5.cho_toi_duyet':{QLCSVC:'xsde@Branch'},
+ 'm6.5.lich_muon_phong':{QLCSVC:'xsde@Branch'},
+ 'm6.5.thiet_bi_dang_cho_muon':{KT:'xe@School',QLCSVC:'xsde@Branch'},
+ 'm6.5.dot_mua_sam':{HT:'xde@School',PHT_DT:'xd@Branch',KT:'xse@School',QLCSVC:'xtse@Branch'},
+ 'm6.5.cau_hinh':{QLCSVC:'xsde@Branch'},
+ 'm6.6.so_y_te':{HT:'xde@School',PHT_DT:'xde@Branch',YT:'xtsoie@Branch',GVCN:'x@Class'},
+ 'm6.6.ho_so_suc_khoe':{YT:'xtsoie@Branch',GVCN:'x@Class',NVBT:'x@Branch'},
+ 'm6.6.dot_kham_suc_khoe':{HT:'xde@School',PHT_DT:'xde@Branch',YT:'xtsoie@Branch'},
+ 'm6.6.tu_thuoc':{YT:'xtsoie@Branch'},
+ 'm6.6.phong_chong_dich':{HT:'xde@School',PHT_DT:'xde@Branch',YT:'xtsoie@Branch'},
+ 'm6.6.bao_cao_y_te':{HT:'xde@School',YT:'xtsoie@Branch'},
+ 'm6.6.cau_hinh':{YT:'xtsoie@Branch'},
+ 'm6.7.xem_truc_tiep':{HT:'xe@School',PHT_CM:'x@School',PHT_DT:'x@Branch',BV:'x@Branch#assigned',IT:'x@School'},
+ 'm6.7.danh_sach_camera':{HT:'x@School',PHT_CM:'x@School',IT:'xtso@School'},
+ 'm6.7.nhom_camera':{HT:'xtso@School',IT:'xtso@School'},
+ 'm6.7.phan_cong_bao_ve':{HT:'xtso@School',IT:'xtso@School'},
+ 'm6.7.nhat_ky_truy_cap':{HT:'xe@School',IT:'xe@School'},
+ 'm6.7.cau_hinh':{IT:'xtso@School'},
+ 'm6.8.su_kien':{HT:'xts@School',PHT_CM:'xts@School#authored',PHT_DT:'xts@Branch#authored',TCNS:'xtse@School#authored',VT:'xe@School',TPT:'xts@School#authored'},
+ 'm6.8.lich_su_kien':{HT:'x@School',PHT_CM:'x@School',PHT_DT:'x@Branch',TCNS:'x@School',VT:'xe@School',TPT:'x@School'},
+ 'm6.8.bao_cao':{HT:'xe@School',PHT_CM:'xe@School',TCNS:'xe@School',VT:'xe@School'},
+ 'm6.8.cau_hinh':{HT:'xts@School',IT:'xts@School'},
+ 'm6.9.viec_cua_toi':{HT:'xsd@School',PHT_CM:'xsd@School',PHT_DT:'xs@Own#assigned',TCNS:'xs@Own#assigned',KT:'xs@Own#assigned',TQ:'xs@Own#assigned',VT:'xs@School',QLCSVC:'xs@Own#assigned',YT:'xs@Own#assigned',TV:'xs@Own#assigned',BT:'xs@Own#assigned',BV:'xs@Own#assigned',GT:'xs@Own#assigned',TPT:'xs@Own#assigned',BTD:'xs@Own#assigned',IT:'xs@Own#assigned',TTCM:'xs@Own#assigned',TPCM:'xs@Own#assigned',TTVP:'xs@Own#assigned',GVCN:'xs@Own#assigned',GVBM:'xs@Own#assigned',NVBT:'xs@Own#assigned',QLKTX:'xs@Own#assigned',QS:'xs@Own#assigned'},
+ 'm6.9.so_cong_van_den':{HT:'xs@School',PHT_CM:'x@School',TCNS:'x@Own#assigned',KT:'x@Own#assigned',VT:'xts@School',TTCM:'x@Own#assigned'},
+ 'm6.9.so_cong_van_di':{HT:'xtd@School',PHT_CM:'xt@School',TCNS:'xt@Own#authored',KT:'xt@Own#authored',VT:'xts@School',TTCM:'x@Own#assigned'},
+ 'm6.9.tra_cuu':{HT:'x@School',PHT_CM:'x@School',TCNS:'x@Own#assigned',KT:'x@Own#assigned',VT:'x@School',TTCM:'x@Own#assigned'},
+ 'm6.9.uy_quyen_ky':{HT:'xtso@School',PHT_CM:'x@School'},
+ 'm6.9.cau_hinh':{VT:'xts@School'},
+ 'm6.10.cho_toi_duyet':{HT:'xd@School',PHT_DT:'xd@Branch',QLKTX:'xd@Branch',QS:'xd@Branch'},
+ 'm6.10.diem_danh_toi':{HT:'xe@School',PHT_DT:'xde@Branch',GVCN:'x@Class#assigned',QLKTX:'xtse@Branch',QS:'xtse@Branch#assigned'},
+ 'm6.10.ra_ngoai_ve_nha':{PHT_DT:'xde@Branch',GVCN:'x@Class#assigned',QLKTX:'xtsdie@Branch',QS:'xtsde@Branch#assigned'},
+ 'm6.10.so_su_kien':{HT:'xe@School',PHT_DT:'xe@Branch',GVCN:'x@Class#assigned',QLKTX:'xtse@Branch',QS:'xts@Branch#assigned'},
+ 'm6.10.dang_ky_noi_tru':{HT:'xde@School',PHT_DT:'xde@Branch',KT:'xe@Branch',VT:'xtsie@Branch',QLKTX:'xtsodie@Branch',QS:'x@Branch#assigned'},
+ 'm6.10.phong_o_so_do':{HT:'xe@School',PHT_DT:'xe@Branch',QLKTX:'xtsoie@Branch',QS:'x@Branch#assigned'},
+ 'm6.10.theo_doi_an':{HT:'xe@School',PHT_DT:'xe@Branch',KT:'xe@Branch',VT:'xe@Branch',GVCN:'x@Class#assigned',QLKTX:'xtsde@Branch',QS:'xtse@Branch#assigned'},
+ 'm6.10.cau_hinh':{HT:'xts@School',PHT_DT:'xs@Branch',QLKTX:'xts@Branch'},
+ 'm6.12.kho_tai_lieu':{HT:'xtsoie@School',PHT_CM:'xtsoie@School#authored',PHT_DT:'xtsoie@School#authored',TCNS:'xtsoie@School#authored',KT:'xsie@School#authored',TQ:'xe@School',VT:'xtsoie@School',QLCSVC:'xsie@School#authored',YT:'xie@School',TV:'xe@School',BT:'x@School',BV:'x@School',GT:'x@School',TPT:'xtsie@School#authored',BTD:'xtsie@School#authored',TTCM:'xtsoie@School#authored',TPCM:'xtsie@School#authored',TTVP:'x@School',GVCN:'xsie@School#authored',GVBM:'xsie@School#authored',NVBT:'x@School',QLKTX:'x@School',QS:'x@School'},
+ 'm6.12.thung_rac':{HT:'xso@School',PHT_CM:'xs@School#authored',PHT_DT:'xs@School#authored',TCNS:'xs@School#authored',KT:'xs@School#authored',VT:'xso@School',QLCSVC:'xs@School#authored',TPT:'xs@School#authored',BTD:'xs@School#authored',TTCM:'xs@School#authored',TPCM:'xs@School#authored',GVCN:'xs@School#authored',GVBM:'xs@School#authored'},
+ 'm6.12.cau_hinh':{HT:'xs@School',PHT_CM:'x@School',PHT_DT:'x@School',TCNS:'x@School',VT:'xs@School'},
+ 'm6.14.to_chuc_hoat_dong':{HT:'xde@School',PHT_DT:'xde@Branch',VT:'xse@Branch',TPT:'xtsode@School#assigned',BTD:'xtsode@School#assigned'},
+ 'm6.15.co_cau_to_chuc':{HT:'xe@School',PHT_DT:'x@Branch',VT:'xtsie@Branch',TPT:'xtsie@School#assigned',BTD:'xtsdie@School#assigned',GVCN:'xts@Class#assigned'},
+ 'm6.15.can_bo':{HT:'xe@School',PHT_DT:'x@Branch',VT:'xe@Branch',TPT:'xe@School#assigned',BTD:'xe@School#assigned',GVCN:'x@Class#assigned'},
+ 'm6.15.cau_hinh':{HT:'x@School',TPT:'xs@School#assigned',BTD:'xs@School#assigned'},
+ 'm6.16.danh_sach_clb':{HT:'xde@School',PHT_DT:'xe@Branch',TPT:'xtsoie@School#assigned',BTD:'xtsoie@School#assigned',GVCN:'x@Class#assigned',GVBM:'xtsi@School#assigned'},
+ 'm6.16.danh_gia_clb':{HT:'xe@School',PHT_DT:'xe@Branch',TPT:'xtsde@School#assigned',BTD:'xtsde@School#assigned',GVBM:'x@School#assigned'},
+ 'm6.16.cau_hinh_danh_gia':{HT:'x@School',PHT_DT:'x@Branch',TPT:'xts@School',BTD:'xts@School'},
+ 'm6.17.so_quy':{HT:'xod@School',PHT_DT:'xod@School#assigned',TPT:'xtso@School#assigned',BTD:'xtso@School#assigned'},
+ 'm6.17.khoa_so_bao_cao':{HT:'xsde@School',PHT_DT:'xe@School#assigned',TPT:'xtse@School#assigned',BTD:'xtse@School#assigned'},
+ 'm6.18.lich_hop':{HT:'xse@School',PHT_CM:'xse@School',PHT_DT:'xse@Branch',TCNS:'xs@School#assigned',KT:'xs@School#assigned',TQ:'xs@School#assigned',VT:'xse@Branch',QLCSVC:'xs@School#assigned',YT:'xs@School#assigned',TV:'xs@School#assigned',BT:'xs@School#assigned',BV:'xs@Branch#assigned',GT:'xs@Branch#assigned',TPT:'xs@School#assigned',BTD:'xs@School#assigned',IT:'xs@School#assigned',TTCM:'xs@Group#assigned',TPCM:'xs@Group#assigned',TTVP:'xs@Group#assigned',GVCN:'xs@Class#assigned',GVBM:'xs@Class#assigned',TKHD:'xs@School#assigned',NVBT:'xs@Branch#assigned',QLKTX:'xs@Branch#assigned',QS:'xs@Branch#assigned'},
+ 'm6.18.cuoc_hop':{HT:'xtsode@School',PHT_CM:'xtsode@School',PHT_DT:'xtsode@Branch',TCNS:'xtsod@School#authored',KT:'xsd@School#assigned',TQ:'xsd@School#assigned',VT:'xtsode@Branch',QLCSVC:'xsd@School#assigned',YT:'xsd@School#assigned',TV:'xsd@School#assigned',BT:'xsd@School#assigned',BV:'xsd@Branch#assigned',GT:'xsd@Branch#assigned',TPT:'xtsod@School#assigned',BTD:'xtsod@School#assigned',IT:'xsd@School#assigned',TTCM:'xsd@Group#assigned',TPCM:'xsd@Group#assigned',TTVP:'xsd@Group#assigned',GVCN:'xsd@Class#assigned',GVBM:'xsd@Class#assigned',TKHD:'xsd@School#assigned',NVBT:'xsd@Branch#assigned',QLKTX:'xsd@Branch#assigned',QS:'xsd@Branch#assigned'},
+ 'm6.18.cau_hinh':{HT:'xs@School',PHT_CM:'x@School',VT:'x@Branch'},
+ 'm6.19.muon_tra':{TV:'xtsoe@Branch',GVCN:'x@Class'},
+ 'm6.19.kho_sach':{HT:'xe@School',PHT_DT:'xe@Branch',TV:'xtsie@Branch'},
+ 'm6.19.kiem_ke_thanh_loc':{HT:'xde@School',PHT_DT:'xe@Branch',TV:'xtse@Branch'},
+ 'm6.19.thong_ke':{HT:'xe@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch',TV:'xe@Branch'},
+ 'm6.19.cau_hinh':{TV:'xs@Branch'},
+ 'm7.1.khoan_thu_nam_hoc':{HT:'xde@School',PHT_DT:'xtse@Branch#authored',KT:'xtse@School'},
+ 'm7.1.lich_cong_bo_hang_thang':{HT:'xde@School',PHT_DT:'xe@Branch#authored',KT:'xtse@School'},
+ 'm7.1.cho_toi_duyet':{HT:'xd@School',KT:'x@School'},
+ 'm7.2.theo_doi_xac_nhan_dong_tien':{HT:'xde@School',PHT_DT:'xde@Branch',KT:'xte@School',TQ:'xt@Branch',GVCN:'x@Class#assigned'},
+ 'm7.2.thong_ke_thuc_hien_khoan_thu':{HT:'xde@School',PHT_DT:'xde@Branch',KT:'xtsdie@School',TQ:'xt@Branch'},
+ 'm7.2.chung_tu_dien_tu':{HT:'xd@School',PHT_DT:'x@Branch',KT:'xt@School'},
+ 'm7.3.dieu_chinh_khoan_phai_thu':{HT:'xode@School',PHT_DT:'xod@Branch',KT:'xtsoe@School'},
+ 'm7.3.hoan_tien':{HT:'xode@School',PHT_DT:'xode@Branch',KT:'xtsoe@School',TQ:'xt@Branch'},
+ 'm7.3.thong_ke_xuat_ke_toan':{HT:'xe@School',PHT_DT:'xe@Branch',KT:'xe@School',TQ:'x@Branch'},
+ 'm7.4.hoc_sinh_dang_huong_chinh_sach':{HT:'xd@School',PHT_DT:'xd@Branch#assigned',KT:'xtsodi@School',VT:'xt@Branch#assigned',GVCN:'xt@Class#assigned'},
+ 'm7.4.danh_muc_chinh_sach_mien_giam':{HT:'xs@School',KT:'xtso@School'},
+ 'm7.4.bao_cao':{HT:'xe@School',PHT_DT:'xe@Branch#assigned',KT:'xe@School',VT:'xe@Branch#assigned'},
+ 'm7.5.so_thu_chi':{HT:'xt@School',PHT_DT:'x@Branch',KT:'xtsd@School',TQ:'x@Branch#authored'},
+ 'm7.5.bao_cao_xuat_ke_toan':{HT:'xde@School',PHT_DT:'xe@Branch',KT:'xe@School'},
+ 'm7.5.danh_muc_thu_chi_ma_doi_ung':{HT:'xd@School',KT:'xts@School'},
+ 'm7.6.bang_tong_hop_thang':{HT:'x@School',TCNS:'x@School',KT:'x@School'},
+ 'm7.6.xuat_tep_doi_chieu':{HT:'xe@School',TCNS:'xtde@School',KT:'xtde@School'},
+ 'm7.6.template_xuat':{HT:'xd@School',TCNS:'x@School',KT:'xts@School'},
+ 'm8.1.cho_toi_duyet':{HT:'xd@School'},
+ 'm8.1.thong_bao_cua_toi':{HT:'xtsoe@School',PHT_CM:'xtsoe@School',PHT_DT:'xtsoe@Branch',TCNS:'xtsoe@School',VT:'xtsoe@Branch',TTCM:'xtsoe@Group',GVCN:'xtsoe@Class',GVBM:'xtsoe@Class'},
+ 'm8.1.lich_phat_tan':{HT:'xsoe@School',PHT_CM:'xe@School',PHT_DT:'xsoe@Branch',TCNS:'xe@School',VT:'xe@Branch',TTCM:'xe@Group',GVCN:'xe@Class',GVBM:'xe@Own'},
+ 'm8.1.mau_thong_bao':{HT:'xtsod@School',PHT_CM:'xt@School',PHT_DT:'x@Branch',TCNS:'xt@School',VT:'x@Branch',TTCM:'x@Group',GVCN:'x@Class',GVBM:'x@Class'},
+ 'm8.2.cuoc_tro_chuyen':{GVCN:'xtse@Class',GVBM:'xte@Own'},
+ 'm8.2.danh_ba':{GVCN:'x@Class',GVBM:'x@Own'},
+ 'm8.2.nhom_lop_nam_cu':{GVCN:'xe@Class'},
+ 'm8.2.cai_dat_chat_cua_toi':{GVCN:'xs@Own',GVBM:'xs@Own'},
+ 'm8.3.bao_cao_vi_pham':{HT:'xsde@School',PHT_DT:'xsde@Branch'},
+ 'm8.3.khoa_chat':{HT:'xtse@School',PHT_DT:'xtse@Branch'},
+ 'm8.3.quy_tac_chat':{HT:'xts@School',PHT_DT:'x@Branch'},
+ 'm8.4.can_xu_ly':{HT:'xtsde@School',PHT_DT:'xtsde@Branch',KT:'xtse@School',VT:'xtse@Branch'},
+ 'm8.4.tat_ca':{HT:'xtsde@School',PHT_DT:'xtsde@Branch',KT:'xtse@School',VT:'xtse@Branch'},
+ 'm8.5.cho_toi_duyet':{HT:'xd@School',PHT_CM:'xd@School'},
+ 'm8.5.bai_cua_toi':{HT:'xtso@School#authored',PHT_CM:'xtso@School#authored',PHT_DT:'xtso@Branch#authored',TCNS:'xtso@School#authored',KT:'xtso@School#authored',VT:'xtso@Branch#authored',TPT:'xtso@School#authored',BTD:'xtso@School#authored'},
+ 'm8.5.bai_tren_web':{HT:'xsoe@School',PHT_CM:'xsoe@School',PHT_DT:'x@Branch',TCNS:'x@School',KT:'x@School',VT:'xe@Branch',TPT:'x@School',BTD:'x@School',IT:'x@School'},
+ 'm8.5.cong_khai':{HT:'xtde@School',PHT_CM:'xte@School',PHT_DT:'x@School',TCNS:'xt@School',KT:'xt@School',VT:'xt@School'},
+ 'm8.5.cau_hinh':{HT:'xtso@School',PHT_CM:'x@School',IT:'xs@School'},
+ 'm9.1.hoc_sinh':{HT:'xe@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch',KT:'xe@Branch',VT:'xe@Branch'},
+ 'm9.1.bien_dong_hoc_sinh':{HT:'xe@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch',VT:'xe@Branch'},
+ 'm9.1.ket_qua_chuyen_can':{HT:'xe@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch'},
+ 'm9.1.nhan_su':{HT:'xe@School',PHT_DT:'xe@Branch',TCNS:'xe@School'},
+ 'm9.1.tai_chinh':{HT:'xe@School',PHT_DT:'xe@Branch',KT:'xe@School'},
+ 'm9.1.doan_doi':{HT:'xe@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch',TPT:'xe@School#assigned',BTD:'xe@School#assigned'},
+ 'm10.1.ho_so_nam_hoc':{HT:'xtsode@School',PHT_CM:'xe@School',PHT_DT:'xse@School',TCNS:'x@School',KT:'x@School',VT:'x@School',IT:'xe@School',TTCM:'x@School',GVCN:'x@School',GVBM:'x@School'},
+ 'm10.1.chuyen_giao_nam_hoc':{HT:'xd@School'},
+ 'm10.1.che_do_truy_cap_theo_trang_thai':{HT:'xs@School',PHT_CM:'x@School',PHT_DT:'x@School',TCNS:'x@School',KT:'x@School',VT:'x@School',IT:'x@School',TTCM:'x@School',GVCN:'x@School',GVBM:'x@School'},
+ 'm10.2.truong':{HT:'xtsd@School',PHT_CM:'x@School',PHT_DT:'x@School',TCNS:'x@School',KT:'x@School',TQ:'x@School',VT:'x@School',QLCSVC:'x@School',YT:'x@School',TV:'x@School',BT:'x@School',BV:'x@School',GT:'x@School',TPT:'x@School',BTD:'x@School',IT:'xts@School',TTCM:'x@School',TPCM:'x@School',TTVP:'x@School',GVCN:'x@School',GVBM:'x@School',DMCM:'x@School',UQGA:'x@School',TKHD:'x@School',CTCD:'x@School',NVBT:'x@School',QLKTX:'x@School',QS:'x@School',TCDT:'x@School'},
+ 'm10.2.danh_muc_mon':{HT:'xe@School',PHT_CM:'xtsoe@School',PHT_DT:'x@School',TCNS:'x@School',KT:'x@School',TQ:'x@School',VT:'x@School',QLCSVC:'x@School',YT:'x@School',TV:'x@School',BT:'x@School',BV:'x@School',GT:'x@School',TPT:'x@School',BTD:'x@School',IT:'x@School',TTCM:'x@School',TPCM:'x@School',TTVP:'x@School',GVCN:'x@School',GVBM:'x@School',DMCM:'x@School',UQGA:'x@School',TKHD:'x@School',CTCD:'x@School',NVBT:'x@School',QLKTX:'x@School',QS:'x@School',TCDT:'x@School'},
+ 'm10.2.diem_truong':{HT:'xtsode@School',PHT_CM:'xs@School',PHT_DT:'xsie@Branch',TCNS:'x@School',KT:'x@School',VT:'x@Branch',IT:'x@School',TTCM:'x@Group',GVCN:'x@Class',GVBM:'x@Class'},
+ 'm10.2.danh_muc_lop':{HT:'xtsode@School',PHT_CM:'xe@School',PHT_DT:'xtsoie@Branch',TCNS:'x@School',KT:'x@School',VT:'x@Branch',IT:'x@School',TTCM:'x@Group',GVCN:'x@Class',GVBM:'x@Class'},
+ 'm10.2.mon_hoc':{HT:'xe@School',PHT_CM:'xtsoie@School',PHT_DT:'x@School',TCNS:'x@School',KT:'x@School',VT:'x@Branch',IT:'x@School',TTCM:'x@Group',GVCN:'x@Class',GVBM:'x@Class'},
+ 'm10.2.to_chuyen_mon':{HT:'xtsod@School',PHT_CM:'xtsie@School',PHT_DT:'x@School',TCNS:'x@School',KT:'x@School',VT:'x@Branch',IT:'x@School',TTCM:'x@Group',GVCN:'x@Class',GVBM:'x@Class'},
+ 'm10.1.mon_hoc_cho_lop':{HT:'xe@School',PHT_CM:'xtsoie@School',PHT_DT:'x@School',TCNS:'x@School',KT:'x@School',VT:'x@Branch',IT:'x@School',TTCM:'x@Group',GVCN:'x@Class',GVBM:'x@Class'},
+ 'm10.4.cau_hinh_quyen':{HT:'xtsoe@School',PHT_CM:'x@School',PHT_DT:'x@School',TCNS:'x@School',IT:'xtsoie@School'},
+ 'm10.4.ai_truy_cap_duoc_gi':{HT:'xe@School',PHT_CM:'x@School',PHT_DT:'x@School',TCNS:'xe@School',IT:'xe@School',TTCM:'x@School'},
+ 'm10.5.tai_khoan_nhan_su':{HT:'xde@School',TCNS:'xt@School',IT:'xtsde@School'},
+ 'm10.5.tai_khoan_phu_huynh':{HT:'xde@School',VT:'x@School',IT:'xsde@School'},
+ 'm10.5.chinh_sach_bao_mat':{HT:'xe@School',IT:'xse@School'},
+ 'm10.5.nhat_ky_dang_nhap':{HT:'xe@School',IT:'xe@School'},
+ 'm10.6.trung_tam_cau_hinh':{HT:'xe@School',PHT_CM:'x@School',PHT_DT:'x@School',TCNS:'x@School',KT:'x@School',IT:'xe@School',TTCM:'x@School'},
+ 'm10.7.tra_cuu':{HT:'xe@School',PHT_CM:'x@Own',PHT_DT:'xe@Branch',TCNS:'x@Own',KT:'x@Own',TQ:'x@Own',VT:'x@Own',QLCSVC:'x@Own',YT:'x@Own',TV:'x@Own',BT:'x@Own',BV:'x@Own',GT:'x@Own',TPT:'x@Own',BTD:'x@Own',IT:'xe@School',TTCM:'x@Own',TPCM:'x@Own',TTVP:'x@Own',GVCN:'x@Own',GVBM:'x@Own',NVBT:'x@Own',QLKTX:'x@Own',QS:'x@Own'},
+ 'm10.7.ra_soat':{HT:'xe@School',IT:'xe@School'},
+ 'm10.8.ket_noi':{HT:'xd@School',IT:'xts@School'},
+ 'm10.8.keo_ve':{TCNS:'xti@School',VT:'xti@Branch',IT:'xti@School'},
+ 'm10.8.day_len':{HT:'xd@School',TCNS:'xt@School',VT:'xt@Branch'},
+ 'm10.8.viec_chua_xong':{TCNS:'xs@Branch',VT:'xs@Branch'},
+ 'm10.8.lich_su':{HT:'xe@School',IT:'xe@School'},
+ 'm10.8.xuat_du_lieu':{HT:'xe@School',TCNS:'xe@School',VT:'xe@Branch'},
+ 'm10.9.dot_nghi':{HT:'xtsode@School',PHT_CM:'xe@School',PHT_DT:'xtsoe@Branch',TCNS:'xe@School',KT:'xe@School',TQ:'x@Own',VT:'xtse@Branch',QLCSVC:'x@Own',YT:'xe@Branch',TV:'x@Own',BT:'x@Own',BV:'x@Own',GT:'x@Own',TPT:'x@Own',BTD:'x@Own',IT:'x@Own',TTCM:'x@Own',TPCM:'x@Own',TTVP:'x@Own',GVCN:'x@Own',GVBM:'x@Own',NVBT:'xe@Branch',QLKTX:'x@Own',QS:'x@Own'},
+ 'm10.9.lich_nam_hoc':{HT:'xe@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch',TCNS:'xe@School',KT:'xe@School',TQ:'x@Own',VT:'xe@Branch',QLCSVC:'x@Own',YT:'xe@Branch',TV:'x@Own',BT:'x@Own',BV:'x@Own',GT:'x@Own',TPT:'x@Own',BTD:'x@Own',IT:'x@Own',TTCM:'x@Own',TPCM:'x@Own',TTVP:'x@Own',GVCN:'x@Own',GVBM:'x@Own',NVBT:'xe@Branch',QLKTX:'x@Own',QS:'x@Own'},
+ 'm10.9.so_ngay_thuc_hoc':{HT:'xe@School',PHT_CM:'xe@School',PHT_DT:'xe@Branch',TCNS:'xe@School',KT:'xe@School',TQ:'x@Own',VT:'xe@Branch',QLCSVC:'x@Own',YT:'xe@Branch',TV:'x@Own',BT:'x@Own',BV:'x@Own',GT:'x@Own',TPT:'x@Own',BTD:'x@Own',IT:'x@Own',TTCM:'x@Own',TPCM:'x@Own',TTVP:'x@Own',GVCN:'x@Own',GVBM:'x@Own',NVBT:'xe@Branch',QLKTX:'x@Own',QS:'x@Own'},
+ 'm10.10.dich_vu_app':{HT:'xse@School',PHT_CM:'x@School',PHT_DT:'x@School',KT:'x@School',IT:'xse@School'},
+ 'm10.11.tong_quan_dung_luong':{HT:'xe@School',IT:'xe@School'},
+ 'm10.11.tra_cuu_tep':{HT:'xe@School',IT:'xte@School'},
+ 'm10.11.luot_giai_phong':{HT:'xde@School',IT:'xtse@School'},
+ 'm10.11.cau_hinh':{HT:'xs@School',IT:'xs@School'},
+ 'm12.1.kho_cua_toi':{HT:'xtsoie@Own#authored',PHT_CM:'xtsoie@Own#authored',TTCM:'xtsoie@Own#authored',TPCM:'xtsoie@Own#authored',GVCN:'xtsoie@Own#authored',GVBM:'xtsoie@Own#authored'},
+ 'm12.1.thung_rac':{HT:'xtsoie@Own#authored',PHT_CM:'xtsoie@Own#authored',TTCM:'xtsoie@Own#authored',TPCM:'xtsoie@Own#authored',GVCN:'xtsoie@Own#authored',GVBM:'xtsoie@Own#authored'},
+ 'm12.1.cau_hinh':{HT:'xs@School',PHT_CM:'xs@School'},
+ 'm12.2.ngan_hang_de':{HT:'xe@School',PHT_CM:'xtsoie@School',TTCM:'xtsoie@Group',TPCM:'xtsoie@School#authored',GVCN:'xtsoie@School#authored',GVBM:'xtsoie@School#authored'},
+ 'm12.2.nhap_tu_word':{PHT_CM:'xti@Own#authored',TTCM:'xti@Own#authored',TPCM:'xti@Own#authored',GVCN:'xti@Own#authored',GVBM:'xti@Own#authored'},
+ 'm12.2.cau_hinh':{HT:'x@School',PHT_CM:'xs@School',TTCM:'x@School'},
+ 'm12.3.ma_tran':{HT:'xe@School',PHT_CM:'xtsoe@School',TTCM:'xtsoe@Group',TPCM:'xtsoe@School#authored',GVCN:'xtsoe@School#authored',GVBM:'xtsoe@School#authored'},
+ 'm12.3.cau_hinh':{HT:'x@School',PHT_CM:'xs@School',TTCM:'x@School'},
+ 'm12.4.cay_bo_sach':{HT:'x@School',PHT_CM:'xtsoie@School',TTCM:'xtsoie@Group',TPCM:'x@Group',GVCN:'x@School',GVBM:'x@School'},
+ 'm12.4.cay_mach_kien_thuc':{HT:'x@School',PHT_CM:'xtsoie@School',TTCM:'xtsoie@Group',TPCM:'x@Group',GVCN:'x@School',GVBM:'x@School'},
+ 'm12.4.de_xuat':{PHT_CM:'xd@School',TTCM:'xd@Group',TPCM:'xt@Own#authored',GVCN:'xt@Own#authored',GVBM:'xt@Own#authored'},
+ 'm12.5.ngan_hang_cau_hoi':{HT:'x@School',PHT_CM:'xtsoie@School#authored',TTCM:'xtsoie@School#authored',TPCM:'xtsoie@School#authored',GVCN:'xtsoie@School#authored',GVBM:'xtsoie@School#authored'},
+ 'm12.5.cho_duyet':{PHT_CM:'xd@School',TTCM:'xd@Group'},
+ 'm12.5.cau_hinh':{HT:'x@School',PHT_CM:'xs@School',TTCM:'x@School'},
+ 'm12.6.ngan_hang_nhom_cau':{HT:'x@School',PHT_CM:'xtsoie@School#authored',TTCM:'xtsoie@School#authored',TPCM:'xtsoie@School#authored',GVCN:'xtsoie@School#authored',GVBM:'xtsoie@School#authored'},
+ 'm12.6.cho_duyet':{PHT_CM:'xd@School',TTCM:'xd@Group'},
+ 'm12.7.luot_giao':{HT:'xe@School',PHT_CM:'xe@School',TTCM:'x@Group',TPCM:'xtsoe@Class#assigned',GVCN:'x@Class',GVBM:'xtsoe@Class#assigned'},
+ 'm12.7.cho_cham':{TTCM:'xs@Own#authored',TPCM:'xs@Own#authored',GVBM:'xs@Own#authored'},
+ 'm12.7.nhom_lam_bai':{HT:'x@School',PHT_CM:'xtsi@School',TTCM:'x@Group',TPCM:'xtsi@Own#authored',GVBM:'xtsi@Own#authored'},
+ 'm12.7.cau_hinh':{HT:'xs@School',PHT_CM:'xs@School'}};
 
 /* ===== Ô KHÓA CỨNG — có căn cứ văn bản ===== */
-const LOCK=[
+/* ===== GIEO BỔ SUNG THEO CHỨC DANH — GQB (15/9/2026, phiên bổ sung chức danh) =====
+   Khác GQ ở MỘT điểm: GQ thay hẳn cả Feature (chức danh vắng = không quyền); GQB chỉ ghi đè ô của ĐÚNG chức danh
+   được nêu — mọi chức danh khác trên Feature đó giữ nguyên gieo cũ. Lý do: đưa nguyên 30 Feature bị chạm vào GQ thì
+   237 ô của 24 chức danh cũ đổi theo (đo bằng script) — việc đó không thuộc phiên thêm chức danh (anh Ninh chốt 15/9, câu 4 = b).
+   Nguồn từng dòng: các dòng «không cấp — vai chưa có chức danh» của TL2 (luật 1 · 1+4 · 6 «BT» bán trú · 8e) —
+   tức §Ma trận quyền của menu, đọc lại bằng máy; không tự suy quyền. Hai dòng của cùng vai trên một tab thì HỢP quyền.
+   Lối D (phân công trong menu, không phải chức danh): ô đặt ở chức danh gốc kèm #assigned, danh sách phân công nằm ở menu chủ.
+   Chuỗi cùng dạng GQ: 'xtsodie@Phạm vi#Bộ lọc'. */
+const GQB={};   /* 15/9 — rà soát quyền: bảng chuẩn đã có 5 chức danh mới ⇒ GQ (sinh từ bảng chuẩn) phủ hết; giữ tên biến cho sinh() */
+
+/* QD = quy dinh phap luat. KHONG con khoa cung — day la MAC DINH + can cu de canh bao. */
+const QD=[
  {fe:'m1.3.chot_hoc_ba_theo_nam',q:'d',chi:['HT'],cc:'<b>TT 22/2021/TT-BGDĐT</b> — GVCN <i>ghi</i> học bạ; <b>Hiệu trưởng ký, đóng dấu xác nhận</b> quá trình học tập từng năm học. Không chức danh nào khác ký thay được.'},
  {fe:'m3.1.chot_tong_ket_theo_lop',q:'t',chi:['HT','GVCN'],cc:'<b>TT 22/2021</b> — <b>giáo viên chủ nhiệm</b> tổng hợp kết quả rèn luyện và học tập của học sinh từng học kỳ, cả năm vào Sổ theo dõi và Học bạ.'},
  {fe:'m3.1.chot_tong_ket_theo_lop',q:'s',chi:['HT','GVCN'],cc:'<b>TT 22/2021</b> — giáo viên môn học sửa điểm phải có <b>xác nhận của GVCN</b>; phần tổng kết của lớp do GVCN ghi.'},
  {fe:'m3.4.xet_tot_nghiep_thcs',q:'d',chi:['HT'],cc:'<b>TT 10/2026/TT-BGDĐT</b> <i>(hiệu lực 15/4/2026)</i> — từ 15/4/2026 <b>THCS không còn cấp bằng</b>; <b>Hiệu trưởng</b> xác nhận hoàn thành chương trình vào học bạ.'},
  {fe:'m3.4.ket_qua_thi_tot_nghiep_thp',q:'d',chi:['HT'],cc:'<b>TT 10/2026</b> — thẩm quyền <b>cấp bằng tốt nghiệp THPT chuyển từ Sở GDĐT về Hiệu trưởng</b>.'},
- {fe:'m2.5.bang_diem_mon_hoc',q:'d',chi:['HT','PHT_CM','TTCM'],cc:'<b>4-eye principle</b> — <code>PHAN-QUYEN</code> v2.3 §3. Người <b>nhập điểm</b> không được là người <b>chốt điểm</b>. GVBM có <code>T</code> và <code>S</code> trên chính Feature này nên <b>không thể</b> có <code>D</code>.'}];
-const lockOf=(fe,q)=>LOCK.filter(l=>l.fe===fe&&l.q===q)[0];
+];
+/* 7/9/2026 — ĐÃ GỠ ô khóa "m2.5 · d · 4-eye". Hai lý do:
+   (1) 4-eye là kiểm soát nội bộ, không phải thẩm quyền do văn bản — không đủ tư cách khóa cứng (M10.4 §5.1);
+   (2) ô D trên "Bảng điểm môn" còn gánh "ký kết quả môn" mà M2.5 §13 giao đích danh cho GVBM.
+   Thay bằng CẢNH BÁO 4-eye ở canhBao4Eye() — suy từ chính ma trận, không cần biết thao tác của tab.
+   ⚠ Ô cũ còn trỏ SAI mã Feature ("m2.5.bang_diem_mon_hoc" vs "m2.5.bang_diem_mon") nên CHƯA TỪNG có hiệu lực. */
+const qdOf=(fe,q)=>QD.filter(l=>l.fe===fe&&l.q===q)[0];
+/* 7/9/2026 — BO KHOA CUNG. Phap luat chi la MAC DINH + CANH BAO khi lech, khong chan.
+   Quyen quyet dinh tra ve Truong hoc. qdMD = gia tri mac dinh theo van ban. */
+const qdMD=(l,cd)=>l.chi.indexOf(cd)>=0;
+const lechQD=(cd,fe,q)=>{const l=qdOf(fe,q);return !!l&&P[cd][fe][q]!==qdMD(l,cd)};
 
 /* ===== BẢNG QUYỀN ===== */
 let P={};
@@ -625,16 +1166,23 @@ function sinh(){
    let st=(g.ng&&g.ng[f.ng])||'';
    if(g.mn&&g.mn[f.menu]!==undefined)st=g.mn[f.menu];
    if(g.fe&&g.fe[f.ma]!==undefined)st=g.fe[f.ma];
+   /* Đợt 1 — Feature có mục Q: GQ thay hẳn (vắng = không quyền) */
+   let locQ='';
+   if(GQ[f.ma]){st=GQ[f.ma][c.ma]||'';const h=st.indexOf('#');if(h>=0){locQ=st.slice(h+1);st=st.slice(0,h)}}
+   /* 15/9 — GQB: ghi đè ô của đúng chức danh được nêu, các chức danh khác giữ nguyên */
+   const coB=!!(GQB[f.ma]&&GQB[f.ma][c.ma]!==undefined);
+   if(coB){st=GQB[f.ma][c.ma];locQ='';const h=st.indexOf('#');if(h>=0){locQ=st.slice(h+1);st=st.slice(0,h)}}
    /* spec dạng 'xtso@Own' — phần sau @ là Scope RIÊNG CỦA TAB NÀY */
    let scRieng='';const at=st.indexOf('@');
    if(at>=0){scRieng=st.slice(at+1);st=st.slice(0,at)}
    const o={};Q7.forEach(function(x){
     o[x[0]]=st.indexOf(x[0]==='xo'?'o':(x[0]==='id'?'i':(x[0]==='xd'?'e':x[0])))>=0});
    o.sc=scRieng||(f.ng==='cn'?'Own':c.sc);
-   o.loc=(f.fc&&['GVBM','TPCM'].indexOf(c.ma)>=0)?'assigned':'all';
+   o.loc=(GQ[f.ma]||coB)?(locQ||'all'):((f.fc&&['GVBM','TPCM'].indexOf(c.ma)>=0)?'assigned':'all');
    row[f.ma]=o});
   P[c.ma]=row});
- LOCK.forEach(function(l){CD.forEach(function(c){
+ /* Dat GIA TRI MAC DINH theo van ban. Truong doi duoc sau do — xem qdOf/lechQD. */
+ QD.forEach(function(l){CD.forEach(function(c){
   if(P[c.ma][l.fe])P[c.ma][l.fe][l.q]=l.chi.indexOf(c.ma)>=0})});
 }
 sinh();
@@ -705,8 +1253,8 @@ function scopeBar(extra){
   '<span class="sp"></span>'+chips()+'</div>'}
 function filBar(){
  if(tab==='fe')return '<input class="inp" id="q" placeholder="⌕ Tìm Feature, menu…" value="'+esc(q)+'">'+
-  '<select class="fs" id="fng"><option value="">Mọi nhóm nghiệp vụ</option>'+
-   NG.map(n=>'<option value="'+n[0]+'"'+(fNg===n[0]?' selected':'')+'>'+n[1]+'</option>').join('')+'</select>';
+  '<select class="fs" id="fng"><option value="">Mọi nhóm menu</option>'+
+   NHOMSB.map(n=>'<option value="'+n[0]+'"'+(fNg===n[0]?' selected':'')+'>'+n[1]+'</option>').join('')+'</select>';
  return '<input class="inp" id="q" placeholder="⌕ Tìm chức danh…" value="'+esc(q)+'">'+
   '<select class="fs" id="fnhom"><option value="">Mọi nhóm</option>'+
    [1,2,3,4].map(n=>'<option value="'+n+'"'+(fNhom==String(n)?' selected':'')+'>'+NHOMTEN[n]+'</option>').join('')+'</select>'+
@@ -761,8 +1309,8 @@ function mxScreen(){
   (c.giu?'<span class="st2 b">'+c.giu+' người đang giữ</span> '+dlink('M4.3','xem ai'):'<span class="st2 w">0 người giữ</span>')+
   '</div>';
  h+='<div class="mxtool"><input class="inp" id="q" placeholder="⌕ Tìm Feature, menu…" value="'+esc(q)+'">'+
-  '<select class="fs" id="fng2"><option value="">Mọi nhóm tính năng</option>'+
-   NG.map(n=>'<option value="'+n[0]+'"'+(fNg===n[0]?' selected':'')+'>'+n[1]+'</option>').join('')+'</select>'+
+  '<select class="fs" id="fng2"><option value="">Mọi nhóm menu</option>'+
+   NHOMSB.map(n=>'<option value="'+n[0]+'"'+(fNg===n[0]?' selected':'')+'>'+n[1]+'</option>').join('')+'</select>'+
   '<button class="btn sm'+(fMo?' p':'')+'" data-x="chiMo">'+(fMo?'✓ ':'')+'Chỉ Feature đã mở</button>'+
   '<button class="btn sm" data-x="moHet">'+(dangMoHet()?'⊟ Thu hết':'⊞ Mở hết')+'</button>'+
   '<span style="flex:1"></span>'+
@@ -770,17 +1318,17 @@ function mxScreen(){
   (suaDuoc()?'<button class="btn sm" data-x="mApSang">⇉ Áp sang…</button>'+
    '<button class="btn sm p" data-x="mLuu"'+(nDirty?'':' disabled')+'>💾 Lưu</button>':
    '<button class="rolnk off" data-x="viSaoDoc">🔒 chỉ đọc</button>')+'</div>';
- h+='<div class="mxw"><div class="mxh"><div>Nhóm tính năng › Menu › Feature (tab)</div>'+
+ h+='<div class="mxw"><div class="mxh"><div>Nhóm menu › Menu › Feature (tab)</div>'+
   Q7.map(x=>'<div title="'+x[2]+'">'+x[1]+'</div>').join('')+'<div>Phạm vi dữ liệu</div><div>Bộ lọc</div></div>';
  const k=kd(q);let n=0;
- NG.forEach(function(g){
+ NHOMSB.forEach(function(g){
   if(fNg&&fNg!==g[0])return;
-  let fs=FE.filter(f=>f.ng===g[0]);
+  let fs=FE.filter(f=>f.nh===g[0]);
   if(q)fs=fs.filter(f=>kd(f.ten+' '+f.menu+' '+f.mten+' '+f.ma).indexOf(k)>=0);
   if(fMo)fs=fs.filter(f=>Q7.some(x=>P[cur][f.ma][x[0]]));
   if(!fs.length)return;
   n+=fs.length;
-  const menus=[];fs.forEach(function(f){if(menus.indexOf(f.menu)<0)menus.push(f.menu)});
+  const menus=[];fs.forEach(function(f){if(menus.indexOf(f.menu)<0)menus.push(f.menu)});menus.sort(theoTT);
   h+='<div class="mgrp">'+g[1]+'<span class="ct">'+menus.length+' menu · '+fs.length+' Feature · mở '+
    fs.filter(f=>Q7.some(x=>P[cur][f.ma][x[0]])).length+'</span></div>';
   menus.forEach(function(m){
@@ -802,10 +1350,11 @@ function mxRow(f,c){
   '<span>'+f.ma+(f.nc===4?' · <b style="color:var(--red)">Rất cao</b>':(f.nc===3?' · Cao':''))+
   (f.ks?' · ký số '+f.ks:'')+'</span></div>';
  Q7.forEach(function(x){
-  const qq=x[0],lk=lockOf(f.ma,qq),on=o[qq];
-  let cls='cb'+(on?' on':'')+(lk?' lk':'')+(dt&&dt[qq]?' ch':'');
+  const qq=x[0],qd=qdOf(f.ma,qq),lech=qd&&o[qq]!==qdMD(qd,cur),on=o[qq];
+  let cls='cb'+(on?' on':'')+(lech?' lk':'')+(dt&&dt[qq]?' ch':'');
   h+='<div class="cel"><button class="'+cls+'" data-x="oQuyen" data-f="'+f.ma+'" data-q="'+qq+'"'+
-   (lk?' title="Khóa cứng — bấm xem căn cứ"':'')+'>'+(lk?'🔒':(on?'✓':''))+'</button></div>'});
+   (qd?' title="'+(lech?'LỆCH quy định pháp luật — ':'Có quy định pháp luật — ')+'bấm xem căn cứ"':'')+'>'+
+   (on?'✓':'')+(lech?'<span class="qdw">⚠</span>':'')+'</button></div>'});
  h+='<div class="cel" style="border-left:1px solid #f1f5f9"><select class="mxsel'+(an?' mo':'')+'" data-x="oScope" data-f="'+f.ma+'"'+
   (suaDuoc()&&!an?'':' disabled')+(an?' title="Tab không hiện với chức danh này — phạm vi không có tác dụng"':'')+'>'+
   scopeOpts().map(x=>'<option value="'+x[0]+'"'+(o.sc===x[0]?' selected':'')+'>'+x[1]+'</option>').join('')+'</select></div>';
@@ -817,15 +1366,15 @@ function mxRow(f,c){
 /* ===== TAB ② — AI TRUY CẬP ĐƯỢC GÌ ===== */
 function feTab(){
  let a=FE.slice();
- if(fNg)a=a.filter(f=>f.ng===fNg);
+ if(fNg)a=a.filter(f=>f.nh===fNg);
  if(q){const k=kd(q);a=a.filter(f=>kd(f.ten+' '+f.menu+' '+f.ma).indexOf(k)>=0)}
  let h='<div class="stage'+(curFE?' open':'')+'"><div class="listw">'+
   '<div class="hdrow"><div>Feature</div><div>Nhạy cảm</div><div class="hcol">Ký số</div>'+
   '<div class="hcol">Ai xem được</div><div class="hcol">Ai duyệt được</div></div>';
  if(!a.length)h+='<div class="empty">Không có Feature nào khớp bộ lọc.</div>';
- NG.forEach(function(g){
-  const fs=a.filter(f=>f.ng===g[0]); if(!fs.length)return;
-  const menus=[];fs.forEach(function(f){if(menus.indexOf(f.menu)<0)menus.push(f.menu)});
+ NHOMSB.forEach(function(g){
+  const fs=a.filter(f=>f.nh===g[0]); if(!fs.length)return;
+  const menus=[];fs.forEach(function(f){if(menus.indexOf(f.menu)<0)menus.push(f.menu)});menus.sort(theoTT);
   h+='<div class="grow"><span class="ar">▼</span>'+g[1]+'<span class="ct"><span>'+menus.length+' menu</span><span>'+fs.length+' Feature</span></span></div>';
   menus.forEach(function(m){
    const mf=fs.filter(f=>f.menu===m);
@@ -836,7 +1385,7 @@ function feTab(){
    h+='<div class="hrow'+(curFE===f.ma?' on':'')+'" data-f2="'+f.ma+'">'+
     '<div style="padding-left:29px"><b>'+esc(f.ten)+'</b><div style="font-size:10.5px;color:var(--ink3)">'+f.ma+'</div></div>'+
     '<div><span class="st2 '+(f.nc===4?'r':(f.nc===3?'w':'n'))+'">'+NCTEN[f.nc]+'</span>'+
-      (LOCK.some(l=>l.fe===f.ma)?' <span class="st2 r">🔒</span>':'')+'</div>'+
+      (QD.some(l=>l.fe===f.ma)?' <span class="st2 w" title="Có quy định pháp luật — mặc định theo văn bản, đổi được">⚖</span>':'')+'</div>'+
     '<div class="hcol">'+(f.ks?'<span class="st2 '+(f.ks==='B'?'r':'n')+'">Nhóm '+f.ks+'</span>':'<span style="color:var(--ink3)">—</span>')+'</div>'+
     '<div class="hcol"><span class="st2 b">'+x+' chức danh</span></div>'+
     '<div class="hcol">'+(coD?(d?'<span class="st2 o">'+d+' chức danh</span>':'<span class="st2 r">🔴 0 — chuỗi đứt</span>')
@@ -845,25 +1394,27 @@ function feTab(){
  return h}
 const canDuyet=m=>{const x=feBy(m);return !!(x&&x.ks)};
 function fePanel(){
- const f=feBy(curFE),ls=LOCK.filter(l=>l.fe===f.ma);
+ const f=feBy(curFE),ls=QD.filter(l=>l.fe===f.ma);
  let h='<div class="panel"><div class="ph"><div class="n"><h2>'+esc(f.ten)+'</h2>'+
   '<div class="m"><span class="pill">'+f.menu+'</span><span class="pill">'+f.ma+'</span>'+
   '<span class="st2 '+(f.nc===4?'r':(f.nc===3?'w':'n'))+'">'+NCTEN[f.nc]+'</span>'+
   (f.ks?'<span class="st2 '+(f.ks==='B'?'r':'n')+'">Ký số nhóm '+f.ks+'</span>':'')+'</div></div>'+
   '<div class="spacer"></div><button class="btn sm" data-x="dong">✕</button></div><div class="pbody">';
- if(ls.length)h+='<div class="danger">🔒 <b>Feature có ô khóa cứng.</b>'+
-  ls.map(l=>'<div style="margin-top:6px">Quyền <b>'+Q7.filter(x=>x[0]===l.q)[0][2]+'</b> — chỉ <b>'+
+ if(ls.length)h+='<div class="warn">⚖ <b>Feature có quy định pháp luật.</b> Văn bản đặt <b>giá trị mặc định</b>; '+
+  'trường <b>đổi được</b>, hệ thống <b>cảnh báo và bắt ghi lý do</b> — <b>không chặn</b>.'+
+  ls.map(l=>'<div style="margin-top:6px">Quyền <b>'+Q7.filter(x=>x[0]===l.q)[0][2]+'</b> — mặc định chỉ <b>'+
    l.chi.map(m=>esc(cdBy(m).ten)).join(', ')+'</b><div style="font-weight:400;margin-top:3px">'+l.cc+'</div></div>').join('')+'</div>';
- if(!f.fc)h+='<div class="ro">Bộ lọc bản ghi <b>cố định <code>all</code></b> — Feature này <b>không có nguồn suy ra phân công</b>. '+
-  'Đặt <code>assigned</code> thì truy vấn trả về rỗng và màn hình trắng mà không ai biết vì sao.</div>';
+ if(!f.fc)h+='<div class="ro">Bộ lọc bản ghi <b>không cấu hình được</b> ở Feature này — cố định theo cột <i>Bộ lọc</i> dưới đây '+
+  '<i>(thường là <code>all</code>; vài tab Đợt 1 cố định <code>assigned</code>/<code>authored</code> theo §Ma trận quyền của menu, vd hàng đợi duyệt chỉ trả việc của chính người xem)</i>. '+
+  'Đặt <code>assigned</code> ở tab không có nguồn suy ra phân công thì truy vấn trả về rỗng và màn hình trắng mà không ai biết vì sao.</div>';
  else h+='<div class="info">Bộ lọc bản ghi <b>cấu hình được</b>. Nguồn suy ra <code>assigned</code>: '+dlink('M4.7','Lịch giảng dạy')+
   ' — theo <b>GV thực dạy</b>, không phải GV theo thời khóa biểu. Tiết dạy thay thì <b>người dạy thay</b> có quyền ghi.</div>';
  const co=CD.filter(c=>!c.ngung&&Q7.some(x=>P[c.ma][f.ma][x[0]]));
  h+='<div class="sech">'+co.length+' chức danh có quyền trên Feature này</div>';
  h+='<table><tr><th>Chức danh</th>'+Q7.map(x=>'<th class="c" title="'+x[2]+'">'+x[1]+'</th>').join('')+'<th>Phạm vi dữ liệu</th><th>Bộ lọc</th></tr>'+
   co.map(function(c){const o=P[c.ma][f.ma];
-   return '<tr><td><b>'+esc(c.ten)+'</b></td>'+Q7.map(function(x){const lk=lockOf(f.ma,x[0]);
-     return '<td class="c">'+(o[x[0]]?(lk?'🔒':'✓'):'<span style="color:var(--line2)">–</span>')+'</td>'}).join('')+
+   return '<tr><td><b>'+esc(c.ten)+'</b></td>'+Q7.map(function(x){const lech=lechQD(c.ma,f.ma,x[0]);
+     return '<td class="c">'+(o[x[0]]?'✓':'<span style="color:var(--line2)">–</span>')+(lech?' <span class="qdw">⚠</span>':'')+'</td>'}).join('')+
    '<td><span class="st2 v">'+scTen(o.sc)+'</span></td><td><code>'+o.loc+'</code></td></tr>'}).join('')+'</table>';
  const kh=CD.filter(c=>!c.ngung&&!Q7.some(x=>P[c.ma][f.ma][x[0]]));
  h+='<div class="sech">'+kh.length+' chức danh KHÔNG truy cập được</div>'+
@@ -921,8 +1472,8 @@ let APDICH=[];
 function mApSang(){
  APDICH=[];
  modal('⇉ Áp quyền từ <b>'+esc(cdBy(cur).ten)+'</b> sang chức danh khác',
-  '<div class="info">Thay cho cơ chế preset liên kết sống. Sửa preset <b>Nhân viên</b> để mở thêm một menu cho Thư viện thì '+
-  '<b>Bảo vệ và Giám thị cũng được mở</b> — mà màn hình đang sửa không hề nhắc tới hai chức danh đó. Đây là <b>một hành động có chủ ý</b>, có audit.</div>'+
+  '<div class="info">Thay cho cơ chế preset liên kết sống. Sửa preset <b>Nhân viên</b> để mở thêm một menu cho Y tế thì '+
+  '<b>Bảo trì và Bảo vệ cũng được mở</b> — mà màn hình đang sửa không hề nhắc tới hai chức danh đó. Đây là <b>một hành động có chủ ý</b>, có audit.</div>'+
   '<label class="lbl">Chọn chức danh đích</label><div class="chkl" id="dichList">'+
    CD.filter(c=>c.ma!==cur&&!c.ngung).map(c=>'<button class="chkb" data-x="tgDich" data-c="'+c.ma+'">'+esc(c.ten)+'</button>').join('')+
   '</div><div id="apPrev"></div>',
@@ -931,24 +1482,24 @@ function vApPrev(){
  if(!APDICH.length){$('#apPrev').innerHTML='<div class="ro" style="margin-top:11px">Chưa chọn đích nào.</div>';return}
  let h='<div class="sech">Xem trước khác biệt</div>';
  APDICH.forEach(function(m){
-  const c=cdBy(m);let them=0,bot=0,giuLai=[];
+  const c=cdBy(m);let them=0,bot=0,lechs=[];
   FE.forEach(function(f){Q7.forEach(function(x){
-   const lk=lockOf(f.ma,x[0]);
-   if(lk){if(P[m][f.ma][x[0]]!==P[cur][f.ma][x[0]])giuLai.push(f.ten+' · '+x[2]);return}
    if(P[cur][f.ma][x[0]]&&!P[m][f.ma][x[0]])them++;
-   if(!P[cur][f.ma][x[0]]&&P[m][f.ma][x[0]])bot++})});
+   if(!P[cur][f.ma][x[0]]&&P[m][f.ma][x[0]])bot++;
+   /* 7/9/2026 — o co quy dinh phap luat KHONG con duoc giu lai; chi bao truoc neu ap xong se lech */
+   const l=qdOf(f.ma,x[0]);
+   if(l&&P[cur][f.ma][x[0]]!==qdMD(l,m))lechs.push(f.ten+' · '+x[2])})});
   h+='<div class="dif"><div class="ic">→</div><div><b>'+esc(c.ten)+'</b>'+
    '<div style="font-size:11.5px">mở thêm <b style="color:var(--green)">'+them+'</b> ô · đóng bớt <b style="color:var(--red)">'+bot+'</b> ô'+
    (c.giu?' · ảnh hưởng <b>'+c.giu+' người</b>':' · chưa ai giữ')+'</div>'+
-   (giuLai.length?'<div style="font-size:11.5px;color:#991b1b;margin-top:3px">🔒 <b>'+giuLai.length+' ô khóa cứng KHÔNG bị ghi đè</b>: '+
-     esc(giuLai.slice(0,3).join(' · '))+(giuLai.length>3?' …':'')+'</div>':'')+
+   (lechs.length?'<div style="font-size:11.5px;color:#92400e;margin-top:3px">⚠ <b>Sau khi áp, '+lechs.length+' ô sẽ LỆCH quy định pháp luật</b>: '+
+     esc(lechs.slice(0,3).join(' · '))+(lechs.length>3?' …':'')+' — <b>vẫn áp được</b>, audit ghi lại</div>':'')+
    '</div></div>'});
  $('#apPrev').innerHTML=h}
 function doAp(){
  if(!APDICH.length){toast('⚠ Chưa chọn chức danh đích');return}
  let n=0;
  APDICH.forEach(function(m){FE.forEach(function(f){Q7.forEach(function(x){
-   if(lockOf(f.ma,x[0]))return;
    if(P[m][f.ma][x[0]]!==P[cur][f.ma][x[0]]){P[m][f.ma][x[0]]=P[cur][f.ma][x[0]];n++}});
    if(f.fc)P[m][f.ma].loc=P[cur][f.ma].loc})});
  const ten=APDICH.map(m=>cdBy(m).ten);
@@ -985,11 +1536,12 @@ function doThemCD(){
  if(cdBy(ma)){toast('⛔ Mã <b>'+esc(ma)+'</b> đã tồn tại — <b>'+esc(cdBy(ma).ten)+'</b>');return}
  CD.push({ma:ma,ten:ten,nhom:4,sc:sc,ps:ng?cdBy(ng).ps:'(không)',giu:0,phu:1});
  const row={};FE.forEach(function(f){const o={};
-  Q7.forEach(function(x){const lk=lockOf(f.ma,x[0]);o[x[0]]=lk?false:(ng?P[ng][f.ma][x[0]]:false)});
+  Q7.forEach(function(x){const l=qdOf(f.ma,x[0]);
+   o[x[0]]=l?qdMD(l,ma):(ng?P[ng][f.ma][x[0]]:false)});
   o.sc=sc;o.loc=ng&&f.fc?P[ng][f.ma].loc:'all';row[f.ma]=o});
  P[ma]=row;DAU[ma]=JSON.parse(JSON.stringify(row));
  closeModal();cur=ma;DIRTY={};render();
- toast('Đã tạo chức danh phụ <b>'+esc(ten)+'</b>'+(ng?' · nhân bản từ <b>'+esc(cdBy(ng).ten)+'</b>, ô khóa cứng không nhân bản':'')+
+ toast('Đã tạo chức danh phụ <b>'+esc(ten)+'</b>'+(ng?' · nhân bản từ <b>'+esc(cdBy(ng).ten)+'</b>; ô có quy định pháp luật đặt theo <b>mặc định của văn bản</b>':'')+
   ' · chưa ai giữ — bổ nhiệm tại M4.3')}
 function mNgung(m){
  const c=cdBy(m);
@@ -1016,15 +1568,40 @@ function raSoat(){const r=dsRa();
    '<div style="margin-top:6px;font-weight:400;font-size:12px">'+x[2]+'</div></div>').join('')
    :'<div class="okbox">✅ Không có vấn đề nào.</div>'),
   '<button class="btn" data-x="close">Đóng</button>')}
-function oKhoa(f,q){const l=lockOf(f,q);
- modal('🔒 Ô khóa cứng — '+esc(feBy(f).ten)+' · quyền '+Q7.filter(x=>x[0]===q)[0][2],
-  '<div class="danger">🔒 <b>Không ai sửa được ô này, kể cả Hiệu trưởng.</b></div>'+
+/* ===== CẢNH BÁO 4-eye (7/9/2026) — thay cho ô khóa cứng đã gỡ =====
+   Suy HOÀN TOÀN từ ma trận: ba ô T + S + D trên cùng một dòng.
+   Không đòi hệ thống biết trước thao tác nào của tab nào — giữ nguyên khung ĐỀU (§2.1 Hệ quả 4). */
+const pha4Eye=(c,f)=>P[c][f].t&&P[c][f].s&&!P[c][f].d;
+function canhBao4Eye(f,q){const fe=feBy(f),c=cdBy(cur);
+ modal('⚠ Cảnh báo 4-eye — '+esc(fe.ten),
+  '<div class="warn">⚠ <b>'+esc(c.ten)+'</b> đã có <b>Tạo</b> và <b>Sửa</b> trên <b>'+esc(fe.ten)+'</b>. '+
+  'Cấp thêm <b>Duyệt</b> nghĩa là <b>người tạo bản ghi cũng là người duyệt chính bản ghi đó</b>.</div>'+
+  '<div class="sech">Không chặn — Hiệu trưởng tự quyết</div>'+
+  '<div class="ro">4-eye là <b>nguyên tắc kiểm soát nội bộ</b>, không phải thẩm quyền do văn bản quy định — nên <b>không đủ tư cách để khóa cứng</b> '+
+  '<i>(§5.1: khóa vì pháp luật thì khóa; khóa vì sợ lạm quyền thì không)</i>. Bật hay không là <b>quyết định của Hiệu trưởng</b>, có audit và <b>bắt ghi lý do</b>.</div>'+
+  (f==='m2.5.bang_diem_mon'
+   ? '<div class="info" style="margin-top:12px">ℹ <b>Ở ô này, bật <code>D</code> cho GVBM là ĐÚNG Ý.</b> <code>M2.5</code> §13 giao đích danh cho GVBM thao tác <b>ký kết quả môn</b> — cũng nằm trên chữ <code>D</code> này.<br>'+
+     '🛑 Nhưng <b>chữ <code>D</code> gánh HAI thao tác</b>: ký kết quả môn <i>của mình</i>, và <b>duyệt sửa điểm vùng C</b> <i>của người khác</i>. Bật là cho cả hai — <b>7 quyền không tách được</b>, và chốt 7/9/2026 là <b>không tách</b>.<br>'+
+     '<b>Hàng rào thật của điểm số nằm ở <code>M2.5</code> §7</b> — bốn vùng sửa điểm; vùng C vẫn <b>duyệt 1 tầng + lý do + minh chứng</b>. Ô này không đụng tới đó.</div>'
+   : '')+
+  '<label class="lbl" style="margin-top:12px">Lý do bật <span style="color:#dc2626">*</span></label>'+
+  '<input class="din" id="ly4e" placeholder="Ví dụ: GVBM tự ký kết quả môn mình dạy — theo M2.5 §13">',
+  '<button class="btn" data-x="close">Hủy</button>'+
+  '<button class="btn w" data-x="do4e" data-f="'+f+'" data-q="'+q+'">⚠ Vẫn bật</button>')}
+function canhBaoQD(f,q){const l=qdOf(f,q),c=cdBy(cur),md=qdMD(l,cur),qt=Q7.filter(x=>x[0]===q)[0][2];
+ modal('⚖ Lệch quy định pháp luật — '+esc(feBy(f).ten)+' · quyền '+qt,
+  '<div class="warn">⚠ Văn bản đặt mặc định: quyền <b>'+qt+'</b> trên Feature này <b>'+(md?'CÓ':'KHÔNG')+'</b> cấp cho <b>'+esc(c.ten)+'</b>. '+
+  'Bạn đang định đổi thành <b>'+(md?'KHÔNG':'CÓ')+'</b>.</div>'+
   '<div class="sech">Căn cứ</div><div class="ro">'+l.cc+'</div>'+
-  '<div class="sech">Chỉ những chức danh này có quyền</div>'+
+  '<div class="sech">Mặc định theo văn bản</div>'+
   '<div>'+l.chi.map(m=>'<span class="pill">'+esc(cdBy(m).ten)+'</span>').join(' ')+'</div>'+
-  '<div class="info" style="margin-top:12px">Ô khóa <b>vẫn hiện, không ẩn</b>. Ẩn đi thì người cấu hình tưởng hệ thống thiếu tính năng và đi tìm cách khác; '+
-  'hiện kèm lý do thì hiểu ngay đây là <b>ranh giới pháp lý</b>, không phải thiếu sót phần mềm.</div>',
-  '<button class="btn" data-x="close">Đóng</button>')}
+  '<div class="info" style="margin-top:12px">🛑 <b>Hệ thống KHÔNG chặn.</b> Quyền quyết định là của <b>trường</b> — pháp luật ở đây là <b>khung để đặt mặc định và cảnh báo</b>, không phải cái khóa. '+
+  'Trường có thể có tình huống hợp lệ mà văn bản chưa lường *(ủy quyền, kiêm nhiệm, cơ sở đặc thù)*; chặn cứng thì trường <b>không còn đường hợp lệ nào</b> và sẽ đi vòng bằng cách xấu hơn.<br>'+
+  'Ô lệch <b>mang dấu ⚠ vĩnh viễn</b> trên ma trận, và <b>audit ghi lý do</b> — đó mới là thứ dùng được khi thanh tra hỏi.</div>'+
+  '<label class="lbl" style="margin-top:12px">Lý do đổi khác mặc định <span style="color:#dc2626">*</span></label>'+
+  '<input class="din" id="lyqd" placeholder="Ví dụ: Phó hiệu trưởng được ủy quyền ký theo QĐ số … của Hiệu trưởng">',
+  '<button class="btn" data-x="close">Hủy</button>'+
+  '<button class="btn w" data-x="doQD" data-f="'+f+'" data-q="'+q+'">⚠ Vẫn đổi</button>')}
 function aiGiu(m){const c=cdBy(m);
  modal('Ai đang giữ — '+esc(c.ten),
   (c.giu?'<div class="okbox"><b>'+c.giu+' người</b> đang giữ chức danh này. Mọi thay đổi quyền ở đây <b>ảnh hưởng cả '+c.giu+' người ngay khi lưu</b>.</div>'
@@ -1061,13 +1638,14 @@ function ghiChu(){
   '<tr><td>Ai truy cập được gì</td><td>một <b>Feature</b></td><td><i>"Ai vào được màn hình này"</i></td></tr></table>'+
   '<div class="ro" style="margin-top:11px">Sự cố thật nghe như thế này: <i>"cô Lan báo không vào được màn hình nhập điểm"</i>. '+
   'Người xử lý cần <b>bắt đầu từ màn hình</b> — bắt đầu từ chức danh thì phải đoán trước cô Lan giữ chức danh nào, mà đó chính là thứ đang cần tìm.</div>'+
-  '<div class="sech">Nguyên tắc đặt khóa</div>'+
+  '<div class="sech">Nguyên tắc — KHÔNG CÓ KHÓA CỨNG NÀO <i>(chốt 7/9/2026)</i></div>'+
   '<table><tr><th>Loại rủi ro</th><th>Ứng xử</th><th>Vì sao</th></tr>'+
-  '<tr><td><b>Trái văn bản</b></td><td>🔒 khóa cứng</td><td>Không có ngoại lệ hợp lệ — mở ra là <b>làm sai luật</b></td></tr>'+
-  '<tr><td><b>Vỡ dữ liệu</b></td><td>🔒 khóa cứng</td><td>Bộ lọc không có nguồn suy ra → màn hình trắng</td></tr>'+
-  '<tr><td><b>Lạm quyền</b></td><td><b>Không chặn</b> — audit + cờ ⚑</td><td>Chặn thì Hiệu trưởng <b>đưa mật khẩu cho IT</b> — cửa sau phá hủy Audit Log</td></tr></table>'+
+  '<tr><td><b>Trái văn bản</b></td><td>⚖ <b>Mặc định + cảnh báo</b> — bắt ghi lý do</td><td><b>7/9/2026 — bỏ khóa cứng.</b> Pháp luật là <b>khung để đặt mặc định</b>, không phải cái khóa. Trường có tình huống hợp lệ mà văn bản chưa lường; chặn cứng thì trường <b>đi vòng bằng cách xấu hơn</b></td></tr>'+
+  '<tr><td><b>Vỡ dữ liệu</b></td><td>⚠ <b>Cảnh báo</b> — nêu đích danh màn hình sẽ trắng</td><td>Bộ lọc không có nguồn suy ra. Vẫn là <b>quyết định của trường</b></td></tr>'+
+  '<tr><td><b>Lạm quyền</b></td><td><b>Không chặn</b> — audit + cờ ⚑</td><td>Chặn thì Hiệu trưởng <b>đưa mật khẩu cho IT</b> — cửa sau phá hủy Audit Log</td></tr>'+
+  '<tr><td><b>Phá vỡ 4-eye</b><br><span class="st2">cấp D cho chức danh đã có T+S</span></td><td>⚠ <b>Cảnh báo</b> — bắt ghi lý do</td><td><b>7/9/2026 — chuyển từ 🔒 sang ⚠.</b> Kiểm soát nội bộ, không phải thẩm quyền do văn bản — <b>Hiệu trưởng tự quyết</b></td></tr></table>'+
   '<div class="sech">Preset là khuôn mẫu, không phải liên kết sống</div>'+
-  '<div class="ro">Sửa preset <b>Nhân viên</b> để mở thêm menu cho Thư viện thì <b>Bảo vệ và Giám thị cũng được mở</b> — mà màn hình đang sửa '+
+  '<div class="ro">Sửa preset <b>Nhân viên</b> để mở thêm menu cho Y tế thì <b>Bảo trì và Bảo vệ cũng được mở</b> — mà màn hình đang sửa '+
   'không hề nhắc tới hai chức danh đó. Thay bằng <b>⇉ Áp quyền</b> có xem trước: một hành động <b>có chủ ý</b>, có audit.</div>',
   '<button class="btn" data-x="close">Đóng</button>')}
 function xuat(){
@@ -1134,10 +1712,26 @@ document.addEventListener('click',function(e){
   if(x==='doThemCD'){doThemCD();return}
   if(x==='mNgung'){mNgung(cm);return}
   if(x==='doNgung'){doNgung(cm);return}
+  if(x==='do4e'){
+   const f=el.dataset.f,qq=el.dataset.q,ly=(($('#ly4e')||{}).value||'').trim();
+   if(!ly){toast('⚠ <b>Bắt buộc ghi lý do</b> — đây là ô phá vỡ 4-eye');return}
+   P[cur][f][qq]=true;DIRTY[f]=DIRTY[f]||{};DIRTY[f][qq]=1;
+   $('#mask').classList.remove('on');render();
+   toast('Đã bật <b>Duyệt</b> · phá vỡ 4-eye · audit ghi lý do: <i>'+esc(ly)+'</i>');return}
+  if(x==='doQD'){
+   const f=el.dataset.f,qq=el.dataset.q,ly=(($('#lyqd')||{}).value||'').trim();
+   if(!ly){toast('⚠ <b>Bắt buộc ghi lý do</b> — ô này lệch quy định pháp luật');return}
+   P[cur][f][qq]=!P[cur][f][qq];DIRTY[f]=DIRTY[f]||{};DIRTY[f][qq]=1;
+   $('#mask').classList.remove('on');render();
+   toast('Đã đổi · <b>lệch quy định pháp luật</b> · audit ghi lý do: <i>'+esc(ly)+'</i>');return}
   if(x==='oQuyen'){
    const f=el.dataset.f,qq=el.dataset.q;
-   if(lockOf(f,qq)){oKhoa(f,qq);return}
    if(!suaDuoc()){viSaoDoc();return}
+   /* 7/9/2026 — BO KHOA CUNG: o co quy dinh phap luat chi CANH BAO khi sap lech, khong chan */
+   const qd=qdOf(f,qq);
+   if(qd&&P[cur][f][qq]===qdMD(qd,cur)){canhBaoQD(f,qq);return}
+   /* 7/9/2026 — bật D cho chức danh đã có T+S trên cùng Feature: cảnh báo, KHÔNG chặn */
+   if(qq==='d'&&pha4Eye(cur,f)){canhBao4Eye(f,qq);return}
    P[cur][f][qq]=!P[cur][f][qq];
    DIRTY[f]=DIRTY[f]||{};DIRTY[f][qq]=1;
    render();return}

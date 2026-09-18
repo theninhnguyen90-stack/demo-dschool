@@ -212,6 +212,8 @@ td.c,th.c{text-align:center}
   <button class="rb" data-r="TCNS">TCNS</button>
   <button class="rb" data-r="KT">KT</button>
   <button class="rb" data-r="VT_HEP">VT thiếu quyền M1.5</button>
+  <button class="rb" data-r="BTD">Bí thư Đoàn</button>
+  <button class="rb" data-r="TPT">TPT Đội</button>
   <span class="note">Nhóm 9 <b>chỉ có X và XD</b> — không sửa được gì, chỉ deep-link về menu chủ</span>
 </div>
 
@@ -230,7 +232,7 @@ td.c,th.c{text-align:center}
 <div class="wrap">
   <main class="main">
     <div class="tophd"><h1 id="ttl">Báo cáo tổng hợp</h1>
-      <span class="pill" style="background:var(--green-soft);color:#065f46;font-weight:700;border:1px solid #6ee7b7">M9.1 · v2.0 MVP</span><span class="pill">5 tab · 22 chỉ tiêu cơ bản · công thức đọc từ Từ điển chỉ tiêu nh9 §2</span><div class="spacer"></div>
+      <span class="pill" style="background:var(--green-soft);color:#065f46;font-weight:700;border:1px solid #6ee7b7">M9.1 · v2.2 MVP</span><span class="pill">6 tab · 22 chỉ tiêu cơ bản + 15 <code>DD</code> · công thức đọc từ Từ điển chỉ tiêu nh9 §2</span><div class="spacer"></div>
       <button class="btn sm" data-x="ghiChu">💡 Ghi chú thiết kế</button><button class="btn sm" data-x="mau">📋 Mẫu báo cáo định kỳ</button>
       <button class="btn sm" data-x="xuatbang">⬇ Xuất bảng số liệu</button></div>
     <div class="tabs" id="tabs"></div>
@@ -257,22 +259,25 @@ const NAV=[
  ['ht','⚙ Hệ thống',[['M10.4','Chức danh & Phân quyền'],['M10.8','Đồng bộ CSDL ngành']]],
 ];
 
-/* ===== §14.4 — mô hình quyền bằng MẢNG NĂNG LỰC, kiểm bằng .includes() ===== */
+/* ===== §14.4 — mô hình quyền bằng MẢNG NĂNG LỰC, kiểm bằng .includes() =====
+   'dd' = tab 🎖 Đoàn - Đội (m9.1.doan_doi — YKDD-2B). Trục tổ chức KHÔNG phải năng lực: nó theo chức danh (ddVaiTC ở app.60). */
 const ROLE={
  FULL  :{ten:'Đủ quyền (demo)',sc:'school',av:'DQ',
-         q:['hs','bd','kq','ns','tc','xd_m15','xd_m16','xd_m17','xuat_ct']},
+         q:['hs','bd','kq','ns','tc','dd','xd_m15','xd_m16','xd_m17','xuat_ct']},
  HT    :{ten:'Hiệu trưởng',sc:'school',av:'HT',
-         q:['hs','bd','kq','ns','tc','xd_m15','xd_m16','xd_m17','xuat_ct']},
+         q:['hs','bd','kq','ns','tc','dd','xd_m15','xd_m16','xd_m17','xuat_ct']},
  PHT_CM:{ten:'Phó HT Chuyên môn',sc:'school',av:'PC',
-         q:['hs','bd','kq','xd_m15','xd_m16','xd_m17','xuat_ct']},
+         q:['hs','bd','kq','dd','xd_m15','xd_m16','xd_m17','xuat_ct']},
  PHT_A :{ten:'PHT Điểm trường A',sc:'branch',dt:'Điểm trường A',av:'PA',
-         q:['hs','bd','kq','ns','xd_m15','xd_m16','xd_m17','xuat_ct']},
+         q:['hs','bd','kq','ns','dd','xd_m15','xd_m16','xd_m17','xuat_ct']},
  VT    :{ten:'Văn thư Điểm trường A',sc:'branch',dt:'Điểm trường A',av:'VT',
          q:['hs','bd','xd_m15','xd_m16','xd_m17','xuat_ct']},
  TCNS  :{ten:'Tổ chức nhân sự',sc:'school',av:'TC',q:['ns','xuat_ct']},
  KT    :{ten:'Kế toán',sc:'school',av:'KT',q:['tc','xuat_ct']},
  VT_HEP:{ten:'Văn thư — thiếu XD trên M1.5',sc:'branch',dt:'Điểm trường A',av:'V!',
          q:['hs','bd','xd_m16','xd_m17','xuat_ct']},
+ BTD   :{ten:'Bí thư Đoàn trường',sc:'school',av:'BĐ',q:['dd']},      /* YKDD-2B — chỉ Đoàn */
+ TPT   :{ten:'Tổng phụ trách Đội',sc:'school',av:'TP',q:['dd']},      /* YKDD-2B — chỉ Đội */
 };
 let role='FULL', tab='hs', chotNgay=HOMNAY, tuNgay=DAUNAM, denNgay=HOMNAY, phanTo='khoi';
 const R=()=>ROLE[role];
@@ -384,7 +389,7 @@ function sideNav(){
 
 const TABS=[['hs','👥 Học sinh','hs'],['bd','🔄 Biến động học sinh','bd'],
             ['kq','📈 Kết quả & Chuyên cần','kq'],['ns','👨‍🏫 Nhân sự','ns'],
-            ['tc','💰 Tài chính','tc']];
+            ['tc','💰 Tài chính','tc'],['dd','🎖 Đoàn - Đội','dd']];
 function tabsBar(){
  $('#tabs').innerHTML=TABS.map(([k,l,q])=>
   '<button class="tab1'+(tab===k?' on':'')+(co(q)?'':' mo')+'" data-tab="'+k+'">'+l+
@@ -751,7 +756,7 @@ function xuatBang(){
   'Vì thế hai nút <b>khác chữ, khác màu, khác popup</b> — người dùng phải thấy mình đang làm cái nào.</div>'+
   '<div class="wrapx"><table style="font-size:12.5px"><tr><th>Nội dung</th><th>Giá trị</th></tr>'+
   '<tr><td>Tab</td><td><b>'+(TABS.find(t=>t[0]===tab)||['','—'])[1]+'</b></td></tr>'+
-  '<tr><td>Loại số</td><td>'+(tab==='bd'?'Số PHÁT SINH · '+tuNgay+' → '+denNgay:'Số TỒN · chốt '+chotNgay)+'</td></tr>'+
+  '<tr><td>Loại số</td><td>'+(tab==='bd'?'Số PHÁT SINH · '+tuNgay+' → '+denNgay:tab==='dd'?loaiSoDD():'Số TỒN · chốt '+chotNgay)+'</td></tr>'+
   '<tr><td>Phạm vi</td><td>'+(biCat()?'<b>'+R().dt+'</b> — '+TRONG_PV()+'/'+TONG_TRUONG()+' HS toàn trường':'Toàn trường')+'</td></tr>'+
   '<tr><td>Dữ liệu cá nhân</td><td><span class="st2 o">Không có</span></td></tr>'+
   '</table></div>'+
@@ -762,7 +767,7 @@ function xuatBang(){
 function xuatChiTiet(ten,so){
  if(!co('xuat_ct')){toast('Chức danh '+R().ten+' không có quyền xuất danh sách chi tiết');return}
  $('#mdl').classList.remove('sm');
- modal('⬇ Xuất danh sách chi tiết — <b>chịu NĐ 13/2023</b>',
+ modal('⬇ Xuất danh sách chi tiết — <b>chịu Luật BVDLCN 91/2025</b>',
   '<div class="danger"><b>Danh sách này có họ tên, ngày sinh, liên hệ → là DỮ LIỆU CÁ NHÂN.</b> '+
   'Xuất ra file là đưa dữ liệu của <b>'+so+' người</b> ra khỏi phạm vi kiểm soát của hệ thống — '+
   'file đó đi đâu, ai mở, lưu ở USB nào, hệ thống không biết nữa.</div>'+
@@ -806,7 +811,7 @@ function moMau(){
    '<div style="flex:1;min-width:0"><b>'+m[0]+'</b><div style="font-size:11.5px;color:var(--ink2);margin-top:3px">'+m[6]+'</div>'+
    '<div style="font-size:11px;color:var(--ink3);margin-top:3px">Nạp: tab <b>'+(TABS.find(t=>t[0]===m[1])||['','?'])[1]+
    '</b> · chốt <b>'+m[2]+'</b>'+(m[1]==='bd'?' · khoảng <b>'+m[3]+' → '+m[4]+'</b>':'')+'</div></div>'+
-   '<button class="btn sm p" data-x="napmau" data-k="'+i+'">Nạp</button></div></div>').join('')+
+   '<button class="btn sm p" data-x="napmau" data-k="'+i+'">Nạp</button></div></div>').join('')+mauDDHtml()+
   '<div class="ro"><b>Số liệu gửi Sở</b> theo TT 42/2021 cũng nạp ở đây, nhưng <b>việc NỘP thuộc <span class="rolnk" data-go="M9.9">M9.9</span></b> — '+
   'M9.1 chỉ ra số, không phát hành văn bản.</div>',
   [['Đóng',0]]);}
@@ -850,15 +855,21 @@ function ghiChu(){
   '<div class="sech">Xuất — hai mức, hai chế độ pháp lý</div>'+
   '<table style="font-size:12.5px"><tr><th>Xuất gì</th><th>Là dữ liệu gì</th><th>Ràng buộc</th></tr>'+
   '<tr><td>Bảng tổng hợp <i>(chỉ số)</i></td><td>Số liệu thống kê</td><td><b>Tự do</b></td></tr>'+
-  '<tr><td>Danh sách chi tiết <i>(có tên)</i></td><td><b>Dữ liệu cá nhân</b></td><td><b>NĐ 13/2023</b> — mục đích · chọn trường · đóng dấu file</td></tr></table>'+
+  '<tr><td>Danh sách chi tiết <i>(có tên)</i></td><td><b>Dữ liệu cá nhân</b></td><td><b>Luật BVDLCN 91/2025</b> — mục đích · chọn trường · đóng dấu file</td></tr></table>'+
   '<div class="ro">Hai nút <b>khác chữ, khác màu, khác popup</b> — người dùng phải thấy mình đang làm hành vi nào.</div>'+
 
   '<div class="sech">Phạm vi MVP</div>'+
-  '<div class="warn"><b>1 menu · 5 tab · 22 chỉ tiêu cơ bản</b>, phục vụ loại <b>B Điều hành</b> và <b>D Tra cứu</b>.<br>'+
+  '<div class="warn"><b>1 menu · 6 tab · 22 chỉ tiêu cơ bản + 15 chỉ tiêu Đoàn - Đội <code>DD</code></b>, phục vụ loại <b>B Điều hành</b> và <b>D Tra cứu</b>.<br>'+
   '<b>Hoãn sau MVP:</b> tách 10 sub-menu · <b>snapshot</b> · nộp Sở · xuất kế toán. '+
   'Mười sub-menu chỉ có nghĩa khi <b>đủ chỉ tiêu lấp đầy</b> — một menu đầy đặn thuyết phục hơn mười menu lưng chừng.<br>'+
   'Công thức đọc từ <b>Từ điển chỉ tiêu <code>nh9</code> §2</b> — menu <b>không tự tính</b>.</div>'+
 
+  '<div class="sech">Tab 🎖 Đoàn - Đội — YKDD-2B</div>'+
+  '<div class="ro"><b>Trục tổ chức</b>: Bí thư Đoàn chỉ thấy Đoàn, Tổng phụ trách Đội chỉ thấy Đội, Ban giám hiệu thấy cả hai — cùng trục phạm vi của M6.3. '+
+  '<b>Chỉ số tổng hợp</b>: drill-down ra danh sách <b>đơn vị</b> (chi đoàn · chi đội · CLB · đợt · tuần · quý); danh sách người mở ở menu chủ, theo quyền ở đó — '+
+  'xếp loại đoàn viên là đánh giá của tổ chức, không được có một chỗ thứ hai đọc nó theo từng em. '+
+  '<b>Chưa có dữ liệu ≠ 0</b>: trước mốc một nguồn lên hệ thống, ô ghi rõ «chưa có dữ liệu». '+
+  '<b>Nhiệm kỳ</b> lấy ngày đại hội từ M6.15 và không theo năm học ở header.</div>'+
   '<div class="sech">Quy ước demo — §14.4</div>'+
   '<div class="ro">Demo dựng theo vai <code>🔓 Đủ quyền</code> đặt mặc định, thao tác được mọi chức năng. '+
   'Đổi sang chức danh thật ở thanh trên để thử <b>phạm vi dữ liệu</b> và <b>tab bị khóa</b>.<br>'+
@@ -875,9 +886,9 @@ function render(){
   const first=TABS.find(t=>co(t[2]));
   if(first&&!co(T?T[2]:''))
    {const NG={hs:'M1.1 · M1.2',bd:'M1.5 · M1.6 · M1.7',kq:'M2.5 · M3.1 · M2.9',ns:'M4.1 · M4.5 · M4.9',tc:'M7.2 · M7.4'};
-    $('#content').innerHTML=daiPhamVi()+khoiKhoaTab(T[2],T[1].replace(/^\S+\s/,''),NG[T[0]]||'M1.1');return}
+    $('#content').innerHTML=T[0]==='dd'?khoiKhoaDD():daiPhamVi()+khoiKhoaTab(T[2],T[1].replace(/^\S+\s/,''),NG[T[0]]||'M1.1');return}
  }
- $('#content').innerHTML=tab==='hs'?viewHS():tab==='bd'?viewBD():tab==='kq'?viewKQ():tab==='ns'?viewNS():viewTC();
+ $('#content').innerHTML=tab==='hs'?viewHS():tab==='bd'?viewBD():tab==='kq'?viewKQ():tab==='ns'?viewNS():tab==='dd'?viewDD():viewTC();
 }
 
 /* ================= MODAL ================= */
@@ -912,6 +923,7 @@ document.body.addEventListener('change',e=>{
 });
 
 function act(a,d){
+ if(actDD(a,d))return;                       /* tab Đoàn - Đội — app.60 */
  if(a==='drill'){drill(d.k);return}
  if(a==='setchot'){chotNgay=d.k;render();return}
  if(a==='vehomnay'){chotNgay=HOMNAY;render();return}
@@ -925,8 +937,520 @@ function act(a,d){
   closeM();toast('Đã nạp mẫu «'+m[0]+'» — tham số vào thẳng tab đang có, không mở màn hình mới');render();return}
  toast('Thao tác demo');
 }
-render();
+/* render() đầu tiên chạy ở cuối app.60-doan-doi.js — tệp đó khai hằng số tab Đoàn - Đội */
 
+
+/* ================= TAB 6 — 🎖 ĐOÀN - ĐỘI · m9.1.doan_doi (YKDD-2B · 17/9/2026) =================
+   Bản chốt YKDD §3.5 BC-1 · BC-2. Công thức đọc từ Từ điển chỉ tiêu nh9 §2.8b (nhóm DD) — menu KHÔNG tự tính.
+   Tên trường / trạng thái theo hợp đồng HDDD ③ ④ ⑤ ⑥ (sổ PROMPT-YKDD-00-SO-DIEU-PHOI.md §3) — không chép khối ở đây.
+   ★ Số liệu dưới đây là BẢN CHIẾU dữ liệu mẫu của từng menu chủ, đóng ở «hôm nay» của demo đó
+     (M6.3 · M6.13 · M6.14 · M6.16 · M6.17 đều 23/10/2026). Việc xảy ra ở menu chủ sau ngày đó KHÔNG giả lập ở đây.
+   ★ Trục tổ chức (P1): Bí thư Đoàn chỉ thấy Đoàn · TPT chỉ thấy Đội · BGH cả hai. CLB «Chung» ai cũng thấy (M6.16 tc=… + Chung).
+   ★ Chỉ số TỔNG HỢP — không chỉ tiêu nào về TỪNG học sinh; drill-down ra danh sách ĐƠN VỊ (chi đoàn · chi đội · CLB · đợt · tuần · quý),
+     danh sách người mở ở menu chủ (rb 4b · 18). */
+const DD_HOM='2026-11-30';                              /* = HOMNAY của M9.1 */
+const DD_NAM={ten:'2026–2027',tu:'2026-09-01',den:'2027-08-31',
+ hk:[['I','2026-09-05','2027-01-16'],['II','2027-01-17','2027-05-31']]};   /* mốc học kỳ 🔗 M10.1 */
+const d2=k=>k?k.slice(8,10)+'/'+k.slice(5,7)+'/'+k.slice(0,4):'—';
+const tuVN=s=>{const m=(s||'').trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);return m?m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0'):null};
+const ngaySau=k=>{const d=new Date(k+'T00:00:00');d.setDate(d.getDate()+1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const TCN={doan:['🔵','Đoàn trường','Đoàn'],doi:['🔴','Liên đội','Đội'],chung:['⚪','Chung','Chung']};
+const tcTag=t=>'<span class="st2 '+(t==='doan'?'b':t==='doi'?'r':'n')+'">'+TCN[t][0]+' '+TCN[t][2]+'</span>';
+
+/* ══ 🔗 M6.15 — nhiệm kỳ (nhiệm kỳ = khoảng giữa hai kỳ đại hội, §3.4) ══ */
+const NK_DD=[
+ {id:'NK-DT-25',tc:'doan',ten:'Đoàn trường 2025–2026',dh:'2025-10-10',ke:'2026-10-15',cn:'QĐ 87-QĐ/ĐTN ngày 20/10/2025 — Đoàn cấp trên',
+  bch:{gv:5,hs:0},cv:'Bí thư Vũ Đình Trung · Phó Bí thư Ngô Thanh Tùng · 3 ủy viên'},
+ {id:'NK-DT-26',tc:'doan',ten:'Đoàn trường 2026–2027',dh:'2026-10-15',ke:null,cn:'QĐ 112-QĐ/ĐTN ngày 21/10/2026 — Đoàn cấp trên',
+  bch:{gv:5,hs:2},cv:'Bí thư Lê Thị Thu Hằng · Phó Bí thư Ngô Thanh Tùng · 5 ủy viên (2 học sinh)'},
+ {id:'NK-LD-25',tc:'doi',ten:'Liên đội 2025–2026',dh:'2025-09-27',ke:'2026-09-30',cn:'không cần công nhận',
+  bch:{gv:0,hs:5},cv:'Liên đội trưởng · 2 Liên đội phó · 2 ủy viên (2 em đã tốt nghiệp THCS)'},
+ {id:'NK-LD-26',tc:'doi',ten:'Liên đội 2026–2027',dh:'2026-09-30',ke:null,cn:'không cần công nhận',
+  bch:{gv:0,hs:9},cv:'Liên đội trưởng · 2 Liên đội phó · 6 ủy viên'}
+];
+const nkDD=id=>NK_DD.find(n=>n.id===id);
+
+/* ══ 🔗 M6.3 sổ đội viên — đoàn viên (theo lớp, ngày 23/10/2026) · M6.15 đơn vị ══
+   doiCu = đội viên kết nạp trước năm học · kn = kết nạp đợt KN-03 ngày 05/09/2026 · doan = kết nạp Đoàn 26/03/2026 */
+const DDL=[
+ {id:'6A1',dt:'A',k:6,n:38,doiCu:24,kn:3,doan:0},{id:'6A2',dt:'A',k:6,n:35,doiCu:15,kn:9,doan:0},
+ {id:'6A3',dt:'A',k:6,n:31,doiCu:15,kn:7,doan:0},{id:'7A1',dt:'A',k:7,n:33,doiCu:23,kn:3,doan:0},
+ {id:'7A2',dt:'A',k:7,n:26,doiCu:19,kn:3,doan:0},{id:'8A1',dt:'A',k:8,n:18,doiCu:16,kn:1,doan:0},
+ {id:'6B1',dt:'B',k:6,n:30,doiCu:20,kn:2,doan:0},{id:'7B1',dt:'B',k:7,n:21,doiCu:16,kn:1,doan:0},
+ {id:'9A1',dt:'A',k:9,n:34,doiCu:32,kn:0,doan:2},{id:'9A2',dt:'A',k:9,n:30,doiCu:27,kn:0,doan:3},
+ {id:'9B1',dt:'B',k:9,n:25,doiCu:22,kn:0,doan:3}
+];
+const CHIDOAN=[
+ {id:'CDGV',ten:'Chi đoàn giáo viên',dt:null,lops:[],canbo:3,dh:'2026-09-18'},
+ {id:'CDO-9A2',ten:'Chi đoàn 9A2 (sinh hoạt ghép 9A1)',dt:'A',lops:['9A2','9A1'],canbo:2,dh:'2026-09-17',ghi:'Phó Bí thư bầu bổ sung 20/10 — chờ công nhận'},
+ {id:'CDO-9B1',ten:'Chi đoàn 9B1',dt:'B',lops:['9B1'],canbo:0,dh:null,ghi:'chưa có kết quả đại hội năm học này'}
+];
+/* chi đoàn giáo viên — số đoàn viên theo danh sách M6.15 (máy đếm của M6.17 từng quý) */
+const GV_DV=[['2025-09-01',12],['2026-03-01',13],['2026-06-01',12],['2026-09-18',11]];
+const gvDV=c=>GV_DV.filter(x=>x[0]<=c).slice(-1).map(x=>x[1])[0]||0;
+const KET_NAP=[
+ {ngay:'2026-03-26',tc:'doan',ten:'Kết nạp Đoàn nhân Ngày thành lập Đoàn 26/3',lop:{'9A1':2,'9A2':3,'9B1':3},lk:'/M6.3?tab=hoivien&tc=doan'},
+ {ngay:'2026-09-05',tc:'doi',ten:'Đợt KN-03 — kết nạp Đội đầu năm học',lop:{'6A1':3,'6A2':9,'6A3':7,'7A1':3,'7A2':3,'8A1':1,'6B1':2,'7B1':1},lk:'/M6.3?tab=ketnap&ctx=KN-03'}
+];
+const KN_CHUA=[['KN-01','doi','Đợt kết nạp Đội — 20/11/2026','Đang xét'],['KN-05','doi','Đợt kết nạp Đội — 22/12/2026','Đang mở đăng ký'],['KN-02','doan','Đợt kết nạp Đoàn — 26/3/2027','Đang mở đăng ký'],['KN-04','doi','Đợt bổ sung tháng 10','Đã hủy']];
+
+/* ══ 🔗 M6.16 — CLB, đội, nhóm (HDDD ③) · ls = [ngày, trạng thái] ══ */
+const CLB_DD=[
+ {id:'CLB-01',ten:'CLB Tiếng Anh «English Club»',loai:'clb',tc:'chung',dt:'A',ls:[['2024-09-15','dang_hoat_dong']],qdTL:'2024-09-15',ghiNhan:'2026-01-15'},
+ {id:'CLB-02',ten:'CLB Bóng đá',loai:'clb',tc:'doi',dt:'A',ls:[['2023-09-20','dang_hoat_dong']],qdTL:'2023-09-20',ghiNhan:'2026-01-15'},
+ {id:'CLB-03',ten:'CLB STEM – Robotics',loai:'clb',tc:'chung',dt:'A',ls:[['2026-06-02','cho_duyet'],['2026-06-15','dang_hoat_dong']],qdTL:'2026-06-15',ghiNhan:null,dngt:'2026-10-20'},
+ {id:'CLB-04',ten:'CLB Văn nghệ «Sao Mai»',loai:'clb',tc:'doi',dt:'A',ls:[['2022-10-05','dang_hoat_dong']],qdTL:'2022-10-05',ghiNhan:'2026-01-15'},
+ {id:'CLB-05',ten:'CLB Cờ vua',loai:'clb',tc:'doi',dt:'B',ls:[['2025-09-12','dang_hoat_dong'],['2026-09-30','tam_dung']],qdTL:'2025-09-12',ghiNhan:'2026-01-15'},
+ {id:'CLB-06',ten:'CLB Tuổi trẻ và Pháp luật',loai:'clb',tc:'doan',dt:'A',ls:[['2025-09-25','dang_hoat_dong']],qdTL:'2025-09-25',ghiNhan:'2026-01-15'},
+ {id:'CLB-07',ten:'CLB Sách và Hành động',loai:'clb',tc:'doan',dt:'A',ls:[['2026-10-19','cho_gop_y']]},
+ {id:'CLB-08',ten:'CLB Cờ tướng',loai:'clb',tc:'chung',dt:'A',ls:[['2026-10-21','cho_duyet']]},
+ {id:'CLB-09',ten:'CLB Bóng rổ',loai:'clb',tc:'doi',dt:'A',ls:[['2026-10-16','cho_gop_y'],['2026-10-19','cho_duyet']]}
+];
+const TT_CLB={dang_hoat_dong:'Đang hoạt động',tam_dung:'Tạm dừng',cho_gop_y:'Chờ góp ý',cho_duyet:'Chờ duyệt',khong_duyet:'Không duyệt',giai_the:'Giải thể',nhap:'Nháp'};
+const clbTT=(c,d)=>{const x=c.ls.filter(s=>s[0]<=d).slice(-1)[0];return x?x[1]:null};
+
+/* ══ 🔗 M6.14 — đợt hoạt động (tab 2) · sự kiện phong trào (tab 1) ══ */
+const HD_DD=[
+ {id:'HD-01',ten:'Chăm sóc Nhà bia ghi danh liệt sĩ phường',tc:'doi',dt:'A',dau:'2026-09-19',buoi:3,tv:25,co:68,luot:75,p:3,tt:'chot'},
+ {id:'HD-02',ten:'Tuyên truyền an toàn giao thông ở cổng trường',tc:'doi',dt:'A',dau:'2026-10-10',buoi:3,tv:26,co:69,luot:78,p:7,tt:'chua'},
+ {id:'HD-03',ten:'Tập luyện văn nghệ Liên đội — Hội thi 20/11',tc:'doi',dt:'A',dau:'2026-10-13',buoi:5,tv:16,co:14,luot:16,p:1,tt:'chua'},
+ {id:'HD-04',ten:'Học tập chuyên đề «Tuổi trẻ học tập và làm theo lời Bác»',tc:'doan',dt:'A',dau:'2026-10-16',buoi:2,tv:5,co:5,luot:5,p:0,tt:'chua'},
+ {id:'HD-05',ten:'Dã ngoại rèn kỹ năng sống — Điểm trường B',tc:'doi',dt:'B',dau:'2026-10-17',buoi:1,tv:39,co:0,luot:0,p:0,tt:'huy'}
+];
+const PT_DD=[
+ {id:'PT-01',ten:'Lễ khai giảng và kết nạp Đội',tc:'chung',dt:'A',tu:'2026-09-05',tt:'congbo'},
+ {id:'PT-02',ten:'Hội thi Nghi thức Đội cấp trường',tc:'doi',dt:'A',tu:'2026-10-12',tt:'noibo'},
+ {id:'PT-03',ten:'Ngày hội «Thiếu nhi vui khỏe» điểm trường B',tc:'doi',dt:'B',tu:'2026-10-18',tt:'congbo'},
+ {id:'PT-04',ten:'Diễn đàn «Tuổi trẻ học tập và làm theo lời Bác»',tc:'doan',dt:'A',tu:'2026-11-05',tt:'nhap'}
+];
+
+/* ══ 🔗 M6.13 — bảng tuần nền nếp · lịch trực · lực lượng (HDDD ④) ══
+   [tuần, điểm trường, ngày cuối tuần, lớp trực, đã chốt, đã công bố, lớp đứng đầu tuần (CC.05)] — tuần 7 chưa chốt tại 23/10 */
+const TUAN_NN=[
+ [1,'A','2026-09-12','9A1',1,1,'6A2'],[2,'A','2026-09-19','9A2',1,1,'7A1'],[3,'A','2026-09-26','7A1',1,1,'9A2'],
+ [4,'A','2026-10-03','8A1',1,1,'6A1'],[5,'A','2026-10-10','7A2',1,1,'9A1'],[6,'A','2026-10-17','9A1',1,0,null],
+ [1,'B','2026-09-12','9B1',1,1,'9B1'],[2,'B','2026-09-19','7B1',1,1,'9B1'],[3,'B','2026-09-26','6B1',1,1,'6B1'],
+ [4,'B','2026-10-03','9B1',1,1,'9B1'],[5,'B','2026-10-10','7B1',1,1,'9B1'],[6,'B','2026-10-17','6B1',1,0,null]
+];
+const tcLop=id=>{const l=DDL.find(x=>x.id===id);return l&&l.k===9?'doan':'doi'};   /* 🔗 M6.15 tổ chức áp dụng: khối 9 → Đoàn */
+const DOI_LICH_DD=[{luc:'2026-10-20',dt:'A',tuan:'9 ↔ 10',lop:'8A1 ↔ 7A2',tc:'doi',ly:'8A1 đi trải nghiệm thực tế'}];
+const LL_DD=[   /* thành viên lực lượng nền nếp — chỉ số lượng theo điểm trường; tên ở M6.13 */
+ {tc:'doan',ten:'Ban nền nếp',dt:'A',tu:'2026-09-07',rut:null,sl:5},{tc:'doan',ten:'Ban nền nếp',dt:'B',tu:'2026-09-07',rut:null,sl:1},
+ {tc:'doi',ten:'Đội Sao đỏ',dt:'A',tu:'2026-09-07',rut:null,sl:3},{tc:'doi',ten:'Đội Sao đỏ',dt:'A',tu:'2026-09-07',rut:'2026-10-05',sl:1},
+ {tc:'doi',ten:'Đội Sao đỏ',dt:'B',tu:'2026-09-07',rut:null,sl:2}
+];
+
+/* ══ 🔗 M6.17 — khối đoàn phí (HDDD ⑥) · quý theo năm học (QH-17) ══ */
+const QUY_DP=[
+ {id:'doan-2526-q1',nam:'2025–2026',k:1,tu:'2025-09-01',den:'2025-11-30',han:'2025-10-30',trich:'2025-10-24',nop:[['CDGV',12,0,5000,60000,'2025-09-22']]},
+ {id:'doan-2526-q2',nam:'2025–2026',k:2,tu:'2025-12-01',den:'2026-02-28',han:'2026-01-30',trich:'2026-01-26',nop:[['CDGV',12,0,5000,60000,'2025-12-15']]},
+ {id:'doan-2526-q3',nam:'2025–2026',k:3,tu:'2026-03-01',den:'2026-05-31',han:'2026-04-30',trich:'2026-04-27',nop:[['CDGV',13,0,5000,65000,'2026-03-16'],['CDO-K9-2526',8,0,2000,16000,'2026-04-08']]},
+ {id:'doan-2526-q4',nam:'2025–2026',k:4,tu:'2026-06-01',den:'2026-08-31',han:'2026-07-30',trich:'2026-07-24',nop:[['CDGV',12,0,5000,60000,'2026-06-12']]},
+ {id:'doan-2627-q1',nam:'2026–2027',k:1,tu:'2026-09-01',den:'2026-11-30',han:'2026-10-30',trich:null,nop:[['CDGV',11,0,5000,55000,'2026-09-18'],['CDO-9A2',5,1,2000,6000,'2026-10-19']]}
+];
+const QT_DP={'2025–2026':'2026-09-12'};                        /* quyết toán công khai */
+const CD_NAM={'2025–2026':[['CDGV',null],['CDO-K9-2526','2026-03-26']],'2026–2027':[['CDGV',null],['CDO-9A2',null],['CDO-9B1',null]]};
+const phaiNop=n=>(n[1]-n[2])*n[3];
+const tongNhanQ=q=>q.nop.reduce((a,n)=>a+n[4],0);
+const trich13Q=q=>Math.round(tongNhanQ(q)/3);
+/* cờ «chi đoàn nộp đủ» — định nghĩa M6.17 §5.5e: quý được xét = đã đến hạn trích nộp tính tới ngày xét HOẶC đã có dòng nộp;
+   đủ = mọi quý được xét có dòng nộp và thực nhận ≥ phải nộp; không quý nào được xét ⇒ null «chưa có dữ liệu» (không coi là đủ) */
+function coNopDu(cd,nam,ngay){
+ const ks=QUY_DP.filter(q=>q.nam===nam&&q.tu<=ngay&&(q.han<=ngay||q.nop.some(n=>n[0]===cd&&n[5]<=ngay)));
+ const du=ks.filter(q=>{const n=q.nop.find(x=>x[0]===cd&&x[5]<=ngay);return n&&n[4]>=phaiNop(n)});
+ return {du:ks.length?du.length===ks.length:null,soQuy:ks.length,soDu:du.length};
+}
+/* sổ quỹ Liên đội — kỳ nửa năm (QH-6); lên hệ thống từ 01/09/2026, số dư chuyển sang 1.640.000đ (sổ giấy 2025–2026) */
+const LD_BAT_DAU='2026-09-01', LD_DU_DAU=1640000;
+const PHIEU_LD=[
+ ['2026-09-03','thu',3000000,'duyet','Kinh phí nhà trường cấp HK I'],['2026-09-03','chi',1145000,'duyet','Cờ chi đội và cờ Liên đội'],
+ ['2026-09-04','chi',360000,'huy','Khăn quàng đội viên mới'],['2026-10-09','chi',180000,'duyet','Giấy, màu vẽ tranh cổ động'],
+ ['2026-10-10','thu',2145000,'duyet','Kế hoạch nhỏ đợt 1'],['2026-10-14','chi',1200000,'duyet','Giải thưởng Hội thi Nghi thức Đội'],
+ ['2026-10-19','chi',420000,'tralai','Nước uống, quà Ngày hội điểm trường B'],['2026-10-21','chi',350000,'cho','In giấy khen Hội thi'],
+ ['2026-10-22','thu',1000000,'cho','Kinh phí cấp bổ sung Hội thi']
+];
+
+/* ══ 🔗 M6.3 tab «Đánh giá xếp loại» (HDDD ⑤) — CHỈ đếm theo cong_nhan ══ */
+const DG_DD=[{id:'DG-2627',nam:'2026–2027',mo:'2026-10-19',tt:'dang_mo',
+ dv:{gv:{tong:11,cn:[2,8,1,0]},hs:{tong:8,cn:[0,0,0,0],deXuat:7}},
+ cd:[['CDGV',null,'hoan_thanh_tot','Đã công nhận'],['CDO-9A2','A',null,'Chi đoàn đang nhập đề xuất'],['CDO-9B1','B',null,'Đã gửi — chờ BCH công nhận']],
+ khen:{doan_vien:1,chi_doan:0}}];
+const MUC4DD=['Hoàn thành xuất sắc','Hoàn thành tốt','Hoàn thành','Không hoàn thành'];
+const TT_DGN={dang_mo:'Đang mở',cho_cong_nhan:'Chờ công nhận',da_cong_nhan:'Đã công nhận'};
+
+/* mốc dữ liệu sớm nhất của từng nguồn trên hệ thống — trước mốc là «chưa có dữ liệu», KHÔNG phải 0 (rb 9b) */
+const MOC_NGUON={hd:['2026-09-01','M6.14'],nn:['2026-09-01','M6.13'],ld:[LD_BAT_DAU,'M6.17 sổ Liên đội'],xl:['2026-09-01','M6.3 (đợt đầu tiên: năm học 2026–2027)']};
+
+/* ══ Khối CHẠM TIỀN và khối ĐÁNH GIÁ đi theo quyền X ở menu nguồn (rb 13 · 13b) — báo cáo không là cửa sau ══
+   dp = khối đoàn phí m6.17.so_quy (Đoàn) · ld = sổ quỹ Liên đội m6.17.so_quy (Đội) · xl = m6.3.danh_gia_xep_loai.
+   Bảng chuẩn quyền: PHT_DT xem sổ ĐƯỢC GIAO (demo M6.17: PHT Điểm trường A được giao sổ Liên đội) · PHT_CM không có dòng ở M6.17 và tab xếp loại M6.3.
+   Khối đếm tổ chức (thành viên · CLB · đợt · nền nếp · BCH) không chịu điều kiện này. ✅ chốt 17/9/2026 — §11 điểm 9 */
+const DD_NGUON={FULL:['dp','ld','xl'],HT:['dp','ld','xl'],PHT_CM:[],PHT_A:['ld','xl'],BTD:['dp','xl'],TPT:['ld']};
+const coNguon=k=>(DD_NGUON[role]||[]).includes(k);
+const khoiThieuNguon=(ma,ten,feat)=>'<div class="noacc" style="padding:16px;margin-bottom:11px;text-align:left"><h3 style="font-size:14px">🔒 '+ma+' '+ten+' không hiển thị</h3>'+
+ '<p style="margin:0 0 5px">Chức danh <b>'+R().ten+'</b> không có quyền <code>X</code> trên <code>'+feat+'</code>'+(role==='PHT_A'&&feat.indexOf('m6.17')===0?' với sổ này (chỉ xem sổ được giao)':'')+'. Phần này <b>vẫn chiếm chỗ</b> để bạn biết nó tồn tại.</p>'+
+ '<p style="margin:0"><span class="rolnk" data-go="M10.4">→ Đề nghị cấp quyền tại M10.4</span></p></div>';
+
+/* ================= TRẠNG THÁI TAB ================= */
+let DD={tc:'ca',ky:'nam',hk:0,nk:'NK-DT-25',tu:'2026-09-01',den:'2027-08-31'};
+const ddVaiTC=()=>role==='BTD'?['doan']:role==='TPT'?['doi']:['doan','doi'];
+function ddTC(){
+ const v=ddVaiTC(); if(v.length===1) return v;
+ if(DD.ky==='nk') return [nkDD(DD.nk).tc];
+ return DD.tc==='ca'?v:[DD.tc];
+}
+const xemTC=t=>t==='chung'||ddTC().includes(t);
+const ddDT=()=>R().sc==='branch'?R().dt.slice(-1):null;         /* 'Điểm trường A' → 'A' */
+const inDT=dt=>!ddDT()||!dt||dt===ddDT();
+function ddKhoang(){
+ let tu,den,nhan;
+ if(DD.ky==='hk'){const h=DD_NAM.hk[DD.hk];tu=h[1];den=h[2];nhan='Học kỳ '+h[0]+' · '+DD_NAM.ten}
+ else if(DD.ky==='nam'){tu=DD_NAM.tu;den=DD_NAM.den;nhan='Năm học '+DD_NAM.ten}
+ else if(DD.ky==='nk'){const n=nkDD(DD.nk);tu=ngaySau(n.dh);den=n.ke||DD_HOM;nhan='Nhiệm kỳ '+n.ten}
+ else {tu=DD.tu;den=DD.den;nhan='Tùy chọn'}
+ const denT=den>DD_HOM?DD_HOM:den;
+ const chot=denT<DD_NAM.tu?DD_NAM.tu:denT;          /* số tồn chỉ lùi trong năm học đang chọn — §11.2 quy tắc 1 */
+ return {tu,den,denT,cat:den>DD_HOM,chot,chotLui:denT<DD_NAM.tu,chuaBD:tu>DD_HOM,nhan,vuotNam:tu<DD_NAM.tu};
+}
+const trongK=(x,K)=>x&&x>=K.tu&&x<=K.denT;
+
+/* ================= DỰNG TAB ================= */
+const nhanTonDD=K=>'<span class="st2 b" title="Đếm tại một thời điểm">Số TỒN · chốt '+d2(K.chot)+'</span>';
+const nhanPSDD=K=>'<span class="st2 v" title="Đếm trong một khoảng">Số PHÁT SINH · '+d2(K.tu)+' → '+d2(K.denT)+'</span>';
+const maDD=m=>'<code>'+m+'</code> ';
+const oDD=(n,nhan,k,phu)=>oSo(n,nhan,k?JSON.stringify({dd:k}):'',phu);
+const mocNguon=(K,m)=>K.tu<MOC_NGUON[m][0]?'<span class="st2 w" style="margin-left:6px" title="Trước mốc này nguồn chưa có bản ghi trên hệ thống">⚠ dữ liệu '+MOC_NGUON[m][1]+' có từ '+d2(MOC_NGUON[m][0])+'</span>':'';
+const khoiDD=(tieuDe,chip,than,lk)=>'<div class="hb"><div class="lbh">'+tieuDe+'<span class="sp"></span>'+chip+
+ (lk?' <span class="rolnk" data-go="'+lk+'" style="margin-left:6px">'+lk.split('?')[0].slice(1)+' ↗</span>':'')+'</div>'+than+'</div>';
+const bang=(cot,rows)=>'<div class="wrapx"><table style="font-size:12.5px"><tr>'+cot.map(c=>'<th>'+c+'</th>').join('')+'</tr>'+rows.join('')+'</table></div>';
+const tr_=cells=>'<tr>'+cells.map(c=>'<td>'+c+'</td>').join('')+'</tr>';
+const vndDD=n=>n.toLocaleString('vi-VN')+'đ';
+
+function thanhKyDD(K){
+ const v=ddVaiTC(), nks=NK_DD.filter(n=>v.includes(n.tc));
+ const b=(on,x,k,l)=>'<button class="btn xs'+(on?' p':'')+'" data-x="'+x+'" data-k="'+k+'">'+l+'</button>';
+ return '<div class="bar" style="flex-wrap:wrap;gap:6px"><span style="font-size:12.5px"><b>Mẫu</b></span>'+
+  '<button class="btn xs" data-x="ddmau" data-k="hk">📋 Tổng kết học kỳ</button>'+
+  '<button class="btn xs" data-x="ddmau" data-k="nam">📋 Tổng kết năm học</button>'+
+  '<button class="btn xs" data-x="ddmau" data-k="nk">📋 Tổng kết nhiệm kỳ</button>'+
+  '<span style="margin-left:12px;font-size:12.5px"><b>Kỳ</b></span>'+
+  b(DD.ky==='hk'&&DD.hk===0,'ddky','hk0','HK I')+b(DD.ky==='hk'&&DD.hk===1,'ddky','hk1','HK II')+
+  b(DD.ky==='nam','ddky','nam','Năm học '+DD_NAM.ten)+
+  '<select class="sel" id="ddnk" style="'+(DD.ky==='nk'?'border-color:var(--brand);font-weight:700':'')+'">'+
+   '<option value="">Nhiệm kỳ…</option>'+nks.map(n=>'<option value="'+n.id+'"'+(DD.ky==='nk'&&DD.nk===n.id?' selected':'')+'>'+
+   TCN[n.tc][0]+' '+n.ten+' · '+d2(n.dh)+' → '+(n.ke?d2(n.ke):'nay')+'</option>').join('')+'</select>'+
+  b(DD.ky==='tuy','ddky','tuy','Tùy chọn')+
+  (DD.ky==='tuy'?'<input class="inp" id="ddtu" style="min-width:0;max-width:105px" value="'+d2(DD.tu)+'"> → <input class="inp" id="ddden" style="min-width:0;max-width:105px" value="'+d2(DD.den)+'">':'')+
+ '</div>'+
+ (v.length>1&&DD.ky!=='nk'?'<div class="bar" style="gap:6px"><span style="font-size:12.5px"><b>Tổ chức</b></span>'+
+   b(DD.tc==='ca','ddtc','ca','Cả hai')+b(DD.tc==='doan','ddtc','doan','🔵 Đoàn trường')+b(DD.tc==='doi','ddtc','doi','🔴 Liên đội')+'</div>':'');
+}
+function daiDD(K){
+ const out=[], r=R();
+ if(ddVaiTC().length===1) out.push('🔒 <b>'+r.ten+'</b> — chỉ số liệu <b>'+TCN[ddVaiTC()[0]][1]+'</b> (trục tổ chức) · CLB «Chung» vẫn hiện');
+ else if(DD.ky==='nk') out.push('Nhiệm kỳ là của một tổ chức — đang xem <b>'+TCN[nkDD(DD.nk).tc][1]+'</b>');
+ if(ddDT()) out.push('🔒 <b>'+r.dt+'</b> — số theo lớp · CLB · đợt · tuần chỉ gồm điểm trường này; <b>đoàn phí · sổ Liên đội · BCH · chi đoàn giáo viên</b> là của cấp trường, không cắt');
+ const w=[];
+ if(DD.ky==='nk') w.push('<b>Bộ lọc Nhiệm kỳ không theo năm học ở header</b> — phát sinh tính từ '+d2(K.tu)+' (sau ngày đại hội mở nhiệm kỳ) tới hết '+d2(K.denT)+(nkDD(DD.nk).ke?' (ngày đại hội kế tiếp)':''));
+ if(K.cat&&!K.chuaBD) w.push('⏱ <b>Kỳ chưa kết thúc</b> — số tạm tính tới hôm nay '+d2(DD_HOM));
+ if(K.chuaBD) w.push('⏱ <b>Kỳ chưa bắt đầu</b> — chưa có số phát sinh');
+ if(K.chotLui) w.push('Số tồn chỉ lùi trong năm học đang chọn — chốt tại '+d2(K.chot));
+ return (out.length?'<div class="scopebar" style="background:var(--amber-soft);border-color:#fcd34d;padding:7px 12px;font-size:12.5px;display:block">'+out.join('<br>')+'</div>':'')+
+  (w.length?'<div class="warn" style="padding:7px 12px">'+w.join('<br>')+'</div>':'');
+}
+
+function viewDD(){
+ if(!co('dd'))return khoiKhoaDD();
+ ddChuanVai();
+ const K=ddKhoang(), dT=xemTC('doan'), iT=xemTC('doi');
+ return daiDD(K)+thanhKyDD(K)+
+  '<div style="font-size:12.5px;margin:0 0 9px"><b>'+K.nhan+'</b> · phát sinh '+d2(K.tu)+' → '+d2(K.den)+' · tồn chốt tại '+d2(K.chot)+'</div>'+
+  '<div class="sech">① Tổ chức · thành viên</div>'+(dT?ddDoanVien(K):'')+(iT?ddDoiVien(K):'')+ddBCH(K)+
+  '<div class="sech">② Kết nạp · CLB, đội, nhóm</div>'+ddKetNap(K)+ddCLBTon(K)+ddCLBPS(K)+
+  '<div class="sech">③ Hoạt động · nền nếp</div>'+ddHoatDong(K)+ddNenNep(K)+ddLucLuong(K)+
+  '<div class="sech">④ Đoàn phí · quỹ Liên đội</div>'+
+   (dT?(coNguon('dp')?ddDoanPhi(K)+ddCoNop(K):khoiThieuNguon('DD.10 · DD.11','Đoàn phí','m6.17.so_quy · khối đoàn phí')):'')+
+   (iT?(coNguon('ld')?ddQuyLD(K):khoiThieuNguon('DD.12','Sổ quỹ Liên đội','m6.17.so_quy · sổ Liên đội')):'')+
+  (dT?'<div class="sech">⑤ Xếp loại đoàn viên — chi đoàn</div>'+(coNguon('xl')?ddXepLoai(K):khoiThieuNguon('DD.13 · DD.14','Xếp loại','m6.3.danh_gia_xep_loai')):'')+
+  '<div class="hint" style="margin-top:6px">Chỉ số tổng hợp — danh sách người xem ở menu chủ · bản chiếu dữ liệu mẫu các menu chủ tới 23/10/2026</div>';
+}
+function khoiKhoaDD(){
+ return '<div class="noacc"><h3>🔒 Đoàn - Đội</h3><p>Chức danh <b>'+R().ten+'</b> không có quyền <code>X</code> ở tab <b>Đoàn - Đội</b> <code>m9.1.doan_doi</code>.</p>'+
+  '<p>Tab dành cho Bí thư Đoàn · Tổng phụ trách Đội · Ban giám hiệu.</p><p><span class="rolnk" data-go="M10.4">→ Đề nghị cấp quyền tại M10.4</span></p></div>';
+}
+
+/* ── ① DD.02 đoàn viên · DD.01 đội viên · DD.15 BCH ── */
+function ddDoanVien(K){
+ const c=K.chot, cds=CHIDOAN.filter(x=>inDT(x.dt));
+ const hsCD=x=>x.lops.reduce((a,l)=>a+(c>='2026-03-26'?DDL.find(y=>y.id===l).doan:0),0);
+ const hs=cds.filter(x=>x.lops.length).reduce((a,x)=>a+hsCD(x),0), gv=inDT(null)?gvDV(c):0;
+ const k9=DDL.filter(l=>l.k===9&&inDT(l.dt)).reduce((a,l)=>a+l.n,0);
+ return khoiDD(maDD('DD.02')+'Đoàn viên theo chi đoàn '+tcTag('doan'),nhanTonDD(K),
+  '<div style="padding:11px 13px"><div class="grid4">'+
+   oDD(hs+gv,'Đoàn viên','dv','học sinh '+hs+' · giáo viên '+gv)+
+   oDD((k9?(hs*100/k9).toFixed(1):0)+'%','Tỉ lệ đoàn viên / HS khối 9','dv',hs+'/'+k9+' học sinh')+
+   oDD(cds.length,'Chi đoàn','dv','')+'</div>'+
+  bang(['Chi đoàn','Đoàn viên','Cán bộ chi đoàn','Ghi chú'],cds.map(x=>tr_(['<b>'+x.ten+'</b>',x.lops.length?hsCD(x):gvDV(c),x.canbo,'<span class="hint">'+(x.ghi||'')+'</span>'])))+'</div>','/M6.3?tab=hoivien&tc=doan');
+}
+function ddDoiVien(K){
+ const c=K.chot, L=DDL.filter(l=>inDT(l.dt)), dv=l=>l.doiCu+(c>='2026-09-05'?l.kn:0);
+ const tong=L.reduce((a,l)=>a+dv(l),0), hs=L.reduce((a,l)=>a+l.n,0);
+ const hsDoi=L.filter(l=>l.k<9), tlDoi=hsDoi.reduce((a,l)=>a+dv(l),0)*100/hsDoi.reduce((a,l)=>a+l.n,0);
+ return khoiDD(maDD('DD.01')+'Đội viên theo chi đội '+tcTag('doi'),nhanTonDD(K),
+  '<div style="padding:11px 13px"><div class="grid4">'+
+   oDD(tong,'Đội viên','dvi','trên '+hs+' học sinh · '+L.length+' chi đội')+
+   oDD(tlDoi.toFixed(1)+'%','Tỉ lệ đội viên khối 6–8','dvi','khối 9: đội viên chưa vào Đoàn')+'</div>'+
+  bang(['Chi đội','Sĩ số','Đội viên','Tỉ lệ'],L.map(l=>tr_(['<b>'+l.id+'</b> <span class="hint">ĐT '+l.dt+'</span>',l.n,dv(l),
+   '<span class="st2 '+(dv(l)/l.n<0.7?'w':'o')+'">'+(dv(l)*100/l.n).toFixed(0)+'%</span>'])))+'</div>','/M6.3?tab=hoivien&tc=doi');
+}
+function ddBCH(K){
+ const v=ddTC(), rows=[];
+ if(DD.ky==='nk'){const n=nkDD(DD.nk);
+  rows.push(tr_(['<b>'+n.ten+'</b> '+tcTag(n.tc),d2(n.dh)+' → '+(n.ke?d2(n.ke):'nay'),n.bch.gv+n.bch.hs,n.bch.gv+' · '+n.bch.hs,'<span class="hint">'+n.cv+' · '+n.cn+'</span>']));
+  const ke=NK_DD.find(x=>x.tc===n.tc&&x.dh===n.ke);
+  if(ke) rows.push(tr_(['<span class="hint">↳ BCH nhiệm kỳ kế tiếp — bầu tại đại hội '+d2(ke.dh)+'</span>','',ke.bch.gv+ke.bch.hs,ke.bch.gv+' · '+ke.bch.hs,'<span class="hint">'+ke.cv+'</span>']));
+ } else v.forEach(t=>{const n=NK_DD.filter(x=>x.tc===t&&x.dh<=K.chot).slice(-1)[0]; if(n)
+  rows.push(tr_(['<b>'+n.ten+'</b> '+tcTag(t),d2(n.dh)+' → '+(n.ke?d2(n.ke):'nay'),n.bch.gv+n.bch.hs,n.bch.gv+' · '+n.bch.hs,'<span class="hint">'+n.cv+'</span>']))});
+ const cb=(v.includes('doan')?'Cán bộ chi đoàn: <b>'+CHIDOAN.reduce((a,x)=>a+x.canbo,0)+'</b> (1 chi đoàn chưa đại hội)':'')+
+  (v.includes('doi')?(v.includes('doan')?' · ':'')+'Ban chỉ huy chi đội: <b>27</b> em ở 9/11 chi đội (6B1 · 7B1 chưa nhập biên bản) · TPT 🔗 M4.3':'');
+ return khoiDD(maDD('DD.15')+'Ban chấp hành · cán bộ',DD.ky==='nk'?'<span class="st2 n">BCH của nhiệm kỳ đang xem</span>':nhanTonDD(K),
+  '<div style="padding:0">'+bang(['Nhiệm kỳ','Đại hội → đại hội','BCH','GV · HS','Cơ cấu · công nhận'],rows)+
+  '<div class="hint" style="padding:7px 12px;border-top:1px solid var(--line)">'+cb+'</div></div>','/M6.15?tab=cocau');
+}
+
+/* ── ② DD.03 kết nạp · DD.04 CLB tồn · DD.05 CLB phát sinh ── */
+function ddKetNap(K){
+ const ev=KET_NAP.filter(e=>xemTC(e.tc)&&trongK(e.ngay,K));
+ const sl=e=>Object.keys(e.lop).filter(l=>inDT(DDL.find(x=>x.id===l).dt)).reduce((a,l)=>a+e.lop[l],0);
+ const dem=t=>ev.filter(e=>e.tc===t).reduce((a,e)=>a+sl(e),0);
+ return khoiDD(maDD('DD.03')+'Kết nạp mới',nhanPSDD(K),
+  '<div style="padding:11px 13px"><div class="grid4">'+
+   (xemTC('doan')?oDD(dem('doan'),'Đoàn viên kết nạp mới','kn:doan',''):'')+
+   (xemTC('doi')?oDD(dem('doi'),'Đội viên kết nạp mới','kn:doi',''):'')+'</div>'+
+  '<div class="hint">Theo ngày kết nạp ghi ở sổ · đợt chưa kết nạp không tính: '+
+   KN_CHUA.filter(x=>xemTC(x[1])).map(x=>x[0]+' '+x[3].toLowerCase()).join(' · ')+'</div></div>','/M6.3?tab=ketnap');
+}
+function ddCLBTon(K){
+ const ds=CLB_DD.filter(c=>xemTC(c.tc)&&inDT(c.dt)), tcs=['doan','doi','chung'].filter(xemTC);
+ const dem=(t,f)=>ds.filter(c=>c.tc===t&&f(clbTT(c,K.chot),c)).length;
+ const rows=tcs.map(t=>tr_([tcTag(t),
+  ...['clb','doi','nhom'].map(l=>dem(t,(s,c)=>s==='dang_hoat_dong'&&c.loai===l)),
+  dem(t,s=>s==='tam_dung'),dem(t,s=>s==='cho_gop_y'||s==='cho_duyet')]));
+ const tong=ds.filter(c=>clbTT(c,K.chot)==='dang_hoat_dong').length;
+ return khoiDD(maDD('DD.04')+'CLB, đội, nhóm đang có',nhanTonDD(K),
+  '<div style="padding:11px 13px"><div class="grid4">'+oDD(tong,'Đang hoạt động','clbton','')+
+   oDD(ds.filter(c=>clbTT(c,K.chot)==='tam_dung').length,'Tạm dừng','clbton','')+'</div>'+
+  bang(['Tổ chức bảo trợ','Đang hoạt động · CLB','· Đội','· Nhóm','Tạm dừng','Đề xuất đang xử lý'],rows)+
+  '<div class="hint" style="margin-top:6px">Đề xuất nháp không đếm · «Đội» ở đây là loại CLB, không phải chi đội</div></div>','/M6.16');
+}
+function clbPS(K){
+ const ds=CLB_DD.filter(c=>xemTC(c.tc)&&inDT(c.dt));
+ return {tl:ds.filter(c=>trongK(c.qdTL,K)&&!c.ghiNhan),gt:ds.filter(c=>trongK(c.qdGT,K)),kd:ds.filter(c=>trongK(c.khongDuyet,K)),
+  gn:ds.filter(c=>trongK(c.ghiNhan,K)),dn:ds.filter(c=>trongK(c.dngt,K))};
+}
+function ddCLBPS(K){
+ const p=clbPS(K);
+ return khoiDD(maDD('DD.05')+'Thành lập · giải thể · không duyệt',nhanPSDD(K),
+  '<div style="padding:11px 13px"><div class="grid4">'+
+   oDD(p.tl.length,'Thành lập mới','clb:tl',p.tl.map(c=>c.id).join(' · '))+
+   oDD(p.gt.length,'Giải thể','clb:gt','')+oDD(p.kd.length,'Đề xuất không duyệt','clb:kd','')+'</div>'+
+  '<div class="hint">Không tính là thành lập: <b>'+p.gn.length+'</b> CLB ghi nhận đã có quyết định từ trước · '+
+   '<b>'+p.dn.length+'</b> đề nghị giải thể đang chờ (chưa có quyết định)</div></div>','/M6.16');
+}
+
+/* ── ③ DD.06 đợt · DD.07 lượt tham gia · DD.08 nền nếp (+ CC.05) · DD.09 lực lượng ── */
+function ddHoatDong(K){
+ const hd=HD_DD.filter(d=>xemTC(d.tc)&&inDT(d.dt)&&trongK(d.dau,K)), pt=PT_DD.filter(d=>xemTC(d.tc)&&inDT(d.dt)&&trongK(d.tu,K)&&d.tt!=='nhap');
+ const chot=hd.filter(d=>d.tt==='chot'), chua=hd.filter(d=>d.tt==='chua'), huy=hd.filter(d=>d.tt==='huy');
+ const tv=chot.reduce((a,d)=>a+d.tv,0), co=chot.reduce((a,d)=>a+d.co,0), luot=chot.reduce((a,d)=>a+d.luot,0);
+ return khoiDD(maDD('DD.06')+'· '+maDD('DD.07')+'Đợt hoạt động · sự kiện phong trào'+mocNguon(K,'hd'),nhanPSDD(K),
+  '<div style="padding:11px 13px"><div class="grid4">'+
+   oDD(chot.length,'Đợt đã chốt','hd:chot',chua.length+' đợt đang tổ chức · '+huy.length+' đã hủy — không đếm')+
+   oDD(pt.length,'Sự kiện phong trào đã lưu','hd:pt','bản nháp không đếm')+
+   oDD(tv,'<code>DD.07</code> Lượt học sinh tham gia','hd:chot','chỉ đợt đã chốt')+
+   oDD(luot?(co*100/luot).toFixed(1)+'%':'—','Có mặt / lượt điểm danh','hd:chot',luot?co+'/'+luot+' lượt':'')+'</div>'+
+  '<div class="hint">Đợt tính theo ngày buổi đầu tiên · số tham gia chỉ lấy đợt đã chốt (điểm danh đã khóa)</div></div>','/M6.14?tab=hoatdong');
+}
+function ddNenNep(K){
+ const T=TUAN_NN.filter(t=>inDT(t[1])&&trongK(t[2],K)), cb=T.filter(t=>t[5]), cho=T.filter(t=>t[4]&&!t[5]);
+ const tcs=['doan','doi'].filter(xemTC);
+ const dl=DOI_LICH_DD.filter(x=>xemTC(x.tc)&&inDT(x.dt)&&trongK(x.luc,K));
+ const rows=tcs.map(t=>tr_([tcTag(t),cb.filter(w=>tcLop(w[3])===t).length,dl.filter(x=>x.tc===t).length,cb.filter(w=>w[6]&&tcLop(w[6])===t).length]));
+ return khoiDD(maDD('DD.08')+'Nền nếp — tuần đã công bố'+mocNguon(K,'nn'),nhanPSDD(K),
+  '<div style="padding:11px 13px"><div class="grid4">'+
+   oDD(cb.length,'Tuần đã công bố','nn','theo điểm trường · '+cho.length+' tuần đã chốt chưa công bố — không đếm')+'</div>'+
+  bang(['Tổ chức của lớp','Lượt lớp trực tuần','Lần đổi lịch trực','<code>CC.05</code> Lượt lớp dẫn đầu tuần'],rows)+
+  '<div class="hint" style="margin-top:6px">Tuần chung cho mọi lớp của điểm trường — lớp khối 9 thuộc Đoàn, khối 6–8 thuộc Đội (🔗 M6.15 tổ chức áp dụng)</div></div>','/M6.13?tab=cham_nen_nep');
+}
+function ddLucLuong(K){
+ const ds=LL_DD.filter(x=>xemTC(x.tc)&&inDT(x.dt)&&x.tu<=K.chot&&(!x.rut||x.rut>K.chot));
+ const tcs=['doan','doi'].filter(xemTC);
+ return khoiDD(maDD('DD.09')+'Lực lượng nền nếp',nhanTonDD(K),
+  '<div style="padding:11px 13px"><div class="grid4">'+tcs.map(t=>oDD(ds.filter(x=>x.tc===t).reduce((a,x)=>a+x.sl,0),
+   (t==='doan'?'Ban nền nếp':'Đội Sao đỏ')+' — đang tham gia','ll:'+t,'đã rút không đếm')).join('')+'</div></div>','/M6.13?tab=lich_truc');
+}
+
+/* ── ④ DD.10 đoàn phí · DD.11 cờ nộp đủ · DD.12 sổ Liên đội ── */
+function ddDoanPhi(K){
+ const Q=QUY_DP.filter(q=>trongK(q.den,K)), dang=QUY_DP.filter(q=>q.tu<=K.denT&&q.den>K.denT&&q.den>=K.tu);
+ const nhan=Q.reduce((a,q)=>a+tongNhanQ(q),0), tr=Q.reduce((a,q)=>a+trich13Q(q),0), daTr=Q.filter(q=>q.trich&&q.trich<=K.denT);
+ return khoiDD(maDD('DD.10')+'Đoàn phí theo quý '+tcTag('doan'),nhanPSDD(K),
+  '<div style="padding:11px 13px"><div class="grid4">'+
+   oDD(vndDD(nhan),'Thực nhận từ chi đoàn','dp',Q.length+' quý')+oDD(vndDD(tr),'Phải trích nộp 1/3 lên cấp trên','dp','')+
+   oDD(daTr.length+'/'+Q.length,'Quý đã trích nộp','dp',Q.length-daTr.length?'còn '+(Q.length-daTr.length)+' quý chưa ghi trích nộp':'')+'</div>'+
+  bang(['Quý','Thực nhận','1/3 trích nộp','Trích nộp','Quyết toán năm'],Q.map(q=>tr_(['<b>Quý '+q.k+'</b> · '+q.nam,vndDD(tongNhanQ(q)),vndDD(trich13Q(q)),
+   q.trich&&q.trich<=K.denT?'<span class="st2 o">đã nộp '+d2(q.trich)+'</span>':'<span class="st2 w">chưa ghi · hạn '+d2(q.han)+'</span>',
+   QT_DP[q.nam]&&QT_DP[q.nam]<=K.denT?'<span class="st2 o">công khai '+d2(QT_DP[q.nam])+'</span>':'<span class="hint">chưa</span>'])))+
+  '<div class="hint" style="margin-top:6px">Quý tính khi ngày cuối quý nằm trong khoảng · '+(dang.length?'quý đang dở không tính: '+dang.map(q=>'Quý '+q.k+' '+q.nam).join(' · ')+' · ':'')+
+   'phần giữ lại 2/3 và chi tiêu xem ở M6.17</div></div>','/M6.17?so=doan');
+}
+function ddCoNop(K){
+ const nam=K.chot<'2026-09-01'?'2025–2026':'2026–2027', cds=CD_NAM[nam].filter(x=>(!x[1]||x[1]<=K.chot)&&inDT((CHIDOAN.find(c=>c.id===x[0])||{}).dt));
+ const f=cds.map(x=>[x[0],coNopDu(x[0],nam,K.chot)]);
+ const nhan=v=>v===null?'<span class="st2 n">chưa có dữ liệu</span>':v?'<span class="st2 o">✓ đủ</span>':'<span class="st2 r">✗ chưa đủ</span>';
+ const ten=id=>(CHIDOAN.find(c=>c.id===id)||{ten:'Chi đoàn học sinh khối 9 (2025–2026)'}).ten;
+ return khoiDD(maDD('DD.11')+'Chi đoàn nộp đủ đoàn phí '+tcTag('doan'),nhanTonDD(K),
+  '<div style="padding:11px 13px"><div class="grid4">'+oDD(f.filter(x=>x[1].du===true).length+'/'+f.length,'Chi đoàn nộp đủ','co',
+   f.filter(x=>x[1].du===null).length+' chi đoàn chưa có dữ liệu — không coi là đủ')+'</div>'+
+  bang(['Chi đoàn','Quý được xét','Quý nộp đủ','Cờ'],f.map(x=>tr_(['<b>'+ten(x[0])+'</b>',x[1].soQuy,x[1].soDu,nhan(x[1].du)])))+
+  '<div class="hint" style="margin-top:6px">Năm học '+nam+' · quý được xét = đã đến hạn trích nộp hoặc chi đoàn đã ghi nộp (M6.17 §5.5e)</div></div>','/M6.17?so=doan');
+}
+function ddQuyLD(K){
+ const tu=K.tu<LD_BAT_DAU?LD_BAT_DAU:K.tu;
+ const P=PHIEU_LD.filter(p=>p[3]==='duyet'&&p[0]>=tu&&p[0]<=K.denT), cho=PHIEU_LD.filter(p=>(p[3]==='cho'||p[3]==='tralai')&&p[0]>=tu&&p[0]<=K.denT);
+ const thu=P.filter(p=>p[1]==='thu').reduce((a,p)=>a+p[2],0), chi=P.filter(p=>p[1]==='chi').reduce((a,p)=>a+p[2],0);
+ const ton=K.chot<LD_BAT_DAU?null:PHIEU_LD.filter(p=>p[3]==='duyet'&&p[0]<=K.chot).reduce((a,p)=>a+(p[1]==='thu'?p[2]:-p[2]),LD_DU_DAU);
+ return khoiDD(maDD('DD.12')+'Sổ quỹ Liên đội '+tcTag('doi')+mocNguon(K,'ld'),
+  nhanPSDD(K),
+  '<div style="padding:11px 13px"><div class="grid4">'+oDD(vndDD(thu),'Thu đã duyệt','ld','')+oDD(vndDD(chi),'Chi đã duyệt','ld','')+
+   oDD(cho.length,'Phiếu chờ duyệt / trả lại','ld','không vào số')+'</div>'+
+  '<div class="hb" style="margin:0"><div class="lbh" style="font-size:12px">Tồn quỹ<span class="sp"></span>'+nhanTonDD(K)+'</div><div style="padding:0">'+
+   oDD(ton===null?'chưa có dữ liệu':vndDD(ton),'Tồn tại ngày chốt','ld','số dư chuyển sang '+vndDD(LD_DU_DAU)+' ⚠ chưa có người xác nhận ở M6.17 · sổ lên hệ thống '+d2(LD_BAT_DAU))+'</div></div>'+
+  '</div>','/M6.17?so=doi');
+}
+
+/* ── ⑤ DD.13 xếp loại đoàn viên · DD.14 chi đoàn + đề nghị khen ── */
+function ddXepLoai(K){
+ const D=DG_DD.filter(d=>trongK(d.mo,K));
+ if(!D.length) return khoiDD(maDD('DD.13')+'· '+maDD('DD.14')+'Xếp loại'+mocNguon(K,'xl'),'<span class="st2 n">theo đợt</span>',
+  '<div class="empty" style="padding:18px">Không có đợt đánh giá nào mở trong khoảng này</div>','/M6.3?tab=xeploai');
+ const d=D[0], gv=inDT(null)?d.dv.gv:{tong:0,cn:[0,0,0,0]}, hs=d.dv.hs, cds=d.cd.filter(x=>inDT(x[1]));
+ const sum=a=>a.reduce((x,y)=>x+y,0);
+ return khoiDD(maDD('DD.13')+'Xếp loại đoàn viên — '+d.id+' · năm học '+d.nam,'<span class="st2 n">Đợt: '+TT_DGN[d.tt]+'</span>',
+  '<div style="padding:11px 13px">'+
+  bang(['Đoàn viên','Tổng','Đã công nhận'].concat(MUC4DD),[
+   tr_(['<b>Học sinh</b>',hs.tong,sum(hs.cn)+(hs.deXuat?' <span class="hint">('+hs.deXuat+' mới đề xuất — không đếm)</span>':'')].concat(hs.cn)),
+   tr_(['<b>Giáo viên</b>',gv.tong,sum(gv.cn)].concat(gv.cn))])+
+  '<div class="hint" style="margin:6px 0 11px">Chỉ đếm mức BCH Đoàn trường đã công nhận — mức chi đoàn đề xuất không vào báo cáo · không chảy sang hạnh kiểm, rèn luyện</div>'+
+  '<div style="font-weight:700;font-size:12.5px;margin-bottom:5px"><code>DD.14</code> Chi đoàn · đề nghị khen</div>'+
+  bang(['Chi đoàn','Mức công nhận','Tình trạng'],cds.map(x=>tr_(['<b>'+(CHIDOAN.find(c=>c.id===x[0])||{}).ten+'</b>',
+   x[2]?'<span class="st2 o">'+MUC4DD[['hoan_thanh_xuat_sac','hoan_thanh_tot','hoan_thanh','khong_hoan_thanh'].indexOf(x[2])]+'</span>':'<span class="hint">—</span>',x[3]])))+
+  '<div class="grid4" style="margin-top:9px">'+oDD(d.khen.doan_vien,'Đoàn viên trong danh sách đề nghị khen','xl','gửi cấp trên')+oDD(d.khen.chi_doan,'Chi đoàn đề nghị khen','xl','')+'</div>'+
+  '</div>','/M6.3?tab=xeploai&ctx='+d.id);
+}
+
+/* ================= DRILL-DOWN — danh sách ĐƠN VỊ + quy tắc đếm + deep-link ================= */
+function locDD(k){
+ const K=ddKhoang(), c=K.chot;
+ const R_=(ten,vao,ra,cot,rows,lk)=>({ten,vao,ra,cot,rows,lk});
+ if(k==='dv') return R_('Đoàn viên theo chi đoàn — chốt '+d2(c),
+  ['Có tên trong sổ đoàn viên 🔗 M6.3 tại ngày chốt','Chi đoàn giáo viên: danh sách chi đoàn 🔗 M6.15','Chi đoàn sinh hoạt ghép: đếm cả lớp ghép vào chi đoàn chính'],
+  ['Đoàn viên đã chuyển sinh hoạt / trưởng thành Đoàn trước ngày chốt','Ứng viên của đợt kết nạp chưa kết nạp'],
+  ['Chi đoàn','Điểm trường','Đoàn viên'],CHIDOAN.filter(x=>inDT(x.dt)).map(x=>[x.ten,x.dt||'cấp trường',x.lops.length?x.lops.reduce((a,l)=>a+(c>='2026-03-26'?DDL.find(y=>y.id===l).doan:0),0):gvDV(c)]),'/M6.3?tab=hoivien&tc=doan');
+ if(k==='dvi') return R_('Đội viên theo chi đội — chốt '+d2(c),
+  ['Có tên trong sổ đội viên 🔗 M6.3 tại ngày chốt','Chi đội = lớp (M6.15 — đơn vị dẫn xuất từ danh sách lớp)'],
+  ['Em đã kết nạp Đoàn (chuyển sang sổ đoàn viên)','Ứng viên đợt kết nạp chưa kết nạp'],
+  ['Chi đội','Sĩ số','Đội viên'],DDL.filter(l=>inDT(l.dt)).map(l=>[l.id,l.n,l.doiCu+(c>='2026-09-05'?l.kn:0)]),'/M6.3?tab=hoivien&tc=doi');
+ if(k.startsWith('kn:')){const t=k.slice(3);
+  return R_('Kết nạp mới — '+TCN[t][1],['Ngày kết nạp ghi ở sổ M6.3 nằm trong khoảng '+d2(K.tu)+' → '+d2(K.denT)],
+   ['Đợt đang mở / đang xét / đã hủy — chưa ai được kết nạp','Em chuyển đến đã là '+(t==='doan'?'đoàn':'đội')+' viên ở trường cũ'],
+   ['Đợt / lễ kết nạp','Ngày','Chi đoàn · chi đội','Số em'],KET_NAP.filter(e=>e.tc===t&&trongK(e.ngay,K)).flatMap(e=>Object.keys(e.lop).filter(l=>inDT(DDL.find(x=>x.id===l).dt)).map(l=>[e.ten,d2(e.ngay),l,e.lop[l]])),'/M6.3?tab=ketnap')}
+ if(k==='clbton') return R_('CLB, đội, nhóm — trạng thái tại '+d2(c),
+  ['Trạng thái vòng đời tại ngày chốt: «Đang hoạt động» hoặc «Tạm dừng»','Theo tổ chức bảo trợ trong phạm vi vai (+ Chung)'],
+  ['Đề xuất nháp · chờ góp ý · chờ duyệt · không duyệt — chưa phải CLB','CLB đã giải thể trước ngày chốt'],
+  ['CLB','Bảo trợ','Điểm trường','Trạng thái'],CLB_DD.filter(x=>xemTC(x.tc)&&inDT(x.dt)&&clbTT(x,c)).map(x=>[x.id+' '+x.ten,TCN[x.tc][2],x.dt,TT_CLB[clbTT(x,c)]]),'/M6.16');
+ if(k.startsWith('clb:')){const p=clbPS(K), t=k.slice(4), ds=p[t];
+  return R_({tl:'Thành lập mới',gt:'Giải thể',kd:'Đề xuất không duyệt'}[t]+' — '+d2(K.tu)+' → '+d2(K.denT),
+   {tl:['Ngày quyết định thành lập (quyet_dinh_thanh_lap.ngay) trong khoảng','Đi qua vòng đời đề xuất → Hiệu trưởng duyệt (ghi_nhan_co_san = false)'],
+    gt:['Ngày quyết định giải thể (quyet_dinh_giai_the.ngay) trong khoảng'],kd:['Thời điểm Hiệu trưởng không duyệt (khong_duyet.luc) trong khoảng']}[t],
+   ['CLB ghi nhận đã có quyết định từ trước — không phải thành lập trong kỳ','Đề nghị giải thể chưa có quyết định','Đề xuất nháp'],
+   ['CLB','Bảo trợ','Ngày'],ds.map(x=>[x.id+' '+x.ten,TCN[x.tc][2],d2(t==='tl'?x.qdTL:t==='gt'?x.qdGT:x.khongDuyet)]),'/M6.16')}
+ if(k.startsWith('hd:')){const pt=k==='hd:pt';
+  if(pt) return R_('Sự kiện phong trào',['Ngày bắt đầu trong khoảng','Trạng thái «Đã lưu — nội bộ» hoặc «Đã công bố»'],['Bản nháp'],
+   ['Sự kiện','Tổ chức','Ngày','Trạng thái'],PT_DD.filter(d=>xemTC(d.tc)&&inDT(d.dt)&&trongK(d.tu,K)).map(d=>[d.id+' '+d.ten,TCN[d.tc][2],d2(d.tu),d.tt==='nhap'?'nháp — không đếm':d.tt==='congbo'?'đã công bố':'nội bộ']),'/M6.14?tab=sukien');
+  return R_('Đợt hoạt động',['Buổi đầu tiên của đợt trong khoảng','Số tham gia · có mặt: chỉ đợt «🔒 Đã chốt» (điểm danh đã khóa, kết quả đã chiếu sang M6.3)'],
+   ['Đợt đang tổ chức / chưa chốt — vẫn liệt kê, không vào số','Đợt đã hủy','Buổi hoãn'],
+   ['Đợt','Tổ chức','Buổi đầu','Buổi','Tham gia','Có mặt','Trạng thái'],HD_DD.filter(d=>xemTC(d.tc)&&inDT(d.dt)&&trongK(d.dau,K)).map(d=>[d.id+' '+d.ten,TCN[d.tc][2],d2(d.dau),d.buoi,d.tv,d.tt==='huy'?'—':d.co+'/'+d.luot,
+    d.tt==='chot'?'🔒 đã chốt':d.tt==='huy'?'đã hủy — không đếm':'chưa chốt — không đếm']),'/M6.14?tab=hoatdong')}
+ if(k==='nn') return R_('Tuần nền nếp',['Ngày cuối tuần trong khoảng','Tuần đã được Hiệu trưởng / PHT điểm trường công bố','Lượt lớp trực: nhãn lớp trực CHỤP lúc chốt tuần'],
+  ['Tuần đã chốt nhưng chưa công bố','Tuần chưa chấm đủ lớp'],
+  ['Tuần','Điểm trường','Lớp trực','Tổ chức','Dẫn đầu (CC.05)','Trạng thái'],TUAN_NN.filter(t=>inDT(t[1])&&trongK(t[2],K)).map(t=>['Tuần '+t[0]+' · hết '+d2(t[2]),t[1],t[3],TCN[tcLop(t[3])][2],t[6]||'—',t[5]?'đã công bố':'đã chốt, chưa công bố — không đếm']),'/M6.13?tab=cham_nen_nep');
+ if(k.startsWith('ll:')){const t=k.slice(3);
+  return R_(t==='doan'?'Ban nền nếp':'Đội Sao đỏ',['Thành viên chọn từ sổ '+(t==='doan'?'đoàn':'đội')+' viên, đang tham gia tại ngày chốt'],['Thành viên đã rút trước ngày chốt'],
+   ['Điểm trường','Từ ngày','Rút','Số em'],LL_DD.filter(x=>x.tc===t&&inDT(x.dt)).map(x=>[x.dt,d2(x.tu),x.rut?d2(x.rut)+' — không đếm':'—',x.sl]),'/M6.13?tab=lich_truc')}
+ if(k==='dp') return R_('Đoàn phí theo quý',['Quý có ngày cuối quý trong khoảng (quý theo năm học: 09–11 · 12–02 · 03–05 · 06–08)','Thực nhận = tổng dòng nộp từ chi đoàn — ghi tổng theo chi đoàn, không theo từng em','1/3 trích nộp là dẫn xuất'],
+  ['Quý đang dở ở cuối khoảng','Phần 2/3 chi đoàn giữ lại ở quỹ chi đoàn (ngoài hệ thống)'],
+  ['Quý','Chi đoàn','Máy đếm','Miễn','Mức','Phải nộp','Thực nhận'],QUY_DP.filter(q=>trongK(q.den,K)).flatMap(q=>q.nop.map(n=>['Quý '+q.k+' · '+q.nam,n[0],n[1],n[2],vndDD(n[3]),vndDD(phaiNop(n)),vndDD(n[4])])),'/M6.17?so=doan');
+ if(k==='co') return R_('Cờ chi đoàn nộp đủ đoàn phí',['Quý được xét = quý đã đến hạn trích nộp tính tới ngày chốt, hoặc chi đoàn đã có dòng nộp','Đủ = mọi quý được xét có dòng nộp và thực nhận ≥ phải nộp'],
+  ['Không quý nào được xét ⇒ «chưa có dữ liệu», KHÔNG coi là đủ'],['Quý','Hạn trích nộp','Chi đoàn đã ghi nộp'],
+  QUY_DP.filter(q=>q.tu<=c&&q.nam===(c<'2026-09-01'?'2025–2026':'2026–2027')).map(q=>['Quý '+q.k+' · '+q.nam,d2(q.han),q.nop.filter(n=>n[5]<=c).map(n=>n[0]).join(' · ')||'—']),'/M6.17?so=doan');
+ if(k==='ld') return R_('Sổ quỹ Liên đội',['Phiếu đã duyệt, ngày phiếu trong khoảng','Tồn = số dư chuyển sang + thu − chi đã duyệt tới ngày chốt'],
+  ['Phiếu chờ duyệt · trả lại · đã hủy','Trước '+d2(LD_BAT_DAU)+' sổ chưa lên hệ thống — «chưa có dữ liệu», không phải 0'],
+  ['Ngày','Loại','Số tiền','Trạng thái','Nội dung'],PHIEU_LD.filter(p=>p[0]>=K.tu&&p[0]<=K.denT).map(p=>[d2(p[0]),p[1],vndDD(p[2]),{duyet:'đã duyệt',cho:'chờ duyệt — không đếm',tralai:'trả lại — không đếm',huy:'đã hủy — không đếm'}[p[3]],p[4]]),'/M6.17?so=doi');
+ if(k==='xl') return R_('Xếp loại · đề nghị khen',['Đợt đánh giá mở trong khoảng','Chỉ mức BCH Đoàn trường đã công nhận (cong_nhan)','Danh sách đề nghị khen của đợt (de_nghi_khen[])'],
+  ['Mức chi đoàn mới đề xuất','Đội viên, chi đội — ngoài phạm vi xếp loại (XL-5)'],['Đợt','Trạng thái','Chi đoàn đã công nhận'],
+  DG_DD.filter(d=>trongK(d.mo,K)).map(d=>[d.id+' · '+d.nam,TT_DGN[d.tt],d.cd.filter(x=>x[2]).length+'/'+d.cd.length]),'/M6.3?tab=xeploai');
+ return R_('',[],[],[],[],'');
+}
+function drillDD(k){
+ const x=locDD(k);
+ $('#mdl').classList.remove('sm');
+ modal('🔎 '+x.ten+' — <b>'+x.rows.length+'</b> dòng',
+  '<div class="hb"><div class="lbh">📐 Quy tắc đếm</div><div style="padding:11px 13px">'+
+   '<div style="font-weight:700;font-size:11.5px;color:var(--green);margin-bottom:5px">✓ TÍNH VÀO</div>'+x.vao.map(s=>'<div style="font-size:12.5px;margin-bottom:3px">• '+s+'</div>').join('')+
+   '<div style="font-weight:700;font-size:11.5px;color:var(--red);margin:9px 0 5px">✕ KHÔNG TÍNH</div>'+x.ra.map(s=>'<div style="font-size:12.5px;margin-bottom:3px">• '+s+'</div>').join('')+
+  '</div></div>'+
+  '<div class="hb"><div class="lbh">Danh sách đơn vị<span class="sp"></span><span class="st2 n">'+x.rows.length+'</span></div><div style="padding:0">'+
+   (x.rows.length?bang(x.cot,x.rows.map(r=>tr_(r.map(v=>esc(v))))):'<div class="empty" style="padding:18px">Không có bản ghi nào</div>')+'</div></div>'+
+  '<div class="hint">Chỉ số tổng hợp — danh sách từng người mở ở menu chủ, theo quyền của bạn ở menu đó</div>',
+  [['Đóng',0],['↗ Mở tại '+x.lk,()=>toast('Deep-link '+x.lk+'&return=M9.1 — mang theo khoảng thời gian, có đường quay lại M9.1'),'']]);
+}
+
+/* ================= MẪU NẠP SẴN — dải nút (§6.2), không phải màn hình mới ================= */
+function napMauDD(m){
+ const v=ddVaiTC();
+ if(m==='hk'){DD.ky='hk';DD.hk=DD_HOM>=DD_NAM.hk[1][1]?1:0;return 'Tổng kết học kỳ '+DD_NAM.hk[DD.hk][0]}
+ if(m==='nam'){DD.ky='nam';return 'Tổng kết năm học '+DD_NAM.ten}
+ const tc=v.length===1?v[0]:(DD.tc==='doi'?'doi':'doan');
+ const nk=NK_DD.filter(n=>n.tc===tc&&n.ke&&n.ke<=DD_HOM).slice(-1)[0];
+ DD.ky='nk';DD.nk=nk.id;return 'Tổng kết nhiệm kỳ '+nk.ten;
+}
+const mauDDHtml=()=>co('dd')?'<div class="sech">Tab 🎖 Đoàn - Đội</div>'+
+ [['hk','Tổng kết học kỳ','Học kỳ hiện hành · phát sinh từ đầu kỳ tới hôm nay'],['nam','Tổng kết năm học','01/09 → 31/08 — trùng năm đoàn phí và sổ Liên đội'],
+  ['nk','Tổng kết nhiệm kỳ','Nhiệm kỳ vừa kết thúc gần nhất · ngày đầu / cuối từ M6.15']].map(x=>
+ '<div class="hb" style="margin-bottom:8px"><div style="padding:10px 13px;display:flex;gap:10px;align-items:center"><div style="flex:1"><b>'+x[1]+'</b>'+
+ '<div style="font-size:11.5px;color:var(--ink2);margin-top:3px">'+x[2]+'</div></div><button class="btn sm p" data-x="ddmau" data-k="'+x[0]+'">Nạp</button></div></div>').join(''):'';
+const loaiSoDD=()=>{const K=ddKhoang();return 'Số TỒN · chốt '+d2(K.chot)+' — và số PHÁT SINH · '+d2(K.tu)+' → '+d2(K.denT)+' (hai loại, bảng riêng)'};
+
+/* ================= THAO TÁC ================= */
+function actDD(a,d){
+ if(a==='drill'&&d.k&&decodeURIComponent(d.k).startsWith('{"dd"')){drillDD(JSON.parse(decodeURIComponent(d.k)).dd);return true}
+ if(a==='ddky'){if(d.k==='nam')DD.ky='nam';else if(d.k==='tuy')DD.ky='tuy';else{DD.ky='hk';DD.hk=+d.k.slice(2)}render();return true}
+ if(a==='ddtc'){DD.tc=d.k;render();return true}
+ if(a==='ddmau'){const ten=napMauDD(d.k);tab='dd';closeM();toast('Đã nạp mẫu «'+ten+'» — tham số vào thẳng tab Đoàn - Đội');render();return true}
+ return false;
+}
+document.body.addEventListener('change',e=>{
+ if(e.target.id==='ddnk'&&e.target.value){DD.ky='nk';DD.nk=e.target.value;render()}
+ if(e.target.id==='ddtu'||e.target.id==='ddden'){const v=tuVN(e.target.value);
+  if(!v){toast('Ngày phải theo dạng dd/mm/yyyy');render();return}
+  DD[e.target.id==='ddtu'?'tu':'den']=v;
+  if(DD.tu>DD.den){toast('Từ ngày phải trước đến ngày — đã đổi chỗ hai ngày');const t=DD.tu;DD.tu=DD.den;DD.den=t}
+  render()}
+});
+/* vai hẹp chỉ thấy một tổ chức — nhiệm kỳ đang chọn phải thuộc tổ chức đó */
+function ddChuanVai(){const v=ddVaiTC(); if(!v.includes(nkDD(DD.nk).tc)){DD.nk=NK_DD.find(n=>n.tc===v[0]).id; if(DD.ky==='nk')DD.ky='nam'} if(v.length===1)DD.tc='ca'}
+render();
 </script>
 </body>
 </html>

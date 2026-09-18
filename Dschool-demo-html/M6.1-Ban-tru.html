@@ -294,6 +294,7 @@ const khoiCua=dt=>[...new Set(LOP.filter(l=>l.dt===dt).map(l=>l.khoi))].sort();
 
 const DUPHONG={A:'Đỗ Văn Sơn',B:'Cao Thị Vân',C:'Đinh Văn Lâm'};
 const NVBT={A:'Trần Thị Lan',B:'Mai Thị Hạnh',C:'Tô Văn Hải'};
+/* Chiếu 🔗 từ M4.8 — chỉ những NGÀY có hiệu lực (coHieuLuc(don, ngay): đơn co_hieu_luc, ngày chưa rút). Cụm YKNP 17/9/2026 — đơn nghỉ nhân sự không còn duyệt. */
 const NGHIPHEP=[{ai:'Vũ Thị Mai',tu:'2026-10-23',den:'2026-10-23',ly:'Nghỉ ốm',ma:'NP-2026-0318'}];
 const dangNghi=(ten,k)=>NGHIPHEP.find(x=>x.ai===ten&&k>=x.tu&&k<=x.den);
 
@@ -312,7 +313,7 @@ const LUUTRU=[
  ['Quyết toán tháng · hóa đơn nhà thầu · báo cáo đã ký','10 năm','Luật Kế toán 2015 Đ.41 k.5 — chứng từ dùng trực tiếp ghi sổ'],
  ['Chấm ăn chi tiết theo học sinh · đơn nghỉ · đăng ký','5 năm','Luật Kế toán 2015 Đ.41 k.5 — tài liệu phục vụ quản lý điều hành'],
  ['Tệp kế hoạch thực đơn tuần','3 năm','Căn cứ ATTP khi có phản ánh — mẫu thức ăn chỉ lưu 24h (QĐ 1246/QĐ-BYT)'],
- ['Ảnh khay ăn','Hết năm học + 6 tháng','NĐ 13/2023 Đ.3 — chỉ lưu trong thời gian phù hợp mục đích']
+ ['Ảnh khay ăn','Hết năm học + 6 tháng','Luật BVDLCN 91/2025 — chỉ lưu trong thời gian phù hợp mục đích']
 ];
 
 /* ========== VAI TRÒ ========== */
@@ -435,7 +436,7 @@ const NGHI=[
   ly:'Đơn nghỉ học đã bị hủy ngày 21/10',tt:'thuhoi'}
 ];
 const nghiCua=(hsId,k)=>NGHI.find(n=>n.hs===hsId&&n.ngay===k&&n.tt!=='thuhoi');
-const NGUON_NGHI={app:['Đơn nghỉ ăn — App PH','a'],m24:['Đơn nghỉ học — M2.4','c'],cc:['Vắng học — M2.9/T2','c'],bt:['BT nhập hộ','b']};
+const NGUON_NGHI={app:['Đơn nghỉ ăn — App PH','a'],m24:['Đơn nghỉ học — M2.4','c'],cc:['Vắng học — M2.9/T2','c'],bt:['NV bán trú nhập hộ','b']};
 const TT_NGHI={ok:['Không tính tiền','o'],tinh:['Vẫn tính tiền','w'],mien:['Miễn ngoại lệ','b'],thuhoi:['Đã thu hồi','n']};
 
 /* ★ SỐ SUẤT BÁO BẾP = đăng ký − nghỉ. Đây là CĂN CỨ TRẢ TIỀN NHÀ THẦU,
@@ -677,11 +678,11 @@ function rolebar(){
  +'</select> · deadline chấm '+CFG.deadline+'</span>'
  +'<button class="ntg" id="btnNote">💡 Ghi chú thiết kế: TẮT</button>';
 }
-const NAV=[['🏫 Vận hành &amp; Dịch vụ',[['M6.1','Bán trú',1],['M6.2','Học ngoại khóa',0],['M6.3','Hoạt động Đoàn — Đội',0],
-  ['M6.4','Danh mục &amp; Kiểm kê CSVC',0],['M6.5','Yêu cầu CSVC',0],['M6.6','Y tế học đường',0],
-  ['M6.7','Camera an ninh',0],['M6.8','Sự kiện trường học',0],['M6.9','Văn thư — Công văn',0]]],
+const NAV=[['🏫 Vận hành &amp; Dịch vụ',[['M6.1','Bán trú',1],['M6.2','Học ngoại khóa',0],['M6.3','Hồ sơ HS thành viên',0],
+  ['M6.4','Danh mục &amp; Kiểm kê',0],['M6.5','Mượn phòng &amp; thiết bị',0],['M6.6','Y tế học đường',0],
+  ['M6.7','Camera an ninh',0],['M6.8','Sự kiện trường học',0],['M6.9','Công văn',0]]],
  ['👥 Học sinh',[['M1.1','Hồ sơ học sinh',0],['M1.7','Lớp học',0]]],
- ['📚 Lớp học hàng ngày',[['M2.4','Đơn xin nghỉ của HS',0],['M2.9','Không gian lớp học',0]]],
+ ['📚 Lớp học hàng ngày',[['M2.4','Đơn xin nghỉ của HS',0],['M2.9','Danh sách lớp học',0]]],
  ['💰 Tài chính',[['M7.1','Danh mục khoản thu'],['M7.2','Theo dõi thực hiện khoản thu'],['M7.3','Điều chỉnh &amp; Hoàn tiền'],['M7.4','Chính sách miễn giảm',0],['M7.5','Thu chi &amp; Báo cáo TC',0]]]];
 function sidebar(){
  const n=viecCuaToi().length;
@@ -802,7 +803,7 @@ function panelDK(){
   +'</div></div>';
  h+='<div class="card"><div class="ch">Dị ứng &amp; lưu ý ăn uống <span class="tg c">🔗 chỉ đọc từ M1.1 phần C</span></div><div class="cb">'
   +'<div class="f"><div class="k">Nội dung</div><div class="v">'
-  +(!can('diung')?'<span style="color:var(--ink3)">Vai này không được xem — NĐ 13/2023</span>'
+  +(!can('diung')?'<span style="color:var(--ink3)">Vai này không được xem — Luật BVDLCN 91/2025</span>'
    :hs.du?'<span style="color:var(--red)">🔴 '+esc(hs.du.t)+' — mức '+MUC_DU[hs.du.m]+'</span>':'Không có ghi nhận')+'</div></div>'
   +'</div>'+(can('diung')?'<div class="cact"><span style="font-size:11.5px;color:var(--ink2)">Sửa thuộc M1.1 — M6.1 chỉ đọc.</span>'
   +'<div class="spacer"></div><span class="rolnk" data-lnk="M1.1">↗ Cập nhật tại M1.1</span></div>':'')+'</div>';
@@ -926,7 +927,7 @@ function panelKH(){
    +'</div><div class="lgd"><span class="chip">Bản cũ giữ lại và xem lại được — phụ huynh đã thấy nó</span></div></div>';
  h+='<div class="card'+(k.doichieu?'':' bad')+'"><div class="ch">🔴 Học sinh dị ứng tại '+DT[k.dt]
   +' <span class="tg c">🔗 chỉ đọc từ M1.1 phần C</span></div><div class="cb">';
- if(!can('diung')) h+='<div class="f"><div class="k">Danh sách</div><div class="v" style="font-weight:400;color:var(--ink3)">Vai này không được xem — NĐ 13/2023</div></div>';
+ if(!can('diung')) h+='<div class="f"><div class="k">Danh sách</div><div class="v" style="font-weight:400;color:var(--ink3)">Vai này không được xem — Luật BVDLCN 91/2025</div></div>';
  else if(!du.length) h+='<div class="f"><div class="k">Danh sách</div><div class="v" style="font-weight:400">Không có học sinh dị ứng đang ăn bán trú</div></div>';
  else h+='<div style="padding:2px 0">'+du.map(x=>'<div class="hsrow"><div class="av">'+esc(x.ten.split(' ').slice(-2).map(y=>y[0]).join(''))+'</div>'
    +'<div class="nm"><b>'+esc(x.ten)+'</b><span>'+x.lop+' · '+TEN_DU[x.du.ng]+'</span></div>'
@@ -994,7 +995,7 @@ function quyenCham(l,k){
  if(l.cham===r.n) return {ok:true};
  if(DUPHONG[l.dt]===r.n){
   const dn=dangNghi(l.cham,k);
-  if(dn) return {ok:true,nhan:'thay',vi:'Người chấm chính <b>'+esc(l.cham)+'</b> có đơn nghỉ đã duyệt ('+esc(dn.ly)+', '+esc(dn.ma)+') 🔗 M4.8'};
+  if(dn) return {ok:true,nhan:'thay',vi:'Người chấm chính <b>'+esc(l.cham)+'</b> có đơn nghỉ có hiệu lực ngày này ('+esc(dn.ly)+', '+esc(dn.ma)+') 🔗 M4.8'};
   if(quaDeadline()&&!CHAM[ckey(k,l.id)]) return {ok:true,nhan:'thay',vi:'Đã quá deadline '+CFG.deadline+' mà lớp chưa có dữ liệu'};
   const con=gio2p(CFG.deadline)-gio2p(simGio);
   return {ok:false,duphong:1,ly:'Người chấm chính là <b>'+esc(l.cham)+'</b> — không có đơn nghỉ ngày '+k2s(k)
@@ -1433,7 +1434,7 @@ function veCauHinh(){
   +' <span class="tg c">chấm được MỌI lớp trong điểm trường</span></div></div>'
   +'<div class="f"><div class="k">NV bán trú</div><div class="v">'+esc(NVBT[d])
   +' <span class="tg c">luôn sửa được ở scope Branch · chụp ảnh khay ăn · trình quyết toán</span></div></div></div>'
-  +'<div class="lgd"><span class="chip">Quyền dự phòng <b>chỉ mở</b> khi người chấm chính có đơn nghỉ đã duyệt, hoặc quá deadline mà lớp chưa có dữ liệu</span></div></div>';
+  +'<div class="lgd"><span class="chip">Quyền dự phòng <b>chỉ mở</b> khi người chấm chính có đơn nghỉ có hiệu lực ngày đó, hoặc quá deadline mà lớp chưa có dữ liệu</span></div></div>';
  h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">3 · Cơ chế tính &amp; thu tiền <span class="tg a">theo '+DT[d]+'</span> <span class="tg g">M6.1 sở hữu phần chi</span></div>'
   +'<table><tr><th>Mục</th><th>Giá trị</th><th>Ghi chú</th><th></th></tr>'
   +'<tr class="warnrow"><td><b>Chế độ thu tiền của học sinh</b></td><td><b>'+TEN_CHEDO[CFG.cheDoThu]+'</b></td>'
@@ -1466,7 +1467,7 @@ function veCauHinh(){
    +'<td style="font-size:11.5px;color:var(--ink2)">'+r[2]+'</td></tr>').join('')
   +'</table></div><div class="lgd"><span class="chip">Hết hạn thì <b>xóa theo lịch</b>, ghi audit lượt xóa</span>'
   +'<span class="chip">Xóa <b>ảnh trước</b>, giữ số liệu tổng hợp</span></div></div>';
- h+=dnote('Ảnh <b>không</b> giữ ngang 10 năm như chứng từ kế toán: NĐ 13/2023 Đ.3 chỉ cho lưu dữ liệu cá nhân trong '
+ h+=dnote('Ảnh <b>không</b> giữ ngang 10 năm như chứng từ kế toán: Luật BVDLCN 91/2025 chỉ cho lưu dữ liệu cá nhân trong '
   +'<b>thời gian phù hợp với mục đích</b>, mà mẫu thức ăn theo QĐ 1246/QĐ-BYT còn chỉ lưu <b>24 giờ</b>.');
  return h;
 }
@@ -1519,7 +1520,7 @@ document.addEventListener('click',e=>{
  if(t.id==='khThay'){thayTep();return}
  if(t.id==='khGo'){KEHOACH.find(x=>x.id===ST.curKH).tt='dago';
   toast('🗑 Đã gỡ tệp — bản ghi <b>không xóa</b>, chuyển sang <b>Đã gỡ</b> và tra lại được.');render();return}
- if(t.id==='taiTep'||t.id==='taiHD'){toast('⬇ Đã ghi audit lượt tải tệp — NĐ 13/2023.');return}
+ if(t.id==='taiTep'||t.id==='taiHD'){toast('⬇ Đã ghi audit lượt tải tệp — Luật BVDLCN 91/2025.');return}
  const an=t.closest('[data-anh]'); if(an){themAnhKhoi(an.dataset.anh);return}
  const xa=t.closest('[data-xoaanh]'); if(xa){delete ANHKHOI[akey(ST.ngay,dtThuc(),xa.dataset.xoaanh)];
   toast('🗑 Đã xóa ảnh khối '+xa.dataset.xoaanh+' — ghi audit lượt xóa.');render();return}
@@ -1703,12 +1704,12 @@ function themAnhKhoi(khoi){
   toast('📷 Đã thêm ảnh khay ăn <b>khối '+khoi+'</b>.'+(CFG.congKhaiAnh?' Công khai cho phụ huynh qua App.':' Không công khai theo cấu hình trường.'));render()};
  modal('📷 Thêm ảnh khay ăn — khối '+khoi+' · '+kThu(ST.ngay)+' '+k2s(ST.ngay),
   '<div class="danger">Hình ảnh cá nhân của trẻ em là <b>thông tin bí mật đời sống riêng tư</b> (NĐ 56/2017 Đ.33). '
-  +'Đưa lên môi trường mạng phải có đồng ý của <b>cả cha mẹ và trẻ em từ đủ 7 tuổi</b> (Đ.36 · NĐ 13/2023 Đ.20).<br>'
+  +'Đưa lên môi trường mạng phải có đồng ý của <b>cả cha mẹ và trẻ em từ đủ 7 tuổi</b> (NĐ 56/2017 Đ.36 · Luật BVDLCN 91/2025).<br>'
   +'Ảnh bán trú chỉ được phép là <b>ảnh khay ăn chụp ở khu chia suất</b>. Ô tích dưới ghi <b>tên người xác nhận</b>.</div>'
   +(tc?'<div class="warn">⚠️ '+DT[dt]+' có <b>'+tc+' gia đình đã từ chối</b> cho công khai ảnh nhận diện con mình.</div>':'')
   +'<label class="lbl"><input type="checkbox" id="ckMat"> Tôi xác nhận ảnh này <b>không có mặt học sinh nhận diện được</b></label>'
   +'<div class="ro" style="margin-top:11px">Ảnh <b>tải thẳng lên hệ thống</b>, không lưu trên điện thoại cá nhân — '
-  +'nếu lưu lại thì dữ liệu trẻ em nằm ngoài tầm kiểm soát của nhà trường, mà nhà trường mới là Bên Kiểm soát dữ liệu theo NĐ 13/2023.</div>',
+  +'nếu lưu lại thì dữ liệu trẻ em nằm ngoài tầm kiểm soát của nhà trường, mà nhà trường mới là Bên Kiểm soát dữ liệu theo Luật BVDLCN 91/2025.</div>',
   '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="Anh">Tải lên</button>');
 }
 function lichSu(){
@@ -1793,7 +1794,7 @@ function doiCongKhai(){
   toast(CFG.congKhaiAnh?'👁 Đã <b>BẬT</b> công khai ảnh cho phụ huynh.':'🚫 Đã <b>TẮT</b> — ảnh chỉ dùng nội bộ khi đối soát và khi có phản ánh.');render()};
  modal('Đổi cấu hình công khai ảnh khay ăn',
   '<div class="danger">⚠️ Hình ảnh cá nhân của trẻ em là <b>thông tin bí mật đời sống riêng tư</b> (NĐ 56/2017 Đ.33). '
-  +'Đưa lên môi trường mạng phải có đồng ý của <b>cả cha mẹ và trẻ em từ đủ 7 tuổi</b> (Đ.36 · NĐ 13/2023 Đ.20).</div>'
+  +'Đưa lên môi trường mạng phải có đồng ý của <b>cả cha mẹ và trẻ em từ đủ 7 tuổi</b> (NĐ 56/2017 Đ.36 · Luật BVDLCN 91/2025).</div>'
   +'<div class="info">Trường thu đồng ý <b>một lần khi đăng ký bán trú đầu năm</b>, có ô cho gia đình từ chối riêng con mình. '
   +'Dù bật, mỗi lần tải ảnh vẫn phải tích xác nhận <b>ảnh không có mặt học sinh nhận diện được</b>.</div>'
   +'<div class="tbw"><div class="kv"><span>Hiện tại</span><b>'+(CFG.congKhaiAnh?'Có công khai':'Không công khai')+'</b></div>'
@@ -1828,7 +1829,7 @@ function nhapExcel(la){
 }
 function xuat(nd){
  modal('📤 Xuất dữ liệu — bắt buộc chọn mục đích',
-  '<div class="warn">Dữ liệu chứa <b>họ tên và tình trạng sức khỏe của trẻ em</b> — NĐ 13/2023. Mọi lượt xuất <b>ghi audit</b> và <b>bắt buộc chọn mục đích</b>.</div>'
+  '<div class="warn">Dữ liệu chứa <b>họ tên và tình trạng sức khỏe của trẻ em</b> — Luật BVDLCN 91/2025. Mọi lượt xuất <b>ghi audit</b> và <b>bắt buộc chọn mục đích</b>.</div>'
   +'<label class="lbl">Nội dung xuất</label><select class="fldi"><option>'+esc(nd||'Phiếu báo bếp theo ngày')+'</option>'
   +'<option>Danh sách suất riêng cho học sinh dị ứng</option><option>Báo cáo thu tiền theo lớp</option>'
   +'<option>Kế hoạch thực đơn tuần</option></select>'

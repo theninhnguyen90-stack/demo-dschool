@@ -1,0 +1,2006 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M10.11 Quản lý lưu trữ hệ thống — Dschool</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f1f5f9;--surface:#fff;--line:#e2e8f0;--line2:#cbd5e1;
+ --ink:#0f172a;--ink2:#475569;--ink3:#94a3b8;--brand:#1d4ed8;--brand-soft:#eff6ff;
+ --red:#dc2626;--red-soft:#fef2f2;--amber:#d97706;--amber-soft:#fffbeb;
+ --green:#059669;--green-soft:#ecfdf5;--violet:#7c3aed}
+body{font:14px/1.5 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font:inherit}
+
+.hdr{height:56px;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:13px;padding:0 15px;position:sticky;top:0;z-index:40}
+.logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px}
+.logo .mark{width:28px;height:28px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px}
+.school{color:var(--ink2);font-size:12.5px;border-left:1px solid var(--line);padding-left:13px;max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sel{border:1px solid var(--line2);border-radius:7px;padding:5px 9px;font-size:12.5px;background:#fff}
+.sel:disabled{background:#f1f5f9;color:var(--ink2);cursor:not-allowed}
+.spacer{flex:1}
+.icobtn{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;position:relative;font-size:15px}
+.icobtn:hover{background:var(--bg)}
+.dot{position:absolute;top:3px;right:3px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--violet);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700}
+.lockico{font-size:11px;color:var(--ink3)}
+
+.wrap{display:flex;min-height:calc(100vh - 56px)}
+.side{width:216px;flex:0 0 216px;background:var(--surface);border-right:1px solid var(--line);padding:10px 8px;position:sticky;top:56px;max-height:calc(100vh - 56px);overflow-y:auto}
+.sgrp{font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;padding:12px 10px 5px}
+.snav{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:var(--ink2);font-size:12.5px;margin-bottom:1px}
+.snav:hover{background:var(--bg)}
+.snav.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
+.snav .nb{margin-left:auto;flex:0 0 auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;min-width:18px;text-align:center;line-height:15px}
+.snav.off{opacity:.34;pointer-events:none}
+.main{flex:1;padding:14px 18px 44px;min-width:0}
+
+.tophd{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+h1{font-size:19px;font-weight:700}
+.btn{border:1px solid var(--line2);background:#fff;border-radius:8px;padding:7px 12px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--bg)}
+.btn.p{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn.p:hover{background:#1e40af}
+.btn.d{background:var(--red);color:#fff;border-color:var(--red)}
+.btn.g{background:var(--green);color:#fff;border-color:var(--green)}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn.xs{padding:3px 8px;font-size:11.5px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.act{background:var(--brand-soft);border-color:var(--brand);color:var(--brand);font-weight:600}
+
+.tabs{display:flex;gap:3px;border-bottom:2px solid var(--line);margin:12px 0 0;flex-wrap:wrap}
+.tab1{padding:9px 14px;font-size:13.5px;font-weight:600;color:var(--ink2);border-bottom:2px solid transparent;margin-bottom:-2px;display:flex;align-items:center;gap:7px}
+.tab1.on{color:var(--brand);border-bottom-color:var(--brand)}
+.tab1 .b{background:var(--bg);color:var(--ink2);font-size:11px;font-weight:700;padding:1px 7px;border-radius:9px}
+.tab1.on .b{background:var(--brand);color:#fff}
+.tab1 .b.r{background:var(--red);color:#fff}
+
+.scope{display:flex;align-items:center;gap:9px;background:#f8fafc;border:1px solid var(--line);border-left:3px solid var(--brand);
+ border-radius:9px;padding:8px 12px;font-size:12px;color:var(--ink2);margin:12px 0 0;flex-wrap:wrap}
+.scope b{color:var(--ink)}
+.scope .sp{flex:1}
+
+.bar{display:flex;gap:7px;align-items:center;flex-wrap:wrap;padding:11px 0}
+.inp{border:1px solid var(--line2);border-radius:8px;padding:7px 11px;font-size:13px;background:#fff;min-width:220px}
+.fs{border:1px solid var(--line2);border-radius:8px;padding:6px 9px;font-size:12.5px;background:#fff}
+.sum{display:flex;gap:13px;font-size:12px;color:var(--ink2);margin-left:auto;flex-wrap:wrap}
+.sum b{color:var(--ink)}
+
+.alert{display:flex;align-items:flex-start;gap:10px;padding:9px 13px;border-radius:10px;font-size:12.5px;font-weight:600;margin-bottom:10px;line-height:1.6}
+.alert .sp{flex:1;font-weight:400}
+.alert .sp b{font-weight:700}
+.alert.w{background:var(--amber-soft);border:1px solid #fde68a;color:#92400e}
+.alert.r{background:var(--red-soft);border:1px solid #fecaca;color:#991b1b}
+.alert.g{background:var(--green-soft);border:1px solid #a7f3d0;color:#065f46}
+.alert.b{background:var(--brand-soft);border:1px solid #bfdbfe;color:#1e40af}
+.info{background:var(--brand-soft);border:1px solid #bfdbfe;color:#1e40af;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.65;margin-bottom:11px}
+.warn{background:var(--amber-soft);border:1px solid #fde68a;color:#92400e;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.65;margin-bottom:11px}
+.danger{background:var(--red-soft);border:1px solid #fecaca;color:#991b1b;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.65;margin-bottom:11px}
+.okbox{background:var(--green-soft);border:1px solid #a7f3d0;color:#065f46;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.65;margin-bottom:11px}
+.ro{background:#f8fafc;border:1px solid var(--line);color:var(--ink2);padding:8px 11px;border-radius:9px;font-size:12px;margin-bottom:11px;line-height:1.6}
+
+.stage{display:flex;gap:13px;align-items:flex-start}
+.listw{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.panel{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:none}
+.stage.open .panel{display:block}
+@media(max-width:1320px){.stage.open .listw{display:none}}
+
+.grph{display:flex;align-items:center;gap:9px;padding:8px 13px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:11.5px;font-weight:700;color:var(--ink2);cursor:pointer}
+.grph .cnt{margin-left:auto;font-weight:600;color:var(--ink3);font-size:11px}
+.grph .arw{font-size:10px;color:var(--ink3)}
+
+.hdrow,.hrow{display:grid;gap:9px;padding:9px 13px;align-items:center;font-size:13px;grid-template-columns:1.25fr 1.5fr 1.75fr .8fr .75fr}
+.hdrow{background:#fbfdff;border-bottom:1px solid var(--line);font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em}
+.hrow{border-bottom:1px solid var(--line);cursor:pointer;border-left:3px solid transparent}
+.hrow:hover{background:var(--brand-soft)}
+.hrow.on{background:#eff6ff;border-left-color:var(--brand)}
+.hrow.bad{border-left-color:var(--red);background:#fffafa}
+.hrow.warnl{border-left-color:var(--amber)}
+.stage.open .hdrow,.stage.open .hrow{grid-template-columns:1.25fr 1.7fr}
+.stage.open .hcol{display:none}
+
+.st2{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;white-space:nowrap;display:inline-block}
+.st2.o{background:var(--green-soft);color:var(--green)}
+.st2.w{background:var(--amber-soft);color:var(--amber)}
+.st2.r{background:var(--red-soft);color:var(--red)}
+.st2.n{background:var(--bg);color:var(--ink2)}
+.st2.b{background:#e0e7ff;color:#3730a3}
+.tg{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;white-space:nowrap;display:inline-block}
+.tg.a{background:#e0e7ff;color:#3730a3}
+.tg.b{background:#fef3c7;color:#92400e}
+.tg.c{background:var(--bg);color:var(--ink2)}
+.tg.g{background:var(--green-soft);color:var(--green)}
+.tg.r{background:var(--red-soft);color:var(--red)}
+
+.ph{padding:12px 15px;border-bottom:1px solid var(--line);display:flex;gap:13px;align-items:center;flex-wrap:wrap}
+.ph .n h2{font-size:16px;font-weight:700}
+.ph .n .m{font-size:12px;color:var(--ink2);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pill{font-size:10.5px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--ink2)}
+/* ★ KHÔNG neo chiều cao vào 100vh: trong khung nhúng hoặc màn hình thấp,
+   calc(100vh - 215px) ra 0 và THÂN PANEL BỊ NÉN SẠCH — nội dung vẫn nằm
+   trong DOM nhưng không ai nhìn thấy. Mốc cố định thì luôn đúng, và panel
+   vẫn tự cuộn bên trong thay vì kéo dài trang ra vài nghìn pixel. */
+.pbody{padding:13px 15px;max-height:760px;overflow-y:auto}
+.card{border:1px solid var(--line);border-radius:11px;margin-bottom:12px;overflow:hidden}
+.card.bad{border-color:#fecaca}
+.ch{display:flex;align-items:center;gap:9px;padding:10px 12px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:13px;font-weight:700;flex-wrap:wrap}
+.ch .sp{flex:1}
+.cb{padding:4px 0}
+.f{display:grid;grid-template-columns:180px 1fr;gap:11px;align-items:start;padding:7px 12px;font-size:13px}
+.f+.f{border-top:1px solid #f1f5f9}
+.f .k{color:var(--ink2);font-size:12.5px}
+.f .v{font-weight:600;min-width:0;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.cact{display:flex;gap:6px;padding:9px 12px;border-top:1px solid var(--line);background:#fcfdfe;flex-wrap:wrap;align-items:center}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:7px 9px;border-bottom:1px solid var(--line);background:#f8fafc;white-space:nowrap}
+td{padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr.warnrow{background:var(--amber-soft)}
+.ro2{background:#f8fafc}
+tr.rorow{background:#f8fafc}
+tr.okrow{background:var(--green-soft)}
+tr.totrow{background:#f1f5f9;font-weight:600}
+.cell{width:64px;border:1px solid var(--line2);border-radius:6px;padding:4px 6px;text-align:right;font:inherit;font-size:12.5px}
+.cell:focus{outline:2px solid var(--brand);border-color:var(--brand)}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.stp{flex:1;min-width:150px;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);font-size:12px;color:var(--ink3)}
+.stp.done{background:var(--green-soft);border-color:var(--green);color:var(--green);font-weight:600}
+.stp.now{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:700}
+.stp.off{opacity:.45}
+.spark{display:flex;gap:2px;align-items:flex-end;height:24px}
+.spark i{width:6px;border-radius:1px;display:block}
+.frow{display:flex;gap:9px;flex-wrap:wrap}
+.frow>div{flex:1;min-width:130px}
+.kchk{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;cursor:pointer}
+
+.lt{width:100%;border-collapse:collapse;font-size:11.5px}
+.lt th{background:var(--bg);text-align:left;padding:5px 8px;font-size:10.5px;color:var(--ink3);border:1px solid var(--line)}
+.lt td{padding:5px 8px;border:1px solid var(--line);vertical-align:top}
+.lt td.d{width:46px;font-weight:700;background:#fafbfc;text-align:center}
+.blk{display:inline-block;padding:2px 7px;border-radius:5px;margin:2px 3px 2px 0;font-weight:600;white-space:nowrap}
+.blk.ck{background:#e0e7ff;color:#3730a3}
+.blk.nk{background:var(--green-soft);color:var(--green)}
+.blk.moi{background:#f1f5f9;color:var(--ink2);border:1px dashed var(--ink3)}
+.blk.x{background:var(--red-soft);color:var(--red);box-shadow:0 0 0 1.5px var(--red) inset}
+.blk.s{background:var(--amber-soft);color:var(--amber);box-shadow:0 0 0 1.5px var(--amber) inset}
+.lichpick{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:5px}
+.lprow{display:flex;align-items:center;gap:8px;padding:7px 11px;border-bottom:1px solid #f1f5f9;font-size:12.5px}
+.lprow:last-child{border-bottom:none}
+.lprow.on{background:#f8fafc}
+.lpd{display:flex;align-items:center;gap:6px;width:96px;font-weight:600;cursor:pointer;flex:none}
+.lprow:not(.on) .lpd{color:var(--ink3);font-weight:400}
+.lpsep{color:var(--ink3)}
+.lpt:disabled{background:#f8fafc;color:#cbd5e1}
+.lpinfo{font-size:11px;margin-left:auto;text-align:right;line-height:1.4}
+.lpinfo.x{color:var(--red);font-weight:700}
+.lpinfo.s{color:var(--amber);font-weight:700}
+.lpinfo.o{color:var(--green)}
+.frow{display:flex;gap:9px;flex-wrap:wrap}
+.frow>div{flex:1;min-width:130px}
+.kchk{display:inline-flex;align-items:center;gap:5px;margin-right:12px;font-size:12.5px}
+tr.badrow{background:var(--red-soft)}
+tr.totrow td{background:#f8fafc;font-weight:700}
+.tbw{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.tbx{overflow-x:auto}
+
+.mask{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:60;display:none;place-items:center}
+.mask.on{display:grid}
+.modal{background:#fff;border-radius:13px;width:820px;max-width:94vw;max-height:88vh;display:flex;flex-direction:column}
+.mh{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700}
+.mb{padding:15px 18px;overflow-y:auto;font-size:13px;line-height:1.65}
+.mf{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;align-items:center}
+.fldi{width:100%;border:1px solid var(--line2);border-radius:8px;padding:8px 10px;margin-top:4px}
+.lbl{display:block;font-size:12px;color:var(--ink2);font-weight:600;margin-top:11px}
+
+.rolebar{background:#0f172a;color:#cbd5e1;padding:8px 15px;display:flex;align-items:center;gap:7px;font-size:12.5px;flex-wrap:wrap}
+.rolebar b{color:#fff}
+.rb{border:1px solid #334155;border-radius:999px;padding:3px 10px;font-size:12px;color:#cbd5e1}
+.rb:hover{background:#1e293b;color:#fff}
+.rb.on{background:#fff;color:#0f172a;border-color:#fff;font-weight:700}
+.ntg{border:1px solid #334155;border-radius:999px;padding:3px 10px;font-size:12px;color:#cbd5e1}
+.ntg:hover{background:#1e293b;color:#fff}
+.ntg.on{background:#fbbf24;color:#3b2a05;border-color:#fbbf24;font-weight:700}
+.simw{font-size:11.5px;color:#94a3b8;display:flex;align-items:center;gap:6px;margin-left:auto}
+.simw select{background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:6px;padding:2px 6px;font-size:11.5px}
+/* Ghi chu thiet ke: giai thich VI SAO, khong phai mot phan man hinh that. Mac dinh TAT. */
+body.nn .dnote{display:none!important}
+.dnote{background:#fffbeb;border:1px dashed #fbbf24;color:#78350f;padding:8px 11px;border-radius:9px;font-size:12px;line-height:1.6;margin-bottom:11px}
+.dnote b{color:#78350f}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(110px);background:#0f172a;color:#fff;padding:11px 17px;border-radius:9px;font-size:13px;z-index:80;transition:transform .22s;max-width:92vw}
+.toast.on{transform:translateX(-50%)}
+.empty{padding:38px;text-align:center;color:var(--ink3)}
+.lgd{display:flex;gap:14px;font-size:11.5px;color:var(--ink3);padding:9px 13px;border-top:1px solid var(--line);flex-wrap:wrap;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px 9px;color:var(--ink2)}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+.rolnk{font-size:10px;font-weight:700;color:var(--brand);background:#eef2ff;border:1px solid #c7d2fe;border-radius:999px;padding:1px 7px;white-space:nowrap}
+.rolnk:hover{background:#e0e7ff}
+.crumb{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink2);margin-bottom:9px;flex-wrap:wrap}
+.crumb a{color:var(--brand);cursor:pointer;font-weight:600}
+
+/* --- phan duoi chep tu khung chung (M6.17) --- */
+.daybar{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:9px 13px;flex-wrap:wrap;margin-bottom:10px}
+.daybar .dt{font-weight:700;font-size:14px;min-width:190px}
+.pbar{display:flex;height:9px;border-radius:5px;overflow:hidden;background:var(--line);flex:1;min-width:180px}
+.pbar i{display:block}
+.pbar i.a{background:var(--green)}
+.pbar i.b{background:var(--amber)}
+.pbar i.c{background:var(--line2)}
+.pbar i.d{background:var(--red)}
+.pleg{display:flex;gap:12px;font-size:11px;color:var(--ink2);flex-wrap:wrap;align-items:center}
+.pleg s{width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:4px}
+.hsrow{display:flex;align-items:center;gap:10px;padding:7px 11px;border-bottom:1px solid #f1f5f9;font-size:13px}
+.hsrow:last-child{border-bottom:none}
+.hsrow .av{width:30px;height:30px;border-radius:50%;background:#e0e7ff;color:#3730a3;display:grid;place-items:center;font-size:11px;font-weight:700;flex:0 0 30px}
+.hsrow .nm{min-width:0;flex:1}
+.hsrow .nm b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hsrow .nm span{font-size:10.5px;color:var(--ink3)}
+.hsrow.lk{background:#fafbfc}
+.tgl{display:flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden;flex:0 0 auto}
+.tgl button{padding:4px 11px;font-size:11.5px;font-weight:600;color:var(--ink2);background:#fff}
+.tgl button.on{background:var(--green);color:#fff}
+.tgl button.on.v{background:var(--red)}
+.tgl button:disabled{opacity:.45;cursor:not-allowed}
+.src{font-size:10.5px;color:var(--ink3);flex:0 0 auto;max-width:250px}
+.aller{color:var(--red);font-size:12px;cursor:help}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.stp{border:1px solid var(--line2);background:#fff;border-radius:9px;padding:7px 13px;font-size:12.5px;font-weight:600;color:var(--ink2);display:flex;align-items:center;gap:7px}
+.stp.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.stp.done{border-color:#a7f3d0;background:var(--green-soft);color:#065f46}
+.stp:disabled{opacity:.45;cursor:not-allowed}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:7px 12px;font-size:13px;border-bottom:1px solid #f1f5f9}
+.kv:last-child{border-bottom:none}
+.kv b{font-variant-numeric:tabular-nums}
+.kv.tot{background:#f8fafc;font-weight:700}
+.mini{width:74px;text-align:right;border:1px solid var(--line2);border-radius:7px;padding:4px 7px;font-variant-numeric:tabular-nums;font-size:12px}
+.qgrp{padding:9px 13px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:11.5px;font-weight:700;color:var(--ink2)}
+
+/* --- rieng M10.11 Quan ly luu tru he thong --- */
+.mu{color:var(--ink3)}
+.mono{font-family:Consolas,"Cascadia Mono",monospace;font-size:11.5px}
+.qwrap{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--ink3);flex-wrap:wrap}
+.qc{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:1px 6px;border-radius:5px;background:#f1f5f9;color:#cbd5e1;border:1px solid var(--line)}
+.qc.on{background:var(--green-soft);color:var(--green);border-color:#a7f3d0}
+.qc.vh{border-style:dashed}
+
+/* o luu tru */
+.ocard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin-bottom:11px}
+.ocard.w{border-color:#fecaca;box-shadow:inset 3px 0 0 var(--red)}
+.ohd{display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;margin-bottom:10px}
+.olbl{font-size:11.5px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.04em}
+.obig{font-size:26px;font-weight:800;line-height:1.15}
+.obig span{font-size:13px;font-weight:600;color:var(--ink2)}
+.ocard.w .obig{color:var(--red)}
+.ostat{display:flex;gap:18px;flex-wrap:wrap;margin-left:auto}
+.ostat div{display:flex;flex-direction:column;min-width:96px}
+.ostat b{font-size:15px;font-variant-numeric:tabular-nums}
+.ostat span{font-size:11px;color:var(--ink3)}
+.stk{position:relative;display:flex;height:16px;border-radius:8px;overflow:hidden;background:var(--line)}
+.stk i{display:block;height:100%}
+.stk em{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--red)}
+.omut{font-size:12px;color:var(--ink2);margin-top:8px;line-height:1.6}
+
+/* che do */
+.chd{display:inline-block;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:5px;white-space:nowrap}
+.chd.o{background:var(--green-soft);color:var(--green)}
+.chd.b{background:#e0e7ff;color:#3730a3}
+.chd.w{background:var(--amber-soft);color:#b45309}
+.chd.r{background:var(--red-soft);color:var(--red)}
+
+/* bang theo lop */
+.lt2{width:100%;border-collapse:collapse;font-size:12.5px}
+.lt2 th{position:sticky;top:0}
+.lt2 tr.grow td{background:#f8fafc;border-top:1px solid var(--line2)}
+.lt2 tr.rw{cursor:pointer}
+.lt2 tr.rw:hover{background:var(--brand-soft)}
+.dotc{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.mbar{height:5px;border-radius:3px;background:var(--line);overflow:hidden;margin-bottom:2px;min-width:60px}
+.mbar i{display:block;height:100%}
+
+/* tra cuu */
+.fbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:9px 0 3px}
+.fbar .inp{min-width:280px;flex:1}
+.sumline2{display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--ink2);padding:9px 0}
+.sumline2 .sp{flex:1}
+.ft{width:100%;border-collapse:collapse;font-size:12.5px}
+.ft td{padding:7px 9px}
+.ft tr.rw{cursor:pointer}
+.ft tr.rw:hover{background:var(--brand-soft)}
+.ft tr.rw.on{background:#eff6ff;box-shadow:inset 3px 0 0 var(--brand)}
+.ft .ico{display:inline-block;width:22px}
+.ft td.num,.lt2 td.num{white-space:nowrap}
+.stage.open .ft .hcol,.stage.open th.hcol{display:none}
+.che{color:#7c2d12;font-style:italic;font-weight:600}
+.gpl{display:inline-block;background:#f1f5f9;border:1px dashed var(--ink3);border-radius:6px;padding:3px 8px;font-size:11.5px;color:var(--ink2)}
+.gpl a{color:var(--brand);font-weight:700;cursor:pointer}
+
+/* luot */
+.lhd{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 4px}
+.lhd h2{font-size:17px}
+.kgrid{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:11px}
+.kbox{flex:1;min-width:170px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 12px}
+.kbox b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
+.kbox span{font-size:12px;color:var(--ink2)}
+.kbox.g{border-left:3px solid var(--green)}
+.kbox.r{border-left:3px solid var(--red)}
+.kbox.w{border-left:3px solid var(--amber)}
+.kbox.b{border-left:3px solid var(--brand)}
+.stp.off{opacity:.5;text-decoration:line-through}
+.kiem{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:12.5px}
+.chgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+@media(max-width:1000px){.chgrid{grid-template-columns:1fr}}
+.chip:disabled{opacity:.55;cursor:not-allowed}
+</style>
+</head>
+<body class="nn"><script>/* sidebar da chuyen ve index.html — node an giu cho JS cu khong vo */
+(function(){var n=document.createElement("nav");n.id="side";n.style.display="none";document.documentElement.appendChild(n)})();</script>
+
+
+<div class="rolebar" id="rolebar"></div>
+
+<header class="hdr">
+  <div class="logo"><span class="mark">DS</span> Dschool</div>
+  <div class="school">THCS &amp; THPT Nguyễn Tất Thành</div>
+  <select class="sel" id="hnam"><option value="2026-2027">Năm học 2026-2027</option><option value="2025-2026">Năm học 2025-2026</option></select>
+  <select class="sel" id="hdt"></select>
+  <span class="lockico" id="dtlock"></span>
+  <div class="spacer"></div>
+  <button class="icobtn" id="bell">🔔<span class="dot" id="ndot">2</span></button>
+  <button class="icobtn">💬<span class="dot">1</span></button>
+  <div class="avatar" id="ava">TĐ</div>
+</header>
+
+<div class="wrap">
+  <main class="main">
+    <div id="crumb"></div>
+    <div class="tophd"><h1 id="h1">Quản lý lưu trữ hệ thống</h1><span class="pill" style="margin-left:4px">⚙️ Quản trị &amp; cấu hình</span><span class="pill">mã tạm M10.11</span><div class="spacer"></div><span id="topact"></span></div>
+    <div class="tabs" id="tabs"></div>
+    <div id="content"></div>
+  </main>
+</div>
+
+<div class="mask" id="mask"><div class="modal">
+  <div class="mh" id="mh"></div><div class="mb" id="mb"></div><div class="mf" id="mf"></div>
+</div></div>
+<div class="toast" id="toast"></div>
+<script>
+/* ══════════════ M10.11 QUẢN LÝ LƯU TRỮ HỆ THỐNG — TIỆN ÍCH · NHÂN SỰ · QUYỀN ══════════════
+   Menu này là màn hình SIÊU DỮ LIỆU của ổ lưu trữ chung (R3): biết tệp nào của lớp nào, nặng bao nhiêu, nhập lúc nào,
+   ai tải lên — KHÔNG mở nội dung. Giải phóng = hủy NỘI DUNG tệp trên ổ; bản ghi ở menu chủ ở lại (R1 · D1). */
+
+/* ========== TIỆN ÍCH ========== */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const p2=n=>String(n).padStart(2,'0');
+const kd=s=>(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d');
+function toast(m){const t=$('#toast');t.innerHTML=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),5200)}
+function closeM(){$('#mask').classList.remove('on')}
+const mfns={};
+function modal(t,b,f){$('#mh').innerHTML=t;$('#mb').innerHTML=b;$('#mf').innerHTML=f;$('#mask').classList.add('on')}
+const k2s=k=>{if(!k)return '';const[a,b,c]=k.slice(0,10).split('-');return c+'/'+b+'/'+a};
+const HOMNAY_GOC='2026-10-23';
+let HOMNAY=HOMNAY_GOC;                                  /* 🧪 tua ngày được — mô phỏng lượt hủy đêm */
+const THU=['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
+const thuCua=k=>THU[new Date(k+'T00:00:00').getDay()];
+const BAYGIO=()=>HOMNAY+' '+p2(8+Math.floor(Math.random()*9))+':'+p2(Math.floor(Math.random()*60));
+const QS=new URLSearchParams(location.search);
+const ngayD=k=>new Date(k.slice(0,10)+'T00:00:00');
+const kOf=d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
+function cong(k,n,dv){const d=ngayD(k);if(dv==='nam')d.setFullYear(d.getFullYear()+n);else if(dv==='thang')d.setMonth(d.getMonth()+n);else d.setDate(d.getDate()+n);return kOf(d)}
+const soNgay=(a,b)=>Math.round((ngayD(b)-ngayD(a))/864e5);
+const nf=n=>Number(n).toLocaleString('vi-VN');
+const nf1=n=>Number(n).toLocaleString('vi-VN',{maximumFractionDigits:1});
+/* dung lượng: đầu vào MB */
+const mb=n=>n>=1024*1024?nf1(n/1048576)+' TB':n>=1024?nf1(n/1024)+' GB':n>=1?nf1(n)+' MB':n>0?Math.max(1,Math.round(n*1024))+' KB':'0';
+const gb=n=>nf1(n/1024)+' GB';
+let _id=100; const moiId=p=>p+(++_id);
+let VER=0;                                              /* tăng mỗi lần dữ liệu đổi — bộ nhớ đệm thống kê theo VER */
+
+/* sinh số giả ngẫu nhiên TẤT ĐỊNH: hạt giống = băm FNV-1a THEO THỨ TỰ ký tự
+   (không dùng tổng mã ký tự — hai chuỗi đảo chữ ra cùng hạt, các lớp sinh giống hệt nhau — bài học 13/9) */
+function hat(s){let h=2166136261>>>0;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)>>>0}return h}
+function rngTu(s){let a=hat(s);return()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296}}
+const bam=s=>{const a=hat(s).toString(16).padStart(8,'0'),b=hat(s+'#').toString(16).padStart(8,'0');return a+b.slice(0,4)+'…'+hat('~'+s).toString(16).slice(-4)};
+
+/* ========== NĂM HỌC (🔗 M10.1) ========== */
+const NAMHOC={'2024-2025':{bd:'2024-09-05',kt:'2025-05-31'},'2025-2026':{bd:'2025-09-05',kt:'2026-05-31'},'2026-2027':{bd:'2026-09-05',kt:'2027-05-31'}};
+const namCua=k=>{for(const n in NAMHOC){const x=NAMHOC[n];if(k>=cong(x.bd,-40,'ngay')&&k<=cong(x.kt,90,'ngay'))return n}return k<'2025-07-01'?'2024-2025':k<'2026-07-01'?'2025-2026':'2026-2027'};
+const DT={A:'Điểm trường A',B:'Điểm trường B',C:'Điểm trường C'};
+
+/* ========== NHÂN SỰ (🔗 M4.1 · M4.3) — người tải lên, người lập / duyệt lượt ========== */
+const NS=[
+ {id:'ns00',ten:'Trần Minh Đức',cd:['FULL']},
+ {id:'ns01',ten:'Nguyễn Quang Huy',cd:['HT']},
+ {id:'ns30',ten:'Lê Hoàng Nam',cd:['IT']},
+ {id:'ns02',ten:'Trần Thị Lệ',cd:['PHT_CM']},
+ {id:'ns04',ten:'Phạm Văn Khải',cd:['PHT_DT']},
+ {id:'ns06',ten:'Phan Thị Thảo',cd:['VT']},
+ {id:'ns08',ten:'Trịnh Thị Vân',cd:['KT']},
+ {id:'ns09',ten:'Hồ Minh Tâm',cd:['TCNS']},
+ {id:'ns10',ten:'Đặng Văn Toàn',cd:['TTCM','GVBM']},
+ {id:'ns11',ten:'Hoàng Thị Nhung',cd:['GVBM','GVCN']},
+ {id:'ns12',ten:'Lê Văn Minh',cd:['GVBM','GVCN']},
+ {id:'ns13',ten:'Bùi Quốc Hải',cd:['TPCM','GVBM']},
+ {id:'ns15',ten:'Vũ Thị Mai',cd:['GVBM','GVCN']},
+ {id:'ns16',ten:'Ngô Thị Lan',cd:['TTCM','GVBM']},
+ {id:'ns18',ten:'Phạm Văn Đức',cd:['GVBM','GVCN']},
+ {id:'ns19',ten:'Nguyễn Thị Hoa',cd:['TTCM','GVBM']},
+ {id:'ns21',ten:'Trần Hữu Nghĩa',cd:['GVBM']},
+ {id:'ns22',ten:'Đặng Thị Hồng',cd:['TTCM','GVBM']},
+ {id:'ns24',ten:'Dương Minh Khoa',cd:['TTCM','GVBM']},
+ {id:'ns25',ten:'Phan Gia Bảo',cd:['GVBM']},
+ {id:'ns28',ten:'Nguyễn Thị Thu',cd:['YT']},
+ {id:'ns31',ten:'Đoàn Thị Hà',cd:['TPT']},
+ {id:'ns32',ten:'Nguyễn Văn Bình',cd:['NVBT']},
+ {id:'ns33',ten:'Tạ Thị Quyên',cd:['QLKTX']},
+ /* đã nghỉ việc — hồ sơ vẫn tra được (M4.2); tệp cá nhân ở Kho tài liệu còn nằm trên ổ */
+ {id:'ns40',ten:'Trịnh Văn Quang',cd:['GVBM'],nghi:'2025-06-30'},
+ {id:'ns41',ten:'Hà Thị Liên',cd:['GVBM'],nghi:'2025-07-31'},
+ {id:'ns42',ten:'Mạc Đình Phú',cd:['GVBM'],nghi:'2026-08-31'}
+];
+const NSM={};NS.forEach(n=>NSM[n.id]=n);
+const nsById=id=>NSM[id]||{ten:'(không rõ)',cd:[]};
+const GV_POOL=['ns10','ns11','ns12','ns13','ns15','ns16','ns18','ns19','ns21','ns22','ns24','ns25'];
+const CD={FULL:'Đủ quyền (demo)',HT:'Hiệu trưởng',IT:'Quản trị hệ thống',PHT_CM:'PHT Chuyên môn',PHT_DT:'PHT điểm trường',VT:'Văn thư',KT:'Kế toán',
+ TCNS:'Tổ chức nhân sự',TTCM:'Tổ trưởng CM',TPCM:'Tổ phó CM',GVCN:'GV chủ nhiệm',GVBM:'GV bộ môn',YT:'Y tế',TPT:'TPT Đội',NVBT:'NV bán trú',QLKTX:'Quản lý KTX'};
+const cdNS=n=>n.cd.map(c=>CD[c]||c).join(' + ');
+/* người tải lên: mã nhân sự · 'ph:<HS>' phụ huynh qua App · 'hs:<HS>' học sinh · 'he' hệ thống */
+const tenBoi=b=>!b?'—':b==='he'?'Hệ thống':b.startsWith('ph:')?'Phụ huynh của '+b.slice(3):b.startsWith('hs:')?'Học sinh '+b.slice(3):nsById(b).ten+(nsById(b).nghi?' (đã nghỉ)':'');
+const KENH={web:'Web',app_ph:'App PH-HS',app_gv:'App Giáo viên',tlb:'Trang làm bài (HS)',he:'Hệ thống sinh'};
+
+/* ========== QUYỀN FEATURE (bản chiếu ma trận M10.4 — chỉ đọc ở đây) ==========
+   Bốn tab = bốn Feature. Khung đủ 7 quyền; ô không có thao tác thì bật / tắt vô hại.
+   Hai lớp: ① quyền Feature (PQ) → vai LÀM ĐƯỢC GÌ ở tab · ② năng lực (NL) tách nghĩa bên trong một tab:
+     lap       — lập lượt giải phóng, chạy thẳng lượt chỉ gồm tệp ① Tự do (IT)
+     duyet     — duyệt / từ chối lượt (HT — thủ trưởng, bên kiểm soát dữ liệu)
+     kythuat   — khối kỹ thuật ở ⚙: phần ổ dành cho Dschool · trần cỡ tệp · định dạng cấm (IT)
+     chinhsach — khối chính sách ở ⚙: ngưỡng · chờ hủy · chế độ và thời hạn từng lớp · người nhận cảnh báo (HT)
+   Vai Đủ quyền có cả bốn — thấy mọi nút cùng lúc (quy ước demo). */
+const T7=['X','T','S','XO','D','ID','XD'];
+const TABS=[['tq','📊 Tổng quan dung lượng','m10.11.tong_quan_dung_luong'],['tc','🔎 Tra cứu tệp','m10.11.tra_cuu_tep'],
+ ['gp','🧹 Lượt giải phóng','m10.11.luot_giai_phong'],['ch','⚙ Cấu hình','m10.11.cau_hinh']];
+const PQ={
+ FULL:{tq:T7,tc:T7,gp:T7,ch:T7},
+ IT  :{tq:['X','XD'],tc:['X','T','XD'],gp:['X','T','S','XD'],ch:['X','S']},
+ HT  :{tq:['X','XD'],tc:['X','XD'],gp:['X','D','XD'],ch:['X','S']}
+};
+const NL={FULL:['lap','duyet','kythuat','chinhsach'],IT:['lap','kythuat'],HT:['duyet','chinhsach']};
+const ROLES={
+ FULL:{cd:'🔓 Đủ quyền (demo)',ns:'ns00',c:'FULL'},
+ IT  :{cd:'Quản trị hệ thống',ns:'ns30',c:'IT'},
+ HT  :{cd:'Hiệu trưởng',ns:'ns01',c:'HT'},
+ VT  :{cd:'Văn thư · ĐT A',ns:'ns06',c:'VT'},
+ GVBM:{cd:'GVBM Ngữ văn · ĐT A',ns:'ns15',c:'GVBM'}
+};
+let role='FULL';
+if(QS.get('vai')&&ROLES[QS.get('vai')]) role=QS.get('vai');
+const R=()=>ROLES[role];
+const ME=()=>nsById(R().ns);
+const coQ=(tab,q)=>((PQ[R().c]||{})[tab]||[]).includes(q);
+const coNL=k=>(NL[R().c]||[]).includes(k);
+const coMenu=()=>!!PQ[R().c];
+
+
+/* ══════════════ M10.11 — DANH MỤC LỚP LƯU TRỮ ══════════════
+   Một dòng = MỘT LOẠI TỆP của MỘT MENU CHỦ (Việc 1 — kiểm kê 97 mô tả + App PH-HS + App GV).
+   ★ Danh mục lớp là DẪN XUẤT: mỗi menu chủ khai lớp của mình và gắn mã lớp vào tệp lúc tải lên ("chức năng đã tải nó lên" — M6.8 §12).
+     M10.11 không thêm / bớt lớp bằng tay. Cái M10.11 LÀM CHỦ là CHÍNH SÁCH GIẢI PHÓNG của từng lớp (chế độ · thời hạn · căn cứ · công tắc TỰ ĐỘNG) — tab ⚙.
+   ★ LT-14 (anh Ninh chốt 16/9/2026): MỌI lớp đều cấu hình được thời hạn. Lớp có luật thì màn hình NHẮC theo luật (sàn gốc giữ ở l.goc);
+     lớp không có luật thì trường tự quyết. Mỗi lớp có công tắc «Tự động xóa khi đến hạn» riêng — mặc định TẮT.
+   Khối giữa hai mốc K-BAT-DAU / K-KET-THUC chỉ gồm chuỗi và số: script sinh mục K của phiếu đọc thẳng khối này (một nguồn, hai nơi dùng).
+   Cột: 0 mã · 1 nhóm · 2 tên · 3 menu chủ · 4 thực thể chứa tệp · 5 kênh tải lên · 6 khi nào phát sinh · 7 khối lượng ước tính / năm ·
+        8 chế độ (TD ① Tự do · SH ② Sau thời hạn · QD ③ Theo quyết định hủy · KH ④ Khóa) · 9 thời hạn (số; -1 = không áp) · 10 đơn vị (nam/thang/ngay; '' = CHƯA ĐẶT)
+        · 11 mốc tính (nh = hết năm học · ntc = hết năm tài chính · tl = ngày tải lên · nv = ngày chủ tệp nghỉ việc · ng = ngày câu / nhóm câu ngừng dùng · rt = ngày học sinh rời trường (🔗 M1.1); với ③ là SÀN tối thiểu tính từ năm của văn bản) · 12 căn cứ · 13 phiên bản cũ & thùng rác là ① (1/0)
+        · 14 che tên (own / nc / '') · 15 cơ chế xóa sẵn có ở menu chủ · 16 ⚖ căn cứ pháp luật (1/0) · 17 định dạng thường gặp · 18 ghi chú ⏳ · 19 TỰ ĐỘNG xóa khi đến hạn (1/0 — mặc định TẮT; ③ không bật được) */
+const NHOM=[['hl','🧠 Học liệu số hóa'],['bl','✍ Bài làm & bài nộp của học sinh'],['lh','📚 Hoạt động lớp'],['hs','👥 Hồ sơ học sinh'],
+ ['kq','🎓 Học bạ · tốt nghiệp · kết quả thi'],['ns','👨‍🏫 Hồ sơ nhân sự'],['cm','📖 Chuyên môn'],['vb','🗂 Văn bản'],['tc','💰 Tài chính'],
+ ['vh','🏫 Vận hành & dịch vụ'],['tt','💬 Truyền thông'],['ht','⚙️ Hệ thống sinh ra']];
+/* ── YK01-D (16/9/2026) — CHẤM CÔNG TIẾT DẠY BẰNG THIẾT BỊ Ở CỬA LỚP: thêm L58 · L59 (nhóm ns) ──
+   Tách ẢNH (L58) khỏi BẢN GHI (L59) là chủ ý, không phải chia nhỏ cho đẹp: ảnh là dữ liệu sinh trắc — hết việc thì phải đi;
+   bản ghi tầng ① là căn cứ đối chiếu bảng công — phải ở lại lâu hơn. Gộp làm một lớp thì một trong hai chạy sai hạn,
+   và cái chạy sai sẽ là ảnh (vì bản ghi luôn được ưu tiên giữ). L59 KHÔNG có tệp — nó ở đây chỉ để khai thời hạn. */
+/*K-BAT-DAU*/
+const LOP_RAW=[
+["L01","hl","Media trong câu hỏi (hình · âm thanh · video)","M12.5","Câu hỏi (M12.5 v1.1 — câu KHÔNG có phiên bản, sửa tại chỗ)","web","Soạn / sửa câu","≈ 6–10 GB","KH",-1,"","","Tệp của câu hỏi đi theo VÒNG ĐỜI CỦA CÂU, không theo thời hạn: không tự xóa, KHÔNG đề xuất xóa (LT-12 — anh Ninh chốt 16/9/2026). Chỉ vào luồng giải phóng khi CÂU Ở TRẠNG THÁI ĐÃ HỦY ở M12.5 (bộ lọc «Bản ghi chủ đã hủy» — LT-6). Câu ghim trong đề đã sử dụng thì kể cả khi câu bị hủy vẫn ④ (đề đóng băng — kiến trúc Học liệu quy tắc 2 · 3)",0,"","Hủy câu ở M12.5 (câu không xóa, chuyển trạng thái)",0,"png · jpg · mp3 · mp4","LT-12 ✅ chốt · cần M12.5 cho 🔗 trạng thái câu + kiểm tra toàn vẹn tệp định kỳ · HL-10 → HL-Z: tệp của câu tính vào ổ chung, lớp này",0],
+["L02","hl","Ngữ liệu nhóm câu (hình · âm thanh)","M12.6","Nhóm câu hỏi (không có phiên bản — như L01)","web","Soạn / sửa nhóm câu","≈ 1–2 GB","KH",-1,"","","Như L01 — theo vòng đời của nhóm câu, không theo thời hạn; chỉ vào luồng khi nhóm câu ĐÃ HỦY ở M12.6 (LT-12)",0,"","Hủy nhóm câu ở M12.6",0,"png · mp3","LT-12 ✅ chốt",0],
+["L03","hl","Kho tài liệu cá nhân (tệp · phiên bản cũ · thùng rác)","M12.1","Mục tệp của kho (Own)","web","Giáo viên tải lên kho của mình","≈ 40–60 GB (video tiết dạy chiếm phần lớn)","SH",3,"thang","nv","Kho Own — chủ tự dọn khi còn công tác. Mức 3 tháng: anh Ninh chốt 16/9/2026 sau khi soát cả danh mục (LT-14c). Người đã nghỉ việc: **phải xử lý xong toàn bộ kho** (chuyển tệp cần giữ sang M6.12 hoặc nơi khác, xóa phần không cần) rồi mới giải phóng phần còn lại — LT-11 anh Ninh chốt 16/9/2026. Phiên bản cũ · thùng rác quá hạn là ①",1,"own","Thùng rác tự dọn sau 30 ngày (M12.1 §8); chủ xóa vĩnh viễn",0,"mp4 · pptx · pdf · docx · ggb","LT-11 ✅ chốt — cần M4.2 / M12.1 cho 🔗 trạng thái xử lý kho của người đã nghỉ",0],
+["L04","bl","Bài làm trực tuyến (ảnh bài tự luận)","M12.7","Lượt làm bài của học sinh","tlb","Học sinh chụp và nộp khi làm bài","≈ 35–45 GB","SH",0,"thang","nh","Xóa sau năm học, giữ điểm và nhận xét (kiến trúc Học liệu quy tắc 15 — chốt vòng 2 ③) · Luật BVDLCN 91/2025: lưu trong thời gian phù hợp mục đích",0,"","Không — chờ lượt giải phóng",1,"jpg · heic · pdf","",0],
+["L05","bl","Bài nộp bài tập về nhà (ảnh vở · PDF · video ngắn)","M2.3","Bài nộp của học sinh","app_ph · web","Học sinh / phụ huynh nộp qua App","≈ 25–30 GB","SH",0,"thang","nh","Hết năm học → xóa tệp, giữ nhận xét (M2.3 §11 #7 — \"tài liệu hạ tầng\" nay là M10.11) · Luật BVDLCN 91/2025",0,"","Không",1,"jpg · pdf · mp4","Tệp nộp dở (không thành bài nộp) = mồ côi",0],
+["L06","lh","Tệp đề bài tập & ảnh chữa bài","M2.3","Lượt giao bài tập","web · app_gv","Giáo viên giao bài / chữa bài","≈ 2 GB","SH",1,"nam","nh","Không có văn bản riêng — đề xuất giữ thêm 1 năm học sau năm của lượt để đối chiếu khi phụ huynh hỏi lại",0,"","Không",0,"pdf · jpg · docx","⏳ thời hạn đề xuất, chưa có căn cứ",0],
+["L07","lh","Ảnh · giấy tờ đơn xin nghỉ của học sinh","M2.4","Đơn xin nghỉ","app_ph · web","Phụ huynh gửi đơn / GVCN tạo hộ","≈ 2 GB","SH",1,"nam","nh","Căn cứ vắng có phép (xét lên lớp) — giữ hết năm học sau · có DỮ LIỆU SỨC KHỎE (Luật BVDLCN 91/2025 — nhạy cảm)",0,"nc","Không",1,"jpg · pdf","⏳ thời hạn đề xuất",0],
+["L08","lh","Minh chứng đề nghị sửa điểm (ảnh bài kiểm tra)","M2.5","Đề nghị sửa điểm vùng C","web","Giáo viên gửi đề nghị","< 0,5 GB","SH",2,"nam","tl","TT 08/2025/TT-BGDĐT mục 75 — bài kiểm tra định kỳ 02 năm",0,"","Không",1,"jpg · pdf","⏳ có thể phải giữ theo hồ sơ học bạ",0],
+["L09","lh","Tệp văn bản xử lý kỷ luật học sinh","M2.7","Lượt kỷ luật","web","GVCN lập hồ sơ","< 0,2 GB","SH",10,"nam","nh","TT 08/2025/TT-BGDĐT mục 90 — hồ sơ khen thưởng, kỷ luật học sinh 10 năm",0,"nc","Không",1,"pdf · jpg","",0],
+["L10","lh","Tệp bằng chứng khen thưởng học sinh","M2.10","Lượt khen thưởng","web","GVCN / BGH ghi nhận","< 0,3 GB","SH",10,"nam","nh","TT 08/2025/TT-BGDĐT mục 90 — 10 năm",0,"","Không",1,"jpg · pdf","",0],
+["L11","lh","Đề · đáp án · thang điểm kỳ thi định kỳ","M2.8","Hồ sơ kỳ thi","web","Nộp SAU giờ thi (M2.8 v4.0)","≈ 0,5 GB","SH",2,"nam","nh","TT 08/2025/TT-BGDĐT mục 75 — bài kiểm tra định kỳ 02 năm (áp cho đề — ⏳)",0,"","Không",1,"pdf · docx","⏳ đối chiếu toàn văn phụ lục",0],
+["L12","lh","Báo cáo rèn luyện hè (cha mẹ ký)","M3.2","Hồ sơ rèn luyện hè","web","GVCN đính kèm","< 0,1 GB","SH",5,"nam","nh","Anh Ninh chốt 16/9/2026 sau khi soát cả danh mục (LT-14c). Không có mục riêng trong TT 08/2025 (phần đã đọc) — khuôn L08 chỉ là gợi ý ban đầu",0,"","Không",0,"jpg · pdf","⏳",0],
+["L13","hs","Giấy tờ hồ sơ học sinh (khai sinh · ảnh · giấy tờ gia đình)","M1.1","Giấy tờ F6 của hồ sơ HS","web · app_ph","Phụ huynh nộp qua App · Văn thư tải lên thay","≈ 5–8 GB","KH",-1,"","","Hồ sơ học sinh giữ vĩnh viễn (M1.1 · M1.3; TT 08/2025 mục 85 — sổ đăng bộ vĩnh viễn). Bản bị \"Yêu cầu nộp lại\" (mờ, thiếu trang) là phiên bản cũ → ①",1,"","Không — bản cũ giữ trong lịch sử phiên bản",1,"jpg · pdf","",0],
+["L14","hs","Minh chứng yêu cầu cập nhật hồ sơ học sinh","M1.1","Yêu cầu cập nhật hồ sơ tầng 2","app_ph","Phụ huynh gửi yêu cầu (App A03)","< 1 GB","KH",-1,"","","Căn cứ của một lần đổi trường pháp lý trong hồ sơ — đi cùng hồ sơ học sinh",0,"","Không",1,"jpg · pdf","",0],
+["L15","hs","Giấy tờ đối tượng ưu tiên","M1.2","Hồ sơ đối tượng ưu tiên","web · app_ph","Nộp / thay thế giấy tờ","< 1 GB","KH",-1,"","","Căn cứ miễn giảm (M7.4) — giữ theo hồ sơ học sinh. Bản bị thay thế là phiên bản cũ → ①",1,"","Không",1,"jpg · pdf","",0],
+["L16","hs","Hồ sơ dự tuyển đầu cấp","M1.4","Hồ sơ dự tuyển của đợt","app_ph · web","Mỗi đợt tuyển sinh","≈ 5–6 GB / đợt","SH",10,"nam","nh","TT 08/2025/TT-BGDĐT mục 102 — hồ sơ tuyển sinh 10 năm (thí sinh trúng tuyển: giấy tờ đã sang L13)",0,"","Không — M1.4 không tự xóa hồ sơ",1,"jpg · pdf","",0],
+["L17","hs","Hồ sơ chuyển trường (tệp ticket · bản chụp học bạ giấy)","M1.5","Hồ sơ chuyển đến / chuyển đi","web","Văn thư nhận tệp","< 1 GB","KH",-1,"","","M1.5: hồ sơ \"Đã tiếp nhận\" giữ vĩnh viễn",0,"","Không",1,"pdf · jpg","",0],
+["L18","hs","Giấy tờ bảo lưu · tái nhập · thôi học","M1.6","Yêu cầu bảo lưu / tái nhập / thôi học","web","Popup tạo yêu cầu bước 3","< 0,5 GB","KH",-1,"","","M1.6: hồ sơ và quyết định giữ vĩnh viễn, có chip lọc",0,"nc","Không",1,"pdf · jpg","",0],
+["L19","hs","Minh chứng hoàn cảnh · quyết định học bổng","M1.11","Hồ sơ xét học bổng","web","GVCN / Văn thư đính kèm","< 0,5 GB","SH",10,"nam","ntc","Hồ sơ chi học bổng — Luật Kế toán 88/2015 Đ.41 · NĐ 174/2016 Đ.13 (≥ 10 năm, mốc Đ.15) · hoàn cảnh là dữ liệu nhạy cảm",0,"nc","Không",1,"pdf · jpg","⏳ QĐ học bổng có thể phải vĩnh viễn",0],
+["L20","kq","Học bạ điện tử đã ký (PDF ký số · bản đính chính · minh chứng)","M1.3","Phiên ký học bạ","he · web","Sinh khi ký học bạ","≈ 2–3 GB","KH",-1,"","","Bản gốc điện tử trường giữ — M1.3 \"khóa cứng, giữ vĩnh viễn\"; TT 08/2025 mục 89 (học bạ giấy trả học sinh) · Luật GDĐT 20/2023 (thông điệp dữ liệu có giá trị như bản gốc)",0,"","Không",1,"pdf","",0],
+["L21","kq","Căn cứ điểm khuyến khích · bản chụp học bạ giấy (xét tốt nghiệp)","M3.4","Hồ sơ xét tốt nghiệp","web","Nhập tay có bản chụp","< 0,5 GB","SH",10,"nam","nh","TT 08/2025/TT-BGDĐT mục 103 — hồ sơ công nhận tốt nghiệp (ngoài quyết định) 10 năm",0,"","Không",1,"jpg · pdf","",0],
+["L22","kq","Quyết định công nhận giải học sinh giỏi","M11.4","Kỳ thi HSG","web","Văn thư đính kèm QĐ","< 0,1 GB","KH",-1,"","","TT 08/2025/TT-BGDĐT mục 106 — quyết định đoạt giải cấp quốc gia vĩnh viễn (áp chung cho mọi cấp — ⏳)",0,"","Không",1,"pdf","⏳ QĐ cấp tỉnh",0],
+["L23","ns","Hồ sơ nhân sự (văn bằng · giấy tờ · minh chứng cập nhật)","M4.1","Hồ sơ nhân sự","web","Nhân sự nộp ở M0.4 · TCNS tải lên","≈ 2–3 GB","KH",-1,"","","TT 07/2019/TT-BNV — hồ sơ viên chức bảo quản vĩnh viễn",0,"","Không",1,"pdf · jpg","",0],
+["L24","ns","Tệp căn cứ quyết định bổ nhiệm chức danh","M4.3","Bản ghi chức danh","web","Bổ nhiệm nhóm ① ②","< 0,1 GB","KH",-1,"","","Thành phần hồ sơ viên chức (TT 07/2019/TT-BNV)",0,"","Không",1,"pdf","",0],
+["L25","ns","Quyết định · tệp đề xuất khen thưởng kỷ luật nhân sự","M4.10","Đợt khen thưởng / kỷ luật","web","Đề xuất và kết quả","< 0,2 GB","KH",-1,"","","Thành phần hồ sơ viên chức (TT 07/2019/TT-BNV)",0,"nc","Không",1,"pdf","",0],
+["L26","ns","Hồ sơ đính kèm đơn nghỉ phép (giấy khám bệnh…)","M4.8","Đơn nghỉ phép","web","Người gửi đơn đính kèm","< 0,5 GB","SH",5,"nam","ntc","NĐ 174/2016 Đ.12 — tài liệu phục vụ quản lý, không ghi sổ trực tiếp ≥ 5 năm · DỮ LIỆU SỨC KHỎE (nhạy cảm)",0,"nc","Không",1,"jpg · pdf","⏳",0],
+["L27","ns","Biên bản họp đánh giá, xếp loại viên chức","M4.12","Đợt đánh giá","web","Chốt đợt","< 0,1 GB","KH",-1,"","","Thành phần hồ sơ viên chức (TT 07/2019/TT-BNV)",0,"","Không",1,"pdf","",0],
+["L58","ns","Ảnh từng lượt nhận diện chấm công (tầng ①)","M4.9","Sự kiện thiết bị — ô anh_ref của su_kien_thiet_bi","he","Mỗi lượt nhận diện ở cửa lớp","≈ 3–4 GB / năm học (~47.000 ảnh) — nhưng CHỈ ~0,3 GB nằm trên ổ, vì tự động hủy sau 30 ngày","SH",30,"ngay","tl","Anh Ninh chốt 16/9/2026 (YK01-4): giữ 30 NGÀY rồi hủy nội dung; bản ghi sự kiện tầng ① Ở LẠI (L59) với nhãn 🗄. Ảnh khuôn mặt của nhân sự là DỮ LIỆU SINH TRẮC — nhạy cảm (Luật BVDLCN 91/2025 Đ.31): giữ đúng khoảng cần để đối chiếu một kỳ bảng công, không hơn. 30 ngày phủ trọn một tháng công nên mọi khiếu nại «tháng này chấm sai» còn ảnh để mở ra",0,"nc","Không — M4.9 KHÔNG có nút xóa ảnh (ai xóa được ảnh thì xóa được bằng chứng chống lại kết luận của chính mình); đi qua lượt giải phóng",1,"jpg","YK01-D · lớp mới 16/9/2026. Con số 30 ngày KHỚP NGƯỢC với demo M4.9: dữ liệu ngày 28/08/2026, panel một tiết hiện hạn 27/09/2026. Đổi con số ở đây thì M4.9 nói sai. CHỈ ảnh của lượt NHẬN RA nhân sự — lượt «không nhận ra ai» thiết bị gửi anh_ref = null (YK01-D2 ✅ 16/9/2026: ở cửa lớp người lạ nhiều khả năng là học sinh). Trường bật tự động từ 22/10/2026 — lượt đêm đầu tiên chưa chạy, nên demo còn thấy phần đã quá hạn",1],
+["L59","ns","Bản ghi sự kiện thiết bị chấm công (tầng ①) — lớp KHÔNG có tệp","M4.9","su_kien_thiet_bi (bản ghi bất biến; ảnh đã tách sang L58)","he","Mỗi lượt nhận diện — bản ghi sống lâu hơn ảnh của nó","— không có tệp (chỉ bản ghi CSDL)","SH",1,"nam","nh","Hết năm học + 1 năm — đủ để đối chiếu khi có khiếu nại lương của năm liền trước (lương tháng 5 còn hỏi lại được vào tháng 5 năm sau). Bản ghi không có ảnh thì không còn là dữ liệu sinh trắc, nên giữ lâu hơn L58 mà không tăng rủi ro",0,"","Không — tầng ① là BẤT BIẾN, không ai sửa kể cả Hiệu trưởng (hợp đồng ba tầng M4.9 §4f.2)",0,"— (bản ghi CSDL, không sinh tệp)","YK01-D1 ✅ anh Ninh chốt 16/9/2026 — hết năm học + 1 năm. Lớp không có tệp vẫn đứng ở đây vì THỜI HẠN GIỮ LÀ CHÍNH SÁCH CỦA LỚP (quy tắc chung 16/9/2026) — khai con số ở M4.9 là đẻ ra nơi thứ hai nói về cùng một thứ. Hệ quả: lớp này không bao giờ xuất hiện trong bảng xếp theo dung lượng",1],
+["L28","cm","Tệp giáo án & học liệu kèm theo","M5.2","Giáo án","web","Giáo viên tải giáo án soạn ngoài","≈ 8–10 GB","SH",5,"nam","nh","Đề xuất 5 năm học — mục \"kế hoạch bài dạy\" của TT 08/2025 chưa đọc được (phụ lục đọc qua bản tóm tắt)",1,"","Không",0,"docx · pdf · pptx","⏳ đối chiếu toàn văn TT 08/2025",0],
+["L29","cm","Tệp đính kèm kế hoạch giáo dục","M5.1","Kế hoạch giáo dục","web","Biểu mẫu · căn cứ","< 0,5 GB","SH",5,"nam","nh","Như L28 — ⏳",0,"","Không",0,"pdf · docx","⏳",0],
+["L30","cm","Tệp sinh hoạt chuyên môn (ảnh · slide · sản phẩm)","M5.4","Buổi sinh hoạt tổ","web","Biên bản buổi sinh hoạt","≈ 2–3 GB","SH",5,"nam","nh","Như L28 — ⏳",0,"","Không",0,"pptx · jpg · pdf","⏳",0],
+["L31","cm","Minh chứng đào tạo, bồi dưỡng","M5.6","Kết quả đợt đào tạo","web","Nhân sự nộp minh chứng của mình","< 1 GB","SH",10,"nam","nh","Mức 10 năm của TT 27/2016 (đã bị TT 08/2025 thay — ⏳ đối chiếu); giấy chứng nhận còn là thành phần hồ sơ viên chức",0,"","Không",0,"pdf · jpg","⏳",0],
+["L32","cm","Minh chứng bồi dưỡng thường xuyên","M5.7","Kết quả đợt BDTX","web","Giáo viên nộp minh chứng","< 1 GB","SH",10,"nam","nh","Như L31 — ⏳",0,"","Không",0,"pdf · jpg","⏳",0],
+["L33","vb","Tài liệu lưu trữ (kho văn bản dùng chung)","M6.12","Tệp và phiên bản trong folder","web","Cán bộ tải lên folder","≈ 3–4 GB","QD",2,"nam","ntc","Luật Lưu trữ 33/2024 Đ.14 (xác định giá trị) · Đ.15 (thời hạn 2–70 năm / vĩnh viễn) · Đ.16 (hủy phải toàn bộ, không khôi phục được) — hủy cần hội đồng xác định giá trị + quyết định của Hiệu trưởng. Phiên bản cũ · thùng rác quá hạn là ①",1,"","Thùng rác KHÔNG tự dọn; quản trị kho xóa vĩnh viễn (M6.12 §2.10)",1,"pdf · docx · xlsx · pptx","",0],
+["L34","vb","Công văn đến · đi (bản scan · tệp)","M6.9","Văn bản đến / đi","web","Văn thư vào sổ","≈ 5–6 GB","QD",2,"nam","ntc","Luật Lưu trữ 33/2024 Đ.14–16 · thời hạn theo loại văn bản (TT 08/2025) — hủy cần quyết định",0,"","Không",1,"pdf","",0],
+["L35","vb","Tệp căn cứ ngày nghỉ (công văn chỉ đạo)","M10.9","Ngày nghỉ","web","Khai ngày nghỉ theo quy định","< 0,1 GB","QD",2,"nam","ntc","Bản sao văn bản đến — như L34",0,"","Không",1,"pdf","",0],
+["L36","vb","Tệp căn cứ nghỉ đột xuất / dạy thay","M4.7","Quyết định nghỉ đột xuất","web","Nhận chỉ đạo của Phòng / Sở","< 0,1 GB","QD",2,"nam","ntc","Như L35",0,"","Không",1,"pdf","",0],
+["L57","vb","Hồ sơ hủy tài liệu (7 thành phần)","M10.11","Lượt giải phóng có tệp ③","web · he","Khi hủy xong một lượt ③ (theo quyết định hủy)","< 0,1 GB","SH",20,"nam","tl","TT 06/2025/TT-BNV Đ.15 k.4b — hồ sơ hủy tài liệu **lưu 20 năm kể từ ngày hủy**. Gồm 7 thành phần (k.4a): danh mục · thuyết minh · QĐ lập hội đồng · biên bản họp hội đồng · QĐ hủy · biên bản bàn giao · biên bản hủy",0,"","Không — chính M10.11 sinh ra và giữ",1,"pdf","LT-22 ✅ chốt 16/9/2026 — dựng đủ checklist 7 thành phần",0],
+["L37","tc","Chứng từ đính kèm giao dịch thu chi","M7.5","Giao dịch thu / chi","web","Kế toán ghi sổ","≈ 2–3 GB","SH",10,"nam","ntc","Luật Kế toán 88/2015 Đ.41 · NĐ 174/2016 Đ.13 — chứng từ dùng ghi sổ ≥ 10 năm; mốc tính Đ.15 (hết kỳ kế toán năm); tiêu hủy theo Đ.16",0,"","Không — chứng từ bị thay thế giữ vĩnh viễn, có chip",1,"pdf · jpg · xml","",0],
+["L38","tc","Hồ sơ điều chỉnh · hoàn tiền (căn cứ · giấy ủy quyền)","M7.3","Phiếu điều chỉnh / hoàn tiền","web","Kế toán lập phiếu","< 0,5 GB","SH",10,"nam","ntc","Như L37 — hồ sơ chi",0,"nc","Không",1,"pdf · jpg","",0],
+["L39","tc","Chứng từ đoàn phí · sổ quỹ Liên đội · quy chế chi tiêu","M6.17","Sổ quỹ hoạt động","web","Người giữ sổ đính kèm","< 0,2 GB","SH",10,"nam","ntc","Theo khuôn chứng từ (L37) — quỹ của tổ chức Đoàn/Đội, HD 39-HD/TWĐTN-BKT",0,"","Không",0,"pdf · jpg","⏳ quỹ tổ chức có theo NĐ 174 không",0],
+["L40","tc","Biên bản chốt suất · bảng kê nhà bếp đã ký","M6.1","Biên bản chốt sổ bán trú","web","Chốt sổ tháng","< 0,5 GB","SH",10,"nam","ntc","M6.1 §10.1 — Luật Kế toán, chứng từ dùng ghi sổ 10 năm",0,"","\"Xóa theo lịch\" (M6.1 §10.1) → nay qua lượt M10.11",1,"pdf","",0],
+["L41","vh","Ảnh khay ăn (chấm ăn)","M6.1","Lượt chấm ăn","web · app_gv","Nhân viên bán trú chụp mỗi bữa","≈ 8–10 GB","SH",6,"thang","nh","M6.1 §10.1 — hết năm học + 6 tháng (Luật BVDLCN 91/2025: lưu trong thời gian phù hợp mục đích)",0,"","\"Xóa theo lịch\" (M6.1 §10.1) → nay qua lượt M10.11",1,"jpg","",0],
+["L42","vh","Tệp kế hoạch thực đơn tuần","M6.1","Thực đơn tuần","web","Nhà thầu / NVBT tải lên","< 0,2 GB","SH",1,"nam","tl","M6.1 §10.1 nêu căn cứ ATTP khi có phản ánh — phản ánh về bữa ăn thường đến trong năm. Anh Ninh chốt 16/9/2026 sau khi soát cả danh mục (LT-14c)",0,"","Như L40",0,"pdf · xlsx","",0],
+["L43","vh","Hồ sơ tạm trú ký túc xá (CCCD · giấy tờ)","M6.10","Hồ sơ nội trú","web","Quản lý KTX tiếp nhận","< 0,5 GB","SH",5,"nam","tl","Anh Ninh chốt 16/9/2026 sau khi soát cả danh mục (LT-14c): GIỮ mốc ngày tải lên, không chờ M6.10 cấp mốc «hết hạn tạm trú», bù lại nâng thời hạn lên 5 năm. Luật Cư trú 2020 Đ.27 — tạm trú tối đa 2 năm, nên 5 năm đã phủ cả kỳ ở lâu nhất",0,"nc","\"Xóa theo lịch\" (M6.10 §10.3) → nay qua lượt M10.11",1,"jpg · pdf","LT-21 ✅ khép 16/9/2026 — anh Ninh chốt giữ mốc ngày tải lên, nâng lên 5 năm thay vì chờ M6.10 cấp mốc sự kiện",0],
+["L44","vh","Tệp đính kèm sổ sự kiện ký túc xá","M6.10","Sổ sự kiện KTX","web","Quản sinh ghi sự kiện","< 0,3 GB","SH",3,"nam","tl","M6.10 §10.3 — hồ sơ giải trình sự cố. Anh Ninh chốt 16/9/2026 sau khi soát cả danh mục (LT-14c)",0,"nc","Như L43",0,"jpg · pdf","",0],
+["L45","vh","Hồ sơ sức khỏe · kết quả khám (bản scan)","M6.6","Hồ sơ sức khỏe học sinh","web","Y tế học đường tải lên","≈ 1 GB","SH",3,"nam","rt","Hồ sơ sức khỏe học sinh — giữ tới khi học sinh rời trường + 3 năm. Nhà trường tự quyết — không có văn bản nào quy định (LT-14b, anh Ninh chốt 16/9/2026); đây là GIÁ TRỊ MẶC ĐỊNH ở ⚙, Hiệu trưởng sửa được. Dữ liệu sức khỏe là NHẠY CẢM (Luật BVDLCN 91/2025): còn đang học thì không xóa, mốc rời trường đọc 🔗 M1.1",0,"nc","Không",1,"pdf · jpg","LT-14b ✅ chốt 16/9/2026 · mốc «rời trường» đọc 🔗 M1.1 (LT-21)",0],
+["L46","vh","Ảnh sự kiện trường","M6.8","Sự kiện","web","Upload sau sự kiện","— chưa lưu (M6.8 §12)","SH",1,"nam","tl","Nhà trường tự quyết — không có văn bản nào quy định; anh Ninh chốt 16/9/2026 sau khi soát cả danh mục (LT-14c) *(LT-14b đặt 5 năm → LT-14c rút xuống 1 năm)*; đây là GIÁ TRỊ MẶC ĐỊNH ở ⚙, Hiệu trưởng sửa được. Ảnh trẻ em (Luật BVDLCN 91/2025)",0,"","Không",0,"jpg","LT-14b · LT-14c ✅ chốt 16/9/2026 — M6.8 §12: khi có nơi lưu ảnh thì gắn lớp này",0],
+["L47","vh","Ảnh hoạt động Đoàn – Đội (có cờ đồng ý)","M6.14","Hoạt động / sự kiện Đoàn – Đội","web","Tải ảnh hoạt động","≈ 5–6 GB","SH",1,"nam","tl","Nhà trường tự quyết — không có văn bản nào quy định; anh Ninh chốt 16/9/2026 sau khi soát cả danh mục (LT-14c) *(LT-14b đặt 5 năm → LT-14c rút xuống 1 năm)*; đây là GIÁ TRỊ MẶC ĐỊNH ở ⚙, Hiệu trưởng sửa được. Ảnh trẻ em (Luật BVDLCN 91/2025)",0,"","Không",0,"jpg","LT-14b · LT-14c ✅ chốt 16/9/2026",0],
+["L48","vh","Ảnh · nhật ký CLB","M6.16","Nhật ký buổi CLB","web","GV phụ trách ghi nhật ký","≈ 1–2 GB","SH",1,"nam","tl","Nhà trường tự quyết — không có văn bản nào quy định; anh Ninh chốt 16/9/2026 sau khi soát cả danh mục (LT-14c) *(LT-14b đặt 5 năm → LT-14c rút xuống 1 năm)*; đây là GIÁ TRỊ MẶC ĐỊNH ở ⚙, Hiệu trưởng sửa được. \"Chỉ lưu nội bộ\" (M6.16 điểm C)",0,"","Không",0,"jpg","LT-14b · LT-14c ✅ chốt 16/9/2026",0],
+["L49","vh","Biên bản đại hội · QĐ công nhận Ban chấp hành (bản scan)","M6.15","Nhiệm kỳ / lượt bầu","web","Ghi kết quả đại hội","< 0,2 GB","QD",2,"nam","ntc","Văn bản của tổ chức Đoàn — lưu trữ theo Luật Lưu trữ; hủy cần quyết định",0,"","Không",1,"pdf","",0],
+["L50","vh","Biên bản họp (bản scan có chữ ký)","M6.18","Cuộc họp","web","Thư ký họp tải lên","≈ 0,5 GB","QD",2,"nam","ntc","Biên bản họp hội đồng trường · hội nghị viên chức là tài liệu lưu trữ (Luật Lưu trữ 33/2024)",0,"","Không",1,"pdf","",0],
+["L51","vh","Biên bản kiểm kê tài sản","M6.4","Đợt kiểm kê","web","Chốt đợt kiểm kê","< 0,3 GB","SH",10,"nam","ntc","NĐ 174/2016 Đ.13 — tài liệu kiểm kê tài sản ≥ 10 năm",0,"","Không",1,"pdf","",0],
+["L52","vh","Ảnh hư hỏng · biên bản sửa chữa, bàn giao","M6.11","Phiếu sửa chữa / lệnh điều chuyển","web · app_gv","Báo hỏng · nghiệm thu","≈ 0,5 GB","SH",10,"nam","ntc","Căn cứ chi sửa chữa (chứng từ ở M7.5) — theo khuôn L37",0,"","Không",0,"jpg · pdf","⏳",0],
+["L53","tt","Tệp đính kèm thông báo chủ động","M8.1","Thông báo đã gửi (bất biến)","web","Người soạn thông báo","≈ 2 GB","SH",1,"nam","tl","Nhà trường tự quyết — không có văn bản nào quy định; anh Ninh chốt 16/9/2026 sau khi soát cả danh mục (LT-14c) *(LT-14b đặt 5 năm → LT-14c rút xuống 1 năm)*; đây là GIÁ TRỊ MẶC ĐỊNH ở ⚙, Hiệu trưởng sửa được. Nội dung thông báo vẫn lưu theo năm học ở M0.3",0,"","Không — thông báo đã gửi bất biến",0,"pdf · docx · jpg","LT-14b · LT-14c ✅ chốt 16/9/2026",0],
+["L54","tt","Tệp · ảnh trong trò chuyện","M8.2","Tin nhắn","app_ph · app_gv · web","Gửi trong cuộc riêng / nhóm lớp","≈ 8–10 GB","SH",1,"nam","tl","Nhà trường tự quyết — không có văn bản nào quy định; anh Ninh chốt 16/9/2026 sau khi soát cả danh mục (LT-14c) *(LT-14b đặt 5 năm học → LT-14c rút xuống 1 năm sau ngày tải lên)*. ⚠ **Ngắn hơn mức M8.2 §11.2 từng đề xuất (5 năm học)** — M8.2 và M8.3 phải sửa theo con số này, không giữ số cũ. đây là GIÁ TRỊ MẶC ĐỊNH ở ⚙, Hiệu trưởng sửa được. Chat chứa ảnh trẻ em (Luật BVDLCN 91/2025) — M8.3 khối 4 chiếu 🔗 con số này",0,"nc","Không",1,"jpg · pdf · docx","LT-14c ✅ chốt 16/9/2026 — M8.2 §11.2 (5 năm học) và M8.3 khối 4 phải sửa theo 1 năm sau ngày tải lên",0],
+["L55","tt","Tệp khiếu nại · biên bản giải quyết","M8.4","Khiếu nại / phản ánh","app_ph · web","Gia đình gửi · nhà trường tải kết quả","< 0,5 GB","QD",2,"nam","ntc","M8.4: bản ghi giữ vĩnh viễn — hồ sơ giải quyết khiếu nại lưu theo Luật Lưu trữ; hủy cần quyết định",0,"nc","Không",1,"jpg · pdf","⏳",0],
+["L56","tt","Ảnh · tệp trang web trường","M8.5","Tin · trang · báo cáo thường niên","web","Người soạn tin","≈ 2 GB","TD",-1,"","","Không có sàn — tin đang hiện trên web là \"đang được dẫn tới\" (cảnh báo). Báo cáo thường niên công khai giữ theo quy định công khai (M8.5 §10.4)",0,"","Gỡ tin (M8.5)",0,"jpg · png · pdf","",0],
+["S1","ht","Tệp nhập Excel tạm (bước đối chiếu)","Mọi menu có Import","Lượt nhập","web","Mỗi lượt Import","< 0,5 GB","TD",-1,"","","Chỉ để đối chiếu — dữ liệu đã ghi vào bản ghi; lượt nhập còn trong nhật ký M10.7",0,"","Không",0,"xlsx · csv","",1],
+["S2","ht","Ảnh thu nhỏ · bản xem trước (👁 Xem)","Hạ tầng","Tệp gốc ở lớp khác","he","Sinh khi có người bấm 👁 Xem","≈ 5–10 GB","TD",-1,"","","Sinh lại được từ tệp gốc bất cứ lúc nào",0,"","Không",0,"webp · pdf","",1],
+["S3","ht","Tệp xuất báo cáo","M9.1 · mọi menu có Export","Lượt xuất","he","Mỗi lượt Export","≈ 1–2 GB","TD",-1,"","","Lượt xuất đã ghi nhật ký mức ② (M10.7) — tệp chỉ để người xuất tải về",0,"","Không",0,"xlsx · pdf","",1],
+["S4","ht","Nhật ký hệ thống đã archive (kho lạnh)","M10.7","Bản ghi nhật ký","he","Archive mức ① sau 18 tháng","≈ 2 GB","KH",-1,"","","M10.7 §3: mức ② ③ vĩnh viễn; mức ① archive \"không mất\" — M10.11 không giải phóng nhật ký",0,"","Không",1,"gz","",0],
+["S5","ht","Bản sao lưu cục bộ (ảnh chụp CSDL)","Hạ tầng","—","he","Sao lưu tự động hằng đêm","— giữ 7 bản","KH",-1,"","","Xoay vòng theo cấu hình hạ tầng (mô hình on-prem §4 \"Không ai sao lưu\") — không giải phóng từ M10.11",0,"","Tự xoay vòng",0,"dump","",0]
+];
+/*K-KET-THUC*/
+const LOP=LOP_RAW.map(r=>({ma:r[0],nhom:r[1],ten:r[2],menu:r[3],the:r[4],kenh:r[5],khi:r[6],uoc:r[7],
+ cs:{che:r[8],n:r[9],dv:r[10],moc:r[11],can:r[12],tuDong:!!r[19]},goc:{che:r[8],n:r[9],dv:r[10],moc:r[11]},
+ phu:!!r[13],an:r[14],coSan:r[15],luat:!!r[16],dd:r[17],ghi:r[18]}));
+const LOPM={};LOP.forEach(l=>LOPM[l.ma]=l);
+const lop=m=>LOPM[m];
+const CHE={TD:['①','Tự do','o'],SH:['②','Sau thời hạn','b'],QD:['③','Theo quyết định hủy','w'],KH:['④','Vĩnh viễn','r']};
+/* ④ KHÔNG còn là «khóa cứng»: Hiệu trưởng đổi được sang có thời hạn — lớp ⚖ thì bắt lý do và nhắc sàn của văn bản (LT-14). */
+const cheChip=(c,them)=>'<span class="chd '+CHE[c][2]+'">'+CHE[c][0]+' '+CHE[c][1]+(them||'')+'</span>';
+const DV={nam:'năm',thang:'tháng',ngay:'ngày'};
+const MOC={nh:'hết năm học',ntc:'hết năm tài chính',tl:'ngày tải lên',nv:'chủ tệp nghỉ việc',ng:'câu ngừng dùng',rt:'học sinh rời trường'};
+function hanText(cs){
+ if(cs.che==='QD') return 'sàn '+(cs.n>=0?cs.n:2)+' năm sau năm của văn bản · cần QĐ hủy';
+ if(cs.che!=='SH') return cs.che==='KH'?'vĩnh viễn — không xóa theo hạn':'không có sàn';
+ if(!cs.dv) return '⚠ chưa đặt';
+ return (cs.n?cs.n+' '+DV[cs.dv]+' sau ':'ngay khi ')+MOC[cs.moc];
+}
+const chuaDat=l=>l.cs.che==='SH'&&!l.cs.dv;
+/* ③ không bật tự động được: TT 06/2025/TT-BNV đòi Hội đồng xét hủy (≥ 5 người) + quyết định + biên bản cho TỪNG lần hủy — máy không thay được (LT-14 ca 1).
+   Lớp ② chưa đặt thời hạn cũng không bật được: không có mốc thì không biết «đến hạn» là khi nào. */
+const batTuDongDuoc=l=>l.cs.che==='TD'||(l.cs.che==='SH'&&!!l.cs.dv);
+const lyDoKhongTuDong=l=>l.cs.che==='QD'?'Lớp ③ — mỗi lần hủy cần hội đồng xét hủy và quyết định của Hiệu trưởng (TT 06/2025/TT-BNV Đ.12 · Đ.15)'
+ :l.cs.che==='KH'?'Lớp ④ vĩnh viễn — không có thời hạn để «đến hạn»'
+ :'Lớp chưa đặt thời hạn giữ — đặt thời hạn trước';
+const tuDongBat=l=>l.cs.tuDong&&batTuDongDuoc(l);
+/* nhắc theo luật khi Hiệu trưởng sửa chính sách — chỉ nhắc, không chặn (LT-14) */
+const nhacLuat=l=>l.luat?'⚖ Văn bản đang là căn cứ của lớp này: '+l.cs.can+' — mức của văn bản: '+hanText(l.goc)+'.':'';
+
+
+
+/* ══════════════ M10.11 — DỮ LIỆU MẪU ══════════════
+   ★ Chỉ mục tệp là SIÊU DỮ LIỆU mà mọi menu chủ ghi lúc tải lên (mã lớp · bản ghi chủ · người tải lên · kênh · cỡ · mã băm).
+   Demo sinh ~80 nghìn dòng TẤT ĐỊNH (hạt giống FNV theo thứ tự ký tự — mỗi lớp một chuỗi riêng) cho một trường ~1.200 học sinh,
+   ba điểm trường, dùng Dschool từ 6/2024. Ổ nạp ở trạng thái 498,9 / 500 GB — khớp bản chiếu mô phỏng LUU_TRU của M12.1 (còn 1,1 GB). */
+
+/* ========== CẤU HÌNH (tab ⚙) ========== */
+const CFG={oVatLyGB:960,danhChoGB:500,canhBao:90,tranMB:2048,
+ cam:['exe','bat','cmd','msi','ps1','vbs','js','jar','apk','scr','dll'],
+ choHuy:7,racNgay:30,nhan:['HT','IT'],xoayVong:30,
+ /* LT-14: lượt tự động vẫn qua chờ hủy và vẫn ghi vết — trần số tệp để lượt đêm không treo máy chủ trường */
+ tranTuDong:20000,
+ /* LT-12: quét toàn vẹn — so mã băm để bắt tệp hỏng do nén / hỏng ổ, người dùng tải lại tệp thay thế */
+ quet:{bat:true,moiThang:1,lanCuoi:'2026-10-01',phamVi:'tat_ca'}};
+/* cỡ tối đa một tệp mà menu con đang đặt — 🔗 đọc để cảnh báo khi hạ trần toàn hệ thống */
+const CO_MENU=[['M12.1 Kho tài liệu',500],['M6.12 Tài liệu lưu trữ',100],['M2.3 Bài nộp (video ngắn)',200],['M8.3 → M8.1 · M8.2 tệp đính kèm',20],['M12.5 Media câu hỏi',300]];
+const CFG_LS=[{boi:'ns30',ngay:'2026-08-20 09:12',nd:'Khai phần ổ dành cho Dschool: 400 GB → 500 GB (mở rộng ổ dữ liệu sau hè)'},
+ {boi:'ns01',ngay:'2026-09-03 15:40',nd:'Ngưỡng cảnh báo 85% → 90%'}];
+
+/* ========== SINH CHỈ MỤC TỆP ========== */
+const HS_MA=r=>'HS'+(2019+Math.floor(r()*8))+p2(Math.floor(r()*99))+p2(Math.floor(r()*99));
+const LOPHS=['6A1','6A2','6A3','7A1','7A2','8A1','8A2','9A1','9A2','10A1','10A2','11A1','11A2','12A1','12A2'];
+const pick=(r,a)=>a[Math.floor(r()*a.length)];
+/* mẫu tên tệp theo lớp — tên do NGƯỜI TẢI LÊN đặt (lớp own / nc bị che khi hiển thị) */
+const TEN={
+ L01:(r,i)=>'Q'+(1000+i%900)+'-'+pick(r,['hinh-minh-hoa.png','bai-nghe.mp3','video-thi-nghiem.mp4','bieu-do.png','do-thi.png']),
+ L02:(r,i)=>'N'+p2(i%90)+'-'+pick(r,['ngu-lieu-doc.png','bai-nghe-listening.mp3','ban-do.png']),
+ L03:(r,i)=>pick(r,['Video-tiet-day-','Slide-chuyen-de-','Phieu-hoc-tap-','GeoGebra-','Anh-bang-','Ngu-lieu-'])+pick(r,LOPHS)+'-bai-'+(1+i%30)+pick(r,['.mp4','.mp4','.pptx','.pdf','.docx','.ggb']),
+ L04:(r,i,h)=>'BL-LG'+(200+i%300)+'-'+h+'-'+(1+i%3)+'.jpg',
+ L05:(r,i,h)=>'BN-'+pick(r,LOPHS)+'-'+h+'-'+(1+i%40)+pick(r,['.jpg','.jpg','.jpg','.pdf','.mp4']),
+ L06:(r,i)=>pick(r,['De-BTVN-','Anh-chua-bai-'])+pick(r,LOPHS)+'-'+(1+i%60)+pick(r,['.pdf','.jpg','.docx']),
+ L07:(r,i,h)=>'Don-nghi-'+h+'-'+pick(r,['giay-kham.jpg','don-viet-tay.jpg','xac-nhan-benh-vien.pdf']),
+ L08:(r,i)=>'MC-sua-diem-SD-'+(10+i)+'.jpg',
+ L09:(r,i)=>'KL-bien-ban-'+(i+1)+'.pdf', L10:(r,i)=>'KT-bang-chung-'+(i+1)+'.jpg',
+ L11:(r,i)=>'De-'+pick(r,['giua-ky','cuoi-ky'])+'-'+pick(r,['Toan','Van','Anh','KHTN','Su-Dia'])+'-'+pick(r,['6','7','8','9','10','11','12'])+pick(r,['-de.pdf','-dap-an.pdf','-thang-diem.docx']),
+ L12:(r,i,h)=>'Ren-luyen-he-'+h+'.jpg',
+ L13:(r,i,h)=>h+'-'+pick(r,['giay-khai-sinh.pdf','anh-the.jpg','so-ho-khau-cu.pdf','cccd-cha-me.pdf','giay-chuyen-sinh-hoat.pdf']),
+ L14:(r,i,h)=>'YC-'+h+'-minh-chung.jpg', L15:(r,i,h)=>h+'-'+pick(r,['giay-xac-nhan-ho-ngheo.pdf','the-thuong-binh.pdf','xac-nhan-dan-toc.pdf']),
+ L16:(r,i,h)=>'TS-'+h+'-'+pick(r,['hoc-ba-tieu-hoc.pdf','giay-khai-sinh.pdf','anh-nhan-ban-chinh.jpg','giay-uu-tien.pdf']),
+ L17:(r,i,h)=>'CT-'+h+'-'+pick(r,['don-xin-chuyen.pdf','hoc-ba-giay-ban-chup.pdf','giay-gioi-thieu.pdf']),
+ L18:(r,i,h)=>'BL-TN-'+h+'-'+pick(r,['don.pdf','giay-kham.pdf']),
+ L19:(r,i,h)=>'HB-'+h+'-'+pick(r,['minh-chung-hoan-canh.pdf','xac-nhan-dia-phuong.pdf','QD-hoc-bong.pdf']),
+ L20:(r,i,h)=>'HocBa-'+h+'-'+pick(r,['2024-2025','2025-2026'])+'-da-ky.pdf',
+ L21:(r,i,h)=>'TN-'+h+'-'+pick(r,['chung-chi-nghe.pdf','giai-HSG.pdf','hoc-ba-giay.pdf']),
+ L22:(r,i)=>'QD-cong-nhan-giai-HSG-'+(2024+i%3)+'.pdf',
+ L23:(r,i)=>'NS-'+pick(r,['bang-dai-hoc.pdf','chung-chi-tin-hoc.pdf','so-yeu-ly-lich.pdf','quyet-dinh-tuyen-dung.pdf','cccd.pdf','minh-chung-cap-nhat.jpg']),
+ L24:(r,i)=>'QD-bo-nhiem-'+(10+i)+'.pdf', L25:(r,i)=>'QD-khen-thuong-NS-'+(i+1)+'.pdf',
+ L26:(r,i)=>'Nghi-phep-'+pick(r,['giay-kham.jpg','giay-ra-vien.pdf']), L27:(r,i)=>'BB-xep-loai-VC-'+(2024+i%3)+'.pdf',
+ L28:(r,i)=>'Giao-an-'+pick(r,['Toan','Van','Anh','Vat-li','Hoa','Sinh','Tin'])+'-'+pick(r,LOPHS)+'-bai-'+(1+i%35)+pick(r,['.docx','.pdf','.pptx']),
+ L29:(r,i)=>'KHGD-'+pick(r,['bieu-mau','can-cu'])+'-'+(i+1)+'.pdf', L30:(r,i)=>'SHCM-'+pick(r,['slide-chuyen-de.pptx','anh-buoi-sinh-hoat.jpg','san-pham.pdf']),
+ L31:(r,i)=>'DT-giay-chung-nhan-'+(i+1)+'.pdf', L32:(r,i)=>'BDTX-bai-thu-hoach-'+(i+1)+'.pdf',
+ L33:(r,i)=>pick(r,['Quy-che-','Bien-ban-hop-HDT-','Ke-hoach-nam-hoc-','Bao-cao-tong-ket-','Tai-lieu-tap-huan-'])+(i+1)+pick(r,['.pdf','.docx','.xlsx','.pptx']),
+ L34:(r,i)=>pick(r,['VD-','VĐi-'])+(2024+i%3)+'-'+p2(1+i%99)+'-'+pick(r,['cong-van-So.pdf','quyet-dinh.pdf','ke-hoach.pdf','bao-cao.pdf']),
+ L35:(r,i)=>'CV-nghi-le-'+(i+1)+'.pdf', L36:(r,i)=>'CV-nghi-dot-xuat-'+(i+1)+'.pdf',
+ L37:(r,i)=>'CT-'+pick(r,['phieu-thu','phieu-chi','hoa-don','uy-nhiem-chi','bang-ke'])+'-'+(1000+i)+pick(r,['.pdf','.jpg','.xml']),
+ L38:(r,i)=>'HT-'+pick(r,['can-cu.pdf','giay-uy-quyen.jpg','de-nghi-gia-dinh.pdf']), L39:(r,i)=>'Quy-'+pick(r,['phieu-chi.jpg','bang-ke-TNVN.pdf','quy-che-chi-tieu.pdf']),
+ L40:(r,i)=>'BT-bien-ban-chot-thang-'+(1+i%10)+'.pdf', L41:(r,i)=>'Khay-an-'+pick(r,['A','B','C'])+'-'+(i+1)+'.jpg',
+ L42:(r,i)=>'Thuc-don-tuan-'+(1+i%40)+'.pdf', L43:(r,i,h)=>'Tam-tru-'+h+'-'+pick(r,['cccd.jpg','giay-xac-nhan.pdf']), L44:(r,i)=>'KTX-su-kien-'+(i+1)+'.jpg',
+ L45:(r,i,h)=>'YT-'+h+'-'+pick(r,['ket-qua-kham.pdf','so-tiem-chung.pdf','giay-chuyen-vien.pdf']),
+ L47:(r,i)=>'DD-hoat-dong-'+(i+1)+'.jpg', L48:(r,i)=>'CLB-nhat-ky-'+(i+1)+'.jpg', L49:(r,i)=>'BB-dai-hoi-chi-doan-'+(i+1)+'.pdf', L50:(r,i)=>'BB-hop-'+(i+1)+'-scan.pdf',
+ L51:(r,i)=>'BB-kiem-ke-KK-0'+(1+i%4)+'.pdf', L52:(r,i)=>pick(r,['Anh-hu-hong-','BB-nghiem-thu-'])+(i+1)+pick(r,['.jpg','.pdf']),
+ L53:(r,i)=>'TB-'+pick(r,['lich-khai-giang','ke-hoach-thi','thong-bao-hoc-phi','lich-hop-PH'])+'-'+(i+1)+pick(r,['.pdf','.docx','.jpg']),
+ L54:(r,i)=>'Chat-'+pick(r,['anh','tep'])+'-'+(i+1)+pick(r,['.jpg','.jpg','.pdf','.docx']), L55:(r,i)=>'KN-'+pick(r,['anh-dinh-kem.jpg','bien-ban-lam-viec.pdf']),
+ L56:(r,i)=>'Web-'+pick(r,['anh-tin','bao-cao-thuong-nien','banner'])+'-'+(i+1)+pick(r,['.jpg','.png','.pdf']),
+ S1:(r,i)=>'import-'+pick(r,['M1.1','M4.1','M7.2','M1.9','M6.19'])+'-'+(i+1)+'.xlsx', S2:(r,i)=>'preview-'+hat('p'+i).toString(16)+'.webp',
+ S3:(r,i)=>'xuat-'+pick(r,['M9.1-bao-cao','M7.5-so-thu-chi','M1.1-danh-sach','M2.5-bang-diem'])+'-'+(i+1)+'.xlsx', S4:(r,i)=>'audit-archive-'+(2024+Math.floor(i/12))+'-'+p2(1+i%12)+'.gz',
+ S5:(r,i)=>'snapshot-csdl-'+(i+1)+'.dump',
+ /* YK01-D — ảnh do THIẾT BỊ ở cửa lớp đẩy thẳng về (YK01-6: đẩy thẳng là đường chính).
+    Tên tệp do thiết bị đặt, không do người đặt: mã thiết bị + mốc thời gian. */
+ L58:(r,i)=>'CC-'+pick(r,['TB-A01','TB-A02','TB-A03','TB-A04','TB-A05','TB-A06','TB-B01','TB-B02','TB-B03'])+'-'+(20260907+i%47)+'-'+p2(6+Math.floor(r()*11))+p2(Math.floor(r()*60))+'.jpg'
+};
+/* người tải lên theo lớp */
+function boiCua(ma,r,h){
+ const L=lop(ma);
+ /* YK01-D — KHÔNG có người tải lên: thiết bị ở cửa lớp đẩy thẳng về máy chủ.
+    Ghi «he» chứ không gán bừa một người, vì cột «ai tải lên» là thứ dùng để đi hỏi lại. */
+ if(ma==='L58') return 'he';
+ if(L.nhom==='ht') return ma==='S1'||ma==='S3'?pick(r,['ns06','ns08','ns09','ns30','ns02']):'he';
+ switch(ma){
+  case 'L04':return 'hs:'+h;
+  case 'L05':case 'L07':case 'L14':case 'L12':return r()<0.85?'ph:'+h:pick(r,GV_POOL);
+  case 'L13':case 'L15':case 'L16':return r()<0.6?'ph:'+h:'ns06';
+  case 'L54':return r()<0.55?'ph:'+h:pick(r,GV_POOL);
+  case 'L55':return r()<0.7?'ph:'+h:'ns06';
+  case 'L03':{const x=r();return x<0.07?'ns40':x<0.12?'ns41':x<0.15?'ns42':pick(r,GV_POOL)}
+  case 'L20':return 'he';
+  case 'L23':case 'L24':case 'L25':case 'L27':return r()<0.5?'ns09':pick(r,GV_POOL);
+  case 'L33':case 'L34':case 'L35':case 'L36':case 'L50':case 'L17':case 'L18':case 'L22':return pick(r,['ns06','ns06','ns02','ns01']);
+  case 'L37':case 'L38':case 'L39':case 'L51':return pick(r,['ns08','ns08','ns31']);
+  case 'L40':case 'L41':case 'L42':return pick(r,['ns32','ns32','ns04']);
+  case 'L43':case 'L44':return 'ns33';
+  case 'L45':return 'ns28';
+  case 'L47':case 'L49':return pick(r,['ns31','ns15']);
+  case 'L19':case 'L26':return pick(r,['ns06','ns11','ns12','ns15']);
+  default:return pick(r,GV_POOL);
+ }
+}
+function kenhCua(ma,b,r){
+ if(b==='he')return 'he';
+ if(ma==='L04')return 'tlb';
+ if(b.startsWith('ph:'))return 'app_ph';
+ const k=lop(ma).kenh;
+ if(k.includes('app_gv')&&r()<0.35)return 'app_gv';
+ return 'web';
+}
+/* đoạn sinh: [lớp, số tệp, tổng MB, từ ngày, đến ngày, tùy chọn]  — tùy chọn: cu · rac · moc (mồ côi) · ghim · lech (đuôi nặng) · giai (lượt đã hủy) */
+const GEN=[
+ ['L01',1850,16000,'2024-06-10',HOMNAY_GOC,{ghim:.35,huy:.12,hong:.004}],
+ ['L02',420,3100,'2024-06-10',HOMNAY_GOC,{ghim:.3,huy:.1,hong:.005}],
+ ['L03',3100,110000,'2024-06-10',HOMNAY_GOC,{cu:.12,rac:.04,moc:.006,lech:2.2,dan:.08,hong:.002}],
+ ['L04',11200,41300,'2025-09-08','2026-05-29',{}],
+ ['L04',2150,6900,'2026-09-07',HOMNAY_GOC,{}],
+ ['L05',2700,8700,'2024-09-09','2025-05-29',{giai:'GP-2025-03'}],
+ ['L05',8600,27400,'2025-09-08','2026-05-29',{lech:1.3}],
+ ['L05',2400,6100,'2026-09-07',HOMNAY_GOC,{moc:.03,lech:1.3}],
+ ['L06',1200,4800,'2024-09-09',HOMNAY_GOC,{}],
+ ['L07',1600,3900,'2024-09-09',HOMNAY_GOC,{giu:.01}],
+ ['L08',160,350,'2024-10-01',HOMNAY_GOC,{giu:.06}],['L09',90,300,'2024-10-01',HOMNAY_GOC,{}],['L10',140,400,'2024-10-01',HOMNAY_GOC,{}],
+ ['L11',380,1400,'2024-10-15',HOMNAY_GOC,{}],['L12',120,300,'2025-07-15','2025-08-30',{}],
+ ['L13',4200,19000,'2024-06-10',HOMNAY_GOC,{cu:.06}],
+ ['L14',520,1800,'2024-08-01',HOMNAY_GOC,{}],['L15',380,1400,'2024-08-01',HOMNAY_GOC,{cu:.1}],
+ ['L16',1150,5200,'2024-06-10','2024-07-20',{}],['L16',1200,5500,'2025-06-10','2025-07-20',{}],['L16',1250,5300,'2026-06-10','2026-07-20',{}],
+ ['L17',210,1900,'2024-08-01',HOMNAY_GOC,{}],['L18',130,600,'2024-08-01',HOMNAY_GOC,{}],['L19',240,900,'2024-10-01',HOMNAY_GOC,{}],
+ ['L20',1250,3300,'2025-06-05','2025-06-25',{}],['L20',1350,3500,'2026-06-05','2026-06-25',{}],
+ ['L21',260,1100,'2025-05-10','2026-06-20',{}],['L22',30,100,'2024-12-01',HOMNAY_GOC,{}],
+ ['L23',2100,8600,'2024-06-10',HOMNAY_GOC,{}],['L24',90,300,'2024-06-10',HOMNAY_GOC,{}],['L25',110,400,'2024-06-10',HOMNAY_GOC,{}],
+ ['L26',420,1000,'2024-08-01',HOMNAY_GOC,{}],['L27',40,300,'2025-05-20','2026-06-10',{}],
+ ['L28',4300,24000,'2024-08-15',HOMNAY_GOC,{cu:.1,lech:1.4}],['L29',260,800,'2024-08-15',HOMNAY_GOC,{}],['L30',1700,6500,'2024-09-15',HOMNAY_GOC,{}],
+ ['L31',480,1400,'2024-09-01',HOMNAY_GOC,{}],['L32',560,1600,'2024-09-01',HOMNAY_GOC,{}],
+ ['L33',2300,11000,'2024-06-10',HOMNAY_GOC,{cu:.15,rac:.05}],['L34',3200,12400,'2024-06-10',HOMNAY_GOC,{}],
+ ['L34',600,2600,'2024-06-12','2024-06-21',{nvb:[2018,2022]}],   /* bản scan công văn cũ NHẬP từ hệ thống trước khi Dschool thay thế — năm văn bản ≠ ngày tải lên */
+ ['L35',12,50,'2024-09-01',HOMNAY_GOC,{}],['L36',14,50,'2024-09-01',HOMNAY_GOC,{}],
+ ['L37',2900,5800,'2024-06-10',HOMNAY_GOC,{huy:.05}],['L38',320,700,'2024-09-01',HOMNAY_GOC,{}],['L39',180,300,'2024-10-01',HOMNAY_GOC,{}],['L40',60,600,'2024-09-30',HOMNAY_GOC,{}],
+ ['L41',3000,8200,'2025-09-08','2026-05-29',{}],['L41',600,1300,'2026-09-07',HOMNAY_GOC,{}],
+ ['L42',150,200,'2024-09-01',HOMNAY_GOC,{}],['L43',260,800,'2024-08-15',HOMNAY_GOC,{}],['L44',210,400,'2024-09-15',HOMNAY_GOC,{}],['L45',900,2300,'2024-09-15',HOMNAY_GOC,{roi:.35}],
+ ['L47',2400,11500,'2024-09-15',HOMNAY_GOC,{}],['L48',900,2800,'2024-10-01',HOMNAY_GOC,{}],['L49',40,300,'2024-10-01',HOMNAY_GOC,{}],['L50',420,1200,'2024-08-20',HOMNAY_GOC,{}],
+ ['L51',30,500,'2024-12-20',HOMNAY_GOC,{}],['L52',380,900,'2024-09-01',HOMNAY_GOC,{}],
+ ['L53',1900,4800,'2024-08-20',HOMNAY_GOC,{}],['L54',7400,18500,'2024-09-05',HOMNAY_GOC,{moc:.01}],['L55',190,900,'2024-10-01',HOMNAY_GOC,{giu:.2}],['L56',1400,5600,'2024-08-20',HOMNAY_GOC,{dan:.4}],
+ /* YK01-D — ảnh nhận diện chấm công. Trường bật thiết bị từ đầu năm học 2026-2027 (07/09/2026).
+   45 phòng × 30 tiết/tuần ≈ 1.350 ảnh/tuần; 47 ngày ≈ 6,7 tuần ≈ 9.000 ảnh × ~80 KB ≈ 700 MB.
+   Lớp bật TỰ ĐỘNG (30 ngày) nhưng công tắc mới bật 22/10 — lượt đêm đầu tiên chưa chạy,
+   nên phần quá hạn (trước 23/09) còn nằm đó và hiện ở «đề xuất lượt giải phóng». Đó chính là
+   cái cần nhìn thấy: bật công tắc rồi thì khối này biến mất và lớp đứng yên ở ~30 ngày gần nhất. */
+ ['L58',9000,700,'2026-09-07',HOMNAY_GOC,{}],
+ ['S1',180,350,'2026-06-01',HOMNAY_GOC,{}],['S2',1200,14000,'2026-03-01',HOMNAY_GOC,{hong:.003}],['S3',640,2600,'2026-05-01',HOMNAY_GOC,{}],
+ ['S4',26,5800,'2024-08-01','2026-09-30',{}],['S5',7,36000,'2026-10-16','2026-10-22',{}]
+];
+/* ========== KHO CÁ NHÂN CỦA NGƯỜI ĐÃ NGHỈ VIỆC — LT-11 ==========
+   Chốt 16/9/2026: phải XỬ LÝ XONG toàn bộ kho (chuyển tệp cần giữ sang M6.12 / nơi khác, xóa phần không cần)
+   rồi mới giải phóng phần còn lại. Trạng thái này do việc bàn giao ở M4.2 / M12.1 sinh ra — ở đây là bản chiếu 🔗. */
+const KHO_NGHI={
+ ns40:{tt:'chua',ghi:'Chưa bàn giao — tổ Toán còn xin giữ video chuyên đề (lý do Hiệu trưởng từ chối lượt GP-2026-06)'},
+ ns41:{tt:'xong',ngay:'2026-10-10',boi:'ns02',ghi:'Đã bàn giao: 34 tệp cần giữ chuyển sang M6.12 (folder Tổ Ngữ văn), phần còn lại để giải phóng'},
+ ns42:{tt:'chua',ghi:'Mới nghỉ 31/8/2026 — chưa tới mốc 1 năm, cũng chưa bàn giao'}};
+const khoXong=id=>(KHO_NGHI[id]||{}).tt==='xong';
+
+const F=[], FM=new Map();
+(function sinh(){
+ const DEM={};
+ GEN.forEach(([ma,n,tong,tu,den,o],gi)=>{
+  const r=rngTu(ma+'#'+gi+'#'+tu), a=ngayD(tu).getTime(), b=ngayD(den).getTime();
+  const w=[];let s=0;
+  for(let i=0;i<n;i++){const x=Math.pow(-Math.log(1-r()*0.999),o.lech||1)*(0.4+r());w.push(x);s+=x}
+  for(let i=0;i<n;i++){
+   const k=(DEM[ma]=(DEM[ma]||0)+1);
+   const h=HS_MA(r), ngay=kOf(new Date(a+Math.floor(r()*(b-a+864e5)/864e5)*864e5)), boi=boiCua(ma,r,h);
+   const ten=(TEN[ma]||((r,i)=>ma+'-'+i))(r,k,h);
+   const f={id:ma+'-'+k,lop:ma,ten,mb:Math.max(Math.round(tong/n*12)/100,Math.round(w[i]/s*tong*100)/100)   /* sàn = 12% cỡ trung bình của đoạn — không có ảnh bài làm 20 KB */,ngay:ngay+' '+p2(7+Math.floor(r()*14))+':'+p2(Math.floor(r()*60)),
+    nam:namCua(ngay),boi,kenh:null,ban:null,tt:'dung',dan:null,ghim:null};
+   f.kenh=kenhCua(ma,boi,r);
+   f.ban=lop(ma).menu.split(' ')[0]+' · '+({L01:'Q',L02:'N',L03:'KT-',L04:'LB-',L05:'BN-',L06:'BT-',L07:'DN-',L13:'HS ',L16:'TS-',L20:'HB-',L23:'NS-',L28:'GA-',L33:'TL-',L34:'CV-',L37:'GD-',L41:'CA-',L54:'TN-',L58:'SK-'}[ma]||'#')+(1000+Math.floor(r()*9000));
+   const x=r();
+   if(o.cu&&x<o.cu) f.tt='cu';
+   else if(o.rac&&x<(o.cu||0)+o.rac){f.tt='rac';f.racNgay=cong(HOMNAY_GOC,-(ma==='L03'?1+Math.floor(r()*29):3+Math.floor(r()*200)),'ngay')}
+   else if(o.moc&&x<(o.cu||0)+(o.rac||0)+o.moc) f.tt='mocoi';
+   if(o.ghim&&f.tt!=='mocoi'&&r()<o.ghim) f.ghim='D0'+(1+Math.floor(r()*8))+' — đề đã sử dụng ('+pick(r,['kiểm tra 15 phút 8A1','ôn tập giữa kỳ 9A2','luyện nghe 7A1','kiểm tra 11A2'])+')';
+   if(o.ngung&&f.tt==='dung'&&!f.ghim&&r()<o.ngung) f.ngung=cong('2024-09-01',Math.floor(r()*560),'ngay');   /* ngày câu ngừng dùng — 🔗 M12.5 */
+   /* BẢN GHI CHỦ ĐÃ HỦY (🔗 menu chủ) — LT-6: lọc riêng nhóm này để người quản trị tự quyết; KHÔNG tự thành ① nếu lớp có sàn luật */
+   if(o.huy&&f.tt==='dung'&&r()<o.huy){f.banGhiHuy=cong('2024-10-01',Math.floor(r()*700),'ngay')}
+   /* TỆP HỎNG — quét toàn vẹn bắt được (mã băm lệch / không đọc được) */
+   if(o.hong&&r()<o.hong) f.hong=pick(r,['Mã băm lệch so với lúc tải lên','Tệp đọc được nhưng phát không ra tiếng / hình','Tệp rỗng 0 byte']);
+   /* TẠM GIỮ theo vụ việc — LT-14 ca 2 · LT-20: người có quyền S ở MENU CHỦ đặt cờ, Hiệu trưởng gỡ.
+      Cờ là một bản ghi có dấu vết: ai đặt · khi nào · vụ việc nào — để còn biết hỏi ai khi muốn gỡ. */
+   if(o.giu&&r()<o.giu){
+    const vv=pick(r,[['Đang có khiếu nại của gia đình','M8.4 · KN-2026-0'+(1+Math.floor(r()*9)),'ns06'],
+     ['Đang thanh tra chuyên môn của Sở (tháng 11/2026)','M6.12 · TT-2026-03','ns02'],
+     ['Đang có đề nghị sửa điểm chờ duyệt','M2.5 · SD-'+(10+Math.floor(r()*40)),'ns10']]);
+    f.tamGiu={ly:vv[0],vv:vv[1],boi:vv[2],ngay:cong(HOMNAY_GOC,-(3+Math.floor(r()*60)),'ngay')};
+   }
+   if(o.nvb) f.nvb=o.nvb[0]+Math.floor(r()*(o.nvb[1]-o.nvb[0]+1));
+   /* 🔗 M1.1 — học sinh đã rời trường (ra trường / chuyển trường): mốc tính hạn của hồ sơ sức khỏe (LT-14b) */
+   if(o.roi&&r()<o.roi) f.roiTruong=cong('2022-06-01',Math.floor(r()*1400),'ngay');
+   if(o.dan&&f.tt==='dung'&&r()<o.dan) f.dan=ma==='L03'?['M5.2 · giáo án GA-'+(2000+Math.floor(r()*900))+' dẫn tới (liên kết học liệu)']:ma==='L56'?['M8.5 · tin đang hiện trên web trường']:['M12.5 · câu '+f.ten.split('-')[0]+' đang dùng — giải phóng thì câu mất tệp'];
+   if(o.giai){f.tt='giai';f.luotGiai=o.giai;f.ngayGiai='2025-07-18'}
+   f.hash=bam(f.id+f.ten);
+   F.push(f);FM.set(f.id,f);
+  }
+ });
+})();
+const fById=id=>FM.get(id);
+
+/* ========== LƯỢT GIẢI PHÓNG ==========
+   tt: nhap Nháp · cho_duyet Chờ HT duyệt · cho_huy Chờ hủy · da_huy Đã hủy · tu_choi Bị từ chối · hoan_tac Đã hoàn tác · rut Đã rút */
+const LUOT=[];
+const TT_LUOT={nhap:['Nháp','n'],cho_duyet:['Chờ Hiệu trưởng duyệt','w'],cho_huy:['Chờ hủy','b'],da_huy:['Đã hủy','o'],tu_choi:['Bị từ chối','r'],hoan_tac:['Đã hoàn tác','n'],rut:['Đã rút','n']};
+(function seedLuot(){
+ const ids=fn=>F.filter(fn).map(f=>f.id);
+ const sum=a=>a.reduce((s,id)=>s+fById(id).mb,0);
+ /* 0 — LT-22: lượt ③ đã hủy — công văn cũ nhập từ hệ thống trước, hồ sơ hủy đủ 7 thành phần (TT 06/2025/TT-BNV Đ.15 k.4a) */
+ const a0=ids(f=>f.lop==='L34'&&f.nvb&&f.nvb<=2019);
+ a0.forEach(id=>{const f=fById(id);f.tt='giai';f.luotGiai='GP-2025-01';f.ngayGiai='2025-08-20'});
+ const mb0=a0.reduce((s,id)=>s+fById(id).mb,0);
+ LUOT.push({id:'GP-2025-01',ten:'Công văn đến năm 2018 – 2019 (bản scan nhập từ hệ thống cũ)',
+  tieuChi:'Lớp L34 · năm văn bản ≤ 2019 · đã qua sàn 2 năm (Luật Lưu trữ Đ.15)',ids:a0.slice(),loai:[],
+  lap:{boi:'ns06',ngay:'2025-07-02 09:00'},lyDo:'Hết thời hạn bảo quản theo bảng thời hạn ngành Giáo dục; bản giấy đã nộp lưu, bản scan không còn giá trị sử dụng',
+  hs:{tm:'Số tài liệu đề nghị hủy là bản scan công văn đến năm 2018 – 2019 đã hết thời hạn bảo quản, không thuộc diện lưu vĩnh viễn, không liên quan vụ việc đang giải quyết.',
+   hd:{so:'118/QĐ-NTT',ngay:'2025-07-10',tep:{id:'L57-GP-2025-01-hd',ten:'QD-lap-Hoi-dong-xet-huy-GP-2025-01.pdf',mb:.62}},
+   bb:{so:'04/BB-HĐXH',ngay:'2025-07-25',tep:{id:'L57-GP-2025-01-bb',ten:'Bien-ban-hop-Hoi-dong-GP-2025-01.pdf',mb:.85}},
+   qd:{so:'131/QĐ-NTT',ngay:'2025-08-12',tep:{id:'L57-GP-2025-01-qd',ten:'QD-huy-tai-lieu-GP-2025-01.pdf',mb:.48}},
+   bg:{ngay:'2025-08-20'},bh:{ngay:'2025-08-20',ma:'BBH-GP-2025-01'},tepHS:'Ho-so-huy-GP-2025-01.pdf'},
+  tt:'da_huy',gui:'2025-07-26 08:10',duyet:{boi:'ns01',ngay:'2025-08-12 15:30',yk:'Đồng ý hủy theo kết luận Hội đồng xét hủy ngày 25/7/2025'},
+  choDen:'2025-08-20',hoan:[],kq:{huy:a0.slice(),bo:[],ngay:'2025-08-20 01:00',mb:mb0}});
+ /* tệp hồ sơ hủy của lượt trên — lớp L57, giữ 20 năm */
+ (function(){[['','Ho-so-huy-GP-2025-01.pdf',1.4,'he','2025-08-20 01:05'],
+   ['-hd','QD-lap-Hoi-dong-xet-huy-GP-2025-01.pdf',.62,'web','2025-07-10 14:20'],
+   ['-bb','Bien-ban-hop-Hoi-dong-GP-2025-01.pdf',.85,'web','2025-07-25 16:40'],
+   ['-qd','QD-huy-tai-lieu-GP-2025-01.pdf',.48,'web','2025-08-12 16:05']].forEach(([h,ten,mbF,kenh,ngay])=>{
+    const f={id:'L57-GP-2025-01'+h,lop:'L57',ten,mb:mbF,ngay,nam:namCua(ngay.slice(0,10)),boi:'ns06',kenh,
+     ban:'M10.11 · GP-2025-01',tt:'dung',dan:null,ghim:null};
+    f.hash=bam(f.id+f.ten);F.push(f);FM.set(f.id,f)})})();
+ /* 1 — đã hủy năm ngoái: bài nộp BTVN 2024-2025 */
+ const a1=ids(f=>f.luotGiai==='GP-2025-03');
+ LUOT.push({id:'GP-2025-03',ten:'Bài nộp BTVN năm học 2024-2025',tieuChi:'Lớp L05 · năm học 2024-2025 · tới hạn (hết năm học)',ids:a1,loai:[],
+  lap:{boi:'ns30',ngay:'2025-07-08 09:20'},lyDo:'Ổ còn dưới 15% — giải phóng bài nộp của năm học đã kết thúc theo M2.3 §11 #7',qd:null,tt:'da_huy',
+  gui:'2025-07-08 09:25',duyet:{boi:'ns01',ngay:'2025-07-10 14:05',yk:'Đồng ý — nhận xét và điểm vẫn giữ ở M2.3'},choDen:'2025-07-17',hoan:[],
+  kq:{huy:a1.slice(),bo:[],ngay:'2025-07-18 01:00',mb:sum(a1)}});
+ /* 2 — đã hủy (① chạy thẳng): nhập tạm + tệp xuất > 30 ngày, bản nộp lại của M1.1, một phần phiên bản cũ của Kho */
+ const r2=rngTu('GP-2026-05');
+ const a2=ids(f=>(f.lop==='S1'||f.lop==='S3')&&f.ngay<'2026-08-03'||f.lop==='L13'&&f.tt==='cu'||f.lop==='L03'&&f.tt==='cu'&&r2()<0.4);
+ a2.forEach(id=>{const f=fById(id);f.tt0=f.tt;f.tt='giai';f.luotGiai='GP-2026-05';f.ngayGiai='2026-09-09'});
+ LUOT.push({id:'GP-2026-05',ten:'Tệp nhập tạm, tệp xuất quá 30 ngày · bản nộp lại (M1.1) · phiên bản cũ',tieuChi:'Chế độ ① Tự do — chạy thẳng, không cần Hiệu trưởng duyệt (LT-3)',ids:a2,loai:[],
+  lap:{boi:'ns30',ngay:'2026-09-02 08:10'},lyDo:'Dọn định kỳ đầu năm học',qd:null,tt:'da_huy',chayThang:true,gui:null,duyet:null,choDen:'2026-09-09',hoan:[],
+  kq:{huy:a2.slice(),bo:[],ngay:'2026-09-09 01:00',mb:sum(a2)}});
+ /* 3 — bị Hiệu trưởng từ chối: kho cá nhân của hai giáo viên đã nghỉ ≥ 1 năm */
+ const a3=ids(f=>f.lop==='L03'&&f.tt==='dung'&&(f.boi==='ns40'||f.boi==='ns41'));
+ LUOT.push({id:'GP-2026-06',ten:'Kho tài liệu của giáo viên đã nghỉ việc (Trịnh Văn Quang · Hà Thị Liên)',tieuChi:'Lớp L03 · chủ tệp nghỉ việc ≥ 1 năm',ids:a3,loai:[],
+  lap:{boi:'ns30',ngay:'2026-10-05 10:30'},lyDo:'Hai giáo viên nghỉ việc từ hè 2025; kho chiếm nhiều video tiết dạy',qd:null,tt:'tu_choi',gui:'2026-10-05 10:32',
+  duyet:{boi:'ns01',ngay:'2026-10-12 16:20',yk:'Tổ Toán xin giữ video chuyên đề của thầy Quang làm tư liệu. Chuyển những tệp tổ cần sang M6.12 trước, rồi lập lượt khác.'},choDen:null,hoan:[],kq:null});
+ /* 4 — đang chờ hủy (① chạy thẳng 20/10): phiên bản cũ còn lại + bản xem trước > 90 ngày */
+ const a4=ids(f=>(f.tt==='cu'&&['L03','L33','L28'].includes(f.lop))||f.lop==='S2'&&f.ngay<'2026-07-22');
+ const hoan=a4.find(id=>fById(id).lop==='L28');
+ a4.forEach(id=>{const f=fById(id);if(id===hoan)return;f.tt0=f.tt;f.tt='cho';f.luot='GP-2026-07'});
+ /* một tệp ĐỔI trong thời gian chờ — lượt hủy đêm phải kiểm lại và bỏ qua nó (bảng kết quả tách dòng bỏ qua kèm lý do) */
+ const doi=a4.find(id=>fById(id).lop==='L03'&&id!==hoan);
+ if(doi) fById(doi).doiTrongCho='Chủ tệp đặt lại bản cũ này làm bản hiện hành ở M12.1 ngày 22/10/2026 — không còn là phiên bản cũ';
+ LUOT.push({id:'GP-2026-07',ten:'Phiên bản cũ (M12.1 · M6.12 · M5.2) · bản xem trước quá 90 ngày',tieuChi:'Chế độ ① Tự do — chạy thẳng (LT-3)',ids:a4,loai:[],
+  lap:{boi:'ns30',ngay:'2026-10-20 07:45'},lyDo:'Ổ vượt ngưỡng 90% — dọn phần tự do trước',qd:null,tt:'cho_huy',chayThang:true,gui:null,duyet:null,choDen:'2026-10-27',
+  hoan:[hoan],hoanLy:{[hoan]:'TTCM Toán nhờ giữ bản v1 giáo án thao giảng để so với bản sau góp ý (hoàn tác 21/10)'},kq:null});
+ /* 5 — chờ Hiệu trưởng duyệt: bài nộp BTVN 2025-2026 */
+ const a5=ids(f=>f.lop==='L05'&&f.nam==='2025-2026'&&f.tt==='dung');
+ a5.forEach(id=>fById(id).luot='GP-2026-08');
+ LUOT.push({id:'GP-2026-08',ten:'Bài nộp BTVN năm học 2025-2026',tieuChi:'Lớp L05 · năm học 2025-2026 · tới hạn (hết năm học 31/05/2026)',ids:a5,loai:[],
+  lap:{boi:'ns30',ngay:'2026-10-22 08:30'},lyDo:'Ổ còn 1,1 GB — năm học 2025-2026 đã kết thúc, nhận xét và điểm vẫn giữ ở M2.3',qd:null,tt:'cho_duyet',gui:'2026-10-22 08:31',duyet:null,choDen:null,hoan:[],kq:null});
+})();
+const luotById=id=>LUOT.find(l=>l.id===id);
+
+/* ========== NHẬT KÝ — ghi ở đây; TRA CỨU toàn trường ở M10.7 ========== */
+const AUDIT=[
+ {boi:'ns01',ngay:'2026-10-12 16:20',muc:2,nd:'Từ chối lượt GP-2026-06 — «Tổ Toán xin giữ video chuyên đề…»'},
+ {boi:'ns30',ngay:'2026-10-20 07:45',muc:2,nd:'Chạy thẳng lượt ① GP-2026-07 — vào chờ hủy đến 27/10/2026'},
+ {boi:'ns10',ngay:'2026-10-21 09:05',muc:2,nd:'Đề nghị hoàn tác 1 tệp của GP-2026-07 (qua Quản trị hệ thống)'},
+ {boi:'ns30',ngay:'2026-10-22 08:31',muc:2,nd:'Gửi Hiệu trưởng duyệt lượt GP-2026-08 (bài nộp BTVN 2025-2026)'},
+ {boi:'ns30',ngay:'2026-10-22 08:40',muc:3,nd:'Xem danh sách lớp nhạy cảm L54 Tệp · ảnh trong trò chuyện (siêu dữ liệu, tên che)'}
+];
+function ghiVet(o){o.boi=o.boi||ME().id;o.ngay=o.ngay||BAYGIO();o.muc=o.muc||2;AUDIT.unshift(o)}
+
+/* ========== Ổ LƯU TRỮ — số đo tại lúc nạp ==========
+   Đã dùng = phần "hệ thống / không phân loại được" (CSDL · hệ điều hành · phần mềm — đo ổ trừ tổng các lớp, KHÔNG che) + mọi tệp còn nội dung. */
+const DUNG_NAP_MB=498.9*1024;
+let HE_THONG_MB=0;
+(function(){let s=0;for(const f of F)if(f.tt!=='giai')s+=f.mb;HE_THONG_MB=Math.round((DUNG_NAP_MB-s)*100)/100})();
+
+/* ========== TRẠNG THÁI MÀN HÌNH ========== */
+const ST={tab:'tq',ret:null,
+ loc:{nhom:'',lop:'',menu:'',dd:'',tu:'',den:'',nam:'',co:'',boi:'',kenh:'',tt:'',che:'',dan:'',q:''},sx:'co',trang:0,chon:new Set(),cur:null,
+ gpLoc:'all',gpCur:null,gpTrang:0,gpXem:'duoc',nhatKyNC:{}};
+
+
+/* ══════════════ M10.11 — LOGIC: CHẾ ĐỘ HIỆU LỰC · DUNG LƯỢNG · DỰ BÁO · LỌC ══════════════ */
+
+/* ngày được phép giải phóng theo chính sách ② của lớp — null nếu chưa tính được (chưa đặt thời hạn / chủ tệp đang công tác) */
+function ngayDuoc(f,L){
+ const cs=L.cs; if(cs.che!=='SH'||!cs.dv) return null;
+ let goc;
+ if(cs.moc==='nh') goc=cong(NAMHOC[f.nam]?NAMHOC[f.nam].kt:f.ngay,1,'ngay');
+ else if(cs.moc==='ntc') goc=(+f.ngay.slice(0,4)+1)+'-01-01';
+ else if(cs.moc==='nv'){const n=nsById(f.boi);if(!n.nghi) return null;goc=cong(n.nghi,1,'ngay')}
+ else if(cs.moc==='ng'){if(!f.ngung) return null;goc=cong(f.ngung,1,'ngay')}
+ else if(cs.moc==='rt'){if(!f.roiTruong) return null;goc=cong(f.roiTruong,1,'ngay')}   /* 🔗 M1.1 — ngày học sinh rời trường */
+ else goc=f.ngay.slice(0,10);
+ return cs.n?cong(goc,cs.n,cs.dv):goc;
+}
+/* CHẾ ĐỘ HIỆU LỰC của MỘT tệp = chính sách lớp × trạng thái tệp.
+   Trả {m, ok, ly, ngay?, qd?} — ok = đưa được vào lượt; qd = cần số quyết định hủy. Bộ nhớ đệm theo VER. */
+function cheDo(f){
+ if(f._v===VER) return f._c;
+ const L=lop(f.lop), cs=L.cs; let c;
+ const s=f.tt==='cho'?(f.tt0||'dung'):f.tt;            /* tệp đang chờ hủy: xét theo trạng thái trước khi vào lượt */
+ if(f.tt==='giai') c={m:'',ok:false,ly:'Đã giải phóng ngày '+k2s(f.ngayGiai)+' — lượt '+f.luotGiai};
+ /* TẠM GIỮ theo vụ việc (LT-14 ca 2) — đè lên mọi chế độ, kể cả ① và kể cả đã tới hạn */
+ else if(f.tamGiu) c={m:'',ok:false,giu:1,ly:'TẠM GIỮ — '+f.tamGiu.ly+' ('+f.tamGiu.vv+'), do '+tenBoi(f.tamGiu.boi)+' đặt ngày '+k2s(f.tamGiu.ngay)+'. Chỉ Hiệu trưởng gỡ được (LT-20)'};
+ else if(f.ghim) c={m:'KH',ok:false,ly:'Khóa theo trạng thái — '+f.ghim+'. Đề đã sử dụng đóng băng, tệp của câu không được mất (kiến trúc Học liệu quy tắc 2 · 3)',tt:1};
+ else if(s==='mocoi') c={m:'TD',ok:true,ly:'Mồ côi — không bản ghi nào của '+L.menu+' trỏ tới nội dung này'};
+ /* BẢN GHI CHỦ ĐÃ HỦY (LT-6 · LT-12): lớp KHÔNG có sàn luật → ① (nội dung hết mục đích);
+    lớp CÓ sàn luật → VẪN theo chính sách lớp (chứng từ bị hủy vẫn phải lưu 10 năm) — chỉ lọc riêng ra cho người quản trị tự quyết. */
+ else if(f.banGhiHuy&&!L.luat) c={m:'TD',ok:true,huy:1,ly:'Bản ghi chủ ở '+L.menu+' đã HỦY ngày '+k2s(f.banGhiHuy)+' — nội dung không còn mục đích; lớp này không có sàn pháp lý'};
+ else if((s==='cu'||s==='rac')&&L.phu){
+  if(s==='rac'){const d=cong(f.racNgay,CFG.racNgay,'ngay');
+   c=d>HOMNAY?{m:'TD',ok:false,ly:'Còn trong thời gian khôi phục ở thùng rác của '+L.menu+' (người xóa còn lấy lại được)',ngay:d}
+    :{m:'TD',ok:true,ly:'Trong thùng rác của '+L.menu+' quá '+CFG.racNgay+' ngày'};}
+  else c={m:'TD',ok:true,ly:'Phiên bản cũ — bản hiện hành giữ nguyên'};
+ }
+ else if(cs.che==='TD') c={m:'TD',ok:true,ly:'Lớp tự do — '+cs.can};
+ else if(cs.che==='KH') c={m:'KH',ok:false,ly:'Lớp ④ vĩnh viễn, không xóa theo hạn — '+cs.can};
+ else if(cs.che==='QD'){
+  /* ③ vẫn có SÀN: Luật Lưu trữ Đ.15 — thời hạn có hạn tối thiểu 2 năm tính từ năm công việc kết thúc. Tính theo NĂM CỦA VĂN BẢN (nvb), không theo ngày tải lên */
+  const nam=f.nvb||+f.ngay.slice(0,4), n=cs.n>=0?cs.n:2, san=cong((nam+1)+'-01-01',n,'nam');
+  c=san>HOMNAY?{m:'QD',ok:false,ngay:san,ly:'Chưa qua sàn '+n+' năm tính từ năm của văn bản ('+nam+') — Luật Lưu trữ 33/2024 Đ.15; thời hạn thật theo loại văn bản do hội đồng xác định giá trị'}
+   :{m:'QD',ok:true,qd:true,ly:'Văn bản năm '+nam+' — cần quyết định hủy của Hiệu trưởng + biên bản hội đồng xác định giá trị tài liệu. '+cs.can};
+ }
+ else if(!cs.dv) c={m:'SH',ok:false,ly:'Lớp CHƯA có thời hạn giữ — Hiệu trưởng đặt ở ⚙ Cấu hình trước. '+cs.can,chua:1};
+ else{
+  const d=ngayDuoc(f,L);
+  if(!d) c={m:'SH',ok:false,ly:cs.moc==='ng'?'Câu / nhóm câu ĐANG DÙNG ở '+L.menu+' — giải phóng thì câu mất tệp; chỉ được khi câu đã ngừng dùng ≥ '+cs.n+' '+DV[cs.dv]
+   :cs.moc==='rt'?'Học sinh vẫn đang học ở trường (🔗 M1.1) — hồ sơ chỉ tính hạn từ khi em rời trường, cộng '+cs.n+' '+DV[cs.dv]
+   :'Chủ tệp đang công tác — kho cá nhân (Own), chủ tự dọn ở '+L.menu};
+  /* LT-11: kho của người đã nghỉ phải XỬ LÝ XONG toàn bộ mới được giải phóng phần còn lại */
+  else if(cs.moc==='nv'&&!khoXong(f.boi)) c={m:'SH',ok:false,ngay:d,kho:f.boi,
+   ly:'Kho cá nhân của '+tenBoi(f.boi)+' CHƯA xử lý xong — phải chuyển tệp cần giữ sang nơi lưu khác (M6.12…) và xử lý hết kho rồi mới giải phóng phần còn lại. '+((KHO_NGHI[f.boi]||{}).ghi||'')};
+  else if(d>HOMNAY) c={m:'SH',ok:false,ngay:d,ly:'Chưa tới hạn — giữ tối thiểu '+hanText(cs)+' ('+cs.can+')'};
+  else c={m:'SH',ok:true,ngay:d,ly:'Đã tới hạn từ '+k2s(d)+' — '+hanText(cs)};
+ }
+ f._v=VER;f._c=c;return c;
+}
+const moTrongLuot=f=>f.luot&&(luotById(f.luot)||{}).tt&&['nhap','cho_duyet','cho_huy'].includes(luotById(f.luot).tt);
+
+/* ========== DUNG LƯỢNG ========== */
+let _TK=null;
+function thongKe(){
+ if(_TK&&_TK.v===VER) return _TK;
+ const t={v:VER,lop:{},tong:HE_THONG_MB,tep:0,t30:0,t90:0,cho:0,duocNgay:0,toiHan:0};
+ const m30=cong(HOMNAY,-30,'ngay'), m90=cong(HOMNAY,-90,'ngay');
+ LOP.forEach(l=>t.lop[l.ma]={n:0,mb:0,t30:0,cu:null,duoc:0,duocN:0,giai:0,giaiMB:0,cho:0,mocoi:0,duocBgh:0});
+ for(const f of F){
+  const s=t.lop[f.lop];
+  if(f.tt==='giai'){s.giai++;s.giaiMB+=f.mb;continue}
+  s.n++;s.mb+=f.mb;t.tong+=f.mb;t.tep++;
+  const d=f.ngay.slice(0,10);
+  /* bản sao lưu cục bộ tự xoay vòng — dung lượng ổn định, KHÔNG phải tăng trưởng: không tính vào tốc độ tăng */
+  if(f.lop!=='S5'){if(d>=m30){s.t30+=f.mb;t.t30+=f.mb} if(d>=m90) t.t90+=f.mb}
+  if(!s.cu||d<s.cu) s.cu=d;
+  if(f.tt==='cho'){s.cho+=f.mb;t.cho+=f.mb;continue}
+  if(f.tt==='mocoi') s.mocoi++;
+  const c=cheDo(f);
+  if(c.ok&&!moTrongLuot(f)){s.duoc+=f.mb;s.duocN++;if(c.huy)s.duocBgh++;if(c.m==='TD')t.duocNgay+=f.mb;else t.toiHan+=f.mb}
+ }
+ _TK=t;return t;
+}
+const tongMB=()=>CFG.danhChoGB*1024;
+const dungMB=()=>thongKe().tong;
+const conMB=()=>Math.max(0,tongMB()-dungMB());
+const pctDung=()=>dungMB()/tongMB()*100;
+/* dự báo ngày đầy — tốc độ tăng thật trong 30 / 90 ngày gần nhất (không trừ phần sắp hủy) */
+function duBao(){
+ const t=thongKe(), v30=t.t30/30, v90=t.t90/90, con=conMB();
+ const ng=v=>v>0?Math.max(0,con/v):Infinity;
+ return {v30,v90,d30:ng(v30),d90:ng(v90)};
+}
+const ngayText=d=>d===Infinity?'không tăng':d<1?'dưới 1 ngày':'~'+nf1(d)+' ngày (≈ '+k2s(cong(HOMNAY,Math.ceil(d),'ngay'))+')';
+
+/* ========== LỌC — tab Tra cứu tệp ========== */
+const TT_TEP={dung:['Đang dùng','o'],cu:['Phiên bản cũ','n'],rac:['Trong thùng rác của menu chủ','w'],mocoi:['Mồ côi','r'],cho:['Chờ hủy','b'],giai:['Đã giải phóng','n']};
+const CO_MOC=[['','Mọi cỡ'],['1','≥ 1 MB'],['10','≥ 10 MB'],['100','≥ 100 MB'],['1000','≥ 1 GB']];
+function locTep(){
+ const L=ST.loc, q=kd(L.q.trim());
+ const out=[];
+ for(const f of F){
+  if(L.lop&&f.lop!==L.lop) continue;
+  if(L.nhom&&lop(f.lop).nhom!==L.nhom) continue;
+  if(L.menu&&lop(f.lop).menu!==L.menu) continue;
+  if(L.dd&&f.ten.split('.').pop().toLowerCase()!==L.dd) continue;
+  if(L.tu&&f.ngay.slice(0,10)<L.tu) continue;
+  if(L.den&&f.ngay.slice(0,10)>L.den) continue;
+  if(L.nam&&f.nam!==L.nam) continue;
+  if(L.co&&f.mb<+L.co) continue;
+  if(L.boi&&(L.boi==='ph'?!f.boi.startsWith('ph:'):L.boi==='hs'?!f.boi.startsWith('hs:'):f.boi!==L.boi)) continue;
+  if(L.kenh&&f.kenh!==L.kenh) continue;
+  if(L.tt){
+   const khop=L.tt==='luot'?moTrongLuot(f):L.tt==='hong'?!!f.hong&&f.tt!=='giai':L.tt==='tamGiu'?!!f.tamGiu&&f.tt!=='giai'
+    :L.tt==='bghuy'?!!f.banGhiHuy&&f.tt!=='giai':f.tt===L.tt;
+   if(!khop) continue;
+  }
+  else if(f.tt==='giai') continue;                      /* đã giải phóng: ẩn mặc định, có chip lọc tìm lại (bản ghi không xóa) */
+  if(L.che){const c=cheDo(f);if(L.che==='duoc'?!(c.ok&&!moTrongLuot(f)):L.che==='chan'?c.ok:c.m!==L.che) continue}
+  if(L.dan==='ghim'&&!f.ghim) continue;
+  if(L.dan==='co'&&!f.dan&&!f.ghim) continue;
+  if(L.dan==='khong'&&(f.dan||f.ghim)) continue;
+  if(q&&!kd(f.id+' '+f.ban+' '+(lop(f.lop).an?'':f.ten)).includes(q)) continue;
+  out.push(f);
+ }
+ const k=ST.sx;
+ out.sort(k==='co'?(a,b)=>b.mb-a.mb:k==='coTang'?(a,b)=>a.mb-b.mb:k==='moi'?(a,b)=>a.ngay<b.ngay?1:-1:(a,b)=>a.ngay<b.ngay?-1:1);
+ return out;
+}
+const tenHien=f=>{const L=lop(f.lop);return L.an==='own'?'🔒 Tệp cá nhân — tên ẩn':L.an==='nc'?'🔒 Dữ liệu nhạy cảm — tên ẩn':f.ten};
+const coChe=f=>!!lop(f.lop).an;
+
+/* ========== LT-14 — TỰ ĐỘNG XÓA KHI ĐẾN HẠN ==========
+   Công tắc bật / tắt riêng từng lớp ở ⚙ (mặc định TẮT). Lượt tự động do HỆ THỐNG lập, vẫn qua CHỜ HỦY và vẫn ghi vết:
+   trong khoảng chờ, người quản trị và Hiệu trưởng hoàn tác được. ③ không bật được (TT 06/2025 đòi hội đồng + quyết định từng lần). */
+function tepTuDong(){
+ const ds=[];
+ for(const f of F){
+  if(f.tt==='giai'||f.tt==='cho'||moTrongLuot(f)) continue;
+  const L=lop(f.lop); if(!tuDongBat(L)) continue;
+  const c=cheDo(f); if(!c.ok||c.qd) continue;          /* tạm giữ · chưa tới hạn · cần QĐ đều rơi ra ở đây */
+  ds.push(f); if(ds.length>=CFG.tranTuDong) break;
+ }
+ return ds;
+}
+const soLopTuDong=()=>LOP.filter(tuDongBat).length;
+/* tệp hỏng do quét toàn vẹn (LT-12) và tệp đang tạm giữ — hai con số phải nhìn thấy ở Tổng quan */
+const tepHong=()=>F.filter(f=>f.hong&&f.tt!=='giai');
+const tepTamGiu=()=>F.filter(f=>f.tamGiu&&f.tt!=='giai');
+const tepBanGhiHuy=()=>F.filter(f=>f.banGhiHuy&&f.tt!=='giai');
+const khoChuaXuLy=()=>Object.keys(KHO_NGHI).filter(id=>!khoXong(id))
+ .map(id=>({id,n:F.filter(f=>f.lop==='L03'&&f.boi===id&&f.tt!=='giai').length,
+  mb:F.filter(f=>f.lop==='L03'&&f.boi===id&&f.tt!=='giai').reduce((s,f)=>s+f.mb,0),ghi:KHO_NGHI[id].ghi}));
+
+
+
+/* ══════════════ M10.11 — KHUNG MÀN HÌNH ══════════════ */
+function rolebar(){
+ $('#rolebar').innerHTML='<b>Vai trò:</b>'+Object.keys(ROLES).map(k=>
+  '<button class="rb'+(k===role?' on':'')+'" data-r="'+k+'">'+esc(ROLES[k].cd)+'</button>').join('')
+ +'<span class="simw">Hôm nay (mô phỏng): <b style="color:#e2e8f0">'+thuCua(HOMNAY)+' '+k2s(HOMNAY)+'</b>'
+ +(HOMNAY!==HOMNAY_GOC?' <button class="ntg" data-lai="1">↺ về '+k2s(HOMNAY_GOC)+'</button>':'')+'</span>'
+ +'<button class="ntg" id="btnNote">💡 Ghi chú thiết kế: TẮT</button>';
+}
+function header(){
+ const n=ME();
+ $('#ava').textContent=n.ten.split(' ').slice(-2).map(x=>x[0]).join('');
+ /* ổ lưu trữ là của CẢ máy chủ trường: không cắt theo năm học, không cắt theo điểm trường — khóa và nói ra */
+ $('#hdt').innerHTML='<option>Tất cả điểm trường</option>';
+ $('#hdt').disabled=true; $('#hnam').disabled=true;
+ $('#dtlock').textContent='🔒 menu này không lọc theo năm học / điểm trường ở header — ổ là của cả máy chủ trường (năm học là một bộ lọc ở tab Tra cứu tệp)';
+ const nc=LUOT.filter(l=>l.tt==='cho_duyet').length;
+ $('#ndot').textContent=coQ('gp','D')?nc+1:1;
+}
+function tabs(){
+ const nc=LUOT.filter(l=>l.tt==='cho_duyet'&&coQ('gp','D')).length, ch=LUOT.filter(l=>l.tt==='cho_huy').length;
+ $('#tabs').innerHTML=TABS.map(([k,n])=>'<button class="tab1'+(k===ST.tab?' on':'')+'" data-t="'+k+'">'+n
+  +(k==='gp'&&nc?'<span class="b r" title="Chờ tôi duyệt">'+nc+'</span>':'')+(k==='gp'&&ch?'<span class="b" title="Lượt đang chờ hủy">⏳ '+ch+'</span>':'')
+  +(k==='tq'&&pctDung()>=CFG.canhBao?'<span class="b r">'+nf1(pctDung())+'%</span>':'')+'</button>').join('');
+}
+const QTEN={X:'Xem',T:'Tạo',S:'Sửa',XO:'Xóa',D:'Duyệt',ID:'Import',XD:'Export'};
+const QNGHIA={tq:{XD:'xuất bảng dung lượng'},tc:{T:'lập lượt giải phóng từ tệp đã chọn',XD:'xuất danh sách siêu dữ liệu (bắt chọn mục đích)'},
+ gp:{T:'lập lượt',S:'sửa nháp · rút · hoàn tác từng tệp · chạy thẳng lượt ①',D:'duyệt / từ chối lượt (4-eye)',XD:'xuất bảng kết quả'},ch:{S:'sửa khối theo năng lực: kỹ thuật (IT) · chính sách (HT)'}};
+function chipQuyen(tab){
+ return T7.map(q=>{const c=coQ(tab,q),y=(QNGHIA[tab]||{})[q];
+  return '<span class="qc'+(c?' on':'')+(y?'':' vh')+'" title="'+QTEN[q]+(y?' — '+y:' — tab này không có thao tác tương ứng (ô vô hại)')+'">'+q+'</span>'}).join('');
+}
+function scopeBar(tab,extra){
+ const n=ME(), f=TABS.find(x=>x[0]===tab);
+ return '<div class="scope"><span>🗄</span><span class="sp">Vai <b>'+esc(R().cd)+'</b> — '+esc(n.ten)+' <span class="mu">('+esc(cdNS(n))+')</span>. '
+  +'Phạm vi dữ liệu: <b>School</b> — chỉ mục tệp của cả máy chủ trường, <b>chỉ siêu dữ liệu</b>: menu này không mở nội dung tệp nào.'+(extra?' '+extra:'')+'</span>'
+  +'<span class="qwrap" title="Quyền Feature ở M10.4 cho tab '+f[1]+' ('+f[2]+')">Quyền ở tab này: '+chipQuyen(tab)+'</span></div>';
+}
+function dnote(html){return '<div class="dnote">💡 <b>Ghi chú thiết kế.</b> '+html+'</div>'}
+function khongQuyen(){
+ return scopeBar(ST.tab)+'<div class="card" style="margin-top:14px"><div class="ch">⛔ Không có quyền ở menu này</div><div class="cb" style="padding:12px 14px;line-height:1.75">'
+  +'Chức danh <b>'+esc(cdNS(ME()))+'</b> không có dòng nào ở <b>M10.11 Quản lý lưu trữ hệ thống</b> — menu chỉ dành cho <b>Quản trị hệ thống</b> (lập lượt, tham số kỹ thuật) và <b>Hiệu trưởng</b> (duyệt lượt, chính sách giữ tệp).<br>'
+  +'<span class="mu">Bạn không có hạn mức riêng — Dschool chỉ có <b>một ổ lưu trữ chung của trường</b>. Muốn biết mình đang chiếm bao nhiêu thì xem ở menu chủ: <b>Kho tài liệu</b> (M12.1) hiện "bạn đang dùng …" ở cây trái; '
+  +'mỗi menu có tải tệp chiếu 🔗 phần còn trống của ổ chung khi bạn tải lên.</span></div></div>';
+}
+/* thanh dung lượng nhỏ dùng lại ở nhiều chỗ */
+const NHOM_MAU={hl:'#6366f1',bl:'#f97316',lh:'#eab308',hs:'#0ea5e9',kq:'#14b8a6',ns:'#8b5cf6',cm:'#22c55e',vb:'#64748b',tc:'#ef4444',vh:'#ec4899',tt:'#06b6d4',ht:'#a3a3a3'};
+
+/* ========== SỰ KIỆN CHUNG ========== */
+mfns.bclose=()=>closeM();
+document.addEventListener('click',e=>{
+ const t=e.target;
+ const m=t.closest('[data-mb]'); if(m){const fn=mfns['b'+m.dataset.mb]; fn?fn(m):closeM(); return}
+ if(t===$('#mask')){closeM();return}
+ const rb=t.closest('.rb'); if(rb){role=rb.dataset.r;ST.cur=null;ST.chon.clear();render();return}
+ if(t.id==='btnNote'){document.body.classList.toggle('nn');render();return}
+ if(t.closest('[data-lai]')){HOMNAY=HOMNAY_GOC;VER++;render();toast('↺ Về ngày mô phỏng gốc '+k2s(HOMNAY_GOC)+'.');return}
+ const tb=t.closest('#tabs [data-t]'); if(tb){ST.tab=tb.dataset.t;ST.cur=null;ST.gpCur=null;render();return}
+ if(t.id==='bell'){toast('🔔 '+(coQ('gp','D')?'Chờ bạn duyệt: '+LUOT.filter(l=>l.tt==='cho_duyet').length+' lượt giải phóng (↗ M0.2) · ':'')+'Cảnh báo ổ lưu trữ: đã dùng '+nf1(pctDung())+'% — vượt ngưỡng '+CFG.canhBao+'% (M0.3).');return}
+ suKien(t,e);
+});
+
+
+/* ══════════════ M10.11 — TAB 1 · TỔNG QUAN DUNG LƯỢNG (đơn vị dòng: MỘT LỚP LƯU TRỮ) ══════════════ */
+function oBar(){
+ const t=thongKe(), T=tongMB(), p=pctDung(), w=p>=CFG.canhBao;
+ const nh={};NHOM.forEach(([k])=>nh[k]=0);
+ LOP.forEach(l=>nh[l.nhom]+=t.lop[l.ma].mb);
+ let seg=NHOM.map(([k,n])=>nh[k]?'<i style="width:'+(nh[k]/T*100).toFixed(2)+'%;background:'+NHOM_MAU[k]+'" title="'+esc(n)+' — '+mb(nh[k])+'"></i>':'').join('');
+ seg+='<i style="width:'+(HE_THONG_MB/T*100).toFixed(2)+'%;background:#475569" title="Hệ thống · không phân loại được — '+mb(HE_THONG_MB)+'"></i>';
+ const db=duBao();
+ return '<div class="ocard'+(w?' w':'')+'">'
+  +'<div class="ohd"><div><div class="olbl">🗄 Ổ lưu trữ chung của trường</div><div class="obig">'+gb(dungMB())+' <span>/ '+CFG.danhChoGB+' GB · '+nf1(p)+'%</span></div></div>'
+  +'<div class="ostat"><div><b>'+mb(conMB())+'</b><span>còn trống</span></div><div><b>'+CFG.canhBao+'%</b><span>ngưỡng cảnh báo</span></div>'
+  +'<div><b>'+(t.cho?mb(t.cho):'0')+'</b><span>đang chờ hủy'+(t.cho?' — trả lại khi hết hạn chờ':'')+'</span></div>'
+  +'<div><b>'+mb(t.duocNgay)+'</b><span>giải phóng được ngay (①)</span></div><div><b>'+mb(t.toiHan)+'</b><span>đã tới hạn (② ③)</span></div></div></div>'
+  +'<div class="stk">'+seg+'<em style="left:'+CFG.canhBao+'%" title="Ngưỡng cảnh báo '+CFG.canhBao+'%"></em></div>'
+  +'<div class="pleg" style="margin-top:6px">'+NHOM.filter(([k])=>nh[k]).map(([k,n])=>'<span><s style="background:'+NHOM_MAU[k]+'"></s>'+esc(n.replace(/^\S+\s/,''))+' '+mb(nh[k])+'</span>').join('')
+  +'<span><s style="background:#475569"></s>Hệ thống · không phân loại được '+mb(HE_THONG_MB)+'</span></div>'
+  +'<div class="omut">📈 Dự báo đầy ổ: theo tốc độ <b>30 ngày</b> ('+mb(db.v30)+'/ngày) <b>'+ngayText(db.d30)+'</b> · theo <b>90 ngày</b> ('+mb(db.v90)+'/ngày, gồm hè) <b>'+ngayText(db.d90)+'</b>'
+  +' <span class="mu">· ổ vật lý '+CFG.oVatLyGB+' GB đo tự động, phần dành cho Dschool '+CFG.danhChoGB+' GB (⚙)</span></div></div>';
+}
+/* LT-10 — máy CHỈ ĐỀ XUẤT lượt tới hạn, người bấm. Gom tệp đủ điều kiện, chưa nằm trong lượt nào, theo lớp × loại × năm học.
+   loaiDX dùng chung với chỗ lập lượt từ đề xuất (app.90) — một công thức, hai nơi đọc. */
+function loaiDX(f,c){const L=lop(f.lop);
+ return f.tt==='mocoi'?'mocoi':c.huy?'bghuy':(f.tt==='cu'||f.tt==='rac')&&L.phu?f.tt:'chinh'}
+function khoaDX(f,c){const L=lop(f.lop),loai=loaiDX(f,c);
+ return loai==='mocoi'?'mocoi':f.lop+'|'+loai+(loai==='chinh'&&L.cs.moc==='nh'?'|'+f.nam:'')}
+function deXuat(){
+ const g={};
+ for(const f of F){
+  if(f.tt==='giai'||f.tt==='cho'||moTrongLuot(f)) continue;
+  const c=cheDo(f); if(!c.ok) continue;
+  const L=lop(f.lop);
+  const loai=loaiDX(f,c), k=khoaDX(f,c);
+  const x=g[k]||(g[k]={k,lop:loai==='mocoi'?null:f.lop,loai,nam:loai==='chinh'&&L.cs.moc==='nh'?f.nam:'',n:0,mb:0,m:c.m,qd:false});
+  x.n++;x.mb+=f.mb;if(c.qd)x.qd=true;
+  const tc=LUOT.find(l=>l.tt==='tu_choi'&&l.ids.includes(f.id));if(tc)x.tuChoi=tc.id;
+ }
+ return Object.values(g).sort((a,b)=>b.mb-a.mb);
+}
+function nhanDX(x){
+ if(x.loai==='mocoi') return '🧩 Tệp mồ côi — mọi lớp';
+ const L=lop(x.lop);
+ return L.ma+' · '+L.ten+(x.loai==='cu'?' — phiên bản cũ':x.loai==='rac'?' — thùng rác quá '+CFG.racNgay+' ngày'
+  :x.loai==='bghuy'?' — <b>bản ghi chủ đã HỦY</b> ở '+L.menu:'')+(x.nam?' · năm học '+x.nam:'');
+}
+function veTQ(){
+ if(!coMenu()) return khongQuyen();
+ const t=thongKe(), p=pctDung();
+ let h=scopeBar('tq','Bấm một lớp để sang <b>Tra cứu tệp</b> đã lọc sẵn.');
+ h+='<div style="margin-top:12px">'+oBar()+'</div>';
+ if(p>=CFG.canhBao) h+='<div class="alert r"><span>⛔</span><span class="sp">Ổ đã dùng <b>'+nf1(p)+'%</b> — vượt ngưỡng '+CFG.canhBao+'%, còn <b>'+mb(conMB())+'</b>. '
+  +'Đã gửi cảnh báo tới <b>'+CFG.nhan.map(c=>CD[c]).join(' · ')+'</b> (M0.3). Menu có tải tệp đang <b>chặn</b> tệp lớn hơn phần còn trống (M12.1 · M2.3 · App PH-HS…). '
+  +'Giải phóng được ngay <b>'+mb(t.duocNgay)+'</b> (① Tự do) · đã tới hạn <b>'+mb(t.toiHan)+'</b> (② ③ — cần Hiệu trưởng duyệt).</span></div>';
+ /* ⚠ Cần chú ý — những việc KHÔNG phải "giải phóng" nhưng người giữ ổ phải thấy (LT-6 · LT-11 · LT-12 · LT-14) */
+ const hong=tepHong(), giu=tepTamGiu(), bgh=tepBanGhiHuy(), kho=khoChuaXuLy(), chuaDatDS=LOP.filter(chuaDat);
+ const mbOf=a=>a.reduce((s,f)=>s+f.mb,0);
+ const cy=[];
+ if(hong.length) cy.push(['⚠','Tệp hỏng — quét toàn vẹn '+k2s(CFG.quet.lanCuoi)+' bắt được',nf(hong.length)+' tệp · '+mb(mbOf(hong)),'Người phụ trách ở menu chủ <b>tải lại tệp thay thế</b> — nội dung cũ không cứu được (LT-12)','hong']);
+ if(giu.length) cy.push(['⏸','Tạm giữ theo vụ việc — tới hạn cũng không xóa',nf(giu.length)+' tệp · '+mb(mbOf(giu)),'Người có quyền Sửa ở menu chủ đặt cờ; <b>chỉ Hiệu trưởng gỡ</b> khi vụ việc khép lại (LT-20)','tamGiu']);
+ if(bgh.length) cy.push(['🗂','Tệp của bản ghi chủ ĐÃ HỦY',nf(bgh.length)+' tệp · '+mb(mbOf(bgh)),'Lọc riêng để tự quyết: lớp không có sàn luật thì giải phóng được ngay; lớp có sàn thì vẫn phải giữ (LT-6)','bghuy']);
+ if(kho.length) cy.push(['📦','Kho cá nhân của người đã nghỉ — chưa xử lý xong',kho.map(k=>tenBoi(k.id)+' ('+nf(k.n)+' tệp · '+mb(k.mb)+')').join(' · '),'Phải chuyển tệp cần giữ sang nơi khác và xử lý hết kho rồi mới giải phóng phần còn lại (LT-11)','kho']);
+ if(chuaDatDS.length) cy.push(['📐','Lớp chưa đặt thời hạn giữ',chuaDatDS.map(l=>l.ma).join(' · '),'Tệp các lớp này bị chặn tới khi Hiệu trưởng đặt thời hạn ở ⚙ (LT-14)','chuadat']);
+ if(cy.length) h+='<div class="card"><div class="ch">⚠ Cần chú ý <span class="mu" style="font-weight:400">— không phải việc giải phóng, nhưng người giữ ổ phải biết</span></div><div class="cb"><table><tbody>'
+  +cy.map(x=>'<tr><td style="width:24px;font-size:15px">'+x[0]+'</td><td><b>'+esc(x[1])+'</b><div class="mu" style="font-size:11.5px">'+x[3]+'</div></td><td style="font-size:12px">'+esc(x[2])+'</td>'
+   +'<td style="width:104px">'+(x[4]==='chuadat'?'<button class="btn xs" data-dichuadat="1">⚙ Đặt thời hạn</button>':'<button class="btn xs" data-dico="'+x[4]+'">🔎 Lọc ra</button>')+'</td></tr>').join('')
+  +'</tbody></table></div></div>';
+ const dx=deXuat().slice(0,8);
+ h+='<div class="card"><div class="ch">🧹 Đề xuất lượt giải phóng <span class="mu" style="font-weight:400">— máy chỉ gom tệp đã đủ điều kiện, <b>người lập lượt và người duyệt quyết định</b> (LT-10: không tự xóa theo lịch)</span></div><div class="cb">'
+  +(dx.length?'<table><thead><tr><th>Nhóm tệp đủ điều kiện</th><th class="num">Số tệp</th><th class="num">Dung lượng</th><th>Chế độ</th><th>Duyệt</th><th></th></tr></thead><tbody>'
+  +dx.map(x=>'<tr><td><b>'+esc(nhanDX(x))+'</b>'+(x.lop?'<div class="mu" style="font-size:11px">'+esc(lop(x.lop).menu)+'</div>':'')+(x.tuChoi?'<div style="font-size:11px;color:var(--amber)">⚠ có tệp Hiệu trưởng đã từ chối ở '+x.tuChoi+' — đọc ý kiến trước khi lập lại</div>':'')+'</td><td class="num">'+nf(x.n)+'</td><td class="num"><b>'+mb(x.mb)+'</b></td>'
+   +'<td>'+cheChip(x.m)+'</td><td style="font-size:11.5px">'+(x.lop&&tuDongBat(lop(x.lop))?'<b style="color:var(--green)">⚡ Tự động — lượt đêm gom</b>':x.m==='TD'?'<span class="mu">IT chạy thẳng (LT-3)</span>':x.qd?'HT duyệt + <b>số QĐ hủy</b>':'Hiệu trưởng duyệt')+'</td>'
+   +'<td>'+(coNL('lap')?'<button class="btn xs p" data-dx="'+esc(x.k)+'">🧹 Lập lượt</button>':'<span class="mu" style="font-size:11px">Quản trị hệ thống lập</span>')+'</td></tr>').join('')
+  +'</tbody></table>':'<div class="empty">Không còn tệp nào đủ điều kiện giải phóng.</div>')+'</div></div>';
+ /* bảng theo lớp */
+ const T=tongMB();
+ let rows='';
+ NHOM.forEach(([k,n])=>{
+  const ls=LOP.filter(l=>l.nhom===k); const s=ls.reduce((a,l)=>a+t.lop[l.ma].mb,0), sn=ls.reduce((a,l)=>a+t.lop[l.ma].n,0);
+  rows+='<tr class="grow"><td colspan="3"><span class="dotc" style="background:'+NHOM_MAU[k]+'"></span><b>'+esc(n)+'</b> <span class="mu">· '+ls.length+' lớp</span></td><td class="num"><b>'+nf(sn)+'</b></td><td class="num"><b>'+mb(s)+'</b></td><td colspan="5"></td></tr>';
+  ls.forEach(l=>{const s=t.lop[l.ma];
+   rows+='<tr class="rw" data-lop="'+l.ma+'"><td class="mono">'+l.ma+'</td><td><b>'+esc(l.ten)+'</b>'+(l.an?' <span class="tg r" title="Tên tệp bị che ở menu này (R3)">🔒 '+(l.an==='own'?'Own':'nhạy cảm')+'</span>':'')
+    +(s.mocoi?' <span class="tg b">🧩 '+nf(s.mocoi)+' mồ côi</span>':'')+'</td><td class="mono">'+esc(l.menu)+'</td>'
+    +'<td class="num">'+(s.n?nf(s.n):'<span class="mu">0</span>')+'</td>'
+    +'<td class="num"><div class="mbar"><i style="width:'+Math.min(100,s.mb/T*100*6).toFixed(1)+'%;background:'+NHOM_MAU[k]+'"></i></div>'+(s.n?mb(s.mb):l.ma==='L46'?'<span class="mu" title="M6.8 §12">chưa lưu</span>':'<span class="mu">—</span>')+'</td>'
+    +'<td class="num">'+(s.t30?'+'+mb(s.t30):l.ma==='S5'?'<span class="mu" title="Tự xoay vòng — không tính vào tốc độ tăng">xoay vòng</span>':'<span class="mu">—</span>')+'</td><td>'+(s.cu?k2s(s.cu):'<span class="mu">—</span>')+'</td>'
+    +'<td class="num">'+(s.duoc?'<b style="color:var(--green)">'+mb(s.duoc)+'</b><div class="mu" style="font-size:10.5px">'+nf(s.duocN)+' tệp'
+     +(s.duocBgh?'<br><span title="Không phải do thời hạn — bản ghi chủ ở menu chủ đã hủy">· '+nf(s.duocBgh)+' do bản ghi đã hủy</span>':'')+'</div>':'<span class="mu">0</span>')+(s.cho?'<div style="font-size:10.5px;color:var(--brand)">⏳ '+mb(s.cho)+' chờ hủy</div>':'')+'</td>'
+    +'<td>'+cheChip(l.cs.che)+'<div class="mu" style="font-size:10.5px">'+(chuaDat(l)?'<b style="color:var(--red)">⚠ chưa đặt thời hạn</b>':esc(hanText(l.cs)))+'</div></td>'
+    +'<td>'+(tuDongBat(l)?'<span class="tg g" title="Tự động xóa khi đến hạn — vẫn qua chờ hủy '+CFG.choHuy+' ngày, vẫn ghi vết">⚡ Bật</span>':'<span class="mu" style="font-size:11px">Tắt</span>')+'</td></tr>'});
+ });
+ rows+='<tr class="grow"><td colspan="3"><span class="dotc" style="background:#475569"></span><b>Hệ thống · không phân loại được</b> <span class="mu">— CSDL · hệ điều hành · phần mềm · nhật ký chưa archive = <b>đo ổ − tổng các lớp</b>, không chia vào lớp nào</span></td>'
+  +'<td class="num mu">—</td><td class="num"><b>'+mb(HE_THONG_MB)+'</b></td><td colspan="5" class="mu" style="font-size:11px">Không giải phóng từ menu này — hạ tầng</td></tr>'
+  +'<tr class="totrow"><td colspan="3">Tổng đã dùng</td><td class="num">'+nf(t.tep)+'</td><td class="num">'+gb(dungMB())+'</td><td class="num">+'+mb(t.t30)+'</td><td></td><td class="num" style="color:var(--green)">'+mb(t.duocNgay+t.toiHan)+'</td><td></td><td class="mu" style="font-size:11px">'+soLopTuDong()+' lớp bật</td></tr>';
+ h+='<div class="tbw"><div class="tbx"><table class="lt2"><thead><tr><th>Mã</th><th>Lớp lưu trữ</th><th>Menu chủ</th><th class="num">Số tệp</th><th class="num">Dung lượng</th><th class="num">Tăng 30 ngày</th><th>Tệp cũ nhất</th><th class="num">Giải phóng được</th><th>Chế độ · thời hạn tối thiểu</th><th>Tự động</th></tr></thead><tbody>'
+  +rows+'</tbody></table></div>'
+  +'<div class="lgd">'+Object.keys(CHE).map(c=>cheChip(c)).join(' ')+'<span>· ① tự do · ② sau thời hạn — trước hạn ⛔ nêu ngày được phép · ③ cần quyết định hủy · ④ không giải phóng được, chỉ nói chiếm bao nhiêu</span></div></div>';
+ h+=dnote('<b>Một dòng = một loại tệp của một menu chủ</b> (danh mục <b>dẫn xuất</b>: menu chủ gắn mã lớp vào tệp lúc tải lên — M6.8 §12 gọi đó là "chức năng đã tải nó lên"). '
+  +'M10.11 làm chủ <b>con số dung lượng chung</b> và <b>chính sách giải phóng</b>, không làm chủ tệp: giải phóng chỉ hủy <b>nội dung</b>, bản ghi ở menu chủ ở lại với nhãn 🗄 (R1). '
+  +'"Giải phóng được" không tính tệp đang nằm trong một lượt mở. Dòng <b>Hệ thống · không phân loại được</b> hiện ra để tổng khớp số đo thật — che đi thì con số "đã dùng" nói sai về ổ.');
+ return h;
+}
+
+
+/* ══════════════ M10.11 — TAB 2 · TRA CỨU TỆP (đơn vị dòng: MỘT TỆP) ══════════════
+   Không có 👁 Xem / ⬇ Tải (R3): quản trị dung lượng cần biết tệp là gì, nặng bao nhiêu, của ai — không cần đọc nội dung. */
+const DUOI_ICON={pdf:'📕',docx:'📘',doc:'📘',xlsx:'📗',csv:'📗',pptx:'📙',jpg:'🖼',heic:'🖼',png:'🖼',webp:'🖼',mp4:'🎞',mp3:'🔊',ggb:'📐',xml:'🧾',gz:'🗜',dump:'💽'};
+const duoi=f=>f.ten.split('.').pop().toLowerCase();
+const PAGE=100;
+function selOpt(v,opts,cur){return opts.map(([k,n])=>'<option value="'+esc(k)+'"'+(k===cur?' selected':'')+'>'+esc(n)+'</option>').join('')}
+function boLoc(){
+ const L=ST.loc;
+ const lops=LOP.filter(l=>!L.nhom||l.nhom===L.nhom);
+ const menus=[...new Set(LOP.map(l=>l.menu))].sort((a,b)=>a.localeCompare(b,'vi',{numeric:true}));
+ const dds=[...new Set(F.map(duoi))].sort();
+ const bois=[['','Mọi người tải lên'],['ph','Phụ huynh (App PH-HS)'],['hs','Học sinh'],['he','Hệ thống']].concat(NS.filter(n=>!n.cd.includes('FULL')).map(n=>[n.id,n.ten+(n.nghi?' (đã nghỉ)':'')]));
+ return '<div class="fbar">'
+  +'<input class="inp" id="qT" placeholder="🔎 Mã tệp · mã bản ghi · tên tệp (lớp bị che: chỉ theo mã)" value="'+esc(L.q)+'">'
+  +'<select class="fs" data-lc="nhom">'+selOpt(0,[['','Mọi nhóm nguồn']].concat(NHOM),L.nhom)+'</select>'
+  +'<select class="fs" data-lc="lop">'+selOpt(0,[['','Mọi lớp lưu trữ']].concat(lops.map(l=>[l.ma,l.ma+' · '+l.ten])),L.lop)+'</select>'
+  +'<select class="fs" data-lc="menu">'+selOpt(0,[['','Mọi menu chủ']].concat(menus.map(m=>[m,m])),L.menu)+'</select>'
+  +'<select class="fs" data-lc="nam">'+selOpt(0,[['','Mọi năm học'],['2024-2025','2024-2025'],['2025-2026','2025-2026'],['2026-2027','2026-2027']],L.nam)+'</select>'
+  +'<select class="fs" data-lc="tt">'+selOpt(0,[['','Còn nội dung (mặc định)']].concat(Object.entries(TT_TEP).map(([k,v])=>[k,v[0]])).concat([['luot','Đang trong một lượt mở'],['bghuy','Bản ghi chủ đã HỦY ở menu chủ'],['hong','⚠ Tệp hỏng — cần tải lại'],['tamGiu','Tạm giữ theo vụ việc']]),L.tt)+'</select>'
+  +'<select class="fs" data-lc="che">'+selOpt(0,[['','Mọi chế độ'],['duoc','✓ Giải phóng được'],['chan','⛔ Bị chặn'],['TD','① Tự do'],['SH','② Sau thời hạn'],['QD','③ Theo quyết định hủy'],['KH','④ Vĩnh viễn']],L.che)+'</select>'
+  +'</div><div class="fbar">'
+  +'<span class="mu" style="font-size:12px">Nhập từ</span><input type="date" class="fs" data-lc="tu" value="'+esc(L.tu)+'"><span class="mu" style="font-size:12px">đến</span><input type="date" class="fs" data-lc="den" value="'+esc(L.den)+'">'
+  +'<select class="fs" data-lc="dd">'+selOpt(0,[['','Mọi định dạng']].concat(dds.map(d=>[d,'.'+d])),L.dd)+'</select>'
+  +'<select class="fs" data-lc="co">'+selOpt(0,CO_MOC,L.co)+'</select>'
+  +'<select class="fs" data-lc="boi">'+selOpt(0,bois,L.boi)+'</select>'
+  +'<select class="fs" data-lc="kenh">'+selOpt(0,[['','Mọi kênh']].concat(Object.entries(KENH)),L.kenh)+'</select>'
+  +'<select class="fs" data-lc="dan">'+selOpt(0,[['','Dẫn tới: mọi'],['co','Đang được dẫn tới'],['ghim','Ghim trong đề đã sử dụng'],['khong','Không bản ghi nào dẫn tới']],L.dan)+'</select>'
+  +'<select class="fs" data-sx="1">'+selOpt(0,[['co','Sắp: cỡ lớn → nhỏ'],['coTang','Sắp: cỡ nhỏ → lớn'],['cu','Sắp: nhập cũ → mới'],['moi','Sắp: nhập mới → cũ']],ST.sx)+'</select>'
+  +'<button class="btn sm" data-xloc="1">✕ Xóa lọc</button></div>'
+  +'<div class="fbar" style="padding-top:0">'+[['mocoi','🧩 Mồ côi'],['bghuy','🗂 Bản ghi chủ đã hủy'],['hong','⚠ Tệp hỏng'],['tamGiu','⏸ Tạm giữ'],['rac','🗑 Trong thùng rác'],['cu','🕘 Phiên bản cũ'],['cho','⏳ Chờ hủy'],['giai','✕ Đã giải phóng']].map(([k,n])=>
+   '<button class="chip'+(L.tt===k?' on':'')+'" data-qtt="'+k+'">'+n+'</button>').join('')+'</div>';
+}
+function hangTep(f,o){
+ const L=lop(f.lop), c=cheDo(f), trong=moTrongLuot(f);
+ const tt=TT_TEP[f.tt];
+ return '<tr class="rw'+(ST.cur===f.id?' on':'')+'" data-f="'+f.id+'">'
+  +'<td onclick="event.stopPropagation()">'+(o.chon?'<input type="checkbox" data-ck="'+f.id+'"'+(ST.chon.has(f.id)?' checked':'')+'>':'')+'</td>'
+  +'<td><span class="ico">'+(DUOI_ICON[duoi(f)]||'📄')+'</span><b'+(L.an?' class="che"':'')+'>'+esc(tenHien(f))+'</b><div class="mu mono" style="font-size:10.5px">'+f.id+' · '+esc(f.ban)+'</div></td>'
+  +'<td><span class="mono">'+L.ma+'</span> <span class="mu" style="font-size:11px">'+esc(L.menu)+'</span></td>'
+  +'<td class="num"><b>'+mb(f.mb)+'</b></td>'
+  +'<td class="hcol">'+k2s(f.ngay)+'<div class="mu" style="font-size:10.5px">'+f.nam+'</div></td>'
+  +'<td class="hcol" style="font-size:12px">'+esc(tenBoi(f.boi))+'<div class="mu" style="font-size:10.5px">'+KENH[f.kenh]+'</div></td>'
+  +'<td><span class="st2 '+tt[1]+'">'+tt[0]+'</span>'+(trong&&f.tt!=='cho'?'<div style="font-size:10.5px;color:var(--amber)">trong '+f.luot+'</div>':f.tt==='cho'?'<div style="font-size:10.5px;color:var(--brand)">'+f.luot+'</div>':'')
+   +(f.banGhiHuy?'<div class="tg c" title="Bản ghi chủ đã hủy ở menu chủ">🗂 bản ghi đã hủy</div>':'')
+   +(f.hong?'<div class="tg r" title="'+esc(f.hong)+'">⚠ hỏng</div>':'')
+   +(f.tamGiu?'<div class="tg b" title="'+esc(f.tamGiu.ly+' — '+f.tamGiu.vv+', do '+tenBoi(f.tamGiu.boi)+' đặt '+k2s(f.tamGiu.ngay))+'">⏸ tạm giữ</div>':'')
+   +(f.giuCu&&f.giuCu.length?'<div class="mu" style="font-size:10.5px" title="'+esc(f.giuCu.map(g=>g.ly+' — gỡ '+k2s(g.goNgay)).join(' · '))+'">đã gỡ tạm giữ '+f.giuCu.length+' lần</div>':'')+'</td>'
+  +'<td>'+(c.m?cheChip(c.m,c.ok&&!trong?' ✓':' ⛔'):'<span class="mu">—</span>')+(c.ngay&&!c.ok?'<div style="font-size:10.5px;color:var(--red)">từ '+k2s(c.ngay)+'</div>':'')+'</td>'
+  +'<td class="hcol" style="font-size:11px">'+(f.ghim?'<span class="tg r">📌 ghim đề</span>':f.dan?'<span class="tg b">🔗 '+f.dan.length+'</span>':'<span class="mu">—</span>')+'</td></tr>';
+}
+function ghiNhayCam(ds){
+ const nc=[...new Set(ds.slice(0,PAGE*(ST.trang+1)).filter(f=>lop(f.lop).an).map(f=>f.lop))].filter(m=>!ST.nhatKyNC[m]);
+ nc.forEach(m=>{ST.nhatKyNC[m]=1;AUDIT.unshift({boi:ME().id,ngay:BAYGIO(),muc:3,nd:'Xem danh sách lớp nhạy cảm '+m+' '+lop(m).ten+' (siêu dữ liệu, tên che)'})});
+}
+function veTC(){
+ if(!coMenu()) return khongQuyen();
+ const ds=locTep(), L=ST.loc;
+ let h=scopeBar('tc','Mặc định ẩn tệp <b>đã giải phóng</b> — chip ✕ tìm lại dòng vết của chúng.');
+ h+=boLoc();
+ const nc=[...new Set(ds.filter(f=>lop(f.lop).an).map(f=>f.lop))];
+ if(nc.length){ghiNhayCam(ds);h+='<div class="alert w"><span>🔒</span><span class="sp">Kết quả có tệp thuộc lớp <b>Own / nhạy cảm</b> ('+nc.map(m=>m).join(' · ')+') — <b>tên tệp che</b>, chỉ hiện chủ · cỡ · ngày · mã. '
+  +'<b>Lượt xem danh sách này đã ghi nhật ký mức ③</b> (M10.7) — màn hình nói trước, không ghi lén.</span></div>'}
+ let sm=0,dn=0,dm=0,ch=0;for(const f of ds){sm+=f.mb;const c=cheDo(f);if(c.ok&&!moTrongLuot(f)&&f.tt!=='cho'){dn++;dm+=f.mb}else ch++}
+ const nChon=ST.chon.size, mChon=[...ST.chon].reduce((s,id)=>s+(fById(id)||{mb:0}).mb,0);
+ const coLap=coQ('tc','T')&&coNL('lap');
+ h+='<div class="sumline2"><span>Khớp <b>'+nf(ds.length)+'</b> tệp · <b>'+mb(sm)+'</b></span><span style="color:var(--green)">✓ giải phóng được <b>'+nf(dn)+'</b> · '+mb(dm)+'</span><span style="color:var(--red)">⛔ bị chặn / đang bận '+nf(ch)+'</span>'
+  +'<span class="sp"></span>'
+  +(coLap?'<button class="btn sm" data-chonall="1">☑ Chọn cả '+nf(ds.length)+' tệp khớp lọc</button>'+(nChon?'<button class="btn sm" data-bochon="1">Bỏ chọn</button>':'')
+   +'<button class="btn sm p" data-laplt="1"'+(nChon?'':' disabled')+'>🧹 Lập lượt giải phóng'+(nChon?' ('+nf(nChon)+' tệp · '+mb(mChon)+')':'')+'</button>'
+   :'<span class="mu" style="font-size:11.5px">'+(coQ('tc','X')?'Vai này chỉ xem — lập lượt là việc của Quản trị hệ thống':'')+'</span>')
+  +(coQ('tc','XD')?'<button class="btn sm" data-xuat="tc">⬇ Xuất siêu dữ liệu</button>':'')+'</div>';
+ const trang=ds.slice(ST.trang*PAGE,(ST.trang+1)*PAGE), nt=Math.max(1,Math.ceil(ds.length/PAGE));
+ const f=ST.cur?fById(ST.cur):null;
+ h+='<div class="stage'+(f?' open':'')+'"><div class="listw"><div class="tbx"><table class="ft"><thead><tr><th>'+(coLap?'<input type="checkbox" data-cktrang="1" title="Chọn cả trang">':'')+'</th><th>Tệp</th><th>Lớp · menu chủ</th><th class="num">Cỡ</th><th class="hcol">Nhập lúc</th><th class="hcol">Người tải lên · kênh</th><th>Trạng thái</th><th>Chế độ</th><th class="hcol">Dẫn tới</th></tr></thead><tbody>'
+  +(trang.length?trang.map(x=>hangTep(x,{chon:coLap})).join(''):'<tr><td colspan="9" class="empty">Không có tệp nào khớp bộ lọc.</td></tr>')+'</tbody></table></div>'
+  +'<div class="lgd"><span>Trang <b>'+(ST.trang+1)+'</b>/'+nt+' · 100 dòng mỗi trang</span>'+(ST.trang>0?'<button class="btn xs" data-trang="-1">‹ Trước</button>':'')+(ST.trang<nt-1?'<button class="btn xs" data-trang="1">Sau ›</button>':'')
+  +'<span>· Không có 👁 Xem / ⬇ Tải — nội dung mở ở menu chủ theo quyền của người xem (R3)</span></div></div>'
+  +'<div class="panel">'+(f?panelTep(f):'')+'</div></div>';
+ h+=dnote('<b>Chế độ ở cột cuối là chế độ HIỆU LỰC của từng tệp</b> = chính sách lớp × trạng thái tệp: phiên bản cũ · thùng rác quá '+CFG.racNgay+' ngày · mồ côi thành ① dù lớp là ② hay ③; '
+  +'câu <b>ghim trong đề đã sử dụng</b> thành ④ dù lớp là ①. Tên tệp của lớp Own / nhạy cảm che vì <b>tên tệp cũng là nội dung</b> ("Giay-kham-tam-than-HS…"). '
+  +'"Chọn cả n tệp khớp lọc" để lập lượt theo tiêu chí (vd lớp L04 · năm học 2025-2026) mà không phải tích từng trang.');
+ return h;
+}
+/* bản ghi ở menu chủ SAU khi nội dung đã giải phóng — một khuôn chung cho mọi menu giữ tệp (mục E) */
+function banGhiChu(f){
+ const L=lop(f.lop), lt=luotById(f.luotGiai)||{}, ng=lt.duyet?nsById(lt.duyet.boi).ten:lt.lap?nsById(lt.lap.boi).ten:'—';
+ const nhan='<span class="gpl">🗄 Nội dung đã giải phóng — '+k2s(f.ngayGiai)+' · '+esc(ng)+' · '+esc((lt.lyDo||'').slice(0,60))+(lt.lyDo&&lt.lyDo.length>60?'…':'')+' · <a>↗ M10.11 '+esc(f.luotGiai)+'</a></span>';
+ const dong=L.ma==='L03'?'<tr><td>📄 <b>'+esc(f.ten)+'</b><div class="mu" style="font-size:11px">Kho của '+esc(tenBoi(f.boi))+' · phiên bản cũ</div></td><td>'+nhan+'</td></tr>'
+  :L.ma==='L13'?'<tr><td>🪪 <b>'+esc(f.ten.replace(/^HS\d+-/,''))+'</b><div class="mu" style="font-size:11px">Hồ sơ '+esc(f.ban)+' · F6 Giấy tờ · bản nộp lần trước (bị yêu cầu nộp lại)</div></td><td>'+nhan+'<div class="mu" style="font-size:11px;margin-top:3px">Bản hiện hành: <b>👁 Xem</b> <b>⬇ Tải</b> vẫn như cũ</div></td></tr>'
+  :'<tr><td>📄 <b>'+esc(tenHien(f))+'</b><div class="mu" style="font-size:11px">'+esc(f.ban)+'</div></td><td>'+nhan+'</td></tr>';
+ return '<div class="card"><div class="ch">🔗 Bản ghi ở '+esc(L.menu)+' hiện như sau <span class="tg c">mô phỏng</span></div><div class="cb"><table><tbody>'+dong+'</tbody></table>'
+  +'<div class="mu" style="font-size:11.5px;padding:6px 12px">Dòng <b>không mất</b> — thay chỗ <b>👁 Xem ⬇ Tải</b> bằng nhãn 🗄. Menu chủ vẫn là chủ bản ghi (D1); ↗ chỉ hiện với vai có quyền Xem ở M10.11.</div></div></div>';
+}
+function panelTep(f){
+ const L=lop(f.lop), c=cheDo(f), trong=moTrongLuot(f), lt=f.luot?luotById(f.luot):null;
+ const kv=(k,v)=>'<div class="f"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>';
+ const nk=[['📥 Tải lên',f.ngay,tenBoi(f.boi)+' qua '+KENH[f.kenh]]];
+ if(f.tt==='cu') nk.push(['🕘 Thành phiên bản cũ','—','có bản mới hơn ở '+L.menu]);
+ if(f.tt==='rac') nk.push(['🗑 Vào thùng rác của '+L.menu,f.racNgay,'người dùng xóa ở menu chủ']);
+ if(f.luot||f.luotGiai){const l=luotById(f.luot||f.luotGiai);if(l){nk.push(['🧹 Vào lượt '+l.id,l.lap.ngay,nsById(l.lap.boi).ten]);if(l.duyet&&l.tt!=='tu_choi')nk.push(['✓ Duyệt',l.duyet.ngay,nsById(l.duyet.boi).ten])}}
+ if(f.tt==='giai') nk.push(['✕ Hủy nội dung',f.ngayGiai+' 01:00','lượt hủy đêm · dòng vết + mã băm giữ vĩnh viễn']);
+ let h='<div class="ph"><div class="n"><h2>'+(DUOI_ICON[duoi(f)]||'📄')+' '+esc(tenHien(f))+'</h2><div class="m"><span class="mono">'+f.id+'</span><span class="pill">'+L.ma+' · '+esc(L.ten)+'</span></div></div><div class="spacer"></div><button class="btn sm" data-close="1">✕</button></div><div class="pbody">';
+ if(L.an) h+='<div class="ro">🔒 Tên tệp che — lớp <b>'+(L.an==='own'?'Own (kho cá nhân — kể cả Hiệu trưởng không đọc)':'nhạy cảm (Luật BVDLCN 91/2025)')+'</b>. Menu này chỉ thấy chủ · cỡ · ngày · mã; lượt mở panel ghi nhật ký mức ③.</div>';
+ h+='<div class="card"><div class="ch">🗂 Siêu dữ liệu</div><div class="cb">'
+  +kv('Lớp lưu trữ',L.ma+' · '+esc(L.ten))+kv('Menu chủ · bản ghi','<span class="mono">'+esc(f.ban)+'</span>'+(role==='FULL'||role==='HT'?' <a class="rolnk" data-mochu="'+f.id+'">↗ Mở ở '+esc(L.menu)+'</a>':' <span class="mu" style="font-weight:400;font-size:11px">(không có quyền ở menu chủ — không hiện lối mở)</span>'))
+  +kv('Định dạng · cỡ','.'+duoi(f)+' · <b>'+mb(f.mb)+'</b>')+kv('Nhập lúc',k2s(f.ngay)+' '+f.ngay.slice(11)+' · năm học '+f.nam)
+  +(f.nvb?kv('Năm của văn bản',f.nvb+' <span class="mu" style="font-weight:400">— bản scan nhập từ hệ thống cũ; sàn ③ tính theo năm này, không theo ngày tải lên</span>'):'')
+  +(L.cs.moc==='ng'?kv('Câu / nhóm câu',f.ngung?'ngừng dùng từ '+k2s(f.ngung)+' <span class="mu" style="font-weight:400">🔗 '+L.menu+'</span>':'<b>đang dùng</b> <span class="mu" style="font-weight:400">🔗 '+L.menu+'</span>'):'')
+  +kv('Người tải lên',esc(tenBoi(f.boi)))+kv('Kênh',KENH[f.kenh]+(f.kenh==='app_ph'||f.kenh==='app_gv'?' <span class="mu" style="font-weight:400">— đi chung đường với Web, cùng ổ</span>':''))
+  +kv('Trạng thái','<span class="st2 '+TT_TEP[f.tt][1]+'">'+TT_TEP[f.tt][0]+'</span>'+(lt?' · lượt <a class="rolnk" data-golt="'+lt.id+'">'+lt.id+'</a>':''))
+  +kv('Mã băm SHA-256','<span class="mono">'+f.hash+'</span>')+'</div></div>';
+ h+='<div class="card'+(c.ok?'':' bad')+'"><div class="ch">⚖ Chế độ giải phóng <span class="sp"></span>'+(c.m?cheChip(c.m):'')+'</div><div class="cb" style="padding:9px 12px;font-size:12.5px;line-height:1.65">'
+  +(f.tt==='giai'?'✕ '+esc(c.ly):c.ok&&!trong?'✓ <b>Đưa được vào lượt.</b> '+esc(c.ly):'⛔ <b>'+(trong&&c.ok?'Đang nằm trong lượt '+f.luot:'Không giải phóng được lúc này')+'.</b> '+esc(c.ly))
+  +(c.ngay&&!c.ok?'<div style="margin-top:4px">📅 Được phép từ <b>'+k2s(c.ngay)+'</b></div>':'')
+  +(c.chua&&coNL('chinhsach')?'<div style="margin-top:6px"><button class="btn xs" data-golop="'+L.ma+'">⚙ Đặt thời hạn cho '+L.ma+'</button></div>':c.chua?'<div class="mu" style="margin-top:4px">Hiệu trưởng đặt ở tab ⚙ Cấu hình.</div>':'')
+  +'<div class="mu" style="margin-top:4px">Chính sách lớp: '+CHE[L.cs.che][0]+' '+CHE[L.cs.che][1]+' · '+esc(hanText(L.cs))+'</div></div></div>';
+ if(f.hong) h+='<div class="danger">⚠ <b>Tệp hỏng — quét toàn vẹn ngày '+k2s(CFG.quet.lanCuoi)+' báo:</b> '+esc(f.hong)+'.<br>Cách xử lý: người phụ trách ở <b>'+esc(L.menu)+'</b> <b>tải lại tệp thay thế</b> (nội dung cũ không cứu được). Giải phóng tệp hỏng cũng được — nhưng bản ghi sẽ mang nhãn 🗄 và không ai biết nội dung từng là gì, nên tải lại trước thì hơn.</div>';
+  if(f.tamGiu) h+='<div class="warn">⏸ <b>Tạm giữ theo vụ việc</b> — '+esc(f.tamGiu.ly)+' <span class="mono">('+esc(f.tamGiu.vv)+')</span>.<br>'
+   +'Đặt bởi <b>'+esc(tenBoi(f.tamGiu.boi))+'</b> ngày '+k2s(f.tamGiu.ngay)+' <span class="mu">— người có quyền Sửa ở '+esc(L.menu)+' (LT-20)</span>. '
+   +'Tới hạn cũng <b>không</b> vào lượt, kể cả lượt tự động.<br>'
+   +(role==='HT'||role==='FULL'?'<button class="btn xs" data-gogiu="'+f.id+'" style="margin-top:6px">🔓 Gỡ tạm giữ</button> <span class="mu">— chỉ Hiệu trưởng</span>'
+     :'<span class="mu">Chỉ <b>Hiệu trưởng</b> gỡ được — báo Hiệu trưởng khi vụ việc khép lại.</span>')+'</div>';
+  if(f.giuCu&&f.giuCu.length) h+='<div class="ro">🔓 <b>Lịch sử tạm giữ</b> (giữ lại, không xóa):<br>'
+   +f.giuCu.map(g=>'· '+esc(g.ly)+' <span class="mono">('+esc(g.vv)+')</span> — '+esc(tenBoi(g.boi))+' đặt '+k2s(g.ngay)+', <b>'+esc(tenBoi(g.goBoi))+'</b> gỡ '+k2s(g.goNgay)+': '+esc(g.goLy)).join('<br>')+'</div>';
+ if(f.banGhiHuy) h+='<div class="ro">🗂 <b>Bản ghi chủ đã hủy</b> ở '+esc(L.menu)+' ngày <b>'+k2s(f.banGhiHuy)+'</b>'+(L.luat?' — nhưng lớp này có <b>sàn pháp lý</b>, tệp vẫn giữ theo chính sách lớp (bản ghi bị hủy không làm mất nghĩa vụ lưu).':' — nội dung không còn mục đích, giải phóng được.')+'</div>';
+ h+='<div class="card"><div class="ch">🔗 Đang được dẫn tới</div><div class="cb" style="padding:8px 12px;font-size:12.5px">'
+  +(f.ghim?'📌 '+esc(f.ghim)+' <b style="color:var(--red)">— chặn</b><br>':'')+(f.dan?f.dan.map(d=>'⚠ '+esc(d)+' <span class="mu">— cảnh báo, không chặn</span>').join('<br>'):'')
+  +(!f.ghim&&!f.dan?'<span class="mu">Không có bản ghi nào khác dẫn tới ngoài bản ghi chủ.</span>':'')+'</div></div>';
+ if(f.tt==='giai') h+=banGhiChu(f);
+ else h+='<div class="ro">🚫 <b>Không có 👁 Xem / ⬇ Tải ở menu này</b> (R3). Muốn đọc nội dung thì mở ở <b>'+esc(L.menu)+'</b> — menu chủ tự kiểm quyền của bạn.</div>';
+ h+='<div class="card"><div class="ch">📜 Nhật ký của tệp</div><div class="cb"><table><tbody>'+nk.map(x=>'<tr><td>'+x[0]+'</td><td>'+k2s(x[1])+'</td><td class="mu">'+esc(x[2])+'</td></tr>').join('')+'</tbody></table></div></div>';
+ h+='</div><div class="cact">'
+  +(c.ok&&!trong&&f.tt!=='cho'&&coNL('lap')?'<button class="btn sm p" data-lap1="'+f.id+'">🧹 Lập lượt với tệp này</button>':'')
+  +(f.tt==='cho'&&lt&&(coQ('gp','S')||coQ('gp','D'))?'<button class="btn sm" data-hoan="'+f.id+'">↺ Hoàn tác khỏi '+lt.id+'</button>':'')
+  +'</div>';
+ return h;
+}
+
+/* ════ LT-20 — gỡ tạm giữ: ĐẶT là việc của người có quyền S ở menu chủ, GỠ là thẩm quyền Hiệu trưởng ════
+   Gỡ không xóa dấu vết: cờ cũ chuyển vào f.giuCu kèm người gỡ và lý do gỡ, nhật ký mức ②. */
+let GOF=null;
+function moGoGiu(id){
+ const f=fById(id); if(!f||!f.tamGiu) return;
+ if(!(role==='HT'||role==='FULL')){toast('⛔ <b>LT-20:</b> chỉ <b>Hiệu trưởng</b> gỡ tạm giữ. Người có quyền Sửa ở '+esc(lop(f.lop).menu)+' là người ĐẶT cờ.');return}
+ GOF=id;
+ modal('🔓 Gỡ tạm giữ — '+esc(tenHien(f)),
+  '<div class="warn">⏸ Đang giữ vì: <b>'+esc(f.tamGiu.ly)+'</b> <span class="mono">('+esc(f.tamGiu.vv)+')</span> — '+esc(tenBoi(f.tamGiu.boi))+' đặt ngày '+k2s(f.tamGiu.ngay)+'.</div>'
+  +'<div class="ro">Gỡ xong, tệp trở lại chế độ bình thường của lớp <b>'+f.lop+'</b> — nếu đã tới hạn thì lần lập lượt sau (hoặc lượt tự động) sẽ lấy nó. Cờ cũ <b>không mất</b>: lưu vào lịch sử tạm giữ của tệp và nhật ký mức ②.</div>'
+  +'<label class="lbl">Lý do gỡ *</label><input class="fldi" id="goLy" placeholder="vd Khiếu nại KN-2026-04 đã khép ngày 12/10/2026">',
+  '<button class="btn" data-mb="close">Bỏ</button><button class="btn p" data-mb="gogiu">🔓 Gỡ tạm giữ</button>');
+}
+mfns.bgogiu=()=>{
+ const f=fById(GOF), ly=($('#goLy').value||'').trim();
+ if(!ly){toast('⛔ Phải ghi lý do gỡ — người đặt cờ và người kiểm tra sau này cần biết vì sao tệp hết bị giữ.');return}
+ (f.giuCu=f.giuCu||[]).push(Object.assign({},f.tamGiu,{goBoi:ME().id,goNgay:HOMNAY,goLy:ly}));
+ f.tamGiu=null; VER++;
+ ghiVet({nd:'Gỡ tạm giữ tệp '+f.id+' ('+f.lop+' · '+lop(f.lop).menu+') — '+ly});
+ closeM(); render();
+ toast('🔓 Đã gỡ tạm giữ <b>'+esc(f.id)+'</b> — tệp trở lại chế độ '+CHE[cheDo(f).m||'TD'][0]+' của lớp; lịch sử tạm giữ vẫn còn ở panel.');
+};
+
+
+/* ══════════════ M10.11 — TAB 3 · LƯỢT GIẢI PHÓNG (đơn vị dòng: MỘT LƯỢT) ══════════════
+   Lập (IT) → xem trước tách ĐƯỢC / BỊ CHẶN → Hiệu trưởng duyệt (4-eye) → CHỜ HỦY N ngày (hoàn tác từng tệp) → lượt hủy đêm → bảng kết quả + dòng vết.
+   Lượt chỉ gồm tệp ① Tự do: IT chạy thẳng, không cần HT (LT-3) — vẫn qua chờ hủy, vẫn ghi vết. */
+/* ════ LT-22 (anh Ninh chốt 16/9/2026) — HỒ SƠ HỦY TÀI LIỆU: 7 thành phần theo TT 06/2025/TT-BNV Đ.15 k.4a ════
+   Chỉ áp cho lượt có tệp ③. Ba thành phần máy lo (danh mục · biên bản bàn giao · biên bản hủy); bốn thành phần là
+   văn bản của trường ký NGOÀI hệ thống — M10.11 ghi số + ngày, không thay thẩm quyền.
+   Hai mốc pháp lý kèm theo: hủy trong 15 ngày kể từ quyết định (Đ.15 k.3) · hồ sơ hủy lưu 20 năm (k.4b — lớp L57). */
+const HS_TP=[
+ ['dm','Danh mục tài liệu hết thời hạn lưu trữ, trùng lặp','Đ.11 k.1','may','Máy sinh từ chính danh sách tệp của lượt'],
+ ['tm','Bản thuyết minh','Đ.11 k.1','text','Vì sao hủy — người lập viết'],
+ ['hd','Quyết định thành lập Hội đồng xét hủy','Đ.12 k.2 — tối thiểu 05 thành viên','so','Ký ngoài hệ thống — ghi số, ngày và tải bản scan'],
+ ['bb','Biên bản họp Hội đồng xét hủy','Đ.12','so','Ký ngoài hệ thống — ghi số, ngày và tải bản scan'],
+ ['qd','Quyết định hủy tài liệu','Đ.15 k.1 — người có thẩm quyền','so','Hiệu trưởng ghi khi duyệt; bản scan nộp trước khi lượt hủy chạy'],
+ ['bg','Biên bản bàn giao tài liệu để hủy','Đ.15 k.4a','ngay','Máy ghi ngày khi lượt hủy chạy'],
+ ['bh','Biên bản hủy','Đ.15 k.3 — hủy trong 15 ngày','maySau','Máy sinh sau khi hủy: số tệp · dung lượng · mã băm']
+];
+const hsMoi=()=>({tm:'',hd:{so:'',ngay:'',tep:null},bb:{so:'',ngay:'',tep:null},qd:{so:'',ngay:'',tep:null},bg:{ngay:''},bh:{ngay:'',ma:''},tepHS:''});
+/* LT-22b (chốt 16/9/2026) — ba văn bản ký NGOÀI hệ thống phải có BẢN SCAN: số + ngày sau 20 năm không tra lại được nội dung.
+   Bản scan là tệp thật, vào lớp L57 ngay khi tải lên và chiếm chỗ trên ổ như mọi tệp khác. */
+const VB_SCAN={hd:'QD-lap-Hoi-dong-xet-huy',bb:'Bien-ban-hop-Hoi-dong',qd:'QD-huy-tai-lieu'};
+function taiScan(lt,k){
+ const r=rngTu(lt.id+k), mbF=Math.round((0.35+r()*0.9)*100)/100;
+ const f={id:'L57-'+lt.id+'-'+k,lop:'L57',ten:VB_SCAN[k]+'-'+lt.id+'.pdf',mb:mbF,ngay:BAYGIO(),nam:namCua(HOMNAY),
+  boi:ME().id,kenh:'web',ban:'M10.11 · '+lt.id,tt:'dung',dan:null,ghim:null};
+ f.hash=bam(f.id+f.ten); F.push(f); FM.set(f.id,f);
+ lt.hs[k].tep={id:f.id,ten:f.ten,mb:mbF}; VER++;
+ ghiVet({nd:'Tải bản scan '+({hd:'quyết định thành lập Hội đồng xét hủy',bb:'biên bản họp Hội đồng',qd:'quyết định hủy'}[k])+' cho lượt '+lt.id+' — '+f.ten+' ('+mb(mbF)+', lớp L57)'});
+ render(); toast('📎 Đã tải <b>'+esc(f.ten)+'</b> ('+mb(mbF)+') — vào lớp <b>L57</b>, giữ 20 năm cùng hồ sơ hủy.');
+}
+function goScan(lt,k){
+ const t=lt.hs[k].tep; if(!t) return;
+ const i=F.findIndex(f=>f.id===t.id); if(i>=0){F.splice(i,1);FM.delete(t.id)}
+ lt.hs[k].tep=null; VER++; ghiVet({nd:'Gỡ bản scan '+t.ten+' khỏi hồ sơ hủy lượt '+lt.id}); render(); toast('Đã gỡ <b>'+esc(t.ten)+'</b>.');
+}
+const canHoSo=lt=>{const p=phanLoai(lt);return !!(p.qd||(lt.hs&&lt.hs.qd.so))};
+const hanHuy15=lt=>lt.hs&&lt.hs.qd.ngay?cong(lt.hs.qd.ngay,15,'ngay'):null;
+let _soLuot=9;
+const moiLuotId=()=>'GP-2026-'+p2(_soLuot++);
+function taoLuot(ids,ten,tieuChi){
+ if(!coNL('lap')){toast('⛔ Chỉ Quản trị hệ thống lập lượt giải phóng (M10.4).');return}
+ if(!ids.length){toast('⛔ Chưa chọn tệp nào.');return}
+ const lt={id:moiLuotId(),ten,tieuChi,ids:ids.slice(),loai:[],lap:{boi:ME().id,ngay:BAYGIO()},lyDo:'',hs:hsMoi(),tt:'nhap',gui:null,duyet:null,choDen:null,hoan:[],kq:null};
+ LUOT.unshift(lt);ghiVet({nd:'Lập nháp lượt '+lt.id+' — '+nf(ids.length)+' tệp ('+ten+')'});
+ ST.chon.clear();ST.tab='gp';ST.gpCur=lt.id;ST.gpXem='duoc';ST.gpTrang=0;ST.cur=null;VER++;render();
+ toast('🧹 Đã lập nháp <b>'+lt.id+'</b> — xem trước tách tệp <b>được giải phóng</b> và <b>bị chặn</b> kèm lý do.');
+}
+/* phân loại tệp của lượt */
+function phanLoai(lt){
+ if(lt._v===VER) return lt._p;
+ const duoc=[],chan=[],hoan=[],huy=[],bo=[];
+ if(lt.tt==='nhap'){
+  for(const id of lt.ids){const f=fById(id);const c=cheDo(f);
+   if(f.tt==='giai') chan.push({f,ly:'Đã giải phóng ở lượt '+f.luotGiai});
+   else if(moTrongLuot(f)&&f.luot!==lt.id) chan.push({f,ly:'Đang nằm trong lượt '+f.luot+' ('+TT_LUOT[luotById(f.luot).tt][0]+')',k:'luot'});
+   else if(f.tt==='cho') chan.push({f,ly:'Đang chờ hủy ở lượt '+f.luot,k:'luot'});
+   else if(!c.ok) chan.push({f,ly:c.ly,ngay:c.ngay,k:c.m==='KH'?(c.tt?'ghim':'khoa'):c.chua?'chua':c.ngay?'han':'khac'});
+   else duoc.push({f,c});}
+ } else {
+  lt.loai.forEach(x=>chan.push({f:fById(x.id),ly:x.ly,ngay:x.ngay,k:x.k}));
+  for(const id of lt.ids){const f=fById(id);
+   if(lt.hoan.includes(id)) hoan.push({f,ly:(lt.hoanLy||{})[id]||''});
+   else if(lt.kq&&lt.kq.bo.find(b=>b.id===id)) bo.push({f,ly:lt.kq.bo.find(b=>b.id===id).ly});
+   else if(lt.tt==='da_huy') huy.push({f});
+   else duoc.push({f,c:cheDo(f)});}
+ }
+ const p={duoc,chan,hoan,huy,bo,mb:duoc.reduce((s,x)=>s+x.f.mb,0),qd:duoc.some(x=>x.c&&x.c.qd),
+  chiTD:duoc.length&&duoc.every(x=>x.c&&x.c.m==='TD'),cheDem:{}};
+ duoc.forEach(x=>{const m=x.c?x.c.m:'';p.cheDem[m]=(p.cheDem[m]||0)+1});
+ lt._v=VER;lt._p=p;return p;
+}
+const LYNHOM={han:'② chưa tới hạn — nêu ngày được phép',khoa:'④ lớp khóa',ghim:'④ ghim trong đề đã sử dụng',chua:'② lớp chưa có thời hạn giữ',luot:'đang ở lượt khác',khac:'khác (chủ tệp đang công tác · còn trong thời gian khôi phục…)'};
+function veGP(){
+ if(!coMenu()) return khongQuyen();
+ if(ST.gpCur&&luotById(ST.gpCur)) return veLuot(luotById(ST.gpCur));
+ const choToi=LUOT.filter(l=>l.tt==='cho_duyet'&&coQ('gp','D'));
+ const chips=[['all','Tất cả',LUOT.length]].concat(coQ('gp','D')?[['toi','✅ Chờ tôi duyệt',choToi.length]]:[]).concat(Object.entries(TT_LUOT).map(([k,v])=>[k,v[0],LUOT.filter(l=>l.tt===k).length]));
+ const ds=LUOT.filter(l=>ST.gpLoc==='all'||(ST.gpLoc==='toi'?choToi.includes(l):l.tt===ST.gpLoc));
+ let h=scopeBar('gp','Lượt <b>không bao giờ xóa</b> — bị từ chối, đã rút, đã hoàn tác đều tìm lại được bằng chip.');
+ if(choToi.length) h+='<div class="alert b" style="margin-top:10px"><span>✅</span><span class="sp"><b>'+choToi.length+' lượt chờ bạn duyệt</b> — bấm để mở, duyệt ngay trong màn hình lượt (không phải chuyển tab). Việc này cũng hiện ở M0.2.</span></div>';
+ h+='<div class="bar">'+chips.map(([k,n,c])=>'<button class="chip'+(ST.gpLoc===k?' on':'')+'" data-gpl="'+k+'">'+n+' <b>'+c+'</b></button>').join('')
+  +'<span class="sp" style="flex:1"></span>'
+  +'<span class="mu" style="font-size:11.5px">⚡ Tự động: <b>'+soLopTuDong()+'</b> lớp bật — lượt đêm gom <b>'+nf(tepTuDong().length)+'</b> tệp</span>'
+  +((coNL('lap')||coQ('gp','D'))?'<button class="btn sm" data-dem="1">🧪 Chạy lượt đêm nay (tự động + hủy)</button>':'')
+  +(coNL('lap')?'<button class="btn sm p" data-moilt="1">＋ Lập lượt</button>':'')+'</div>';
+ h+='<div class="tbw"><div class="tbx"><table class="ft"><thead><tr><th>Lượt</th><th>Nội dung · tiêu chí</th><th class="num">Số tệp</th><th class="num">Dung lượng</th><th>Người lập</th><th>Trạng thái</th><th>Người duyệt</th></tr></thead><tbody>'
+  +(ds.length?ds.map(l=>{const p=phanLoai(l),n=l.tt==='nhap'?p.duoc.length:l.ids.length-l.hoan.length,m=l.kq?l.kq.mb:p.mb;
+   return '<tr class="rw" data-lt="'+l.id+'"><td class="mono"><b>'+l.id+'</b></td><td><b>'+esc(l.ten)+'</b><div class="mu" style="font-size:11px">'+esc(l.tieuChi)+'</div></td>'
+    +'<td class="num">'+nf(n)+(l.hoan.length?'<div class="mu" style="font-size:10.5px">↺ '+l.hoan.length+' hoàn tác</div>':'')+'</td><td class="num"><b>'+mb(m)+'</b></td>'
+    +'<td style="font-size:12px">'+esc(l.tuDong?'⚡ Hệ thống (tự động)':nsById(l.lap.boi).ten)+'<div class="mu" style="font-size:10.5px">'+k2s(l.lap.ngay)+'</div></td>'
+    +'<td><span class="st2 '+TT_LUOT[l.tt][1]+'">'+TT_LUOT[l.tt][0]+'</span>'+(l.tt==='cho_huy'?'<div style="font-size:10.5px;color:var(--brand)">hủy đêm '+k2s(l.choDen)+'</div>':'')+(l.tuDong?'<div class="mu" style="font-size:10.5px">⚡ tự động</div>':l.chayThang?'<div class="mu" style="font-size:10.5px">① chạy thẳng</div>':'')+'</td>'
+    +'<td style="font-size:12px">'+(l.duyet?esc(nsById(l.duyet.boi).ten)+'<div class="mu" style="font-size:10.5px">'+k2s(l.duyet.ngay)+'</div>':'<span class="mu">—</span>')+'</td></tr>'}).join('')
+  :'<tr><td colspan="7" class="empty">Không có lượt nào ở bộ lọc này.</td></tr>')+'</tbody></table></div></div>';
+ h+=dnote('Tầng 2 của một lượt là <b>màn hình đầy đủ có breadcrumb</b> (hàng nghìn tệp, nhiều bước) — không phải panel 1:1. '
+  +'<b>4-eye:</b> người lập không tự duyệt, kể cả vai Đủ quyền. Lượt chỉ gồm tệp ① thì Quản trị hệ thống <b>chạy thẳng</b> (LT-3). Mọi lượt đã duyệt đều qua <b>chờ hủy '+CFG.choHuy+' ngày</b> — hoàn tác từng tệp được (R5).');
+ return h;
+}
+function stepsLuot(lt){
+ const b=[['nhap','Bước 1 · Xem trước'],['cho_duyet','Bước 2 · Hiệu trưởng duyệt'],['cho_huy','Bước 3 · Chờ hủy '+CFG.choHuy+' ngày'],['da_huy','Bước 4 · Đã hủy · dòng vết']];
+ const i=['nhap','cho_duyet','cho_huy','da_huy'].indexOf(lt.tt);
+ return '<div class="steps">'+b.map(([k,n],j)=>'<span class="stp'+(j<i?' done':j===i?' on':'')+(lt.chayThang&&k==='cho_duyet'?' off':'')+'">'+(j<i?'✓ ':'')+n+(lt.chayThang&&k==='cho_duyet'?' — bỏ qua (①)':'')+'</span>').join('')
+  +(['tu_choi','hoan_tac','rut'].includes(lt.tt)?'<span class="stp on" style="background:var(--red)">'+TT_LUOT[lt.tt][0]+'</span>':'')+'</div>';
+}
+function bangTepLuot(ds,kind,lt){
+ const tr=ST.gpTrang, trang=ds.slice(tr*PAGE,(tr+1)*PAGE), nt=Math.max(1,Math.ceil(ds.length/PAGE));
+ const coHoan=kind==='duoc'&&lt.tt==='cho_huy'&&(coQ('gp','S')||coQ('gp','D'));
+ return '<div class="tbx"><table class="ft"><thead><tr><th>Tệp</th><th>Lớp</th><th class="num">Cỡ</th><th>Nhập lúc</th><th>'+(kind==='duoc'?'Chế độ':kind==='huy'?'Mã băm (dòng vết)':'Lý do')+'</th>'+(coHoan?'<th></th>':'')+'</tr></thead><tbody>'
+  +(trang.length?trang.map(x=>{const f=x.f;return '<tr><td><b'+(lop(f.lop).an?' class="che"':'')+'>'+esc(tenHien(f))+'</b><div class="mu mono" style="font-size:10.5px">'+f.id+' · '+esc(f.ban)+'</div></td>'
+   +'<td class="mono">'+f.lop+' <span class="mu">'+esc(lop(f.lop).menu)+'</span></td><td class="num">'+mb(f.mb)+'</td><td>'+k2s(f.ngay)+'</td>'
+   +'<td style="font-size:12px">'+(kind==='duoc'?(x.c&&x.c.m?cheChip(x.c.m):'')+(f.dan?' <span class="tg b" title="'+esc(f.dan.join(' · '))+'">⚠ dẫn tới</span>':''):kind==='huy'?'<span class="mono">'+f.hash+'</span>':esc(x.ly)+(x.ngay?' <b style="color:var(--red)">· được phép từ '+k2s(x.ngay)+'</b>':''))+'</td>'
+   +(coHoan?'<td><button class="btn xs" data-hoan="'+f.id+'">↺ Hoàn tác</button></td>':'')+'</tr>'}).join('')
+  :'<tr><td colspan="6" class="empty">Không có tệp.</td></tr>')+'</tbody></table></div>'
+  +(nt>1?'<div class="lgd"><span>Trang '+(tr+1)+'/'+nt+'</span>'+(tr>0?'<button class="btn xs" data-gptr="-1">‹</button>':'')+(tr<nt-1?'<button class="btn xs" data-gptr="1">›</button>':'')+'</div>':'');
+}
+function veLuot(lt){
+ const p=phanLoai(lt), laNguoiLap=lt.lap.boi===ME().id;
+ let h='<div class="crumb"><a data-gpback="1">🧹 Lượt giải phóng</a> <span>›</span> <b>'+lt.id+'</b> <span class="mu">— màn hình đầy đủ của một lượt</span></div>';
+ h+='<div class="lhd"><div><h2>'+esc(lt.ten)+'</h2><div class="mu" style="font-size:12px">'+esc(lt.tieuChi)+' · lập bởi <b>'+esc(nsById(lt.lap.boi).ten)+'</b> '+k2s(lt.lap.ngay)+(lt.gui?' · gửi duyệt '+k2s(lt.gui):'')+'</div></div>'
+  +'<span class="st2 '+TT_LUOT[lt.tt][1]+'" style="font-size:12px">'+TT_LUOT[lt.tt][0]+'</span></div>';
+ h+=stepsLuot(lt);
+ /* tóm tắt */
+ const chanN={};p.chan.forEach(x=>{chanN[x.k||'khac']=(chanN[x.k||'khac']||0)+1});
+ const huyMB=lt.kq?lt.kq.mb:p.mb;
+ h+='<div class="kgrid"><div class="kbox g"><b>'+nf(lt.tt==='da_huy'?p.huy.length:p.duoc.length)+'</b><span>'+(lt.tt==='da_huy'?'tệp đã hủy nội dung':'tệp được giải phóng')+' · '+mb(huyMB)+'</span><div class="mu" style="font-size:11px">'+Object.entries(p.cheDem).filter(([m])=>m).map(([m,n])=>CHE[m][0]+' '+nf(n)).join(' · ')+'</div></div>'
+  +'<div class="kbox r"><b>'+nf(p.chan.length)+'</b><span>tệp bị chặn — không vào lượt</span><div class="mu" style="font-size:11px">'+Object.entries(chanN).map(([k,n])=>esc(LYNHOM[k]||k)+': '+nf(n)).join(' · ')+'</div></div>'
+  +(p.hoan.length?'<div class="kbox"><b>'+nf(p.hoan.length)+'</b><span>tệp đã hoàn tác</span></div>':'')
+  +(p.bo.length?'<div class="kbox w"><b>'+nf(p.bo.length)+'</b><span>tệp bỏ qua lúc hủy</span></div>':'')
+  +'<div class="kbox b"><b>'+gb(dungMB())+'</b><span>'+(lt.tt==='da_huy'?'đã dùng hiện tại — lượt này đã trả lại <b>'+mb(lt.kq.mb)+'</b>':'đã dùng hiện tại → sau hủy ≈ <b>'+gb(dungMB()-p.mb)+'</b>')+'</span></div></div>';
+ /* khối theo trạng thái */
+ if(lt.tt==='nhap'){
+  const dung=laNguoiLap&&coNL('lap');
+  h+='<div class="card"><div class="ch">✍ Thông tin lượt '+(dung?'':'<span class="mu" style="font-weight:400">— chỉ người lập sửa</span>')+'</div><div class="cb" style="padding:6px 12px 12px">'
+   +'<label class="lbl">Tên lượt</label><input class="fldi" data-lf="ten" value="'+esc(lt.ten)+'"'+(dung?'':' disabled')+'>'
+   +'<label class="lbl">Lý do giải phóng *</label><textarea class="fldi" rows="2" data-lf="lyDo" placeholder="Vì sao giải phóng lúc này — người duyệt đọc câu này"'+(dung?'':' disabled')+'>'+esc(lt.lyDo)+'</textarea>'
+   +(p.qd?'<div class="warn" style="margin-top:10px">③ Lượt có <b>'+nf(p.cheDem.QD||0)+' tệp chế độ Theo quyết định hủy</b> — hội đồng xét hủy họp và Hiệu trưởng ký <b>ngoài hệ thống</b>; menu giữ <b>hồ sơ hủy 7 thành phần</b> (bảng dưới) và canh mốc <b>15 ngày</b> (TT 06/2025/TT-BNV Đ.15).</div>':'')
+   +'</div><div class="cact">'
+   +(dung?(p.chiTD?'<button class="btn sm g" data-chay="'+lt.id+'">▶ Chạy thẳng — chỉ tệp ① (không cần HT duyệt)</button>':'')
+    +'<button class="btn sm p" data-gui="'+lt.id+'">📨 Gửi Hiệu trưởng duyệt</button><button class="btn sm" data-rut="'+lt.id+'">Rút nháp</button>'
+    :'<span class="mu" style="font-size:12px">Nháp của '+esc(nsById(lt.lap.boi).ten)+'.</span>')+'</div></div>';
+ } else {
+  h+='<div class="card"><div class="ch">✍ Thông tin lượt</div><div class="cb">'
+   +'<div class="f"><div class="k">Lý do</div><div class="v" style="font-weight:400">'+esc(lt.lyDo)+'</div></div>'
+   +(lt.hs&&lt.hs.qd.so?'<div class="f"><div class="k">Quyết định hủy</div><div class="v">'+esc(lt.hs.qd.so)+' ngày '+k2s(lt.hs.qd.ngay)+' <span class="mu" style="font-weight:400">· hạn hủy '+k2s(hanHuy15(lt))+' (15 ngày — Đ.15 k.3)</span></div></div>':'')
+   +(lt.tuDong?'<div class="f"><div class="k">Duyệt</div><div class="v" style="font-weight:400">⚡ <b>Lượt tự động</b> — Hiệu trưởng đã bật công tắc «Tự động xóa khi đến hạn» cho các lớp trong lượt (⚙); công tắc đó CHÍNH LÀ quyết định, nên lượt không hỏi duyệt lại. Vẫn qua <b>chờ hủy '+CFG.choHuy+' ngày</b>, vẫn ghi vết, vẫn hoàn tác được (LT-14)</div></div>'
+    :lt.chayThang?'<div class="f"><div class="k">Duyệt</div><div class="v" style="font-weight:400">① Chạy thẳng bởi Quản trị hệ thống — không cần Hiệu trưởng (LT-3)</div></div>':'')
+   +(lt.duyet?'<div class="f"><div class="k">'+(lt.tt==='tu_choi'?'Từ chối':'Duyệt')+'</div><div class="v" style="font-weight:400"><b>'+esc(nsById(lt.duyet.boi).ten)+'</b>&nbsp;'+k2s(lt.duyet.ngay)+' — '+esc(lt.duyet.yk||'')+'</div></div>':'')
+   +(lt.tt==='cho_huy'?'<div class="f"><div class="k">Hủy vật lý</div><div class="v">đêm '+k2s(lt.choDen)+' <span class="mu" style="font-weight:400">(còn '+Math.max(0,soNgay(HOMNAY,lt.choDen))+' ngày — trước đó hoàn tác từng tệp được)</span></div></div>':'')
+   +'</div>';
+  if(lt.tt==='cho_duyet'){
+   h+='<div class="cact">';
+   if(coQ('gp','D')){
+    if(canHoSo(lt)) h+='<div style="flex:1 0 100%"><div class="warn" style="margin-bottom:8px">③ Duyệt lượt này là <b>ký quyết định hủy tài liệu</b> — ghi số và ngày quyết định (TT 06/2025/TT-BNV Đ.15 k.1). Hủy phải xong <b>trong 15 ngày</b> kể từ ngày đó (k.3).</div>'
+     +'<div class="frow"><div><label class="lbl">Số quyết định hủy *</label><input class="fldi" data-hs="qd.so" value="'+esc(lt.hs.qd.so)+'" placeholder="vd 45/QĐ-NTT"></div>'
+     +'<div><label class="lbl">Ngày quyết định *</label><input type="date" class="fldi" data-hs="qd.ngay" value="'+esc(lt.hs.qd.ngay||HOMNAY)+'"></div></div></div>';
+    h+='<textarea class="fldi" rows="1" data-lf="yk" placeholder="Ý kiến (bắt buộc khi từ chối)" style="flex:1;min-width:220px">'+esc(lt._yk||'')+'</textarea><button class="btn sm g" data-duyet="'+lt.id+'">✓ Duyệt</button><button class="btn sm d" data-tuchoi="'+lt.id+'">✕ Từ chối</button>';
+   }
+   else if(coNL('lap')) h+='<button class="btn sm" data-duyet="'+lt.id+'" title="4-eye">✓ Duyệt</button>';
+   if(laNguoiLap&&coNL('lap')) h+='<button class="btn sm" data-rut="'+lt.id+'">↩ Rút lượt</button>';
+   h+='</div>';
+  }
+  if(lt.tt==='cho_huy'&&(coQ('gp','S')||coQ('gp','D'))) h+='<div class="cact"><button class="btn sm" data-hoanca="'+lt.id+'">↺ Hoàn tác cả lượt</button><button class="btn sm" data-tua="'+lt.id+'">🧪 Tua tới đêm '+k2s(lt.choDen)+' — chạy lượt hủy</button></div>';
+  h+='</div>';
+ }
+ if(lt.tt==='cho_huy'||lt.tt==='da_huy'||lt.tt==='nhap'||lt.tt==='cho_duyet') h+='<div class="ro">💽 <b>Bản sao lưu (LT-6 — đã tra 16/9/2026):</b> nội dung đã hủy <b>còn trong bản sao lưu</b> tới khi bản sao lưu xoay vòng (chu kỳ hạ tầng '+CFG.xoayVong+' ngày'
+  +(lt.kq?' — hết hẳn sau ≈ <b>'+k2s(cong(lt.kq.ngay,CFG.xoayVong,'ngay'))+'</b>':'')+'). '
+  +'<b>Không văn bản nào bắt xóa ngay trong bản sao lưu</b>: TT 05/2025/TT-BNV Đ.27 còn <b>bắt buộc sao lưu ít nhất hai bộ</b> trên phương tiện độc lập. Thứ luật cấm là <b>cố ý khôi phục trái phép</b> dữ liệu đã hủy (Luật BVDLCN 91/2025 Đ.14). '
+  +'Vì vậy: khi khôi phục hệ thống từ bản sao lưu, <b>chạy lại dòng vết hủy</b> để tệp đã hủy không sống lại — việc của hạ tầng, M10.11 cấp danh sách mã băm.</div>';
+ if(lt.kq) h+='<div class="okbox">✓ <b>Bảng kết quả lượt hủy đêm '+k2s(lt.kq.ngay)+':</b> đã hủy nội dung <b>'+nf(p.huy.length)+'</b> tệp · <b>'+mb(lt.kq.mb)+'</b> trả lại ổ · bỏ qua <b>'+nf(p.bo.length)+'</b> · hoàn tác trước đó <b>'+nf(p.hoan.length)+'</b>. '
+  +'Dòng vết (tên · lớp · menu chủ · bản ghi · cỡ · ngày nhập · người lập · người duyệt · lý do · mã băm) <b>giữ vĩnh viễn</b> — nhật ký mức ② (M10.7).</div>';
+ /* 📋 hồ sơ hủy 7 thành phần — chỉ lượt ③ (LT-22) */
+ if(canHoSo(lt)) h+=veHoSoHuy(lt,p,laNguoiLap&&coNL('lap')&&lt.tt==='nhap');
+ /* bảng tệp */
+ const tabs=[['duoc',(lt.tt==='nhap'?'✓ Được giải phóng':lt.tt==='da_huy'?'—':'✓ Trong lượt'),p.duoc],['chan','⛔ Bị chặn',p.chan],['hoan','↺ Đã hoàn tác',p.hoan],['huy','✕ Đã hủy — dòng vết',p.huy],['bo','⚠ Bỏ qua lúc hủy',p.bo]].filter(x=>x[2].length||x[0]==='duoc'&&lt.tt!=='da_huy');
+ if(!tabs.find(x=>x[0]===ST.gpXem)) ST.gpXem=tabs[0]?tabs[0][0]:'duoc';
+ h+='<div class="tbw"><div class="bar" style="padding:8px 12px">'+tabs.map(([k,n,a])=>'<button class="chip'+(ST.gpXem===k?' on':'')+'" data-gpx="'+k+'">'+n+' <b>'+nf(a.length)+'</b></button>').join('')+'</div>'
+  +bangTepLuot((tabs.find(x=>x[0]===ST.gpXem)||[0,0,[]])[2],ST.gpXem,lt)+'</div>';
+ return h;
+}
+/* ========== THAO TÁC ========== */
+function khoaTep(lt,ids){ids.forEach(id=>{fById(id).luot=lt.id})}
+function nhaTep(lt){lt.ids.forEach(id=>{const f=fById(id);if(f.luot===lt.id&&f.tt!=='cho')f.luot=null})}
+function vaoChoHuy(lt){
+ lt.choDen=cong(HOMNAY,CFG.choHuy,'ngay');
+ /* LT-22 — lượt ③ phải hủy xong trong 15 ngày kể từ quyết định: chờ hủy không được vượt mốc đó */
+ const h15=hanHuy15(lt); if(h15&&lt.choDen>h15) lt.choDen=h15;
+ lt.ids.forEach(id=>{if(lt.hoan.includes(id))return;const f=fById(id);f.tt0=f.tt;f.tt='cho';f.luot=lt.id});
+ lt.tt='cho_huy';
+}
+function kiemGui(lt,p){
+ const thieu=[];
+ if(!lt.lyDo.trim()) thieu.push('lý do giải phóng');
+ if(!p.duoc.length) thieu.push('ít nhất một tệp được giải phóng (mọi tệp đang bị chặn)');
+ /* LT-22 — lượt ③ phải có 4 thành phần đầu của hồ sơ hủy trước khi trình Hiệu trưởng ký quyết định */
+ if(p.qd){const hs=lt.hs;
+  if(!hs.tm.trim()) thieu.push('bản thuyết minh (hồ sơ hủy #2)');
+  if(!hs.hd.so.trim()||!hs.hd.ngay) thieu.push('quyết định thành lập Hội đồng xét hủy — số và ngày (#3)');
+  if(!hs.hd.tep) thieu.push('bản scan quyết định thành lập Hội đồng (#3)');
+  if(!hs.bb.so.trim()||!hs.bb.ngay) thieu.push('biên bản họp Hội đồng xét hủy — số và ngày (#4)');
+  if(!hs.bb.tep) thieu.push('bản scan biên bản họp Hội đồng (#4)');
+ }
+ return thieu;
+}
+function chotDanhSach(lt,p){
+ lt.loai=p.chan.map(x=>({id:x.f.id,ly:x.ly,ngay:x.ngay,k:x.k}));
+ lt.ids=p.duoc.map(x=>x.f.id);
+}
+function guiDuyet(lt){
+ const p=phanLoai(lt), thieu=kiemGui(lt,p);
+ if(thieu.length){toast('⛔ Chưa gửi được — còn thiếu: <b>'+thieu.join(' · ')+'</b>.');return}
+ chotDanhSach(lt,p);khoaTep(lt,lt.ids);lt.tt='cho_duyet';lt.gui=BAYGIO();VER++;
+ ghiVet({nd:'Gửi Hiệu trưởng duyệt lượt '+lt.id+' — '+nf(lt.ids.length)+' tệp · '+mb(p.mb)+(lt.loai.length?' · '+lt.loai.length+' tệp bị chặn không vào lượt':'')});
+ render();toast('📨 Đã gửi <b>'+lt.id+'</b> tới Hiệu trưởng (việc hiện ở M0.2 · chip Chờ tôi duyệt). '+nf(lt.loai.length)+' tệp bị chặn ghi lại cùng lượt.');
+}
+function chayThang(lt){
+ const p=phanLoai(lt), thieu=kiemGui(lt,p);
+ if(!p.chiTD) thieu.push('lượt chỉ gồm tệp ① (đang có tệp ② ③ — phải gửi Hiệu trưởng)');
+ if(thieu.length){toast('⛔ Không chạy thẳng được — '+thieu.join(' · ')+'.');return}
+ chotDanhSach(lt,p);lt.chayThang=true;vaoChoHuy(lt);VER++;
+ ghiVet({nd:'Chạy thẳng lượt ① '+lt.id+' — '+nf(lt.ids.length)+' tệp · '+mb(p.mb)+' · chờ hủy đến '+lt.choDen});
+ render();toast('▶ <b>'+lt.id+'</b> vào <b>chờ hủy đến '+k2s(lt.choDen)+'</b> — hoàn tác từng tệp được tới lúc đó. Dung lượng trả lại khi lượt hủy đêm chạy.');
+}
+function duyet(lt){
+ if(!coQ('gp','D')){toast('⛔ <b>4-eye:</b> người lập lượt không tự duyệt — và chức danh <b>Quản trị hệ thống</b> không có quyền Duyệt ở menu này. Hiệu trưởng duyệt (chip <b>Chờ tôi duyệt</b>, việc ở M0.2).');return}
+ if(lt.lap.boi===ME().id){toast('⛔ <b>4-eye:</b> bạn là người lập lượt '+lt.id+' — người lập không tự duyệt, kể cả vai Đủ quyền. Đổi sang vai <b>Hiệu trưởng</b> để duyệt.');return}
+ /* LT-22 — lượt ③: duyệt chính là ký quyết định hủy */
+ if(canHoSo(lt)){
+  if(!lt.hs.qd.so.trim()||!lt.hs.qd.ngay){toast('⛔ Lượt ③ — phải ghi <b>số và ngày quyết định hủy</b> (TT 06/2025/TT-BNV Đ.15 k.1) trước khi duyệt.');return}
+  if(cong(lt.hs.qd.ngay,15,'ngay')<HOMNAY){toast('⛔ Quyết định '+esc(lt.hs.qd.so)+' ký ngày '+k2s(lt.hs.qd.ngay)+' — <b>đã quá 15 ngày</b> (Đ.15 k.3). Phải ra quyết định mới rồi duyệt lại.');return}
+ }
+ lt.duyet={boi:ME().id,ngay:BAYGIO(),yk:(lt._yk||'').trim()||'Đồng ý'};vaoChoHuy(lt);VER++;
+ ghiVet({nd:'Duyệt lượt '+lt.id+' — '+nf(lt.ids.length)+' tệp vào chờ hủy đến '+lt.choDen});
+ render();toast('✓ Đã duyệt <b>'+lt.id+'</b> — chờ hủy đến <b>'+k2s(lt.choDen)+'</b>. Trong '+CFG.choHuy+' ngày, hoàn tác từng tệp được.');
+}
+function tuChoi(lt){
+ if(!coQ('gp','D')){toast('⛔ Chỉ Hiệu trưởng từ chối.');return}
+ if(!(lt._yk||'').trim()){toast('⛔ Từ chối phải ghi ý kiến — người lập cần biết làm lại thế nào.');return}
+ lt.duyet={boi:ME().id,ngay:BAYGIO(),yk:lt._yk.trim()};lt.tt='tu_choi';nhaTep(lt);VER++;
+ ghiVet({nd:'Từ chối lượt '+lt.id+' — '+lt._yk.trim()});render();toast('✕ Đã từ chối <b>'+lt.id+'</b> — tệp trả về như cũ; lượt còn tìm lại được ở chip «Bị từ chối».');
+}
+function rut(lt){
+ if(lt.lap.boi!==ME().id){toast('⛔ Chỉ người lập rút lượt của mình.');return}
+ lt.tt='rut';nhaTep(lt);VER++;ghiVet({nd:'Rút lượt '+lt.id});render();toast('Đã rút <b>'+lt.id+'</b> — còn ở chip «Đã rút».');
+}
+function hoanTac(id){
+ const f=fById(id), lt=f&&luotById(f.luot);
+ if(!lt||lt.tt!=='cho_huy'){toast('⛔ Tệp không ở trạng thái chờ hủy.');return}
+ f.tt=f.tt0||'dung';f.luot=null;lt.hoan.push(id);(lt.hoanLy=lt.hoanLy||{})[id]='Hoàn tác bởi '+ME().ten+' '+k2s(HOMNAY);
+ if(lt.hoan.length>=lt.ids.length) lt.tt='hoan_tac';
+ VER++;ghiVet({nd:'Hoàn tác 1 tệp khỏi lượt '+lt.id+' — '+f.id+' ('+mb(f.mb)+')'});render();
+ toast('↺ Đã hoàn tác <b>'+esc(f.id)+'</b> — nội dung giữ nguyên, tệp về «'+TT_TEP[f.tt][0]+'».');
+}
+function hoanCa(lt){
+ lt.ids.forEach(id=>{if(lt.hoan.includes(id))return;const f=fById(id);if(f.tt==='cho'){f.tt=f.tt0||'dung';f.luot=null}lt.hoan.push(id)});
+ lt.tt='hoan_tac';VER++;ghiVet({nd:'Hoàn tác cả lượt '+lt.id});render();toast('↺ Đã hoàn tác cả lượt <b>'+lt.id+'</b> — còn ở chip «Đã hoàn tác».');
+}
+/* lượt hủy đêm — hệ thống chạy cho mọi lượt đã hết hạn chờ; KIỂM LẠI từng tệp: thứ đổi trong thời gian chờ thì bỏ qua, nêu lý do */
+function chayHuyDem(){
+ const truoc=dungMB(); let n=0;
+ LUOT.filter(l=>l.tt==='cho_huy'&&l.choDen<=HOMNAY).forEach(lt=>{
+  /* LT-22b — hồ sơ hủy chưa đủ bản scan quyết định hủy thì KHÔNG hủy: hủy là hành vi pháp lý, hồ sơ phải đủ trước */
+  if(canHoSo(lt)&&!lt.hs.qd.tep){
+   lt.thieuScan=HOMNAY;
+   ghiVet({boi:'he',ngay:HOMNAY+' 01:00',nd:'Lượt hủy đêm BỎ QUA '+lt.id+' — hồ sơ hủy thiếu bản scan quyết định hủy (TT 06/2025 Đ.15 k.4a)'});
+   return;
+  }
+  lt.thieuScan=null;
+  const huy=[],bo=[];let m=0;
+  lt.ids.forEach(id=>{if(lt.hoan.includes(id))return;const f=fById(id);
+   if(f.doiTrongCho){bo.push({id,ly:f.doiTrongCho});f.tt='dung';f.luot=null;return}
+   if(f.tt!=='cho'){bo.push({id,ly:'Tệp không còn ở trạng thái chờ hủy'});return}
+   f.tt='giai';f.luotGiai=lt.id;f.ngayGiai=HOMNAY;f.luot=null;huy.push(id);m+=f.mb});
+  lt.kq={huy,bo,ngay:HOMNAY+' 01:00',mb:m};lt.tt='da_huy';n++;
+  /* LT-22 — lượt ③: máy ghi biên bản bàn giao (#6), sinh biên bản hủy (#7) rồi đóng cả hồ sơ thành một tệp lớp L57 (giữ 20 năm) */
+  if(canHoSo(lt)){
+   lt.hs.bg.ngay=HOMNAY; lt.hs.bh={ngay:HOMNAY,ma:'BBH-'+lt.id};
+   const f={id:'L57-'+lt.id,lop:'L57',ten:'Ho-so-huy-'+lt.id+'.pdf',mb:Math.round((0.6+huy.length/900)*100)/100,
+    ngay:HOMNAY+' 01:05',nam:namCua(HOMNAY),boi:lt.duyet?lt.duyet.boi:lt.lap.boi,kenh:'he',
+    ban:'M10.11 · '+lt.id,tt:'dung',dan:null,ghim:null};
+   f.hash=bam(f.id+f.ten); F.push(f); FM.set(f.id,f); lt.hs.tepHS=f.ten;
+   ghiVet({boi:'he',ngay:HOMNAY+' 01:05',nd:'Lập hồ sơ hủy '+lt.hs.bh.ma+' cho lượt '+lt.id+' — 7 thành phần, lưu 20 năm (TT 06/2025 Đ.15 k.4)'});
+  }
+  ghiVet({boi:'he',ngay:HOMNAY+' 01:00',nd:'Lượt hủy đêm: '+lt.id+' — hủy '+nf(huy.length)+' tệp · '+mb(m)+' · bỏ qua '+bo.length});
+ });
+ VER++;return {n,truoc,sau:dungMB()};
+}
+function tua(lt){
+ if(lt.choDen>HOMNAY){HOMNAY=lt.choDen;VER++}
+ const r=chayHuyDem();
+ render();toast('🧪 Tua tới <b>'+k2s(HOMNAY)+'</b> · lượt hủy đêm chạy '+r.n+' lượt — ổ <b>'+gb(r.truoc)+' → '+gb(r.sau)+'</b> (trả lại '+mb(r.truoc-r.sau)+').');
+}
+
+/* ========== LT-14 — LƯỢT TỰ ĐỘNG (hệ thống lập) ==========
+   Đêm: ① gom tệp tới hạn của các lớp ĐANG BẬT tự động → một lượt do «Hệ thống» lập, vào chờ hủy N ngày (hoàn tác được, có thông báo);
+        ② hủy các lượt đã hết hạn chờ. Công tắc ở ⚙ là quyết định của Hiệu trưởng — lượt tự động không hỏi duyệt lại.
+   Tệp tạm giữ · chưa tới hạn · lớp ③ · lớp chưa đặt thời hạn KHÔNG bao giờ vào lượt tự động (lọc ở tepTuDong + kiểm lại lúc hủy). */
+function gomTuDong(){
+ const ds=tepTuDong(); if(!ds.length) return null;
+ const lop3=[...new Set(ds.map(f=>f.lop))];
+ const lt={id:'GP-TĐ-'+HOMNAY.slice(2,4)+HOMNAY.slice(5,7)+HOMNAY.slice(8,10),ten:'Lượt tự động — '+lop3.join(' · '),
+  tieuChi:'Tự động: lớp bật công tắc ('+lop3.map(m=>m+' '+lop(m).ten).join(' · ')+') · tệp đã tới hạn',
+  ids:ds.map(f=>f.id),loai:[],lap:{boi:'he',ngay:HOMNAY+' 01:00'},lyDo:'Tự động xóa khi đến hạn — công tắc bật ở ⚙ Cấu hình (Hiệu trưởng)',
+  hs:hsMoi(),tt:'cho_huy',tuDong:true,gui:null,duyet:null,choDen:cong(HOMNAY,CFG.choHuy,'ngay'),hoan:[],kq:null};
+ ds.forEach(f=>{f.tt0=f.tt;f.tt='cho';f.luot=lt.id});
+ LUOT.unshift(lt);
+ ghiVet({boi:'he',ngay:HOMNAY+' 01:00',nd:'Lượt tự động '+lt.id+' — gom '+nf(ds.length)+' tệp tới hạn của '+lop3.length+' lớp bật tự động · chờ hủy đến '+lt.choDen+' · đã báo '+CFG.nhan.join(' · ')});
+ return lt;
+}
+function chayDem(){
+ const tuD=gomTuDong(), r=chayHuyDem();
+ VER++;render();
+ toast('🧪 <b>Lượt đêm '+k2s(HOMNAY)+'</b>: '+(tuD?'tự động gom <b>'+nf(tuD.ids.length)+'</b> tệp ('+mb(tuD.ids.reduce((s,id)=>s+fById(id).mb,0))+') vào chờ hủy đến '+k2s(tuD.choDen)+' — hoàn tác được; ':'không có tệp nào tới hạn ở lớp bật tự động; ')
+  +'hủy '+r.n+' lượt hết hạn chờ — ổ <b>'+gb(r.truoc)+' → '+gb(r.sau)+'</b>.');
+}
+
+/* ════ LT-22 — khối HỒ SƠ HỦY TÀI LIỆU (7 thành phần) ════ */
+function oScan(lt,k,dung){
+ const v=lt.hs[k];
+ if(v.tep) return '<div class="mu" style="font-size:11.5px;margin-top:4px">📎 <b>'+esc(v.tep.ten)+'</b> · '+mb(v.tep.mb)+' <span class="tg c">L57</span>'
+  +(dung?' <button class="btn xs" data-goscan="'+k+'">✕ Gỡ</button>':'')+'</div>';
+ return dung?'<button class="btn xs" data-taiscan="'+k+'" style="margin-top:4px">📎 Tải bản scan</button>'
+  :'<div style="font-size:11.5px;color:var(--red);margin-top:4px">📎 chưa có bản scan</div>';
+}
+function oHS(lt,k,dung){
+ const v=lt.hs[k];
+ return '<div class="frow"><div><input class="fldi" data-hs="'+k+'.so" value="'+esc(v.so)+'" placeholder="Số văn bản"'+(dung?'':' disabled')+'></div>'
+  +'<div><input type="date" class="fldi" data-hs="'+k+'.ngay" value="'+esc(v.ngay)+'"'+(dung?'':' disabled')+'></div></div>'+oScan(lt,k,dung);
+}
+function veHoSoHuy(lt,p,dung){
+ const han=hanHuy15(lt), xong=lt.tt==='da_huy', hs=lt.hs;
+ const tt=k=>{const v=hs[k];
+  if(k==='dm') return '<span class="tg g">✓ máy có sẵn</span>';
+  if(k==='tm') return hs.tm.trim()?'<span class="tg g">✓ đã có</span>':'<span class="tg r">thiếu</span>';
+  if(k==='bh') return v.ma?'<span class="tg g">✓ '+esc(v.ma)+'</span>':'<span class="mu">sinh sau khi hủy</span>';
+  if(k==='bg') return v.ngay?'<span class="tg g">✓ '+k2s(v.ngay)+'</span>':'<span class="mu">khi hủy</span>';
+  return v.so&&v.tep?'<span class="tg g">✓ '+esc(v.so)+' · 📎</span>':v.so?'<span class="tg b">thiếu bản scan</span>':'<span class="tg r">thiếu</span>'};
+ const soTep=lt.tt==='nhap'?p.duoc.length:lt.ids.length-lt.hoan.length, dl=lt.kq?lt.kq.mb:p.mb;
+ let h='<div class="card"><div class="ch">📋 Hồ sơ hủy tài liệu — <b>7 thành phần</b> <span class="mu" style="font-weight:400">(TT 06/2025/TT-BNV Đ.15 k.4a · hồ sơ lưu <b>20 năm</b> kể từ ngày hủy — k.4b, thành tệp lớp <b>L57</b>)</span></div>'
+  +'<div class="tbx"><table class="ft"><thead><tr><th style="width:24px">#</th><th>Thành phần</th><th>Căn cứ</th><th>Trạng thái</th><th style="min-width:230px">Ghi ở đây</th></tr></thead><tbody>';
+ HS_TP.forEach(([k,ten,can,loai,mo],i)=>{
+  const o=k==='tm'?(dung?'<textarea class="fldi" rows="2" data-hs="tm" placeholder="vd Tài liệu hết thời hạn bảo quản theo TT 08/2025, không còn giá trị sử dụng…">'+esc(hs.tm)+'</textarea>'
+      :'<span style="font-size:12px">'+esc(hs.tm||'—')+'</span>')
+   :k==='dm'?'<button class="btn xs" data-xuathsh="'+lt.id+'">⬇ Xuất danh mục</button> <span class="mu" style="font-size:11px">'+nf(soTep)+' tệp · '+mb(dl)+'</span>'
+   :k==='qd'?(hs.qd.so?'<b>'+esc(hs.qd.so)+'</b> · '+k2s(hs.qd.ngay)+oScan(lt,'qd',lt.tt==='cho_huy'&&(coQ('gp','D')||coQ('gp','S')))
+      :'<span class="mu">Hiệu trưởng ghi khi duyệt lượt</span>')
+   :['hd','bb'].includes(k)?oHS(lt,k,dung)
+   :k==='bg'?(hs.bg.ngay?k2s(hs.bg.ngay):'<span class="mu">máy ghi khi lượt hủy chạy</span>')
+   :(hs.bh.ma?'<b>'+esc(hs.bh.ma)+'</b> · '+k2s(hs.bh.ngay)+'<div class="mu" style="font-size:11px">'+nf(lt.kq?lt.kq.huy.length:0)+' tệp · '+mb(lt.kq?lt.kq.mb:0)+' · có mã băm từng tệp</div>':'<span class="mu">máy sinh sau khi hủy</span>');
+  h+='<tr><td>'+(i+1)+'</td><td><b>'+esc(ten)+'</b><div class="mu" style="font-size:11px">'+esc(mo)+'</div></td>'
+   +'<td class="mu" style="font-size:11.5px">'+esc(can)+'</td><td>'+tt(k)+'</td><td>'+o+'</td></tr>';
+ });
+ h+='</tbody></table></div>';
+ if(lt.tt==='cho_huy'&&!hs.qd.tep) h+='<div class="danger" style="margin:10px 12px">📎 <b>Chưa hủy được — thiếu bản scan quyết định hủy</b> (#5). Lượt hủy đêm bỏ qua lượt này cho tới khi có bản scan'
+  +(lt.thieuScan?' — đêm '+k2s(lt.thieuScan)+' đã bỏ qua một lần':'')+'. Hồ sơ hủy phải đủ 7 thành phần <b>trước khi</b> hủy (TT 06/2025/TT-BNV Đ.15 k.4a).</div>';
+ if(han) h+='<div class="'+(lt.tt==='cho_huy'&&han<HOMNAY?'danger':'warn')+'" style="margin:10px 12px">⏱ <b>Hủy trong 15 ngày</b> kể từ quyết định <b>'+esc(hs.qd.so)+'</b> ('+k2s(hs.qd.ngay)+') — hạn <b>'+k2s(han)+'</b>'
+  +(lt.tt==='cho_huy'?' · lượt hủy đêm đặt vào <b>'+k2s(lt.choDen)+'</b>'+(lt.choDen>=han?' <span class="mu">(đã rút về đúng hạn)</span>':' ✓ trong hạn'):'')
+  +(xong?' · đã hủy '+k2s(lt.kq.ngay):'')+' <span class="mu">(Đ.15 k.3)</span></div>';
+ if(xong&&hs.tepHS) h+='<div class="okbox" style="margin:10px 12px">📁 Hồ sơ hủy đã thành tệp <b>'+esc(hs.tepHS)+'</b> cùng <b>'+[hs.hd.tep,hs.bb.tep,hs.qd.tep].filter(Boolean).length+' bản scan</b> — lớp <b>L57</b> (M10.11 làm chủ), giữ tới <b>'+k2s(cong(lt.kq.ngay,20,'nam'))+'</b>.</div>';
+ else if(!xong) h+='<div class="ro" style="margin:10px 12px">Sau khi hủy, bảy thành phần được đóng thành <b>một tệp hồ sơ hủy</b> (lớp L57) và giữ <b>20 năm</b> — chính M10.11 sinh ra và giữ, không nhờ menu khác.</div>';
+ return h+'</div>';
+}
+/* xuất danh mục tài liệu hủy (#1) */
+function xuatDanhMuc(lt){
+ const p=phanLoai(lt), n=lt.tt==='nhap'?p.duoc.length:lt.ids.length-lt.hoan.length;
+ ghiVet({nd:'Xuất danh mục tài liệu hết thời hạn của lượt '+lt.id+' ('+nf(n)+' tệp) — thành phần #1 hồ sơ hủy'});
+ toast('⬇ Đã xuất <b>danh mục '+nf(n)+' tệp</b> (mã · lớp · menu chủ · bản ghi · ngày nhập · thời hạn · căn cứ) — thành phần #1 của hồ sơ hủy. Nhật ký mức ②.');
+}
+
+
+/* ══════════════ M10.11 — TAB 4 · ⚙ CẤU HÌNH ══════════════
+   Hai khối, hai năng lực trong CÙNG một Feature: kỹ thuật (IT — ổ, trần cỡ tệp, định dạng cấm) · chính sách (HT — ngưỡng, chờ hủy, chế độ và thời hạn từng lớp).
+   Con số dung lượng chung là của menu này (D1); menu khác chỉ chiếu 🔗. */
+let CFGT=null, LOPLOC='';
+const CAM_GOI=['exe','bat','cmd','msi','ps1','vbs','js','jar','apk','scr','dll','zip','rar','iso'];
+function veCH(){
+ if(!coMenu()) return khongQuyen();
+ if(!CFGT) CFGT=JSON.parse(JSON.stringify(CFG));
+ const kt=coNL('kythuat')&&coQ('ch','S'), cs=coNL('chinhsach')&&coQ('ch','S');
+ const dis=b=>b?'':' disabled';
+ const doi=JSON.stringify(CFGT)!==JSON.stringify(CFG);
+ let h=scopeBar('ch','Khối <b>kỹ thuật</b> do Quản trị hệ thống sửa, khối <b>chính sách</b> do Hiệu trưởng sửa — cùng một Feature, tách bằng năng lực.');
+ h+='<div class="chgrid">';
+ h+='<div class="card"><div class="ch">🗄 Ổ lưu trữ · tham số kỹ thuật <span class="sp"></span><span class="tg '+(kt?'g':'c')+'">'+(kt?'bạn sửa được':'chỉ đọc — Quản trị hệ thống')+'</span></div><div class="cb">'
+  +'<div class="f"><div class="k">Ổ vật lý của máy chủ</div><div class="v">'+CFG.oVatLyGB+' GB <span class="mu" style="font-weight:400">— 🔗 đo tự động qua kênh quản trị (đường hầm Q1)</span></div></div>'
+  +'<div class="f"><div class="k">Phần dành cho Dschool *</div><div class="v"><input class="mini" data-cf="danhChoGB" value="'+CFGT.danhChoGB+'"'+dis(kt)+'> GB <span class="mu" style="font-weight:400">— máy chủ có thể chạy việc khác (LT-5); đây là con số mọi menu chiếu 🔗</span></div></div>'
+  +'<div class="f"><div class="k">Trần cỡ một tệp — toàn hệ thống</div><div class="v"><input class="mini" data-cf="tranMB" value="'+CFGT.tranMB+'"'+dis(kt)+'> MB <span class="mu" style="font-weight:400">— menu con đặt cỡ riêng ≤ trần</span></div></div>'
+  +'<div class="f"><div class="k">Menu con đang đặt</div><div class="v" style="font-weight:400;font-size:12px">'+CO_MENU.map(([m,c])=>esc(m)+' <b'+(c>+CFGT.tranMB?' style="color:var(--red)"':'')+'>'+c+' MB</b>').join(' · ')+' <span class="mu">🔗</span></div></div>'
+  +'<div class="f"><div class="k">Định dạng cấm — toàn hệ thống</div><div class="v" style="font-weight:400">'+CAM_GOI.map(d=>'<button class="chip'+(CFGT.cam.includes(d)?' on':'')+'" data-cam="'+d+'"'+dis(kt)+'>.'+d+'</button>').join(' ')+'</div></div>'
+  +'<div class="f"><div class="k">Sao lưu cục bộ</div><div class="v" style="font-weight:400">giữ 7 bản · xoay vòng bản ngoài trường '+CFG.xoayVong+' ngày <span class="mu">— cấu hình hạ tầng, 🔗 chỉ đọc (LT-6)</span></div></div>'
+  +'</div></div>';
+ h+='<div class="card"><div class="ch">📐 Chính sách chung <span class="sp"></span><span class="tg '+(cs?'g':'c')+'">'+(cs?'bạn sửa được':'chỉ đọc — Hiệu trưởng')+'</span></div><div class="cb">'
+  +'<div class="f"><div class="k">Ngưỡng cảnh báo *</div><div class="v"><input class="mini" data-cf="canhBao" value="'+CFGT.canhBao+'"'+dis(cs)+'> % đã dùng</div></div>'
+  +'<div class="f"><div class="k">Thời gian chờ hủy *</div><div class="v"><input class="mini" data-cf="choHuy" value="'+CFGT.choHuy+'"'+dis(cs)+'> ngày <span class="mu" style="font-weight:400">— hoàn tác từng tệp trong khoảng này (LT-7)</span></div></div>'
+  +'<div class="f"><div class="k">Thùng rác của menu chủ là ① sau</div><div class="v"><input class="mini" data-cf="racNgay" value="'+CFGT.racNgay+'"'+dis(cs)+'> ngày <span class="mu" style="font-weight:400">— trước đó người xóa còn khôi phục được</span></div></div>'
+  +'<div class="f"><div class="k">Người nhận cảnh báo ổ</div><div class="v" style="font-weight:400">'+['HT','IT','PHT_CM','KT'].map(c=>'<button class="chip'+(CFGT.nhan.includes(c)?' on':'')+'" data-nhan="'+c+'"'+dis(cs)+'>'+CD[c]+'</button>').join(' ')+' <span class="mu">→ M0.3</span></div></div>'
+  +'<div class="f"><div class="k">Tự động xóa khi đến hạn</div><div class="v" style="font-weight:400">Bật / tắt <b>riêng từng lớp</b> ở bảng dưới (mặc định TẮT) — '
+   +'<b>'+soLopTuDong()+'</b> lớp đang bật. Lượt tự động do <b>Hệ thống</b> lập, vẫn qua <b>chờ hủy '+CFG.choHuy+' ngày</b>, vẫn hoàn tác được, vẫn ghi vết (LT-14)</div></div>'
+  +'<div class="f"><div class="k">Trần một lượt tự động</div><div class="v"><input class="mini" data-cf="tranTuDong" value="'+CFGT.tranTuDong+'"'+dis(cs)+'> tệp <span class="mu" style="font-weight:400">— lượt đêm không nuốt cả ổ trong một lần</span></div></div>'
+  +'</div></div></div>';
+ /* 🔍 kiểm tra toàn vẹn — LT-12: bắt tệp hỏng do nén / hỏng ổ để người dùng tải lại */
+ const hong=tepHong();
+ h+='<div class="card"><div class="ch">🔍 Kiểm tra toàn vẹn tệp <span class="mu" style="font-weight:400">— so mã băm với lúc tải lên, bắt tệp hỏng để menu chủ tải lại (LT-12)</span>'
+  +'<span class="sp"></span><span class="tg '+(kt?'g':'c')+'">'+(kt?'bạn sửa được':'chỉ đọc — Quản trị hệ thống')+'</span></div><div class="cb">'
+  +'<div class="f"><div class="k">Quét định kỳ</div><div class="v"><button class="chip'+(CFGT.quet.bat?' on':'')+'" data-quetbat="1"'+dis(kt)+'>'+(CFGT.quet.bat?'Đang bật':'Đang tắt')+'</button> · mỗi <input class="mini" data-cfq="moiThang" value="'+CFGT.quet.moiThang+'"'+dis(kt)+'> tháng</div></div>'
+  +'<div class="f"><div class="k">Phạm vi quét</div><div class="v" style="font-weight:400">'+[['tat_ca','Tất cả lớp'],['media','Chỉ lớp media (L01 · L02 · L03 · L47 · L48)'],['nhay','Chỉ lớp có sàn pháp lý']].map(([k,n])=>'<button class="chip'+(CFGT.quet.phamVi===k?' on':'')+'" data-quetpv="'+k+'"'+dis(kt)+'>'+n+'</button>').join(' ')+'</div></div>'
+  +'<div class="f"><div class="k">Lần quét gần nhất</div><div class="v">'+k2s(CFG.quet.lanCuoi)+' — bắt được <b style="color:'+(hong.length?'var(--red)':'var(--green)')+'">'+nf(hong.length)+'</b> tệp hỏng'
+   +(hong.length?' <span class="mu" style="font-weight:400">('+[...new Set(hong.map(f=>f.lop))].join(' · ')+')</span>':'')+'</div></div>'
+  +'<div class="f"><div class="k">Tệp hỏng thì sao</div><div class="v" style="font-weight:400">M10.11 <b>không xóa hộ</b>: báo để người phụ trách ở menu chủ <b>tải lại tệp thay thế</b>. Tệp hỏng vẫn chiếm chỗ tới khi được thay hoặc được giải phóng qua lượt</div></div>'
+  +'</div><div class="cact"><button class="btn sm" data-quetngay="1">🧪 Quét ngay</button>'+(hong.length?'<button class="btn sm" data-dico="hong">🔎 Xem '+nf(hong.length)+' tệp hỏng</button>':'')+'</div></div>';
+ if(kt||cs) h+='<div class="bar"><button class="btn sm p" data-luuch="1"'+(doi?'':' disabled')+'>💾 Lưu cấu hình</button><button class="btn sm" data-boch="1"'+(doi?'':' disabled')+'>Hoàn tác chưa lưu</button>'+(doi?'<span class="tg b">có thay đổi chưa lưu</span>':'')+'</div>';
+ /* danh mục lớp + chính sách */
+ const chua=LOP.filter(chuaDat);
+ const ds=LOP.filter(l=>!LOPLOC||(LOPLOC==='chua'?chuaDat(l):LOPLOC==='luat'?l.luat:l.cs.che===LOPLOC));
+ h+='<div class="card"><div class="ch">📚 Danh mục lớp lưu trữ · chính sách giải phóng <span class="mu" style="font-weight:400">— lớp do menu chủ khai (dẫn xuất); chính sách do Hiệu trưởng đặt ở đây</span></div>'
+  +'<div class="bar" style="padding:8px 12px">'+[['','Tất cả',LOP.length],['chua','⚠ Chưa đặt thời hạn',chua.length],['luat','⚖ Có căn cứ pháp luật',LOP.filter(l=>l.luat).length]].concat(Object.keys(CHE).map(c=>[c,CHE[c][0]+' '+CHE[c][1],LOP.filter(l=>l.cs.che===c).length]))
+   .map(([k,n,c])=>'<button class="chip'+(LOPLOC===k?' on':'')+'" data-lloc="'+k+'">'+n+' <b>'+c+'</b></button>').join('')+'</div>'
+  +(chua.length?'<div class="warn" style="margin:0 12px 10px">⚠ <b>'+chua.length+' lớp chưa có thời hạn giữ</b> ('+chua.map(l=>l.ma).join(' · ')+') — tệp của các lớp này <b>không giải phóng được</b> cho tới khi nhà trường chốt. Không đặt sẵn một con số trông có vẻ ổn: con số do phần mềm tự nghĩ ra sẽ không ai đọc lại (cùng tinh thần M8.3 §8.5.2).</div>':'')
+  +'<div class="tbx"><table class="lt2"><thead><tr><th>Mã</th><th>Lớp · menu chủ</th><th>Chế độ</th><th>Thời hạn tối thiểu</th><th>Tự động</th><th>Căn cứ</th><th class="num">Tệp</th><th></th></tr></thead><tbody>'
+  +ds.map(l=>{const s=thongKe().lop[l.ma];return '<tr><td class="mono">'+l.ma+'</td><td><b>'+esc(l.ten)+'</b><div class="mu" style="font-size:11px">'+esc(l.menu)+' · '+esc(l.the)+(l.an?' · 🔒 che tên':'')+'</div></td>'
+   +'<td>'+cheChip(l.cs.che)+(l.phu?'<div class="mu" style="font-size:10.5px">bản cũ · thùng rác: ①</div>':'')+'</td>'
+   +'<td style="font-size:12px">'+(chuaDat(l)?'<b style="color:var(--red)">⚠ chưa đặt</b>':esc(hanText(l.cs)))+'</td>'
+   +'<td>'+(batTuDongDuoc(l)
+     ?'<button class="chip'+(l.cs.tuDong?' on':'')+'" data-tudong="'+l.ma+'"'+(cs?'':' disabled')+' title="Tự động xóa khi đến hạn — vẫn qua chờ hủy">'+(l.cs.tuDong?'⚡ Bật':'Tắt')+'</button>'
+     :'<span class="mu" style="font-size:11px" title="'+esc(lyDoKhongTuDong(l))+'">— không bật được</span>')+'</td>'
+   +'<td style="font-size:11.5px;max-width:420px">'+(l.luat?'⚖ ':'')+esc(l.cs.can)+(l.ghi?'<div style="color:var(--amber)">⏳ '+esc(l.ghi.replace(/^⏳\s*/,''))+'</div>':'')+'</td>'
+   +'<td class="num">'+nf(s.n)+'</td><td>'+(cs?'<button class="btn xs" data-sualop="'+l.ma+'">✎</button>':'')+'</td></tr>'}).join('')
+  +'</tbody></table></div></div>';
+ h+='<div class="card"><div class="ch">📜 Lịch sử cấu hình</div><div class="cb"><table><tbody>'+CFG_LS.slice().reverse().map(x=>'<tr><td style="width:150px">'+k2s(x.ngay)+' '+x.ngay.slice(11)+'</td><td style="width:170px">'+esc(tenBoi(x.boi))+'</td><td>'+esc(x.nd)+'</td></tr>').join('')+'</tbody></table></div></div>';
+ h+=dnote('<b>Không có hạn mức theo tài khoản ở bất kỳ đâu</b> (chốt 15/9/2026): chỉ một con số — phần ổ dành cho Dschool. '
+  +'Lớp có ⚖ căn cứ pháp luật: nới chính sách xuống dưới sàn văn bản vẫn lưu được (trường có thể có lý do) nhưng bắt ghi lý do và ghi nhật ký mức ② — cùng khuôn "⚖ mặc định pháp lý + cảnh báo" của M10.4.');
+ return h;
+}
+function luuCH(){
+ const T=CFGT, dcm=+T.danhChoGB, tr=+T.tranMB, cb=+T.canhBao, ch=+T.choHuy, rn=+T.racNgay;
+ if(!(dcm>0)||!(tr>0)||!(cb>0)||!(ch>0)||!(rn>0)){toast('⛔ Giá trị không hợp lệ — mọi ô phải là số dương.');return}
+ if(dcm*1024<dungMB()){toast('⛔ Phần dành cho Dschool <b>'+dcm+' GB</b> nhỏ hơn dung lượng đang dùng <b>'+gb(dungMB())+'</b> — giải phóng trước hoặc khai lớn hơn.');return}
+ if(dcm>CFG.oVatLyGB){toast('⛔ Phần dành cho Dschool <b>'+dcm+' GB</b> vượt ổ vật lý <b>'+CFG.oVatLyGB+' GB</b> đo được.');return}
+ if(tr>4096){toast('⛔ Trần cỡ một tệp tối đa 4.096 MB — tệp lớn hơn nên ở hệ thống lưu trữ chuyên dụng.');return}
+ if(cb<50||cb>99){toast('⛔ Ngưỡng cảnh báo phải trong 50 – 99%.');return}
+ if(ch<1||ch>30){toast('⛔ Thời gian chờ hủy phải từ 1 đến 30 ngày — 0 ngày là bỏ lớp an toàn hoàn tác (R5).');return}
+ if(rn<7||rn>365){toast('⛔ Ngưỡng thùng rác phải trong 7 – 365 ngày.');return}
+ if(!T.nhan.length){toast('⛔ Phải có ít nhất một người nhận cảnh báo ổ.');return}
+ const cu=JSON.stringify(CFG), vuot=CO_MENU.filter(([m,c])=>c>tr);
+ Object.assign(CFG,{danhChoGB:dcm,tranMB:tr,cam:T.cam.slice(),canhBao:cb,choHuy:ch,racNgay:rn,nhan:T.nhan.slice()});
+ const nd=[];['danhChoGB','tranMB','canhBao','choHuy','racNgay'].forEach(k=>{const a=JSON.parse(cu)[k];if(a!==CFG[k])nd.push(k+': '+a+' → '+CFG[k])});
+ if(JSON.stringify(JSON.parse(cu).cam)!==JSON.stringify(CFG.cam)) nd.push('định dạng cấm: '+CFG.cam.join(' '));
+ if(JSON.stringify(JSON.parse(cu).nhan)!==JSON.stringify(CFG.nhan)) nd.push('người nhận cảnh báo: '+CFG.nhan.join(' · '));
+ CFG_LS.push({boi:ME().id,ngay:BAYGIO(),nd:nd.join(' · ')||'(không đổi)'});ghiVet({nd:'Đổi cấu hình M10.11 — '+nd.join(' · ')});
+ CFGT=null;VER++;render();
+ toast('✓ Đã lưu — mọi menu chiếu 🔗 con số mới ngay.'+(vuot.length?' ⚠ '+vuot.map(x=>x[0]).join(' · ')+' đang đặt cỡ lớn hơn trần — tải lên ở đó dừng ở '+tr+' MB.':''));
+}
+/* sửa chính sách một lớp */
+let SL=null;
+function moSuaLop(ma){
+ const l=lop(ma); SL={ma,che:l.cs.che,n:l.cs.n<0?1:l.cs.n,dv:l.cs.dv||'nam',moc:l.cs.moc||'nh',can:l.cs.can,ly:'',tuDong:!!l.cs.tuDong};
+ veSuaLop();
+}
+function demDuoc(ma,cs){
+ const l=lop(ma), cu=l.cs;l.cs=cs;VER++;let n=0,m=0;for(const f of F){if(f.lop!==ma||f.tt==='giai'||f.tt==='cho')continue;const c=cheDo(f);if(c.ok){n++;m+=f.mb}}
+ l.cs=cu;VER++;return {n,m};
+}
+function csTu(){const td=(SL.che==='TD'||(SL.che==='SH'&&SL.dv))&&SL.tuDong;
+ return SL.che==='SH'?{che:'SH',n:+SL.n,dv:SL.dv,moc:SL.moc,can:SL.can,tuDong:td}:{che:SL.che,n:-1,dv:'',moc:'',can:SL.can,tuDong:td}}
+function veSuaLop(){
+ const l=lop(SL.ma), truoc=demDuoc(SL.ma,l.cs), sau=demDuoc(SL.ma,csTu());
+ modal('✎ Chính sách giải phóng — '+l.ma+' · '+esc(l.ten),
+  '<div class="ro">Menu chủ <b>'+esc(l.menu)+'</b> · thực thể '+esc(l.the)+'. Lớp do menu chủ khai — ở đây chỉ đặt <b>chính sách</b>.</div>'
+  +(l.luat?'<div class="warn">⚖ <b>Lớp có căn cứ pháp luật — màn hình nhắc, không chặn:</b> '+esc(nhacLuat(l))+' Đặt ngắn hơn mức của văn bản thì <b>bắt ghi lý do</b> và ghi nhật ký mức ②.</div>'
+   :'<div class="info">Lớp <b>không có văn bản nào quy định</b> — thời hạn giữ do <b>nhà trường quyết định</b> (LT-14).</div>')
+  +'<label class="lbl">Chế độ</label><select class="fldi" data-sl="che">'+Object.keys(CHE).map(c=>'<option value="'+c+'"'+(SL.che===c?' selected':'')+'>'+CHE[c][0]+' '+CHE[c][1]+'</option>').join('')+'</select>'
+  +(SL.che==='SH'?'<div class="frow"><div><label class="lbl">Thời hạn tối thiểu</label><input class="fldi" data-sl="n" value="'+esc(SL.n)+'"></div>'
+   +'<div><label class="lbl">Đơn vị</label><select class="fldi" data-sl="dv">'+Object.entries(DV).map(([k,v])=>'<option value="'+k+'"'+(SL.dv===k?' selected':'')+'>'+v+'</option>').join('')+'</select></div>'
+   +'<div><label class="lbl">Tính từ</label><select class="fldi" data-sl="moc">'+Object.entries(MOC).map(([k,v])=>'<option value="'+k+'"'+(SL.moc===k?' selected':'')+'>'+v+'</option>').join('')+'</select></div></div>':'')
+  +'<label class="lbl">Căn cứ</label><textarea class="fldi" rows="2" data-sl="can">'+esc(SL.can)+'</textarea>'
+  +'<label class="lbl">Tự động xóa khi đến hạn</label>'
+  +(SL.che==='TD'||(SL.che==='SH'&&SL.dv)
+   ?'<div class="kiem" style="margin-top:4px"><button class="chip'+(SL.tuDong?' on':'')+'" data-sltd="1">'+(SL.tuDong?'⚡ Đang BẬT':'Đang TẮT')+'</button> '
+    +(SL.tuDong?'<span style="color:var(--amber)">Đêm nào hệ thống cũng gom tệp tới hạn của lớp này thành một lượt, vào <b>chờ hủy '+CFG.choHuy+' ngày</b> rồi hủy. Không hỏi duyệt lại — công tắc này chính là quyết định của Hiệu trưởng; vẫn hoàn tác được trong thời gian chờ và vẫn ghi vết.</span>'
+     :'<span class="mu">Tắt: tệp tới hạn chỉ hiện ở <b>Đề xuất lượt</b>, người lập và người duyệt quyết từng lần.</span>')+'</div>'
+   :'<div class="ro">Không bật được — '+esc(lyDoKhongTuDong({cs:csTu()}))+'</div>')
+  +'<label class="lbl">Lý do thay đổi'+(l.luat?' *':'')+'</label><input class="fldi" data-sl="ly" value="'+esc(SL.ly)+'" placeholder="vd Hội đồng trường chốt thời hạn lưu hồ sơ sức khỏe ngày …">'
+  +'<div class="kiem" style="margin-top:10px">Tệp đủ điều kiện giải phóng hôm nay: <b>'+nf(truoc.n)+'</b> ('+mb(truoc.m)+') → <b>'+nf(sau.n)+'</b> ('+mb(sau.m)+') <span class="mu">— đổi chính sách không tự xóa gì; chỉ đổi thứ được đưa vào lượt</span></div>',
+  '<button class="btn" data-mb="close">Bỏ</button><button class="btn p" data-mb="luulop">💾 Lưu chính sách</button>');
+}
+mfns.bluulop=()=>{
+ const l=lop(SL.ma), cs=csTu();
+ if(cs.che==='SH'&&!(cs.n>=0)){toast('⛔ Thời hạn phải là số ≥ 0.');return}
+ if(l.luat&&!SL.ly.trim()){toast('⛔ Lớp có căn cứ pháp luật — phải ghi lý do thay đổi.');return}
+ const cu=hanText(l.cs)+' ('+CHE[l.cs.che][1]+')';l.cs=cs;VER++;
+ CFG_LS.push({boi:ME().id,ngay:BAYGIO(),nd:'Chính sách '+l.ma+': '+cu+' → '+hanText(cs)+' ('+CHE[cs.che][1]+')'+(cs.tuDong?' · TỰ ĐỘNG: bật':'')+(SL.ly?' — '+SL.ly:'')});
+ ghiVet({nd:'Đổi chính sách lớp '+l.ma+' → '+CHE[cs.che][1]+' · '+hanText(cs)+(SL.ly?' — lý do: '+SL.ly:'')});
+ closeM();render();toast('✓ Đã lưu chính sách <b>'+l.ma+'</b> — áp ngay cho lượt lập sau; lượt đang chờ hủy vẫn được kiểm lại lúc hủy.');
+};
+
+/* 🧪 quét toàn vẹn (LT-12) — so mã băm; demo: quét tất định theo mã tệp, mỗi lượt bắt thêm vài tệp hỏng.
+   M10.11 KHÔNG tự xóa tệp hỏng: nội dung hỏng vẫn là bản ghi của menu chủ, chỉ menu chủ mới biết có tải lại được không. */
+function quetToanVen(){
+ const pv=CFG.quet.phamVi, media=['L01','L02','L03','L47','L48'];
+ let quet=0, moi=0;
+ for(const f of F){
+  if(f.tt==='giai') continue;
+  const L=lop(f.lop);
+  if(pv==='media'&&!media.includes(f.lop)) continue;
+  if(pv==='nhay'&&!L.luat) continue;
+  quet++;
+  if(!f.hong&&hat(f.id+'#quet'+HOMNAY)%3000===0){f.hong='Mã băm lệch so với lúc tải lên (quét '+k2s(HOMNAY)+')';moi++}
+ }
+ CFG.quet.lanCuoi=HOMNAY;CFGT=null;VER++;
+ ghiVet({nd:'Quét toàn vẹn ('+({tat_ca:'tất cả lớp',media:'lớp media',nhay:'lớp có sàn pháp lý'}[pv])+'): '+nf(quet)+' tệp · phát hiện thêm '+moi+' tệp hỏng'});
+ render();
+ toast('🔍 Quét xong <b>'+nf(quet)+'</b> tệp — phát hiện thêm <b>'+moi+'</b> tệp hỏng'+(moi?', đã báo menu chủ tải lại tệp thay thế (M0.3).':'; tổng đang hỏng '+nf(tepHong().length)+' tệp.'));
+}
+
+
+
+/* ══════════════ M10.11 — RENDER · SỰ KIỆN · DEEP-LINK ══════════════ */
+function render(){
+ rolebar(); header(); tabs();
+ $('#crumb').innerHTML=ST.ret?'<div class="crumb"><a href="'+ST.ret+'.html">← '+esc(ST.ret)+'</a> <span>mở từ '+esc(ST.ret)+'</span></div>':'';
+ $('#content').innerHTML=ST.tab==='tq'?veTQ():ST.tab==='tc'?veTC():ST.tab==='gp'?veGP():veCH();
+ $('#btnNote').classList.toggle('on',!document.body.classList.contains('nn'));
+ $('#btnNote').textContent='💡 Ghi chú thiết kế: '+(document.body.classList.contains('nn')?'TẮT':'BẬT');
+ const q=$('#qT');if(q) q.onchange=()=>{ST.loc.q=q.value;ST.trang=0;ST.cur=null;render()};
+}
+function datLoc(o){Object.assign(ST.loc,{nhom:'',lop:'',menu:'',dd:'',tu:'',den:'',nam:'',co:'',boi:'',kenh:'',tt:'',che:'',dan:'',q:''},o);ST.trang=0;ST.cur=null;ST.chon.clear()}
+function suKien(t){
+ const g=a=>t.closest('['+a+']');
+ let x;
+ /* tổng quan */
+ if((x=g('data-dx'))){const k=x.dataset.dx,d=deXuat().find(y=>y.k===k);if(!d)return;
+  const ids=F.filter(f=>{if(f.tt==='giai'||f.tt==='cho'||moTrongLuot(f))return false;const c=cheDo(f);if(!c.ok)return false;
+   return khoaDX(f,c)===k}).map(f=>f.id);
+  taoLuot(ids,nhanDX(d),'Đề xuất của máy — '+nhanDX(d));return}
+ if((x=g('data-lop'))&&ST.tab==='tq'){datLoc({lop:x.dataset.lop});ST.tab='tc';render();return}
+ /* ⚠ Cần chú ý → lọc thẳng sang tab 2 */
+ if((x=g('data-dico'))){const k=x.dataset.dico;datLoc(k==='kho'?{lop:'L03'}:{tt:k});ST.tab='tc';render();
+  if(k==='kho') toast('📦 Lớp L03 — kho cá nhân. Kho của người đã nghỉ phải <b>xử lý xong</b> mới giải phóng được phần còn lại (LT-11).');return}
+ if(g('data-dichuadat')){ST.tab='ch';LOPLOC='chua';render();return}
+ /* tra cứu */
+ if((x=g('data-qtt'))){ST.loc.tt=ST.loc.tt===x.dataset.qtt?'':x.dataset.qtt;ST.trang=0;ST.cur=null;render();return}
+ if(g('data-xloc')){datLoc({});render();return}
+ if((x=g('data-trang'))){ST.trang+=+x.dataset.trang;render();return}
+ if(g('data-chonall')){locTep().forEach(f=>ST.chon.add(f.id));render();toast('☑ Đã chọn <b>'+nf(ST.chon.size)+'</b> tệp — bấm «Lập lượt giải phóng». Tệp bị chặn vẫn vào nháp để thấy lý do, rồi bị loại khi gửi.');return}
+ if(g('data-bochon')){ST.chon.clear();render();return}
+ if(g('data-laplt')){const L=ST.loc,ids=[...ST.chon];
+  const ten=L.lop?lop(L.lop).ten+(L.nam?' · năm học '+L.nam:''):L.tt==='mocoi'?'Tệp mồ côi':'Tệp chọn ở Tra cứu tệp';
+  const tc=['lop','nhom','menu','nam','tt','che','dd','co','tu','den','kenh','dan'].filter(k=>L[k]).map(k=>k+'='+L[k]).join(' · ')||'chọn tay';
+  taoLuot(ids,ten,'Tiêu chí: '+tc);return}
+ if((x=g('data-lap1'))){const f=fById(x.dataset.lap1);taoLuot([f.id],'Một tệp — '+f.id,'Chọn tay từ panel tệp');return}
+ if((x=g('data-gogiu'))){moGoGiu(x.dataset.gogiu);return}
+ if((x=g('data-mochu'))){const f=fById(x.dataset.mochu);toast('↗ Mở <b>'+esc(f.ban)+'</b> ở '+esc(lop(f.lop).menu)+' — menu chủ tự kiểm quyền của bạn và mở nội dung ở đó (demo: không điều hướng).');return}
+ if((x=g('data-golt'))){ST.tab='gp';ST.gpCur=x.dataset.golt;ST.gpXem='duoc';ST.gpTrang=0;render();return}
+ if((x=g('data-golop'))){ST.tab='ch';render();moSuaLop(x.dataset.golop);return}
+ if(g('data-close')){ST.cur=null;render();return}
+ if((x=g('data-xuat'))){moXuat(x.dataset.xuat);return}
+ if((x=g('data-f'))&&!t.closest('input')){const id=x.dataset.f;ST.cur=ST.cur===id?null:id;
+  const f=fById(id);if(ST.cur&&lop(f.lop).an) AUDIT.unshift({boi:ME().id,ngay:BAYGIO(),muc:3,nd:'Mở siêu dữ liệu tệp '+f.id+' (lớp '+f.lop+' — tên che)'});render();return}
+ /* lượt */
+ if((x=g('data-gpl'))){ST.gpLoc=x.dataset.gpl;render();return}
+ if((x=g('data-lt'))){ST.gpCur=x.dataset.lt;ST.gpXem='duoc';ST.gpTrang=0;render();return}
+ if(g('data-gpback')){ST.gpCur=null;render();return}
+ if((x=g('data-gpx'))){ST.gpXem=x.dataset.gpx;ST.gpTrang=0;render();return}
+ if((x=g('data-gptr'))){ST.gpTrang+=+x.dataset.gptr;render();return}
+ if(g('data-dem')){chayDem();return}
+ if(g('data-moilt')){modal('＋ Lập lượt giải phóng','<div class="info">Lượt lập từ <b>tệp đã chọn</b>, theo một trong hai lối:<br>① <b>Tổng quan dung lượng → Đề xuất lượt</b> — máy đã gom sẵn tệp đủ điều kiện theo lớp × năm học;<br>'
+  +'② <b>Tra cứu tệp</b> — lọc (lớp · năm học · trạng thái · khoảng ngày nhập…) → «Chọn cả n tệp khớp lọc» hoặc tích tay → «🧹 Lập lượt giải phóng».</div>'
+  +'<div class="mu">Lượt mới là <b>nháp</b>: màn hình xem trước tách tệp được / bị chặn kèm lý do trước khi gửi.</div>',
+  '<button class="btn" data-mb="close">Đóng</button><button class="btn p" data-mb="sangtc">🔎 Sang Tra cứu tệp</button>');return}
+ if((x=g('data-gui'))){guiDuyet(luotById(x.dataset.gui));return}
+ if((x=g('data-chay'))){chayThang(luotById(x.dataset.chay));return}
+ if((x=g('data-duyet'))){duyet(luotById(x.dataset.duyet));return}
+ if((x=g('data-tuchoi'))){tuChoi(luotById(x.dataset.tuchoi));return}
+ if((x=g('data-rut'))){rut(luotById(x.dataset.rut));return}
+ if((x=g('data-xuathsh'))){xuatDanhMuc(luotById(x.dataset.xuathsh));return}
+ if((x=g('data-taiscan'))){const lt=luotById(ST.gpCur);if(lt)taiScan(lt,x.dataset.taiscan);return}
+ if((x=g('data-goscan'))){const lt=luotById(ST.gpCur);if(lt)goScan(lt,x.dataset.goscan);return}
+ if((x=g('data-hoan'))){hoanTac(x.dataset.hoan);return}
+ if((x=g('data-hoanca'))){hoanCa(luotById(x.dataset.hoanca));return}
+ if((x=g('data-tua'))){tua(luotById(x.dataset.tua));return}
+ /* cấu hình */
+ if((x=g('data-cam'))){if(x.disabled)return;const d=x.dataset.cam;CFGT.cam=CFGT.cam.includes(d)?CFGT.cam.filter(y=>y!==d):CFGT.cam.concat(d);render();return}
+ if((x=g('data-nhan'))){if(x.disabled)return;const d=x.dataset.nhan;CFGT.nhan=CFGT.nhan.includes(d)?CFGT.nhan.filter(y=>y!==d):CFGT.nhan.concat(d);render();return}
+ if(g('data-luuch')){luuCH();return}
+ if(g('data-boch')){CFGT=null;render();toast('Đã hoàn tác thay đổi chưa lưu.');return}
+ if((x=g('data-lloc'))){LOPLOC=x.dataset.lloc;render();return}
+ /* ⚙ — công tắc tự động của từng lớp (LT-14) */
+ if((x=g('data-tudong'))){if(x.disabled)return;const l=lop(x.dataset.tudong);
+  if(!batTuDongDuoc(l)){toast('⛔ Lớp này không bật tự động được — '+lyDoKhongTuDong(l)+'.');return}
+  l.cs.tuDong=!l.cs.tuDong;VER++;
+  CFG_LS.push({boi:ME().id,ngay:BAYGIO(),nd:'Tự động xóa khi đến hạn — '+l.ma+' '+l.ten+': '+(l.cs.tuDong?'BẬT':'TẮT')});
+  ghiVet({nd:(l.cs.tuDong?'Bật':'Tắt')+' tự động xóa khi đến hạn cho lớp '+l.ma});render();
+  toast(l.cs.tuDong?'⚡ Đã BẬT tự động cho <b>'+l.ma+'</b> — mỗi đêm hệ thống gom tệp tới hạn thành lượt, vào chờ hủy '+CFG.choHuy+' ngày (hoàn tác được), không hỏi duyệt lại.'
+   :'Đã TẮT tự động cho <b>'+l.ma+'</b> — tệp tới hạn chỉ hiện ở Đề xuất lượt.');return}
+ if(g('data-sltd')){SL.tuDong=!SL.tuDong;veSuaLop();return}
+ if(g('data-quetbat')){if(!coNL('kythuat'))return;CFGT.quet.bat=!CFGT.quet.bat;render();return}
+ if((x=g('data-quetpv'))){if(!coNL('kythuat'))return;CFGT.quet.phamVi=x.dataset.quetpv;render();return}
+ if(g('data-quetngay')){if(!coNL('kythuat')){toast('⛔ Quét toàn vẹn là việc kỹ thuật — Quản trị hệ thống chạy.');return}quetToanVen();return}
+ if((x=g('data-sualop'))){moSuaLop(x.dataset.sualop);return}
+}
+mfns.bsangtc=()=>{closeM();ST.tab='tc';render()};
+function moXuat(tab){
+ modal('⬇ Xuất danh sách siêu dữ liệu tệp','<div class="ro">Bản xuất chỉ có <b>siêu dữ liệu</b> (mã · lớp · menu chủ · cỡ · ngày · người tải lên · trạng thái) — <b>không kèm nội dung</b>, tên tệp lớp Own / nhạy cảm vẫn che. Lượt xuất ghi nhật ký mức ②.</div>'
+  +'<label class="lbl">Mục đích *</label><select class="fldi" id="mdX"><option value="">— chọn —</option><option>Báo cáo Hiệu trưởng về dung lượng</option><option>Lập kế hoạch mở rộng ổ</option><option>Đối chiếu trước lượt giải phóng</option></select>',
+  '<button class="btn" data-mb="close">Bỏ</button><button class="btn p" data-mb="xuatok">⬇ Xuất</button>');
+}
+mfns.bxuatok=()=>{const v=$('#mdX').value;if(!v){toast('⛔ Bắt buộc chọn mục đích xuất.');return}
+ ghiVet({nd:'Xuất siêu dữ liệu '+nf(locTep().length)+' tệp — mục đích: '+v});closeM();toast('⬇ Đã xuất '+nf(locTep().length)+' dòng siêu dữ liệu — nhật ký mức ② ghi kèm mục đích «'+esc(v)+'».')};
+document.addEventListener('change',e=>{
+ const t=e.target;
+ if(t.dataset.lc!==undefined){ST.loc[t.dataset.lc]=t.value;if(t.dataset.lc==='nhom')ST.loc.lop='';ST.trang=0;ST.cur=null;render();return}
+ if(t.dataset.sx!==undefined){ST.sx=t.value;ST.trang=0;render();return}
+ if(t.dataset.ck!==undefined){t.checked?ST.chon.add(t.dataset.ck):ST.chon.delete(t.dataset.ck);render();return}
+ if(t.dataset.cktrang!==undefined){locTep().slice(ST.trang*PAGE,(ST.trang+1)*PAGE).forEach(f=>t.checked?ST.chon.add(f.id):ST.chon.delete(f.id));render();return}
+ if(t.dataset.sl!==undefined){SL[t.dataset.sl]=t.value;if(t.dataset.sl==='che'||t.dataset.sl==='dv'||t.dataset.sl==='moc')veSuaLop();return}
+});
+document.addEventListener('input',e=>{
+ const t=e.target;
+ if(t.dataset.cf!==undefined&&CFGT){CFGT[t.dataset.cf]=t.value;return}
+ if(t.dataset.cfq!==undefined&&CFGT){CFGT.quet[t.dataset.cfq]=t.value;return}
+ if(t.dataset.lf!==undefined){const lt=luotById(ST.gpCur);if(!lt)return;const k=t.dataset.lf;
+  if(k==='yk')lt._yk=t.value;else lt[k]=t.value;return}
+ /* LT-22 — ô của hồ sơ hủy 7 thành phần */
+ if(t.dataset.hs!==undefined){const lt=luotById(ST.gpCur);if(!lt)return;const k=t.dataset.hs;
+  if(k==='tm')lt.hs.tm=t.value;else{const[a,b2]=k.split('.');lt.hs[a][b2]=t.value}return}
+ if(t.dataset.sl!==undefined&&SL){SL[t.dataset.sl]=t.value;return}
+});
+/* deep-link D3: ?tab=tq|tc|gp|ch · &lop=Lxx · &ctx=GP-… (&action=duyet) · &return=<menu> · &vai=…
+   ctx là một lượt vai không có quyền Xem → không nói nó tồn tại */
+(function moTuLienKet(){
+ const map={tong_quan:'tq',tra_cuu:'tc',luot:'gp',cau_hinh:'ch',tq:'tq',tc:'tc',gp:'gp',ch:'ch'};
+ if(map[QS.get('tab')]) ST.tab=map[QS.get('tab')];
+ if(QS.get('return')) ST.ret=QS.get('return');
+ if(QS.get('lop')&&lop(QS.get('lop'))){datLoc({lop:QS.get('lop')});ST.tab='tc'}
+ const c=QS.get('ctx');
+ if(c&&coMenu()&&luotById(c)){ST.tab='gp';ST.gpCur=c}
+})();
+render();
+</script>
+</body>
+</html>

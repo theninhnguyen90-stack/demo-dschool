@@ -168,6 +168,20 @@ tr:last-child td{border-bottom:none}
 .note{margin-left:auto;color:#64748b;font-size:11.5px}
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(90px);background:#0f172a;color:#fff;padding:11px 17px;border-radius:9px;font-size:13px;z-index:80;transition:transform .22s;max-width:92vw}
 .toast.on{transform:translateX(-50%)}
+
+/* ===== GY18-C (18/9/2026) — dai chip chuc danh kiem nhiem tren the dau trang (M0.4 §2.2b) ===== */
+.pill.b{font-weight:700;color:var(--ink);background:var(--surface);border-color:var(--line2)}
+.knw{display:flex;gap:6px;flex-wrap:wrap;align-items:center;width:100%;margin-top:6px}
+.knw .lb{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
+.kn{font-size:11px;background:#f5f3ff;border:1px solid #ddd6fe;color:#5b21b6;border-radius:999px;
+ padding:2px 9px;font-weight:600;display:inline-flex;gap:5px;align-items:center}
+.kn i{font-style:normal;font-weight:400;opacity:.8}
+.kn.mo{background:var(--bg);border-color:var(--line);color:var(--ink3);font-weight:500}
+.kn.cho{background:#fff7ed;border-color:#fdba74;color:#c2410c}
+.kn.tam{background:var(--amber-soft);border-color:var(--amber);color:#92400e;cursor:pointer}
+.kn.more{background:var(--surface);border-color:var(--line2);color:var(--ink2);font-weight:500;cursor:pointer}
+.kn.more:hover,.kn.tam:hover{box-shadow:0 0 0 3px var(--brand-soft)}
+.srcn{font-size:12px;color:var(--ink3)}
 </style>
 </head>
 <body>
@@ -176,13 +190,20 @@ tr:last-child td{border-bottom:none}
 
 <div class="rolebar">
   <b>Demo — chọn vai trò:</b>
-  <button class="rb on" data-r="DEMO">🔓 Đủ quyền (demo)</button>
+  <button class="rb on" data-r="DEMO" title="Bùi Văn Khánh — ca S4: đơn ba ngày đủ ba vùng thu hồi">🔓 Đủ quyền (demo)</button>
+  <button class="rb" data-r="MAI" title="Nguyễn Thị Mai — ca S1: gửi 06:12 trên App, có hiệu lực ngay">S1 · Nguyễn Thị Mai</button>
+  <button class="rb" data-r="NGAN" title="Lưu Thị Ngân — ca S3: đơn nhập hộ, ghép báo vắng">S3 · Lưu Thị Ngân</button>
+  <button class="rb" data-r="HA" title="Trịnh Thu Hà — ca S5: rút sát giờ, giữ người dạy thay">S5 · Trịnh Thu Hà</button>
+  <button class="rb" data-r="DUC" title="Hà Minh Đức — ca S8: nhận đề nghị đổi ngày">S8 · Hà Minh Đức</button>
+  <button class="rb" data-r="CHI" title="Lê Thị Kim Chi — ca S9: Kế toán, không dạy">S9 · Lê Thị Kim Chi (KT)</button>
+  <button class="rb" data-r="HUONG" title="Phùng Thị Lan Hương — ca C1: Bí thư Đoàn trường + GVCN 10A1 + GVBM Ngữ văn">C1 · Lan Hương (kiêm 3 tư cách)</button>
+  <button class="rb" data-r="VTHU" title="Đặng Thị Vân — Văn thư kiêm Tổ trưởng tổ văn phòng, không giảng dạy">Văn thư kiêm TTVP</button>
   <button class="rb" data-r="GVBM">GVBM</button>
   <button class="rb" data-r="GVCN">GVCN</button>
   <button class="rb" data-r="HT">HT</button>
   <button class="rb" data-r="TCNS">TCNS</button>
   <button class="rb" data-r="TQ">TQ (không giảng dạy)</button>
-  <span class="note">Mục tự ẩn theo dữ liệu — Thủ quỹ thấy 6 mục thay vì 9</span>
+  <span class="note">Mục tự ẩn theo dữ liệu — Thủ quỹ thấy 6 mục thay vì 9 · dải chip kiêm nhiệm chỉ hiện với người thật sự kiêm nhiệm</span>
 </div>
 
 <header class="hdr">
@@ -221,41 +242,133 @@ tr:last-child td{border-bottom:none}
 
 <script>
 const P={
- DEMO:{n:'Phạm Anh Khoa',i:'PK',r:'Vai demo — đủ dữ liệu ở mọi mục',to:'Tổ Toán - Tin',ms:'NS-0001-DEMO',teach:1,ck:1,cts:1,
-   mon:['Toán','Tin học'],loai:'vc'},
- GVBM:{n:'Lê Hoàng Minh',i:'LM',r:'Giáo viên bộ môn',to:'Tổ Toán - Tin',ms:'NS-0142',teach:1,ck:1,cts:0,
-   mon:['Toán','Tin học'],loai:'vc'},
- GVCN:{n:'Trịnh Văn Hùng',i:'TH',r:'Giáo viên chủ nhiệm 9A2',to:'Tổ Toán - Tin',ms:'NS-0118',teach:1,ck:1,cts:0,
-   mon:['Toán'],loai:'vc'},
+ /* Đ4 (YKNP 17/9/2026): vai Đủ quyền = Bùi Văn Khánh — ca S4, đơn ba ngày đủ ba vùng thu hồi.
+    Mục khác của vai ca mẫu (MAI NGAN HA DUC CHI) MƯỢN dữ liệu vai GVBM (muon:'GVBM').
+    id · toMa · dtr (điểm trường) · tn (thâm niên) · ng (nhà giáo) dùng cho F6 Đơn nghỉ phép — app.50-don-nghi.js */
+ DEMO:{n:'Bùi Văn Khánh',i:'BK',r:'Giáo viên bộ môn · vai demo đủ dữ liệu',to:'Tổ KHTN',ms:'GV015',teach:1,ck:1,cts:1,
+   mon:['KHTN'],loai:'vc',id:15,toMa:'T4',dtr:'A',tn:7,ng:1},
+ MAI:{n:'Nguyễn Thị Mai',i:'NM',r:'Giáo viên bộ môn · ca S1',to:'Tổ Ngữ văn — Sử — Địa',ms:'GV003',teach:1,ck:1,cts:0,
+   mon:['Ngữ văn'],loai:'vc',id:3,toMa:'T2',dtr:'A',tn:6,ng:1,muon:'GVBM'},
+ NGAN:{n:'Lưu Thị Ngân',i:'LN',r:'Giáo viên bộ môn · ca S3',to:'Tổ Ngoại ngữ',ms:'GV017',teach:1,ck:1,cts:0,
+   mon:['Tiếng Anh'],loai:'vc',id:17,toMa:'T3',dtr:'A',tn:3,ng:1,muon:'GVBM'},
+ HA:{n:'Trịnh Thu Hà',i:'TH',r:'Giáo viên bộ môn · ca S5',to:'Tổ Ngoại ngữ',ms:'GV008',teach:1,ck:1,cts:0,
+   mon:['Tiếng Anh'],loai:'vc',id:8,toMa:'T3',dtr:'B',tn:4,ng:1,muon:'GVBM'},
+ DUC:{n:'Hà Minh Đức',i:'HĐ',r:'Giáo viên bộ môn · ca S8',to:'Tổ Toán — Tin',ms:'GV018',teach:1,ck:1,cts:0,
+   mon:['Toán'],loai:'vc',id:18,toMa:'T1',dtr:'A',tn:5,ng:1,muon:'GVBM'},
+ CHI:{n:'Lê Thị Kim Chi',i:'KC',r:'Kế toán · ca S9',to:'Phòng Kế toán',ms:'NV002',teach:0,ck:1,cts:0,
+   mon:[],loai:'vc',id:41,toMa:null,dtr:'A',tn:4,ng:0,muon:'GVBM'},
+ GVBM:{n:'Lê Hoàng Minh',i:'LM',r:'Giáo viên bộ môn',to:'Tổ Toán — Tin',ms:'NS-0142',teach:1,ck:1,cts:0,
+   mon:['Toán','Tin học'],loai:'vc',toMa:'T1',dtr:'A',tn:10,ng:1},
+ GVCN:{n:'Trịnh Văn Hùng',i:'TH',r:'Giáo viên chủ nhiệm 9A2',to:'Tổ Toán — Tin',ms:'NS-0118',teach:1,ck:1,cts:0,
+   mon:['Toán'],loai:'vc',toMa:'T1',dtr:'A',tn:12,ng:1},
  HT:{n:'Nguyễn Văn Sơn',i:'NS',r:'Hiệu trưởng',to:'Ban Giám hiệu',ms:'NS-0001',teach:1,ck:1,cts:1,
-   mon:['Giáo dục công dân'],loai:'vc'},
- TCNS:{n:'Ngô Thị Hạnh',i:'NH',r:'Tổ chức nhân sự',to:'Phòng Hành chính',ms:'NS-0076',teach:0,ck:1,cts:1,mon:[],loai:'vc'},
- TQ:{n:'Bùi Thị Thu',i:'BT',r:'Thủ quỹ',to:'Phòng Kế toán',ms:'NS-0091',teach:0,ck:0,cts:0,mon:[],loai:'hdld'}
+   mon:['Giáo dục công dân'],loai:'vc',toMa:'T2',dtr:'A',tn:22,ng:1},
+ TCNS:{n:'Ngô Thị Hạnh',i:'NH',r:'Tổ chức nhân sự',to:'Phòng Hành chính',ms:'NS-0046',teach:0,ck:1,cts:1,mon:[],loai:'vc',id:46,toMa:null,dtr:'A',tn:9,ng:0},
+ TQ:{n:'Bùi Thị Thu',i:'BT',r:'Thủ quỹ',to:'Phòng Kế toán',ms:'NS-0091',teach:0,ck:0,cts:0,mon:[],loai:'hdld',toMa:null,dtr:'A',tn:6,ng:0},
+ /* GY18-C (18/9/2026) — hai vai thêm cho góp ý GY-68GW: ca C1 (kiêm ba tư cách) và ca Văn thư kiêm Tổ trưởng tổ văn phòng */
+ HUONG:{n:'Phùng Thị Lan Hương',i:'LH',r:'Giáo viên bộ môn · ca C1 — kiêm ba tư cách',to:'Tổ Ngữ văn — Sử — Địa',ms:'GV022',teach:1,ck:1,cts:1,
+   mon:['Ngữ văn'],loai:'vc',id:22,toMa:'T2',dtr:'A',tn:11,ng:1,muon:'GVBM'},
+ VTHU:{n:'Đặng Thị Vân',i:'ĐV',r:'Văn thư · ca kiêm nhiệm không giảng dạy',to:'Tổ văn phòng',ms:'NV011',teach:0,ck:1,cts:1,
+   mon:[],loai:'vc',id:11,toMa:null,dtr:'A',tn:8,ng:0,muon:'GVBM'}
 };
 
-/* Danh ba GV cho bo chon nguoi day thay */
+/* Danh ba GV cho bo chon nguoi day thay — ma · ten · to theo mang NS chung cua M4.8 · M4.7 · M4.9 (bo ca mau YKNP §6) */
 const GV=[
- {n:'Đặng Thu Trang',sdt:'0913 224 588',mon:'Toán',to:'Tổ Toán - Tin',ms:'NS-0155',dt:2},
- {n:'Vũ Thị Hồng',sdt:'0904 771 236',mon:'Toán',to:'Tổ Toán - Tin',ms:'NS-0103',dt:0},
- {n:'Nguyễn Văn Hùng',sdt:'0977 812 045',mon:'Toán',to:'Tổ Toán - Tin',ms:'NS-0167',dt:5},
- {n:'Nguyễn Văn Hùng',sdt:'0912 660 314',mon:'Tin học',to:'Tổ Toán - Tin',ms:'NS-0181',dt:1},
- {n:'Phạm Thị Lan Anh',sdt:'0968 405 117',mon:'Tin học',to:'Tổ Toán - Tin',ms:'NS-0129',dt:0},
- {n:'Trần Quốc Đạt',sdt:'0983 117 902',mon:'Toán',to:'Tổ Tự nhiên 2',ms:'NS-0209',dt:3},
- {n:'Lê Thị Mai Hương',sdt:'0917 338 651',mon:'Vật lý',to:'Tổ Toán - Tin',ms:'NS-0134',dt:1},
- {n:'Hoàng Minh Đức',sdt:'0906 552 187',mon:'Vật lý',to:'Tổ Tự nhiên 1',ms:'NS-0198',dt:0},
- {n:'Đỗ Thị Lan',sdt:'0935 720 449',mon:'Lịch sử',to:'Tổ Xã hội',ms:'NS-0176',dt:0},
- {n:'Vũ Minh Tuấn',sdt:'0988 016 273',mon:'Địa lý',to:'Tổ Xã hội',ms:'NS-0188',dt:2},
+ {n:'Lê Minh Tuấn',sdt:'0912 345 671',mon:'Toán',to:'Tổ Toán — Tin',ms:'GV001',dt:1},
+ {n:'Phạm Thị Hòa',sdt:'0912 345 672',mon:'Toán',to:'Tổ Toán — Tin',ms:'GV002',dt:0},
+ {n:'Vũ Thị Hồng',sdt:'0912 345 684',mon:'Toán',to:'Tổ Toán — Tin',ms:'GV014',dt:2},
+ {n:'Hà Minh Đức',sdt:'0912 345 688',mon:'Toán',to:'Tổ Toán — Tin',ms:'GV018',dt:1},
+ {n:'Phan Thị Kim',sdt:'0912 345 689',mon:'Toán',to:'Tổ Toán — Tin',ms:'GV019',dt:0},
+ {n:'Nguyễn Thị Mai',sdt:'0912 345 673',mon:'Ngữ văn',to:'Tổ Ngữ văn — Sử — Địa',ms:'GV003',dt:2},
+ {n:'Trần Thị Bích',sdt:'0912 345 674',mon:'Ngữ văn',to:'Tổ Ngữ văn — Sử — Địa',ms:'GV004',dt:0},
+ {n:'Hoàng Văn Sơn',sdt:'0912 345 675',mon:'Lịch sử & Địa lí',to:'Tổ Ngữ văn — Sử — Địa',ms:'GV005',dt:1},
+ {n:'Lý Thị Thu',sdt:'0912 345 676',mon:'Ngữ văn',to:'Tổ Ngữ văn — Sử — Địa',ms:'GV006',dt:0},
+ {n:'Tạ Thị Quyên',sdt:'0912 345 690',mon:'Ngữ văn',to:'Tổ Ngữ văn — Sử — Địa',ms:'GV020',dt:2},
+ {n:'Nguyễn Văn Chiến',sdt:'0912 345 691',mon:'Ngữ văn',to:'Tổ Ngữ văn — Sử — Địa',ms:'GV021',dt:0},
+ {n:'Ngô Thị Hương',sdt:'0912 345 677',mon:'Tiếng Anh',to:'Tổ Ngoại ngữ',ms:'GV007',dt:3},
+ {n:'Trịnh Thu Hà',sdt:'0912 345 678',mon:'Tiếng Anh',to:'Tổ Ngoại ngữ',ms:'GV008',dt:0},
+ {n:'Lưu Thị Ngân',sdt:'0912 345 687',mon:'Tiếng Anh',to:'Tổ Ngoại ngữ',ms:'GV017',dt:0},
+ {n:'Bùi Thị Loan',sdt:'0912 345 713',mon:'Tiếng Anh',to:'Tổ Ngoại ngữ',ms:'GV043',dt:0,nghiViec:1},
+ {n:'Đặng Văn Long',sdt:'0912 345 679',mon:'Vật lí',to:'Tổ KHTN',ms:'GV009',dt:0},
+ {n:'Cao Thị Nhung',sdt:'0912 345 680',mon:'KHTN',to:'Tổ KHTN',ms:'GV010',dt:1},
+ {n:'Bùi Văn Khánh',sdt:'0912 345 685',mon:'KHTN',to:'Tổ KHTN',ms:'GV015',dt:0},
+ {n:'Đỗ Thị Yến',sdt:'0912 345 686',mon:'KHTN',to:'Tổ KHTN',ms:'GV016',dt:4},
 ];
+/* ===== GY18-C (18/9/2026) — TƯ CÁCH của từng vai (góp ý GY-68GW) =====
+   kn[]  = dải chip kiêm nhiệm trên thẻ đầu trang (M0.4 §2.2b) — mỗi tư cách MỘT chip kèm phạm vi
+           day:1  chip giảng dạy (chỉ có khi GVBM là tư cách KIÊM, chức danh chính là thứ khác)
+           chua:1 chức danh đã có quyết định nhưng CHƯA phân công — nhãn giữ nguyên của M4.3
+           het:1  hết hiệu lực trong năm học đang chọn — hiện nhưng để mờ (C-3)
+   tam   = chức danh tạm do ủy quyền M0.5 (mặt nạ CÓ HẠN) — chip riêng, đứng sau mọi chip thật,
+           không bao giờ bị gộp vào «và N nữa» (§2.2b luật 8)
+   pcb   = các khối của mục Phân công, gom theo TỪNG TƯ CÁCH (§4.4.1b)
+   🔗 Toàn bộ là BẢN CHIẾU: chức danh và phạm vi loại 1 của M4.3 · lớp CN và môn dạy của M4.5 ·
+      tổ của M10.2 · tổ chức Đoàn - Đội của M6.15. M0.4 không ghi gì ở đây. */
+const TC={
+ DEMO:{kn:[
+   {n:'Tổ trưởng tổ KHTN',pv:'Tổ KHTN'},
+   {n:'GVCN 8A1',pv:'Điểm trường A'},
+   {n:'Thư ký hội đồng trường',pv:'Toàn trường'},
+   {n:'Quản sinh',pv:'Điểm trường A'},
+   {n:'Tổ chức đợt đào tạo',pv:'Đợt BDTX hè 2026',het:1}],
+  tam:{n:'Tổ trưởng tổ Toán — Tin',den:'30/9',duq:'ĐUQ-006'},
+  pcb:{gvbm:[['9A3','KHTN',4,'A'],['8A2','KHTN',4,'A'],['7A1','KHTN',4,'A'],['7A2','KHTN',4,'A']],
+   gvcn:{lop:'8A1',si:38,dt:'Điểm trường A'},
+   to:[{vt:'Tổ trưởng',ten:'Tổ KHTN',tv:9},
+       {vt:'Tổ trưởng',ten:'Tổ Toán — Tin',tv:11,tam:'ĐUQ-006',den:'30/9/2026'}],
+   khac:[{n:'Thư ký hội đồng trường',pv:'Toàn trường',tt:'QĐ 12/QĐ-NTT · từ 01/9/2025'},
+         {n:'Quản sinh',pv:'Điểm trường A',tt:'QĐ 61/QĐ-NTT · từ 01/9/2026'},
+         {n:'Tổ chức đợt đào tạo',pv:'Đợt BDTX hè 2026',tt:'Hết hiệu lực 31/8/2026',het:1}]}},
+
+ /* ca C1 — Bí thư Đoàn trường + GVCN một lớp + GVBM: ba khối, hai chip */
+ HUONG:{kn:[
+   {n:'Bí thư Đoàn trường',pv:'Đoàn TNCS Hồ Chí Minh'},
+   {n:'GVCN 10A1',pv:'Điểm trường A'}],
+  pcb:{gvbm:[['10A1','Ngữ văn',4,'A'],['10A2','Ngữ văn',4,'A'],['11A3','Ngữ văn',4,'A']],
+   gvcn:{lop:'10A1',si:42,dt:'Điểm trường A'},
+   doan:{tc:'Đoàn TNCS Hồ Chí Minh — Đoàn trường',vt:'Bí thư',nk:'2026-2027',dv:486,cd:14}}},
+
+ /* chức danh đã có quyết định nhưng CHƯA phân công + một chức danh đã hết hiệu lực */
+ GVBM:{kn:[
+   {n:'Giáo viên chủ nhiệm',pv:'chưa phân công',chua:1},
+   {n:'Tổ phó tổ Toán — Tin',pv:'Tổ Toán — Tin',het:1}],
+  pcb:{gvbm:[['9A1','Toán',4,'A'],['9A2','Toán',4,'A'],['8A1','Toán',4,'A'],['8A3','Toán',4,'B']],
+   gvcn:{chua:1},
+   to:[{vt:'Tổ phó',ten:'Tổ Toán — Tin',tv:11,het:'31/8/2026'}]}},
+
+ /* chức danh chính là GVCN ⇒ tư cách giảng dạy thành chip (day:1), ô 📘 Dạy nhường chỗ */
+ GVCN:{kn:[{n:'GVBM Toán',pv:'4 lớp · 16 tiết/tuần',day:1}],
+  pcb:{gvbm:[['9A2','Toán',4,'A'],['9A4','Toán',4,'A'],['7A1','Toán',4,'A'],['7A3','Toán',4,'A']],
+   gvcn:{lop:'9A2',si:41,dt:'Điểm trường A'}}},
+
+ HT:{kn:[{n:'GVBM Giáo dục công dân',pv:'2 lớp · 4 tiết/tuần',day:1},
+        {n:'Chủ tịch Hội đồng thi đua khen thưởng',pv:'Toàn trường'}],
+  pcb:{gvbm:[['10A1','Giáo dục công dân',2,'A'],['10A2','Giáo dục công dân',2,'A']],
+   khac:[{n:'Hiệu trưởng',pv:'Toàn trường',tt:'QĐ 4102/QĐ-UBND · từ 01/8/2022'},
+         {n:'Chủ tịch Hội đồng thi đua khen thưởng',pv:'Toàn trường',tt:'QĐ 03/QĐ-NTT · từ 01/9/2026'}]}},
+
+ /* Văn thư kiêm Tổ trưởng tổ văn phòng — KHÔNG giảng dạy nhưng vẫn phải thấy tải công tác (§2.1) */
+ VTHU:{kn:[{n:'Tổ trưởng tổ văn phòng',pv:'Tổ văn phòng'}],
+  pcb:{khac:[{n:'Văn thư',pv:'Điểm trường A',tt:'QĐ 55/QĐ-NTT · từ 01/9/2018'},
+             {n:'Tổ trưởng tổ văn phòng',pv:'Tổ văn phòng · 7 thành viên',tt:'QĐ 88/QĐ-NTT · từ 01/9/2026'}]}}
+ /* TQ · CHI · MAI · NGAN · HA · DUC · TCNS: KHÔNG kiêm nhiệm ⇒ KHÔNG có dải chip (§2.2b luật 2) */
+};
+const tc=()=>TC[role]||{};
+const tcKn=()=>tc().kn||[];
+const MAX_CHIP=4;   /* C-1 — §7 #17: tối đa 4 chip thật, phần còn lại gộp «và N nữa» */
+
 const NAV=[
  ['','🏠 Trung tâm điều hành',[['M0.1','Bảng điều khiển'],['M0.2','Việc cần làm','6'],['M0.3','Thông báo của tôi','5'],['M0.4','Trang cá nhân']]],
- ['lop','📚 Lớp học hàng ngày',[['M2.1','Lịch dạy & học'],['M2.2','Sổ đầu bài'],['M2.5','Nhập điểm thường xuyên'],['M2.6','Bảng điểm môn']]],
+ ['lop','📚 Lớp học hàng ngày',[['M2.1','Lịch dạy & học'],['M2.2','Sổ đầu bài'],['M2.5','Nhập điểm thường xuyên'],['M2.5','Bảng điểm môn']]],
  ['ns','👨‍🏫 Nhân sự',[['M4.1','Hồ sơ nhân sự'],['M4.8','Nghỉ phép'],['M4.9','Chấm công nhân sự'],
    ['M4.10','Khen thưởng & Kỷ luật NS'],['M4.11','Chứng thư số']]],
  ['cm','📖 Chuyên môn',[['M5.2','Giáo án'],['M5.6','Đào tạo & BDTX']]],
  ['tc','💰 Tài chính',[['M7.1','Danh mục khoản thu'],['M7.2','Theo dõi thực hiện khoản thu'],['M7.3','Điều chỉnh & Hoàn tiền']]],
  ['gt','💬 Giao tiếp',[['M8.1','Thông báo chủ động'],['M8.2','Nhắn tin']]],
 ];
-const RM={DEMO:'all',GVBM:['lop','cm','gt'],GVCN:['lop','gt'],HT:'all',TCNS:['ns','gt'],TQ:['tc','gt']};
+const RM={DEMO:'all',GVBM:['lop','cm','gt'],GVCN:['lop','gt'],HT:'all',TCNS:['ns','gt'],TQ:['tc','gt'],
+ MAI:['lop','cm','gt'],NGAN:['lop','cm','gt'],HA:['lop','cm','gt'],DUC:['lop','cm','gt'],CHI:['tc','gt'],
+ HUONG:['lop','cm','gt'],VTHU:['ns','gt']};
 
 const SEC=[
  ['HỒ SƠ',[['f1','👤','Thông tin cá nhân'],['f2','📝','Yêu cầu cập nhật','1'],['f4','🎖️','Văn bằng & chứng chỉ'],['f10','🏅','Khen thưởng & Kỷ luật']]],
@@ -268,7 +381,8 @@ const pend=new Set(['Số CCCD']);
 const $=s=>document.querySelector(s);
 const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._);t._=setTimeout(()=>t.classList.remove('on'),2700)};
 const vis=id=>{const p=P[role];
- if(id==='f5')return !!p.teach; if(id==='f6')return !!p.ck; if(id==='f8')return !!p.cts||role==='HT'; return true};
+ if(id==='f5')return !!p.teach||tcKn().length>0;   /* GY18-C §2.1 — có kiêm nhiệm thì vẫn có tải công tác để đọc */
+ if(id==='f6')return !!p.ck; if(id==='f8')return !!p.cts||role==='HT'; return true};
 
 function sidebar(){const a=RM[role],full=a==='all';
  $('#side').innerHTML=NAV.map(([id,n,items])=>{const on=full||id===''||a.includes(id);
@@ -279,9 +393,18 @@ function sidebar(){const a=RM[role],full=a==='all';
 
 function head(){const p=P[role];
  $('#pph').textContent=p.i; $('#ava').textContent=p.i; $('#pname').textContent=p.n;
- $('#prole').innerHTML=`<span class="pill">${p.r}</span><span class="pill">${p.to}</span>`
-  +(p.mon.length?`<span class="subj">📘 Dạy: ${p.mon.join(' · ')}</span>`:'')
-  +`<span class="pill">Mã ${p.ms}</span>`;
+ /* GY18-C — dải chip kiêm nhiệm (§2.2b). Chỉ đọc, không nút; nguồn M4.3 🔗 (phạm vi loại 2 từ M4.5). */
+ const kn=tcKn(), tam=tc().tam, hien=kn.slice(0,MAX_CHIP), con=kn.length-hien.length;
+ const chip=k=>`<span class="kn${k.het?' mo':''}${k.chua?' cho':''}" title="🔗 M4.3 — chỉ đọc${k.het?' · đã hết hiệu lực trong năm học đang chọn':''}">${k.n}${k.pv?` <i>· ${k.pv}</i>`:''}${k.het?' <i>· đã kết thúc</i>':''}</span>`;
+ $('#prole').innerHTML=`<span class="pill b">${p.r}</span><span class="pill">${p.to}</span>`
+  +(p.mon.length&&!kn.some(k=>k.day)?`<span class="subj">📘 Dạy: ${p.mon.join(' · ')}</span>`:'')
+  +`<span class="pill">Mã ${p.ms}</span>`
+  +(kn.length||tam
+    ? `<span class="knw"><span class="lb">Kiêm nhiệm</span>`+hien.map(chip).join('')
+      +(con>0?`<span class="kn more" data-s="f5" title="Mở mục Phân công & Lịch dạy để xem đủ">và ${con} nữa</span>`:'')
+      +(tam?`<span class="kn tam" data-s="f5" title="Chức danh TẠM do ủy quyền ${tam.duq} — mặt nạ có hạn trên chức danh gốc (M0.5)">⏳ tạm · ${tam.n} <i>· đến ${tam.den}</i></span>`:'')
+      +`</span>`
+    : '');
  $('#ckin').innerHTML = p.ck
   ? `<div class="s">Chấm công hôm nay</div><div class="v" id="ckv">Đã vào lúc 06:52</div>
      <div class="btns"><button class="btn g sm" id="ckbtn">Bấm Về</button>
@@ -363,15 +486,48 @@ const F4=()=>`<div class="card"><div class="ch"><h3>Văn bằng &amp; chứng ch
   Chứng chỉ có nhãn <b>Hệ thống cấp</b> sinh tự động khi hoàn thành đợt tập huấn nội bộ tại M5.6 — không sửa, không xóa.
   Chứng chỉ tự khai chỉ sửa được <b>khi chưa được Tổ chức nhân sự xác nhận</b>.</div></div></div>`;
 
-const F5=()=>`<div class="card"><div class="ch"><h3>Phân công giảng dạy năm 2026-2027</h3>
-  <span style="font-size:12px;color:var(--ink3)">Nguồn: M4.5 · chỉ đọc</span></div><div class="cb" style="padding:0">
-  <table><tr><th>Lớp</th><th>Môn</th><th>Số tiết/tuần</th><th>Điểm trường</th></tr>
-  <tr><td>9A1</td><td>Toán</td><td>4</td><td>Điểm trường A</td></tr>
-  <tr><td>9A2</td><td>Toán</td><td>4</td><td>Điểm trường A</td></tr>
-  <tr><td>8A1</td><td>Toán</td><td>4</td><td>Điểm trường A</td></tr>
-  <tr><td>8A3</td><td>Toán</td><td>4</td><td>Điểm trường B</td></tr>
-  </table></div></div>
-  <div class="card"><div class="ch"><h3>Cân đối định mức</h3></div><div class="cb">
+/* ===== GY18-C (18/9/2026) — Phân công gom theo TỪNG TƯ CÁCH (M0.4 §4.4.1b) =====
+   Người kiêm nhiệm mở mục này để trả lời "tôi đang gánh những gì". Danh sách phẳng bắt họ
+   tự phân loại lại trong đầu; các khối theo tư cách thì không. Khối rỗng ⇒ ẩn khối (§2.1). */
+const nguon=x=>`<span class="srcn">🔗 Nguồn: ${x} · chỉ đọc</span>`;
+const F5=()=>{const p=P[role],b=tc().pcb||{};
+ let h=`<div class="card"><div class="cb" style="padding-bottom:15px"><div class="info" style="margin:0">
+   Mục này gom <b>theo từng tư cách</b> bạn đang giữ, mỗi khối ghi rõ <b>nguồn</b>.
+   Tư cách nào không có dữ liệu thì <b>ẩn khối</b> — không hiện khối rỗng.
+   Toàn bộ là <b>bản chiếu chỉ đọc</b>: chức danh do <b>M4.3</b> sở hữu, phân công do <b>M4.5</b>.</div></div></div>`;
+
+ if(b.gvbm&&b.gvbm.length)h+=`<div class="card"><div class="ch"><h3>📘 Giáo viên bộ môn</h3>${nguon('M4.5 §7.1')}</div>
+  <div class="cb" style="padding:0"><table><tr><th>Lớp</th><th>Môn</th><th>Số tiết/tuần</th><th>Điểm trường</th></tr>
+  ${b.gvbm.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>Điểm trường ${r[3]}</td></tr>`).join('')}
+  <tr><td colspan="2"><b>Tổng</b></td><td><b>${b.gvbm.reduce((s,r)=>s+r[2],0)}</b></td><td></td></tr></table></div></div>`;
+
+ if(b.gvcn)h+=`<div class="card"><div class="ch"><h3>👩‍🏫 Giáo viên chủ nhiệm</h3>${nguon('M4.5 §7.3 · sĩ số M1.7')}</div>
+  <div class="cb">${b.gvcn.chua
+   ? `<div class="warn" style="margin:0">Bạn <b>có chức danh Giáo viên chủ nhiệm</b> nhưng <b>chưa được phân công lớp nào</b> trong năm học này —
+      nhãn giữ nguyên của M4.3. Không phải lỗi quyền: danh sách lớp rỗng vì chưa có bản ghi phân công.
+      <button class="btn sm" data-go="M4.5" style="margin-left:8px">↗ M4.5 Phân công giảng dạy</button></div>`
+   : `<div class="kpi"><div><b>${b.gvcn.lop}</b><span>Lớp chủ nhiệm</span></div>
+      <div><b>${b.gvcn.si}</b><span>Sĩ số</span></div>
+      <div><b>${b.gvcn.dt}</b><span>Điểm trường</span></div></div>`}</div></div>`;
+
+ if(b.to&&b.to.length)h+=`<div class="card"><div class="ch"><h3>🧑‍🔬 Tổ trưởng / Tổ phó chuyên môn</h3>${nguon('M10.2')}</div>
+  <div class="cb" style="padding:0"><table><tr><th>Vai trò</th><th>Tổ chuyên môn</th><th>Số thành viên</th><th>Hiệu lực</th></tr>
+  ${b.to.map(t=>`<tr${t.het?' style="opacity:.6"':''}><td>${t.vt}${t.tam?` <span class="kn tam">⏳ tạm · ${t.tam}</span>`:''}</td><td>${t.ten}</td><td>${t.tv}</td>
+   <td>${t.tam?`đến ${t.den} — <b>chức danh tạm</b>, hết hạn là tự đóng (M0.5)`:t.het?`<span class="sub">hết hiệu lực ${t.het}</span>`:'đang giữ'}</td></tr>`).join('')}</table></div></div>`;
+
+ if(b.doan)h+=`<div class="card"><div class="ch"><h3>🎖 Bí thư Đoàn / Tổng phụ trách Đội</h3>${nguon('M6.15')}</div>
+  <div class="cb"><div class="kpi"><div><b>${b.doan.vt}</b><span>${b.doan.tc}</span></div>
+   <div><b>${b.doan.nk}</b><span>Nhiệm kỳ</span></div>
+   <div><b>${b.doan.dv}</b><span>Đoàn viên · ${b.doan.cd} chi đoàn</span></div></div></div></div>`;
+
+ if(b.khac&&b.khac.length)h+=`<div class="card"><div class="ch"><h3>🗂 Chức danh khác</h3>${nguon('M4.3')}</div>
+  <div class="cb" style="padding:0"><table><tr><th>Chức danh</th><th>Phạm vi</th><th>Căn cứ · hiệu lực</th></tr>
+  ${b.khac.map(k=>`<tr${k.het?' style="opacity:.6"':''}><td>${k.n}</td><td>${k.pv}</td><td>${k.tt}</td></tr>`).join('')}</table></div></div>`;
+
+ if(!p.teach)return h+`<div class="card"><div class="cb"><div class="sub">Bạn <b>không có phân công giảng dạy</b> trong năm học này —
+   các khối <b>định mức</b> và <b>lịch dạy tuần</b> ẩn theo đúng luật §2.1, không hiện khối rỗng.</div></div></div>`;
+
+ return h+`<div class="card"><div class="ch"><h3>Cân đối định mức</h3>${nguon('M4.5 · M2.1')}</div><div class="cb">
    <div class="warn">Hai chỉ số dưới đây <b>khác nhau và đều cần theo dõi</b>: định mức kế hoạch tính từ Thời khóa biểu, còn số tiết thực dạy tính từ Lịch giảng dạy (đã cộng tiết dạy thay, trừ tiết nghỉ).</div>
    <div class="kpi">
     <div><b>16</b><span>Định mức kế hoạch (tiết/tuần)</span></div>
@@ -393,7 +549,8 @@ const F5=()=>`<div class="card"><div class="ch"><h3>Phân công giảng dạy n�
   <div class="cb" style="border-top:1px solid var(--line)"><div style="font-size:12px;color:var(--ink3)">
    Mục này <b>hoàn toàn chỉ đọc</b> — và <b>M2.1 Lịch dạy &amp; học cũng vậy</b>.
    Muốn đổi tiết thì trao đổi trực tiếp với đồng nghiệp rồi báo người có thẩm quyền, họ thao tác tại M4.7.
-   Muốn nhờ dạy thay thì hỏi trước rồi điền tên vào đơn nghỉ phép ở M4.8.</div></div></div>`;
+   Muốn nhờ dạy thay thì hỏi trước rồi điền tên vào đơn nghỉ phép ở mục <b>Đơn nghỉ phép</b> ngay trang này.
+   <b>Không có bộ chọn «vai đang làm việc»</b> ở trang này: quyền của người kiêm nhiệm <b>hợp theo ô</b>, không phải chọn một vai rồi tắt các vai còn lại.</div></div></div>`};
 
 const F6=()=>{
  /* 1/8/2026 la Thu 7 -> offset 5 o trong; hom nay = 25 (Thu 3) */
@@ -421,7 +578,7 @@ const F6=()=>{
    <div style="margin-top:8px"><button class="btn sm p" data-x="giaitrinh">Giải trình ngày 19/8</button></div></div>
   <div style="background:var(--red-soft);border:1px solid #fecaca;color:#991b1b;padding:10px 13px;border-radius:9px;font-size:12.5px;line-height:1.65;margin-bottom:14px">
    🔴 Ngày <b>11/8</b> đã bị kết luận <b>Vắng không phép</b> bởi <b>Vũ Thị Hồng — TTCM Tổ Toán - Tin</b> lúc 14:20 ngày 12/8.<br>
-   Lý do ghi nhận: <i>"Không có đơn nghỉ, không liên lạc được trong ngày, không có tiết dạy nào được ký sổ."</i>
+   Lý do ghi nhận: <i>"Không có đơn nghỉ, không liên lạc được trong ngày, không có tiết dạy nào được ghi sổ."</i>
    <div style="margin-top:8px"><button class="btn sm" data-x="khieunai">Khiếu nại kết luận này</button></div></div>
   <div class="cal">${['T2','T3','T4','T5','T6','T7','CN'].map(d=>`<div style="text-align:center;font-size:10.5px;color:var(--ink3);font-weight:700;padding:3px">${d}</div>`).join('')}
    ${[0,1,2,3,4].map(()=>'<div></div>').join('')}
@@ -438,30 +595,24 @@ const F6=()=>{
    <button class="btn" data-x="ot">Đăng ký làm thêm giờ</button>
    <button class="btn" data-x="suacc">Đề nghị sửa chấm công sau chốt</button></div>
   </div></div>
-  <div class="card"><div class="ch"><h3>Hai nguồn chấm công — tự đối chiếu</h3></div><div class="cb">
-   <div class="grid2">
-    <div class="mini"><div class="t">Nguồn 1 · Bấm công trên hệ thống</div>16 ngày đủ công · trung bình vào 06:54</div>
-    <div class="mini"><div class="t">Nguồn 2 · Timestamp ký sổ đầu bài</div>139/142 tiết đã ký · 3 tiết chưa ký</div>
-   </div></div></div>`};
+  <div class="card"><div class="ch"><h3>Chấm công tiết dạy của tôi</h3><div class="spacer"></div>
+   <span class="mini" style="font-size:11px">🔗 M4.9 · <code>m4.9.cham_cong_cua_toi</code> · chỉ của bạn</span></div><div class="cb">
+   <div style="font-size:12px;margin-bottom:8px"><b>Chấm công tiết dạy do thiết bị tại cửa lớp ghi nhận. Bạn không cần thao tác gì.</b>
+    <span style="color:var(--ink3)">Sổ đầu bài <b>không</b> còn là nguồn giờ giấc — nó là căn cứ <b>tiết thực dạy</b> (139/142 tiết đã ghi xong sổ).</span></div>
+   <table><tr><th>Tiết</th><th>Phòng · lớp</th><th>Kết luận</th><th>Nguồn kết luận</th><th></th></tr>
+    <tr><td>28/8 · Tiết 3 · 08:50</td><td>P.301 · 8A1</td><td><span class="st2 o">Đúng giờ</span></td><td>máy tự chốt</td><td></td></tr>
+    <tr><td>28/8 · Tiết 6 · 13:30</td><td>P.102 · 6A2</td><td><span class="st2 o">Đúng giờ</span></td><td>máy tự chốt</td><td></td></tr>
+    <tr><td>27/8 · Tiết 2 · 07:50</td><td>P.303 · 9A2</td><td><span class="st2 w">Muộn 12′</span></td><td>máy tự chốt</td>
+     <td><button class="btn sm" data-x="giaitrinhtiet">💬 Giải trình</button></td></tr>
+    <tr><td>26/8 · Tiết 4 · 09:40</td><td>P.201 · 7A1</td><td><span class="st2 b">Có lý do</span></td><td>Lê Thị Kim Chi <span style="color:var(--ink3)">— thiết bị ngừng</span></td><td></td></tr>
+   </table>
+   <div style="font-size:11px;color:var(--ink3);margin-top:6px"><b>Muộn N′</b> không trừ công — chỉ vào báo cáo nề nếp. Giải trình là <b>đề nghị chờ duyệt</b> ở M4.9, kết luận giữ nguyên tới khi duyệt.
+    Nhân viên hành chính: mức NGÀY vẫn từ bấm công / thiết bị cổng trường (16 ngày đủ công tháng này).</div>
+   </div></div>`};
 
-const F7=()=>`<div class="card"><div class="ch"><h3>Đơn nghỉ phép của tôi</h3>
-  <div class="spacer"></div><button class="btn p sm" data-x="donmoi">+ Tạo đơn nghỉ</button></div><div class="cb">
-  <div class="kpi"><div><b>9</b><span>Ngày phép còn lại trong năm</span></div>
-   <div><b>3</b><span>Ngày đã nghỉ</span></div><div><b>1</b><span>Đơn đang chờ duyệt</span></div></div>
-  </div><div class="cb" style="padding:0;border-top:1px solid var(--line)">
-  <table><tr><th>Loại nghỉ</th><th>Thời gian</th><th>Số ngày</th><th>Trạng thái</th><th>Dạy thay</th><th>Thao tác</th></tr>
-  <tr><td>Nghỉ ốm</td><td>26/8 – 27/8</td><td>2</td>
-    <td><span class="st w">Chờ TTCM duyệt</span></td>
-    <td><span style="font-size:11.5px;color:var(--ink3)">Chờ duyệt đơn</span></td>
-    <td><button class="btn sm" data-x="huy">Hủy</button></td></tr>
-  <tr><td>Việc riêng</td><td>14/7 – 16/7</td><td>3</td><td><span class="st o">Đã duyệt</span></td>
-    <td><span class="st o">6/6 tiết đã có người</span></td><td>—</td></tr>
-  <tr><td>Nghỉ phép năm</td><td>02/6</td><td>1</td><td><span class="st n">Đã hoàn thành</span></td>
-    <td><span class="st o">2/2 tiết</span></td><td>—</td></tr>
-  </table></div>
-  <div class="cb" style="border-top:1px solid var(--line)"><div style="font-size:12px;color:var(--ink3);line-height:1.6">
-   Sau khi đơn được duyệt, nhu cầu dạy thay <b>tự động đẩy sang M4.7</b> — bạn không tự xếp người.
-   Bạn có thể <b>đề xuất người dạy thay ngay trong đơn</b> để người điều hành chỉ cần xác nhận.</div></div></div>`;
+/* F7 (= F6 «Đơn nghỉ phép của tôi» của tài liệu) viết lại 17/9/2026 — YKNP-1C, mã m0.4.don_nghi_cua_toi.
+   Bản cũ có «Chờ TTCM duyệt» · «Đã duyệt» · nút Hủy khi chưa duyệt — đã bỏ vì đơn nghỉ nhân sự không còn bước duyệt.
+   Toàn bộ mục nay ở app.50-don-nghi.js (function F7 — khai báo hàm nên dùng được trong R ở dưới). */
 
 const F8=()=>`<div class="card"><div class="ch"><h3>Chứng thư số của tôi</h3></div><div class="cb">
   <div class="info">Nhà trường <b>không cấp, không gia hạn, không thu hồi</b> chứng thư số — bạn đăng ký với nhà cung cấp CA.
@@ -688,7 +839,7 @@ function bKLmot(k){
      ${k.hoSo.map(h=>`<div class="hs"><span>${h[1]==='qd'?'📕':h[1]==='gt'?'✍️':'📄'} ${h[0]}</span>
        <button class="btn sm" data-xem="${h[0]} — ${k.so}">👁 Xem</button>
        <button class="btn sm" data-tai="${h[0]}">⬇ Tải</button></div>`).join('')}
-     <div class="sub" style="margin-top:6px">Mọi lần xem và tải đều ghi audit theo NĐ 13/2023/NĐ-CP.</div></div>
+     <div class="sub" style="margin-top:6px">Mọi lần xem và tải đều ghi audit theo Luật BVDLCN 91/2025/QH15.</div></div>
    <div class="mini" style="margin-bottom:11px"><div class="t">Hiệu lực</div>
      Từ ${fdt(k.hieuLucTu)} · <b>12 tháng</b> · ${het?`đã hết hiệu lực ngày ${fdd(them12(k.hieuLucTu))}`:`còn <b>${con} ngày</b>, tự chấm dứt ${fdd(them12(k.hieuLucTu))}`}
      <div class="sub" style="margin-top:5px">Hết hiệu lực <b>tự chấm dứt, không cần văn bản riêng</b> (NĐ 234/2026/NĐ-CP). Đây là trạng thái suy ra từ ngày quyết định — không có nút bấm để chuyển.</div></div>
@@ -709,7 +860,7 @@ function bKL(t){
   <div class="sub" style="margin-top:10px">Bản ghi hết hiệu lực <b>không bị xóa</b> — vẫn tìm được bằng bộ lọc, vì <i>"từng bị và đã hết hiệu lực"</i> khác với <i>"chưa bao giờ bị"</i>.</div>
  </div>`}
 
-const F10=()=>{const t=TD[role]||{kt:[],dx:[],kl:[]};
+const F10=()=>{const t=TD[role]||TD[P[role].muon]||{kt:[],dx:[],kl:[]};
  return `<div class="card"><div class="cb" style="padding-bottom:15px">
    <div class="info" style="margin:0">Toàn bộ mục này là <b>bản chiếu chỉ đọc</b> của dữ liệu do <b>M4.10 Khen thưởng &amp; Kỷ luật NS</b> sở hữu${coM410()?'':' — vai của bạn không truy cập được menu đó, nên đây là nơi duy nhất đọc được kết quả của chính mình'}.
     Hành động ghi duy nhất ở đây là <b>ghi nhận khiếu nại</b>.</div></div></div>
@@ -730,7 +881,7 @@ const R={f1:F1,f2:F2,f4:F4,f5:F5,f6:F6,f7:F7,f8:F8,f9:F9,f10:F10};
 function pane(){$('#pane').innerHTML=R[sec]()}
 function all(){head();sidebar();subnav();pane()}
 
-function modal(t,h,ok,lab){$('#mh').textContent=t;$('#mb').innerHTML=h;$('#mok').textContent=lab||'Xác nhận';
+function modal(t,h,ok,lab){$('#mh').textContent=t;$('#mb').innerHTML=h;$('#mok').textContent=lab||'Xác nhận';$('#mok').disabled=false;
  $('#mno').style.display=ok?'':'none';$('#mask').classList.add('on');$('#mok').onclick=()=>{if(ok&&ok()===false)return;$('#mask').classList.remove('on')}}
 
 document.body.addEventListener('click',e=>{
@@ -766,7 +917,7 @@ document.body.addEventListener('click',e=>{
       Theo đề nghị của Tổ chức nhân sự,</div>
      <div style="margin-top:12px;color:var(--ink3)">…</div>
     </div>
-    <div class="sub" style="margin-top:10px">Lượt xem này đã ghi audit theo NĐ 13/2023/NĐ-CP: <b>ai · tệp nào · lúc nào · từ M0.4</b>.
+    <div class="sub" style="margin-top:10px">Lượt xem này đã ghi audit theo Luật BVDLCN 91/2025/QH15: <b>ai · tệp nào · lúc nào · từ M0.4</b>.
      Nút <b>⬇ Tải</b> đứng sau nút <b>👁 Xem</b> vì phần lớn nhu cầu chỉ là đọc.</div>`,
    null,'Đóng');return}
  const ta=e.target.closest('[data-tai]');
@@ -792,28 +943,12 @@ document.body.addEventListener('click',e=>{
  const x=e.target.closest('[data-x]');
  if(x){const a=x.dataset.x;
   const M={
+   giaitrinhtiet:['💬 Giải trình tiết Muộn 12′ — 27/8 · Tiết 2 · P.303','<div class="fld"><label>Lý do</label><textarea rows="3" placeholder="VD: họp phụ huynh đột xuất ở phòng hội đồng, đã báo tổ trưởng"></textarea></div><div style="font-size:11.5px;color:var(--ink3)">Gửi xong là một <b>đề nghị chờ duyệt</b> ở <b>M4.9</b> (loại giai_trinh_tiet) — kết luận của tiết <b>giữ nguyên</b> cho tới khi người phụ trách chấm công duyệt.</div>',()=>toast('Đã gửi đề nghị giải trình sang M4.9 — kết luận tiết giữ nguyên tới khi duyệt')],
    thu:['Thu hồi yêu cầu','Yêu cầu YC-0231 sẽ được thu hồi. Bạn có thể gửi lại sau.',()=>toast('Đã thu hồi yêu cầu')],
    bs:['Bổ sung minh chứng','<div class="fld"><label>Tệp bổ sung</label><div class="drop">📎 Kéo thả tệp</div></div>',()=>toast('Đã gửi bổ sung')],
    them:['Thêm văn bằng / chứng chỉ',
     '<div class="fld"><label>Tên văn bằng, chứng chỉ</label><input></div><div class="fld"><label>Đơn vị cấp</label><input></div><div class="fld"><label>Ngày cấp · Hiệu lực đến</label><input></div><div class="fld"><label>Tệp scan <span style="color:var(--red)">*bắt buộc</span></label><div class="drop">📎 Kéo thả tệp</div></div>',
     ()=>toast('Đã thêm — chờ Tổ chức nhân sự xác nhận')],
-   donmoi:['Tạo đơn nghỉ phép',
-    `<div class="fld"><label>Loại nghỉ</label><select><option>Nghỉ phép năm</option><option>Nghỉ ốm</option><option>Nghỉ việc riêng</option><option>Nghỉ thai sản</option></select></div>
-     <div class="fld"><label>Từ ngày — Đến ngày</label><input value="26/8/2026 — 27/8/2026"></div>
-     <div class="fld"><label>Lý do</label><textarea></textarea></div>
-     <div class="warn">Hệ thống tính từ <b>Lịch giảng dạy</b>: đơn này ảnh hưởng <b>6 tiết</b> ở 3 lớp (9A1, 9A2, 8A1).</div>
-     <div class="fld"><label>Đề xuất người dạy thay (tùy chọn)</label>
-      <div class="ac">
-       <input id="acin" placeholder="Gõ tên, mã nhân sự hoặc môn để tìm… (thử gõ &quot;hung&quot;)" autocomplete="off">
-       <div class="aclist" id="aclist"></div>
-      </div>
-      <div id="acsel" style="margin-top:7px"></div>
-      <div style="font-size:11.5px;color:var(--ink3);margin-top:6px;line-height:1.6">
-       Gõ không dấu vẫn tìm được. Danh sách hiển thị <b>số điện thoại</b> để phân biệt người trùng tên,
-       và <b>số tiết đã dạy thay trong tháng</b> để tránh dồn vào một người.
-       Ưu tiên: cùng môn cùng tổ → cùng môn khác tổ → cùng tổ khác môn.</div>
-     </div>`,
-    ()=>toast('Đã gửi đơn — chờ TTCM duyệt, sau đó nhu cầu dạy thay đẩy sang M4.7')],
    giahan:['Cập nhật sau khi gia hạn với CA',
     '<div class="info">Chỉ nhập <b>thông tin công khai</b> của chứng thư. Không nhập mã PIN hay mật khẩu tài khoản CA.</div><div class="fld"><label>Serial number mới</label><input></div><div class="fld"><label>Hiệu lực từ — đến</label><input></div>',
     ()=>toast('Đã cập nhật — chờ Tổ chức nhân sự xác nhận lại')],
@@ -828,7 +963,7 @@ document.body.addEventListener('click',e=>{
      <div class="fld"><label>Lý do</label><select>
       <option>Quên bấm chấm công — đề nghị bổ sung</option>
       <option>Đi công tác nhưng chưa khai báo</option>
-      <option>Đã nộp đơn nghỉ nhưng chưa được duyệt</option>
+      <option>Đã nộp đơn nghỉ nhưng đơn chưa có hiệu lực</option>
       <option>Lý do khác</option></select></div>
      <div class="fld"><label>Diễn giải</label><textarea placeholder="Mô tả cụ thể"></textarea></div>
      <div class="fld"><label>Minh chứng (nếu có)</label><div class="drop">📎 Kéo thả tệp</div></div>`,
@@ -836,7 +971,7 @@ document.body.addEventListener('click',e=>{
    khieunai:['Khiếu nại kết luận Vắng không phép — 11/8/2026',
     `<div style="background:var(--red-soft);border:1px solid #fecaca;color:#991b1b;padding:10px 13px;border-radius:9px;font-size:12.5px;margin-bottom:12px">
      Kết luận bởi <b>Vũ Thị Hồng — TTCM</b> lúc 14:20 ngày 12/8.<br>
-     Lý do: <i>"Không có đơn nghỉ, không liên lạc được trong ngày, không có tiết dạy nào được ký sổ."</i></div>
+     Lý do: <i>"Không có đơn nghỉ, không liên lạc được trong ngày, không có tiết dạy nào được ghi sổ."</i></div>
      <div class="fld"><label>Nội dung khiếu nại</label><textarea placeholder="Trình bày căn cứ"></textarea></div>
      <div class="fld"><label>Minh chứng</label><div class="drop">📎 Kéo thả tệp</div></div>
      <div class="info">Khiếu nại đi theo luồng <b>Đề nghị sửa chấm công sau chốt</b> tại M4.9. Nếu ảnh hưởng lương thì cần thêm Hiệu trưởng duyệt.</div>`,
@@ -845,7 +980,7 @@ document.body.addEventListener('click',e=>{
     ()=>toast('Đã gửi — chờ trưởng đơn vị xác nhận')],
   };
   if(M[a]){modal(M[a][0],M[a][1],M[a][2],M[a][2]?'Xác nhận':'Đóng');return}
-  const t={xuat:'Xuất tệp',sua:'Mở form sửa',xoa:'Xóa (chỉ khi chưa xác nhận)',huy:'Hủy đơn (chỉ khi chưa duyệt)',
+  const t={xuat:'Xuất tệp',sua:'Mở form sửa',xoa:'Xóa (chỉ khi chưa xác nhận)',
    logout:'Đã đăng xuất thiết bị đó'};
   toast(t[a]||a);return}
  if(e.target.id==='ckbtn'){$('#ckv').textContent='Đã về lúc '+new Date().toTimeString().slice(0,5);
@@ -857,7 +992,8 @@ document.body.addEventListener('click',e=>{
 });
 document.querySelectorAll('.rb').forEach(b=>b.onclick=()=>{
  document.querySelectorAll('.rb').forEach(x=>x.classList.remove('on'));b.classList.add('on');
- role=b.dataset.r; if(!vis(sec))sec='f1'; editing=null; klMo=null; klLoc='all'; all();
+ role=b.dataset.r; if(!vis(sec))sec='f1'; editing=null; klMo=null; klLoc='all';
+ dnView='ds'; dnForm=null; dnMo=null; dnLoc='all'; all();
  const c=SEC.flatMap(s=>s[1]).filter(x=>vis(x[0])).length;
  toast(`${P[role].r} — hiển thị ${c}/8 mục`)});
 /* ===== AUTOCOMPLETE nguoi day thay ===== */
@@ -868,7 +1004,9 @@ function acRank(g){const cm=g.mon===MYMON(),ct=g.to===MYTO();
 function acRender(q){
  const box=$('#aclist'); if(!box)return;
  const qq=kd(q||'');
- let r=GV.filter(g=>g.n!==P[role].n)
+ /* loại: chính mình · người đã nghỉ việc · người có đơn nghỉ CÓ HIỆU LỰC trùng ngày (dnLoaiTru — app.50) */
+ const all0=GV.filter(g=>g.n!==P[role].n), an=all0.filter(g=>dnLoaiTru(g)).length;
+ let r=all0.filter(g=>!dnLoaiTru(g))
    .filter(g=>!qq||kd(g.n).includes(qq)||kd(g.mon).includes(qq)||kd(g.ms).includes(qq)||kd(g.to).includes(qq));
  r.sort((a,b)=>acRank(a)-acRank(b)||a.dt-b.dt);
  r=r.slice(0,8);
@@ -878,6 +1016,7 @@ function acRender(q){
      <span>${g.ms}</span><span style="color:${g.dt>=3?'var(--amber)':'var(--ink3)'}">Đã dạy thay ${g.dt} tiết/tháng</span></div>
    </div>`).join('')
   : `<div class="acnone">Không tìm thấy nhân sự phù hợp</div>`;
+ if(an)box.innerHTML+=`<div class="acnone">Đã ẩn ${an} người đã nghỉ việc hoặc có đơn nghỉ có hiệu lực trùng ngày — không hiện tên, không hiện lý do</div>`;
  box.classList.add('on');
 }
 document.body.addEventListener('input',e=>{if(e.target.id==='acin')acRender(e.target.value)});
@@ -885,6 +1024,7 @@ document.body.addEventListener('focusin',e=>{if(e.target.id==='acin')acRender(e.
 document.body.addEventListener('click',e=>{
  const a=e.target.closest('[data-ac]');
  if(a){const g=GV.find(x=>x.ms===a.dataset.ac);
+  if(dnForm){dnChonNguoi(g);return}   /* form soạn đơn F6 giữ người đã chọn trong dnForm — app.50 */
   $('#acin').value=g.n; $('#aclist').classList.remove('on');
   $('#acsel').innerHTML=`<div style="border:1px solid var(--green);background:var(--green-soft);border-radius:9px;padding:9px 11px;font-size:12.5px">
     ✓ Đã chọn <b>${g.n}</b> · 📞 ${g.sdt} · ${g.mon} · ${g.to} · ${g.ms}
@@ -896,6 +1036,529 @@ document.body.addEventListener('click',e=>{
 $('#mno').onclick=()=>$('#mask').classList.remove('on');
 $('#mask').onclick=e=>{if(e.target.id==='mask')$('#mask').classList.remove('on')};
 all();
+
+/* =====================================================================
+   F6 — ĐƠN NGHỈ PHÉP CỦA TÔI · mã Feature m0.4.don_nghi_cua_toi
+   YKNP-1C · 17/9/2026 · hợp đồng HDNP (CHOT-YKNP-cum-nghi-phep.md §5)
+   - Không có bước duyệt: gửi là có hiệu lực, trừ loại can_thoa_thuan.
+   - Mọi chỗ đọc hiệu lực đi qua coHieuLuc(don, ngay) — KHÔNG đọc trang_thai trực tiếp.
+   - Rút theo NGÀY, máy phân vùng ⚪🟡🔴, một nút Rút đơn, bảng kết quả hai khối.
+   D0 của mục này = 25/08/2026 (Thứ Ba) 15:30 — "hôm nay" của khối Chấm công ngay bên cạnh (xem phiếu mục P).
+   ===================================================================== */
+const DN_D0=new Date(2026,7,25), DN_NOW=new Date(2026,7,25,15,30);
+const DN_SATGIO=24;          /* giờ — ngưỡng ở ⚙ M4.7 (NP-4), M0.4 chỉ đọc */
+const DN_HE_TUAN=8;          /* tuần nghỉ hè thực hưởng — khai ở M10.1, M0.4 chỉ đọc */
+const DN_NVCC='Trần Thị Thanh';
+const TO_TEN={T1:'Tổ Toán — Tin',T2:'Tổ Ngữ văn — Sử — Địa',T3:'Tổ Ngoại ngữ',T4:'Tổ KHTN'};
+const TTCM_TEN={T1:'Lê Minh Tuấn',T2:'Trần Thị Bích',T3:'Ngô Thị Hương',T4:'Cao Thị Nhung'};
+const GIO_TIET={1:'07:00',2:'07:50',3:'08:50',4:'09:40',5:'10:30',6:'13:30',7:'14:20',8:'15:10'};
+const BUOI_TEN={ca_ngay:'Cả ngày',sang:'Chỉ buổi sáng',chieu:'Chỉ buổi chiều'};
+const THU=['CN','T2','T3','T4','T5','T6','T7'];
+const dnP=s=>{const a=String(s).trim().split('/').map(Number);return new Date(a[2],a[1]-1,a[0])};
+const dnOK=s=>/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(String(s).trim())&&!isNaN(dnP(s));
+const dnS=d=>String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear();
+const dnThem=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
+const dnThu=s=>THU[dnP(s).getDay()]+' '+s.slice(0,5);
+const dnGio=(s,t)=>{const d=dnP(s),g=GIO_TIET[t].split(':').map(Number);return new Date(d.getFullYear(),d.getMonth(),d.getDate(),g[0],g[1])};
+const lopDT=l=>/B/.test(l)?'B':'A';
+const dnNowS='25/08/2026 15:30';
+
+/* ---- LOẠI NGHỈ — chiếu từ ⚙ M4.8 (mã · tên · co_che theo demo M4.8 của YKNP-1A; loại đã ngừng không hiện khi soạn) ---- */
+const LOAI_NGHI=[
+ {ma:'PN', ten:'Nghỉ phép năm',co_che:'ghi_nhan',quy:1,giay:0},
+ {ma:'OM', ten:'Nghỉ ốm',co_che:'ghi_nhan',quy:0,giay:1},
+ {ma:'VL', ten:'Nghỉ việc riêng có hưởng lương',co_che:'ghi_nhan',quy:0,giay:0},
+ {ma:'VR', ten:'Nghỉ không hưởng lương',co_che:'can_thoa_thuan',quy:0,giay:0},
+ {ma:'TS', ten:'Nghỉ thai sản',co_che:'ghi_nhan_quyet_dinh',quy:0,giay:1},
+];
+const loaiN=ma=>LOAI_NGHI.find(x=>x.ma===ma);
+const CO_CHE_TEN={
+ ghi_nhan:'Có hiệu lực ngay khi gửi — không chờ ai',
+ can_thoa_thuan:'Có hiệu lực khi MỘT người được quyền bấm Đồng ý (loại không hưởng lương — BLLĐ Đ.115 k3 gọi là «thỏa thuận»)',
+ ghi_nhan_quyet_dinh:'Có hiệu lực ngay khi gửi; Hiệu trưởng ký quyết định sau (Nhóm B) — ký chậm không chặn nghỉ, chỉ chặn chốt lương'};
+
+/* ---- LỊCH DẠY — chiếu từ M4.7 (mẫu tuần theo thứ; demo) ---- */
+const LICH_TUAN={
+ DEMO:{1:[[2,'7A1']],2:[[1,'7A1'],[3,'8A1']],3:[[2,'6A1'],[4,'6A2']],4:[[1,'7A2'],[5,'9A1']],5:[[3,'6A1']]},
+ MAI:{1:[[4,'6A2']],2:[[2,'6A1'],[4,'7A1'],[5,'6A2']],3:[[1,'6A2']],4:[[3,'6A1']],5:[[2,'7A1'],[6,'6A2']]},
+ NGAN:{1:[[2,'7A2']],2:[[1,'6A2'],[3,'8A1']],3:[[4,'6A1']],4:[[2,'9A1']],5:[[1,'7A1']]},
+ HA:{1:[[2,'11B1']],2:[[4,'10B1']],3:[[1,'10B1'],[3,'10B2']],4:[[1,'10B2']],5:[[3,'11B1']]},
+ DUC:{1:[[2,'9A1'],[4,'9A2']],2:[[3,'8A1']],3:[[1,'9A1']],4:[[2,'9A2']],5:[[4,'8A1']]},
+ GVBM:{1:[[1,'9A1'],[2,'9A1']],2:[[1,'9A2'],[2,'9A2']],3:[[3,'8A1']],4:[[1,'8A1'],[2,'8A1']],5:[[1,'9A1'],[3,'9A2']]},
+ GVCN:{1:[[3,'9A2']],2:[[1,'9A2']],3:[[2,'9A1']],4:[[4,'9A2']],5:[[2,'9A2']]},
+ HT:{3:[[5,'9A1']]}
+};
+/* tiết đã xếp người dạy thay ở M4.7 — '' = đã có người (M0.4 không cần tên) */
+const DAY_THAY={
+ 'DEMO|25/08/2026|1':'Đỗ Thị Yến','DEMO|25/08/2026|3':'Đỗ Thị Yến',
+ 'DEMO|26/08/2026|2':'Đỗ Thị Yến','DEMO|26/08/2026|4':'Đỗ Thị Yến',
+ 'MAI|25/08/2026|2':'Tạ Thị Quyên','MAI|25/08/2026|4':'Tạ Thị Quyên','MAI|25/08/2026|5':'Tạ Thị Quyên',
+ 'NGAN|25/08/2026|1':'','NGAN|25/08/2026|3':'',
+ 'HA|26/08/2026|1':'Ngô Thị Hương','HA|26/08/2026|3':'Ngô Thị Hương'};
+function dnTiet(r,s,buoi){
+ const p=P[r]; if(!p||!p.teach)return [];
+ const l=(LICH_TUAN[r]||{})[dnP(s).getDay()]||[];
+ return l.filter(x=>!buoi||buoi==='ca_ngay'||(buoi==='sang'?x[0]<=5:x[0]>=6))
+  .map(x=>({ngay:s,tiet:x[0],gio:GIO_TIET[x[0]],lop:x[1],dt:lopDT(x[1]),mon:p.mon[0],toMa:p.toMa,
+   dayThay:DAY_THAY[r+'|'+s+'|'+x[0]]}));
+}
+
+/* ---- ĐƠN — chiếu từ M4.8 (chủ sở hữu), chỉ đơn của CHÍNH người đang xem (Own) ---- */
+const mk=(ngay,buoi)=>({ngay,buoi:buoi||'ca_ngay',da_rut:false,rut_luc:null,rut_boi:null,ly_do_rut:null,giu_nguoi_day_thay:false});
+let DON={
+ DEMO:[
+  {id:'NP-2026-138',loai:'VL',co_che_luc_gui:'ghi_nhan',trang_thai:'co_hieu_luc',gui_luc:'21/08/2026 16:05',kenh:'Web',
+   ly_do:'Tổ chức đám cưới',nguoi_nhap_ho:null,can_cu_nhan_don:null,
+   de_xuat:{ten:'Đỗ Thị Yến',ghi_chu:'Đã nói với cô Đỗ Thị Yến ở phòng hội đồng chiều 20/8, cô nhận các tiết KHTN.'},
+   ho_so:[],nhan:[],de_nghi_doi_ngay:null,quyet_dinh:null,
+   ngay:[mk('25/08/2026'),mk('26/08/2026'),mk('27/08/2026')],
+   nhat_ky:[['21/08/2026 16:05','Bạn gửi đơn trên Web — loại ghi_nhan ⇒ có hiệu lực ngay'],['24/08/2026 08:30','M4.7 xác nhận một nút: Đỗ Thị Yến dạy thay tiết 25/08 và 26/08 (theo đề xuất của bạn)']]},
+  {id:'NP-2026-118',loai:'VR',co_che_luc_gui:null,trang_thai:'nhap',gui_luc:null,kenh:'Web',
+   ly_do:'Về quê giải quyết việc gia đình',nguoi_nhap_ho:null,can_cu_nhan_don:null,de_xuat:null,ho_so:[],nhan:[],
+   de_nghi_doi_ngay:null,quyet_dinh:null,ngay:[mk('14/09/2026'),mk('15/09/2026')],nhat_ky:[['24/08/2026 21:10','Bạn lưu nháp — chưa ai thấy đơn này']]},
+  {id:'NP-2026-119',loai:'VR',co_che_luc_gui:'can_thoa_thuan',trang_thai:'cho_dong_y',gui_luc:'24/08/2026 16:20',kenh:'Web',
+   ly_do:'Đưa bố đi tái khám tại Hà Nội',nguoi_nhap_ho:null,can_cu_nhan_don:null,de_xuat:null,ho_so:[],nhan:[],
+   de_nghi_doi_ngay:null,quyet_dinh:null,ngay:[mk('08/09/2026')],nhat_ky:[['24/08/2026 16:20','Bạn gửi đơn — loại can_thoa_thuan ⇒ chờ một người đồng ý']]},
+  {id:'NP-2026-098',loai:'OM',co_che_luc_gui:'ghi_nhan',trang_thai:'co_hieu_luc',gui_luc:'09/03/2026 07:45',kenh:'Web',
+   ly_do:'Mổ ruột thừa, nằm viện',nguoi_nhap_ho:{ten:'Ngô Thị Bích — Văn thư',luc:'09/03/2026 07:45'},can_cu_nhan_don:'Gọi điện báo',
+   de_xuat:null,ho_so:['Giấy ra viện 18-03.pdf'],nhan:['nhap_ho'],de_nghi_doi_ngay:null,
+   quyet_dinh:{can_ky:true,da_ky_luc:'12/03/2026 · Trần Văn Hùng'},
+   ngay:['09/03/2026','10/03/2026','11/03/2026','12/03/2026','13/03/2026','14/03/2026','16/03/2026','17/03/2026','18/03/2026','19/03/2026'].map(x=>mk(x)),
+   nhat_ky:[['09/03/2026 07:45','Ngô Thị Bích nhập hộ — căn cứ: Gọi điện báo'],['09/03/2026 07:45','Đơn 10 ngày ⇒ sinh quyết định chờ Hiệu trưởng ký (Nhóm B)'],['12/03/2026 10:02','Trần Văn Hùng ký quyết định']]},
+  {id:'NP-2026-120',loai:'VR',co_che_luc_gui:'can_thoa_thuan',trang_thai:'khong_dong_y',gui_luc:'15/04/2026 09:00',kenh:'Web',
+   ly_do:'Việc gia đình',nguoi_nhap_ho:null,can_cu_nhan_don:null,de_xuat:null,ho_so:[],nhan:[],de_nghi_doi_ngay:null,quyet_dinh:null,
+   khong_dong_y:{boi:'Phạm Đức Thắng — PHT Điểm trường A',luc:'17/04/2026 08:30',ly_do:'Trùng tuần kiểm tra giữa kỳ II khối 7 — thầy là người ra đề và coi kiểm tra. Đề nghị thầy chọn tuần sau 27/4.'},
+   ngay:[mk('20/04/2026'),mk('21/04/2026'),mk('22/04/2026')],nhat_ky:[['15/04/2026 09:00','Bạn gửi đơn'],['17/04/2026 08:30','Phạm Đức Thắng không đồng ý — kèm lý do']]},
+  {id:'NP-2025-211',loai:'OM',co_che_luc_gui:'ghi_nhan',trang_thai:'da_rut',gui_luc:'01/12/2025 20:00',kenh:'App Giáo viên',
+   ly_do:'Khám chuyên khoa theo lịch hẹn',nguoi_nhap_ho:null,can_cu_nhan_don:null,de_xuat:null,ho_so:[],nhan:[],de_nghi_doi_ngay:null,quyet_dinh:null,
+   ngay:[Object.assign(mk('12/12/2025'),{da_rut:true,rut_luc:'05/12/2025 19:40',rut_boi:'Bạn',ly_do_rut:null})],
+   nhat_ky:[['01/12/2025 20:00','Bạn gửi đơn trên App'],['05/12/2025 19:40','Bạn rút ngày 12/12 (bệnh viện dời lịch hẹn) — vùng ⚪, M4.7 xóa nhu cầu im lặng']]}],
+ MAI:[
+  {id:'NP-2026-141',loai:'OM',co_che_luc_gui:'ghi_nhan',trang_thai:'co_hieu_luc',gui_luc:'25/08/2026 06:12',kenh:'App Giáo viên',
+   ly_do:'Sốt cao từ đêm qua',nguoi_nhap_ho:null,can_cu_nhan_don:null,
+   de_xuat:{ten:'Tạ Thị Quyên',ghi_chu:'Đã gọi cô Tạ Thị Quyên lúc 05:50 sáng nay, cô đồng ý nhận các tiết Ngữ văn hôm nay.'},
+   ho_so:[],nhan:[],de_nghi_doi_ngay:null,quyet_dinh:null,ngay:[mk('25/08/2026')],
+   nhat_ky:[['25/08/2026 06:12','Bạn gửi đơn trên App — có hiệu lực ngay'],['25/08/2026 06:30','M4.7 xác nhận một nút: Tạ Thị Quyên dạy thay 3 tiết']]}],
+ NGAN:[
+  {id:'NP-2026-143',loai:'OM',co_che_luc_gui:'ghi_nhan',trang_thai:'co_hieu_luc',gui_luc:'25/08/2026 14:30',kenh:'Web — nhập hộ',
+   ly_do:'Đau dạ dày cấp, đã gọi điện báo tổ trưởng lúc 06:40',
+   nguoi_nhap_ho:{ten:'Ngô Thị Bích — Văn thư',luc:'25/08/2026 14:30'},can_cu_nhan_don:'Gọi điện báo',
+   bao_vang:{id:'BV-2026-031',boi:'Ngô Thị Hương — TTCM Tổ Ngoại ngữ',luc:'25/08/2026 06:40',kenh:'Gọi điện'},
+   de_xuat:null,ho_so:[],nhan:['nhap_ho','bao_muon'],de_nghi_doi_ngay:null,quyet_dinh:null,ngay:[mk('25/08/2026')],
+   nhat_ky:[['25/08/2026 06:40','Ngô Thị Hương ⚡ Báo vắng bạn ở M4.7 (kênh: gọi điện) — sinh nhu cầu dạy thay ngay'],
+    ['25/08/2026 14:30','Ngô Thị Bích nhập hộ đơn — căn cứ: Gọi điện báo'],['25/08/2026 14:30','Máy ghép báo vắng BV-2026-031 với đơn này (don_phu_id)']]}],
+ HA:[
+  {id:'NP-2026-144',loai:'VL',co_che_luc_gui:'ghi_nhan',trang_thai:'co_hieu_luc',gui_luc:'24/08/2026 10:20',kenh:'Web',
+   ly_do:'Con kết hôn',nguoi_nhap_ho:null,can_cu_nhan_don:null,
+   de_xuat:{ten:'Ngô Thị Hương',ghi_chu:'Đã nhắn cô Ngô Thị Hương tối 23/8, cô đồng ý dạy thay.'},
+   ho_so:[],nhan:[],de_nghi_doi_ngay:null,quyet_dinh:null,ngay:[mk('26/08/2026')],
+   nhat_ky:[['24/08/2026 10:20','Bạn gửi đơn trên Web — có hiệu lực ngay'],['24/08/2026 14:00','M4.7 xác nhận: Ngô Thị Hương dạy thay 2 tiết']]}],
+ DUC:[
+  {id:'NP-2026-147',loai:'VL',co_che_luc_gui:'ghi_nhan',trang_thai:'co_hieu_luc',gui_luc:'22/08/2026 20:15',kenh:'App Giáo viên',
+   ly_do:'Em gái kết hôn',nguoi_nhap_ho:null,can_cu_nhan_don:null,de_xuat:null,ho_so:[],nhan:[],quyet_dinh:null,
+   de_nghi_doi_ngay:{boi:'Lê Minh Tuấn — TTCM Tổ Toán — Tin',luc:'25/08/2026 10:05',
+    ly_do:'Ngày 31/08/2026 thầy Đức có tên trong danh sách coi thi khảo sát đầu năm khối 9 — đề nghị thầy xem có đổi được ngày khác không.'},
+   ngay:[mk('31/08/2026')],
+   nhat_ky:[['22/08/2026 20:15','Bạn gửi đơn trên App — có hiệu lực ngay'],['25/08/2026 10:05','Lê Minh Tuấn gửi ↩ Đề nghị đổi ngày từ M4.7 — đơn VẪN có hiệu lực']]}],
+ CHI:[
+  {id:'NP-2026-148',loai:'PN',co_che_luc_gui:'ghi_nhan',trang_thai:'co_hieu_luc',gui_luc:'25/08/2026 07:58',kenh:'Web',
+   ly_do:'Nghỉ phép năm',nguoi_nhap_ho:null,can_cu_nhan_don:null,de_xuat:null,ho_so:[],nhan:[],de_nghi_doi_ngay:null,quyet_dinh:null,
+   ngay:[mk('27/08/2026')],nhat_ky:[['25/08/2026 07:58','Bạn gửi đơn — có hiệu lực ngay · không có tiết dạy nên không đến M4.7']]},
+  {id:'NP-2026-071',loai:'PN',co_che_luc_gui:'ghi_nhan',trang_thai:'co_hieu_luc',gui_luc:'05/06/2026 10:00',kenh:'Web',
+   ly_do:'Nghỉ phép năm',nguoi_nhap_ho:null,can_cu_nhan_don:null,de_xuat:null,ho_so:[],nhan:[],de_nghi_doi_ngay:null,quyet_dinh:null,
+   ngay:[mk('15/06/2026'),mk('16/06/2026'),mk('17/06/2026')],nhat_ky:[['05/06/2026 10:00','Bạn gửi đơn']]}],
+ GVBM:[
+  {id:'NP-2026-090',loai:'VL',co_che_luc_gui:'ghi_nhan',trang_thai:'co_hieu_luc',gui_luc:'10/05/2026 08:00',kenh:'Web',
+   ly_do:'Kết hôn',nguoi_nhap_ho:null,can_cu_nhan_don:null,de_xuat:null,ho_so:[],nhan:[],de_nghi_doi_ngay:null,quyet_dinh:null,
+   ngay:[mk('18/05/2026'),mk('19/05/2026'),mk('20/05/2026')],nhat_ky:[['10/05/2026 08:00','Bạn gửi đơn']]}],
+ GVCN:[],HT:[],TCNS:[],TQ:[]
+};
+let dnSeq=170, dnLoc='all', dnMo=null, dnView='ds', dnForm=null;
+const dsDon=()=>DON[role]||(DON[role]=[]);
+const donId=id=>dsDon().find(d=>d.id===id);
+
+/* ---- HDNP ③ — hàm hiệu lực: mọi chỗ đọc hiệu lực đi qua đây ---- */
+const coHieuLuc=(don,ngay)=>don.trang_thai==='co_hieu_luc'&&don.ngay.some(n=>n.ngay===ngay&&!n.da_rut);
+
+/* ---- HDNP ④ — vùng thu hồi, máy tính cho TỪNG NGÀY ---- */
+function dnVung(don,n){
+ if(don.trang_thai!=='co_hieu_luc')return 1;          /* chưa có hiệu lực ⇒ chưa có gì chảy sang M4.7/M4.9 */
+ if(dnP(n.ngay)<DN_D0)return 3;                        /* ngày đã qua: đã có kết luận chấm công ở M4.9 */
+ const ts=dnTiet(role,n.ngay,n.buoi);
+ if(ts.length&&dnGio(n.ngay,ts[0].tiet)<=DN_NOW)return 3;  /* tiết đầu của ngày đã bắt đầu */
+ if(ts.some(t=>t.dayThay!==undefined))return 2;       /* có tiết đã xếp người dạy thay */
+ return 1;
+}
+function dnVungLyDo(don,n){
+ const v=dnVung(don,n),ts=dnTiet(role,n.ngay,n.buoi);
+ if(v===3)return dnP(n.ngay)<DN_D0?'ngày đã qua — đã có kết luận chấm công ở M4.9'
+   :`tiết ${ts[0].tiet} (${ts[0].gio}) lớp ${ts[0].lop} đã bắt đầu`;
+ if(v===2){const x=ts.filter(t=>t.dayThay!==undefined);
+   return `${x.length} tiết đã xếp người dạy thay${x[0].dayThay?' — '+x[0].dayThay:''}`}
+ return don.trang_thai==='co_hieu_luc'?(ts.length?'nhu cầu dạy thay chưa xếp người':'không có tiết dạy trong ngày'):'đơn chưa có hiệu lực — chưa chảy sang M4.7 / M4.9';
+}
+const dnSatGio=n=>{const ts=dnTiet(role,n.ngay,n.buoi);return ts.length&&(dnGio(n.ngay,ts[0].tiet)-DN_NOW)/36e5<DN_SATGIO};
+const VI={1:'⚪',2:'🟡',3:'🔴'};
+
+/* ---- quỹ nghỉ hằng năm — công thức chung M4.8 §2 ---- */
+const dnBLLD=p=>12+Math.floor((p.tn||0)/5);
+const dnHe=p=>p.ng?DN_HE_TUAN*5:0;
+const dnQuy=p=>Math.max(0,dnBLLD(p)-dnHe(p));
+const dnSoNgay=d=>d.ngay.filter(n=>!n.da_rut).reduce((s,n)=>s+(n.buoi==='ca_ngay'?1:.5),0);
+const dnDaDung=()=>dsDon().filter(d=>d.trang_thai==='co_hieu_luc'&&loaiN(d.loai).quy).reduce((s,d)=>s+dnSoNgay(d),0);
+const dnThieuHS=d=>loaiN(d.loai).giay&&!d.ho_so.length&&!['nhap','da_rut'].includes(d.trang_thai);
+
+/* ---- «Đơn này sẽ đến tay» — danh sách do M4.8 §4 sinh, M0.4 chỉ chiếu ---- */
+function dnDenTay(loaiMa,tiets,soNgay){
+ const p=P[role],l=loaiN(loaiMa),pdt=p.dtr==='B'?'PHT phụ trách Điểm trường B':'Phạm Đức Thắng — PHT Điểm trường A';
+ const dongY=l.co_che==='can_thoa_thuan'?[pdt,'Trần Văn Hùng — Hiệu trưởng']:[];
+ const biet=[[pdt,'M4.8 — đơn của người thuộc điểm trường mình (neo NGƯỜI)']];
+ [...new Set(tiets.map(t=>t.toMa).filter(Boolean))].forEach(t=>biet.push([TTCM_TEN[t]+' — TTCM '+TO_TEN[t],'M4.7 tab Giáo viên vắng — chỉ lát tiết của tổ mình (neo TIẾT)']));
+ [...new Set(tiets.map(t=>t.dt))].filter(x=>x!==p.dtr).forEach(x=>biet.push([x==='B'?'PHT phụ trách Điểm trường B':'Phạm Đức Thắng — PHT Điểm trường A','M4.7 — tiết thuộc lớp điểm trường mình']));
+ if(tiets.length)biet.push(['Vũ Thị Thanh — PHT chuyên môn','M4.7 — toàn trường']);
+ biet.push(['Trần Văn Hùng — Hiệu trưởng','M4.8 Tổng hợp — toàn trường'],['Ngô Thị Hạnh — Tổ chức nhân sự','M4.8 Tổng hợp · hồ sơ đính kèm'],[DN_NVCC+' — phụ trách chấm công','M4.9 — ngày công']);
+ const ky=(l.co_che==='ghi_nhan_quyet_dinh'||soNgay>7)?'Trần Văn Hùng — Hiệu trưởng ký quyết định (Nhóm B, bắt buộc)':null;
+ return {dongY,biet,ky};
+}
+function dnDenTayHTML(x){
+ return `<div class="mini" style="margin-bottom:11px"><div class="t">📬 Đơn này sẽ đến tay</div>
+  ${x.dongY.length?`<div style="margin-bottom:6px"><b>Người có thể đồng ý</b> <span class="sub">(một người đồng ý là đủ)</span>: ${x.dongY.join(' · ')}</div>`:''}
+  ${x.ky?`<div style="margin-bottom:6px"><b>Quyết định:</b> ${x.ky}</div>`:''}
+  <div><b>Người cần biết</b> — không ai phải bấm gì:</div>
+  <ul class="ul" style="margin:4px 0 0">${x.biet.map(b=>`<li>${b[0]} <span class="sub">· ${b[1]}</span></li>`).join('')}</ul>
+  <div class="sub" style="margin-top:6px">Danh sách do <b>M4.8 §4</b> sinh theo điểm trường của bạn và tổ/lớp của từng tiết — không có ai «duyệt» đơn.</div></div>`}
+
+/* ---- nhãn ---- */
+const TT_TEN={nhap:['Nháp','n'],cho_dong_y:['Chờ đồng ý','w'],co_hieu_luc:['Có hiệu lực','o'],khong_dong_y:['Không đồng ý','r'],da_rut:['Đã rút','n']};
+function dnNhan(d){
+ const a=[];
+ if(d.nhan.includes('nhap_ho'))a.push(`<span class="st w" title="Người khác nhập đơn này thay bạn — kiểm tra lại, sai thì báo Văn thư / TCNS">✍ nhập hộ</span>`);
+ if(d.nhan.includes('bao_muon'))a.push('<span class="st r">báo muộn</span>');
+ if(d.nhan.includes('vuot_quy'))a.push('<span class="st r">vượt quỹ</span>');
+ if(dnThieuHS(d))a.push('<span class="st w">thiếu hồ sơ</span>');
+ if(d.de_nghi_doi_ngay&&d.trang_thai==='co_hieu_luc')a.push('<span class="st w">↩ đề nghị đổi ngày</span>');
+ if(d.ngay.some(n=>n.sat_gio))a.push('<span class="st r">sát giờ</span>');
+ return a.join(' ');
+}
+function dnDayThay(d){
+ if(['nhap','cho_dong_y','khong_dong_y'].includes(d.trang_thai))return '<span class="sub">—</span>';
+ let tong=0,co=0;
+ if(d.ngay.every(n=>dnP(n.ngay)<DN_D0))return '<span class="sub">Đã qua</span>';
+ d.ngay.filter(n=>!n.da_rut||n.giu_nguoi_day_thay).forEach(n=>dnTiet(role,n.ngay,n.buoi).forEach(t=>{tong++;if(t.dayThay!==undefined)co++}));
+ if(!tong)return '<span class="sub">Không có tiết</span>';
+ return `<span class="st ${co===tong?'o':'w'}">${co}/${tong} tiết đã có người</span>`;
+}
+const dnNgayTxt=d=>{const a=d.ngay[0].ngay,b=d.ngay[d.ngay.length-1].ngay;
+ return (a===b?dnThu(a):a.slice(0,5)+' – '+b)+(d.ngay.length===1&&d.ngay[0].buoi!=='ca_ngay'?` <span class="st n">${BUOI_TEN[d.ngay[0].buoi]}</span>`:'')};
+
+/* ===================== F7 = mục «Đơn nghỉ phép» (F6 của tài liệu) ===================== */
+function F7(){return dnView==='soan'?dnSoan():dnDanhSach()}
+
+function dnDanhSach(){
+ const p=P[role],ds=dsDon(),quy=dnQuy(p),dung=dnDaDung();
+ /* đơn nhận đề nghị đổi ngày: đơn còn hiệu lực và còn ngày chưa rút. KHÔNG có cờ «đã xem» — HDNP ② không có trường đó (phiếu P) */
+ const cho=ds.filter(d=>d.de_nghi_doi_ngay&&d.trang_thai==='co_hieu_luc'&&d.ngay.some(n=>!n.da_rut)).length;
+ const loc=[['all','Tất cả'],['nhap','Nháp'],['cho_dong_y','Chờ đồng ý'],['co_hieu_luc','Có hiệu lực'],['khong_dong_y','Không đồng ý'],['da_rut','Đã rút']];
+ const hien=ds.filter(d=>dnLoc==='all'||d.trang_thai===dnLoc);
+ return `<div class="card"><div class="ch"><h3>🏖️ Đơn nghỉ phép của tôi</h3>
+  <span class="sub" style="margin-left:6px"><code>m0.4.don_nghi_cua_toi</code> · Own</span><div class="spacer"></div>
+  <button class="btn sm" data-dnxuat="1">⬇ Xuất</button>
+  <button class="btn p sm" id="dnTao" data-dntao="">＋ Xin nghỉ phép</button></div><div class="cb">
+  <div class="info"><b>Đơn nghỉ của nhân sự không có bước duyệt.</b> Gửi là <b>có hiệu lực</b> — trừ loại nghỉ không hưởng lương cần <b>một người đồng ý</b>.
+   Ngày có hiệu lực tự chảy sang <b>M4.7</b> (nhu cầu dạy thay) và <b>M4.9</b> (Vắng có phép). Muốn thôi nghỉ thì <b>Rút đơn</b> — máy xét từng ngày.
+   <div class="sub" style="margin-top:4px">Phạm vi: chỉ đơn của chính bạn — <b>kể cả đơn người khác nhập hộ cho bạn</b> (mang nhãn <b>nhập hộ</b>). Hôm nay của mục này: <b>${dnNowS}</b>.</div></div>
+  ${cho?`<div class="warn">↩ Bạn có <b>${cho} đơn nhận đề nghị đổi ngày</b>. Đơn <b>vẫn có hiệu lực</b> — chỉ bạn quyết rút hay giữ.</div>`:''}
+  <div class="kpi">
+   <div><b>${Math.max(0,quy-dung)}</b><span>Quỹ nghỉ hằng năm còn lại <span class="sub">(${quy} − ${dung} đã dùng / đã đăng ký)</span></span></div>
+   <div><b>${ds.filter(d=>d.trang_thai==='co_hieu_luc'&&d.ngay.some(n=>!n.da_rut&&dnP(n.ngay)>=DN_D0)).length}</b><span>Đơn có hiệu lực sắp tới / hôm nay</span></div>
+   <div><b>${ds.filter(d=>d.trang_thai==='cho_dong_y').length}</b><span>Đơn chờ đồng ý</span></div>
+   <div><b style="color:${cho?'var(--amber)':'inherit'}">${cho}</b><span>Đơn nhận đề nghị đổi ngày</span></div></div>
+  <div class="sub" style="margin:-4px 0 12px">Quỹ = max(0, ${dnBLLD(p)} ngày theo BLLĐ Đ.113–114 − ${dnHe(p)} ngày nghỉ hè thực hưởng${p.ng?` (${DN_HE_TUAN} tuần, khai ở M10.1)`:''}) — <b>công thức chung M4.8 §2</b>${p.ng&&!quy?'; nhà giáo nghỉ hè đủ 8 tuần thì nghỉ hè đã bao gồm nghỉ hằng năm (NĐ 93/2026)':''}.</div>
+  <div class="chips">${loc.map(l=>`<button class="chip ${dnLoc===l[0]?'on':''}" data-dnloc="${l[0]}">${l[1]} (${l[0]==='all'?ds.length:ds.filter(d=>d.trang_thai===l[0]).length})</button>`).join('')}</div>
+  </div><div class="cb" style="padding:0;border-top:1px solid var(--line)">
+  ${hien.length?`<table><tr><th>Mã · loại</th><th>Ngày nghỉ</th><th>Số ngày</th><th>Trạng thái</th><th>Nhãn</th><th>Dạy thay <span class="sub">🔗 chỉ đọc</span></th><th>Thao tác</th></tr>
+  ${hien.map(d=>dnDong(d)).join('')}</table>`
+  :`<div class="cb"><div class="empty">${ds.length?'Không có đơn nào ở bộ lọc này.':'Bạn chưa có đơn nghỉ nào. Bấm <b>＋ Xin nghỉ phép</b> để gửi đơn đầu tiên.'}</div></div>`}
+  </div></div>`}
+
+function dnNut(d){
+ const b=[];
+ if(d.trang_thai==='nhap')b.push(`<button class="btn sm p" data-dnsua="${d.id}">Sửa · gửi</button>`,`<button class="btn sm" data-dnxoa="${d.id}">Xóa nháp</button>`);
+ if(['co_hieu_luc','cho_dong_y'].includes(d.trang_thai)&&d.ngay.some(n=>!n.da_rut&&dnP(n.ngay)>=DN_D0))b.push(`<button class="btn sm" data-dnrut="${d.id}">Rút đơn</button>`);
+ if(['khong_dong_y','da_rut'].includes(d.trang_thai)||d.de_nghi_doi_ngay)b.push(`<button class="btn sm" data-dnmoi="${d.id}">Gửi đơn mới</button>`);
+ return b.join(' ')||'—';
+}
+function dnDong(d){
+ const tt=TT_TEN[d.trang_thai],mo=dnMo===d.id;
+ return `<tr style="cursor:pointer;${mo?'background:#f8fafc':''}" data-dnmo="${d.id}">
+  <td><b>${d.id}</b><div class="sub">${loaiN(d.loai).ten}</div></td>
+  <td>${dnNgayTxt(d)}<div class="sub">${d.ngay.map(n=>`<span title="${n.ngay}">${n.da_rut?'<s>'+n.ngay.slice(0,5)+'</s>':VI[dnVung(d,n)]+' '+n.ngay.slice(0,5)}</span>`).join(' ')}</div></td>
+  <td>${dnSoNgay(d)||0}${d.ngay.some(n=>n.da_rut)&&d.trang_thai!=='da_rut'?`<div class="sub">rút ${d.ngay.filter(n=>n.da_rut).length} ngày</div>`:''}</td>
+  <td><span class="st ${tt[1]}">${tt[0]}</span>${d.quyet_dinh&&!d.quyet_dinh.da_ky_luc?'<div class="sub">🔏 quyết định chờ ký</div>':''}</td>
+  <td>${dnNhan(d)||'<span class="sub">—</span>'}</td>
+  <td>${dnDayThay(d)}</td>
+  <td style="white-space:nowrap">${dnNut(d)}</td></tr>
+  ${mo?`<tr><td colspan="7" style="background:#f8fafc;padding:12px 14px">${dnChiTiet(d)}</td></tr>`:''}`}
+
+function dnChiTiet(d){
+ const l=loaiN(d.loai),tiets=d.ngay.flatMap(n=>dnTiet(role,n.ngay,n.buoi));
+ const ddn=d.de_nghi_doi_ngay&&d.trang_thai==='co_hieu_luc';
+ return `
+ ${ddn?`<div class="warn" style="border-width:2px"><b>↩ Đề nghị đổi ngày</b> — ${d.de_nghi_doi_ngay.boi} · ${d.de_nghi_doi_ngay.luc}
+   <div style="margin:6px 0;padding:7px 10px;background:#fff;border-radius:7px;color:var(--ink)"><b>Lý do:</b> ${d.de_nghi_doi_ngay.ly_do}</div>
+   Đơn <b>vẫn có hiệu lực</b> cho tới khi <b>chính bạn</b> rút. Lãnh đạo và tổ trưởng không hủy được đơn nghỉ của người khác.
+   <div style="margin-top:8px;display:flex;gap:7px;flex-wrap:wrap"><button class="btn sm" data-dnrut="${d.id}">Rút đơn ngay tại đây</button>
+    <button class="btn sm" data-dnmoi="${d.id}">Gửi đơn mới (ngày khác)</button>
+    <span class="sub">Không làm gì = giữ nguyên đơn.</span></div></div>`:''}
+ ${d.khong_dong_y?`<div class="alert" style="margin-bottom:11px"><b>✕ Không đồng ý</b> — ${d.khong_dong_y.boi} · ${d.khong_dong_y.luc}<div style="margin-top:4px"><b>Lý do:</b> ${d.khong_dong_y.ly_do}</div></div>`:''}
+ <div class="grid2" style="margin-bottom:11px">
+  <div class="mini"><div class="t">Đơn</div><b>${l.ten}</b>
+   <div class="sub">Cơ chế lúc gửi: <code>${d.co_che_luc_gui||l.co_che}</code> — ${CO_CHE_TEN[d.co_che_luc_gui||l.co_che]}</div>
+   <div style="margin-top:5px">Lý do: ${d.ly_do}</div>
+   <div class="sub" style="margin-top:4px">${d.gui_luc?`Gửi ${d.gui_luc} · ${d.kenh}`:'Chưa gửi — chỉ bạn thấy nháp'}</div>
+   ${d.nguoi_nhap_ho?`<div class="warn" style="margin:7px 0 0;padding:7px 10px">✍ <b>Nhập hộ</b> bởi <b>${d.nguoi_nhap_ho.ten}</b> lúc ${d.nguoi_nhap_ho.luc} · căn cứ: <b>${d.can_cu_nhan_don}</b>.
+     <div class="sub">Không có vòng xác nhận — nhãn này là cách duy nhất để bạn phát hiện đơn nhập sai. Sai thì báo Văn thư / TCNS.
+     Người nhập hộ chỉ rút được ngày ⚪ (ở M4.8); bạn rút được ⚪ và 🟡.</div></div>`:''}
+   ${d.bao_vang?`<div class="sub" style="margin-top:6px">⚡ Đã có báo vắng ${d.bao_vang.id}: ${d.bao_vang.boi} · ${d.bao_vang.luc} · ${d.bao_vang.kenh} — <b>máy đã ghép</b> với đơn này.</div>`:''}</div>
+  <div class="mini"><div class="t">Từng ngày · vùng thu hồi lúc ${dnNowS}</div>
+   ${d.ngay.map(n=>`<div style="padding:3px 0;border-bottom:1px dashed var(--line)">${n.da_rut
+     ?`<s>${dnThu(n.ngay)}</s> <span class="st n">đã rút</span> <span class="sub">${n.rut_luc} · ${n.rut_boi}${n.ly_do_rut?' · «'+n.ly_do_rut+'»':''}${n.giu_nguoi_day_thay?' · giữ người dạy thay':''}${n.sat_gio?' · sát giờ':''}</span>`
+     :`${VI[dnVung(d,n)]} <b>${dnThu(n.ngay)}</b> ${n.buoi!=='ca_ngay'?BUOI_TEN[n.buoi]:''} <span class="sub">— ${dnVungLyDo(d,n)} · ${coHieuLuc(d,n.ngay)?'có hiệu lực':'chưa có hiệu lực'}</span>`}</div>`).join('')}
+  </div></div>
+ <div class="mini" style="margin-bottom:11px"><div class="t">Tiết bị ảnh hưởng · tình trạng dạy thay — 🔗 M4.7, chỉ đọc</div>
+  ${tiets.length?`<table style="font-size:12px"><tr><th>Ngày</th><th>Tiết</th><th>Lớp</th><th>Môn</th><th>Tình trạng</th></tr>
+   ${tiets.map(t=>{const n=d.ngay.find(x=>x.ngay===t.ngay),rut=n.da_rut&&!n.giu_nguoi_day_thay;
+    return `<tr><td>${dnThu(t.ngay)}</td><td>${t.tiet} · ${t.gio}</td><td>${t.lop} <span class="st n">ĐT ${t.dt}</span></td><td>${t.mon}</td>
+     <td>${rut?'<span class="sub">ngày đã rút — tiết trả về bạn</span>':['nhap','cho_dong_y','khong_dong_y'].includes(d.trang_thai)?'<span class="sub">chưa sinh nhu cầu (đơn chưa có hiệu lực)</span>'
+      :t.dayThay!==undefined?`<span class="st o">đã có người${t.dayThay?' · '+t.dayThay:''}</span>${n.giu_nguoi_day_thay?' <span class="sub">giữ người khi rút</span>':''}`:dnGio(t.ngay,t.tiet)<=DN_NOW?'<span class="sub">đã diễn ra — xem ở M4.7</span>':'<span class="st w">chờ M4.7 xếp người</span>'}</td></tr>`}).join('')}</table>
+   <div class="sub" style="margin-top:5px">Bạn không xếp người — người điều hành ở M4.7 làm. <button class="btn sm" data-go="M2.1">↗ Xem lịch ở M2.1</button></div>`
+  :`<div class="sub">${P[role].teach?'Không có tiết dạy nào trong những ngày này':'Bạn không có phân công giảng dạy'} — đơn <b>không phát sinh nhu cầu dạy thay</b> và <b>không xuất hiện ở M4.7</b>.</div>`}</div>
+ ${d.de_xuat?`<div class="mini" style="margin-bottom:11px"><div class="t">Đề xuất người dạy thay</div><b>${d.de_xuat.ten}</b><div style="margin-top:3px">Ghi chú thỏa thuận: <i>«${d.de_xuat.ghi_chu}»</i></div>
+   <div class="sub">Ghi chú hiện nguyên văn cho người dạy thay ở M2.1 — họ nhớ ra lời đã nhận, hoặc phát hiện ngay nếu chưa từng nhận.</div></div>`:''}
+ ${d.quyet_dinh?`<div class="mini" style="margin-bottom:11px"><div class="t">🔏 Quyết định</div>${d.quyet_dinh.da_ky_luc?`<span class="st o">Đã ký</span> ${d.quyet_dinh.da_ky_luc}`
+   :'<span class="st w">Chờ Hiệu trưởng ký (Nhóm B)</span> <span class="sub">— đơn đã có hiệu lực; ký chậm không chặn nghỉ, chỉ chặn chốt lương</span>'}</div>`:''}
+ <div class="mini" style="margin-bottom:11px"><div class="t">Hồ sơ đính kèm — dữ liệu sức khỏe (Luật BVDLCN 91/2025)</div>
+  ${d.ho_so.length?d.ho_so.map(h=>`<div class="hs"><span>📄 ${h}</span><button class="btn sm" data-dnhsxem="${h}">👁 Xem</button><button class="btn sm" data-tai="${h}">⬇ Tải</button></div>`).join('')
+   :`<span class="sub">Chưa có tệp.</span>`}
+  ${dnThieuHS(d)?`<div class="warn" style="margin:7px 0 0">Loại <b>${l.ten}</b> cần hồ sơ đính kèm — đơn <b>vẫn có hiệu lực</b>, chỉ mang nhãn <b>thiếu hồ sơ</b>. Người ốm hôm nay chưa thể có giấy khám hôm nay.
+    <div style="margin-top:6px"><button class="btn sm p" data-dnbs="${d.id}">📎 Bổ sung hồ sơ</button></div></div>`:''}
+  <div class="sub" style="margin-top:5px">Chỉ bạn, Tổ chức nhân sự và người đồng ý (nếu có) xem được. Mỗi lượt xem và tải đều ghi audit.</div></div>
+ <div class="mini"><div class="t">Nhật ký đơn</div>${d.nhat_ky.map(x=>`<div class="sub" style="padding:2px 0">🕘 <b>${x[0]}</b> — ${x[1]}</div>`).join('')}</div>`}
+
+/* ===================== SOẠN ĐƠN ===================== */
+function dnFormMoi(ngay,tu){
+ const p=P[role],d0=ngay&&dnOK(ngay)?ngay:dnS(dnThem(DN_D0,1));
+ return {id:null,loai:p.ng?'OM':'PN',tu:tu?tu.ngay[0].ngay:d0,den:tu?tu.ngay[tu.ngay.length-1].ngay:d0,buoi:'ca_ngay',
+  ly_do:tu?tu.ly_do:'',de_xuat:null,ghi_chu:'',ho_so:[],tuDeepLink:!!ngay};
+}
+function dnNgayKhoang(f){
+ if(!dnOK(f.tu)||!dnOK(f.den))return [];
+ const a=dnP(f.tu),b=dnP(f.den),out=[];
+ for(let d=a;d<=b&&out.length<200;d=dnThem(d,1))if(d.getDay()!==0)out.push(dnS(d));
+ return out;
+}
+function dnKiem(f){
+ const p=P[role],l=loaiN(f.loai),ngay=dnNgayKhoang(f),mot=ngay.length===1,buoi=mot?f.buoi:'ca_ngay';
+ const chan=[],canh=[];
+ if(!dnOK(f.tu)||!dnOK(f.den))chan.push('Ngày chưa đúng dạng dd/mm/yyyy');
+ else if(dnP(f.den)<dnP(f.tu))chan.push('«Đến ngày» đứng trước «Từ ngày»');
+ else if(!ngay.length)chan.push('Khoảng ngày chỉ gồm Chủ nhật — không có ngày làm việc nào');
+ if(!f.ly_do.trim())chan.push('Chưa nhập lý do nghỉ');
+ if(f.de_xuat&&!f.ghi_chu.trim())chan.push(`Đã điền người dạy thay (${f.de_xuat}) nhưng chưa có ghi chú thỏa thuận — ai đã hỏi ai, bằng cách nào, khi nào`);
+ const trung=ngay.filter(s=>dsDon().some(d=>d.id!==f.id&&(coHieuLuc(d,s)||(d.trang_thai==='cho_dong_y'&&d.ngay.some(n=>n.ngay===s&&!n.da_rut)))));
+ if(trung.length)chan.push(`Ngày ${trung.map(s=>s.slice(0,5)).join(', ')} đã nằm trong một đơn khác của bạn (có hiệu lực hoặc chờ đồng ý) — rút đơn đó hoặc chọn ngày khác`);
+ const tiets=ngay.flatMap(s=>dnTiet(role,s,buoi));
+ const soNgay=mot&&buoi!=='ca_ngay'?.5:ngay.length;
+ const nhan=[];
+ if(ngay.length){const t0=tiets.length?dnGio(tiets[0].ngay,tiets[0].tiet):dnP(ngay[0]);
+  if(t0<=DN_NOW){nhan.push('bao_muon');canh.push('Ngày nghỉ đầu tiên đã bắt đầu — đơn <b>vẫn được ghi nhận</b>, mang nhãn <b>báo muộn</b> và vào hàng đợi ngoại lệ của M4.9')}}
+ if(l.quy){const con=dnQuy(p)-dnDaDung();if(soNgay>con){nhan.push('vuot_quy');canh.push(`Quỹ nghỉ hằng năm còn <b>${Math.max(0,con)}</b> ngày, đơn này <b>${soNgay}</b> ngày — đơn <b>vẫn được nhận</b>, mang nhãn <b>vượt quỹ</b> (chảy sang M4.9 · M7.6)`)}}
+ if(l.giay&&!f.ho_so.length)canh.push(`Loại <b>${l.ten}</b> cần hồ sơ đính kèm — gửi được, đơn mang nhãn <b>thiếu hồ sơ</b> tới khi bạn bổ sung`);
+ if(ngay.length>30)canh.push('Đơn trên 30 ngày — cân nhắc thủ tục <b>Tạm nghỉ</b> ở M4.2 (hệ thống gợi ý, bạn quyết)');
+ return {l,ngay,buoi,tiets,soNgay,chan,canh,nhan};
+}
+function dnSoan(){
+ const f=dnForm,p=P[role],k=dnKiem(f),den=dnDenTay(f.loai,k.tiets,k.soNgay);
+ const canTT=k.tiets.some(t=>t.dayThay===undefined&&dnGio(t.ngay,t.tiet)>DN_NOW);
+ return `<div class="card"><div class="ch"><button class="btn sm" data-dnve="1">← Đơn nghỉ phép của tôi</button>
+  <h3 style="margin-left:8px">${f.id?'Sửa nháp '+f.id:'＋ Xin nghỉ phép'}</h3><div class="spacer"></div>
+  <span class="sub">${f.tuDeepLink?'Mở từ lối tắt — ngày đã điền sẵn':''}</span>${dnReturn?` <button class="btn sm" data-go="${dnReturn}">↩ Quay lại ${dnReturn}</button>`:''}</div><div class="cb">
+  <div class="grid2" style="margin-bottom:6px">
+   <div class="fld"><label>Người xin nghỉ</label><input value="${p.n} — chính bạn" readonly style="background:var(--lock)"></div>
+   <div class="fld"><label>Loại nghỉ</label><select id="dnLoai">${LOAI_NGHI.map(x=>`<option value="${x.ma}" ${x.ma===f.loai?'selected':''}>${x.ten}</option>`).join('')}</select>
+    <div class="sub" style="margin-top:4px">${CO_CHE_TEN[k.l.co_che]}</div></div>
+   <div class="fld"><label>Từ ngày</label><input id="dnTu" value="${f.tu}" placeholder="dd/mm/yyyy"></div>
+   <div class="fld"><label>Đến ngày</label><input id="dnDen" value="${f.den}" placeholder="dd/mm/yyyy"></div>
+  </div>
+  ${k.ngay.length===1?`<div class="fld"><label>Phạm vi trong ngày <span class="sub">(nghỉ nửa ngày chỉ áp cho đơn đúng MỘT ngày — M4.8 §4b)</span></label>
+   <div class="chips">${Object.keys(BUOI_TEN).map(b=>`<button class="chip ${f.buoi===b?'on':''}" data-dnbuoi="${b}">${BUOI_TEN[b]}${b==='sang'?' — chiều vẫn đi làm':b==='chieu'?' — sáng vẫn đi làm':''}</button>`).join('')}</div></div>`:''}
+  <div class="fld"><label>Lý do <span style="color:var(--red)">*</span></label><textarea id="dnLy" rows="2">${f.ly_do}</textarea></div>
+  <div class="mini" style="margin-bottom:11px"><div class="t">Tiết bị ảnh hưởng — đọc từ M4.7 Lịch giảng dạy (không đọc TKB) · ${k.soNgay} ngày${k.buoi!=='ca_ngay'?' · lọc theo buổi':''}</div>
+   ${k.tiets.length?`<table style="font-size:12px"><tr><th>Ngày</th><th>Tiết</th><th>Lớp</th><th>Môn</th><th>Sẽ thế nào</th></tr>
+    ${k.tiets.map(t=>`<tr><td>${dnThu(t.ngay)}</td><td>${t.tiet} · ${t.gio}</td><td>${t.lop} <span class="st n">ĐT ${t.dt}</span></td><td>${t.mon}</td>
+     <td>${dnGio(t.ngay,t.tiet)<=DN_NOW?'<span class="sub">đã diễn ra — không sinh nhu cầu dạy thay</span>':t.dayThay!==undefined?'<span class="st n">đã có người dạy thay từ trước — không sinh nhu cầu mới</span>':'<span class="st w">sinh nhu cầu dạy thay ở M4.7</span>'}</td></tr>`).join('')}</table>`
+   :`<div class="sub">${p.teach?'Không có tiết dạy nào trong khoảng này':'Bạn không có phân công giảng dạy'} — đơn <b>không phát sinh nhu cầu dạy thay</b> và <b>không xuất hiện ở M4.7</b>. Không chặn gửi đơn.</div>`}</div>
+  ${canTT?`<div class="mini" style="margin-bottom:11px"><div class="t">Đề xuất người dạy thay — tùy chọn</div>
+   <div class="ac"><input id="acin" placeholder="Gõ tên, mã nhân sự hoặc môn… (thử gõ &quot;bich&quot; không dấu)" autocomplete="off" value="${f.de_xuat||''}"><div class="aclist" id="aclist"></div></div>
+   <div id="acsel" style="margin-top:7px">${f.de_xuat?`<div style="border:1px solid var(--green);background:var(--green-soft);border-radius:9px;padding:8px 11px;font-size:12.5px">✓ Đã chọn <b>${f.de_xuat}</b> <button class="btn sm" style="float:right;padding:2px 8px" data-dnbochon="1">Bỏ chọn</button></div>`:''}</div>
+   ${f.de_xuat?`<div class="fld" style="margin-top:8px"><label>Ghi chú thỏa thuận <span style="color:var(--red)">* bắt buộc khi đã điền tên</span></label>
+     <textarea id="dnGhiChu" rows="2" placeholder="VD: Đã gọi cô Quyên 05:50 sáng 25/8, cô đồng ý nhận 2 tiết">${f.ghi_chu}</textarea>
+     <div class="sub">Hiện nguyên văn cho người dạy thay ở M2.1 — thay cho vòng xác nhận đã bỏ.</div></div>`:''}
+   <div class="sub" style="margin-top:6px">Ưu tiên cùng môn cùng tổ → cùng môn khác tổ → cùng tổ khác môn. Đã loại: chính bạn · người có đơn nghỉ <b>có hiệu lực</b> trùng ngày · người đã nghỉ việc. Để trống thì người điều hành ở M4.7 tự chọn.</div></div>`:''}
+  <div class="mini" style="margin-bottom:11px"><div class="t">Hồ sơ đính kèm${k.l.giay?' — loại này cần giấy tờ':' — tùy chọn'}</div>
+   ${f.ho_so.map(h=>`<div class="hs"><span>📄 ${h}</span><button class="btn sm" data-dnhsxem="${h}">👁 Xem</button></div>`).join('')}
+   <button class="btn sm" data-dnhsthem="1">📎 Chọn tệp</button>
+   <div class="sub" style="margin-top:5px">Giấy khám bệnh, giấy chứng sinh là dữ liệu sức khỏe — xem trong màn hình, mỗi lượt xem/tải ghi audit (Luật BVDLCN 91/2025).</div></div>
+  ${dnDenTayHTML(den)}
+  ${k.canh.map(c=>`<div class="warn">⚠ ${c}</div>`).join('')}
+  ${k.chan.length?`<div class="alert" style="margin-bottom:11px"><b>Chưa gửi được — còn thiếu:</b><ul class="ul" style="margin:4px 0 0">${k.chan.map(c=>`<li>${c}</li>`).join('')}</ul></div>`:''}
+  <div style="display:flex;gap:8px;justify-content:flex-end">
+   <button class="btn" data-dnluu="nhap">Lưu nháp</button>
+   <button class="btn p" data-dnluu="gui" ${k.chan.length?'disabled title="Còn thiếu — xem khung đỏ phía trên"':''}>${k.l.co_che==='can_thoa_thuan'?'Gửi đơn — chờ một người đồng ý':'Gửi đơn — có hiệu lực ngay'}</button></div>
+  </div></div>`}
+
+function dnDocForm(){const f=dnForm;if(!f)return;
+ const v=id=>{const e=document.getElementById(id);return e?e.value:null};
+ if(v('dnLoai')!==null)f.loai=v('dnLoai'); if(v('dnTu')!==null)f.tu=v('dnTu'); if(v('dnDen')!==null)f.den=v('dnDen');
+ if(v('dnLy')!==null)f.ly_do=v('dnLy'); if(v('dnGhiChu')!==null)f.ghi_chu=v('dnGhiChu');
+}
+function dnLuu(kieu){
+ dnDocForm();const f=dnForm,k=dnKiem(f);
+ if(kieu==='gui'&&k.chan.length){pane();toast('Chưa gửi được — '+k.chan[0]);return}
+ if(kieu==='nhap'&&(!dnOK(f.tu)||!dnOK(f.den)||!k.ngay.length)){toast('Nháp cũng cần khoảng ngày hợp lệ');return}
+ const l=k.l,d=f.id?donId(f.id):{id:'NP-2026-'+(++dnSeq),nhat_ky:[]};
+ Object.assign(d,{loai:f.loai,ly_do:f.ly_do,kenh:'Web',nguoi_nhap_ho:null,can_cu_nhan_don:null,
+  de_xuat:f.de_xuat?{ten:f.de_xuat,ghi_chu:f.ghi_chu}:null,ho_so:f.ho_so.slice(),de_nghi_doi_ngay:null,
+  ngay:k.ngay.map(s=>mk(s,k.buoi))});
+ if(kieu==='nhap'){d.trang_thai='nhap';d.co_che_luc_gui=null;d.nhan=[];d.quyet_dinh=null;d.gui_luc=null;
+  d.nhat_ky.push([dnNowS,'Bạn lưu nháp — chưa ai thấy']);}
+ else{d.trang_thai=l.co_che==='can_thoa_thuan'?'cho_dong_y':'co_hieu_luc';d.co_che_luc_gui=l.co_che;d.nhan=k.nhan;d.gui_luc=dnNowS;
+  d.quyet_dinh=(l.co_che==='ghi_nhan_quyet_dinh'||k.soNgay>7)?{can_ky:true,da_ky_luc:null}:null;
+  d.nhat_ky.push([dnNowS,`Bạn gửi đơn — co_che_luc_gui = ${l.co_che} ⇒ ${d.trang_thai==='co_hieu_luc'?'có hiệu lực ngay':'chờ một người đồng ý'}`]);}
+ if(!f.id)dsDon().unshift(d);
+ dnView='ds';dnForm=null;dnMo=d.id;dnLoc='all';pane();
+ toast(kieu==='nhap'?'Đã lưu nháp '+d.id
+  :d.trang_thai==='co_hieu_luc'?`Đã gửi ${d.id} — có hiệu lực ngay${k.tiets.length?' · nhu cầu dạy thay đã sang M4.7':''} · M4.9 ghi Vắng có phép theo ngày`
+  :`Đã gửi ${d.id} — chờ một người đồng ý (PHT điểm trường hoặc Hiệu trưởng)`);
+}
+
+/* ===================== RÚT ĐƠN — ba vùng, bảng hai khối ===================== */
+function dnRutMo(id,chiNgay){
+ const d=donId(id),con=d.ngay.filter(n=>!n.da_rut);
+ const html=`<div class="info" style="margin-bottom:10px">Máy xét <b>từng ngày</b> theo hệ quả đã phát sinh — bạn chỉ chọn ngày muốn rút. <b>Tick hết = rút cả đơn.</b></div>
+  <table style="font-size:12.5px"><tr><th></th><th>Ngày</th><th>Vùng</th><th>Hệ quả nếu rút</th></tr>
+  ${con.map(n=>{const v=dnVung(d,n),sg=v===2&&dnSatGio(n),ts=dnTiet(role,n.ngay,n.buoi).filter(t=>t.dayThay!==undefined),ten=ts.length?(ts[0].dayThay||'người dạy thay'):'';
+   return `<tr style="${v===3?'opacity:.6':''}"><td><input type="checkbox" class="dnck" data-ng="${n.ngay}" data-v="${v}" ${v===3?'disabled':(!chiNgay||chiNgay===n.ngay)?'checked':''}></td>
+    <td><b>${dnThu(n.ngay)}</b></td><td>${VI[v]}</td>
+    <td>${v===1?'<span class="sub">M4.7 xóa nhu cầu dạy thay, không báo ai · không cần lý do</span>'
+     :v===2?`M4.7 <b>gỡ phân công ${ten}</b> (${ts.map(t=>'tiết '+t.tiet).join(', ')}) cùng giao dịch, báo đích danh qua M2.1${sg?' · <span class="st r">sát giờ</span> <span class="sub">(< '+DN_SATGIO+' giờ trước tiết đầu — không chặn, báo đỏ)</span>':''}
+       <div style="margin-top:4px"><label style="font-size:12px"><input type="checkbox" class="dngiu" data-ng="${n.ngay}"> Giữ nguyên người dạy thay <span class="sub">— ${ten} vẫn dạy; bạn đi làm, ngày này <b>không</b> Vắng có phép</span></label></div>`
+     :`<span style="color:var(--red)">Không rút được — ${dnVungLyDo(d,n)}.</span> <span class="sub">Chỉ người phụ trách chấm công <b>${DN_NVCC}</b> đính chính ở M4.9 (bắt buộc lý do, audit); tháng đã chốt thì đi đề nghị sửa sau chốt (M4.9 §6.3).</span>`}</td></tr>`}).join('')}
+  </table>
+  <div class="fld" style="margin-top:10px"><label>Lý do rút <span id="dnLyBat" class="sub">(bắt buộc khi có ngày 🟡)</span></label><textarea id="dnLyRut" rows="2" placeholder="VD: Việc gia đình xong sớm, đi dạy lại được"></textarea></div>
+  <div id="dnRutLoi"></div>
+  <div class="sub">🛑 Rút đơn <b>không bao giờ xóa tiết đã dạy</b> — tiết của người dạy thay giữ nguyên chủ. Không có «đơn điều chỉnh»: muốn đổi ngày thì rút rồi gửi đơn mới.</div>`;
+ modal('Rút đơn '+d.id+' — '+loaiN(d.loai).ten,html,()=>dnRutXacNhan(id),'Rút đơn');
+ if(!con.some(n=>dnVung(d,n)!==3)){$('#mok').disabled=true;
+  $('#dnRutLoi').innerHTML=`<div class="alert" style="margin:8px 0">Mọi ngày còn lại của đơn đều ở vùng 🔴 — <b>không ngày nào rút được</b>. Nếu bạn thực tế đã đi làm, báo <b>${DN_NVCC}</b> (phụ trách chấm công) đính chính ở M4.9.</div>`}
+ else $('#mok').disabled=false;
+}
+function dnRutXacNhan(id){
+ const d=donId(id),ly=($('#dnLyRut').value||'').trim();
+ const chon=[...document.querySelectorAll('.dnck')].filter(x=>x.checked&&!x.disabled).map(x=>x.dataset.ng);
+ const giu=new Set([...document.querySelectorAll('.dngiu')].filter(x=>x.checked).map(x=>x.dataset.ng));
+ if(!chon.length){$('#dnRutLoi').innerHTML='<div class="alert" style="margin:8px 0">Chưa chọn ngày nào để rút.</div>';return false}
+ if(chon.some(s=>dnVung(d,d.ngay.find(n=>n.ngay===s))===2)&&!ly){$('#dnRutLoi').innerHTML='<div class="alert" style="margin:8px 0">Có ngày 🟡 (đã xếp người dạy thay) — <b>bắt buộc nhập lý do</b>: lý do đi kèm thông báo tới người bị hủy.</div>';$('#dnLyRut').focus();return false}
+ const ok=[],bo=[];
+ d.ngay.filter(n=>!n.da_rut).forEach(n=>{
+  const v=dnVung(d,n),ts=dnTiet(role,n.ngay,n.buoi).filter(t=>t.dayThay!==undefined),ten=ts.length?(ts[0].dayThay||'người dạy thay'):'';
+  if(v===3){bo.push([n.ngay,v,`Không rút — ${dnVungLyDo(d,n)}. Ngày này vẫn <b>có hiệu lực</b>. Đính chính: <b>${DN_NVCC}</b> — phụ trách chấm công, ở M4.9 (lý do + audit).`]);return}
+  if(!chon.includes(n.ngay)){bo.push([n.ngay,v,'Giữ nguyên — bạn không chọn ngày này.']);return}
+  const sg=v===2&&dnSatGio(n);
+  Object.assign(n,{da_rut:true,rut_luc:dnNowS,rut_boi:'Bạn',ly_do_rut:ly||null,giu_nguoi_day_thay:v===2&&giu.has(n.ngay),sat_gio:sg&&!giu.has(n.ngay)});
+  let hq;
+  if(v===1)hq='M4.7 xóa nhu cầu dạy thay — không báo ai. M4.9 bỏ Vắng có phép.';
+  else if(giu.has(n.ngay))hq=`Giữ nguyên <b>${ten}</b> dạy ${ts.map(t=>'tiết '+t.tiet).join(', ')}. Bạn đi làm — M4.9 <b>không</b> ghi Vắng có phép ngày này.`;
+  else{ts.forEach(t=>delete DAY_THAY[role+'|'+t.ngay+'|'+t.tiet]);
+   hq=`M4.7 gỡ phân công <b>${ten}</b> (${ts.map(t=>'tiết '+t.tiet).join(', ')}) cùng giao dịch · đã báo đích danh qua M2.1 kèm lý do «${ly}»${sg?' · <span class="st r">sát giờ</span> báo đỏ':''}. Tiết trả về bạn.`}
+  ok.push([n.ngay,v,hq]);
+ });
+ if(d.ngay.every(n=>n.da_rut))d.trang_thai='da_rut';
+ d.nhat_ky.push([dnNowS,`Bạn rút ${ok.length} ngày (${ok.map(x=>VI[x[1]]+' '+x[0].slice(0,5)).join(', ')})${bo.filter(x=>x[1]===3).length?' · '+bo.filter(x=>x[1]===3).length+' ngày 🔴 không rút':''}`]);
+ dnMo=id;pane();
+ $('#mh').textContent='Kết quả rút đơn '+d.id;
+ $('#mb').innerHTML=`<div class="ok2" style="margin-bottom:10px"><b>✅ Đã rút — ${ok.length} ngày</b>
+   <table style="font-size:12.5px;margin-top:6px">${ok.map(x=>`<tr><td style="white-space:nowrap">${VI[x[1]]} <b>${dnThu(x[0])}</b></td><td>${x[2]}</td></tr>`).join('')}</table></div>
+  <div class="${bo.length?'warn':'sub'}"><b>⏭ Không rút — ${bo.length} ngày</b>
+   ${bo.length?`<table style="font-size:12.5px;margin-top:6px">${bo.map(x=>`<tr><td style="white-space:nowrap">${VI[x[1]]} <b>${dnThu(x[0])}</b></td><td>${x[2]}</td></tr>`).join('')}</table>`:''}</div>
+  <div class="sub" style="margin-top:8px">Trạng thái đơn: <b>${TT_TEN[d.trang_thai][0]}</b>${d.trang_thai==='da_rut'?' — mọi ngày đã rút':' — đơn chỉ sang «Đã rút» khi mọi ngày đã rút'}.</div>`;
+ $('#mno').style.display='none';$('#mok').disabled=false;$('#mok').textContent='Đóng';
+ $('#mok').onclick=()=>$('#mask').classList.remove('on');
+ toast(`Đã rút ${ok.length} ngày · không rút ${bo.length} ngày`);
+ return false;
+}
+
+/* ===================== bộ chọn người dạy thay — loại trừ ===================== */
+/* đơn có hiệu lực của người KHÁC: M0.4 chỉ dùng để loại khỏi bộ chọn, không hiện tên hay lý do */
+const NGHI_KHAC={'Nguyễn Thị Mai':['25/08/2026'],'Lưu Thị Ngân':['25/08/2026'],'Bùi Văn Khánh':['25/08/2026','26/08/2026','27/08/2026'],
+ 'Đặng Văn Long':['26/08/2026','27/08/2026'],'Hà Minh Đức':['31/08/2026'],'Trịnh Thu Hà':['26/08/2026'],
+ 'Nguyễn Văn Chiến':['28/08/2026','29/08/2026','31/08/2026','01/09/2026','02/09/2026','03/09/2026','04/09/2026','05/09/2026','07/09/2026']};
+function dnLoaiTru(g){
+ if(g.nghiViec)return true;
+ if(!dnForm)return false;
+ const ngay=dnNgayKhoang(dnForm);
+ return (NGHI_KHAC[g.n]||[]).some(s=>ngay.includes(s));
+}
+function dnChonNguoi(g){if(!dnForm)return;dnDocForm();dnForm.de_xuat=g.n;pane();setTimeout(()=>$('#dnGhiChu')?.focus(),0)}
+
+/* ===================== sự kiện ===================== */
+document.body.addEventListener('click',e=>{
+ const g=(a)=>e.target.closest('['+a+']');
+ let t;
+ if(t=g('data-dntao')){dnForm=dnFormMoi();dnView='soan';pane();return}
+ if(t=g('data-dnve')){dnView='ds';dnForm=null;pane();return}
+ if(t=g('data-dnloc')){dnLoc=t.dataset.dnloc;dnMo=null;pane();return}
+ if(t=g('data-dnrut')){e.stopPropagation();const d=donId(t.dataset.dnrut);
+  dnRutMo(t.dataset.dnrut,d.de_nghi_doi_ngay&&d.ngay.length>1?d.ngay[0].ngay:null);return}
+ if(t=g('data-dnsua')){const d=donId(t.dataset.dnsua);dnForm=dnFormMoi(null,d);dnForm.id=d.id;dnForm.loai=d.loai;dnForm.buoi=d.ngay[0].buoi;
+  dnForm.ho_so=d.ho_so.slice();if(d.de_xuat){dnForm.de_xuat=d.de_xuat.ten;dnForm.ghi_chu=d.de_xuat.ghi_chu}dnView='soan';pane();return}
+ if(t=g('data-dnxoa')){const id=t.dataset.dnxoa;
+  modal('Xóa nháp '+id,'Nháp chưa gửi nên <b>chưa ai thấy</b> và chưa chảy sang đâu — xóa hẳn được. Đơn đã gửi thì không xóa, chỉ rút.',
+   ()=>{DON[role]=dsDon().filter(d=>d.id!==id);dnMo=null;pane();toast('Đã xóa nháp '+id)},'Xóa nháp');return}
+ if(t=g('data-dnmoi')){const d=donId(t.dataset.dnmoi);dnForm=dnFormMoi(null,d);dnForm.loai=d.loai;
+  dnForm.tu=dnForm.den=dnS(dnThem(DN_D0,1));dnView='soan';pane();toast('Đơn mới lấy lại loại và lý do — chọn ngày khác. Đơn cũ giữ nguyên, muốn thôi thì Rút.');return}
+ if(t=g('data-dnbuoi')){dnDocForm();dnForm.buoi=t.dataset.dnbuoi;pane();return}
+ if(t=g('data-dnbochon')){dnDocForm();dnForm.de_xuat=null;dnForm.ghi_chu='';pane();return}
+ if(t=g('data-dnhsthem')){dnDocForm();dnForm.ho_so.push('Giay-kham-benh-'+(dnForm.ho_so.length+1)+'.pdf');pane();toast('Đã đính kèm tệp (demo)');return}
+ if(t=g('data-dnbs')){const d=donId(t.dataset.dnbs);d.ho_so.push('Giấy khám bệnh bổ sung.pdf');d.nhat_ky.push([dnNowS,'Bạn bổ sung hồ sơ đính kèm']);pane();toast('Đã bổ sung — nhãn «thiếu hồ sơ» tự gỡ');return}
+ if(t=g('data-dnhsxem')){modal('👁 '+t.dataset.dnhsxem,`<div class="pv"><div class="c" style="font-weight:700">GIẤY TỜ Y TẾ</div>
+   <div style="color:var(--ink3);margin-top:8px">— Nội dung tệp hiển thị ngay trong màn hình, không cần tải về —</div></div>
+   <div class="sub" style="margin-top:10px">Lượt xem đã ghi audit (Luật BVDLCN 91/2025): <b>ai · tệp nào · lúc nào · từ M0.4</b>. Nút ⬇ Tải đứng sau 👁 Xem.</div>`,null,'Đóng');return}
+ if(t=g('data-dnluu')){dnLuu(t.dataset.dnluu);return}
+ if(t=g('data-dnxuat')){modal('⬇ Xuất đơn nghỉ của tôi',`<div class="fld"><label>Mục đích <span style="color:var(--red)">*</span></label><select><option>Lưu hồ sơ cá nhân</option><option>Nộp kèm hồ sơ BHXH</option></select></div>
+   <div class="sub">Bản xuất <b>không kèm tệp đính kèm</b>; ghi audit mục đích.</div>`,()=>toast('Đã xuất PDF — ghi audit mục đích'),'Xuất');return}
+ if(t=g('data-dnmo')){if(e.target.closest('button'))return;dnMo=dnMo===t.dataset.dnmo?null:t.dataset.dnmo;pane();return}
+});
+document.body.addEventListener('change',e=>{
+ if(dnView==='soan'&&['dnLoai','dnTu','dnDen'].includes(e.target.id)){dnDocForm();pane()}
+ if(e.target.classList&&e.target.classList.contains('dngiu')&&e.target.checked){
+  const ck=document.querySelector(`.dnck[data-ng="${e.target.dataset.ng}"]`);if(ck&&!ck.checked)ck.checked=true}
+});
+
+/* ---- deep-link: M0.4?muc=don_nghi[&action=tao[&ngay=dd/mm/yyyy]][&ctx=<mã đơn>][&return=<menu>]
+   action=tao — từ M2.1 «Xin nghỉ ngày này» · ctx — thẻ tóm tắt M0.1 / App «Mở trên Web ↗» mở thẳng chi tiết một đơn ---- */
+let dnReturn=null;
+function dnDeepLink(){
+ const q=new URLSearchParams(location.search);
+ if(q.get('muc')!=='don_nghi')return false;
+ sec='f7';dnLoc='all';dnMo=null;dnReturn=q.get('return');
+ if(q.get('action')==='tao'){dnForm=dnFormMoi(q.get('ngay'));dnView='soan'}
+ else{dnView='ds';if(q.get('ctx')){if(donId(q.get('ctx')))dnMo=q.get('ctx');else toast('Không thấy đơn '+q.get('ctx')+' trong đơn của bạn — M0.4 chỉ mở đơn của chính bạn')}}
+ subnav();pane();
+ if(q.get('ngay')&&!dnOK(q.get('ngay')))toast('Tham số ngày không hợp lệ — điền tạm ngày mai');
+ return true;
+}
+dnDeepLink();
 </script>
 </body>
 </html>

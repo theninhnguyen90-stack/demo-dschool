@@ -113,6 +113,14 @@ h1{font-size:19px;font-weight:700}
 .tg.c{background:var(--bg);color:var(--ink2)}
 .tg.g{background:var(--green-soft);color:var(--green)}
 .tg.r{background:var(--red-soft);color:var(--red)}
+.tg.w{background:var(--amber-soft);color:var(--amber)}
+.tg.o{background:var(--bg);color:var(--ink2);border:1px solid var(--line)}
+.tg.n{background:var(--bg);color:var(--ink2)}
+.tg.p{background:#fce7f3;color:#9d174d}
+/* ★ v2.0 — hàng ô tích chọn nhóm nhận thông báo */
+.ck{display:flex;gap:8px;align-items:center;padding:5px 0;font-size:12.5px;cursor:pointer}
+.ck input{width:15px;height:15px;flex:0 0 auto;cursor:pointer}
+.ck input:disabled{cursor:default}
 
 .ph{padding:12px 15px;border-bottom:1px solid var(--line);display:flex;gap:13px;align-items:center;flex-wrap:wrap}
 .ph .n h2{font-size:16px;font-weight:700}
@@ -459,10 +467,10 @@ const ROLES={
  PDT :{ma:'huong',cd:'PHT Điểm trường A',sc:'Branch',dt:'A',
    q:['xem','tao','sua'],},
  TCNS:{ma:'lien',cd:'Tổ chức nhân sự',sc:'School',dt:null,
-   q:['xem','tao','sua','xemAll'],},
+   q:['xem','tao','sua','xemAll','xuat'],},   /* ★ 7/9/2026: §9 vốn ghi TCNS xuất được, demo thiếu — đồng bộ */
  TPT :{ma:'tuan',cd:'Tổng phụ trách Đội',sc:'School',dt:null,
    q:['xem','tao','sua'],},
- VT  :{ma:'nga', cd:'Văn thư',sc:'School',dt:null, q:['xem'],}
+ VT  :{ma:'nga', cd:'Văn thư',sc:'School',dt:null, q:['xem','xuat'],}   /* ★ G chốt 7/9/2026 — Văn thư XUẤT được để làm hồ sơ lưu; vẫn không tạo, không sửa */
 };
 let role='FULL', ST={dt:'ALL',tab:null,cur:null,chip:'all',thang:'2026-12'};
 const R=()=>ROLES[role];
@@ -475,7 +483,13 @@ const loaiTaoDuoc=()=>can('tao')?Object.keys(LOAI_SK).filter(k=>LOAI_SK[k].tao.i
   ||role==='FULL'):[];
 
 const CFG={
- nhacTruoc:1,       /* ngày — nhắc trước sự kiện */
+ /* ⛔ `nhacTruoc` ĐÃ BỎ HẲN — chốt 7/9/2026 (điểm H).
+      v1.x có tham số «nhắc trước N ngày», hệ thống TỰ gửi. v2.0 tách
+      `📣 Gửi thông báo` thành thao tác riêng, nội dung NGƯỜI DÙNG SOẠN,
+      lặp được — và chính §2.5 lấy «nhắc trước một tuần, nhắc trước một
+      ngày» làm ví dụ cho việc đó. Giữ cả hai là HAI CƠ CHẾ NHẮC SONG
+      SONG, mà cái tự động không qua ràng buộc 20f và không hiện ở khối
+      📬 — nên người tổ chức không thấy nó, và nhắc tay lần nữa. */
  canRaAnh:true      /* bắt buộc xác nhận đã rà ảnh trước khi publish có ảnh */
 };
 
@@ -496,22 +510,83 @@ const KHONG_DANG_ANH=[
 const khongDangAnhCua=dt=>KHONG_DANG_ANH.filter(x=>dt==='ALL'||x.dt===dt);
 
 /* ══════════════════════════════════════════════════════════════════
-   PHẠM VI PUBLISH — ai xem được sự kiện
+   PHẠM VI PUBLISH — bao nhiêu PHỤ HUYNH thấy sự kiện
+   ★ 7/9/2026 (ràng buộc 20e): trường này KHÔNG cắt gì cho nhân sự.
+     Nhân sự nào thấy sự kiện nào là do PHẠM VI VAI (ma trận quyền §9) —
+     vai School thấy cả sự kiện gắn một điểm trường. Ba mức dưới đây là
+     ba nấc của MỘT trục duy nhất: tới bao nhiêu phụ huynh.
    ══════════════════════════════════════════════════════════════════ */
 const PUBLISH={
- truong:['Toàn trường — nhân sự và phụ huynh','r'],
- dt    :['Điểm trường — nhân sự và phụ huynh của điểm trường','w'],
- ns    :['Chỉ nhân sự — không gửi phụ huynh','o'],
+ truong:['Toàn trường — mọi phụ huynh của trường','r'],
+ dt    :['Điểm trường — chỉ phụ huynh có con học điểm đó','w'],
+ ns    :['Chỉ nhân sự — không tới phụ huynh nào','o'],
  nhap  :['Chưa công bố','n']
 };
 const denPH=p=>p==='truong'||p==='dt';
+
+/* ══════════════════════════════════════════════════════════════════
+   ★★ NHÓM NHẬN THÔNG BÁO — trục THỨ HAI, không phải trục phạm vi hiển thị
+   Ràng buộc 20f: hộp Gửi thông báo CHỈ CHÀO nhóm PHỤ HUYNH nằm trong
+   phạm vi hiển thị của sự kiện. Ràng buộc 20e: nhóm NHÂN SỰ luôn chào đủ,
+   chỉ giới hạn bởi PHẠM VI VAI của người gửi — phạm vi hiển thị của sự
+   kiện không cắt gì cho nhân sự.
+   ★ Khối giao với điểm trường (không phải hợp): sự kiện hiển thị ở
+     Điểm trường A thì «khối 9» nghĩa là khối 9 CỦA ĐIỂM A.
+   ══════════════════════════════════════════════════════════════════ */
+const KHOI=[6,7,8,9];
+const PH_SO={A:{6:68,7:70,8:66,9:62}, B:{6:46,7:44,8:45,9:44}, C:{6:27,7:26,8:25,9:26}};
+const NS_SO={A:38,B:24,C:13};
+const phDT=d=>KHOI.reduce((a,k)=>a+PH_SO[d][k],0);
+/* điểm trường nào có phụ huynh thấy được sự kiện này */
+const dtThayDuoc=e=>e.pub==='truong'?Object.keys(DT):e.pub==='dt'?[e.dt]:[];
+
+function nhomNhan(e){
+ const pdt=dtThayDuoc(e), g=[];
+ if(pdt.length){
+  g.push({id:'ph:all',loai:'ph',so:pdt.reduce((a,d)=>a+phDT(d),0),
+   ten:pdt.length>1?'Toàn bộ phụ huynh của trường':'Toàn bộ phụ huynh '+DT[pdt[0]]});
+  if(pdt.length>1) pdt.forEach(d=>g.push({id:'ph:dt:'+d,loai:'ph',so:phDT(d),ten:'Phụ huynh '+DT[d]}));
+  KHOI.forEach(k=>g.push({id:'ph:k:'+k,loai:'ph',so:pdt.reduce((a,d)=>a+PH_SO[d][k],0),
+   ten:'Phụ huynh khối '+k+(pdt.length>1?' — toàn trường':' — '+DT[pdt[0]])}));
+ }
+ const ndt=R().sc==='Branch'?[R().dt]:Object.keys(DT);
+ g.push({id:'ns:all',loai:'ns',so:ndt.reduce((a,d)=>a+NS_SO[d],0),
+  ten:ndt.length>1?'Toàn bộ nhân sự':'Nhân sự '+DT[ndt[0]]});
+ if(ndt.length>1) ndt.forEach(d=>g.push({id:'ns:dt:'+d,loai:'ns',so:NS_SO[d],ten:'Nhân sự '+DT[d]}));
+ return g;
+}
+/* tổng người nhận — nhóm lồng nhau thì lấy nhóm rộng nhất, không cộng trùng */
+function soNhan(e,ids){
+ const g=nhomNhan(e), by=Object.fromEntries(g.map(x=>[x.id,x]));
+ const co=i=>ids.includes(i);
+ let ph=0;
+ if(co('ph:all')) ph=(by['ph:all']||{so:0}).so;
+ else{
+  const dts=Object.keys(DT).filter(d=>co('ph:dt:'+d));
+  const ks=KHOI.filter(k=>co('ph:k:'+k));
+  const pdt=dtThayDuoc(e);
+  pdt.forEach(d=>{KHOI.forEach(k=>{
+   if(dts.includes(d)||ks.includes(k)) ph+=PH_SO[d][k]})});
+ }
+ let ns=0;
+ if(co('ns:all')) ns=(by['ns:all']||{so:0}).so;
+ else Object.keys(DT).forEach(d=>{if(co('ns:dt:'+d)) ns+=NS_SO[d]});
+ return ph+ns;
+}
+/* mã bản ghi thật ở M8.1 — mỗi lần gửi là MỘT Thông báo đầy đủ, không phải cờ */
+let MTB=44;
+const maTB=()=>'TB-2026-'+p2(++MTB);
+function ghiTB(e,o){
+ const t={ma:maTB(),ngay:HOMNAY,boi:toiLa(),...o};
+ e.tb.push(t); return t;
+}
 
 /* ══════════════════════════════════════════════════════════════════
    SỰ KIỆN
    ══════════════════════════════════════════════════════════════════ */
 let MSK=0;
 const SUKIEN=[];
-function themSK(o){SUKIEN.push({id:'SK-'+p2(++MSK),ls:[],anh:[],...o})}
+function themSK(o){SUKIEN.push({id:'SK-'+p2(++MSK),ls:[],anh:[],tb:[],...o})}
 (function seed(){
  const d=[
   /* tên, loại, dt, từ, đến, địa điểm, thành phần, publish, chi, số ảnh, người tạo, mô tả */
@@ -537,6 +612,9 @@ function themSK(o){SUKIEN.push({id:'SK-'+p2(++MSK),ls:[],anh:[],...o})}
   ['Hội nghị cán bộ, viên chức năm học 2026-2027','chuyenmon','ALL','2026-10-08','2026-10-08','Hội trường Điểm trường A',
    'Toàn thể cán bộ, giáo viên, nhân viên','ns',4800000,5,'lien',
    'Thông qua quy chế chi tiêu nội bộ, ký giao ước thi đua.'],
+  ['Khám sức khỏe định kỳ đầu cấp','hoctap','ALL','2026-10-15','2026-10-16','Phòng y tế và các phòng học',
+   'Học sinh khối 6 toàn trường, nhân viên y tế học đường','truong',5200000,4,'huong',
+   'Khám thể lực, thị lực, răng hàm mặt cho học sinh đầu cấp theo Thông tư liên tịch 13/2016.'],
   ['Ngày hội đọc sách','thidua','A','2026-10-24','2026-10-24','Thư viện và sảnh Điểm trường A',
    'Học sinh Điểm trường A','dt',3600000,9,'huong',
    'Giới thiệu sách theo chủ đề, thi kể chuyện theo sách.'],
@@ -560,6 +638,12 @@ function themSK(o){SUKIEN.push({id:'SK-'+p2(++MSK),ls:[],anh:[],...o})}
   ['Hội chợ Xuân — Tết Đinh Mùi','le','ALL','2027-01-23','2027-01-24','Sân trường hai điểm trường',
    'Học sinh toàn trường, phụ huynh, giáo viên','truong',0,0,'tuan',
    'Gian hàng theo lớp, gói bánh chưng, viết thư pháp.'],
+  /* ★★ CA MẪU CỦA §2.5.1 — hiện trên feed TOÀN TRƯỜNG, nhưng chỉ gửi
+     thông báo cho KHỐI 9. Đúng cái bất đối xứng đã chốt 7/9/2026:
+     khối là mức độ LIÊN QUAN, không phải ranh giới THÀNH VIÊN. */
+  ['Tư vấn hướng nghiệp và phân luồng sau THCS','hoctap','ALL','2027-01-10','2027-01-10','Hội trường Điểm trường A',
+   'Học sinh khối 9 và cha mẹ học sinh khối 9','truong',0,0,'son',
+   'Giới thiệu các luồng sau THCS, giải đáp hồ sơ dự tuyển vào lớp 10 và trường nghề.'],
   ['Họp phụ huynh cuối học kỳ 1','ph','ALL','2027-01-17','2027-01-18','Các phòng học',
    'Giáo viên chủ nhiệm và phụ huynh toàn trường','nhap',0,0,'son',
    'Thông báo kết quả học kỳ 1 và kế hoạch học kỳ 2.'],
@@ -574,8 +658,9 @@ function themSK(o){SUKIEN.push({id:'SK-'+p2(++MSK),ls:[],anh:[],...o})}
   const o={ten,loai,dt,tu,den,noi,tp,pub,chi,boi,mota,hoanTat:hoanTat||null,
    ngayTao:tu.slice(0,8)+'01',huy:null,
    anh:Array.from({length:soAnh},(_,i)=>({id:i+1,boi,ngay:den}))};
+  o.tb=[]; o.daTK=(pub!=='nhap');
   o.ls=[[o.ngayTao,'Tạo sự kiện',boi]];
-  if(pub!=='nhap') o.ls.push([o.ngayTao,'Công bố — '+PUBLISH[pub][0],boi]);
+  if(pub!=='nhap') o.ls.push([o.ngayTao,'🚀 Triển khai — '+PUBLISH[pub][0],boi]);
   if(soAnh) o.ls.push([den,'Tải lên '+soAnh+' ảnh',boi]);
   if(chi) o.ls.push([den,'Ghi tổng chi '+vnd(chi),boi]);
   if(hoanTat) o.ls.push([hoanTat.ngay,'Đánh dấu hoàn tất hồ sơ — '+hoanTat.ly,hoanTat.boi]);
@@ -587,10 +672,81 @@ function themSK(o){SUKIEN.push({id:'SK-'+p2(++MSK),ls:[],anh:[],...o})}
   tp:'Học sinh khối 7 Điểm trường A và giáo viên chủ nhiệm',pub:'dt',chi:0,boi:'huong',
   mota:'Tham quan ngoại khóa theo chương trình Lịch sử — Địa lý.',
   ngayTao:'2026-11-20',anh:[],
-  huy:{ngay:'2026-12-10',boi:'huong',ly:'Dự báo mưa lớn và rét đậm; đã thông báo lại cho 132 phụ huynh đã nhận thông báo trước đó'},
-  ls:[['2026-11-20','Tạo sự kiện','huong'],['2026-11-20','Công bố — Điểm trường','huong'],
-      ['2026-12-10','HỦY sự kiện','huong']]});
+  huy:{ngay:'2026-12-10',boi:'huong',ly:'Dự báo mưa lớn và rét đậm, không bảo đảm an toàn cho học sinh khi di chuyển. Nhà trường sẽ thông báo lịch mới sau.'},
+  daTK:true,
+  tb:[{ma:'TB-2026-31',ngay:'2026-11-21',boi:'huong',loai:'thuong',
+       tieuDe:'Tham quan Bảo tàng Dân tộc học — khối 7',
+       noiDung:'Kính mời quý phụ huynh khối 7 cho con mang theo nước uống và mũ; xe xuất phát 7h00 tại cổng trường.',
+       nhom:[{id:'ph:k:7',ten:'Phụ huynh khối 7 — Điểm trường A',so:70}],so:70},
+      {ma:'TB-2026-38',ngay:'2026-12-10',boi:'huong',loai:'huy',
+       tieuDe:'HỦY — Tham quan Bảo tàng Dân tộc học khối 7',
+       noiDung:'Dự báo mưa lớn và rét đậm, không bảo đảm an toàn cho học sinh khi di chuyển. Nhà trường sẽ thông báo lịch mới sau.',
+       nhom:[{id:'ph:k:7',ten:'Phụ huynh khối 7 — Điểm trường A',so:70}],so:70}],
+  ls:[['2026-11-20','Tạo sự kiện','huong'],['2026-11-20','🚀 Triển khai — Điểm trường','huong'],
+      ['2026-11-21','📣 Gửi thông báo TB-2026-31 — 70 người nhận','huong'],
+      ['2026-12-10','HỦY sự kiện','huong'],
+      ['2026-12-10','📣 Gửi thông báo hủy TB-2026-38 — 70 người nhận','huong']]});
+
+ /* ── Thông báo đã gửi của vài sự kiện — để khối 📬 có thật, và để
+      kịch bản 23 (hủy sự kiện ĐÃ gửi thông báo) chạy được ── */
+ const g=(ten,o)=>{const e=SUKIEN.find(x=>x.ten===ten); if(!e) return;
+  const t={ma:o.ma,ngay:o.ngay,boi:o.boi,loai:o.loai||'thuong',tieuDe:o.tieuDe,
+   noiDung:o.noiDung,nhom:o.nhom,so:o.nhom.reduce((a,x)=>a+x.so,0)};
+  e.tb.push(t);
+  e.ls.push([o.ngay,'📣 Gửi thông báo '+t.ma+' — '+t.so+' người nhận',o.boi]);
+  e.ls.sort((x,y)=>x[0].localeCompare(y[0]));};
+
+ g('Lễ khai giảng năm học 2026-2027',{ma:'TB-2026-12',ngay:'2026-08-30',boi:'huy',
+  tieuDe:'Lễ khai giảng năm học 2026-2027 — 7h00 ngày 05/9',
+  noiDung:'Kính mời quý phụ huynh đưa con có mặt lúc 6h45 để ổn định chỗ ngồi. Học sinh mặc đồng phục, đeo khăn quàng.',
+  nhom:[{id:'ph:all',ten:'Toàn bộ phụ huynh của trường',so:549},
+        {id:'ns:all',ten:'Toàn bộ nhân sự',so:75}]});
+
+ g('Hội thi văn nghệ chào mừng 20/11',{ma:'TB-2026-24',ngay:'2026-11-02',boi:'tuan',
+  tieuDe:'Hội thi văn nghệ chào mừng 20/11 — mời phụ huynh dự khán',
+  noiDung:'Hội thi diễn ra hai buổi 15 và 16/11 tại Hội trường Điểm trường A. Phụ huynh quan tâm mời tới dự.',
+  nhom:[{id:'ph:all',ten:'Toàn bộ phụ huynh của trường',so:549}]});
+ g('Hội thi văn nghệ chào mừng 20/11',{ma:'TB-2026-29',ngay:'2026-11-14',boi:'tuan',
+  tieuDe:'Nhắc lịch — Hội thi văn nghệ khai mạc 14h00 ngày mai',
+  noiDung:'Khai mạc 14h00 ngày 15/11. Các lớp tập trung trước 13h30.',
+  nhom:[{id:'ph:all',ten:'Toàn bộ phụ huynh của trường',so:549},
+        {id:'ns:all',ten:'Toàn bộ nhân sự',so:75}]});
+
+ /* ★★ CA MẪU §2.5.1 — hiển thị TOÀN TRƯỜNG, thông báo CHỈ KHỐI 9 (132 người).
+      Đây cũng là sự kiện của kịch bản 23: sắp diễn ra, đã gửi thông báo. */
+ g('Tư vấn hướng nghiệp và phân luồng sau THCS',{ma:'TB-2026-41',ngay:'2026-12-22',boi:'son',
+  tieuDe:'Tư vấn hướng nghiệp và phân luồng sau THCS — khối 9',
+  noiDung:'Kính mời cha mẹ học sinh khối 9 có mặt 8h00 ngày 10/01/2027 tại Hội trường Điểm trường A. Buổi tư vấn có đại diện các trường THPT và trung tâm GDNN-GDTX trên địa bàn.',
+  nhom:[{id:'ph:k:9',ten:'Phụ huynh khối 9 — toàn trường',so:132}]});
+ /* v2.7 — lễ khai giảng đã có bài web nháp ở M8.5 (khớp dữ liệu mẫu demo M8.5: WEB-0147 nguồn SK-01) */
+ SUKIEN.find(x=>x.ten==='Lễ khai giảng năm học 2026-2027').web={ma:'WEB-0147',tt:'Nháp',ngay:'2026-09-06'};
 })();
+/* ══════════════════════════════════════════════════════════════════
+   ★★ KHỐI LIÊN QUAN — điểm cần xác nhận I, chốt 7/9/2026
+   ⛔ ĐÂY KHÔNG PHẢI QUYỀN XEM. Ai thấy sự kiện vẫn hoàn toàn do
+      `pub` (phạm vi hiển thị) quyết định — ràng buộc 20d giữ nguyên:
+      phạm vi hiển thị KHÔNG có mức khối.
+   Trường này chỉ làm ba việc, không việc nào đụng tới quyền xem:
+     ① hộp 📣 Gửi thông báo TÍCH SẴN đúng khối (bỏ tích được);
+     ② thẻ sự kiện đeo chip «Khối 9» để người khối khác không đọc
+        nhầm là việc của mình — GIẢM ỒN bằng NHÃN, không bằng TƯỜNG;
+     ③ tab Báo cáo gom được theo khối.
+   Trước đó khối nằm trong `Thành phần` dạng chữ tự do — người đọc
+   hiểu, máy không.  Để trống = sự kiện chung, không gắn khối nào.
+   ══════════════════════════════════════════════════════════════════ */
+(function ganKhoi(){
+ const m={
+  'Tập huấn phòng cháy chữa cháy':[9],
+  'Tư vấn hướng nghiệp và phân luồng sau THCS':[9],
+  'Khám sức khỏe định kỳ đầu cấp':[6],
+  'Tham quan Bảo tàng Dân tộc học khối 7':[7]
+ };
+ SUKIEN.forEach(e=>{e.khoi=m[e.ten]||[]});
+})();
+const chipKhoi=e=>(e.khoi&&e.khoi.length)
+ ? e.khoi.map(k=>'<span class="tg b">Khối '+k+'</span>').join(' ') : '';
+const tenKhoi=e=>(e.khoi&&e.khoi.length)?'khối '+e.khoi.join(' · '):'không gắn khối nào';
+
 const skById=id=>SUKIEN.find(x=>x.id===id);
 
 
@@ -645,7 +801,6 @@ function skTrongPhamVi(){
 }
 /* ★ Sửa được không: chỉ người tạo hoặc Hiệu trưởng — chốt của tài liệu nguồn */
 const suaDuoc=e=>can('sua')&&!e.huy&&(e.boi===toiLa()||role==='HT'||role==='FULL');
-const xoaDuoc=e=>can('xoa')&&!e.huy;
 
 /* ══════════════════════════════════════════════════════════════════
    ★★ ẢNH SỰ KIỆN — MÁY KHÔNG KIỂM ĐƯỢC, NÊN NÓ PHẢI NÓI RA
@@ -686,6 +841,29 @@ function trungNgay(tu,den,dt,boQua){
 
 /* ── ghi vết ── */
 function ghiLS(e,viec,boi){(e.ls=e.ls||[]).push([HOMNAY,viec,boi||toiLa()])}
+
+/* ══════════════════════════════════════════════════════════════════
+   ★ F — XÓA HẲN, chỉ với sự kiện CHƯA TỪNG triển khai (chốt 7/9/2026)
+   ⚠ Điều kiện KHÔNG phải «đang là Nháp». Một sự kiện đã triển khai rồi
+     `🔇 Thu hồi` cũng quay về Nháp — nhưng nó ĐÃ lên lịch, có thể ĐÃ
+     gửi thông báo, và người ngoài đã nhìn thấy nó. Xóa nó là xóa vết.
+     Nên mốc là cờ `daTK` (đã TỪNG triển khai), không phải `pub` hiện tại.
+   ══════════════════════════════════════════════════════════════════ */
+const xoaDuoc=e=>!e.daTK&&!e.huy&&can('xoa');
+
+/* ══════════════════════════════════════════════════════════════════
+   ★★ B — TỔNG CHI ĐẨY SANG M7.5 (chốt 7/9/2026 — ĐẢO chốt cũ)
+   Bản trước: KHÔNG đẩy, hai con số độc lập, đối chiếu bằng mã sự kiện.
+   Nay: CÓ đẩy.
+   ⚠ Đang chạy theo phương án «đẩy thành ĐỀ NGHỊ GHI CHI, Kế toán xác
+     nhận mới thành dòng chi chính thức» — xem điểm cần xác nhận B.
+     Lý do chọn mặc định này: giữ được D1 (M7.5 vẫn là menu chủ của sổ
+     chi, M6.8 không tự ghi thẳng vào sổ người khác), mà vẫn đẩy tự động
+     đúng như đã chốt. Nếu trường muốn đẩy THẲNG thành dòng chi chính
+     thức thì đổi một chỗ này.
+   ══════════════════════════════════════════════════════════════════ */
+let MPC=0;
+
 const tenLS=m=>m==='_may'?'Hệ thống':tenNS(m);
 
 
@@ -699,9 +877,9 @@ function rolebar(){
  +'<button class="ntg" id="btnNote">💡 Ghi chú thiết kế: TẮT</button>';
 }
 const NAV=[['🏫 Vận hành &amp; Dịch vụ',[['M6.1','Bán trú',0],['M6.2','Học ngoại khóa',0],
-  ['M6.3','Hoạt động Đoàn — Đội',0],['M6.4','Danh mục &amp; Kiểm kê CSVC',0],['M6.5','Yêu cầu CSVC',0],
+  ['M6.3','Hồ sơ HS thành viên',0],['M6.4','Danh mục &amp; Kiểm kê',0],['M6.5','Mượn phòng &amp; thiết bị',0],
   ['M6.6','Y tế học đường',0],['M6.7','Camera an ninh',0],['M6.8','Sự kiện trường học',1],
-  ['M6.9','Văn thư — Công văn',0]]],
+  ['M6.9','Công văn',0]]],
  ['📣 Kết nối',[['M8.1','Thông báo chủ động',0],['M8.2','Nhắn tin',0]]],
  ['💰 Tài chính',[['M7.5','Thống kê thu chi',0]]]];
 function sidebar(){
@@ -727,7 +905,7 @@ function header(){
 }
 function tabsOK(){
  const out=[['sk','1 · Sự kiện',chuaXong().length||null],['lich','2 · Lịch sự kiện',null]];
- if(can('xemAll')) out.push(['bc','3 · Báo cáo',null]);
+ if(can('xemAll')||can('xuat')) out.push(['bc','3 · Báo cáo',null]);  /* ★ G 7/9/2026: vai chỉ có quyền XUẤT cũng phải thấy tab — xuất một báo cáo không xem được là vô nghĩa */
  if(can('cauhinh')) out.push(['cfg','4 · ⚙ Cấu hình',null]);
  return out;
 }
@@ -766,7 +944,8 @@ function veDanhSach(){
  if(ST.chip==='thieu') ds=ds0.filter(e=>thieuHoSo(e).length);
  else if(ST.chip&&ST.chip!=='all') ds=ds0.filter(e=>giaiDoan(e)===ST.chip);
  const q=kd(ST.tim||'');
- if(q) ds=ds.filter(e=>kd(e.ten).includes(q)||kd(e.noi).includes(q)||kd(LOAI_SK[e.loai].ten).includes(q));
+ if(q) ds=ds.filter(e=>kd(e.ten).includes(q)||kd(e.noi).includes(q)||kd(LOAI_SK[e.loai].ten).includes(q)
+   ||(e.khoi||[]).some(k=>kd('khoi '+k).includes(q)||String(k)===q));
  ds=ds.slice().sort((a,b)=>b.tu.localeCompare(a.tu));
 
  const thieu=chuaXong(), sapToi=ds0.filter(e=>giaiDoan(e)==='sap').sort((a,b)=>a.tu.localeCompare(b.tu));
@@ -778,9 +957,18 @@ function veDanhSach(){
   +'<br>Đây là <b>số dẫn xuất</b>: sự kiện đã qua ngày mà <b>chưa có ảnh</b> hoặc <b>chưa ghi tổng chi</b>. '
   +'Không ai phải đánh dấu «đã kết thúc» — ngày trôi qua là nó qua.</div>';
 
+ /* ★ Bỏ nhắc tự động (H, 7/9/2026) thì phải có chỗ khác giúp người tổ chức
+      NHỚ. Dải này là chỗ đó: nó nói thêm ĐÃ BÁO CHƯA, vì «còn 3 ngày» mà
+      chưa ai được báo là thứ đáng thấy trước khi quá muộn. */
  if(sapToi.length) h+='<div class="info"><b>📅 Sắp diễn ra:</b> '
-  +sapToi.slice(0,3).map(e=>'<b>'+esc(e.ten)+'</b> — '+k2s(e.tu)
-    +' <span class="pill">còn '+soNgayToi(e)+' ngày</span>').join(' · ')+'</div>';
+  +sapToi.slice(0,3).map(e=>{const n=e.tb.filter(t=>t.loai!=='huy').length;
+    return '<b>'+esc(e.ten)+'</b> — '+k2s(e.tu)
+     +' <span class="pill">còn '+soNgayToi(e)+' ngày</span> '
+     +(n?'<span class="tg g">đã báo '+n+' lần · '+vn(nguoiDaNhan(e).so)+' người</span>'
+        :'<span class="tg r">chưa báo ai</span>')}).join(' · ')
+  +'<br><span class="xs">Hệ thống <b>không tự gửi nhắc</b> <i>(bỏ 7/9/2026)</i> — '
+  +'nhắc là một lần <b>📣 Gửi thông báo</b> do người tổ chức bấm, để nội dung là <b>chữ của người</b> '
+  +'và để mọi lần gửi đều nằm trong <b>cùng một cuốn sổ</b> ở khối 📬.</span></div>';
 
  h+='<div class="bar"><input class="inp" id="tim" value="'+esc(ST.tim||'')
   +'" placeholder="Tìm tên sự kiện, địa điểm, loại…"><span class="sp"></span>'
@@ -793,22 +981,40 @@ function veDanhSach(){
  h+='<div class="stage'+(ST.cur?' open':'')+'"><div class="listw">';
  h+='<div class="tbw"><div class="ch">Sự kiện — năm học '+NAMHOC+' <span class="tg b">'+ds.length+'</span>'
   +'<span class="sp"></span><span class="xs">đơn vị dòng: <b>một sự kiện</b></span></div><div class="tbx"><table>'
-  +'<tr><th>Mã</th><th>Sự kiện</th><th>Loại</th><th>Thời gian</th><th>Phạm vi</th>'
-  +'<th>Công bố</th><th class="num">Ảnh</th><th class="num">Tổng chi</th><th>Trạng thái</th></tr>'
+  +'<tr><th>Mã</th><th>Sự kiện</th><th>Loại</th><th>Thời gian</th><th>Điểm trường</th>'
+  +'<th>Hiển thị</th><th class="num">📬</th><th class="num">Ảnh</th><th class="num">Tổng chi</th>'
+  +'<th>Trạng thái</th></tr>'
   +(ds.length?ds.map(e=>{const g=giaiDoan(e), [gn,gc]=GIAIDOAN[g], th=thieuHoSo(e);
     return '<tr class="rw'+(ST.cur===e.id?' on':'')+(e.huy?' rorow':th.length?' warnrow':g==='dang'?' okrow':'')
      +'" data-sk="'+e.id+'"><td><b>'+e.id+'</b></td>'
-     +'<td><b>'+esc(e.ten)+'</b><br><span class="xs">'+esc(e.noi)+'</span></td>'
+     +'<td><b>'+esc(e.ten)+'</b> '+chipKhoi(e)
+      +'<br><span class="xs">'+esc(e.noi)+'</span></td>'
      +'<td><span class="tg '+LOAI_SK[e.loai].c+'">'+LOAI_SK[e.loai].ten.split(' · ')[0]+'</span></td>'
      +'<td>'+k2s(e.tu)+(e.den!==e.tu?'<br>→ '+k2s(e.den):'')+'</td>'
      +'<td>'+(e.dt==='ALL'?'<b>Toàn trường</b>':DT[e.dt])+'</td>'
      +'<td><span class="tg '+PUBLISH[e.pub][1]+'">'+PUBLISH[e.pub][0].split(' — ')[0]+'</span></td>'
+     +'<td class="num">'+(e.tb.length?'<b>'+e.tb.length+'</b><div class="xs">'+vn(nguoiDaNhan(e).so)+' người</div>':'—')+'</td>'
      +'<td class="num">'+(e.anh.length||'—')+'</td>'
      +'<td class="num">'+(e.chi?vnd(e.chi):'—')+'</td>'
      +'<td><span class="tg '+gc+'">'+gn+'</span>'
       +(th.length?'<div class="xs" style="color:var(--amber)">'+th.join(', ')+'</div>':'')+'</td></tr>'}).join('')
-   :'<tr><td colspan="9" class="empty">Không có sự kiện nào khớp bộ lọc.</td></tr>')
+   :'<tr><td colspan="10" class="empty">Không có sự kiện nào khớp bộ lọc.</td></tr>')
   +'</table></div></div>';
+ h+=dnote('<b>★★ HAI TRỤC, KHÔNG PHẢI MỘT — và chúng KHÔNG có cùng bộ mức</b> <i>(v2.0 · chốt 7/9/2026)</i><br>'
+  +'Cột <b>Hiển thị</b> là <b>phạm vi hiển thị</b>: ai <b>thấy</b> sự kiện trên lịch và trên feed App. '
+  +'Cột <b>📬</b> là <b>đối tượng nhận</b>: ai đã <b>nhận push</b>, mỗi lần gửi một bản ghi riêng ở <b>M8.1</b>. '
+  +'Một sự kiện có thể <b>nằm trên feed toàn trường mà chưa từng gửi thông báo nào</b> — xem '
+  +'<b>Lễ tổng kết</b>; và có thể <b>gửi nhiều lần</b> — xem <b>Hội thi văn nghệ</b> (2 lần).<br>'
+  +'<b>Phạm vi hiển thị KHÔNG có mức khối, và đó là chủ ý</b> <i>(ràng buộc 20d)</i>. '
+  +'<b>Điểm trường chia theo NƠI</b> — không gia đình nào đi qua cả hai. '
+  +'<b>Khối chia theo CHẶNG</b> — mọi gia đình rồi sẽ đi qua tất cả. Khối là <b>mức độ liên quan</b>, '
+  +'không phải <b>ranh giới thành viên</b>; mà kiểm soát truy cập phải biện minh bằng <b>hại</b>, '
+  +'không phải bằng <b>ồn</b>. Ca mẫu: <b>Tư vấn hướng nghiệp</b> — hiển thị <b>toàn trường</b> '
+  +'<i>(khối 6 xem được, ba năm nữa đến lượt con họ)</i> nhưng chỉ gửi thông báo cho <b>khối 9</b> '
+  +'<i>(132 người — chỉ họ phải làm gì đó)</i>.<br>'
+  +'<b>Phạm vi hiển thị chỉ điều khiển PHỤ HUYNH</b> <i>(ràng buộc 20e)</i>. Nhân sự nào thấy sự kiện nào '
+  +'là do <b>phạm vi vai</b> — vai <b>School</b> vẫn thấy sự kiện gắn một điểm trường. Ba mức là '
+  +'<b>ba nấc của một trục</b>: tới bao nhiêu phụ huynh.');
  h+=dnote('<b>Trạng thái sự kiện là số DẪN XUẤT từ ngày</b>, không phải nút ai bấm: sự kiện diễn ra 20/11 thì '
   +'ngày 21/11 nó <b>đã qua</b>, dù có ai vào đổi trạng thái hay không. Chỉ <b>nháp</b> và <b>đã hủy</b> là do người đặt.<br>'
   +'Thứ thật sự cần theo dõi không phải «đã kết thúc chưa» mà là <b>«hồ sơ xong chưa»</b> — '
@@ -840,6 +1046,8 @@ function panelSK(){
   +'<div style="min-width:130px"><span>Phạm vi</span><b>'+(e.dt==='ALL'?'Toàn trường':DT[e.dt])+'</b></div>'
   +'<div style="min-width:150px"><span>Người tạo</span><b>'+esc(tenNS(e.boi))+'</b></div>'
   +'<div style="flex:1 1 100%"><span>Địa điểm</span><b>'+esc(e.noi)+'</b></div>'
+  +'<div style="min-width:150px"><span>Khối liên quan</span><b>'
+  +(chipKhoi(e)||'<span class="xs">không gắn khối nào — sự kiện chung</span>')+'</b></div>'
   +'<div style="flex:1 1 100%"><span>Thành phần tham gia</span><b>'+esc(e.tp)+'</b></div>'
   +'<div style="flex:1 1 100%"><span>Nội dung</span><b style="font-weight:400">'+esc(e.mota)+'</b></div></div>';
 
@@ -847,12 +1055,39 @@ function panelSK(){
   +esc(e.huy.ly)+'<br><span class="xs">Bản ghi <b>vẫn còn</b> — sự kiện đã công bố rồi hủy là thứ cần '
   +'giải thích được về sau.</span></div>';
 
- /* công bố */
- h+='<div class="'+(denPH(e.pub)?'warn':'info')+'"><b>Công bố: '+PUBLISH[e.pub][0]+'</b>'
-  +(denPH(e.pub)?'<br>Sự kiện này <b>hiện trên App phụ huynh</b>. Thông báo đã gửi <b>không thu hồi được</b> — '
-    +'gỡ công bố chỉ làm sự kiện biến khỏi feed, không xóa được cái đã đến điện thoại người ta.'
-   :e.pub==='ns'?'<br>Chỉ nhân sự thấy — <b>không gửi phụ huynh</b>.'
-   :'<br>Chưa công bố cho ai. Tạo trước để giữ chỗ trên lịch là hợp lệ.')+'</div>';
+ /* ★★ PHẠM VI HIỂN THỊ — trục 1. Nó KHÔNG nói gì về việc đã gửi thông báo hay chưa. */
+ h+='<div class="'+(e.pub==='nhap'?'ro':denPH(e.pub)?'warn':'info')+'">'
+  +'<b>Phạm vi hiển thị: '+PUBLISH[e.pub][0]+'</b>'
+  +(denPH(e.pub)?'<br>Sự kiện <b>nằm trên lịch và trên feed App</b> của những phụ huynh này. '
+    +'Đây <b>chưa phải</b> việc đã gửi thông báo — xem khối <b>📬 Thông báo đã gửi</b> bên dưới. '
+    +'<b>Thông báo đã gửi không thu hồi được</b>: <b>🔇 Thu hồi</b> chỉ làm sự kiện biến khỏi lịch và feed, '
+    +'không xóa được cái đã đến điện thoại người ta.'
+   :e.pub==='ns'?'<br>Chỉ nhân sự thấy — <b>không tới phụ huynh nào</b>. Hộp gửi thông báo sẽ '
+    +'<b>không chào nhóm phụ huynh nào</b>.'
+   :'<br><b>Chưa triển khai.</b> Sự kiện chưa lên lịch, chưa lên feed. Tạo trước để giữ chỗ là hợp lệ.')+'</div>';
+
+ /* ★★ 📬 THÔNG BÁO ĐÃ GỬI — trục 2. Mỗi dòng là MỘT bản ghi thật ở M8.1. */
+ h+='<div class="tbw" style="margin-top:11px"><div class="ch">📬 Thông báo đã gửi '
+  +'<span class="tg '+(e.tb.length?'b':'n')+'">'+e.tb.length+'</span><span class="sp"></span>'
+  +(suaDuoc(e)&&e.pub!=='nhap'&&!e.huy?'<button class="btn xs p" data-guitb="'+e.id+'">📣 Gửi thông báo</button>':'')
+  +'</div>';
+ if(e.tb.length) h+='<div class="tbx"><table>'
+   +'<tr><th style="width:96px">Ngày</th><th style="width:132px">Người gửi</th><th>Đối tượng nhận</th>'
+   +'<th class="num" style="width:78px">Người nhận</th><th>Trích nội dung</th><th style="width:112px">M8.1</th></tr>'
+   +e.tb.slice().reverse().map(t=>'<tr'+(t.loai==='huy'?' class="warnrow"':'')+'>'
+     +'<td>'+k2s(t.ngay)+'</td><td>'+esc(tenNS(t.boi))+'</td>'
+     +'<td>'+t.nhom.map(n=>'<span class="pill">'+esc(n.ten)+' · '+vn(n.so)+'</span>').join(' ')
+      +(t.loai==='huy'?'<div class="xs" style="color:var(--amber)">thông báo <b>HỦY</b> — gửi cho đúng người đã nhận trước đó</div>':'')+'</td>'
+     +'<td class="num"><b>'+vn(t.so)+'</b></td>'
+     +'<td><b>'+esc(t.tieuDe)+'</b><div class="xs">'+esc(t.noiDung.slice(0,84))
+      +(t.noiDung.length>84?'…':'')+'</div></td>'
+     +'<td>'+rolnk('🔗 '+t.ma)+'</td></tr>').join('')
+   +'</table></div>';
+ else h+='<div class="empty">'+(e.pub==='nhap'
+   ?'Sự kiện <b>chưa triển khai</b> — chưa gửi được thông báo.'
+   :'<b>Chưa gửi thông báo nào.</b> Sự kiện vẫn nằm trên lịch và trên feed — '
+    +'<b>triển khai không đòi phải gửi thông báo</b>.')+'</div>';
+ h+='</div>';
 
  /* ảnh */
  h+='<div class="tbw" style="margin-top:11px"><div class="ch">Ảnh sự kiện '
@@ -877,11 +1112,13 @@ function panelSK(){
      +(suaDuoc(e)?'<br><button class="btn d" style="margin-top:7px" data-raanh="'+e.id+'">Rà ảnh và xác nhận</button>':''))
   +'</div>';
 
- /* tổng chi */
+ /* ★ tổng chi — v2.6: KHÔNG có đường đẩy sang M7.5 (điểm B, chốt cuối 7/9/2026) */
  h+='<div class="'+(e.chi?'okbox':'ro')+'" style="margin-top:9px">'
   +'<b>Tổng chi: '+(e.chi?vnd(e.chi):'chưa ghi')+'</b>'
-  +'<br><span class="xs">Đây là <b>con số để thống kê</b>, <b>không phải sổ chi</b>. '
-  +'Khoản chi thật nằm ở <b>M7.5</b> — một khoản chi chỉ có một sổ. '+rolnk('🔗 M7.5')+'</span></div>';
+  +'<br><span class="xs">Đây là <b>số của người tổ chức</b>, dùng cho tab Báo cáo. Hệ thống '
+   +'<b>KHÔNG tự đẩy</b> sang M7.5 — Kế toán nhập sổ chi riêng, đối chiếu bằng <b>mã sự kiện '
+   +e.id+'</b>. '+rolnk('🔗 M7.5')+'</span>'
+  +'</div>';
 
  if(th.length) h+='<div class="warn" style="margin-top:9px"><b>Hồ sơ chưa hoàn tất:</b> '
   +th.map(x=>'<b>'+x+'</b>').join(' · ')+'.<br><span class="xs">Nếu sự kiện này <b>đúng là không có ảnh</b> '
@@ -896,11 +1133,21 @@ function panelSK(){
   h+='<button class="btn" data-sua="'+e.id+'">✏️ Sửa</button>';
   if(!e.chi&&g==='qua') h+='<button class="btn p" data-chi="'+e.id+'">💰 Ghi tổng chi</button>';
   if(th.length) h+='<button class="btn" data-xong="'+e.id+'">✓ Không phát sinh — đánh dấu hoàn tất</button>';
-  if(e.pub==='nhap') h+='<button class="btn p" data-pub="'+e.id+'">📣 Công bố</button>';
-  else h+='<button class="btn" data-gopub="'+e.id+'">🔇 Gỡ công bố</button>';
+  if(e.pub==='nhap') h+='<button class="btn p" data-pub="'+e.id+'">🚀 Triển khai</button>';
+  else{
+   h+='<button class="btn p" data-guitb="'+e.id+'">📣 Gửi thông báo</button>';
+   h+='<button class="btn" data-gopub="'+e.id+'">🔇 Thu hồi</button>';
+  }
   if(g==='sap'||g==='dang') h+='<button class="btn d" data-huy="'+e.id+'">✕ Hủy sự kiện</button>';
+  if(xoaDuoc(e)) h+='<button class="btn d" data-xoa="'+e.id+'">🗑 Xóa hẳn</button>';
+  else if(e.daTK&&!e.huy) h+='<span class="xs">Sự kiện <b>đã từng triển khai</b> nên '
+   +'<b>không xóa hẳn được</b> — chỉ <b>✕ Hủy</b>, để lưu vết.</span>';
  }
- if(e.loai==='thidua'||e.loai==='le') h+='<button class="btn" data-m63="'+e.id+'">🔗 Liên kết phong trào M6.3</button>';
+ if(e.loai==='thidua'||e.loai==='le') h+='<button class="btn" data-m63="'+e.id+'">🔗 Liên kết phong trào M6.14</button>';
+ /* v2.7 (14/9/2026, DOT1-P12 — E3): lối sang M8.5 Trang web trường. Chỉ vai có quyền Tạo ở m8.5.bai_cua_toi.
+    Sự kiện đã có bài web thì nút đổi thành lối mở bài đó — không tạo bài thứ hai từ cùng một nút. */
+ if(!e.huy&&e.pub!=='nhap'&&WEB_T.includes(role))
+  h+='<button class="btn" data-web="'+e.id+'">'+(e.web?'🌐 Bài web '+e.web.ma+' · '+e.web.tt:'🌐 Đăng tin lên web')+'</button>';
  if(!suaDuoc(e)&&!e.huy) h+='<span class="xs">'+(can('sua')
    ?'Chỉ <b>người tạo</b> hoặc <b>Hiệu trưởng</b> được sửa sự kiện này.'
    :'Vai của bạn <b>chỉ xem</b>.')+'</span>';
@@ -1003,6 +1250,33 @@ function veBaoCao(){
        +Math.round(v.chi/mt*100)+'%"></div>':'')+'</td></tr>'}).join('')
   +'</table></div>';
 
+ /* ★ Theo KHỐI LIÊN QUAN — chỉ làm được vì khối nay là trường có cấu trúc.
+    Khi khối còn nằm trong `Thành phần` dạng chữ tự do thì bảng này không tồn tại. */
+ const coKhoi=ds.filter(e=>(e.khoi||[]).length);
+ h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">Theo khối liên quan '
+  +'<span class="tg a">mới</span><span class="sp"></span>'
+  +'<span class="xs">một sự kiện gắn nhiều khối thì đếm ở mọi khối đó</span></div><table>'
+  +'<tr><th>Khối</th><th class="num">Số sự kiện</th><th class="num">Tổng chi</th>'
+  +'<th class="num">Đã báo</th><th>Sự kiện</th></tr>'
+  +KHOI.map(k=>{const sk=ds.filter(e=>(e.khoi||[]).includes(k));
+    const tb=sk.reduce((a,e)=>a+e.tb.length,0);
+    return '<tr'+(sk.length?'':' class="rorow"')+'><td><b>Khối '+k+'</b> '
+     +'<span class="xs">'+vn(Object.keys(DT).reduce((a,d)=>a+PH_SO[d][k],0))+' phụ huynh</span></td>'
+     +'<td class="num">'+(sk.length||'—')+'</td>'
+     +'<td class="num">'+(sk.reduce((a,e)=>a+e.chi,0)?vnd(sk.reduce((a,e)=>a+e.chi,0)):'—')+'</td>'
+     +'<td class="num">'+(tb||'—')+'</td>'
+     +'<td class="xs">'+(sk.map(e=>esc(e.ten)).join(' · ')||'—')+'</td></tr>'}).join('')
+  +'<tr class="totrow"><td><b>Không gắn khối</b> <span class="xs">sự kiện chung</span></td>'
+  +'<td class="num"><b>'+(ds.length-coKhoi.length)+'</b></td>'
+  +'<td class="num"><b>'+vnd(ds.filter(e=>!(e.khoi||[]).length).reduce((a,e)=>a+e.chi,0))+'</b></td>'
+  +'<td class="num"><b>'+ds.filter(e=>!(e.khoi||[]).length).reduce((a,e)=>a+e.tb.length,0)+'</b></td>'
+  +'<td></td></tr>'
+  +'</table><div class="lgd">'
+  +'<span class="chip">⛔ Bảng này <b>không nói gì về quyền xem</b> — mọi sự kiện ở đây vẫn hiện cho '
+  +'<b>đúng phạm vi hiển thị</b> của nó. Xem <b>20d</b></span>'
+  +'<span class="chip">Cột <b>Đã báo</b> là số <b>lần gửi thông báo</b>, không phải số người nhận</span>'
+  +'</div></div>';
+
  h+='<div class="tbw"><div class="ch">Theo điểm trường</div><table>'
   +'<tr><th>Phạm vi</th><th class="num">Số sự kiện</th><th class="num">Tổng chi</th></tr>'
   +[['ALL','Toàn trường']].concat(Object.keys(DT).map(k=>[k,DT[k]])).map(([k,n])=>{
@@ -1011,12 +1285,16 @@ function veBaoCao(){
      +'<td class="num">'+(s.reduce((a,e)=>a+e.chi,0)?vnd(s.reduce((a,e)=>a+e.chi,0)):'—')+'</td></tr>'}).join('')
   +'</table></div>';
 
- h+=dnote('<b>★ Con số tổng chi ở đây KHÔNG tự đẩy sang M7.5.</b> Khung menu ban đầu ghi '
-  +'<i>«tổng chi đẩy sang M7.5 bằng trigger»</i> — nhưng để một menu vận hành tự ghi vào sổ chi thì '
-  +'<b>một cuốn sổ có hai người viết</b>, và khi hai con số lệch nhau thì không ai biết con số nào đúng.<br>'
-  +'Cách làm nhất quán với <b>M6.4</b> *(đã chốt 29/8/2026)*: menu vận hành giữ <b>con số để thống kê</b> và '
-  +'<b>xuất cho Kế toán kê khai</b>; <b>sổ chi thật nằm ở M7.5</b>, người dùng tự đối chiếu bằng mã sự kiện. '
-  +'Xem điểm cần xác nhận <b>B</b>.');
+ h+=dnote('<b>★★ CHỐT CUỐI — tổng chi KHÔNG đẩy sang M7.5</b> <i>(v2.6 · 7/9/2026)</i>.<br>'
+  +'Mục này đã đổi hướng <b>ba lần</b>: v1.0 <i>không đẩy</i> → v2.4 <i>có đẩy</i> → <b>v2.6 không đẩy</b>.<br>'
+  +'<b>Vì sao quay lại:</b> v2.4 đứng một mình thì hợp lý, nhưng để lại <b>hai mâu thuẫn nó không tự đóng được</b> — '
+  +'<b>M7.5 ràng buộc 5</b> cấm menu nhóm ② tự sinh giao dịch, và <b>M6.4</b> <i>(29/8 — nay phần sửa chữa ở M6.11)</i> chốt ngược. '
+  +'Giữ v2.4 thì phải sửa <b>M7.5 + M6.4 + dựng hàng đợi mới</b> — đổi mô hình sổ chi của <b>cả cụm 5 menu</b> '
+  +'vì một con số. Quay lại thì sửa <b>đúng một tệp</b>.<br>'
+  +'<b>Cơ chế đang chạy:</b> hai con số <b>độc lập</b>, đối chiếu qua <b>mã sự kiện</b> — đúng cái M6.11 <i>(sửa chữa CSVC — tách từ M6.4)</i> đang làm. '
+  +'M7.5 đã có sẵn ô <b>Mã nguồn để đối chiếu</b>.<br>'
+  +'⚠ <b>Cái giá:</b> vẫn nhập tay hai lần, hai con số vẫn có thể lệch. Nhà trường chấp nhận, để giữ '
+  +'<b>một menu chủ duy nhất cho sổ chi</b> <i>(D1)</i>. ✅ Điểm <b>B</b> đóng hẳn.');
  return h;
 }
 
@@ -1038,12 +1316,51 @@ function veCauHinh(){
   +'mà «ai được tạo <b>loại nào</b>»</span>'
   +'<span class="chip">Hộp thoại tạo <b>chỉ hiện loại vai đó tạo được</b></span></div></div>';
 
- h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">2 · Tham số</div><table>'
+ h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">2 · Hai trục phân phối '
+  +'<span class="tg a">v2.0</span><span class="sp"></span>'
+  +'<span class="xs">bộ mức KHÁC NHAU — có chủ ý</span></div><table>'
+  +'<tr><th style="width:34%">Trục</th><th>Các mức</th><th style="width:30%">Khai lúc nào</th></tr>'
+  +'<tr><td><b>Phạm vi hiển thị</b><div class="xs">ai <b>thấy</b> sự kiện</div></td>'
+  +'<td>'+Object.keys(PUBLISH).filter(k=>k!=='nhap').map(k=>'<span class="tg '+PUBLISH[k][1]+'">'
+    +PUBLISH[k][0].split(' — ')[0]+'</span>').join(' ')
+  +' <span class="xs">— <b>không có mức Khối</b></span></td>'
+  +'<td>một lần, khi <b>🚀 Triển khai</b></td></tr>'
+  +'<tr><td><b>Đối tượng nhận thông báo</b><div class="xs">ai <b>nhận push</b> lần này</div></td>'
+  +'<td><span class="tg n">Toàn trường</span> <span class="tg n">Điểm trường</span> '
+  +KHOI.map(k=>'<span class="tg b">Khối '+k+'</span>').join(' ')
+  +' <span class="tg n">Nhân sự</span> <span class="xs">— <b>CÓ mức Khối</b></span></td>'
+  +'<td><b>mỗi lần</b> bấm 📣 Gửi thông báo</td></tr>'
+  +'</table><div class="lgd">'
+  +'<span class="chip">Bất đối xứng là <b>chủ ý</b> — điểm trường chia theo <b>nơi</b>, '
+  +'khối chia theo <b>chặng</b> <i>(20d)</i></span>'
+  +'<span class="chip">Phạm vi hiển thị chỉ điều khiển <b>phụ huynh</b>; nhân sự đi theo '
+  +'<b>phạm vi vai</b> <i>(20e)</i></span>'
+  +'<span class="chip">Hộp gửi thông báo <b>chỉ chào nhóm phụ huynh trong phạm vi</b> <i>(20f)</i> — '
+  +'trừ <b>thông báo hủy</b>, được vượt phạm vi <i>(20g)</i></span></div></div>';
+
+ h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">3 · Quy mô phụ huynh và nhân sự '
+  +'<span class="xs">— cơ sở tính số người nhận</span></div><table>'
+  +'<tr><th>Điểm trường</th>'+KHOI.map(k=>'<th class="num">Khối '+k+'</th>').join('')
+  +'<th class="num">Phụ huynh</th><th class="num">Nhân sự</th></tr>'
+  +Object.keys(DT).map(d=>'<tr><td><b>'+DT[d]+'</b></td>'
+    +KHOI.map(k=>'<td class="num">'+vn(PH_SO[d][k])+'</td>').join('')
+    +'<td class="num"><b>'+vn(phDT(d))+'</b></td><td class="num">'+vn(NS_SO[d])+'</td></tr>').join('')
+  +'<tr class="totrow"><td><b>Toàn trường</b></td>'
+  +KHOI.map(k=>'<td class="num"><b>'+vn(Object.keys(DT).reduce((a,d)=>a+PH_SO[d][k],0))+'</b></td>').join('')
+  +'<td class="num"><b>'+vn(Object.keys(DT).reduce((a,d)=>a+phDT(d),0))+'</b></td>'
+  +'<td class="num"><b>'+vn(Object.keys(DT).reduce((a,d)=>a+NS_SO[d],0))+'</b></td></tr>'
+  +'</table><div class="lgd"><span class="chip">Khối <b>giao</b> với điểm trường, không phải hợp — '
+  +'sự kiện hiển thị ở <b>Điểm trường A</b> thì «khối 9» nghĩa là <b>khối 9 của điểm A</b> '
+  +'<i>('+vn(PH_SO['A'][9])+' người)</i>, không phải khối 9 toàn trường '
+  +'<i>('+vn(Object.keys(DT).reduce((a,d)=>a+PH_SO[d][9],0))+' người)</i></span></div></div>';
+
+ h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">4 · Tham số</div><table>'
   +'<tr><th style="width:250px">Tham số</th><th style="width:190px">Giá trị</th><th>Ảnh hưởng</th></tr>'
-  +'<tr><td>Nhắc trước sự kiện</td>'
-  +'<td><select class="fs" id="cfNhac">'+[1,2,3,7].map(v=>'<option value="'+v+'"'+(CFG.nhacTruoc===v?' selected':'')
-    +'>'+v+' ngày</option>').join('')+'</select></td>'
-  +'<td>Gửi nhắc cho đúng phạm vi đã công bố</td></tr>'
+  +'<tr class="rorow"><td><s>Nhắc trước sự kiện</s> <span class="tg r">đã bỏ</span></td>'
+  +'<td><span class="xs">không còn</span></td>'
+  +'<td><b>Bỏ hẳn 7/9/2026.</b> Hệ thống <b>không tự gửi nhắc</b>. '
+  +'Nhắc là một lần <b>📣 Gửi thông báo</b> như mọi lần khác — người tổ chức chọn đối tượng, '
+  +'tự soạn nội dung, và nó <b>hiện ở khối 📬</b> nên không báo trùng</td></tr>'
   +'<tr class="warnrow"><td><b>Bắt buộc xác nhận đã rà ảnh trước khi công bố</b></td>'
   +'<td><select class="fs" id="cfRa"><option value="1"'+(CFG.canRaAnh?' selected':'')+'>Bắt buộc</option>'
    +'<option value="0"'+(CFG.canRaAnh?'':' selected')+'>Không bắt buộc</option></select></td>'
@@ -1051,7 +1368,7 @@ function veCauHinh(){
   +'</table></div>';
 
  /* ★ danh sách không đồng ý đăng ảnh */
- h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">3 · Học sinh KHÔNG đồng ý đăng ảnh '
+ h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">5 · Học sinh KHÔNG đồng ý đăng ảnh '
   +'<span class="tg r">'+KHONG_DANG_ANH.length+' em</span><span class="tg c">chiếu từ M1.1</span></div><table>'
   +'<tr><th>Học sinh</th><th>Lớp</th><th>Điểm trường</th><th>Ghi nhận</th></tr>'
   +KHONG_DANG_ANH.map(x=>'<tr class="badrow"><td><b>'+esc(x.ten)+'</b></td><td>'+x.lop+'</td>'
@@ -1062,13 +1379,13 @@ function veCauHinh(){
   +'<span class="chip"><b>Luật Trẻ em 2016</b> — hình ảnh cá nhân là thông tin về đời sống riêng tư</span>'
   +'<span class="chip">Sửa danh sách này ở <b>M1.1</b> '+rolnk('🔗 M1.1')+'</span></div></div>';
 
- h+='<div class="tbw"><div class="ch">4 · Ranh giới với menu khác</div><table>'
+ h+='<div class="tbw"><div class="ch">6 · Ranh giới với menu khác</div><table>'
   +'<tr><th style="width:270px">Việc</th><th>Ở đâu</th></tr>'
   +'<tr class="warnrow"><td><b>Khoản chi thật của sự kiện</b></td>'
   +'<td><b>M7.5</b> — ở đây chỉ là <b>con số tổng để thống kê</b>, không phải sổ chi</td></tr>'
   +'<tr><td>Sự đồng ý đăng ảnh của học sinh</td><td><b>M1.1</b> — menu này <b>chỉ đọc</b></td></tr>'
   +'<tr><td>Thông báo chi tiết ngoài sự kiện</td><td><b>M8.1 Thông báo chủ động</b></td></tr>'
-  +'<tr><td>Phong trào Đội — Đoàn</td><td><b>M6.3</b> — sự kiện thi đua liên kết hai chiều</td></tr>'
+  +'<tr><td>Phong trào Đội — Đoàn</td><td><b>M6.14</b> — sự kiện thi đua liên kết hai chiều</td></tr>'
   +'<tr><td>Mượn hội trường, thiết bị cho sự kiện</td><td><b>M6.5 Yêu cầu CSVC</b></td></tr>'
   +'<tr><td>Học sinh tham gia sự kiện</td><td><b>Không lưu vào hồ sơ cá nhân</b> — chốt đơn giản hóa MVP</td></tr>'
   +'</table></div>';
@@ -1089,9 +1406,10 @@ function moTao(preId){
   modal('➕ Tạo sự kiện','<div class="warn"><b>Vai của bạn không tạo được loại sự kiện nào.</b></div>',
    '<button class="btn" data-mb="close">Đóng</button>'); return;
  }
- ST.f=e?{sua:e.id,ten:e.ten,loai:e.loai,dt:e.dt,tu:e.tu,den:e.den,noi:e.noi,tp:e.tp,mota:e.mota,pub:e.pub}
+ ST.f=e?{sua:e.id,ten:e.ten,loai:e.loai,dt:e.dt,tu:e.tu,den:e.den,noi:e.noi,tp:e.tp,mota:e.mota,pub:e.pub,
+    khoi:[...(e.khoi||[])],bao:false,baoAuto:false,baoNoi:''}
   :{sua:null,ten:'',loai:lt[0],dt:R().sc==='Branch'?R().dt:'ALL',tu:HOMNAY,den:HOMNAY,
-    noi:'',tp:'',mota:'',pub:'nhap'};
+    noi:'',tp:'',mota:'',pub:'nhap',khoi:[]};
  ve();
  function ve(){
   const f=ST.f;
@@ -1121,15 +1439,48 @@ function moTao(preId){
    +'<input class="fldi" id="fNoi" value="'+esc(f.noi)+'" placeholder="VD: Sân trường Điểm trường A">';
   b+='<label class="lbl">Thành phần tham gia</label>'
    +'<input class="fldi" id="fTp" value="'+esc(f.tp)+'" placeholder="VD: Toàn thể giáo viên, học sinh và phụ huynh">';
+  /* ★ Khối liên quan — NHÃN, không phải quyền xem (điểm I, chốt 7/9/2026) */
+  b+='<label class="lbl">Khối liên quan <span class="xs">— không bắt buộc</span></label>'
+   +'<div class="frow" style="gap:14px;padding:2px 0 4px">'
+   +KHOI.map(k=>'<label class="ck" style="padding:0"><input type="checkbox" data-fk="'+k+'"'
+     +((f.khoi||[]).includes(k)?' checked':'')+'> Khối '+k+'</label>').join('')+'</div>'
+   +'<div class="ro">⛔ <b>Trường này KHÔNG quyết định ai thấy sự kiện</b> — quyền xem vẫn hoàn toàn do '
+   +'<b>Phạm vi hiển thị</b> ở dưới. Gắn khối chỉ để: hộp <b>📣 Gửi thông báo</b> <b>tích sẵn đúng khối</b>, '
+   +'thẻ sự kiện đeo <b>chip khối</b> cho gia đình khối khác khỏi đọc nhầm là việc của mình, và '
+   +'<b>Báo cáo</b> gom được theo khối.<br>Để trống nếu sự kiện <b>chung cho cả trường</b>. '
+   +'Trước đây khối chỉ nằm trong ô <b>Thành phần</b> dạng chữ — người đọc hiểu, <b>máy thì không</b>.</div>';
   b+='<label class="lbl">Nội dung</label>'
    +'<textarea class="fldi" id="fMota" rows="2">'+esc(f.mota)+'</textarea>';
-  b+='<label class="lbl">Công bố cho ai</label><select class="fldi" id="fPub">'
+  b+='<label class="lbl">Phạm vi hiển thị — <b>bao nhiêu phụ huynh thấy sự kiện</b></label>'
+   +'<select class="fldi" id="fPub">'
    +Object.keys(PUBLISH).map(k=>'<option value="'+k+'"'+(f.pub===k?' selected':'')+'>'+PUBLISH[k][0]+'</option>').join('')
    +'</select>';
-  if(denPH(f.pub)) b+='<div class="warn">Công bố tới <b>phụ huynh</b> thì sự kiện hiện trên <b>App</b> và '
-   +'gửi thông báo. <b>Thông báo đã gửi không thu hồi được</b> — cân nhắc trước khi chọn.'
-   +(KHONG_DANG_ANH.length?'<br>Khi <b>tải ảnh lên</b>, hệ thống sẽ nhắc rà danh sách <b>'
-     +KHONG_DANG_ANH.length+' học sinh không đồng ý đăng ảnh</b>.':'')+'</div>';
+  b+='<div class="ro">Trường này <b>KHÔNG gửi thông báo</b>. Nó chỉ quyết định ai <b>thấy</b> sự kiện '
+   +'trên lịch và trên feed App. Gửi thông báo là <b>nút riêng</b> <i>(📣 Gửi thông báo)</i>, bấm được '
+   +'<b>nhiều lần</b>, mỗi lần chọn đối tượng nhận riêng và tự soạn nội dung.'
+   +(f.sua?'':'<br>Để <b>Chưa triển khai</b> nếu chỉ muốn giữ chỗ — triển khai sau bằng nút <b>🚀 Triển khai</b>.')+'</div>';
+  if(denPH(f.pub)&&KHONG_DANG_ANH.length) b+='<div class="warn">Sự kiện tới <b>phụ huynh</b> — khi '
+   +'<b>tải ảnh lên</b>, hệ thống sẽ nhắc rà danh sách <b>'+KHONG_DANG_ANH.length
+   +' học sinh không đồng ý đăng ảnh</b>.</div>';
+  /* ★ §2.6.1 — sửa sự kiện ĐÃ gửi thông báo thì hỏi có báo không.
+     Mặc định TẮT vì phần lớn lần sửa là sửa vặt; nhưng đổi NGÀY thì BẬT SẴN,
+     vì ngày là thứ người ta đã ghi vào lịch của mình. */
+  if(f.sua){
+   const eo=skById(f.sua), dn=nguoiDaNhan(eo), doiNgay=(f.tu!==eo.tu||f.den!==eo.den);
+   if(dn.so){
+    if(f.baoAuto!==doiNgay){f.baoAuto=doiNgay; f.bao=doiNgay}
+    b+='<label class="ck"><input type="checkbox" id="fBao"'+(f.bao?' checked':'')+'> '
+     +'<b>📣 Báo thay đổi này cho '+vn(dn.so)+' người đã nhận thông báo</b></label>'
+     +'<div class="'+(doiNgay?'warn':'ro')+'">'+(doiNgay
+       ?'<b>Bạn vừa đổi NGÀY</b> — ô trên <b>bật sẵn</b>. Ngày là thứ người ta đã ghi vào lịch riêng; '
+        +'đổi mà không báo thì họ đến nhầm hôm.'
+       :'Ô này <b>mặc định TẮT</b> — đổi phòng A1 sang A2 trong cùng dãy thì không đáng làm phiền. '
+        +'Đổi từ 7h sang 14h thì đáng, và bạn tự bật.')+'</div>'
+     +(f.bao?'<label class="lbl">Nội dung thông báo thay đổi</label>'
+       +'<textarea class="fldi" id="fBaoNoi" rows="3">'+esc(f.baoNoi||('Nhà trường thông báo thay đổi về sự kiện «'
+       +eo.ten+'». Thông tin mới: '+k2s(f.tu)+' tại '+f.noi+'. Kính mong quý phụ huynh lưu ý.'))+'</textarea>':'');
+   }
+  }
   const ok=f.ten.trim()&&f.noi.trim()&&f.den>=f.tu;
   modal(f.sua?'✏️ Sửa sự kiện — '+f.sua:'➕ Tạo sự kiện',b,
    '<button class="btn" data-mb="close">Hủy</button>'
@@ -1139,6 +1490,11 @@ function moTao(preId){
     if(bt){const o=ST.f.ten.trim()&&ST.f.noi.trim()&&ST.f.den>=ST.f.tu;
      bt.disabled=!o; bt.classList.toggle('off',!o)}}};
   g('#fTen','ten'); g('#fNoi','noi'); g('#fTp','tp'); g('#fMota','mota');
+  $$('[data-fk]').forEach(c=>c.onchange=()=>{const k=+c.dataset.fk;
+   ST.f.khoi=c.checked?[...ST.f.khoi,k].sort((x,y)=>x-y):ST.f.khoi.filter(x=>x!==k); ve()});
+  const cb=$('#fBao'); if(cb) cb.onchange=()=>{const n=$('#fBaoNoi'); if(n) ST.f.baoNoi=n.value;
+   ST.f.bao=cb.checked; ve()};
+  const bn=$('#fBaoNoi'); if(bn) bn.oninput=()=>{ST.f.baoNoi=bn.value};
   ['#fLoai|loai','#fDT|dt','#fPub|pub','#fTu|tu','#fDen|den'].forEach(s=>{
    const [id,k]=s.split('|'); const el=$(id); if(el) el.onchange=()=>{ST.f[k]=el.value; ve()}});
  }
@@ -1146,18 +1502,59 @@ function moTao(preId){
 mfns.bLuuSK=()=>{
  const f=ST.f;
  if(f.sua){const e=skById(f.sua);
+  const cuPub=e.pub, dn=nguoiDaNhan(e);
+  const cuKhoi=(e.khoi||[]).join(',');
   Object.assign(e,{ten:f.ten.trim(),loai:f.loai,dt:f.dt,tu:f.tu,den:f.den,
-   noi:f.noi.trim(),tp:f.tp.trim(),mota:f.mota.trim(),pub:f.pub});
-  ghiLS(e,'Sửa thông tin sự kiện'); closeM(); render(); toast('Đã lưu <b>'+e.id+'</b>.');
+   noi:f.noi.trim(),tp:f.tp.trim(),mota:f.mota.trim(),pub:f.pub,khoi:[...f.khoi]});
+  ghiLS(e,'Sửa thông tin sự kiện');
+  if(cuKhoi!==f.khoi.join(',')) ghiLS(e,'Đổi khối liên quan — '+tenKhoi(e));
+  if(cuPub!==f.pub) ghiLS(e,'Đổi phạm vi hiển thị — '+PUBLISH[f.pub][0]);
+  let g=null;
+  if(f.bao&&dn.so){
+   g=ghiTB(e,{loai:'thuong',tieuDe:'Thay đổi — '+e.ten,noiDung:(f.baoNoi||'').trim()
+     ||'Nhà trường thông báo thay đổi về sự kiện «'+e.ten+'».',nhom:dn.nhom,so:dn.so});
+   ghiLS(e,'📣 Gửi thông báo '+g.ma+' — '+g.so+' người nhận');
+  }
+  closeM(); render();
+  toast('Đã lưu <b>'+e.id+'</b>.'+(g?' Đã gửi thông báo thay đổi <b>'+g.ma+'</b> tới <b>'
+   +vn(g.so)+' người</b>.':' <b>Không gửi thông báo nào</b> — gửi là thao tác riêng.'));
  }else{
   themSK({ten:f.ten.trim(),loai:f.loai,dt:f.dt,tu:f.tu,den:f.den,noi:f.noi.trim(),
    tp:f.tp.trim(),mota:f.mota.trim(),pub:f.pub,chi:0,boi:toiLa(),ngayTao:HOMNAY,huy:null,anh:[],
-   ls:[[HOMNAY,'Tạo sự kiện',toiLa()]].concat(f.pub!=='nhap'?[[HOMNAY,'Công bố — '+PUBLISH[f.pub][0],toiLa()]]:[])});
+   tb:[],khoi:f.khoi||[],daTK:(f.pub!=='nhap'),
+   ls:[[HOMNAY,'Tạo sự kiện',toiLa()]].concat(f.pub!=='nhap'?[[HOMNAY,'🚀 Triển khai — '+PUBLISH[f.pub][0],toiLa()]]:[])});
   const e=SUKIEN[SUKIEN.length-1];
   closeM(); ST.tab='sk'; ST.cur=e.id; ST.chip='all'; render();
-  toast('➕ Đã tạo <b>'+e.id+'</b>.'+(denPH(f.pub)?' Đã gửi thông báo tới <b>phụ huynh</b>.':''));
+  toast('➕ Đã tạo <b>'+e.id+'</b>.'+(f.pub==='nhap'
+   ?' Đang là <b>Nháp</b> — chưa lên lịch. Bấm <b>🚀 Triển khai</b> khi sẵn sàng.'
+   :' Đã triển khai — sự kiện lên lịch và lên feed. <b>Chưa gửi thông báo nào.</b>'));
  }
 };
+/* ★ F — XÓA HẲN (chốt 7/9/2026). Chỉ sự kiện CHƯA TỪNG triển khai. */
+function moXoa(id){
+ const e=skById(id);
+ modal('🗑 Xóa hẳn sự kiện — '+e.id,
+  '<div class="danger"><b>Xóa hẳn là XÓA THẬT — bản ghi biến mất, không tra lại được.</b><br>'
+  +'Khác hẳn <b>✕ Hủy sự kiện</b>: hủy thì bản ghi <b>vẫn còn</b>, có chip riêng, giải thích được về sau.</div>'
+  +'<div class="okbox"><b>Vì sao sự kiện này xóa được:</b> nó <b>chưa từng triển khai</b> — '
+  +'chưa lên lịch, chưa lên feed, <b>chưa ai ngoài nhà trường nhìn thấy</b>, và <b>chưa gửi thông báo nào</b>. '
+  +'Không có vết nào để giữ.<br><span class="xs">Sự kiện đã triển khai — kể cả khi sau đó '
+  +'<b>🔇 Thu hồi</b> đưa nó về Nháp — thì <b>không xóa được nữa</b>, chỉ hủy.</span></div>'
+  +'<div class="evkv"><div style="flex:1 1 100%"><span>Sự kiện</span><b>'+esc(e.ten)+'</b></div>'
+  +'<div><span>Dự kiến</span><b>'+k2s(e.tu)+'</b></div>'
+  +'<div><span>Người tạo</span><b>'+esc(tenNS(e.boi))+'</b></div>'
+  +'<div><span>Đã gửi thông báo</span><b>'+e.tb.length+'</b></div></div>'
+  +'<div class="ro">Vết xóa <b>vẫn ghi vào nhật ký hệ thống</b> — ai xóa, lúc nào. '
+  +'Cái mất là <b>bản ghi sự kiện</b>, không phải dấu vết thao tác.</div>',
+  '<button class="btn" data-mb="close">Không xóa</button>'
+  +'<button class="btn d" data-mb="XoaOK">🗑 Xóa hẳn</button>');
+ mfns.bXoaOK=()=>{
+  const i=SUKIEN.findIndex(x=>x.id===e.id);
+  if(i>=0) SUKIEN.splice(i,1);
+  ST.cur=null; closeM(); render();
+  toast('🗑 Đã xóa hẳn <b>'+e.id+'</b> — <b>'+esc(e.ten)+'</b>. Bản ghi không tra lại được.');
+ };
+}
 function moChi(id){
  const e=skById(id);
  modal('💰 Ghi tổng chi — '+e.id,
@@ -1165,13 +1562,19 @@ function moChi(id){
   +'<div><span>Thời gian</span><b>'+k2s(e.tu)+'</b></div></div>'
   +'<label class="lbl">Tổng chi thực tế</label>'
   +'<input class="fldi" type="number" id="cChi" value="'+(e.chi||0)+'" step="100000" min="0">'
-  +'<div class="ro">Đây là <b>con số để thống kê</b> — nhà trường biết năm nay chi bao nhiêu cho sự kiện và '
-  +'chi vào loại nào. <b>Không phải sổ chi</b>: khoản chi thật với chứng từ nằm ở <b>M7.5</b>.<br>'
-  +'Hệ thống <b>không tự đẩy</b> con số này sang M7.5 — hai con số độc lập, đối chiếu bằng <b>mã sự kiện</b>.</div>',
+  +'<div class="warn"><b>★ Hệ thống KHÔNG tự đẩy con số này sang M7.5</b> <i>(chốt cuối 7/9/2026)</i>. '
+  +'Hai con số <b>độc lập</b>, đối chiếu bằng <b>mã sự kiện '+e.id+'</b>.<br>'
+  +'Sổ chi chính thức ở <b>M7.5</b> do <b>Kế toán</b> nhập, điền mã sự kiện vào ô '
+  +'<b>Mã nguồn để đối chiếu</b>. M7.5 là <b>menu chủ duy nhất</b> của sổ chi <i>(D1)</i>.</div>'
+  +'<div class="ro">Con số ở đây vẫn là <b>số để thống kê</b> của M6.8 — nhà trường biết năm nay chi bao '
+  +'nhiêu cho sự kiện, chi vào loại nào. <b>Chứng từ</b> thì thuộc <b>M7.5</b>.</div>',
   '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="ChiOK">Ghi nhận</button>');
  mfns.bChiOK=()=>{const v=+$('#cChi').value||0;
-  e.chi=v; ghiLS(e,'Ghi tổng chi '+vnd(v)); closeM(); render();
-  toast('💰 Đã ghi tổng chi <b>'+vnd(v)+'</b> cho '+e.id+'.')};
+  e.chi=v;
+  ghiLS(e,'Ghi tổng chi '+vnd(v));
+  closeM(); render();
+  toast('💰 Đã ghi tổng chi <b>'+vnd(v)+'</b>. Hệ thống <b>không đẩy</b> sang M7.5 — '
+   +'Kế toán nhập sổ chi riêng, đối chiếu bằng mã sự kiện <b>'+e.id+'</b>.')};
 }
 function moThemAnh(id){
  const e=skById(id);
@@ -1239,60 +1642,286 @@ function moXong(id){
   ghiLS(e,'Đánh dấu hoàn tất hồ sơ — '+el.value.trim()); closeM(); render();
   toast('✓ Đã đóng hồ sơ <b>'+e.id+'</b> kèm lý do.')};
 }
+/* ══════════════════════════════════════════════════════════════════
+   ✕ HỦY SỰ KIỆN — ô tích gửi thông báo hủy BẬT SẴN, bỏ tích được
+   nhưng phải CHỦ ĐỘNG bỏ, và khi bỏ thì hiện dòng đỏ nêu đích danh
+   số người sẽ không được báo (§2.6.1, ràng buộc 20c).
+   ★★ MIỄN TRỪ 20g: nhóm nhận ở đây là HỢP của (phạm vi hiển thị hiện
+      tại) và (mọi người ĐÃ TỪNG nhận thông báo) — kể cả khi phạm vi
+      đã bị thu hẹp sau đó. Ràng buộc 20f KHÔNG áp cho thông báo hủy:
+      người đã cầm tin trong tay mà không được báo hủy thì HỌ VẪN ĐẾN.
+   ══════════════════════════════════════════════════════════════════ */
 function moHuy(id){
  const e=skById(id);
- const gui=denPH(e.pub);
- modal('✕ Hủy sự kiện — '+e.id,
-  '<div class="warn"><b>Sự kiện không bị xóa.</b> Nó chuyển sang <b>Đã hủy</b> và vẫn tra được bằng chip '
-  +'<b>✕ Đã hủy</b> ở tab 1.'
-  +(gui?'<br><b>Sự kiện này đã công bố tới phụ huynh</b> — hệ thống sẽ gửi <b>thông báo hủy</b> tới đúng những '
-    +'người đã nhận thông báo trước đó. Đó là lý do lý do hủy <b>bắt buộc</b> và nên viết cho người ngoài đọc.':'')
-  +'</div>'
-  +'<div class="evkv"><div style="flex:1 1 100%"><span>Sự kiện</span><b>'+esc(e.ten)+'</b></div>'
-  +'<div><span>Dự kiến</span><b>'+k2s(e.tu)+'</b></div>'
-  +'<div><span>Đã công bố</span><b>'+PUBLISH[e.pub][0]+'</b></div></div>'
-  +'<label class="lbl">Lý do hủy <span style="color:var(--red)">*</span></label>'
-  +'<textarea class="fldi" id="hLy" rows="3" placeholder="VD: dự báo mưa lớn và rét đậm; sẽ thông báo lịch mới sau"></textarea>',
-  '<button class="btn" data-mb="close">Không hủy</button>'
-  +'<button class="btn d off" data-mb="HuyOK" disabled>Hủy sự kiện</button>');
- const el=$('#hLy'); el.oninput=()=>{const b=$('[data-mb="HuyOK"]');
-  b.disabled=!el.value.trim(); b.classList.toggle('off',!el.value.trim())};
- mfns.bHuyOK=()=>{
-  e.huy={ngay:HOMNAY,boi:toiLa(),ly:el.value.trim()};
-  ghiLS(e,'HỦY sự kiện'); closeM(); render();
-  toast('Đã hủy <b>'+e.id+'</b>.'+(gui?' Đã gửi <b>thông báo hủy</b> tới những người đã nhận thông báo trước đó.':'')
-   +' <b>Bản ghi vẫn còn.</b>');
- };
-}
-function moPub(id,go){
- const e=skById(id);
- if(go){
-  e.pub='nhap'; ghiLS(e,'Gỡ công bố'); render();
-  toast('🔇 Đã gỡ công bố <b>'+e.id+'</b>. <b>Thông báo đã gửi không thu hồi được</b> — '
-   +'gỡ chỉ làm sự kiện biến khỏi feed.'); return;
- }
- ST.f={pub:'truong'};
+ const daNhan=nguoiDaNhan(e), ngoai=ngoaiPV(e,daNhan.nhom);
+ ST.f={ly:'',noi:'',tuNoi:false,bao:daNhan.so>0};
  const ve=()=>{
   const f=ST.f;
-  modal('📣 Công bố — '+e.id,
-   '<div class="evkv"><div style="flex:1 1 100%"><span>Sự kiện</span><b>'+esc(e.ten)+'</b></div></div>'
-   +'<label class="lbl">Công bố cho ai</label><select class="fldi" id="pSel">'
-   +Object.keys(PUBLISH).filter(k=>k!=='nhap').map(k=>'<option value="'+k+'"'+(f.pub===k?' selected':'')
-     +'>'+PUBLISH[k][0]+'</option>').join('')+'</select>'
-   +(denPH(f.pub)
-     ?'<div class="warn"><b>Sẽ gửi thông báo tới phụ huynh</b> và hiện trên App. '
-      +'<b>Thông báo đã gửi không thu hồi được.</b>'
-      +(e.anh.length&&KHONG_DANG_ANH.length?'<br>Sự kiện có <b>'+e.anh.length+' ảnh</b> — sau khi công bố, '
-        +'hệ thống sẽ yêu cầu <b>rà danh sách '+KHONG_DANG_ANH.length+' học sinh không đồng ý đăng ảnh</b>.':'')+'</div>'
-     :'<div class="info">Chỉ nhân sự thấy — <b>không gửi phụ huynh</b>.</div>'),
-   '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="PubOK">Công bố</button>');
-  const s=$('#pSel'); if(s) s.onchange=()=>{ST.f.pub=s.value; ve()};
+  let b='<div class="warn"><b>Sự kiện không bị xóa.</b> Nó chuyển sang <b>Đã hủy</b> và vẫn tra được '
+   +'bằng chip <b>✕ Đã hủy</b> ở tab 1. Một sự kiện đã triển khai rồi hủy là thứ <b>cần giải thích '
+   +'được về sau</b>, không phải thứ để xóa đi.</div>'
+   +'<div class="evkv"><div style="flex:1 1 100%"><span>Sự kiện</span><b>'+esc(e.ten)+'</b></div>'
+   +'<div><span>Dự kiến</span><b>'+k2s(e.tu)+'</b></div>'
+   +'<div><span>Phạm vi hiển thị</span><b>'+PUBLISH[e.pub][0].split(' — ')[0]+'</b></div>'
+   +'<div><span>Đã gửi</span><b>'+e.tb.length+' thông báo · '+vn(daNhan.so)+' người</b></div></div>';
+
+  b+='<label class="lbl">Lý do hủy <span style="color:var(--red)">*</span></label>'
+   +'<textarea class="fldi" id="hLy" rows="2" placeholder="VD: dự báo mưa lớn và rét đậm; sẽ thông báo lịch mới sau">'
+   +esc(f.ly)+'</textarea>'
+   +'<div class="ro">Lý do này <b>sẽ đến tay phụ huynh</b> — điền sẵn vào nội dung thông báo hủy bên dưới. '
+   +'Viết cho <b>người ngoài đọc</b>, đừng viết tắt nội bộ.</div>';
+
+  if(daNhan.so){
+   b+='<label class="ck"><input type="checkbox" id="hBao"'+(f.bao?' checked':'')+'> '
+    +'<b>📣 Gửi thông báo hủy</b> cho '+vn(daNhan.so)+' người đã nhận thông báo sự kiện này</label>';
+   if(f.bao){
+    b+='<div class="tbw" style="margin-top:7px"><div class="ch">Nhóm nhận — <b>tích sẵn đúng người đã nhận</b>'
+     +'</div><div style="padding:9px 11px">'
+     +daNhan.nhom.map(n=>'<label class="ck"><input type="checkbox" checked disabled> '+esc(n.ten)
+       +' <span class="pill">'+vn(n.so)+' người</span>'
+       +(ngoai.some(x=>x.id===n.id)?' <span class="tg a">ngoài phạm vi hiện tại</span>':'')+'</label>').join('')
+     +(ngoai.length?'<div class="ro"><b>★ '+vn(soNgoaiPV(e,daNhan.nhom))+' người trong danh sách này '
+       +'nay KHÔNG còn mở được sự kiện</b> — phạm vi hiển thị đã bị thu hẹp sau khi thông báo đã gửi. '
+       +'Họ vẫn được báo hủy: ràng buộc <b>20f</b> <i>(chỉ chào nhóm trong phạm vi)</i> '
+       +'<b>không áp cho thông báo hủy</b> — người đã cầm tin trong tay mà không được báo hủy thì '
+       +'<b>họ vẫn đến</b>.</div>':'')
+     +'</div></div>';
+    b+='<label class="lbl">Nội dung thông báo hủy — <b>điền sẵn từ lý do</b>, sửa được</label>'
+     +'<textarea class="fldi" id="hNoi" rows="3">'+esc(f.tuNoi?f.noi:noiHuy(e,f.ly))+'</textarea>';
+   }else b+='<div class="danger"><b>⛔ '+vn(daNhan.so)+' người đã nhận thông báo sự kiện này '
+    +'sẽ KHÔNG được báo hủy.</b><br><span class="xs">Họ vẫn đang nghĩ sự kiện diễn ra bình thường, '
+    +'và <b>sẽ đến</b>. Bỏ tích là quyền của bạn — nhưng nó phải là một lựa chọn <b>chủ động</b>, '
+    +'không phải thứ quên mất.</span></div>';
+  }else b+='<div class="info">Sự kiện <b>chưa gửi thông báo nào</b> — không ai đang chờ nó, '
+   +'nên hủy không cần báo ai.</div>';
+
+  const ok=f.ly.trim().length>0;
+  modal('✕ Hủy sự kiện — '+e.id,b,
+   '<button class="btn" data-mb="close">Không hủy</button>'
+   +'<button class="btn d'+(ok?'':' off')+'" data-mb="HuyOK"'+(ok?'':' disabled')+'>Hủy sự kiện</button>');
+
+  const l=$('#hLy'); if(l) l.oninput=()=>{ST.f.ly=l.value;
+   const n=$('#hNoi'); if(n&&!ST.f.tuNoi) n.value=noiHuy(e,ST.f.ly);
+   const bt=$('[data-mb="HuyOK"]'); bt.disabled=!ST.f.ly.trim();
+   bt.classList.toggle('off',!ST.f.ly.trim())};
+  const c=$('#hBao'); if(c) c.onchange=()=>{const n=$('#hNoi'); if(n){ST.f.noi=n.value}
+   ST.f.bao=c.checked; ve()};
+  const n=$('#hNoi'); if(n) n.oninput=()=>{ST.f.noi=n.value; ST.f.tuNoi=true};
  };
- mfns.bPubOK=()=>{e.pub=ST.f.pub; ghiLS(e,'Công bố — '+PUBLISH[e.pub][0]);
+ mfns.bHuyOK=()=>{
+  const f=ST.f;
+  e.huy={ngay:HOMNAY,boi:toiLa(),ly:f.ly.trim()};
+  ghiLS(e,'HỦY sự kiện — '+f.ly.trim());
+  let g=null;
+  if(f.bao&&daNhan.so){
+   g=ghiTB(e,{loai:'huy',tieuDe:'HỦY — '+e.ten,
+    noiDung:(f.tuNoi?f.noi:noiHuy(e,f.ly)).trim(),nhom:daNhan.nhom,so:daNhan.so});
+   ghiLS(e,'📣 Gửi thông báo hủy '+g.ma+' — '+g.so+' người nhận');
+  }
   closeM(); render();
-  toast('📣 Đã công bố <b>'+e.id+'</b>.'+(canRaAnh(e)?' ⚠️ <b>Cần rà ảnh</b> — xem dải đỏ trong chi tiết.':''))};
+  toast('Đã hủy <b>'+e.id+'</b>. <b>Bản ghi vẫn còn.</b>'
+   +(g?' Đã gửi thông báo hủy <b>'+g.ma+'</b> tới <b>'+vn(g.so)+' người</b>'
+      +(ngoai.length?' — <b>gồm cả nhóm nay đã ngoài phạm vi hiển thị</b>':'')+'.'
+     :daNhan.so?' ⛔ <b>'+vn(daNhan.so)+' người đã nhận thông báo KHÔNG được báo hủy.</b>':''));
+ };
  ve();
 }
+const noiHuy=(e,ly)=>'Nhà trường thông báo: sự kiện «'+e.ten+'» dự kiến ngày '+k2s(e.tu)
+ +' KHÔNG diễn ra.'+(ly.trim()?' Lý do: '+ly.trim():'')
+ +' Kính mong quý phụ huynh lưu ý để không đưa con tới trường vào thời gian này.';
+
+/* ══════════════════════════════════════════════════════════════════
+   ★★ v2.0 — 🚀 TRIỂN KHAI và 📣 GỬI THÔNG BÁO LÀ HAI THAO TÁC ĐỘC LẬP
+   Triển khai khai PHẠM VI HIỂN THỊ (một lần). Gửi thông báo chọn ĐỐI
+   TƯỢNG NHẬN (mỗi lần), nội dung do người dùng soạn, lặp bao nhiêu lần
+   tùy ý, mỗi lần sinh MỘT bản ghi thật ở M8.1.
+   ══════════════════════════════════════════════════════════════════ */
+function moPub(id,go){
+ const e=skById(id);
+ if(go){ moThuHoi(id); return; }
+ ST.f={pub:'truong'};
+ const ve=()=>{
+  const f=ST.f, gia={...e,pub:f.pub};
+  modal('🚀 Triển khai — '+e.id,
+   '<div class="info"><b>Triển khai đưa sự kiện lên lịch và lên feed App — nó KHÔNG gửi thông báo nào.</b><br>'
+   +'Hai việc tách nhau có lý do: lễ tổng kết chốt ngày từ tháng 10 cần nằm trên lịch để các bộ phận xếp việc, '
+   +'nhưng <b>chưa đến lúc báo phụ huynh</b>. Gửi thông báo là nút riêng, bấm được <b>nhiều lần</b>.</div>'
+   +'<div class="evkv"><div style="flex:1 1 100%"><span>Sự kiện</span><b>'+esc(e.ten)+'</b></div>'
+   +'<div><span>Thời gian</span><b>'+k2s(e.tu)+'</b></div>'
+   +'<div><span>Điểm trường</span><b>'+(e.dt==='ALL'?'Toàn trường':DT[e.dt])+'</b></div></div>'
+   +'<label class="lbl">Phạm vi hiển thị — <b>bao nhiêu phụ huynh thấy sự kiện này</b></label>'
+   +'<select class="fldi" id="pSel">'
+   +Object.keys(PUBLISH).filter(k=>k!=='nhap').map(k=>'<option value="'+k+'"'+(f.pub===k?' selected':'')
+     +'>'+PUBLISH[k][0]+'</option>').join('')+'</select>'
+   +'<div class="ro">Trường này <b>chỉ điều khiển phụ huynh</b>. Nhân sự nào thấy sự kiện là do '
+   +'<b>phạm vi vai</b> — vai <b>School</b> vẫn thấy sự kiện gắn một điểm trường. '
+   +'Ba mức là <b>ba nấc của một trục</b>: tới bao nhiêu phụ huynh.</div>'
+   +(denPH(f.pub)
+     ?'<div class="warn"><b>Sẽ có '+vn(nhomNhan(gia).filter(x=>x.id==='ph:all')[0].so)+' phụ huynh</b> '
+      +'thấy sự kiện trên feed App. <b>Không ai nhận thông báo</b> cho tới khi bạn bấm <b>📣 Gửi thông báo</b>.'
+      +(e.anh.length&&KHONG_DANG_ANH.length?'<br>Sự kiện có <b>'+e.anh.length+' ảnh</b> — hệ thống sẽ yêu cầu '
+        +'<b>rà danh sách '+KHONG_DANG_ANH.length+' học sinh không đồng ý đăng ảnh</b>.':'')+'</div>'
+     :'<div class="info"><b>Chỉ nhân sự thấy</b> — không tới phụ huynh nào. Hộp gửi thông báo sẽ '
+      +'<b>không chào nhóm phụ huynh nào</b> <span class="xs">(ràng buộc 20f)</span>.</div>'),
+   '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="PubOK">🚀 Triển khai</button>');
+  const sl=$('#pSel'); if(sl) sl.onchange=()=>{ST.f.pub=sl.value; ve()};
+ };
+ mfns.bPubOK=()=>{e.pub=ST.f.pub; e.daTK=true; ghiLS(e,'🚀 Triển khai — '+PUBLISH[e.pub][0]);
+  closeM(); render();
+  toast('🚀 Đã triển khai <b>'+e.id+'</b> — sự kiện lên lịch và lên feed. '
+   +'<b>Chưa gửi thông báo nào</b>; dùng <b>📣 Gửi thông báo</b> khi muốn báo.'
+   +(canRaAnh(e)?' ⚠️ <b>Cần rà ảnh</b> — xem dải đỏ trong chi tiết.':''))};
+ ve();
+}
+
+/* ── ★ Ai đã từng nhận thông báo của sự kiện này (gộp, không cộng trùng) ── */
+function nguoiDaNhan(e){
+ const m={};
+ (e.tb||[]).forEach(t=>t.nhom.forEach(n=>{if(!m[n.id]||m[n.id].so<n.so) m[n.id]={...n}}));
+ let nhom=Object.values(m);
+ const co=i=>nhom.some(n=>n.id===i);
+ if(co('ph:all')) nhom=nhom.filter(n=>!n.id.startsWith('ph:')||n.id==='ph:all');
+ if(co('ns:all')) nhom=nhom.filter(n=>!n.id.startsWith('ns:dt:'));
+ return {nhom,so:nhom.reduce((a,n)=>a+n.so,0)};
+}
+/* ★ nhóm nào đã nhận mà nay NẰM NGOÀI phạm vi hiển thị hiện tại — ràng buộc 20g
+   ⚠ So mã nhóm là KHÔNG ĐỦ: `ph:all` giữ nguyên mã nhưng ĐỔI NGHĨA khi phạm vi
+   hẹp lại — «toàn bộ phụ huynh» của sự kiện toàn trường là 549 người, của sự
+   kiện một điểm trường chỉ còn 266. Nhóm cũ vẫn phải bị đánh dấu là ngoài
+   phạm vi, vì 283 người trong đó nay không mở được sự kiện nữa.
+   Nên so cả SỐ NGƯỜI: mã biến mất, HOẶC số cũ lớn hơn số hiện tại. */
+function ngoaiPV(e,nhom){
+ const by=Object.fromEntries(nhomNhan(e).map(x=>[x.id,x.so]));
+ return nhom.filter(n=>by[n.id]===undefined||n.so>by[n.id]);
+}
+/* bao nhiêu người trong nhóm đã nhận nay KHÔNG còn mở được sự kiện */
+function soNgoaiPV(e,nhom){
+ const by=Object.fromEntries(nhomNhan(e).map(x=>[x.id,x.so]));
+ return nhom.reduce((a,n)=>a+Math.max(0,n.so-(by[n.id]||0)),0);
+}
+
+/* ── 🔇 Thu hồi — ô tích gửi thông báo MẶC ĐỊNH TẮT (§2.6.1) ── */
+function moThuHoi(id){
+ const e=skById(id);
+ const daNhan=nguoiDaNhan(e);
+ ST.f={bao:false,noi:'Sự kiện «'+e.ten+'» tạm thời được rút khỏi lịch. Nhà trường sẽ thông báo lại khi có lịch mới.'};
+ const ve=()=>{
+  const f=ST.f;
+  modal('🔇 Thu hồi sự kiện — '+e.id,
+   '<div class="warn"><b>Thu hồi chỉ làm sự kiện biến khỏi lịch và feed</b>, và đưa nó về <b>Nháp</b>. '
+   +'Nó <b>KHÔNG thu hồi được thông báo đã gửi</b> — cái đã đến điện thoại người ta thì đã đến rồi.</div>'
+   +'<div class="evkv"><div style="flex:1 1 100%"><span>Sự kiện</span><b>'+esc(e.ten)+'</b></div>'
+   +'<div><span>Đang hiển thị</span><b>'+PUBLISH[e.pub][0].split(' — ')[0]+'</b></div>'
+   +'<div><span>Đã gửi</span><b>'+e.tb.length+' thông báo · '+vn(daNhan.so)+' người</b></div></div>'
+   +(daNhan.so?'<label class="ck"><input type="checkbox" id="tBao"'+(f.bao?' checked':'')+'> '
+     +'<b>Gửi thông báo cho '+vn(daNhan.so)+' người đã nhận, nói rõ sự kiện tạm rút</b></label>'
+     +'<div class="ro">Ô này <b>mặc định TẮT</b> — phần lớn lần thu hồi là điều chỉnh nội bộ, '
+      +'không đáng làm phiền. Khác với <b>✕ Hủy sự kiện</b>: ở đó ô này <b>bật sẵn</b>, '
+      +'vì không báo hủy thì <b>họ vẫn đến</b>.</div>'
+     +(f.bao?'<label class="lbl">Nội dung thông báo</label><textarea class="fldi" id="tNoi" rows="3">'
+       +esc(f.noi)+'</textarea>':'')
+    :'<div class="info">Sự kiện <b>chưa gửi thông báo nào</b> — thu hồi không ảnh hưởng tới ai.</div>'),
+   '<button class="btn" data-mb="close">Không thu hồi</button>'
+   +'<button class="btn d" data-mb="ThuHoiOK">🔇 Thu hồi</button>');
+  const c=$('#tBao'); if(c) c.onchange=()=>{const t=$('#tNoi'); if(t) ST.f.noi=t.value;
+   ST.f.bao=c.checked; ve()};
+  const t=$('#tNoi'); if(t) t.oninput=()=>{ST.f.noi=t.value};
+ };
+ mfns.bThuHoiOK=()=>{
+  const f=ST.f, cu=PUBLISH[e.pub][0].split(' — ')[0];
+  if(f.bao&&daNhan.so){
+   const t=ghiTB(e,{loai:'thuong',tieuDe:'Tạm rút khỏi lịch — '+e.ten,noiDung:f.noi,
+    nhom:daNhan.nhom,so:daNhan.so});
+   ghiLS(e,'📣 Gửi thông báo '+t.ma+' — '+t.so+' người nhận');
+  }
+  e.pub='nhap'; ghiLS(e,'🔇 Thu hồi — bỏ phạm vi '+cu); closeM(); render();
+  toast('🔇 Đã thu hồi <b>'+e.id+'</b> — biến khỏi lịch và feed, quay về <b>Nháp</b>. '
+   +'<b>Thông báo đã gửi không thu hồi được.</b>');
+ };
+ ve();
+}
+
+/* ── 📣 GỬI THÔNG BÁO — thao tác riêng, lặp được, sinh bản ghi ở M8.1 ── */
+function moGuiTB(id){
+ const e=skById(id);
+ const g=nhomNhan(e), ph=g.filter(x=>x.loai==='ph'), ns=g.filter(x=>x.loai==='ns');
+ /* ★ TÍCH SẴN theo `Khối liên quan` — tác dụng ① của điểm I.
+    Chỉ là GỢI Ý mở sẵn, bỏ tích được. Nó không cấm gửi cho khối khác:
+    trường khối là NHÃN, không phải quyền. */
+ const goiY=(e.khoi||[]).map(k=>'ph:k:'+k).filter(i=>ph.some(x=>x.id===i));
+ ST.f={ids:[...goiY],tieuDe:e.ten,noi:'',goiY};
+ const ve=()=>{
+  const f=ST.f, so=soNhan(e,f.ids);
+  let b='<div class="warn"><b>⚠️ Thông báo đã gửi KHÔNG thu hồi được.</b> Nó đi thẳng vào điện thoại '
+   +'người nhận. Đọc lại nội dung trước khi bấm gửi.</div>'
+   +'<div class="evkv"><div style="flex:1 1 100%"><span>Sự kiện</span><b>'+esc(e.ten)+'</b></div>'
+   +'<div><span>Thời gian</span><b>'+k2s(e.tu)+'</b></div>'
+   +'<div><span>Phạm vi hiển thị</span><b>'+PUBLISH[e.pub][0].split(' — ')[0]+'</b></div>'
+   +'<div><span>Đã gửi trước đó</span><b>'+e.tb.length+' lần</b></div></div>';
+
+  b+='<label class="lbl">Đối tượng nhận lần này</label>';
+  if(f.goiY.length) b+='<div class="info"><b>✓ Đã tích sẵn '+f.goiY.map(i=>'khối '+i.split(':')[2]).join(' · ')
+   +'</b> — sự kiện gắn <b>'+tenKhoi(e)+'</b>.<br><span class="xs">Đây chỉ là <b>gợi ý mở sẵn</b>, '
+   +'bỏ tích hoặc chọn thêm nhóm khác đều được. Gắn khối là <b>nhãn</b>, không phải quyền — '
+   +'nó không cấm bạn báo cho ai cả.</span></div>';
+  b+='<div class="tbw"><div class="ch">Phụ huynh</div><div style="padding:9px 11px">';
+  if(ph.length){
+   b+=ph.map(x=>'<label class="ck"><input type="checkbox" data-nn="'+x.id+'"'
+     +(f.ids.includes(x.id)?' checked':'')+'> '+esc(x.ten)
+     +' <span class="pill">'+vn(x.so)+' người</span></label>').join('');
+   if(e.pub==='dt') b+='<div class="ro">Sự kiện hiển thị ở <b>'+DT[e.dt]+'</b>, nên nhóm khối ở đây là '
+    +'<b>khối GIAO với điểm trường đó</b> — không phải khối toàn trường.</div>';
+  }else b+='<div class="empty">Sự kiện đang ở phạm vi <b>'+PUBLISH[e.pub][0].split(' — ')[0]+'</b> — '
+   +'<b>không có nhóm phụ huynh nào để chào</b>.<br><span class="xs">Gửi cho người '
+   +'<b>không mở được sự kiện</b> là đẩy họ tới một màn hình trống <i>(ràng buộc 20f)</i>. '
+   +'Muốn gửi cho phụ huynh thì <b>✏️ Sửa</b> để mở rộng phạm vi hiển thị trước.</span></div>';
+  b+='</div></div>';
+
+  b+='<div class="tbw" style="margin-top:9px"><div class="ch">Nhân sự</div><div style="padding:9px 11px">'
+   +ns.map(x=>'<label class="ck"><input type="checkbox" data-nn="'+x.id+'"'
+     +(f.ids.includes(x.id)?' checked':'')+'> '+esc(x.ten)
+     +' <span class="pill">'+vn(x.so)+' người</span></label>').join('')
+   +'<div class="ro">Nhóm nhân sự <b>luôn chào đủ</b>, kể cả khi sự kiện chỉ hiển thị ở một điểm trường — '
+   +'nhân sự đi theo <b>phạm vi vai</b>, không theo phạm vi hiển thị của sự kiện '
+   +'<span class="xs">(ràng buộc 20e)</span>.</div></div></div>';
+
+  b+='<label class="lbl">Tiêu đề <span style="color:var(--red)">*</span></label>'
+   +'<input class="fldi" id="gTd" value="'+esc(f.tieuDe)+'">'
+   +'<label class="lbl">Nội dung <span style="color:var(--red)">*</span> — <b>bạn tự soạn</b>, máy không sinh sẵn</label>'
+   +'<textarea class="fldi" id="gNoi" rows="4" placeholder="VD: Kính mời quý phụ huynh có mặt lúc 7h15 để ổn định chỗ ngồi.">'
+   +esc(f.noi)+'</textarea>'
+   +'<div class="'+(so?'okbox':'ro')+'">'+(so
+     ?'<b>Sẽ gửi tới '+vn(so)+' người.</b> Lần gửi này sinh <b>một bản ghi Thông báo đầy đủ ở M8.1</b>, '
+      +'mang <b>mã sự kiện '+e.id+'</b> để đối chiếu ngược — một cuốn sổ, không phải hai.'
+     :'Chưa chọn nhóm nhận nào.')+'</div>';
+
+  const ok=so&&f.tieuDe.trim()&&f.noi.trim();
+  modal('📣 Gửi thông báo — '+e.id,b,
+   '<button class="btn" data-mb="close">Hủy</button>'
+   +'<button class="btn p'+(ok?'':' off')+'" data-mb="GuiOK"'+(ok?'':' disabled')+'>Gửi thông báo</button>');
+  $$('[data-nn]').forEach(c=>c.onchange=()=>{
+   const t=$('#gTd'), n=$('#gNoi'); if(t) ST.f.tieuDe=t.value; if(n) ST.f.noi=n.value;
+   const i=c.dataset.nn;
+   ST.f.ids=c.checked?[...ST.f.ids,i]:ST.f.ids.filter(x=>x!==i); ve()});
+  ['#gTd|tieuDe','#gNoi|noi'].forEach(sp=>{const [i,k]=sp.split('|'); const el=$(i); if(!el) return;
+   el.oninput=()=>{ST.f[k]=el.value;
+    const bt=$('[data-mb="GuiOK"]'); if(!bt) return;
+    const o=soNhan(e,ST.f.ids)&&ST.f.tieuDe.trim()&&ST.f.noi.trim();
+    bt.disabled=!o; bt.classList.toggle('off',!o)}});
+ };
+ mfns.bGuiOK=()=>{
+  const f=ST.f, chon=nhomNhan(e).filter(x=>f.ids.includes(x.id))
+   .map(x=>({id:x.id,ten:x.ten,so:x.so,loai:x.loai}));
+  const t=ghiTB(e,{loai:'thuong',tieuDe:f.tieuDe.trim(),noiDung:f.noi.trim(),
+   nhom:chon,so:soNhan(e,f.ids)});
+  ghiLS(e,'📣 Gửi thông báo '+t.ma+' — '+t.so+' người nhận');
+  closeM(); render();
+  toast('📣 Đã gửi <b>'+t.ma+'</b> tới <b>'+vn(t.so)+' người</b>. '
+   +'Bản ghi nằm ở <b>M8.1</b>, mang mã sự kiện '+e.id+'. <b>Không thu hồi được.</b>');
+ };
+ ve();
+}
+
 function xuat(what){
  modal('📤 '+what,
   '<div class="info">Bản xuất kèm <b>mã sự kiện</b> để đối chiếu ngược về đúng sự kiện — '
@@ -1309,15 +1938,42 @@ function xuat(what){
   +'<div class="ro">Con số ở đây <b>không thay sổ chi M7.5</b> — nó là số để kê khai và đối chiếu.</div>',
   '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="close">Xuất và ghi audit</button>');
 }
+/* ── 🌐 Đăng tin lên web — deep-link sang M8.5 (v2.7) ──
+   M6.8 KHÔNG đăng web: nó chỉ mở màn soạn của M8.5 với sẵn tên, ngày, địa điểm, mô tả và ảnh.
+   Bài web do bộ phận truyền thông viết lại cho người đọc ngoài trường, qua duyệt ở M8.5. */
+const WEB_T=['FULL','HT','PCM','PDT','TCNS','TPT','VT'];
+let MWEB=147;
+function moWeb(id){
+ const e=skById(id);
+ if(e.web){
+  modal('🌐 Bài web của sự kiện',
+   '<div class="evkv"><div style="flex:1 1 100%"><span>Sự kiện</span><b>'+esc(e.ten)+'</b></div>'
+   +'<div><span>Bài web</span><b>'+e.web.ma+'</b></div><div><span>Trạng thái ở M8.5</span><b>'+esc(e.web.tt)+'</b></div>'
+   +'<div><span>Tạo ngày</span><b>'+k2s(e.web.ngay)+'</b></div></div>'
+   +'<div class="ro">Bản chiếu chỉ đọc 🔗 — soạn, duyệt, đăng, gỡ đều ở <b>M8.5</b>.<br>Deep-link: <code>/M8.5?ctx='+e.web.ma+'&amp;return=M6.8</code></div>',
+   '<button class="btn" data-mb="close">Đóng</button><button class="btn p" data-mb="close">Mở ở M8.5</button>');
+  return;
+ }
+ modal('🌐 Đăng tin lên web — '+e.id,
+  '<div class="info">Mở màn soạn của <b>M8.5 Trang web trường</b> với sẵn nội dung của sự kiện. '
+  +'Bài được <b>viết lại cho người đọc ngoài trường</b> và phải <b>qua duyệt ở M8.5</b> — nút này không đăng gì lên web.</div>'
+  +'<div class="evkv"><div style="flex:1 1 100%"><span>Tiêu đề gợi ý</span><b>'+esc(e.ten)+'</b></div>'
+  +'<div><span>Ngày</span><b>'+k2s(e.tu)+(e.den!==e.tu?' – '+k2s(e.den):'')+'</b></div><div><span>Địa điểm</span><b>'+esc(e.noi||'—')+'</b></div>'
+  +'<div><span>Ảnh mang sang</span><b>'+e.anh.length+' ảnh</b> <span class="xs">— người soạn chọn ảnh nào lên web</span></div></div>'
+  +'<div class="ro">Deep-link: <code>/M8.5?action=tao&amp;ctx='+e.id+'&amp;return=M6.8</code></div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="webOK">Tạo bài nháp ở M8.5</button>');
+ mfns.bwebOK=()=>{e.web={ma:'WEB-0'+(++MWEB),tt:'Nháp',ngay:HOMNAY};ghiLS(e,'🌐 Tạo bài nháp '+e.web.ma+' ở M8.5 (Đăng tin lên web)');
+  closeM();toast('🌐 Đã tạo bài nháp <b>'+e.web.ma+'</b> ở M8.5 — mở «Bài của tôi» để viết tiếp.');render()};
+}
 function moM63(id){
  const e=skById(id);
  modal('🔗 Liên kết phong trào Đội — Đoàn',
-  '<div class="info">Sự kiện thi đua và ngày lễ thường gắn với một <b>đợt phong trào</b> ở <b>M6.3</b>. '
-  +'Menu này <b>không sở hữu phong trào</b> — nút này mở M6.3 với sẵn ngữ cảnh.</div>'
+  '<div class="info">Sự kiện thi đua và ngày lễ thường gắn với một <b>đợt phong trào</b> ở <b>M6.14</b>. '
+  +'Menu này <b>không sở hữu phong trào</b> — nút này mở M6.14 với sẵn ngữ cảnh.</div>'
   +'<div class="evkv"><div style="flex:1 1 100%"><span>Sự kiện</span><b>'+esc(e.ten)+'</b></div>'
   +'<div><span>Thời gian</span><b>'+k2s(e.tu)+'</b></div></div>'
-  +'<div class="ro">Deep-link: <code>/m6.3?ctx='+e.id+'&amp;action=lien-ket-phong-trao&amp;return=m6.8</code></div>',
-  '<button class="btn" data-mb="close">Đóng</button><button class="btn p" data-mb="close">Mở M6.3</button>');
+  +'<div class="ro">Deep-link: <code>/M6.14?ctx='+e.id+'&amp;action=lien-ket-phong-trao&amp;return=M6.8</code></div>',
+  '<button class="btn" data-mb="close">Đóng</button><button class="btn p" data-mb="close">Mở M6.14</button>');
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -1340,7 +1996,7 @@ function doiTab(t){ST.tab=t; ST.cur=null}
 function gCfg(){
  const g=(id,f)=>{const el=$(id); if(el) el.onchange=()=>{f(el.value); render();
   toast('⚙️ Đã đổi tham số.')}};
- g('#cfNhac',v=>CFG.nhacTruoc=+v); g('#cfRa',v=>CFG.canRaAnh=v==='1');
+ g('#cfRa',v=>CFG.canRaAnh=v==='1');
 }
 document.addEventListener('click',e=>{
  const t=e.target;
@@ -1364,7 +2020,10 @@ document.addEventListener('click',e=>{
  const hu=t.closest('[data-huy]'); if(hu){moHuy(hu.dataset.huy); return}
  const pb=t.closest('[data-pub]'); if(pb){moPub(pb.dataset.pub,false); return}
  const gp=t.closest('[data-gopub]'); if(gp){moPub(gp.dataset.gopub,true); return}
+ const gt=t.closest('[data-guitb]'); if(gt){moGuiTB(gt.dataset.guitb); return}
+ const xh=t.closest('[data-xoa]'); if(xh){moXoa(xh.dataset.xoa); return}
  const m6=t.closest('[data-m63]'); if(m6){moM63(m6.dataset.m63); return}
+ const wb=t.closest('[data-web]'); if(wb){moWeb(wb.dataset.web); return}
  if(t.id==='xuat'){xuat('Xuất danh sách sự kiện'); return}
  if(t.id==='xuatBC'){xuat('Xuất chi phí sự kiện cho Kế toán'); return}
 });

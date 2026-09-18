@@ -222,13 +222,14 @@ tr:last-child td{border-bottom:none}
 
 <div class="rolebar">
   <b>Chức danh:</b>
+  <button class="rb on" data-r="FULL">🔓 Đủ quyền (demo)</button>
   <button class="rb" data-r="GVBM">GVBM Vật lí</button>
   <button class="rb" data-r="GVCN">GVCN 9A2</button>
   <button class="rb" data-r="VT">Văn thư · ĐT A</button>
   <button class="rb" data-r="KT">Kế toán · ĐT A</button>
   <button class="rb" data-r="PHT_A">PHT_ĐT · Điểm trường A</button>
   <button class="rb" data-r="PHT_B">PHT_ĐT · Điểm trường B</button>
-  <button class="rb on" data-r="HT">Hiệu trưởng</button>
+  <button class="rb" data-r="HT">Hiệu trưởng</button>
   <span class="note">Hệ thống vận hành trường — phụ huynh dùng App riêng, không có mặt trong menu</span>
 </div>
 
@@ -273,10 +274,13 @@ const NAV=[
  ['kq','🎓 Kết quả học tập',[['M3.3','Xét duyệt lên lớp']]],
  ['tc','💰 Tài chính',[['M6.1','Bán trú'],['M7.1','Danh mục khoản thu'],['M7.2','Theo dõi thực hiện khoản thu'],['M7.3','Điều chỉnh & Hoàn tiền']]],
  ['vb','📄 Văn bản',[['M4.11','Văn bản đi'],['M4.5','Phân công giảng dạy']]],
- ['ht','⚙ Hệ thống',[['M10.2','Cơ cấu tổ chức']]],
+ ['ht','⚙ Hệ thống',[['M10.2','Thông tin trường']]],
 ];
 
 const ROLE={
+ /* Vai mặc định của demo (quy ước dự án): phạm vi toàn trường + bật mọi năng lực (tạo · duyệt · xác nhận ·
+    nguyện vọng · ký · ngoại lệ) để rà trọn luồng. Hệ thống thật không có vai này. */
+ FULL:{n:'Đủ quyền (demo)',sc:'school',menu:'all',tao:1,duyet:1,xn:1,ky:1,ngoaile:1,nguyenvong:1,doc:1,av:'ĐQ'},
  GVBM:{n:'GV bộ môn Vật lí',sc:'gvbm',dt:'Điểm trường A',menu:['lop'],av:'BM',lopDay:['9A1','9A2','8A1']},
  GVCN:{n:'GVCN lớp 9A2',sc:'class',lop:'9A2',dt:'Điểm trường A',menu:['hs','lop'],tao:1,nguyenvong:1,av:'GV'},
  VT:{n:'Văn thư Điểm trường A',sc:'branch',dt:'Điểm trường A',menu:['hs','vb'],nguyenvong:1,av:'VT'},
@@ -285,7 +289,7 @@ const ROLE={
  PHT_B:{n:'PHT Điểm trường B',sc:'branch',dt:'Điểm trường B',menu:['hs','lop'],tao:1,duyet:1,xn:1,nguyenvong:1,av:'PB'},
  HT:{n:'Hiệu trưởng',sc:'school',menu:'all',ky:1,xn:1,ngoaile:1,av:'HT'},
 };
-let role='HT', tab='yc', cur=null, qTim='', fTT='Tất cả', tuDongCho=1;
+let role='FULL', tab='yc', cur=null, qTim='', fTT='Tất cả', tuDongCho=1;
 const R=()=>ROLE[role];
 
 /* ===== DEMO HIỆN MỌI CHỨC NĂNG — gắn thẻ chức danh sở hữu ===== */
@@ -580,7 +584,7 @@ function viewYC(){
  '<b>Một chuỗi ba bước:</b> <code>Tạo yêu cầu → Duyệt → Cập nhật hồ sơ HS và lớp học</code>. <b>Không sinh quyết định, không ký số.</b><br>'+
  '<b>Chỉ khác ở người duyệt:</b> cùng điểm trường thì <b>PHT điểm trường</b> duyệt; khác điểm trường thì <b>Hiệu trưởng</b> duyệt vì vượt thẩm quyền một PHT điểm trường.<br>'+
  '<b>Vẫn là cùng một trường</b> — mã định danh không đổi, học bạ không xuất, điểm số và chuyên cần đi theo học sinh. Đổi pháp nhân mới là <span class="rolnk" data-go="M1.5">M1.5</span>.</div>'+
- '<div class="ro"><b>Menu này không có tab Danh sách lớp</b> <i>(bỏ ngày 27/8/2026)</i>. Khai báo lớp · sĩ số tối đa · hệ đào tạo — và tra cứu sĩ số, chỗ trống, GVCN — đều ở <b>M10.2 Danh mục lớp</b> <span class="rolnk" data-go="M10.2">→ M10.2</span>.<br>'+
+ '<div class="ro"><b>Menu này không có tab Danh sách lớp</b> <i>(bỏ ngày 27/8/2026)</i>. Khai báo lớp · sĩ số tối đa · hệ đào tạo — và tra cứu sĩ số, chỗ trống, GVCN — đều ở <b>M10.1 ③ Lớp học</b> <span class="rolnk" data-go="M10.1?ctx=2026-2027&muc=3&return=M1.7">→ M10.1 ③</span>.<br>'+
  'Một menu về chuyển lớp <b>không được tự nhận là chủ của danh mục lớp</b>. Ở đây chỉ giữ đúng phần cần cho việc chuyển lớp: <b>bảng chọn lớp đến</b> trong popup tạo yêu cầu — cùng khối, kèm sĩ số và số chỗ đang giữ.</div>'+
  (fTT==='Đã đóng (từ chối / hủy)'?'<div class="ro">Yêu cầu bị từ chối hoặc bị hủy <b>giữ vĩnh viễn</b>. Bộ lọc mặc định ẩn chúng đi mà không có chip bật lại chính là xóa mềm trá hình.</div>':'')+
  '<div class="stage'+(t0?' open':'')+'"><div class="listw">'+

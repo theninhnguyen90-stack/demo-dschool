@@ -220,12 +220,13 @@ tr:last-child td{border-bottom:none}
 
 <div class="rolebar">
   <b>Chức danh:</b>
+  <button class="rb on" data-r="FULL">🔓 Đủ quyền (demo)</button>
   <button class="rb" data-r="GVCN">GVCN 9A2</button>
   <button class="rb" data-r="VT">Văn thư · ĐT A</button>
   <button class="rb" data-r="KT">Kế toán · ĐT A</button>
   <button class="rb" data-r="PHT_A">PHT_ĐT · Điểm trường A</button>
   <button class="rb" data-r="PHT_B">PHT_ĐT · Điểm trường B</button>
-  <button class="rb on" data-r="HT">Hiệu trưởng</button>
+  <button class="rb" data-r="HT">Hiệu trưởng</button>
   <span class="note">Hệ thống vận hành trường — phụ huynh dùng App riêng, không có mặt trong menu</span>
 </div>
 
@@ -236,7 +237,7 @@ tr:last-child td{border-bottom:none}
   <select class="sel" id="hdt"></select>
   <div class="spacer"></div>
   <button class="icobtn">🔔<span class="dot" id="bell">0</span></button>
-  <div class="avatar" id="ava">HT</div>
+  <div class="avatar" id="ava">ĐQ</div>
 </header>
 
 <div class="wrap">
@@ -257,6 +258,10 @@ tr:last-child td{border-bottom:none}
 const $=s=>document.querySelector(s);
 const NGAY='26/8/2026';
 const vnd=n=>n.toLocaleString('vi-VN')+'đ';
+const pdn=x=>{const a=String(x||'').split('/');return a.length===3?new Date(+a[2],+a[1]-1,+a[0]):null};
+const soNgay=(tu,den)=>{const a=pdn(tu),b=pdn(den||NGAY);return a&&b?Math.max(0,Math.round((b-a)/86400000)):0};
+/* Leo thang mốc Chờ đóng hồ sơ — chốt 7/9/2026 (điểm 11). Cấu hình được, đừng hardcode. */
+const DH30=30, DH60=60;
 
 
 const NAV=[
@@ -275,27 +280,30 @@ const NAV=[
    b = bước mà vai trò này xử lý · lam = thao tác nghiệp vụ của văn thư */
 const ROLE={
  GVCN:{n:'GVCN lớp 9A2',sc:'class',lop:'9A2',dt:'Điểm trường A',menu:['hs','lop'],b:'',doc:1,av:'GV'},
- VT:{n:'Văn thư Điểm trường A',sc:'branch',dt:'Điểm trường A',menu:['hs','vb'],b:'nhap',lam:1,tao:1,av:'VT'},
+ VT:{n:'Văn thư Điểm trường A',sc:'branch',dt:'Điểm trường A',menu:['hs','vb'],b:'nhap',lam:1,tao:1,dongho:1,av:'VT'},
  KT:{n:'Kế toán Điểm trường A',sc:'branch',dt:'Điểm trường A',menu:['hs','tc'],b:'',tien:1,doc:1,av:'KT',
   sdt:'0912 700 118'},
  PHT_A:{n:'PHT Điểm trường A',sc:'branch',dt:'Điểm trường A',menu:['hs','lop'],b:'',chonlop:1,xn:1,av:'PA'},
  PHT_B:{n:'PHT Điểm trường B',sc:'branch',dt:'Điểm trường B',menu:['hs','lop'],b:'',chonlop:1,xn:1,av:'PB'},
- HT:{n:'Hiệu trưởng',sc:'school',menu:'all',b:'ht',ky:1,chonlop:1,xn:1,doiDT:1,av:'HT'},
+ HT:{n:'Hiệu trưởng',sc:'school',menu:'all',b:'ht',ky:1,chonlop:1,xn:1,doiDT:1,dongho:1,av:'HT'},
+ FULL:{n:'🔓 Đủ quyền (demo)',sc:'school',menu:'all',b:['nhap','ht','ngoai','dongho'],
+  ky:1,chonlop:1,xn:1,doiDT:1,lam:1,tao:1,tien:1,doc:1,dongho:1,av:'ĐQ',sdt:'0912 700 118'},
 };
-let role='HT', tab='di', cur=null, qTim='', fTT='Tất cả', openG={}, tuDongCho=1;
+let role='FULL', tab='di', cur=null, qTim='', fTT='Tất cả', openG={}, tuDongCho=1;
 const R=()=>ROLE[role];
 
 const TTDI={nhap:['Nháp — đang lập hồ sơ','n'],
  ht:['Chờ xác nhận và ký','v'],ngoai:['Chờ trường đến tiếp nhận','b'],
  tuchoiNgoai:['Trường đến TỪ CHỐI tiếp nhận','r'],
- xong:['Đã hoàn tất — trường đến đã tiếp nhận','o'],tuchoi:['Bị từ chối','r'],huy:['Đã hủy','n']};
+ dongho:['Chờ đóng hồ sơ — rà soát tài chính','w'],
+ xong:['Đã hoàn tất — hồ sơ đã đóng','o'],tuchoi:['Bị từ chối','r'],huy:['Đã hủy','n']};
 const TTDEN={nhap:['Đang hoàn thiện hồ sơ','n'],ht:['Chờ HT duyệt tiếp nhận và ký','v'],
  chodb:['Đã cho học · CHỜ ĐỒNG BỘ CSDL ngành','w'],
  xong:['Đã tiếp nhận','o'],tuchoi:['Từ chối tiếp nhận','r'],huy:['Đã hủy','n']};
-const CH={di:['nhap','ht','ngoai','xong'],den:['nhap','ht','xong']};
+const CH={di:['nhap','ht','ngoai','dongho','xong'],den:['nhap','ht','xong']};
 const TTN=t=>(t.chieu==='di'?TTDI:TTDEN)[t.tt];
 const BUOC={di:{nhap:'Lập hồ sơ chuyển đi',ht:'Xác nhận, duyệt và ký quyết định',
-  ngoai:'Trường đến tiếp nhận trên CSDL ngành'},
+  ngoai:'Trường đến tiếp nhận trên CSDL ngành',dongho:'Đóng hồ sơ — rà soát tài chính'},
  den:{nhap:'Hoàn thiện hồ sơ',ht:'Duyệt tiếp nhận, chọn lớp và ký quyết định',
   chodb:'Chờ trường đi thao tác trên CSDL ngành để hợp nhất'}};
 
@@ -418,6 +426,57 @@ let T=[
  hb:{du:1,thieu:[],giuaky:0,nam:['2025-2026']},
  lop_ok:0,
  log:[lg('Lê Thu Hằng (VT)','Lập hồ sơ chuyển đi — gia đình đến làm việc trực tiếp','Đang bảo lưu từ 10/2026 (M1.6)')]},
+
+{id:'CD-2026-0016',chieu:'di',ma:'HS-2026-0471',n:'Phạm Gia Bảo',gt:'Nam',ns:'08/11/2012',
+ lop:'7A1',dt:'Điểm trường A',cs:'01315010094',tt:'dongho',ngay:'20/8/2026',
+ ly:'Bố mẹ chuyển công tác vào TP.HCM, cần đi gấp đầu tháng 9',
+ ph:[{ten:'Phạm Quốc Trung',qh:'Cha',sdt:'0908 447 216',chinh:1}],
+ den:{ten:'THCS Lê Quý Đôn',dc:'Phường Bến Nghé, Quận 1',tinh:'TP. Hồ Chí Minh',lh:'Cô Thảo — 028 3829 4471'},
+ no:462000,hoan:318000,buTru:0,
+ nono:[['Bán trú tháng 8/2026',330000,'Quá hạn 12 ngày'],['Nước uống học kỳ I',132000,'Quá hạn 5 ngày']],
+ khoan:[['Bảo hiểm y tế phần chưa dùng',198000],['Học phẩm học kỳ I chưa phát',120000]],
+ hb:{du:1,thieu:[],giuaky:1,nam:['2025-2026']},
+ xn:{lop:{ok:1,boi:'PHT Điểm trường A',ngay:'2/9/2026',note:'Đã trả 1 cuốn thư viện; quỹ lớp không còn nợ'},
+     no:{ok:1,boi:'PHT Điểm trường A',ngay:'2/9/2026',note:'KT báo còn nợ 462.000đ, không có khoản tiền mặt chưa nhập sổ'}},
+ lop_ok:1,gioithieu:{so:'GGT-2026-0058',boi:'Hiệu trưởng',ngay:'22/7/2026'},
+ ky:{ai:'Hiệu trưởng',ngay:'22/7/2026',so:'QĐ-2026-0234',kyso:1},
+ qdNo:{so:'QĐ-2026-0234',ai:'Hiệu trưởng',ngay:'22/7/2026',so_tien:462000,
+   ly:'Cho chuyển kèm cam kết trả nợ — nội dung cam kết in vào quyết định'},
+ db:{day:'22/7/2026',nhan:'24/7/2026',han:'3/8/2026'},
+ sau:{xuat:1,bg:1,bgHt:'Trao trực tiếp cho gia đình',bgAi:'Phạm Quốc Trung (Cha) — CCCD 001208***771',bgNgay:'24/7/2026'},
+ log:[lg('Lê Thu Hằng (VT)','Lập hồ sơ chuyển đi — gia đình đến làm việc trực tiếp','Cần đi gấp'),
+      lg('PHT Điểm trường A','Xác nhận Bàn giao lớp','GVCN Đỗ Minh Châu báo đã trả sách thư viện'),
+      lg('PHT Điểm trường A','Xác nhận Công nợ — gia đình nợ trường 462.000đ','KT Nguyễn Thị Bích báo số'),
+      lg('Hiệu trưởng','Duyệt và ký số quyết định QĐ-2026-0234','Cho chuyển kèm cam kết trả nợ 462.000đ'),
+      lg('Hệ thống','Đẩy CSDL ngành: chờ THCS Lê Quý Đôn tiếp nhận',''),
+      lg('Hệ thống','Sinh việc Rà soát hoàn tiền — rời trường tại M7.3 F5','Số dư tạm giữ 318.000đ ≠ 0'),
+      lg('Lê Thu Hằng (VT)','Xuất giấy xác nhận quá trình học tập','Chuyển giữa kỳ — chưa có học bạ năm nay'),
+      lg('Lê Thu Hằng (VT)','Bàn giao bản cứng cho gia đình','Có ảnh biên bản có chữ ký người nhận'),
+      lg('CSDL ngành','THCS Lê Quý Đôn ĐÃ TIẾP NHẬN — 24/7/2026','Hồ sơ HS chuyển Đã chuyển đi tại M1.1'),
+      lg('Hệ thống','Ticket vào bước Đóng hồ sơ — rà soát tài chính','Số dư tạm giữ 318.000đ chưa về 0')]},
+
+{id:'CD-2026-0017',chieu:'di',ma:'HS-2026-0455',n:'Trịnh Khánh Vy',gt:'Nữ',ns:'14/03/2013',
+ lop:'6A1',dt:'Điểm trường A',cs:'01315010102',tt:'dongho',ngay:'10/7/2026',
+ ly:'Gia đình về quê ngoại ở Nam Định sinh sống',
+ ph:[{ten:'Trịnh Văn Lộc',qh:'Cha',sdt:'0916 302 588',chinh:1}],
+ den:{ten:'THCS Trần Đăng Ninh',dc:'Phường Vị Hoàng',tinh:'Nam Định',lh:'Cô Yến — 0228 3849 226'},
+ no:0,hoan:252000,buTru:0,
+ nono:[],
+ khoan:[['Bảo hiểm y tế phần chưa dùng',252000]],
+ hb:{du:1,thieu:[],giuaky:0,nam:['2025-2026']},
+ xn:{lop:{ok:1,boi:'PHT Điểm trường A',ngay:'10/7/2026',note:'Không nợ sách thư viện'},
+     no:{ok:1,boi:'PHT Điểm trường A',ngay:'10/7/2026',note:'KT báo không nợ khoản nào'}},
+ lop_ok:1,gioithieu:{so:'GGT-2026-0044',boi:'Hiệu trưởng',ngay:'12/7/2026'},
+ ky:{ai:'Hiệu trưởng',ngay:'12/7/2026',so:'QĐ-2026-0201',kyso:1},
+ db:{day:'12/7/2026',nhan:'16/7/2026',han:'24/7/2026'},
+ sau:{xuat:1,bg:1,bgHt:'Trao trực tiếp cho gia đình',bgAi:'Trịnh Văn Lộc (Cha) — CCCD 036190***224',bgNgay:'16/7/2026'},
+ log:[lg('Lê Thu Hằng (VT)','Lập hồ sơ chuyển đi — gia đình đến làm việc trực tiếp',''),
+      lg('PHT Điểm trường A','Xác nhận Bàn giao lớp và Công nợ','Không nợ khoản nào'),
+      lg('Hiệu trưởng','Duyệt và ký số quyết định QĐ-2026-0201',''),
+      lg('CSDL ngành','THCS Trần Đăng Ninh ĐÃ TIẾP NHẬN — 16/7/2026','Hồ sơ HS chuyển Đã chuyển đi tại M1.1'),
+      lg('Hệ thống','Sinh việc Rà soát hoàn tiền — rời trường tại M7.3 F5','Số dư tạm giữ 252.000đ ≠ 0'),
+      lg('Hệ thống','Quá 30 ngày ở mốc Chờ đóng hồ sơ — vào Chờ tôi duyệt của Kế toán và Văn thư',
+        'Hồ sơ KHÔNG tự hết hạn, KHÔNG tự đóng; tiền vẫn là của gia đình')]},
 
 {id:'CD-2026-0005',chieu:'di',ma:'HS-2026-0402',n:'Ngô Bảo Châu',gt:'Nữ',ns:'19/05/2011',
  lop:'9A1',dt:'Điểm trường A',cs:'01315010031',tt:'xong',ngay:'15/8/2026',
@@ -730,6 +789,7 @@ function conTon(t){
  }
  if(t.chieu==='di'&&t.tt==='xong'){
   if(!t.sau||!t.sau.bg)O.push(['Chưa ghi nhận bàn giao bản cứng cho gia đình','']);
+  if(t.donghoso&&t.donghoso.no)O.push(['Công nợ '+vnd(t.donghoso.no)+' đang truy thu — khối G','M7.2']);
  }
  return O}
 
@@ -740,9 +800,9 @@ const XN=[
  {k:'lop',ic:'🏫',t:'Bàn giao lớp',
   ai:t=>'GVCN '+gvcnCua(t.lop),
   ho:'Quỹ lớp · sách và đồ dùng mượn ghi sổ tay · kỷ luật đang xem xét chưa lập hồ sơ'},
- {k:'no',ic:'💰',t:'Công nợ',
+ {k:'no',ic:'💰',t:'Công nợ — gia đình nợ trường',
   ai:t=>'Kế toán — '+ROLE.KT.sdt,
-  ho:'Khoản thu tiền mặt chưa nhập sổ · số phải hoàn của khoản đã đóng chưa dùng'},
+  ho:'Khoản thu tiền mặt chưa nhập sổ · quỹ lớp không qua kế toán'},
 ];
 const xnOf=t=>(t.xn=t.xn||{lop:{},no:{}});
 const duXN=t=>XN.every(x=>xnOf(t)[x.k]&&xnOf(t)[x.k].ok);
@@ -751,9 +811,10 @@ const thieuXN=t=>XN.filter(x=>!(xnOf(t)[x.k]&&xnOf(t)[x.k].ok)).map(x=>x.t);
 /* --- ai đang phải làm gì --- */
 function choToi(t){const r=R();
  if(dong(t)||t.tt==='xong')return false;
- if(t.tt===r.b)return true;
+ if(Array.isArray(r.b)?r.b.includes(t.tt):t.tt===r.b)return true;
  if(t.tt==='ht'&&t.chieu==='di'&&r.xn&&!duXN(t))return true;   /* còn xác nhận chưa tích */
  if(t.tt==='ngoai'&&r.lam)return true;          /* VT theo dõi bên kia + xuất học bạ */
+ if(t.tt==='dongho'&&r.dongho)return true;      /* F14 — đóng hồ sơ, rà soát tài chính */
  if(t.tt==='tuchoiNgoai'&&(r.lam||r.ky))return true;
  if(t.tt==='nhap'&&t.chieu==='den'&&r.chonlop&&duHoSo(t))return true;  /* PHT đề xuất lớp */
  return false}
@@ -764,6 +825,8 @@ function loaiCho(t){const r=R();
   :['v','Chờ bạn duyệt và ký'];
  if(t.tt==='nhap')return t.chieu==='den'&&r.chonlop&&!r.lam?['b','Chờ bạn đề xuất lớp']:['b','Chờ bạn hoàn thiện'];
  if(t.tt==='ngoai')return ['b','Chờ trường đến — theo dõi'];
+ if(t.tt==='dongho'){const n=soNgay(t.db.nhan), tre=n>=DH60?' · treo '+n+' ngày ⚠⚠':(n>=DH30?' · treo '+n+' ngày ⚠':'');
+  return dhChan(t).length?['r','Chưa đóng hồ sơ được — '+dhChan(t).length+' điều kiện chưa đạt'+tre]:['v','Đủ điều kiện — chờ bạn đóng hồ sơ'+tre];}
  if(t.tt==='tuchoiNgoai')return ['r','Bên kia từ chối — cần xử lý'];
  return ['b','Chờ bạn'];}
 const viecCua=()=>T.filter(t=>inScope(t)&&choToi(t));
@@ -813,7 +876,7 @@ function oTim(ph){
 const CHUDS={
  taodi:'VT',guiduyet:'VT',xuathb:'VT',bangiao:'VT',nopgt:'VT',nop1:'VT',nhantep:'VT',
  importhb:'VT',lechSua:'VT',lechGiu:'VT',dongbocho:'VT',capnhatcsdl:'VT',themcho:'VT',
- taotay:'VT',suatk:'VT',xoanhap:'VT',ktcsdl:'VT',
+ taotay:'VT',suatk:'VT',xoanhap:'VT',ktcsdl:'VT',donghoso:'VT / HT',
  chonlop:'PHT_ĐT',togglexn:'PHT_ĐT / HT',
  kydi:'HT',kyden:'HT',tuchoi:'HT',trave:'HT',thuhoi:'HT',huytk:'VT / HT',doitruong:'HT',doidt:'HT'};
 const TENCD={VT:'Văn thư','PHT_ĐT':'PHT Điểm trường',HT:'Hiệu trưởng'};
@@ -830,13 +893,14 @@ function ghiChuDemo(){
 
 function chips(){
  const n=T.filter(t=>t.chieu===tab&&inScope(t)&&choToi(t)).length;
- const C=['Tất cả','Đang xử lý','Chờ tôi','Đã hoàn tất','Đã đóng (từ chối / hủy)'];
+ const C=['Tất cả','Đang xử lý','Chờ tôi','Chờ đóng hồ sơ','Đã hoàn tất','Đã đóng (từ chối / hủy)'];
  return C.map(c=>'<button class="chip'+(fTT===c?' on':'')+'" data-f="'+c+'">'+c+
   (c==='Chờ tôi'&&n?'<span class="cb">'+n+'</span>':'')+'</button>').join('')}
 
 function locTT(L){
  if(fTT==='Đang xử lý')return L.filter(t=>!dong(t)&&t.tt!=='xong');
  if(fTT==='Chờ tôi')return L.filter(choToi);
+ if(fTT==='Chờ đóng hồ sơ')return L.filter(t=>t.tt==='dongho');
  if(fTT==='Đã hoàn tất')return L.filter(t=>t.tt==='xong');
  if(fTT==='Đã đóng (từ chối / hủy)')return L.filter(dong);
  return L.filter(t=>!dong(t))}
@@ -867,6 +931,7 @@ function viewDi(){
  '</div>'+(t0?panel(t0):'')+'</div>'}
 
 function ghiChuChip(){
+ if(fTT==='Chờ đóng hồ sơ')return '<div class="ro"><b>Mốc <i>Chờ đóng hồ sơ</i> KHÔNG giữ học sinh lại.</b> Trường đến đã tiếp nhận, hồ sơ ở M1.1 đã chuyển <b>Đã chuyển đi</b>, em đang học ở trường mới. Cái còn treo là <b>sổ tài chính tại trường cũ</b>.<br>Chip này phải có, vì đây là nhóm <b>dễ bị bỏ quên nhất</b>: nó không còn nằm trong lớp nào, không vào tỷ lệ thu của ai, và không ai đi tìm nếu không có đường tìm.</div>';
  if(fTT==='Chờ tôi')return '<div class="ro"><b>Không có tab <i>Chờ tôi duyệt</i> riêng.</b> Quyền <code>T</code> · <code>S</code> · <code>D</code> đã tách riêng ở từng Feature nên thao tác duyệt nằm <b>ngay trên từng ticket</b>. Danh sách việc xuyên menu ở <b>M0.2 Việc cần làm</b>.</div>';
  if(fTT==='Đã đóng (từ chối / hủy)')return '<div class="ro"><b>Ticket bị từ chối hoặc bị hủy không bao giờ bị xóa.</b> CSDL ngành cũng quy định <b>không xóa hồ sơ và mã định danh</b> học sinh. Bộ lọc mặc định ẩn chúng đi mà không có chip bật lại chính là xóa mềm trá hình.</div>';
  return ''}
@@ -965,6 +1030,8 @@ function nutDi(t){
  if(t.tt==='ngoai')B.push(['p','📤 Xuất học bạ / giấy xác nhận','xuathb'],
    ['','✍️ Ghi nhận bàn giao','bangiao'],['','⟳ Kiểm tra CSDL ngành','ktcsdl']);
  if(t.tt==='tuchoiNgoai')B.push(['p','🔄 Đổi trường đến và ký lại','doitruong']);
+ if(t.tt==='dongho')B.push([dhChan(t).length?'x':'p','🔒 Đóng hồ sơ chuyển đi','donghoso'],
+   ['','📤 Xuất học bạ / giấy xác nhận','xuathb'],['','✍️ Ghi nhận bàn giao','bangiao']);
  return B}
 
 function nutDen(t){
@@ -1079,7 +1146,7 @@ function kyBox(t){
 
 /* ---- CSDL ngành: khối trung tâm của chiều chuyển đi ---- */
 function khoiCSDL(t){
- if(!['ngoai','tuchoiNgoai','xong'].includes(t.tt))return '';
+ if(!['ngoai','tuchoiNgoai','dongho','xong'].includes(t.tt))return '';
  const d=t.db, tc=d.tuchoi;
  return '<div class="hb"><div class="lbh">🔗 CSDL ngành — bàn giao cho trường đến</div><div style="padding:11px 13px">'+
   '<div class="ro"><b>Đây mới là cái quyết định ticket đã xong hay chưa.</b> Ký quyết định xong, hệ thống <b>đẩy ngay</b> lên CSDL ngành (chọn Tỉnh · Xã · Trường · Lớp đến); học sinh xuất hiện ở mục <i>Tiếp nhận học sinh chuyển đến</i> của trường bên kia. Ticket <b>chỉ hoàn tất khi CSDL trả về &ldquo;đã tiếp nhận&rdquo;</b>.</div>'+
@@ -1102,7 +1169,7 @@ function khoiCSDL(t){
 
 /* ---- việc sau khi ký (chuyển đi): không chặn hoàn tất ---- */
 function khoiSau(t){
- if(!['ngoai','tuchoiNgoai','xong'].includes(t.tt))return '';
+ if(!['ngoai','tuchoiNgoai','dongho','xong'].includes(t.tt))return '';
  const s=t.sau||{};
  return '<div class="hb"><div class="lbh">📤 Bàn giao hồ sơ cho gia đình</div><div style="padding:11px 13px">'+
   '<div class="ro">Việc này chạy <b>song song</b> với việc chờ trường đến tiếp nhận, <b>không chặn</b> ticket. Máy biết tệp đã sinh ra; máy <b>không</b> biết gia đình đã cầm bản cứng về chưa.</div>'+
@@ -1118,6 +1185,75 @@ function khoiSau(t){
    '<span class="rolnk" data-go="M7.2">→ M7.2</span></div>':'')+
   '</div></div>'}
 
+/* ================= F14 — ĐÓNG HỒ SƠ CHUYỂN ĐI (mới 7/9/2026 — đóng 🔴-4) =================
+   Ba chỗ trong tài liệu nói "chặn cứng bước Đóng hồ sơ" mà KHÔNG Feature nào đặc tả bước đó.
+   Một ràng buộc được nhắc ba lần mà không có màn hình để đứng lên là ràng buộc KHÔNG tồn tại
+   trong sản phẩm — đó chính là kẽ hở G49 vế ④.
+   Cả bốn dòng đều DẪN XUẤT: không dòng nào có ô tích, không dòng nào có nút bỏ qua. */
+function dhDK(t){
+ const g=sdGD(t), no=noConLai(t);
+ return [
+  {ok:!!t.db.nhan, chan:1, l:'Trường đến đã xác nhận tiếp nhận trên CSDL ngành',
+   v:t.db.nhan?'✓ '+t.den.ten+' đã tiếp nhận — '+t.db.nhan
+     :'Đang chờ '+t.den.ten+' — hạn '+t.db.han,
+   s:'Tuyệt đối không đóng hồ sơ trước khi bên kia nhận (D2-6). Đóng sớm thì học sinh rơi giữa hai trường.'},
+  {ok:g===0, chan:1, cung:1, l:'💠 Số dư tạm giữ = 0',
+   v:g?'⛔ Trường đang giữ '+vnd(g)+' của gia đình':'✓ 0đ — trường không giữ đồng nào của gia đình',
+   s:'Tiền này <b>của gia đình</b>. Trường <b>không có thẩm quyền</b> quyết chuyện giữ nó, nên ở đây <b>không có ô tích, không có nút bỏ qua, không vai nào bypass — kể cả Hiệu trưởng</b>.',
+   go:'M7.3'},
+  {ok:no===0||!!t.qdNo, chan:1, l:'Công nợ = 0, hoặc đã có quyết định của Hiệu trưởng',
+   v:no===0?'✓ Không còn nợ'
+     :t.qdNo?'⚠ Còn nợ '+vnd(no)+' — đã có '+t.qdNo.so+' ('+t.qdNo.ly+')'
+     :'⛔ Còn nợ '+vnd(no)+' mà KHÔNG có quyết định nào — hồ sơ này đang đóng sai',
+   s:no&&t.qdNo?'Không chặn. Trường <b>có thẩm quyền</b> cho nợ, và thẩm quyền đó đã có chữ ký. Đóng hồ sơ thì khoản nợ <b>đi tiếp sang M7.2 F19 truy thu</b>, không biến mất.'
+     :no?'Chặn. Nợ &gt; 0 mà không có quyết định nghĩa là chưa ai chịu trách nhiệm về việc cho đi kèm nợ — trả về bước ký.':'',
+   go:no?'M7.2':''},
+  {ok:!!(t.sau&&t.sau.xuat&&t.sau.bg), chan:0, l:'Học bạ đã xuất và bàn giao bản cứng có biên bản ký',
+   v:(t.sau&&t.sau.xuat?'✓ đã xuất':'⚠ chưa xuất')+' · '+(t.sau&&t.sau.bg?'✓ đã bàn giao':'⚠ chưa ghi nhận bàn giao'),
+   s:'<b>Không chặn</b> — thành việc còn tồn theo dõi ở M1.1 và M0.2 (ràng buộc 6b).'}
+ ]}
+const dhChan=t=>dhDK(t).filter(d=>d.chan&&!d.ok);
+
+function khoiDongHoSo(t){
+ if(t.tt!=='dongho')return '';
+ const D=dhDK(t), C=dhChan(t), no=noConLai(t);
+ return '<div class="hb"><div class="lbh">🔒 Đóng hồ sơ chuyển đi <span class="sp"></span>'+
+  '<span class="st2 '+(C.length?'r':'o')+'">'+(C.length?C.length+' điều kiện chưa đạt':'Đủ điều kiện')+'</span></div>'+
+  '<div style="padding:11px 13px">'+
+  '<div class="ro"><b>Mốc này không giữ học sinh lại.</b> '+t.den.ten+' đã tiếp nhận, hồ sơ ở M1.1 đã chuyển <b>Đã chuyển đi</b>, em đang học ở trường mới. '+
+  'Cái còn treo là <b>sổ tài chính tại trường cũ</b> — việc của trường cũ với chính mình. Gộp hai việc đó vào một mốc chính là lý do trước đây tiền bị bỏ lại mà không ai thấy.<br>'+
+  '<b>Và nó không làm chậm con số gửi ra ngoài:</b> <b>M9.1</b> đã đếm em này vào <b>'+(t.db.nhan||'—')+'</b> — ngày trường đến tiếp nhận, <b>không</b> phải ngày đóng hồ sơ. '+
+  'Không để một con số đối ngoại phụ thuộc vào một việc mà chính trường quyết nhanh chậm.</div>'+
+  dhLeoThang(t)+
+  D.map(d=>'<div class="ck'+(d.ok?' done':'')+'" style="align-items:flex-start">'+
+   '<div class="ic">'+(d.ok?'✅':d.chan?'⛔':'⚠')+'</div><div class="bd">'+
+   '<b>'+d.l+'</b><span>'+d.v+'</span>'+
+   (d.s?'<div style="margin-top:4px;font-size:11.5px;color:var(--ink2)">'+d.s+'</div>':'')+
+   (!d.ok&&d.go?'<div style="margin-top:6px">'+
+     (d.go==='M7.3'&&Math.min(sdGD(t),no)?'<button class="btn xs p" data-x="butru" data-t="'+t.id+'">⇄ Bù trừ '+vnd(Math.min(sdGD(t),no))+' vào công nợ</button>':'')+
+     (d.go==='M7.3'?'<button class="btn xs" data-x="hoanxong" data-t="'+t.id+'">Giả lập: M7.3 đã hoàn xong</button>':'')+
+     '<button class="btn xs" data-go="'+d.go+'">↗ '+d.go+'</button></div>':'')+
+   '</div><span class="who may">MÁY</span></div>').join('')+
+  (dhDK(t)[1].ok?'':'<div class="danger" style="margin-top:9px"><b>Không có nút bỏ qua cho dòng 💠.</b> '+
+   'Vẽ một nút như vậy nghĩa là có ai đó ở trường được quyền quyết chuyện giữ tiền của người đã đi — không ai có quyền đó, nên nút không tồn tại.</div>')+
+  '<div class="ro" style="margin:9px 0 0"><b>Bước này không có chặng ký.</b> Hiệu trưởng đã ký đúng cái mình có thẩm quyền ký — <b>quyết định cho đi kèm nợ</b> — ở bước trước; '+
+  'đóng hồ sơ chỉ là <b>ghi nhận quyết định đó đã thi hành xong</b>. Bắt ký lại là bắt ký hai lần cho một việc, và mỗi chữ ký thừa là thêm một chỗ hồ sơ mắc kẹt.</div>'+
+  '</div></div>'}
+
+/* Leo thang mốc Chờ đóng hồ sơ — chốt 7/9/2026 (điểm 11).
+   Mượn nguyên cơ chế của hồ sơ chờ đồng bộ (ràng buộc 12): hai ca cùng một hình dạng —
+   một bản ghi ĐÚNG, đang chờ bên khác làm xong việc, KHÔNG được phép tự tiêu biến. */
+function dhLeoThang(t){
+ const n=soNgay(t.db.nhan);
+ const bac=n>=DH60?2:(n>=DH30?1:0);
+ const cls=bac===2?'danger':(bac===1?'warn':'ok');
+ return '<div class="'+cls+'" style="margin:0 0 9px"><b>Đã chờ đóng hồ sơ '+n+' ngày</b> — kể từ ngày '+t.den.ten+' tiếp nhận ('+(t.db.nhan||'—')+').'+
+  (bac===2?'<div style="margin-top:5px">Quá <b>'+DH60+' ngày</b> — việc đã <b>báo Hiệu trưởng</b>.</div>'
+   :bac===1?'<div style="margin-top:5px">Quá <b>'+DH30+' ngày</b> — việc đã vào <i>Chờ tôi duyệt</i> của <b>Kế toán</b> và <b>Văn thư</b>. Quá '+DH60+' ngày thì báo Hiệu trưởng.</div>'
+   :'<div style="margin-top:5px">Chưa tới ngưỡng leo thang. Quá <b>'+DH30+' ngày</b> vào <i>Chờ tôi duyệt</i> của Kế toán và Văn thư; quá <b>'+DH60+' ngày</b> báo Hiệu trưởng.</div>')+
+  '<div style="margin-top:5px;font-size:11.5px">⛔ <b>Hồ sơ không tự hết hạn, không tự đóng, và tiền không tự đi đâu cả.</b> '+
+  'Leo thang chỉ để không ai quên — nó <b>không</b> tạo ra một đường tắt. Ngưỡng <b>cấu hình được</b>.</div></div>'}
+
 /* ---- việc còn tồn sau khi ticket đóng ---- */
 function khoiTon(t){
  const O=conTon(t);
@@ -1129,12 +1265,12 @@ function khoiTon(t){
 function timeline(t){
  return '<div class="hb" style="margin-bottom:0"><div class="lbh">🕘 Nhật ký (audit)</div><div style="padding:11px 13px"><div class="tl">'+
   t.log.slice().reverse().map(x=>'<div class="tli"><b>'+x[2]+'</b><span>'+x[1]+' · '+x[0]+(x[3]?' — '+x[3]:'')+'</span></div>').join('')+
-  '</div><div class="ro" style="margin:11px 0 0">Audit lưu <b>họ tên và chức danh tại thời điểm thao tác</b> — truy vết được sau khi nhân sự nghỉ việc. Theo <b>NĐ 13/2023</b>, mọi lượt xem · tải · xuất học bạ đều ghi nhật ký và <b>xuất bắt buộc chọn mục đích</b>.</div></div></div>'}
+  '</div><div class="ro" style="margin:11px 0 0">Audit lưu <b>họ tên và chức danh tại thời điểm thao tác</b> — truy vết được sau khi nhân sự nghỉ việc. Theo <b>Luật BVDLCN 91/2025</b>, mọi lượt xem · tải · xuất học bạ đều ghi nhật ký và <b>xuất bắt buộc chọn mục đích</b>.</div></div></div>'}
 
 /* ================= THÂN — CHUYỂN ĐI ================= */
 function bodyDi(t){
  const r=R(), D=dkDi(t);
- return khoiTon(t)+khoiTT(t)+khoiCSDL(t)+khoiSau(t)+
+ return khoiTon(t)+khoiTT(t)+khoiDongHoSo(t)+khoiCSDL(t)+khoiSau(t)+
  '<div class="hb"><div class="lbh">👤 Học sinh và nơi đến</div>'+
   '<div class="f2"><div class="k">Họ và tên</div><div class="v">'+t.n+' · '+t.gt+' · '+t.ns+'</div></div>'+
   '<div class="f2"><div class="k">Mã HS · Lớp</div><div class="v">'+t.ma+' · '+t.lop+' ('+t.dt+') · GVCN '+gvcnCua(t.lop)+'</div></div>'+
@@ -1179,7 +1315,36 @@ function khoiXN(t){
      '</div></label>'+
     '<div style="margin-top:9px;padding-top:9px;border-top:1px solid var(--line)">'+(x.k==='lop'?tkLop(t):tkNo(t))+'</div>'+
    '</div>'}).join('')+
+  chiBaoSoDu(t)+
   '</div></div>'}
+
+/* ---- Mục thứ BA của khối: chỉ báo DẪN XUẤT, không phải ô tích (sửa 7/9/2026 — 🔴-4) ----
+   Trước 7/9 số dư nằm chung trong ô tích Công nợ: người duyệt nghe kế toán báo "không nợ gì"
+   rồi tích, trong khi vế "trường nợ gia đình" của cùng ô đó vẫn còn tiền. Đó là ca xác nhận nhầm. */
+function chiBaoSoDu(t){
+ const g=sdGD(t), no=noConLai(t), buDuoc=Math.min(g,no);
+ return '<div class="ck" style="display:block;border-style:dashed">'+
+  '<div class="xnrow" style="cursor:default">'+
+   '<div style="width:17px;height:17px;display:flex;align-items:center;justify-content:center;font-size:14px">⚙</div>'+
+   '<div class="bd"><b>💠 Số dư tạm giữ — trường nợ gia đình</b>'+
+   '<span><b>KHÔNG có ô tích.</b> Đây là <b>trạng thái dẫn xuất</b> đọc thẳng sổ số dư ở M7.2 — không ai tích được, nên <b>không ai tích nhầm được</b>.</span></div>'+
+   '<span class="who may">MÁY</span></div>'+
+  '<div style="margin-top:9px;padding-top:9px;border-top:1px solid var(--line)">'+
+  (g
+   ?'<div class="danger" style="margin:0"><b>⛔ Trường đang giữ '+vnd(g)+' của gia đình em '+t.n+'.</b>'+
+     '<div style="margin-top:6px;font-size:11.5px">Số dư này <b>không khóa nút ký</b> — quyết định cho chuyển vẫn ký được, gia đình cần đi thì cho đi. '+
+     'Nó chặn ở <b>bước Đóng hồ sơ (F14)</b>, và <b>không có nút bỏ qua cho bất kỳ vai nào, kể cả Hiệu trưởng</b> — trường không có thẩm quyền giữ tiền của người đã đi.</div>'+
+     '<div style="margin-top:7px">'+
+      (buDuoc?'<button class="btn sm p" data-x="butru" data-t="'+t.id+'">⇄ Bù trừ '+vnd(buDuoc)+' số dư vào công nợ</button>':'')+
+      '<button class="btn sm" data-go="M7.3">↗ M7.3 — lập phiếu hoàn tiền</button>'+
+      '<button class="btn sm" data-x="hoanxong" data-t="'+t.id+'">Giả lập: M7.3 đã hoàn xong</button></div></div>'
+   :'<div class="ok" style="margin:0"><b>✅ Số dư tạm giữ = 0</b> — trường không giữ đồng nào của gia đình này. Điều kiện thứ hai của bước Đóng hồ sơ đã đạt.</div>')+
+  '</div>'+
+  '<div style="margin-top:8px;font-size:11.5px;color:var(--ink2)"><b>Một quy tắc, không phải hai quy tắc ngược nhau.</b> '+
+  'Ở đâu trường <b>có thẩm quyền quyết</b> thì ở đó có <b>một chữ ký</b> — công nợ, HT ký. '+
+  'Ở đâu trường <b>không có thẩm quyền</b> thì ở đó <b>không có ai để ký</b> — máy tự tính. '+
+  '<span class="rolnk" data-go="M7.2">→ M7.2 sổ số dư</span></div>'+
+  '</div>'}
 
 /* Thống kê máy CÓ — để người gọi điện biết hỏi cái gì */
 function tkLop(t){
@@ -1206,25 +1371,13 @@ function tkNo(t){
   (t.nono.length?t.nono.map(x=>'<tr><td>Còn nợ</td><td>'+x[0]+' <i style="color:var(--ink3)">('+x[2]+')</i></td><td><b style="color:var(--red)">'+vnd(x[1])+'</b></td></tr>').join('')
    :'<tr><td>Còn nợ</td><td colspan="2"><span class="st2 o">Không có khoản nợ nào</span></td></tr>')+
   (t.buTru?'<tr><td>Đã bù trừ</td><td>Trừ từ số dư tạm giữ</td><td><b style="color:var(--green)">−'+vnd(t.buTru)+'</b></td></tr>':'')+
-  '<tr><td colspan="3" style="background:var(--bg);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.04em">Trường nợ gia đình — CHẶN CỨNG bước Đóng hồ sơ</td></tr>'+
-  (t.khoan.length?t.khoan.map(x=>'<tr><td>Đã đóng chưa dùng</td><td>'+x[0]+'</td><td><b>'+vnd(x[1])+'</b></td></tr>').join('')
-   :'<tr><td>Đã đóng chưa dùng</td><td colspan="2"><span style="color:var(--ink3)">Không có khoản nào</span></td></tr>')+
-  '<tr><td><b>💠 Số dư tạm giữ</b></td><td colspan="2">'+
-   (g?'<b style="color:#166534;font-size:14px">'+vnd(g)+'</b> — <b>toàn bộ là tiền gia đình</b>, hoàn được, phụ huynh chọn dùng<div class="hint">Hỗ trợ ngân sách đã trừ thẳng khi tính số phải đóng nên hóa đơn chưa từng chứa nó</div>':'<span class="st2 o">0đ — không giữ tiền của gia đình</span>')+'</td></tr>'+
-
+  '<tr><td><b>Nợ còn lại</b></td><td colspan="2">'+
+   (no?'<b style="color:var(--red);font-size:14px">'+vnd(no)+'</b> — <b>không chặn</b>, đẩy lên Hiệu trưởng quyết ở màn hình ký':'<span class="st2 o">0đ</span>')+'</td></tr>'+
   '</table></div>'+
-  (buDuoc?'<div class="warn" style="margin-top:8px"><b>Em vừa nợ '+vnd(no)+' vừa có số dư '+vnd(g)+'.</b> '+
-   'Bù trừ trước thì hai vấn đề gộp thành một — phần còn lại mới phải hỏi tiếp.'+
-   '<div style="margin-top:7px"><button class="btn sm p" data-x="butru" data-t="'+t.id+'">⇄ Bù trừ '+vnd(buDuoc)+' số dư vào công nợ</button></div></div>':'')+
-  (g&&!buDuoc?'<div class="danger" style="margin-top:8px"><b>⛔ Trường đang giữ '+vnd(g)+' của gia đình này.</b> '+
-   '<b>Bước Đóng hồ sơ bị chặn cứng</b> cho tới khi số dư về 0 — trường <b>không có quyền</b> giữ tiền của người đã đi, và không ai được quyết chuyện đó, kể cả Hiệu trưởng. '+
-   'Ký quyết định thì vẫn ký được và <b>tự sinh việc Rà soát hoàn tiền</b> ở M7.3.'+
-   '<div style="margin-top:7px"><button class="btn sm" data-go="M7.3">↗ M7.3 — lập phiếu hoàn tiền</button>'+
-   '<button class="btn sm" data-x="hoanxong" data-t="'+t.id+'">Giả lập: M7.3 đã hoàn xong</button></div></div>':'')+
-  '<div style="font-size:11.5px;color:var(--ink2);margin-top:7px"><b>Hai chiều, hai quy tắc ngược nhau.</b> '+
-  'Gia đình nợ trường thì <b>không chặn</b> — trường <b>có quyền</b> miễn, giảm, cho nợ, đó là thẩm quyền Hiệu trưởng. '+
-  'Trường nợ gia đình thì <b>chặn cứng</b> — trường <b>không có quyền</b> giữ tiền của người đã đi.<br>'+
-  'Máy lập report, <b>người chốt số</b>: khoản thu tiền mặt chưa nhập sổ và <i>"đã đóng nhưng chưa dùng phải hoàn bao nhiêu"</i> là phán đoán.'+
+  '<div style="font-size:11.5px;color:var(--ink2);margin-top:7px"><b>Ô tích này phủ ĐÚNG MỘT chiều tiền: gia đình nợ trường.</b> '+
+  'Trường <b>có quyền</b> miễn, giảm, cho nợ — đó là thẩm quyền Hiệu trưởng, nên chiều này có người ký. '+
+  'Chiều ngược lại nằm ở mục <b>💠 Số dư tạm giữ</b> bên dưới và <b>không có ô tích nào</b>.<br>'+
+  'Máy lập report, <b>người chốt số</b>: khoản thu tiền mặt chưa nhập sổ và quỹ lớp không qua kế toán thì phải hỏi người.'+
   ' <span class="rolnk" data-go="M7.2">→ M7.2</span></div>'}
 
 function khoiNo(t){
@@ -1440,7 +1593,7 @@ function act(a,d){
   '<div style="height:5px;background:#e2e8f0;border-radius:3px;margin:12px 0"></div>'+
   '<div style="height:5px;background:#e2e8f0;border-radius:3px;width:80%;margin:6px 0"></div>'+
   '<div style="text-align:right;margin-top:26px;padding-right:14px">Ký tên · đóng dấu</div></div></div>'+
-  '<div class="ro" style="margin:12px 0 0"><b>👁 Xem đặt trước ⬇ Tải</b> — xem ngay trong màn hình, không ép tải về. Mọi lượt mở xem và tải đều <b>ghi audit</b> theo NĐ 13/2023.</div>',
+  '<div class="ro" style="margin:12px 0 0"><b>👁 Xem đặt trước ⬇ Tải</b> — xem ngay trong màn hình, không ép tải về. Mọi lượt mở xem và tải đều <b>ghi audit</b> theo Luật BVDLCN 91/2025.</div>',
   [['Đóng',0],['⬇ Tải',()=>toast('Đã tải · ghi audit')]]);return}
  if(a==='xemqd'){modal('👁 '+(t.ky?t.ky.so:''),
   '<div style="background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:22px;font-size:12.5px;line-height:1.9">'+
@@ -1603,20 +1756,47 @@ function act(a,d){
       t.log.push(lg('CSDL ngành',t.den.ten+' TỪ CHỐI tiếp nhận','Đã nêu lý do bằng văn bản'));
       toast('Trường đến từ chối · học sinh VẪN thuộc trường mình, hồ sơ giữ Chờ chuyển đi');render()},'d'],
     ['✓ Bên kia ĐÃ TIẾP NHẬN',()=>{
-      if(sdGD(t)>0){
-       $('#mdl').classList.remove('sm');
-       modal('⛔ Không đóng hồ sơ được',
-        '<div class="danger" style="margin-bottom:0"><b>Trường đang giữ '+vnd(sdGD(t))+' của gia đình em '+t.n+'.</b>'+
-        '<div style="margin-top:7px">Số dư tạm giữ chưa về 0. Trường <b>không có quyền</b> giữ tiền của người đã chuyển đi — '+
-        'khác với công nợ, chuyện này <b>không ai được quyết</b>, kể cả Hiệu trưởng.</div>'+
-        '<div style="margin-top:7px">Cần: <b>hoàn cho gia đình</b> ở M7.3, hoặc <b>bù trừ vào công nợ</b> nếu em còn nợ.</div></div>'+
-        '<div class="ro">Bên kia <b>đã tiếp nhận</b> rồi — học sinh vẫn chuyển đi bình thường. Chỉ <b>hồ sơ tại trường mình chưa đóng được</b>, '+
-        'và nó nằm ở danh sách <i>Đang xử lý</i> cho tới khi tiền về tay gia đình.</div>',
-        [['Đóng',0],['↗ Mở M7.3',()=>{toast('Deep-link /m7-3?ctx='+t.ma+'&action=tao&return=M1.5')}]]);
-       return}
-      t.db.nhan=NGAY;t.tt='xong';
-      t.log.push(lg('CSDL ngành',t.den.ten+' ĐÃ TIẾP NHẬN — '+NGAY,'Hồ sơ HS chuyển Đã chuyển đi, khóa sửa, giữ vĩnh viễn'));
-      toast('Hoàn tất · hồ sơ HS chuyển Đã chuyển đi tại M1.1');render()},'g']]);return}
+      t.db.nhan=NGAY;t.tt='dongho';
+      t.log.push(lg('CSDL ngành',t.den.ten+' ĐÃ TIẾP NHẬN — '+NGAY,'Hồ sơ HS chuyển Đã chuyển đi tại M1.1, khóa sửa, giữ vĩnh viễn'));
+      t.log.push(lg('Hệ thống','Ticket vào bước Đóng hồ sơ — rà soát tài chính',
+       'Học sinh đã đi; còn lại là sổ tài chính tại trường cũ'));
+      const C=dhChan(t);
+      toast(C.length?'Bên kia đã nhận · còn '+C.length+' điều kiện tài chính chưa đạt — hồ sơ CHƯA đóng':'Bên kia đã nhận · đủ điều kiện, bấm Đóng hồ sơ');
+      render()},'g']]);return}
+
+ /* ---------- F14: đóng hồ sơ chuyển đi ---------- */
+ if(a==='donghoso'){
+  const C=dhChan(t), no=noConLai(t);
+  if(C.length){
+   $('#mdl').classList.remove('sm');
+   modal('⛔ Chưa đóng hồ sơ được — còn '+C.length+' điều kiện',
+    C.map(d=>'<div class="danger"><b>'+d.l+'</b><div style="margin-top:5px">'+d.v+'</div>'+
+     (d.s?'<div style="margin-top:5px;font-size:11.5px">'+d.s+'</div>':'')+
+     (d.go?'<span class="rolnk" data-go="'+d.go+'">→ '+d.go+'</span>':'')+'</div>').join('')+
+    '<div class="ro" style="margin-bottom:0">Các điều kiện này <b>máy tự tính</b> — không có ô tích nào để đánh dấu chúng đã đạt, '+
+    'và <b>không có nút bỏ qua</b>. Muốn đóng thì phải làm cho chúng đạt thật, ở đúng menu chủ của từng cái.</div>',
+    [['Đóng',0]]);return}
+  $('#mdl').classList.remove('sm');
+  modal('🔒 Đóng hồ sơ chuyển đi — '+t.n,
+   (no?'<div class="warn"><b>Hồ sơ này đóng KÈM công nợ '+vnd(no)+'.</b> Ba điều sẽ xảy ra:'+
+     '<div style="margin-top:7px">1. Công nợ <b>giữ nguyên tại M7.2, không bị xóa</b>.<br>'+
+     '2. Em vào <b>M7.2 → T2 khối G → F19 Truy thu công nợ học sinh đã rời trường</b>, mang căn cứ giữ nợ là <b>'+(t.qdNo?t.qdNo.so:'')+'</b>.<br>'+
+     '3. <b>Nhắc nợ hàng loạt qua App sẽ BỎ QUA em</b> — truy thu từ đây là <b>liên hệ có người thật, ghi vết từng lần</b>, không phải push tự động.</div>'+
+     '<div style="margin-top:7px;font-size:11.5px">Nói rõ điều 3 để bạn biết mình vừa chuyển việc cho ai, chứ không tưởng là hệ thống tự đòi.</div></div>'
+    :'<div class="ok"><b>Không còn nợ, không còn số dư.</b> Sổ tài chính của em tại trường này đã sạch.</div>')+
+   '<div class="ro">Audit ghi <b>giá trị bốn điều kiện tại thời điểm đóng</b> — không chỉ ghi "đã đóng". '+
+   'Sáu tháng sau thanh tra hỏi <i>"lúc đóng thì em này còn nợ bao nhiêu"</i>, câu trả lời phải nằm trong bản ghi, '+
+   'không phải suy ra từ sổ hiện tại vốn đã biến động.</div>'+
+   '<div class="ro" style="margin-bottom:0"><b>Hồ sơ đã đóng không mở lại.</b> Phát hiện đóng sai thì hai đường chữa nằm ở '+
+   '<b>M7.2 F19</b> (còn nợ) và <b>M7.3 §9.3</b> (còn số dư) — cả hai đều nhận học sinh đã đóng hồ sơ.</div>',
+   [['Hủy',0],['🔒 Đóng hồ sơ',()=>{
+     t.tt='xong';t.donghoso={ngay:NGAY,boi:R().n,no:no,sodu:sdGD(t),qd:t.qdNo?t.qdNo.so:''};
+     t.log.push(lg(R().n,'Đóng hồ sơ chuyển đi',
+      'Số dư tạm giữ 0đ · công nợ '+vnd(no)+(no?' (căn cứ '+(t.qdNo?t.qdNo.so:'—')+')':'')+' · CSDL ngành đã xác nhận tiếp nhận'));
+     if(no)t.log.push(lg('Hệ thống','Chuyển công nợ '+vnd(no)+' sang M7.2 F19 truy thu',
+      'Trạng thái rời: Đã chuyển đi · căn cứ giữ nợ: '+(t.qdNo?t.qdNo.so:'—')));
+     toast(no?'Đã đóng hồ sơ · công nợ '+vnd(no)+' chuyển sang M7.2 F19 truy thu':'Đã đóng hồ sơ · sổ tài chính sạch');
+     render()},'p']]);return}
 
  if(a==='doitruong'){
   $('#mdl').classList.remove('sm');
@@ -1904,6 +2084,10 @@ function kyXongDi(t,so,kyso){
   t.log.push(lg(R().n,'Yêu cầu đóng đủ công nợ mới cho chuyển','Trả về văn thư · bỏ xác nhận công nợ · thông báo gia đình kèm deep-link M7.2'));
   toast('Đã trả về văn thư · xác nhận công nợ bị bỏ, phải hỏi lại kế toán');render();return}
  t.ky={ai:'Hiệu trưởng',ngay:NGAY,so:so,kyso:kyso};
+ /* Quyết định về CÔNG NỢ — chiều duy nhất HT có thẩm quyền ký (§3.4b).
+    Nó là CĂN CỨ GIỮ NỢ mà M7.2 F19 đọc khi truy thu sau này. */
+ if(noConLai(t)>0)t.qdNo={so:so,ai:'Hiệu trưởng',ngay:NGAY,so_tien:noConLai(t),
+   ly:'Cho chuyển kèm cam kết trả nợ — nội dung cam kết in vào quyết định'};
  t.gioithieu={so:soGGT(),boi:'Hiệu trưởng',ngay:NGAY};
  t.lop_ok=1;
  t.log.push(lg(R().n,(kyso?'Duyệt và ký số quyết định ':'Duyệt và ký KHÔNG dùng chữ ký số — ')+so,
@@ -1990,7 +2174,7 @@ function tiepTuc(a,d,t){
      thieu.map(x=>'<div style="margin-top:5px">&bull; Năm <b>'+x[0]+'</b> — '+x[1]+' <span class="rolnk" data-go="M1.3">→ M1.3</span></div>').join('')+
      '<div style="margin-top:8px;font-size:11.5px">Bàn giao học bạ thiếu chữ ký sang trường khác là <b>đẩy artefact không có hiệu lực pháp lý ra ngoài phạm vi kiểm soát của mình</b>.</div></div>'
     :'<div class="ok">✓ '+(gk?'Các năm trước đã Hoàn tất':'Toàn bộ '+t.hb.nam.length+' năm đã Hoàn tất')+' — '+t.hb.nam.join(' · ')+'</div>')+
-   '<div><b>Mục đích xuất</b> <span style="color:var(--red)">*bắt buộc — ghi audit theo NĐ 13/2023</span>'+
+   '<div><b>Mục đích xuất</b> <span style="color:var(--red)">*bắt buộc — ghi audit theo Luật BVDLCN 91/2025</span>'+
    '<select class="fldi"><option>Hồ sơ chuyển trường</option><option>Cấp bản sao theo yêu cầu gia đình</option></select></div>'+
    '<div class="ro" style="margin:11px 0 0">Bản xuất có <b>chữ ký số HT + chữ ký số trường</b>, có <b>mã tra cứu và QR</b> ở mỗi trang để bên nhận xác thực.</div>',
    [['Hủy',0],thieu.length?null:['📤 Xuất',()=>{t.sau=t.sau||{};t.sau.xuat=1;

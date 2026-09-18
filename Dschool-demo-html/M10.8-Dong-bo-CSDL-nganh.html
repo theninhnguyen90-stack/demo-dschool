@@ -107,11 +107,21 @@ code{background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:11px}
 /* ═══════════ NHÓM DỮ LIỆU ═══════════ */
 /* thu tu = thu tu phu thuoc bat buoc (§3.1) */
 const NHOM=[
- {id:'cc', ten:'Cơ cấu tổ chức', mo:'điểm trường · hệ đào tạo · tổ chuyên môn', mn:'M10.2', keo:1,day:1, n:14,   lan:'12/08/2026 05:12'},
- {id:'lop',ten:'Danh mục lớp',    mo:'38 lớp · gồm cả lớp không hoạt động',       mn:'M10.2', keo:1,day:1, n:38,   lan:'12/08/2026 05:14'},
+ {id:'cc', ten:'Cơ cấu tổ chức', mo:'điểm trường · hệ đào tạo · tổ chuyên môn', mn:'M10.1 ② ⑤', keo:1,day:1, n:14,   lan:'12/08/2026 05:12'},
+ {id:'lop',ten:'Danh mục lớp',    mo:'38 lớp · gồm cả lớp không hoạt động',       mn:'M10.1 ③', keo:1,day:1, n:38,   lan:'12/08/2026 05:14'},
  {id:'ns', ten:'Danh sách nhân sự',mo:'chỉ người có cờ “Thuộc diện khai CSDL ngành”',mn:'M4.1',keo:1,day:1, n:79,  lan:'20/08/2026 09:40'},
  {id:'hs', ten:'Hồ sơ học sinh',  mo:'toàn trường',                               mn:'M1.1', keo:1,day:1, n:1284, lan:'12/08/2026 05:20'},
  {id:'kq', ten:'Kết quả học tập', mo:'điểm tổng kết · xếp loại',                   mn:'M1.6 · M2.5', keo:1,day:1, n:1284, lan:'—'},
+ /* 🆕 7/9/2026 — nhóm thứ BẢY. Sáu nhóm cũ KHÔNG CÓ SỨC KHỎE, trong khi
+    CSDL ngành BẮT NHẬP (hướng dẫn BGDĐT 3/2026 · mục 4.5.1 và 4.7).
+    Hệ quả nếu để nguyên: y tế nhập vào M6.6 rồi GÕ LẠI LẦN HAI trên cổng
+    Sở — đúng thứ menu này sinh ra để tránh, và là loại thiếu sót KHÔNG AI
+    BÁO LỖI vì hệ thống vẫn chạy đúng, chỉ có người thì làm việc hai lần. */
+ {id:'skhoe',ten:'Sức khỏe – Thể lực', mo:'chiều cao · cân nặng · BMI · biết bơi · bệnh về mắt · bệnh về cột sống + 6 nội dung thể lực',
+  mn:'M6.6', keo:0,day:1, n:1284, lan:'—', nhaycam:1,
+  lydo:'Trường là nơi NHẬP GỐC — CSDL ngành ở nhóm này chỉ nhận, không tính gì trả lại. '+
+       'Ánh xạ ngược lại CÓ MẤT MÁT: M6.6 giữ kết luận của bác sĩ và mức 🔴/🟡, CSDL ngành chỉ giữ sáu chỉ số. '+
+       'Và kéo hàng loạt dữ liệu sức khỏe trẻ em về là mở một bề mặt rủi ro (Luật BVDLCN 91/2025) mà không đổi lại được gì.'},
  {id:'vb', ten:'Văn bằng',        mo:'công khai theo TT 10/2026',                  mn:'M3.4', keo:0,day:1, n:216,  lan:'—',
   lydo:'Trường tự cấp bằng và tự lập số hiệu (TT 10/2026, hiệu lực 15/4/2026). CSDL ngành không cấp mã bằng nữa — kéo về là vô nghĩa.'}];
 
@@ -125,7 +135,23 @@ const DC={
  hs:{khop:1206,lech:64,chiN:9,chiT:5,maLech:2,ruiro:[['Trường vận hành',3,'Lớp · điểm trường · trạng thái HS — lớp sai thì hỏng cả điểm danh, sổ đầu bài, bảng điểm'],
                                                     ['Pháp lý',2,'Họ tên · ngày sinh · dân tộc · số định danh cá nhân'],
                                                     ['Liên hệ',1,'SĐT phụ huynh — Sở thường trống, kéo về có thể xóa mất số đang dùng']]},
- kq:{khop:0,lech:0,chiN:1284,chiT:0,maLech:0, ruiro:[['Kết quả học tập',2,'Điểm tổng kết · xếp loại']]}};
+ kq:{khop:0,lech:0,chiN:1284,chiT:0,maLech:0, ruiro:[['Kết quả học tập',2,'Điểm tổng kết · xếp loại']]},
+ skhoe:{khop:0,lech:0,chiN:0,chiT:1284,maLech:0, ruiro:[]}};
+
+/* ═══════════ 🆕 ÁNH XẠ TRƯỜNG ↔ TRƯỜNG CỦA NHÓM SỨC KHỎE ═══════════
+   Tên trường lấy NGUYÊN từ hướng dẫn BGDĐT 3/2026 và QĐ 53/2008/QĐ-BGDĐT
+   — đặt tên tự do thì đến lúc ánh xạ sẽ phải đoán. */
+const ANHXA_SK=[
+ ['Chiều cao','M6.6 tab 3 — đợt khám','Chiều cao','cm',''],
+ ['Cân nặng','M6.6 tab 3 — đợt khám','Cân nặng','kg',''],
+ ['BMI','dẫn xuất','BMI','','đẩy giá trị đã tính, không đẩy công thức'],
+ ['Phân loại thể lực (máy gợi ý)','dẫn xuất','Đánh giá BMI','','tên ngành khác tên nội bộ — ánh xạ tên, không đổi nghĩa'],
+ ['Biết bơi','M6.6 tab 2 — Lớp 1, theo năm học','Biết bơi','','⛔ «Chưa khảo sát» KHÔNG thành «Không»'],
+ ['Bệnh về mắt','M6.6 tab 3 — bác sĩ điền','Bệnh về mắt','','⛔ không suy từ ngưỡng thị lực'],
+ ['Bệnh về cột sống','M6.6 tab 3 — đợt khám','Bệnh về cột sống','','']];
+const ANHXA_TL=[
+ ['Lực bóp tay thuận','kg'],['Nằm ngửa gập bụng','lần/30 giây'],['Bật xa tại chỗ','cm'],
+ ['Chạy 30m XPC','giây'],['Chạy con thoi 4×10m','giây'],['Chạy tùy sức 5 phút','m']];
 
 /* sua tay gan day se bi mat neu keo ve */
 const SUATAY={hs:[['27/08 Đỗ Thị Lan','SĐT mẹ · địa chỉ — Nguyễn Minh Anh (9A2)'],
@@ -152,6 +178,10 @@ const VIEC=[
   ly:'Đối khớp gần đúng KHÔNG BAO GIỜ tự áp dụng — ghép nhầm là lỗi không phát hiện được bằng mắt về sau', ai:'VT'},
  {loai:'khop', t:'⛔ Không đối khớp được', ob:'Hoàng Thị Mai (nhân sự)', ct:'Có mã ở CSDL ngành, hồ sơ trường trống mã nhưng CCCD khác',
   ly:'Không đủ căn cứ ghép — cần đối chiếu giấy tờ', ai:'TCNS'},
+ {loai:'sk', t:'🩺 Trường sức khỏe chưa khảo sát', ob:'118 học sinh · trường «Biết bơi»', ct:'Giá trị hiện tại: «Chưa khảo sát» — chưa ai hỏi',
+  ly:'⛔ KHÔNG ánh xạ «Chưa khảo sát» thành «Không». «Trường chưa hỏi em này» và «em này không biết bơi» là hai câu khác nhau — biến cái đầu thành cái sau là bịa một số liệu rồi gửi lên Sở. Cách xử lý: khảo sát ở M6.6 tab 2 rồi đẩy lại.', ai:'VT'},
+ {loai:'sk', t:'🩺 Học sinh được miễn đo thể lực', ob:'9 học sinh · sáu nội dung thể lực', ct:'Ghi «Miễn» kèm lý do theo QĐ 53/2008',
+  ly:'⛔ KHÔNG ánh xạ «Miễn» thành «0» — số 0 là «đo được 0», không phải «không đo». Chờ chốt cổng Sở có ô nhận cờ Miễn không (điểm cần xác nhận 9); cổng không có ô đó thì nhóm này nằm lại đây mỗi năm.', ai:'VT'},
  {loai:'tuchoi', t:'↩ Lượt đẩy bị Sở từ chối', ob:'Phiên P-0824 · Hồ sơ học sinh · 12 bản ghi', ct:'Sở trả về: “Mã lớp 9A4 không tồn tại trên hệ thống. Vui lòng đăng ký lớp trước khi đẩy học sinh.”',
   ly:'Lớp mới tách chưa đăng ký với Sở — phải đẩy nhóm Danh mục lớp trước', ai:'VT'},
  {loai:'tuchoi', t:'↩ Lượt đẩy bị Sở từ chối', ob:'Phiên P-0819 · Danh sách nhân sự · 3 bản ghi', ct:'Sở trả về: “Hạng chức danh nghề nghiệp không hợp lệ với trình độ đào tạo đã khai.”',
@@ -333,14 +363,20 @@ function tabChieu(ch){
      '<td><b>'+esc(g.ten)+'</b><br><span class="mut">'+esc(g.mo)+'</span></td>'+
      '<td class="mut">'+esc(g.mn)+'</td>'+
      '<td>'+so(g.n)+'</td><td class="mono">'+esc(g.lan)+'</td><td>';
-    if(!dung) h+='<span class="tag t-r">⛔ chỉ đẩy, không kéo</span><br><span class="mut">'+esc(g.lydo)+'</span>';
+    if(!dung) h+='<span class="tag t-r">⛔ chỉ đẩy, không kéo</span>'+
+      (g.nhaycam?' <span class="tag t-y">🔒 dữ liệu nhạy cảm của trẻ em</span>':'')+
+      '<br><span class="mut">'+esc(g.lydo)+'</span>';
     else if(!quyen) h+='<span class="tag t-n">ngoài phạm vi chức danh</span><br><span class="mut">Tổ chức nhân sự chỉ thao tác nhóm <b>Danh sách nhân sự</b>.</span>';
     else if(!co) h+='<span class="tag t-n">chức danh không có quyền '+(keo?'kéo về':'đẩy lên')+'</span>';
     else if(keo){
       const d=DC[g.id]; if(d&&d.ruiro.length){
         h+=d.ruiro.map(r=>'<span class="risk'+r[1]+'">'+(r[1]===3?'🔴':r[1]===2?'🟡':'🟢')+' '+esc(r[0])+'</span> <span class="mut">'+esc(r[2])+'</span>').join('<br>');
       } else h+='<span class="mut">—</span>';
-    } else h+='<span class="mut">Dữ liệu hệ thống là bản được gửi lên.</span>';
+    } else if(g.nhaycam) h+='<span class="tag t-y">🔒 Luật BVDLCN 91/2025</span> '+
+      '<span class="mut">Đẩy nhóm này là một <b>lượt XUẤT dữ liệu cá nhân nhạy cảm của trẻ em</b> — '+
+      'ghi audit ở <b>cả hai nơi</b>: lịch sử phiên ở đây và <b>nhật ký truy cập M6.6 tab 7</b>. '+
+      '⛔ Nhóm máu · dị ứng · bệnh nền · liên hệ khẩn cấp <b>KHÔNG nằm trong tải trọng</b>.</span>';
+    else h+='<span class="mut">Dữ liệu hệ thống là bản được gửi lên.</span>';
     h+='</td></tr>';
   });
   h+='</tbody></table>';
@@ -379,8 +415,36 @@ function xemTruoc(ch){
        '<td>'+so(d.chiT)+(d.chiT?' <span class="mut">(không xóa)</span>':'')+'</td>'+
        '<td'+(d.maLech?' class="risk3"':'')+'>'+so(d.maLech)+(d.maLech?' <span class="mut">→ Việc chưa xong</span>':'')+'</td></tr>';
   });
-  h+='</tbody></table>'+
-   '<div class="note '+(ch==='keo'?'n-w':'n-i')+'" style="margin:10px">'+
+  h+='</tbody></table>';
+  /* ★ NGOẠI LỆ CÓ CHỦ Ý của quy tắc «không bao giờ ghi mù»: xem trước của
+     nhóm Sức khỏe DỪNG Ở MỨC ĐẾM — số bản ghi và tên trường, không hiện
+     giá trị từng em. M6.6 §2.2 đã chốt phạm vi lọc cả CỘT; một màn hình
+     xem trước hiển thị BMI của 1284 em sẽ vô hiệu hóa nguyên tắc đó bằng
+     một tab khác. Văn thư chạy phiên KHÔNG có quyền đọc Lớp 2 của M6.6. */
+  if(ds.some(g=>g.nhaycam)){
+   h+='<div class="note n-w" style="margin:10px"><b>🔒 Nhóm Sức khỏe – Thể lực: xem trước dừng ở mức ĐẾM.</b> '+
+      'Bảng dưới nêu <b>số bản ghi và tên trường</b>, <b>không hiện giá trị của từng em</b>. '+
+      'Vai chạy phiên đồng bộ (văn thư) <b>không có quyền đọc Lớp 2 của M6.6</b> — '+
+      'một phiên đồng bộ <b>không được là cửa sau để đọc dữ liệu y tế</b>.</div>';
+   h+='<div class="sec" style="margin:0 10px 10px"><h3>Trường sẽ đẩy — ánh xạ trường ↔ trường</h3>'+
+      '<table><thead><tr><th style="width:210px">Trường ở hệ thống</th><th style="width:220px">Nguồn trong M6.6</th>'+
+      '<th style="width:190px">Trường CSDL ngành</th><th>Ghi chú</th></tr></thead><tbody>'+
+      ANHXA_SK.map(r=>'<tr><td><b>'+esc(r[0])+'</b>'+(r[3]?' <span class="mut">'+esc(r[3])+'</span>':'')+'</td>'+
+        '<td class="mut">'+esc(r[1])+'</td><td><b>'+esc(r[2])+'</b></td>'+
+        '<td class="mut">'+esc(r[4])+'</td></tr>').join('')+
+      ANHXA_TL.map((r,i)=>'<tr><td><b>'+['①','②','③','④','⑤','⑥'][i]+' '+esc(r[0])+'</b> <span class="mut">'+esc(r[1])+'</span></td>'+
+        '<td class="mut">M6.6 tab 3 — đợt đo thể lực</td><td><b>'+esc(r[0])+'</b></td>'+
+        '<td class="mut">QĐ 53/2008/QĐ-BGDĐT — tên và đơn vị nguyên văn</td></tr>').join('')+
+      '</tbody></table>'+
+      '<div class="note n-d" style="margin:10px"><b>⛔ Bốn trường KHÔNG nằm trong tải trọng:</b> '+
+      'nhóm máu · dị ứng · bệnh nền · liên hệ khẩn cấp. <b>CSDL ngành không có chỗ nhận chúng</b> — '+
+      'và đó chính là căn cứ chốt <b>M6.6 sở hữu</b> bốn trường ấy. Ghi rõ ở đây để không ai tưởng hệ thống quên.</div>'+
+      '<div class="note n-w" style="margin:0 10px 10px"><b>Hai ánh xạ bị chặn cứng:</b><br>'+
+      '· <b>«Chưa khảo sát» KHÔNG thành «Không»</b> — «trường chưa hỏi» và «em không biết bơi» là hai câu khác nhau; '+
+      'biến cái đầu thành cái sau là <b>bịa một số liệu rồi gửi lên Sở</b>. Dòng đó nằm lại ở <b>Việc chưa xong</b>.<br>'+
+      '· <b>«Miễn» KHÔNG thành «0»</b> — số 0 là «đo được 0», không phải «không đo».</div></div>';
+  }
+  h+='<div class="note '+(ch==='keo'?'n-w':'n-i')+'" style="margin:10px">'+
    (ch==='keo'
     ? '<b>Bất đối xứng có chủ ý:</b> «chỉ có ở CSDL ngành» thì <b>không tự tạo hồ sơ</b>, «chỉ có ở trường» thì <b>KHÔNG BAO GIỜ xóa</b> — dù kéo về là chiều CSDL ngành thắng. Lý do: <b>ghi đè sai một trường thì hoàn tác được, xóa nhầm một học sinh thì không.</b>'
     : '«Chỉ có ở trường» chính là thứ cần đẩy lên. «Chỉ có ở CSDL ngành» không đụng tới — đẩy lên không xóa dữ liệu của Sở.')+
@@ -425,6 +489,18 @@ function xacNhan(ch){
     let b='<div class="note n-i" style="margin:0 0 11px;font-size:13px"><b>Xác nhận đẩy dữ liệu mới nhất từ Hệ thống lên CSDL ngành?</b></div>';
     b+='<dl class="kv" style="padding:0 0 10px"><dt>Nhóm dữ liệu</dt><dd>'+ds.map(g=>'<b>'+esc(g.ten)+'</b>').join(' → ')+'</dd>'+
        '<dt>Số bản ghi gửi lên</dt><dd><b>'+so(ds.reduce((a,g)=>a+g.n,0))+'</b></dd></dl>';
+    if(ds.some(g=>g.nhaycam)){
+      b+='<div class="note n-d" style="margin:0 0 11px"><b>🔒 Phiên này có dữ liệu SỨC KHỎE của trẻ em.</b><br>'+
+         '<b>Luật BVDLCN 91/2025/QH15</b> — dữ liệu về tình trạng sức khỏe là <b>dữ liệu cá nhân nhạy cảm</b>, '+
+         'và dữ liệu cá nhân của <b>trẻ em</b> được bảo vệ riêng. Lượt đẩy này <b>ghi audit ở cả hai nơi</b>: '+
+         'lịch sử phiên ở đây <b>và nhật ký truy cập của M6.6 tab 7</b> — đẩy dữ liệu ra khỏi hệ thống là '+
+         '<b>một lượt xuất</b>, dù nó chạy ở menu khác.</div>';
+      b+='<table style="margin-bottom:11px"><tr><td style="width:120px" class="mut"><b>Cái gì ĐI</b></td>'+
+         '<td>Chiều cao · cân nặng · BMI · đánh giá BMI · biết bơi · bệnh về mắt · bệnh về cột sống '+
+         '<b>+ sáu nội dung thể lực</b></td></tr>'+
+         '<tr><td class="mut"><b>Cái gì Ở LẠI</b></td><td class="risk3">⛔ <b>Nhóm máu · dị ứng · bệnh nền · liên hệ khẩn cấp</b> '+
+         '— CSDL ngành không có chỗ nhận</td></tr></table>';
+    }
     b+='<div class="note n-w" style="margin:0 0 11px"><b>Hiệu trưởng phải DUYỆT trước khi đẩy — không phải ký số.</b><br>'+
        'Đẩy lô là thao tác kỹ thuật với hệ thống Bộ, không phải văn bản hành chính phát hành ra ngoài. '+
        'Ký số Nhóm B của <b>chuyển trường</b> ký tại M1.5, của <b>văn bằng</b> ký tại M3.4 — nơi có văn bản thật.</div>';
@@ -467,7 +543,8 @@ function chay(ch){
 /* ═══════════ TAB 4 — VIỆC CHƯA XONG ═══════════ */
 const LOAI={duyet:['⏸','Phiên đẩy chờ Hiệu trưởng duyệt','t-y'],
             khop:['⛔','Không đối khớp được','t-r'],tuchoi:['↩','Lượt đẩy bị Sở từ chối','t-y'],
-            pending:['⏳','Hồ sơ mang mã tạm PENDING-','t-b'],vb:['📜','Văn bằng chờ công khai','t-n']};
+            pending:['⏳','Hồ sơ mang mã tạm PENDING-','t-b'],vb:['📜','Văn bằng chờ công khai','t-n'],
+            sk:['🩺','Trường sức khỏe chưa khảo sát — không bịa giá trị','t-y']};
 function tab4(){
   let h='<div class="note n-i">Chiều thao tác đã quyết thẩm quyền, nên <b>không còn tình huống “hai bên bất đồng”</b>. Tab <code>Xung đột chờ xử lý</code> đã bị bỏ. Còn lại ở đây là <b>sự cố và việc chưa xong</b> — bốn loại, bốn nguyên nhân khác nhau.</div>';
   Object.keys(LOAI).forEach(function(L){
@@ -566,7 +643,7 @@ function hoanTac(id){
 /* ═══════════ TAB 6 — XUẤT ═══════════ */
 function tab6(){
   let h='<div class="note n-w">⏸ <b>Tab này tạm giữ từ M1.8 — tôi không chắc nó thuộc M10.8.</b> Xuất tệp cho người dùng trường <b>không liên quan gì tới kết nối CSDL ngành</b>; giữ ở đây thì M10.8 thành ngăn kéo đựng đồ thừa. Nhưng chuyển về M1.1/M4.1 là đổi phạm vi hai menu đã chốt. Ghi ở §15 điểm 4.</div>';
-  h+='<div class="sec"><h3>Xuất dữ liệu — chịu NĐ 13/2023<span class="r">mỗi lượt xuất ghi audit mức ② ở M10.7</span></h3><dl class="kv">'+
+  h+='<div class="sec"><h3>Xuất dữ liệu — chịu Luật BVDLCN 91/2025<span class="r">mỗi lượt xuất ghi audit mức ② ở M10.7</span></h3><dl class="kv">'+
    '<dt>Mục đích xuất <b style="color:#b91c1c">*</b></dt><dd>(bắt buộc chọn — không có mặc định)</dd>'+
    '<dt>Nhóm dữ liệu</dt><dd>Hồ sơ học sinh · Danh sách nhân sự · Kết quả học tập</dd>'+
    '<dt>Nhóm trường</dt><dd>Chọn từng nhóm — <b>không xuất mặc định toàn bộ</b></dd>'+

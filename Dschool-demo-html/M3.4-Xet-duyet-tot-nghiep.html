@@ -485,7 +485,7 @@ let HS=[
 ];
 const MON_BB=['Toán','Ngữ văn'];
 /* 9 mon cua quy che. Truong TU KHAI mon minh day khi mo dot — xem DOTDK.mo.mon */
-const MON_QC=['Vật lí','Hóa học','Sinh học','Lịch sử','Địa lí','Tin học','Công nghệ','Ngoại ngữ 1','Giáo dục kinh tế và pháp luật'];
+const MON_QC=['Vật lí','Hóa học','Sinh học','Lịch sử','Địa lí','Tin học','Công nghệ (định hướng Công nghiệp)','Công nghệ (định hướng Nông nghiệp)','Ngoại ngữ 1','Giáo dục kinh tế và pháp luật'];
 const MON_TC_DS=()=>(DOTDK.mo&&DOTDK.mo.mon&&DOTDK.mo.mon.length)?DOTDK.mo.mon:MON_QC;
 
 /* ===== trang thai ===== */
@@ -736,8 +736,8 @@ function tabDK(){
  h+= DOTDK.mo
   ?`<div class="ok">📱 <b>Đợt đăng ký môn tự chọn đã mở trên App</b> — ${DOTDK.mo.at} · ${DOTDK.mo.by} ·
      hạn <b>${DOTDK.mo.han}</b>${quaHanDK()?' <span class="st2 r">đã quá hạn</span>':''}
-     <div style="font-size:11.5px;margin-top:4px">Mở <b>${MON_TC_DS().length}/9</b> môn: ${MON_TC_DS().join(' · ')}
-      ${MON_TC_DS().length<9?`<span style="color:var(--ink3)">— không mở: ${MON_QC.filter(m=>MON_TC_DS().indexOf(m)<0).join(', ')}</span>`:''}</div>
+     <div style="font-size:11.5px;margin-top:4px">Mở <b>${MON_TC_DS().length}/${MON_QC.length}</b> môn: ${MON_TC_DS().join(' · ')}
+      ${MON_TC_DS().length<MON_QC.length?`<span style="color:var(--ink3)">— không mở: ${MON_QC.filter(m=>MON_TC_DS().indexOf(m)<0).join(', ')}</span>`:''}</div>
      ${(r.moDot||F())&&!DK12.chot?`<button class="btn xs" data-x="modot">✎ Sửa hạn</button>`:''}</div>`
   :`<div class="warn">📱 <b>Chưa mở đợt đăng ký môn tự chọn.</b> Chưa mở thì <b>App chưa hiện thẻ chọn môn</b> cho gia đình,
      và không ai đăng ký được.
@@ -1167,7 +1167,7 @@ function act(a,d){
    `<div class="info">Văn thư <b>vào sổ gốc</b> và ghi <b>số hiệu in sẵn trên phôi bằng</b>.
      <b>Hệ thống KHÔNG sinh số</b> — nó chỉ <b>gợi ý số kế tiếp</b> theo sổ gốc và <b>cảnh báo nếu trùng hoặc nhảy cóc</b>.
      Sổ gốc phải ghi <b>số phôi thật</b>, vì đó mới là thứ đối chiếu được khi có yêu cầu xác minh văn bằng — có khi mười năm sau.</div>
-    <div class="ro">Số phôi cuối cùng đã vào sổ: <b>${SOPHOI9.cuoi}</b> · 🔒 lượt cấp bằng ghi audit kèm người thực hiện — NĐ 13/2023.</div>
+    <div class="ro">Số phôi cuối cùng đã vào sổ: <b>${SOPHOI9.cuoi}</b> · 🔒 lượt cấp bằng ghi audit kèm người thực hiện — Luật BVDLCN 91/2025.</div>
     <table><thead><tr><th>Học sinh</th><th>Lớp</th><th style="width:210px">Số hiệu trên phôi bằng</th></tr></thead><tbody>
     ${tn.map((x,i)=>`<tr><td><b>${x.n}</b></td><td>${x.lop}</td>
       <td><input class="fldi" id="ph${i}" value="${goi(i)}" style="margin:0;font-family:ui-monospace,monospace"></td></tr>`).join('')}</tbody></table>`,
@@ -1195,14 +1195,14 @@ function act(a,d){
       <div style="font-size:11.5px;color:var(--ink2);margin-top:4px">Hết hạn thì App khóa ô chọn.
         <b>Không có môn mặc định</b> — em chưa chọn thì trạng thái là <i>Chưa chọn</i>, không phải một cặp môn nào đó.</div></div>
     <div class="fld"><b>Danh mục môn tự chọn — tích những môn trường THỰC SỰ dạy ở lớp 12</b>
-      <div class="ro" style="margin:4px 0 0">Quy chế cho <b>9 môn</b>, nhưng một trường cụ thể thường không dạy hết.
+      <div class="ro" style="margin:4px 0 0">Quy chế cho <b>10 lựa chọn</b> <i>(TT 24/2024 — Công nghệ tách Công nghiệp / Nông nghiệp)</i>, nhưng một trường cụ thể thường không dạy hết.
        <b>Môn không tích thì không hiện trên App</b> — để gia đình không chọn phải môn trường không có giáo viên.</div>
       <div class="monw">${MON_QC.map((m,i)=>`<label class="monc"><input type="checkbox" id="dm${i}" ${MON_TC_DS().indexOf(m)>=0?'checked':''}> ${m}</label>`).join('')}</div></div>`,
    [['Hủy',null,''],[DOTDK.mo?'✔ Lưu':'📱 Mở đợt trên App',()=>{
      const ds=MON_QC.filter((m,i)=>$('#dm'+i)&&$('#dm'+i).checked);
      if(ds.length<2){toast('Phải mở ít nhất 2 môn — thí sinh chọn 2 môn tự chọn');return}
      DOTDK.mo={at:DOTDK.mo?DOTDK.mo.at:HOM,by:r.n.split('—')[0].trim(),han:$('#dhan').value,mon:ds};
-     toast('Đã mở đợt · '+ds.length+'/9 môn · hạn '+DOTDK.mo.han+' · đã đẩy thông báo tới gia đình lớp 12');render()}]]);
+     toast('Đã mở đợt · '+ds.length+'/'+MON_QC.length+' môn · hạn '+DOTDK.mo.han+' · đã đẩy thông báo tới gia đình lớp 12');render()}]]);
   return}
  if(a==='nhac1'||a==='nhacds'){
   const list=a==='nhac1'?[HS.find(z=>z.ma===d.ma)]:dsKhoi(12).filter(x=>x.dk&&!duMon(x));
@@ -1265,7 +1265,7 @@ function act(a,d){
   return}
  if(a==='xuatso'){const ds=dsKhoi(12).filter(x=>x.dk);
   modal('📤 Xuất tệp gửi Sở GDĐT',
-   `<div class="ro">Dữ liệu cá nhân trẻ em — NĐ 13/2023. <b>Bắt buộc chọn mục đích</b>; tệp <b>đóng dấu</b>
+   `<div class="ro">Dữ liệu cá nhân trẻ em — Luật BVDLCN 91/2025. <b>Bắt buộc chọn mục đích</b>; tệp <b>đóng dấu</b>
      tên trường, người xuất, thời điểm và mục đích.</div>
     <select class="fldi" id="mdx"><option>Đăng ký dự thi tốt nghiệp THPT — gửi Sở GDĐT</option><option>Lưu hồ sơ nội bộ</option></select>`,
    [['Hủy',null,''],['📤 Xuất và gửi',()=>{DK12.xuat={at:HOM+' 11:20',n:ds.length,md:$('#mdx').value};
@@ -1338,7 +1338,7 @@ function act(a,d){
      toast('Đã lưu điểm khuyến khích '+(v?'+'+v.toFixed(2).replace('.',','):'0')+' cho '+x.n+' · ghi audit');render()}]]);
   return}
  if(a==='xemtep'){modal('👁 '+d.f,
-   `<div class="ro">🔒 Dữ liệu cá nhân trẻ em — NĐ 13/2023. <b>Lượt xem này đã ghi audit</b>.</div>
+   `<div class="ro">🔒 Dữ liệu cá nhân trẻ em — Luật BVDLCN 91/2025. <b>Lượt xem này đã ghi audit</b>.</div>
     <div class="filev">📄 <b>${d.f}</b></div>`,[['Đóng',null,''],['⬇ Tải về',()=>toast('Đã tải · ghi audit')]],1);return}
  if(a==='ky12'){
   const ds=dsKhoi(12).filter(x=>x.dk),cho=ds.filter(x=>ketLuan12(x).kl==='cho');

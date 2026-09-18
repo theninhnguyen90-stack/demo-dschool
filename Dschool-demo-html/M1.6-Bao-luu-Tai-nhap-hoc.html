@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>M1.6 Bảo lưu / Tái nhập học — Dschool</title>
+<title>M1.6 Bảo lưu / Tái nhập / Thôi học — Dschool</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#f1f5f9;--surface:#fff;--line:#e2e8f0;--line2:#cbd5e1;
@@ -222,12 +222,13 @@ tr:last-child td{border-bottom:none}
 
 <div class="rolebar">
   <b>Chức danh:</b>
+  <button class="rb on" data-r="FULL">🔓 Đủ quyền (demo)</button>
   <button class="rb" data-r="GVCN">GVCN 9A2</button>
   <button class="rb" data-r="VT">Văn thư · ĐT A</button>
   <button class="rb" data-r="KT">Kế toán · ĐT A</button>
   <button class="rb" data-r="PHT_A">PHT_ĐT · Điểm trường A</button>
   <button class="rb" data-r="PHT_B">PHT_ĐT · Điểm trường B</button>
-  <button class="rb on" data-r="HT">Hiệu trưởng</button>
+  <button class="rb" data-r="HT">Hiệu trưởng</button>
   <span class="note">Hệ thống vận hành trường — phụ huynh dùng App riêng, không có mặt trong menu</span>
 </div>
 
@@ -238,13 +239,13 @@ tr:last-child td{border-bottom:none}
   <select class="sel" id="hdt"></select>
   <div class="spacer"></div>
   <button class="icobtn">🔔<span class="dot" id="bell">0</span></button>
-  <div class="avatar" id="ava">HT</div>
+  <div class="avatar" id="ava">ĐQ</div>
 </header>
 
 <div class="wrap">
   <main class="main">
-    <div class="tophd"><h1>Bảo lưu / Tái nhập học</h1>
-      <span class="pill">Một lượt bảo lưu = một bản ghi, gồm cả gia hạn và tái nhập</span></div>
+    <div class="tophd"><h1>Bảo lưu / Tái nhập / Thôi học</h1>
+      <span class="pill">Một lượt bảo lưu = một bản ghi, gồm cả gia hạn và tái nhập</span><span class="pill">Mọi quyết định thôi học = một hồ sơ ở tab ✕</span></div>
     <div class="tabs" id="tabs"></div>
     <div id="content"></div>
   </main>
@@ -263,7 +264,7 @@ const vnd=n=>n.toLocaleString('vi-VN')+'đ';
 const NAV=[
  ['','🏠 Trung tâm điều hành',[['M0.1','Bảng điều khiển'],['M0.2','Việc cần làm','!'],['M0.3','Thông báo'],['M0.4','Trang cá nhân']]],
  ['hs','👥 Học sinh',[['M1.1','Hồ sơ học sinh'],['M1.2','Đối tượng ưu tiên'],['M1.3','Học bạ điện tử'],
-   ['M1.4','Tuyển sinh đầu cấp'],['M1.5','Chuyển trường'],['M1.6','Bảo lưu / Tái nhập','x'],
+   ['M1.4','Tuyển sinh đầu cấp'],['M1.5','Chuyển trường'],['M1.6','Bảo lưu / Tái nhập / Thôi học','x'],
    ['M1.7','Lớp học & Chuyển lớp']]],
  ['lop','📚 Lớp học hàng ngày',[['M2.5','Bảng điểm môn học'],['M2.9','Không gian lớp học']]],
  ['kq','🎓 Kết quả học tập',[['M3.1','Tổng kết và xếp loại']]],
@@ -271,27 +272,46 @@ const NAV=[
  ['vb','📄 Văn bản',[['M4.11','Văn bản đi']]],
 ];
 
+/* ===== VAI — chuẩn hóa v3.0 theo §9 và §12 của M1.6.md =====
+   Quyền mô hình hóa bằng MẢNG NĂNG LỰC, kiểm bằng co(k). Demo vẫn hiện mọi nút với mọi vai;
+   năng lực chỉ quyết định hàng đợi "Chờ tôi". Phạm vi dữ liệu theo sc.
+     lap     VT lập hồ sơ, nộp hộ giấy tờ, tiếp nhận tái nhập, lập gia hạn        (F2 F6 F9 F14)
+     lienhe  ghi nhật ký liên hệ gia đình                                         (F7)
+     xn      tích ô xác nhận                                                       (F3 F15)
+     chonlop chọn chế độ và lớp tái nhập                                           (F10)
+     esc     escalate / quyết định sau escalate                                    (F8)
+     ky      duyệt và ký quyết định                                                (F4 F6 F11 F16)
+     dong    đóng hồ sơ thôi học                                                   (F17)
+     tien    phần tiền ở M7.3 — hoàn số dư để mở khóa đóng hồ sơ                  (F17 — KT chỉ đọc ở đây) */
+const ALL_VIEC=['lap','lienhe','xn','chonlop','esc','ky','dong','tien'];
 const ROLE={
- GVCN:{n:'GVCN lớp 9A2',sc:'class',lop:'9A2',dt:'Điểm trường A',menu:['hs','lop'],b:'',lienhe:1,av:'GV',sdt:'0912 445 007'},
- VT:{n:'Văn thư Điểm trường A',sc:'branch',dt:'Điểm trường A',menu:['hs','vb'],b:'nhap',lam:1,tao:1,lienhe:1,av:'VT'},
- KT:{n:'Kế toán Điểm trường A',sc:'branch',dt:'Điểm trường A',menu:['hs','tc'],b:'',tien:1,doc:1,av:'KT',sdt:'0912 700 118'},
- PHT_A:{n:'PHT Điểm trường A',sc:'branch',dt:'Điểm trường A',menu:['hs','lop'],b:'',xn:1,esc:1,av:'PA'},
- PHT_B:{n:'PHT Điểm trường B',sc:'branch',dt:'Điểm trường B',menu:['hs','lop'],b:'',xn:1,esc:1,av:'PB'},
- HT:{n:'Hiệu trưởng',sc:'school',menu:'all',b:'ht',ky:1,xn:1,esc:1,av:'HT'},
+ FULL:{n:'🔓 Đủ quyền (demo)',sc:'school',menu:'all',viec:ALL_VIEC,av:'ĐQ'},
+ GVCN:{n:'GVCN lớp 9A2',sc:'class',lop:'9A2',dt:'Điểm trường A',menu:['hs','lop'],viec:['lienhe'],av:'GV',sdt:'0912 445 007'},
+ VT:{n:'Văn thư Điểm trường A',sc:'branch',dt:'Điểm trường A',menu:['hs','vb'],viec:['lap','lienhe','dong'],av:'VT'},
+ KT:{n:'Kế toán Điểm trường A',sc:'branch',dt:'Điểm trường A',menu:['hs','tc'],viec:['tien'],av:'KT',sdt:'0912 700 118'},
+ PHT_A:{n:'PHT Điểm trường A',sc:'branch',dt:'Điểm trường A',menu:['hs','lop'],viec:['xn','chonlop','esc','lienhe'],av:'PA'},
+ PHT_B:{n:'PHT Điểm trường B',sc:'branch',dt:'Điểm trường B',menu:['hs','lop'],viec:['xn','chonlop','esc','lienhe'],av:'PB'},
+ HT:{n:'Hiệu trưởng',sc:'school',menu:'all',viec:['xn','ky','chonlop','esc','lienhe','dong'],av:'HT'},
 };
-let role='HT', tab='yc', cur=null, qTim='', fTT='Tất cả', openG={}, tuDongCho=1;
+let role='FULL', tab='yc', cur=null, qTim='', fTT='Tất cả', openG={}, tuDongCho=1;
 const R=()=>ROLE[role];
+const co=k=>R().viec.includes(k);
 
 /* ===== DEMO HIỆN MỌI CHỨC NĂNG — không ẩn theo chức danh, gắn thẻ chủ sở hữu ===== */
 const CHUDS={
  taodon:'VT',guiduyet:'VT',nopgt:'VT',nop1:'VT',suatk:'VT',xoanhap:'VT',
  togglexn:'PHT_ĐT / HT',kybl:'HT',tuchoi:'HT',trave:'HT',thuhoi:'HT',huytk:'VT / HT',
  giahan:'VT → HT',taoyc:'VT',chonlopyc:'PHT_ĐT',kyyc:'HT',tuchoiyc:'HT',huyyc:'VT',
- ghilh:'VT / GVCN',escalate:'PHT_ĐT',qdht:'HT',thoihoc:'HT',dongtam:'HT'};
+ ghilh:'VT / GVCN',escalate:'PHT_ĐT',qdht:'HT',thoihoc:'VT',thoihoc_ht:'HT',dongtam:'HT',
+ /* tab ✕ Thôi học — v3.0 */
+ th_tao:'VT',th_tao_cb:'VT',th_nopdon:'VT',th_lh:'VT / GVCN',th_gui:'VT',th_xn:'PHT_ĐT / HT',
+ th_ky:'HT',th_tuchoi:'HT',th_trave:'HT',th_huy:'VT',th_xoa:'VT',th_sua:'VT',th_dong:'VT / HT',
+ th_hoan:'KT · M7.3',th_thuhoi:'HT',cb_lh:'VT / GVCN'};
 function theAi(a){const c=CHUDS[a];if(!c)return '';
  return '<span class="ai" title="Trong sản phẩm thật, thao tác này thuộc '+c+'">'+c+'</span>'}
 function ghiChuDemo(){
  return '<div class="hintline">🧪 <b>Demo hiển thị mọi chức năng của menu</b>, không ẩn theo chức danh — để duyệt thiết kế trong một lượt. '+
+  (role==='FULL'?'Đang ở vai <b>🔓 Đủ quyền (demo)</b> — thấy <b>mọi hàng đợi Chờ tôi</b> cùng lúc; đổi sang vai chức danh ở thanh đen để xem đúng hàng đợi của từng người. ':'')+
   'Mỗi thao tác gắn thẻ <span class="ai">VT</span> <span class="ai">PHT_ĐT</span> <span class="ai">HT</span> ghi rõ <b>chức danh sở hữu</b> trong sản phẩm thật. '+
   'Nút vẫn <b>đổi theo trạng thái</b>. Phạm vi dữ liệu (Branch / Class / School) <b>vẫn theo vai trò</b>.</div>'}
 
@@ -557,16 +577,18 @@ const quaHan=t=>t.tt==='bl'&&t.conLai<0;
 const soQH=t=>t.conLai<0?-t.conLai:0;
 
 /* --- việc của tôi --- */
-function choToi(t){const r=R();
+function choToi(t){
  if(dong(t))return false;
- if(t.tt==='nhap'&&r.tao)return true;
- if(t.tt==='ht'&&(r.xn&&!duXN(t)||r.ky&&duXN(t)))return true;
+ if(t.tt==='nhap'&&co('lap'))return true;
+ if(t.tt==='ht'&&(co('xn')&&!duXN(t)||co('ky')&&duXN(t)))return true;
  if(coYC(t)){
-  if(t.yc.tt==='nhap'&&(r.tao||r.xn))return true;
-  if(t.yc.tt==='ht'&&r.ky)return true;
+  /* §9 F10 — chọn chế độ và lớp là việc của PHT_ĐT (và HT), KHÔNG phải văn thư. Bản trước đổ cả vào VT. */
+  if(t.yc.tt==='nhap'&&co('chonlop'))return true;
+  if(t.yc.tt==='ht'&&co('ky'))return true;
  }
- if(t.tt==='bl'&&(quaHan(t)||t.conLai<=30)&&(r.lienhe||r.esc||r.ky))return true;
- if(t.tt==='dt'&&(r.lienhe||r.ky))return true;
+ if(t.thId&&thMo(t.thId))return false;   /* đã có hồ sơ thôi học đang mở — việc nằm ở tab ✕ */
+ if(t.tt==='bl'&&(quaHan(t)||t.conLai<=30)&&(co('lienhe')||co('esc')||co('ky')))return true;
+ if(t.tt==='dt'&&(co('lienhe')||co('ky')))return true;
  return false}
 function loaiCho(t){const r=R();
  if(!choToi(t))return null;
@@ -576,12 +598,13 @@ function loaiCho(t){const r=R();
  if(t.tt==='bl')return quaHan(t)?['r','Quá hạn — cần liên hệ']:['w','Sắp hết hạn '+t.conLai+' ngày'];
  if(t.tt==='dt')return ['r','Đóng hồ sơ tạm — theo dõi'];
  return null}
-const viecCua=()=>T.filter(t=>inScope(t)&&choToi(t));
+const viecCua=()=>T.filter(t=>inScope(t)&&choToi(t)).concat(TH.filter(h=>inScope(h)&&choToiTH(h)),cbCuaToi());
 
 /* ===== BA NHÓM DỮ LIỆU CHO BA TAB ===== */
 const nhomYC =()=>T.filter(t=>inScope(t)&&['nhap','ht','tuchoi','huy'].includes(t.tt));
 const nhomBL =()=>T.filter(t=>inScope(t)&&['bl','dt'].includes(t.tt));
-const nhomTN =()=>T.filter(t=>inScope(t)&&(coYC(t)||t.tt==='tn'||t.tt==='th'));
+/* v3.0 — lượt kết thúc bằng thôi học không còn nằm ở tab tái nhập; quyết định thôi học ở tab ✕ */
+const nhomTN =()=>T.filter(t=>inScope(t)&&(coYC(t)||t.tt==='tn'));
 
 /* ================= KHUNG ================= */
 function sideNav(){
@@ -595,7 +618,8 @@ function sideNav(){
 function tabsBar(){
  const A=[['yc','📝 Yêu cầu bảo lưu',nhomYC().filter(t=>!dong(t)).length,nhomYC().filter(choToi).length],
           ['ds','👥 HS đang bảo lưu',nhomBL().length,nhomBL().filter(choToi).length],
-          ['tn','↩ Yêu cầu tái nhập',nhomTN().filter(coYC).length,nhomTN().filter(choToi).length]];
+          ['tn','↩ Yêu cầu tái nhập',nhomTN().filter(coYC).length,nhomTN().filter(choToi).length],
+          ['th','✕ Thôi học',nhomTH().filter(h=>!thKet(h)).length,nhomTH().filter(choToiTH).length+cbCuaToi().length]];
  $('#tabs').innerHTML=A.map(([k,l,c,n])=>
   '<button class="tab1'+(tab===k?' on':'')+'" data-tab="'+k+'">'+l+
   '<span style="color:var(--ink3);font-weight:400">'+c+'</span>'+
@@ -613,7 +637,7 @@ function hdrBar(){
 
 function scopeBar(){
  const r=R();
- const base=r.sc==='school'?'<div class="scopebar"><span>🏫</span><div><b>Phạm vi School.</b> Nhìn thấy lượt bảo lưu của mọi điểm trường.</div></div>'
+ const base=r.sc==='school'?'<div class="scopebar"><span>🏫</span><div>'+(role==='FULL'?'<b>🔓 Vai demo Đủ quyền</b> — gộp năng lực của mọi chức danh để rà trọn luồng. ':'')+'<b>Phạm vi School.</b> Nhìn thấy lượt bảo lưu của mọi điểm trường.</div></div>'
   :r.sc==='class'?'<div class="scopebar"><span>🔒</span><div><b>Phạm vi Class — lớp '+r.lop+'.</b> Học sinh <b>đang bảo lưu vẫn thuộc lớp cũ</b> nên phạm vi Class vẫn suy ra được. Giáo viên chủ nhiệm là vai trò <b>ghi nhật ký liên hệ</b> — thường là người gia đình bắt máy nhất.</div></div>'
   :'<div class="scopebar"><span>🔒</span><div><b>Phạm vi Branch — '+r.dt+'.</b> Lượt ngoài điểm trường <b>không được trả về</b>. Bộ chọn Điểm trường ở header <b>bị khóa</b>.</div></div>';
  return base}
@@ -626,7 +650,7 @@ function chips(list){
  const n=list.filter(choToi).length;
  const C=tab==='yc'?['Tất cả','Chờ tôi','Đang xử lý','Đã đóng (từ chối / hủy)']
   :tab==='ds'?['Tất cả','Chờ tôi','QUÁ HẠN','Sắp hết hạn (≤30 ngày)','Còn hạn','Đóng hồ sơ tạm']
-  :['Tất cả','Chờ tôi','Đang xử lý','Đã tái nhập','Đã cho thôi học'];
+  :['Tất cả','Chờ tôi','Đang xử lý','Đã tái nhập'];
  return C.map(c=>'<button class="chip'+(fTT===c?' on':'')+'" data-f="'+c+'">'+c+
   (c==='Chờ tôi'&&n?'<span class="cb">'+n+'</span>':'')+'</button>').join('')}
 
@@ -639,7 +663,6 @@ function locTT(L){
  if(fTT==='Còn hạn')return L.filter(t=>t.tt==='bl'&&t.conLai>30);
  if(fTT==='Đóng hồ sơ tạm')return L.filter(t=>t.tt==='dt');
  if(fTT==='Đã tái nhập')return L.filter(t=>t.tt==='tn');
- if(fTT==='Đã cho thôi học')return L.filter(t=>t.tt==='th');
  return tab==='yc'?L.filter(t=>!dong(t)):L}
 
 /* ================= TAB 1 — YÊU CẦU BẢO LƯU ================= */
@@ -783,13 +806,17 @@ function nut(t){
    if(t.yc.tt==='nhap')B.push(['p','🪑 Chọn chế độ và lớp tiếp nhận','chonlopyc'],['d','⊘ Hủy yêu cầu tái nhập','huyyc']);
    else B.push(['p','🔏 Duyệt và ký quyết định tái nhập','kyyc'],
      ['','🪑 Đổi chế độ / lớp','chonlopyc'],['d','✕ Từ chối tái nhập','tuchoiyc']);
+  }else if(t.thId&&thMo(t.thId)){
+   /* đã có hồ sơ thôi học đang mở — mọi việc tiếp theo nằm ở tab ✕, không lập trùng */
+   B.push(['p','✕ Mở hồ sơ thôi học '+t.thId,'th_mo'],['','📞 Ghi nhận liên hệ','ghilh']);
   }else{
-   B.push(['p','↩ Tiếp nhận yêu cầu tái nhập','taoyc'],['d','✕ Cho thôi học','thoihoc'],
+   B.push(['p','↩ Tiếp nhận yêu cầu tái nhập','taoyc'],['d','✕ Lập hồ sơ thôi học','thoihoc'],
      ['','⏱ Gia hạn bảo lưu','giahan'],['','📞 Ghi nhận liên hệ','ghilh']);
    if(quaHan(t))B.push(t.esc?['d','⚖️ Quyết định của Hiệu trưởng','qdht']:['','⬆ Escalate lên Hiệu trưởng','escalate']);
   }
  }
- if(t.tt==='dt')B.push(['p','↩ Tiếp nhận yêu cầu tái nhập','taoyc'],['d','✕ Cho thôi học','thoihoc'],
+ if(t.tt==='dt')B.push(['p','↩ Tiếp nhận yêu cầu tái nhập','taoyc'],
+   t.thId&&thMo(t.thId)?['p','✕ Mở hồ sơ thôi học '+t.thId,'th_mo']:['d','✕ Lập hồ sơ thôi học','thoihoc'],
    ['','📞 Ghi nhận liên hệ','ghilh']);
  return B}
 
@@ -926,11 +953,13 @@ function khoiLH(t){
 /* ---- escalate ---- */
 function khoiESC(t){
  if(t.tt!=='bl'||!t.esc)return '';
+ if(t.thId&&thMo(t.thId))return '<div class="info">⚖️ <b>Hiệu trưởng đã chọn (b) Cho thôi học.</b> Hồ sơ <b>'+t.thId+'</b> đang ở tab <b>✕ Thôi học</b> — '+
+  'mọi việc tiếp theo làm ở đó. Lượt này tự chuyển <i>Đã cho thôi học</i> khi hồ sơ được ký. <button class="btn xs p" data-x="th_mo" data-t="'+t.id+'">Mở hồ sơ</button></div>';
  return '<div class="hb"><div class="lbh">⚖️ Đã escalate lên Hiệu trưởng</div><div style="padding:11px 13px">'+
   '<div class="danger"><b>Quá hạn '+soQH(t)+' ngày, đã liên hệ '+(t.lh||[]).length+' lần chưa có kết quả.</b> Hiệu trưởng <b>phải chọn một trong ba</b> — hệ thống không cho để trống.</div>'+
   '<div style="display:grid;gap:8px">'+
   [['(a) Gia hạn thêm bảo lưu','giahan','Nếu gia đình vừa liên lạc lại xin thêm thời gian. Vẫn chịu trần 2 năm theo TT 15/2026.',conTran(t)<=0?'Đã chạm trần '+TRAN+' tháng — không gia hạn thêm được':''],
-   ['(b) Cho thôi học','thoihoc','Ký quyết định thôi học, lý do mặc định điền sẵn và sửa được. Quyết định vào M1.1 Kho quyết định và M4.11.',''],
+   ['(b) Cho thôi học','thoihoc_ht','Tạo hồ sơ ở tab ✕ Thôi học, vào thẳng bước xác nhận và ký. Lý do mặc định điền sẵn, sửa được. Bằng chứng là chính nhật ký liên hệ của lượt này — không phải ghi lại.',t.thId&&thMo(t.thId)?'Đã có hồ sơ thôi học '+t.thId+' đang mở':''],
    ['(c) Đóng hồ sơ tạm','dongtam','Trạng thái trung gian — không tính sĩ số, giữ nguyên hồ sơ, mở lại được bằng luồng tái nhập rút gọn.','']]
   .map(([l,a,d,ch])=>'<div style="border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:#fff">'+
    '<div style="display:flex;gap:9px;align-items:flex-start"><div style="flex:1"><b>'+l+'</b>'+
@@ -961,7 +990,7 @@ function body(t){
   (t.tt==='nhap'?'<button class="btn xs p" data-x="nopgt" data-t="'+t.id+'">⬆ Nộp giấy tờ hộ gia đình'+theAi('nopgt')+'</button>':'')+'</div>'+
   '<div class="wrapx"><table><tr><th>Loại giấy tờ</th><th>Tệp</th><th>Đối chiếu bản gốc</th><th></th></tr>'+
   L.map(g=>{const f=(t.files||{})[g];
-   return '<tr><td><b>'+g+'</b>'+(g.includes('khám bệnh')?'<br><span class="st2 v">Dữ liệu sức khỏe — nhạy cảm (NĐ 13/2023)</span>':'')+'</td>'+
+   return '<tr><td><b>'+g+'</b>'+(g.includes('khám bệnh')?'<br><span class="st2 v">Dữ liệu sức khỏe — nhạy cảm (Luật BVDLCN 91/2025)</span>':'')+'</td>'+
    '<td>'+(f?f.f:'<span class="st2 r">Chưa nộp</span>')+'</td>'+
    '<td>'+(f?(f.dc?'<span class="st2 o">✓ Đã đối chiếu</span>':'<span class="st2 w">Chờ đối chiếu</span>'):'—')+'</td>'+
    '<td>'+(f?'<button class="btn xs" data-x="xemfile">👁 Xem</button> <button class="btn xs">⬇ Tải</button>'
@@ -1020,13 +1049,13 @@ function timeline(t){
  return '<div class="hb" style="margin-bottom:0"><div class="lbh">🕘 Nhật ký (audit)</div><div style="padding:11px 13px"><div class="tl">'+
   t.log.slice().reverse().map(x=>'<div class="tli"><b>'+x[2]+'</b><span>'+x[1]+' · '+x[0]+(x[3]?' — '+x[3]:'')+'</span></div>').join('')+
   '</div><div class="ro" style="margin:11px 0 0">Audit lưu <b>họ tên và chức danh tại thời điểm thao tác</b> — truy vết được sau khi nhân sự nghỉ việc. '+
-  'Theo <b>NĐ 13/2023</b>, giấy khám bệnh là <b>dữ liệu cá nhân nhạy cảm</b>: mọi lượt xem · tải · xuất đều ghi nhật ký, xuất <b>bắt buộc chọn mục đích</b>.</div></div></div>'}
+  'Theo <b>Luật BVDLCN 91/2025</b>, giấy khám bệnh là <b>dữ liệu cá nhân nhạy cảm</b>: mọi lượt xem · tải · xuất đều ghi nhật ký, xuất <b>bắt buộc chọn mục đích</b>.</div></div></div>'}
 
 /* ================= RENDER ================= */
 function render(){
  hdrBar();sideNav();tabsBar();
  if(tuDongCho&&fTT==='Tất cả'&&nhomYC().filter(choToi).length){fTT='Chờ tôi';tuDongCho=0}
- $('#content').innerHTML=tab==='yc'?viewYC():tab==='ds'?viewDS():viewTN();
+ $('#content').innerHTML=tab==='yc'?viewYC():tab==='ds'?viewDS():tab==='tn'?viewTN():viewTH();
 }
 
 /* ================= MODAL ================= */
@@ -1125,6 +1154,7 @@ function theHS(){
 const tOf=d=>T.find(x=>x.id===d.t);
 
 function act(a,d){
+ if(a.startsWith('th_')||a.startsWith('cb_')||a==='thoihoc'||a==='thoihoc_ht'){actTH(a,d);return}
  const t=d.t?tOf(d):null;
  if(a==='xoatim'){qTim='';cur=null;render();return}
  if(a==='dong'){cur=null;render();return}
@@ -1137,8 +1167,8 @@ function act(a,d){
   '<div style="height:5px;background:#e2e8f0;border-radius:3px;width:80%;margin:6px 0"></div>'+
   '<div style="text-align:right;margin-top:26px;padding-right:14px">Ký tên · đóng dấu</div></div></div>'+
   '<div class="ro" style="margin:12px 0 0"><b>👁 Xem đặt trước ⬇ Tải</b> — xem ngay trong màn hình, không ép tải về máy.<br>'+
-  '<b>Giấy khám bệnh là dữ liệu cá nhân nhạy cảm</b> theo NĐ 13/2023: mọi lượt mở xem và tải đều <b>ghi audit</b>, xuất bắt buộc chọn mục đích.</div>',
-  [['Đóng',0],['⬇ Tải',()=>toast('Đã tải · ghi audit theo NĐ 13/2023')]]);return}
+  '<b>Giấy khám bệnh là dữ liệu cá nhân nhạy cảm</b> theo Luật BVDLCN 91/2025: mọi lượt mở xem và tải đều <b>ghi audit</b>, xuất bắt buộc chọn mục đích.</div>',
+  [['Đóng',0],['⬇ Tải',()=>toast('Đã tải · ghi audit theo Luật BVDLCN 91/2025')]]);return}
 
  if(a==='xemqd'){modal('👁 '+t.ky.so,
   '<div style="background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:22px;font-size:12.5px;line-height:1.9">'+
@@ -1382,7 +1412,7 @@ function act(a,d){
    '<div style="margin-top:11px"><b>Kết quả</b> <span style="color:var(--red)">*</span><select class="fldi" id="fkq">'+
    ['Chưa liên lạc được','Gia đình đồng ý tái nhập','Gia đình xin gia hạn','Gia đình đồng ý cho thôi học'].map(x=>'<option>'+x+'</option>').join('')+'</select></div>'+
    '<div style="margin-top:11px"><b>Nội dung trao đổi</b> <span style="color:var(--red)">*</span><textarea class="fldi" id="fnd" rows="2"></textarea></div>'+
-   '<div class="ro" style="margin:11px 0 0">Mỗi kết quả dẫn tới một hành động: <b>đồng ý tái nhập</b> → mở form tái nhập · <b>xin gia hạn</b> → mở form gia hạn · <b>đồng ý thôi học</b> → HT ký quyết định · <b>chưa liên lạc được</b> → giữ trong hàng đợi, đếm tiếp số ngày.</div>',
+   '<div class="ro" style="margin:11px 0 0">Mỗi kết quả dẫn tới một hành động: <b>đồng ý tái nhập</b> → mở form tái nhập · <b>xin gia hạn</b> → mở form gia hạn · <b>đồng ý thôi học</b> → lập hồ sơ ở tab <b>✕ Thôi học</b> · <b>chưa liên lạc được</b> → giữ trong hàng đợi, đếm tiếp số ngày.</div>',
    [['Hủy',0],['📞 Ghi nhận',()=>{
      const nd=$('#fnd').value.trim();
      if(!nd){toast('Phải ghi nội dung trao đổi');return}
@@ -1408,22 +1438,7 @@ function act(a,d){
 
  if(a==='qdht'){toast('Ba lựa chọn của Hiệu trưởng ở khối ⚖️ ngay đầu panel');return}
 
- if(a==='thoihoc'){
-  $('#mdl').classList.remove('sm');
-  modal('✕ Cho thôi học — '+t.n,
-   '<div class="danger"><b>Đây là quyết định cuối cùng về một đứa trẻ.</b> Chỉ ký khi đã cố gắng liên hệ và có căn cứ ghi trong nhật ký.'+
-   '<div style="margin-top:6px">Đã liên hệ <b>'+(t.lh||[]).length+' lần</b> · quá hạn <b>'+soQH(t)+' ngày</b></div></div>'+
-   ((t.lh||[]).length<3?'<div class="warn"><b>⚠ Mới liên hệ '+(t.lh||[]).length+' lần.</b> Cân nhắc <b>Đóng hồ sơ tạm</b> thay vì cho thôi học — trạng thái đó cho phép dừng đếm mà không đóng cửa, và mở lại được nếu gia đình liên lạc lại.</div>':'')+
-   '<div><b>Lý do</b> <span style="color:var(--red)">*bắt buộc — in vào quyết định</span>'+
-   '<textarea class="fldi" id="fly" rows="3">Mất liên lạc sau hết hạn bảo lưu quá '+(soQH(t)||90)+' ngày, gia đình không phản hồi sau '+(t.lh||[]).length+' lần liên hệ.</textarea></div>'+
-   '<div class="ro" style="margin:11px 0 0">Quyết định vào <b>M1.1 Kho quyết định</b> và <b>M4.11 Văn bản đi</b>. Hồ sơ học sinh <b>giữ vĩnh viễn</b>, khóa sửa.</div>',
-   [['Hủy',0],['↔ Đóng hồ sơ tạm thay vì thôi học',()=>act('dongtam',{t:t.id})],
-    ['🔏 Ký quyết định thôi học',()=>{const ly=$('#fly').value.trim();
-     if(!ly){toast('Phải nêu lý do');return}
-     const so=soQD();t.tt='th';t.thLy=ly;
-     t.log.push(lg(R().n,'Ký quyết định cho thôi học '+so,ly));
-     cur=null;toast('Đã ký '+so+' · hồ sơ giữ vĩnh viễn, tìm bằng chip Đã đóng');render()},'d']]);return}
-
+ /* v3.0 — 'thoihoc' khong con ky thang tren luot: tao ho so o tab ✕ (xem actTH) */
  if(a==='dongtam'){
   $('#mdl').classList.add('sm');
   modal('↔ Đóng hồ sơ tạm — '+t.n,
@@ -1605,6 +1620,521 @@ function tiepTuc(a,d,t){
 
  toast('Thao tác demo');
 }
+/* =====================================================================
+   TAB ✕ THÔI HỌC — v3.0 · M1.6.md §6b
+   Hồ sơ thôi học là một THỰC THỂ RIÊNG, không phải trạng thái của lượt bảo lưu:
+   học sinh đang học bình thường cũng thôi học được mà không có lượt nào để gắn vào.
+   ===================================================================== */
+LOP.push({id:'10A1',k:10,dt:'Điểm trường A',gvcn:'Trịnh Văn Tùng',ss:40,max:45});
+HSTRUONG.push({ma:'HS-2026-0590',n:'Cao Thanh Hà',lop:'10A1',dt:'Điểm trường A',gt:'Nữ',ns:'02/03/2010',cs:'01315010290',no:0,hoan:250000,ph:'Cao Văn Minh — 0912 604 118'});
+
+const DON_TH='Đơn xin thôi học (cha/mẹ/người giám hộ ký)';
+const THTT={nhap:['Nháp — đang lập hồ sơ','n'],ht:['Chờ xác nhận và ký','v'],dongcho:['Chờ đóng hồ sơ','w'],
+ dong:['Đã đóng hồ sơ','o'],huy:['Đã hủy','n'],tuchoi:['Bị từ chối','r'],thuhoi:['Đã thu hồi quyết định','n']};
+const thKet=h=>['dong','huy','tuchoi','thuhoi'].includes(h.tt);
+const thMo=id=>{const h=TH.find(x=>x.id===id);return !!(h&&['nhap','ht'].includes(h.tt))};
+/* Cấp học SUY TỪ KHỐI của lớp — không hỏi người dùng */
+const capHoc=lop=>{const k=khoiCua(lop);return k>=10?'THPT':k>=6?'THCS':'Tiểu học'};
+const batBuoc=h=>capHoc(h.lop)!=='THPT';
+/* Loại thôi học là trạng thái SUY RA từ đơn đã đối chiếu — §6b.3. Chốt khi ký. */
+const coDon=h=>{const f=(h.files||{})[DON_TH];return !!(f&&f.dc)};
+const loaiTH=h=>h.loaiChot||(coDon(h)?'Có đơn':'Bỏ học không lý do');
+const luotOf=h=>h.bl?T.find(x=>x.id===h.bl):null;
+/* Hồ sơ nối lượt bảo lưu dùng LUÔN nhật ký của lượt — không bắt ghi lại */
+const lhTH=h=>(h.lh||[]).map(x=>x.concat(['hs'])).concat(luotOf(h)?(luotOf(h).lh||[]).map(x=>x.concat(['luot'])):[]);
+const LH_MIN=3, HF_MIN=2;   /* ngưỡng — M1.6 §11 #10, đang chạy theo phương án mặc định */
+function lhDu(h){const L=lhTH(h), hf=[...new Set(L.map(x=>x[2]))];
+ return {n:L.length,hf:hf.length,ds:hf,ok:L.length>=LH_MIN&&hf.length>=HF_MIN}}
+function thieuGui(h){
+ const m=[];
+ if(!h.hl)m.push(['Ngày hiệu lực','Chưa có ngày quyết định bắt đầu có hiệu lực — sửa hồ sơ để điền.']);
+ if(!h.ly||!h.ly.trim())m.push(['Lý do','Lý do in vào quyết định — sửa hồ sơ để điền.']);
+ if(!coDon(h)){const d=lhDu(h), f=(h.files||{})[DON_TH];
+  if(!d.ok){
+   const thieuLan=Math.max(0,LH_MIN-d.n), thieuHf=Math.max(0,HF_MIN-d.hf);
+   m.push(['Đơn xin thôi học — HOẶC — nhật ký liên hệ đủ ngưỡng',
+    (f?'Đơn đã nhận tệp nhưng <b>CHƯA đối chiếu bản gốc</b>. ':'Chưa có đơn của gia đình. ')+
+    'Nếu gia đình không làm đơn thì cần nhật ký <b>≥ '+LH_MIN+' lần, bằng ≥ '+HF_MIN+' hình thức</b> — mới có <b>'+d.n+' lần</b>'+
+    (d.hf?', hình thức: '+d.ds.join(', '):'')+'. '+
+    (thieuLan?'Còn thiếu <b>'+thieuLan+' lần</b>'+(thieuHf?' và ':''):'')+
+    (thieuHf?'<b>'+thieuHf+' hình thức khác</b> — ví dụ '+['Đến nhà','Người thân chuyển lời','Nhắn tin','Gọi điện'].filter(x=>!d.ds.includes(x)).slice(0,2).join(' hoặc '):'')+'.'])}}
+ return m}
+
+const XNTH=[
+ {k:'lop',ic:'🏫',t:'Tình hình lớp',ai:h=>'GVCN '+gvcnCua(h.lop),ho:'Chuyên cần 30 ngày gần nhất · sách thư viện đang mượn · đồ dùng lớp'},
+ {k:'no',ic:'💰',t:'Công nợ hai chiều',ai:h=>'Kế toán — '+ROLE.KT.sdt,ho:'Gia đình nợ trường · số dư tạm giữ đọc từ M7.2'},
+ {k:'bb',ic:'⚖️',t:'Giáo dục bắt buộc',ai:h=>'Người tích tự trao đổi với gia đình',
+  ho:'Luật Giáo dục 2019 Điều 14, sửa đổi bởi Luật 123/2025/QH15 — tiểu học và THCS là giáo dục bắt buộc (THCS từ 01/7/2026)',chi:batBuoc},
+];
+const xnTH=h=>XNTH.filter(x=>!x.chi||x.chi(h));
+const duXNTH=h=>xnTH(h).every(x=>h.xn[x.k]&&h.xn[x.k].ok);
+const thieuXNTH=h=>xnTH(h).filter(x=>!(h.xn[x.k]&&h.xn[x.k].ok)).map(x=>x.t);
+
+let TH=[
+/* ---- Nháp · có đơn nhưng CHƯA đối chiếu → chưa gửi được ---- */
+{id:'TH-2026-0011',ma:'HS-2026-0472',n:'Mai Đức Toàn',gt:'Nam',ns:'19/01/2011',lop:'9A1',dt:'Điểm trường A',cs:'01315010141',
+ tt:'nhap',hl:'1/10/2026',ly:'Gia đình khó khăn, em xin nghỉ học để đi làm phụ giúp gia đình.',
+ ph:[{ten:'Mai Văn Thắng',qh:'Cha',sdt:'0977 402 118'}],
+ files:{[DON_TH]:{f:'DonThoiHoc_DucToan.pdf',dc:0}},lh:[],xn:{},no:0,sd:0,
+ log:[lg('Lê Thu Hằng (VT)','Lập hồ sơ thôi học — gia đình đến nộp đơn tại văn phòng','Đã quét đơn, chưa đối chiếu bản gốc')]},
+
+/* ---- THPT · có đơn đã đối chiếu · đủ 2/2 xác nhận → HT ký được (không có ô Giáo dục bắt buộc) ---- */
+{id:'TH-2026-0012',ma:'HS-2026-0587',n:'Kiều Anh Thư',gt:'Nữ',ns:'11/07/2010',lop:'10A1',dt:'Điểm trường A',cs:'01315010287',
+ tt:'ht',hl:'15/9/2026',ly:'Gia đình định cư ở Úc, không tiếp tục học tại Việt Nam.',
+ ph:[{ten:'Kiều Văn Lâm',qh:'Cha',sdt:'0903 118 440'}],
+ files:{[DON_TH]:{f:'DonThoiHoc_AnhThu.pdf',dc:1}},lh:[],no:0,sd:350000,
+ xn:{lop:XNOK('PHT Điểm trường A'),no:XNOK('PHT Điểm trường A')},
+ log:[lg('Lê Thu Hằng (VT)','Lập hồ sơ thôi học — gia đình nộp đơn','Đơn đã đối chiếu bản gốc'),
+      lg('Lê Thu Hằng (VT)','Chuyển bước xác nhận và ký',''),
+      lg('PHT Điểm trường A','Xác nhận Tình hình lớp và Công nợ','GVCN Trịnh Văn Tùng · kế toán báo số dư tạm giữ 350.000đ')]},
+
+/* ---- Nháp · bỏ học không lý do · mới 2 lần, 1 hình thức → CHẶN gửi, nêu đích danh ---- */
+{id:'TH-2026-0013',ma:'HS-2026-0539',n:'Triệu Văn Phong',gt:'Nam',ns:'06/12/2012',lop:'8A2',dt:'Điểm trường A',cs:'01315010225',
+ tt:'nhap',hl:'',ly:'Học sinh nghỉ không phép liên tục từ 18/8/2026, gia đình không làm đơn.',
+ ph:[{ten:'Triệu Thị Hoa',qh:'Mẹ',sdt:'0916 227 330',chinh:1},{ten:'Triệu Văn Đông',qh:'Bác',sdt:'0983 440 115'}],
+ files:{},xn:{},no:600000,sd:0,
+ lh:[['26/8/2026','Hoàng Thu Trang (GVCN 8A2)','Gọi điện','Triệu Thị Hoa (Mẹ) — 0916 227 330','Chưa liên lạc được','Máy đổ chuông không ai nghe'],
+     ['2/9/2026','Lê Thu Hằng (VT)','Gọi điện','Triệu Thị Hoa (Mẹ) — 0916 227 330','Chưa liên lạc được','Thuê bao tạm thời không liên lạc được']],
+ log:[lg('Hệ thống','Cảnh báo bỏ học — nghỉ không phép liên tục 13 ngày học (đọc từ M2.9/T2)',''),
+      lg('Lê Thu Hằng (VT)','Lập hồ sơ thôi học từ khối cảnh báo bỏ học','Mang theo 2 lần liên hệ đã ghi')]},
+
+/* ---- Chờ xác nhận và ký · bỏ học không lý do · đủ nhật ký · lớp 9A2 (GVCN 9A2 thấy) ---- */
+{id:'TH-2026-0010',ma:'HS-2026-0431',n:'Sầm Thị Nhàn',gt:'Nữ',ns:'22/05/2011',lop:'9A2',dt:'Điểm trường A',cs:'01315010068',
+ tt:'ht',hl:'8/9/2026',ly:'Học sinh nghỉ không phép liên tục từ 11/8/2026; gia đình xác nhận cho con nghỉ nhưng không làm đơn.',
+ ph:[{ten:'Sầm Văn Kiên',qh:'Cha',sdt:'0962 115 008',chinh:1}],files:{},no:0,sd:0,
+ lh:[['18/8/2026','Trần Thị Mai (GVCN 9A2)','Gọi điện','Sầm Văn Kiên (Cha) — 0962 115 008','Chưa liên lạc được','Không nghe máy'],
+     ['24/8/2026','Lê Thu Hằng (VT)','Nhắn tin','Sầm Văn Kiên (Cha) — 0962 115 008','Chưa liên lạc được','Đã nhắn tin, chưa trả lời'],
+     ['30/8/2026','Trần Thị Mai (GVCN 9A2)','Đến nhà','Sầm Văn Kiên (Cha)','Gia đình xác nhận cho con nghỉ','Gia đình cho em lên rẫy phụ việc, từ chối làm đơn']],
+ xn:{lop:XNOK('PHT Điểm trường A')},
+ log:[lg('Hệ thống','Cảnh báo bỏ học — nghỉ không phép liên tục 10 ngày học',''),
+      lg('Lê Thu Hằng (VT)','Lập hồ sơ thôi học — bỏ học không lý do','3 lần liên hệ · 3 hình thức'),
+      lg('Lê Thu Hằng (VT)','Chuyển bước xác nhận và ký',''),
+      lg('PHT Điểm trường A','Xác nhận Tình hình lớp','Hỏi GVCN Trần Thị Mai')]},
+
+/* ---- Đã ký · Chờ đóng hồ sơ · còn số dư tạm giữ → chặn đóng ---- */
+{id:'TH-2026-0009',ma:'HS-2026-0466',n:'Lục Minh Khang',gt:'Nam',ns:'15/03/2013',lop:'7A1',dt:'Điểm trường A',cs:'01315010129',
+ tt:'dongcho',hl:'20/8/2026',ly:'Gia đình chuyển vào vùng sâu, em không tiếp tục đi học.',loaiChot:'Có đơn',choNgay:23,
+ ph:[{ten:'Lục Văn Tài',qh:'Cha',sdt:'0978 223 115'}],
+ files:{[DON_TH]:{f:'DonThoiHoc_MinhKhang.pdf',dc:1}},lh:[],no:0,sd:420000,
+ xn:{lop:XNOK('PHT Điểm trường A'),no:XNOK('PHT Điểm trường A'),bb:XNOK('PHT Điểm trường A')},
+ ky:{ai:'Hiệu trưởng',ngay:'20/8/2026',so:'QĐ-2026-0187',kyso:1},
+ log:[lg('Lê Thu Hằng (VT)','Lập hồ sơ thôi học — gia đình nộp đơn',''),
+      lg('PHT Điểm trường A','Xác nhận đủ 3/3','Giáo dục bắt buộc: đã giải thích nghĩa vụ, gia đình vẫn giữ nguyện vọng'),
+      lg('Hiệu trưởng','Duyệt và ký số quyết định thôi học QĐ-2026-0187','Loại: Có đơn'),
+      lg('Hệ thống','Hệ quả sau ký','M1.1 Đã thôi học · lớp 7A1 trừ 1 · dừng thu M7.2 · rà soát hoàn tiền M7.3 · đẩy CSDL ngành')]},
+
+/* ---- Đã đóng hồ sơ ---- */
+{id:'TH-2026-0006',ma:'HS-2026-0355',n:'Vi Thị Hồng',gt:'Nữ',ns:'08/08/2014',lop:'6B1',dt:'Điểm trường B',cs:'01315010088',
+ tt:'dong',hl:'5/6/2026',ly:'Gia đình ra nước ngoài lao động, đưa con đi cùng.',loaiChot:'Có đơn',
+ ph:[{ten:'Vi Văn Pao',qh:'Cha',sdt:'0915 003 227'}],
+ files:{[DON_TH]:{f:'DonThoiHoc_ViHong.pdf',dc:1}},lh:[],no:0,sd:0,
+ xn:{lop:XNOK('PHT Điểm trường B'),no:XNOK('PHT Điểm trường B'),bb:XNOK('PHT Điểm trường B')},
+ ky:{ai:'Hiệu trưởng',ngay:'3/6/2026',so:'QĐ-2026-0101',kyso:1},
+ log:[lg('Lê Văn Hòa (VT ĐT B)','Lập hồ sơ thôi học',''),lg('Hiệu trưởng','Ký QĐ-2026-0101',''),
+      lg('Lê Văn Hòa (VT ĐT B)','Đóng hồ sơ','Số dư tạm giữ đã hoàn tại M7.3')]},
+
+/* ---- Đã hủy · gia đình rút đơn sau khi được giải thích nghĩa vụ giáo dục bắt buộc ---- */
+{id:'TH-2026-0008',ma:'HS-2026-0409',n:'Đoàn Gia Huy',gt:'Nam',ns:'01/02/2011',lop:'9A2',dt:'Điểm trường A',cs:'01315010039',
+ tt:'huy',hl:'1/9/2026',ly:'Em chán học, xin nghỉ ở nhà.',huyLy:'Gia đình rút đơn sau khi GVCN và PHT giải thích nghĩa vụ hoàn thành giáo dục bắt buộc; em đi học lại từ 5/9/2026.',
+ ph:[{ten:'Đoàn Văn Tú',qh:'Cha',sdt:'0912 887 004'}],
+ files:{[DON_TH]:{f:'DonThoiHoc_GiaHuy.pdf',dc:1}},lh:[],no:0,sd:0,xn:{},
+ log:[lg('Lê Thu Hằng (VT)','Lập hồ sơ thôi học',''),lg('Lê Thu Hằng (VT)','HỦY — gia đình rút đơn','Em đi học lại từ 5/9/2026')]},
+];
+
+/* ---- cảnh báo bỏ học: ĐỌC từ M2.9/T2 — máy gợi ý, người quyết (§6b.7) ---- */
+const CB_NGAY=10;  /* ngưỡng — M1.6 §11 #11 */
+let CB=[
+ {ma:'HS-2026-0601',n:'Hà Quang Vinh',lop:'8A1',dt:'Điểm trường A',gt:'Nam',ns:'04/04/2012',cs:'01315010301',nghi:12,tu:'27/8/2026',
+  ph:[{ten:'Hà Văn Lộc',qh:'Cha',sdt:'0915 330 227',chinh:1}],
+  lh:[['6/9/2026','Phạm Văn Đức (GVCN 8A1)','Gọi điện','Hà Văn Lộc (Cha) — 0915 330 227','Chưa liên lạc được','Không nghe máy']]},
+ {ma:'HS-2026-0618',n:'Lò Thị Mây',lop:'9A2',dt:'Điểm trường A',gt:'Nữ',ns:'30/10/2011',cs:'01315010318',nghi:15,tu:'22/8/2026',
+  ph:[{ten:'Lò Văn Sướng',qh:'Cha',sdt:'0966 002 441',chinh:1},{ten:'Lò Thị Én',qh:'Chị',sdt:'0374 118 229'}],lh:[]},
+ {ma:'HS-2026-0633',n:'Nông Văn Khải',lop:'6B1',dt:'Điểm trường B',gt:'Nam',ns:'12/01/2015',cs:'01315010333',nghi:11,tu:'26/8/2026',
+  ph:[{ten:'Nông Thị Dung',qh:'Mẹ',sdt:'0987 551 330',chinh:1}],lh:[]},
+];
+
+/* ---- phạm vi & hàng đợi ---- */
+const nhomTH=()=>TH.filter(inScope);
+const cbTrongPV=()=>CB.filter(inScope);
+const cbCuaToi=()=>cbTrongPV().filter(()=>co('lap')||(co('lienhe')&&R().sc==='class'));
+function choToiTH(h){
+ if(thKet(h))return false;
+ if(h.tt==='nhap')return co('lap');
+ if(h.tt==='ht')return co('xn')&&!duXNTH(h)||co('ky')&&duXNTH(h);
+ if(h.tt==='dongcho')return h.sd>0?co('tien'):co('dong');
+ return false}
+function loaiChoTH(h){
+ if(!choToiTH(h))return null;
+ if(h.tt==='nhap')return thieuGui(h).length?['b','Chờ bạn hoàn thiện']:['v','Đủ điều kiện — chuyển bước ký'];
+ if(h.tt==='ht')return duXNTH(h)?['v','Chờ bạn duyệt và ký']:['b','Chờ bạn xác nhận: '+thieuXNTH(h).join(' · ')];
+ if(h.tt==='dongcho')return h.sd>0?['w','Chờ hoàn số dư '+vnd(h.sd)+' tại M7.3']:['v','Chờ bạn đóng hồ sơ'];
+ return null}
+
+let fTH='Tất cả';
+const CHTH=['Tất cả','Chờ tôi','Đang xử lý','Chờ đóng hồ sơ','Có đơn','Bỏ học không lý do','Đã đóng hồ sơ','Đã hủy · từ chối · thu hồi'];
+function locTH(L){
+ if(fTH==='Chờ tôi')return L.filter(choToiTH);
+ if(fTH==='Đang xử lý')return L.filter(h=>['nhap','ht'].includes(h.tt));
+ if(fTH==='Chờ đóng hồ sơ')return L.filter(h=>h.tt==='dongcho');
+ if(fTH==='Có đơn')return L.filter(h=>loaiTH(h)==='Có đơn');
+ if(fTH==='Bỏ học không lý do')return L.filter(h=>loaiTH(h)==='Bỏ học không lý do');
+ if(fTH==='Đã đóng hồ sơ')return L.filter(h=>h.tt==='dong');
+ if(fTH==='Đã hủy · từ chối · thu hồi')return L.filter(h=>['huy','tuchoi','thuhoi'].includes(h.tt));
+ return L.filter(h=>!thKet(h))}
+
+/* ================= TAB 4 — VIEW ================= */
+function viewTH(){
+ const L=locTH(nhomTH().filter(khop)), h0=cur?TH.find(x=>x.id===cur):null, n=nhomTH().filter(choToiTH).length;
+ return scopeBar()+
+ '<div class="bar">'+oTim()+
+  CHTH.map(c=>'<button class="chip'+(fTH===c?' on':'')+'" data-fth="'+c+'">'+c+
+   (c==='Chờ tôi'&&n?'<span class="cb">'+n+'</span>':'')+'</button>').join('')+
+  '<div class="sum"><span>Hiển thị <b>'+L.length+'</b> hồ sơ</span>'+
+  '<button class="btn sm p" data-x="th_tao">+ Lập hồ sơ thôi học'+theAi('th_tao')+'</button></div></div>'+
+ ghiChuDemo()+
+ '<div class="ro"><b>Mọi quyết định thôi học là một hồ sơ ở tab này</b> — học sinh đang học, đang bỏ học, hay đang bảo lưu quá hạn. '+
+  '<b>Loại</b> <i>Có đơn</i> / <i>Bỏ học không lý do</i> <b>tự suy ra</b> từ đơn đã đối chiếu, không có ô chọn — để chỉ tiêu <b>HS.12</b> đếm đúng. '+
+  'Hồ sơ đã đóng, đã hủy, bị từ chối, đã thu hồi <b>giữ vĩnh viễn</b>, tìm bằng chip.</div>'+
+ khoiCB()+
+ '<div class="stage'+(h0?' open':'')+'"><div class="listw">'+
+ (L.length?'<div class="wrapx"><table><tr><th>Mã hồ sơ</th><th>Học sinh</th><th class="hcol">Loại · đường vào</th>'+
+   '<th class="hcol">Cấp học</th><th class="hcol">Hiệu lực</th><th>Trạng thái</th></tr>'+L.map(rowTH).join('')+'</table></div>'
+  :'<div class="empty">'+(qTim?'Không tìm thấy hồ sơ nào khớp <b>'+qTim+'</b>':'Không có hồ sơ phù hợp bộ lọc')+'</div>')+
+ '</div>'+(h0?panelTH(h0):'')+'</div>'}
+
+function rowTH(h){
+ const [nl,nc]=THTT[h.tt], lc=loaiChoTH(h), lo=loaiTH(h);
+ return '<tr class="tr'+(cur===h.id?' on':'')+'" data-t="'+h.id+'">'+
+  '<td><b>'+h.id+'</b>'+(lc?'<br><span class="st2 '+lc[0]+'">'+lc[1]+'</span>':'')+'</td>'+
+  '<td><b>'+h.n+'</b><br><span style="color:var(--ink3);font-size:11px">'+h.ma+' · '+h.lop+'</span></td>'+
+  '<td class="hcol"><span class="st2 '+(lo==='Có đơn'?'b':'r')+'">'+lo+'</span>'+(h.loaiChot?' <span style="font-size:10.5px;color:var(--ink3)">đã chốt</span>':'')+
+   '<br><span style="color:var(--ink3);font-size:11px">'+(h.bl?'Từ lượt bảo lưu '+h.bl:'Đang học')+'</span></td>'+
+  '<td class="hcol">'+capHoc(h.lop)+(batBuoc(h)?'<br><span class="st2 w">Bắt buộc</span>':'')+'</td>'+
+  '<td class="hcol">'+(h.hl||'<span style="color:var(--red)">— chưa có</span>')+'</td>'+
+  '<td><span class="st2 '+nc+'">'+nl+'</span></td></tr>'}
+
+function khoiCB(){
+ const L=cbTrongPV();
+ if(!L.length)return '';
+ return '<div class="hb"><div class="lbh">⚠ Học sinh nghỉ không phép liên tục ≥ '+CB_NGAY+' ngày học <span class="sp"></span>'+
+  '<span class="st2 w">'+L.length+' em</span><span style="font-weight:400;color:var(--ink3)">đọc từ M2.9/T2 Điểm danh</span></div>'+
+  '<div style="padding:11px 13px"><div class="info"><b>Máy gợi ý, người quyết.</b> Máy <b>không tự tạo hồ sơ</b>. Em đi học lại thì chuỗi nghỉ đứt và <b>tự rơi khỏi danh sách</b>. '+
+  'Ghi nhận liên hệ ngay tại đây — lập hồ sơ thì nhật ký <b>đi theo</b>, không phải ghi lại.</div>'+
+  '<div class="wrapx"><table style="font-size:12px"><tr><th>Học sinh</th><th>Lớp · GVCN</th><th>Nghỉ liên tục</th><th>Đã liên hệ</th><th></th></tr>'+
+  L.map(c=>'<tr><td><b>'+c.n+'</b><br><span style="color:var(--ink3);font-size:11px">'+c.ma+'</span></td>'+
+   '<td>'+c.lop+'<br><span style="color:var(--ink3);font-size:11px">'+gvcnCua(c.lop)+'</span></td>'+
+   '<td><span class="st2 r">'+c.nghi+' ngày học</span><br><span style="color:var(--ink3);font-size:11px">từ '+c.tu+'</span></td>'+
+   '<td>'+(c.lh.length?'<span class="st2 n">'+c.lh.length+' lần</span>':'<span class="st2 w">Chưa liên hệ</span>')+'</td>'+
+   '<td style="white-space:nowrap"><button class="btn xs" data-x="cb_lh" data-k="'+c.ma+'">📞 Ghi liên hệ'+theAi('cb_lh')+'</button> '+
+   '<button class="btn xs d" data-x="th_tao_cb" data-k="'+c.ma+'">✕ Lập hồ sơ bỏ học'+theAi('th_tao_cb')+'</button> '+
+   '<button class="btn xs" data-go="M2.9/T2">↗ M2.9</button></td></tr>').join('')+
+  '</table></div></div></div>'}
+
+/* ================= TAB 4 — PANEL ================= */
+function panelTH(h){
+ const lo=loaiTH(h);
+ return '<div class="panel"><div class="ph"><div style="flex:1;min-width:0">'+
+  '<h2>'+h.n+' <span style="font-weight:400;color:var(--ink3);font-size:13px">'+h.id+'</span></h2>'+
+  '<div class="m"><span class="pill">'+h.lop+' · '+h.dt+'</span><span class="pill">'+capHoc(h.lop)+'</span>'+
+   '<span class="st2 '+(lo==='Có đơn'?'b':'r')+'">'+lo+'</span><span class="st2 '+THTT[h.tt][1]+'">'+THTT[h.tt][0]+'</span></div></div>'+
+  '<button class="btn sm" data-x="dong">✕ Đóng</button></div>'+
+  thanhTTH(h)+'<div class="pbody">'+tienTrinhTH(h)+khoiBB(h)+khoiGuiTH(h)+khoiNguonTH(h)+khoiDonTH(h)+khoiLHTH(h)+
+  khoiXNTH(h)+khoiQDTH(h)+khoiDongTH(h)+timeline(h)+'</div></div>'}
+
+function thanhTTH(h){
+ const B=nutTH(h);
+ if(!B.length)return '';
+ return '<div class="actbar">'+B.map(([c,l,a])=>'<button class="btn sm '+c+'" data-x="'+a+'" data-t="'+h.id+'">'+l+theAi(a)+'</button>').join('')+'</div>'}
+
+function nutTH(h){
+ if(h.tt==='nhap')return [[thieuGui(h).length?'':'p','📨 Chuyển bước xác nhận và ký','th_gui'],
+  ['','⬆ Nộp hộ đơn xin thôi học','th_nopdon'],['','📞 Ghi nhận liên hệ','th_lh'],
+  ['','✏️ Sửa','th_sua'],['d','🗑 Xóa nháp','th_xoa'],['d','⊘ Hủy — gia đình rút đơn','th_huy']];
+ if(h.tt==='ht')return [[duXNTH(h)?'p':'','🔏 Duyệt và ký quyết định thôi học','th_ky'],
+  ['d','✕ Từ chối','th_tuchoi'],['','↩ Trả về văn thư','th_trave'],['','⬆ Nộp hộ đơn','th_nopdon'],
+  ['','📞 Ghi nhận liên hệ','th_lh'],['d','⊘ Hủy — gia đình rút đơn','th_huy']];
+ if(h.tt==='dongcho')return [[h.sd>0?'':'p','📁 Đóng hồ sơ','th_dong'],
+  h.sd>0?['p','💸 Hoàn số dư '+vnd(h.sd)+' tại M7.3','th_hoan']:null,['','↩ Thu hồi quyết định','th_thuhoi']].filter(Boolean);
+ if(h.tt==='dong')return [['','↩ Thu hồi quyết định','th_thuhoi']];
+ return []}
+
+function tienTrinhTH(h){
+ const S=[['nhap','Nháp'],['ht','Xác nhận và ký'],['dongcho','Chờ đóng hồ sơ'],['dong','Đã đóng hồ sơ']];
+ const ket=['huy','tuchoi','thuhoi'].includes(h.tt), i=S.findIndex(x=>x[0]===h.tt);
+ return '<div class="hb"><div class="lbh">🧭 Tiến trình</div><div style="padding:10px 13px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">'+
+  (ket?'<span class="st2 '+THTT[h.tt][1]+'">'+THTT[h.tt][0]+'</span><span style="font-size:12px;color:var(--ink2)">'+(h.huyLy||h.tuchoiLy||h.thuhoiLy||'')+'</span>'
+   :S.map(([k,l],j)=>'<span class="st2 '+(j<i?'o':j===i?'v':'n')+'">'+(j<i?'✓ ':'')+l+'</span>').join('<span style="color:var(--ink3)">→</span>'))+
+  '</div><div class="ro" style="margin:0 13px 11px">Học sinh thành <b>Đã thôi học ngay khi ký</b>, từ ngày hiệu lực — không đợi đóng hồ sơ. '+
+  'Đóng hồ sơ chỉ là khép phần tiền của gia đình còn ở trường, như bước <i>Đóng hồ sơ chuyển đi</i> của M1.5.</div></div>'}
+
+function khoiBB(h){
+ if(!batBuoc(h))return h.tt==='ht'||h.tt==='nhap'?'<div class="ro">🎓 <b>THPT</b> — không phải giáo dục bắt buộc, nên hồ sơ này <b>không có ô xác nhận Giáo dục bắt buộc</b>. Chỉ cần 2/2 ô.</div>':'';
+ return '<div class="danger">⚖️ <b>Học sinh '+capHoc(h.lop)+' — giáo dục bắt buộc.</b> Luật Giáo dục 2019 Điều 14, sửa đổi bởi Luật 123/2025/QH15: '+
+  '<b>tiểu học và THCS là giáo dục bắt buộc</b> (THCS từ 01/7/2026); công dân trong độ tuổi <b>có nghĩa vụ học tập</b>, gia đình <b>có trách nhiệm tạo điều kiện</b>.'+
+  '<div style="margin-top:6px">Người xác nhận phải <b>trao đổi với gia đình về nghĩa vụ này</b> và ghi lại gia đình trả lời gì — ô thứ ba bắt buộc tích trước khi ký. '+
+  'Luật <b>không cấm</b> nhà trường ra quyết định, nên phần mềm <b>cảnh báo chứ không chặn</b>.</div></div>'}
+
+function khoiGuiTH(h){
+ if(h.tt!=='nhap')return '';
+ const m=thieuGui(h);
+ return m.length?'<div class="warn"><b>⚠ Chưa chuyển sang bước ký được — còn thiếu:</b>'+
+   m.map(x=>'<div style="margin-top:6px">• <b>'+x[0]+'</b> — '+x[1]+'</div>').join('')+'</div>'
+  :'<div class="ok">✓ <b>Đủ điều kiện</b> — '+(coDon(h)?'có đơn đã đối chiếu':'nhật ký liên hệ đủ ngưỡng')+'. Bấm <b>Chuyển bước xác nhận và ký</b>.</div>'}
+
+function khoiNguonTH(h){
+ const t=luotOf(h), lo=loaiTH(h);
+ return '<div class="hb"><div class="lbh">👤 Học sinh, lý do và đường vào</div><div style="padding:11px 13px;font-size:12.5px;line-height:1.7">'+
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:3px 14px"><div>Mã HS: <b>'+h.ma+'</b></div><div>Mã định danh: <b style="font-family:ui-monospace,monospace">'+h.cs+'</b></div>'+
+  '<div>Lớp: <b>'+h.lop+'</b> · GVCN '+gvcnCua(h.lop)+'</div><div>Ngày hiệu lực: <b>'+(h.hl||'— chưa có')+'</b></div></div>'+
+  '<div style="margin-top:7px"><b>Lý do</b> <span style="color:var(--ink3)">(in vào quyết định)</span>: '+(h.ly||'<i>chưa có</i>')+'</div>'+
+  '<div style="margin-top:7px"><b>Loại:</b> <span class="st2 '+(lo==='Có đơn'?'b':'r')+'">'+lo+'</span> '+
+   (h.loaiChot?'<span style="font-size:11.5px">— <b>đã chốt</b> lúc ký, không đổi nữa</span>'
+    :'<span style="font-size:11.5px;color:var(--ink2)">— <b>tự suy ra</b>: có đơn đã đối chiếu thì là <i>Có đơn</i>. Gia đình gửi đơn muộn thì loại <b>tự đổi</b>.</span>')+'</div>'+
+  (t?'<div class="info" style="margin:9px 0 0">🔗 <b>Nối với lượt bảo lưu '+t.id+'</b> — '+t.ly+', '+t.tu+' → '+t.den+(t.conLai<0?' · <b>quá hạn '+(-t.conLai)+' ngày</b>':'')+
+    '. Nhật ký liên hệ của lượt <b>tính luôn</b> cho hồ sơ này. Ký xong thì lượt <b>tự chuyển Đã cho thôi học</b>. '+
+    '<button class="btn xs" data-x="th_luot" data-t="'+h.id+'">↗ Mở lượt</button></div>'
+   :'<div style="margin-top:7px;font-size:11.5px;color:var(--ink2)">Đường vào: <b>học sinh đang học</b> — không có lượt bảo lưu.</div>')+
+  '</div></div>'}
+
+function khoiDonTH(h){
+ const f=(h.files||{})[DON_TH];
+ return '<div class="hb"><div class="lbh">📎 Đơn xin thôi học <span class="sp"></span>'+
+  (f?(f.dc?'<span class="st2 o">✓ Đã đối chiếu bản gốc</span>':'<span class="st2 w">Đã nhận — chưa đối chiếu</span>'):'<span class="st2 n">Chưa có</span>')+'</div>'+
+  '<div style="padding:11px 13px;font-size:12.5px">'+
+  (f?'<div style="display:flex;gap:9px;align-items:center"><b style="flex:1">'+f.f+'</b>'+
+    '<button class="btn xs" data-x="xemfile">👁 Xem</button><button class="btn xs">⬇ Tải</button>'+
+    (h.tt==='nhap'||h.tt==='ht'?'<button class="btn xs p" data-x="th_nopdon" data-t="'+h.id+'">'+(f.dc?'Sửa':'Đối chiếu')+theAi('th_nopdon')+'</button>':'')+'</div>'
+   :'<div style="color:var(--ink2)">Gia đình <b>không làm đơn</b> thì hồ sơ vẫn đi được — nhưng phải có <b>nhật ký liên hệ ≥ '+LH_MIN+' lần, bằng ≥ '+HF_MIN+' hình thức</b>. '+
+    'Có đơn thì <b>máy đếm tệp, người đối chiếu nội dung</b> — có tệp chưa đủ, phải tích <i>đã đối chiếu bản gốc</i>.</div>')+
+  '</div></div>'}
+
+function khoiLHTH(h){
+ const L=lhTH(h), d=lhDu(h);
+ return '<div class="hb"><div class="lbh">📞 Nhật ký liên hệ gia đình <span class="sp"></span>'+
+  '<span class="st2 '+(d.ok?'o':L.length?'w':'r')+'">'+d.n+' lần · '+d.hf+' hình thức</span>'+
+  (thKet(h)||h.tt==='dongcho'?'':'<button class="btn xs p" data-x="th_lh" data-t="'+h.id+'">📞 Ghi nhận liên hệ'+theAi('th_lh')+'</button>')+'</div>'+
+  '<div style="padding:11px 13px"><div class="danger"><b>Không sửa, không xóa được — kể cả Hiệu trưởng.</b> Với ca bỏ học không lý do, đây là <b>bằng chứng duy nhất</b> rằng trường đã cố liên hệ.</div>'+
+  '<div style="font-size:11.5px;color:var(--ink2);margin-bottom:9px">Danh bạ: '+h.ph.map(p=>'<b>'+p.ten+'</b> ('+p.qh+') <span style="font-family:ui-monospace,monospace">'+p.sdt+'</span>').join(' · ')+'</div>'+
+  (L.length?'<div class="tl">'+L.slice().reverse().map(x=>'<div class="tli '+(x[4]==='Chưa liên lạc được'?'no':'')+'"><b>'+x[2]+' → '+x[3]+'</b>'+
+    '<span>'+x[1]+' · '+x[0]+(x[6]==='luot'?' · <i>từ lượt bảo lưu</i>':'')+'</span>'+
+    '<div style="margin-top:3px"><span class="st2 '+(x[4]==='Chưa liên lạc được'?'r':'o')+'">'+x[4]+'</span> <span style="font-size:11.5px;color:var(--ink2)">'+x[5]+'</span></div></div>').join('')+'</div>'
+   :'<div class="ro" style="margin:0">Chưa có lần liên hệ nào.</div>')+'</div></div>'}
+
+function khoiXNTH(h){
+ if(!['ht','dongcho','dong'].includes(h.tt))return '';
+ const X=xnTH(h), sua=h.tt==='ht';
+ return '<div class="hb"><div class="lbh">☑ Xác nhận trước khi ký <span class="sp"></span><span class="st2 '+(duXNTH(h)?'o':'w')+'">'+
+  X.filter(x=>h.xn[x.k]&&h.xn[x.k].ok).length+'/'+X.length+'</span></div><div style="padding:11px 13px;display:grid;gap:8px">'+
+  X.map(x=>{const v=h.xn[x.k]||{};return '<div style="border:1px solid var(--line);border-radius:9px;padding:9px 11px;background:#fff">'+
+   '<div style="display:flex;gap:9px;align-items:flex-start"><div style="flex:1"><b>'+x.ic+' '+x.t+'</b> <span style="font-size:11.5px;color:var(--ink3)">— hỏi '+x.ai(h)+'</span>'+
+   '<div style="font-size:11.5px;color:var(--ink2);margin-top:3px">'+x.ho+'</div>'+
+   (x.k==='no'?'<div style="font-size:11.5px;margin-top:4px">Gia đình nợ trường: <b>'+(h.no?vnd(h.no):'0đ')+'</b> · Số dư tạm giữ trường phải trả: <b>'+vnd(h.sd||0)+'</b>'+
+     (h.sd?' — <b>thôi học không giữ số dư được</b>, phải hoàn trước khi đóng hồ sơ':'')+'</div>':'')+
+   (v.ok?'<div class="ok" style="margin:6px 0 0;font-size:11.5px">✓ '+v.boi+' · '+v.ngay+(v.note?' — <i>'+v.note+'</i>':'')+'</div>':'')+'</div>'+
+   (sua?'<button class="btn xs'+(v.ok?'':' p')+'" data-x="th_xn" data-t="'+h.id+'" data-k="'+x.k+'">'+(v.ok?'Bỏ tích':'Tích')+theAi('th_xn')+'</button>':'')+
+   '</div></div>'}).join('')+'</div></div>'}
+
+function khoiQDTH(h){
+ if(!h.ky)return '';
+ return '<div class="ok">🔏 <b>'+h.ky.so+'</b> — quyết định thôi học · '+h.ky.ai+' · '+h.ky.ngay+
+  (h.ky.kyso?' · <b>đã ký số</b>':' · <b class="st2 w">chưa ký số</b> (Nhóm A — đã ghi nhật ký bỏ qua)')+' · loại <b>'+h.loaiChot+'</b>'+
+  '<div style="margin-top:6px;font-size:11.5px">Đã sinh: M1.1 <b>Đã thôi học</b> · lớp '+h.lop+' trừ 1 · dừng thu M7.2 · <b>Rà soát hoàn tiền — rời trường</b> sang M7.3 · '+
+  'hủy bán trú, ngoại khóa, nội trú · rời nhóm chat lớp · <b>đẩy CSDL ngành</b> (M10.8) · M4.11 Văn bản đi · thông báo gia đình qua App.</div></div>'}
+
+function khoiDongTH(h){
+ if(h.tt!=='dongcho')return '';
+ return h.sd>0?'<div class="danger"><b>⛔ Chưa đóng hồ sơ được — trường còn giữ '+vnd(h.sd)+' của gia đình</b> (số dư tạm giữ, đọc từ M7.2).'+
+   '<div style="margin-top:6px">Em không quay lại, tiền phải hoàn hết. Kế toán lập phiếu hoàn tại <b>M7.3</b>; số dư về 0 thì nút <b>Đóng hồ sơ</b> mở.</div>'+
+   (h.choNgay?'<div style="margin-top:6px">Đã chờ <b>'+h.choNgay+' ngày</b> — quá 30 ngày thành việc của KT và VT, quá 60 ngày báo HT. Không tự đóng.</div>':'')+'</div>'
+  :'<div class="ok">✓ <b>Số dư tạm giữ đã về 0</b> — văn thư hoặc hiệu trưởng đóng hồ sơ được.</div>'}
+
+/* ================= TAB 4 — THAO TÁC ================= */
+const thOf=d=>TH.find(x=>x.id===d.t);
+const soTH=()=>'TH-2026-00'+(20+Math.floor(Math.random()*70));
+function modalLH(ten,ph,luu){
+ $('#mdl').classList.remove('sm');
+ modal('📞 Ghi nhận liên hệ gia đình — '+ten,
+  '<div class="danger">Bản ghi này <b>KHÔNG sửa, KHÔNG xóa được</b> — kể cả Hiệu trưởng.</div>'+
+  '<div><b>Hình thức</b> <span style="color:var(--red)">*</span><select class="fldi" id="fht">'+
+  ['Gọi điện','Nhắn tin','Đến nhà','Qua App','Người thân chuyển lời'].map(x=>'<option>'+x+'</option>').join('')+'</select></div>'+
+  '<div style="margin-top:11px"><b>Người liên hệ được</b> <span style="color:var(--red)">*</span><select class="fldi" id="fai">'+
+  ph.map(p=>'<option>'+p.ten+' ('+p.qh+') — '+p.sdt+'</option>').join('')+'<option>Người khác (ghi trong nội dung)</option></select></div>'+
+  '<div style="margin-top:11px"><b>Kết quả</b> <span style="color:var(--red)">*</span><select class="fldi" id="fkq">'+
+  ['Chưa liên lạc được','Gia đình xác nhận cho con nghỉ','Gia đình hứa cho con đi học lại','Gia đình sẽ làm đơn xin thôi học'].map(x=>'<option>'+x+'</option>').join('')+'</select></div>'+
+  '<div style="margin-top:11px"><b>Nội dung trao đổi</b> <span style="color:var(--red)">*</span><textarea class="fldi" id="fnd" rows="2"></textarea></div>',
+  [['Hủy',0],['📞 Ghi nhận',()=>{const nd=$('#fnd').value.trim();if(!nd){toast('Phải ghi nội dung trao đổi');return}
+    luu([NGAY2,R().n,$('#fht').value,$('#fai').value,$('#fkq').value,nd])},'p']])}
+
+function taoTH(o){
+ const id=soTH(), h=Object.assign({id:id,tt:'nhap',hl:'',ly:'',files:{},lh:[],xn:{},no:0,sd:0,log:[]},o);
+ TH.push(h);cur=id;tab='th';fTH='Tất cả';return h}
+
+function modalTaoTH(pre){
+ hsChon=pre?pre.ma:null;$('#mdl').classList.remove('sm');
+ const moLuot=T.filter(t=>!ketThuc(t)&&inScope(t));
+ modal('+ Lập hồ sơ thôi học',
+  '<div class="ro"><b>Gia đình đến làm việc trực tiếp</b> — phụ huynh không tạo yêu cầu thôi học trên App. Văn thư lập hồ sơ.</div>'+
+  '<div style="font-weight:700;font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">1. Học sinh đang học</div>'+
+  (pre?'<div class="ok" style="margin:0 0 11px"><b>'+pre.n+'</b> · '+pre.ma+' · '+pre.lop+' — từ khối cảnh báo bỏ học, nghỉ liên tục <b>'+pre.nghi+' ngày học</b>. Nhật ký '+pre.lh.length+' lần <b>đi theo</b>.</div>'
+   :'<div class="hslist">'+HSTRUONG.filter(x=>inScope(x)&&!TH.some(h=>h.ma===x.ma&&!thKet(h))).map(x=>
+     '<div class="hsr" data-x="th_pick" data-k="'+x.ma+'"><div><b>'+x.n+'</b><span>'+x.ma+' · '+x.lop+' · '+capHoc(x.lop)+'</span></div><span class="st2 n">Chọn</span></div>').join('')+
+    moLuot.map(t=>'<div class="hsr" style="opacity:.55;cursor:not-allowed"><div><b>'+t.n+'</b><span>'+t.ma+' · '+t.lop+' — <b>đang có lượt bảo lưu '+t.id+'</b>: lập từ tab 👥 để hồ sơ nối với lượt</span></div><span class="st2 w">Không chọn được</span></div>').join('')+
+    '</div><div id="thchon" style="margin:9px 0 11px"></div>')+
+  '<div class="warn" style="margin:0 0 11px"><b>Em có sang học ở một trường phổ thông hoặc trung tâm GDNN-GDTX khác không?</b> '+
+   'Nếu có thì đây là <b>chuyển trường</b>, không phải thôi học — trường đến phải nhận học bạ qua CSDL ngành. '+
+   '<button class="btn xs" data-go="M1.5">↗ Lập hồ sơ chuyển đi ở M1.5</button></div>'+
+  '<div style="font-weight:700;font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;margin:4px 0 6px">2. Ngày hiệu lực và lý do</div>'+
+  '<div style="display:flex;gap:8px"><input class="fldi" id="fhl" placeholder="Ngày hiệu lực — VD 1/10/2026"></div>'+
+  '<div style="margin-top:9px"><b>Lý do</b> <span style="color:var(--red)">*in vào quyết định</span><textarea class="fldi" id="fly" rows="2">'+(pre?'Học sinh nghỉ không phép liên tục từ '+pre.tu+', gia đình không làm đơn.':'')+'</textarea></div>'+
+  '<div style="font-weight:700;font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;margin:13px 0 6px">3. Đơn xin thôi học — nếu gia đình có làm đơn</div>'+
+  '<label style="display:block"><input type="checkbox" id="fdon"'+(pre?'':' checked')+'> Đã nhận tệp đơn xin thôi học</label>'+
+  '<label style="display:block;margin-top:4px"><input type="checkbox" id="fdc"> Đã đối chiếu bản gốc</label>'+
+  '<div class="ro" style="margin:9px 0 0"><b>Không có ô chọn loại.</b> Có đơn đã đối chiếu thì là <i>Có đơn</i>; không có thì là <i>Bỏ học không lý do</i> và phải có nhật ký liên hệ ≥ '+LH_MIN+' lần, bằng ≥ '+HF_MIN+' hình thức. '+
+   'Thiếu vẫn <b>lưu được ở Nháp</b>, chỉ chưa chuyển bước ký được.</div>',
+  [['Hủy',0],['💾 Lập hồ sơ',()=>{
+    const x=pre||HSTRUONG.find(y=>y.ma===hsChon);if(!x){toast('Chưa chọn học sinh');return}
+    const f={}; if($('#fdon').checked)f[DON_TH]={f:'DonThoiHoc_'+x.n.split(' ').pop()+'.pdf',dc:$('#fdc').checked?1:0};
+    const ph=x.ph&&x.ph.map?x.ph:[{ten:x.ph.split(' — ')[0],qh:'Cha/Mẹ',sdt:x.ph.split(' — ')[1]||''}];
+    const h=taoTH({ma:x.ma,n:x.n,gt:x.gt,ns:x.ns,lop:x.lop,dt:x.dt,cs:x.cs,ph:ph,hl:$('#fhl').value.trim(),ly:$('#fly').value.trim(),
+      files:f,lh:pre?pre.lh.slice():[],no:x.no||0,sd:x.hoan||0,
+      log:[lg(R().n,'Lập hồ sơ thôi học'+(pre?' từ khối cảnh báo bỏ học':' — gia đình đến làm việc tại văn phòng'),pre?'Mang theo '+pre.lh.length+' lần liên hệ':'')]});
+    if(pre)CB=CB.filter(c=>c.ma!==pre.ma);
+    const m=thieuGui(h);
+    toast(m.length?'Đã lập '+h.id+' ở Nháp · còn thiếu '+m.length+' điều kiện để chuyển bước ký':'Đã lập '+h.id+' · đủ điều kiện chuyển bước ký');render()},'p']]);}
+
+function actTH(a,d){
+ const h=d.t?thOf(d):null;
+
+ /* ---- từ lượt bảo lưu (tab 2): VT lập hồ sơ nối lượt ---- */
+ if(a==='thoihoc'){const t=tOf(d);
+  if(t.thId&&thMo(t.thId)){cur=t.thId;tab='th';render();return}
+  const nh=taoTH({ma:t.ma,n:t.n,gt:t.gt,ns:t.ns,lop:t.lop,dt:t.dt,cs:t.cs,ph:t.ph,bl:t.id,
+    ly:'Gia đình đồng ý cho con thôi học sau thời gian bảo lưu.',no:t.no||0,sd:t.hoan||0,
+    log:[lg(R().n,'Lập hồ sơ thôi học từ lượt bảo lưu '+t.id,'Chờ văn thư nộp hộ đơn của gia đình')]});
+  t.thId=nh.id;t.log.push(lg(R().n,'Lập hồ sơ thôi học '+nh.id,'Việc tiếp theo nằm ở tab ✕ Thôi học'));
+  toast('Đã lập '+nh.id+' · nối với lượt '+t.id+' · chờ nộp hộ đơn');render();return}
+
+ /* ---- HT chọn (b) sau escalate: hồ sơ vào thẳng bước xác nhận và ký ---- */
+ if(a==='thoihoc_ht'){const t=tOf(d);
+  const tmp={bl:t.id,lh:[],files:{}}, du=lhDu(tmp);
+  if(!du.ok){$('#mdl').classList.add('sm');
+   modal('⛔ Chưa đủ căn cứ','<div class="danger" style="margin-bottom:0">Lượt này mới có <b>'+du.n+' lần liên hệ, '+du.hf+' hình thức</b>. '+
+    'Cho thôi học vì mất liên lạc cần <b>≥ '+LH_MIN+' lần, bằng ≥ '+HF_MIN+' hình thức</b>. Chọn <b>(c) Đóng hồ sơ tạm</b> nếu cần dừng đếm.</div>',[['Đóng',0]]);return}
+  const nh=taoTH({ma:t.ma,n:t.n,gt:t.gt,ns:t.ns,lop:t.lop,dt:t.dt,cs:t.cs,ph:t.ph,bl:t.id,tt:'ht',hl:NGAY2,
+    ly:'Mất liên lạc sau hết hạn bảo lưu quá '+soQH(t)+' ngày, gia đình không phản hồi sau '+du.n+' lần liên hệ.',no:t.no||0,sd:t.hoan||0,
+    log:[lg(R().n,'Chọn (b) Cho thôi học sau escalate — hồ sơ vào thẳng bước xác nhận và ký','Bằng chứng: '+du.n+' lần liên hệ của lượt '+t.id)]});
+  t.thId=nh.id;t.log.push(lg(R().n,'Quyết định (b) — lập hồ sơ thôi học '+nh.id,''));
+  toast('Đã tạo '+nh.id+' ở bước xác nhận và ký · tích đủ ô rồi ký');render();return}
+
+ if(a==='th_mo'){const t=tOf(d);cur=t.thId;tab='th';fTH='Tất cả';render();return}
+ if(a==='th_luot'){cur=h.bl;tab='ds';fTT='Tất cả';render();return}
+ if(a==='th_tao'){modalTaoTH(null);return}
+ if(a==='th_pick'){hsChon=d.k;const x=HSTRUONG.find(y=>y.ma===d.k);
+  document.querySelectorAll('.hsr').forEach(e=>e.classList.toggle('on',e.dataset.k===d.k));
+  $('#thchon').innerHTML='<div class="ok" style="margin:0"><b>'+x.n+'</b> · '+x.lop+' · <b>'+capHoc(x.lop)+'</b>'+(capHoc(x.lop)!=='THPT'?' — <b>giáo dục bắt buộc</b>, hồ sơ sẽ có ô xác nhận thứ ba':' — không phải giáo dục bắt buộc')+
+   '<br>Công nợ: '+(x.no?'<b style="color:var(--red)">nợ '+vnd(x.no)+'</b>':'không nợ')+(x.hoan?' · số dư tạm giữ <b>'+vnd(x.hoan)+'</b> — phải hoàn':'')+'</div>';return}
+ if(a==='th_tao_cb'){const c=CB.find(x=>x.ma===d.k);modalTaoTH(c);return}
+ if(a==='cb_lh'){const c=CB.find(x=>x.ma===d.k);
+  modalLH(c.n,c.ph,r=>{c.lh.push(r);
+   toast(r[4]==='Gia đình hứa cho con đi học lại'?'Đã ghi · em rơi khỏi danh sách khi đi học lại (M2.9/T2)':'Đã ghi nhật ký · '+r[4]);render()});return}
+ if(a==='xemfile'||a==='th_xemdon'){act('xemfile',{});return}
+
+ if(a==='th_nopdon'){$('#mdl').classList.add('sm');const f=h.files[DON_TH]||{};
+  modal('⬆ Nộp hộ đơn xin thôi học',
+   '<div class="ro"><b>Phụ huynh không thao tác trên App.</b> Gia đình mang đơn bản cứng đến, văn thư <b>quét và nộp hộ</b>, rồi tự đối chiếu bản gốc.</div>'+
+   '<label style="display:block"><input type="checkbox" id="fdon"'+(f.f?' checked':'')+'> Đã nhận tệp đơn</label>'+
+   '<label style="display:block;margin-top:4px"><input type="checkbox" id="fdc"'+(f.dc?' checked':'')+'> Đã đối chiếu bản gốc</label>'+
+   '<div class="ro" style="margin:9px 0 0">Đối chiếu xong thì loại hồ sơ <b>tự thành Có đơn</b>.</div>',
+   [['Hủy',0],['💾 Lưu',()=>{
+     if($('#fdon').checked)h.files[DON_TH]={f:f.f||'DonThoiHoc_'+h.n.split(' ').pop()+'.pdf',dc:$('#fdc').checked?1:0};else delete h.files[DON_TH];
+     h.log.push(lg(R().n,'Nộp hộ đơn xin thôi học',coDon(h)?'Đã đối chiếu bản gốc — loại thành Có đơn':'Chưa đối chiếu'));
+     toast(coDon(h)?'Đã đối chiếu · loại hồ sơ: Có đơn':'Đã lưu · chưa đối chiếu bản gốc');render()},'p']]);return}
+
+ if(a==='th_lh'){modalLH(h.n,h.ph,r=>{h.lh.push(r);h.log.push(lg(R().n,'Ghi nhận liên hệ — '+r[4],r[2]+' · '+r[5]));
+   const dd=lhDu(h);toast('Đã ghi · '+dd.n+' lần, '+dd.hf+' hình thức'+(dd.ok?' — đủ ngưỡng':''));render()});return}
+
+ if(a==='th_gui'){const m=thieuGui(h);
+  if(m.length){$('#mdl').classList.add('sm');
+   modal('⛔ Chưa chuyển bước ký được','<div class="danger" style="margin-bottom:0"><b>Còn thiếu:</b>'+m.map(x=>'<div style="margin-top:6px">• <b>'+x[0]+'</b> — '+x[1]+'</div>').join('')+'</div>',[['Đóng',0]]);return}
+  h.tt='ht';h.log.push(lg(R().n,'Chuyển bước xác nhận và ký',coDon(h)?'Có đơn đã đối chiếu':'Nhật ký '+lhDu(h).n+' lần'));
+  toast('Đã chuyển · chờ PHT_ĐT tích '+xnTH(h).length+' ô xác nhận');render();return}
+
+ if(a==='th_xn'){const x=XNTH.find(y=>y.k===d.k), v=h.xn[x.k]||{};
+  if(v.ok){h.xn[x.k]={};h.log.push(lg(R().n,'Bỏ tích '+x.t,''));toast('Đã bỏ tích · nút ký khóa lại');render();return}
+  $('#mdl').classList.add('sm');
+  modal(x.ic+' Xác nhận: '+x.t,
+   '<div class="ro">Hỏi <b>'+x.ai(h)+'</b>. '+x.ho+'</div>'+
+   (x.k==='bb'?'<div class="danger">Xác nhận rằng bạn <b>đã trao đổi với gia đình về nghĩa vụ hoàn thành giáo dục bắt buộc</b> của em. Ghi lại gia đình trả lời gì.</div>':'')+
+   '<div><b>'+(x.k==='bb'?'Gia đình trả lời':'Họ báo gì')+'</b> <span style="color:var(--red)">*</span><textarea class="fldi" id="fxn" rows="2"></textarea></div>',
+   [['Hủy',0],['☑ Tích xác nhận',()=>{const nt=$('#fxn').value.trim();if(!nt){toast('Phải ghi lại nội dung');return}
+     h.xn[x.k]={ok:1,boi:R().n,ngay:NGAY2,note:nt};h.log.push(lg(R().n,'Xác nhận '+x.t,nt));
+     toast(duXNTH(h)?'Đủ '+xnTH(h).length+'/'+xnTH(h).length+' · Hiệu trưởng ký được':'Đã tích · còn '+thieuXNTH(h).join(', '));render()},'p']]);return}
+
+ if(a==='th_ky'){
+  if(!duXNTH(h)){$('#mdl').classList.add('sm');
+   modal('⛔ Chưa ký được','<div class="danger" style="margin-bottom:0"><b>Còn thiếu xác nhận: '+thieuXNTH(h).join(' · ')+'</b></div>',[['Đóng',0]]);return}
+  const so=soQD(), lo=loaiTH(h);$('#mdl').classList.remove('sm');
+  modal('🔏 Duyệt và ký quyết định thôi học',
+   '<div class="ro"><b>'+h.n+'</b> · '+h.id+' · lớp '+h.lop+' ('+capHoc(h.lop)+')<br>Ngày hiệu lực <b>'+h.hl+'</b> · loại <b>'+lo+'</b> — chốt khi ký<br>Lý do: '+h.ly+'<br>Số quyết định: <b>'+so+'</b></div>'+
+   (batBuoc(h)?'<div class="danger">⚖️ Học sinh <b>'+capHoc(h.lop)+'</b> — giáo dục bắt buộc. Ô xác nhận thứ ba đã tích: <i>'+h.xn.bb.note+'</i></div>':'')+
+   (h.no?'<div class="warn">Gia đình còn nợ <b>'+vnd(h.no)+'</b> — <b>không chặn</b>; ký là chấp nhận, công nợ giữ nguyên tại M7.2.</div>':'')+
+   (h.sd?'<div class="warn">Trường đang giữ <b>'+vnd(h.sd)+'</b> của gia đình. <b>Thôi học không giữ số dư được</b> — em không quay lại. Hồ sơ sẽ ở <i>Chờ đóng hồ sơ</i> cho tới khi hoàn xong tại M7.3.</div>':'')+
+   '<div class="info" style="margin-bottom:0"><b>Ký xong:</b> M1.1 <b>Đã thôi học</b> từ '+h.hl+' · lớp '+h.lop+' trừ 1'+(h.bl?' · lượt '+h.bl+' <b>Đã cho thôi học</b>':'')+
+    ' · dừng thu M7.2 · rà soát hoàn tiền M7.3 · hủy bán trú, ngoại khóa, nội trú · rời nhóm chat lớp · <b>đẩy CSDL ngành</b> · M4.11.</div>',
+   [['Hủy',0],['Ký không dùng chữ ký số',()=>kyTHXong(h,so,0)],['🔏 Ký số',()=>kyTHXong(h,so,1),'p']]);return}
+
+ if(a==='th_tuchoi'||a==='th_trave'||a==='th_huy'||a==='th_thuhoi'){
+  const cf={th_tuchoi:['✕ Từ chối hồ sơ thôi học','tuchoi','TỪ CHỐI','Hiệu trưởng bác — ví dụ cần thêm thời gian vận động gia đình.'],
+   th_trave:['↩ Trả về văn thư','nhap','TRẢ VỀ văn thư','Hồ sơ quay về Nháp, ô xác nhận bị bỏ.'],
+   th_huy:['⊘ Hủy — gia đình rút đơn','huy','HỦY — gia đình rút đơn','Hủy khác Từ chối: hủy là gia đình rút, báo cáo đếm riêng.'],
+   th_thuhoi:['↩ Thu hồi quyết định','thuhoi','THU HỒI quyết định','Chỉ khi sai sót. Học sinh trở lại Đang học; quyết định cũ không xóa, mang dấu Đã thu hồi.']}[a];
+  $('#mdl').classList.add('sm');
+  modal(cf[0],'<div class="ro">'+cf[3]+'</div><div><b>Lý do</b> <span style="color:var(--red)">*</span><textarea class="fldi" id="fly" rows="2"></textarea></div>',
+   [['Hủy',0],[cf[0],()=>{const v=$('#fly').value.trim();if(!v){toast('Phải nêu lý do');return}
+     h.tt=cf[1];if(cf[1]==='nhap')h.xn={};
+     if(cf[1]==='huy')h.huyLy=v;if(cf[1]==='tuchoi')h.tuchoiLy=v;if(cf[1]==='thuhoi')h.thuhoiLy=v;
+     h.log.push(lg(R().n,cf[2],v));
+     const t=luotOf(h);
+     if(t&&['huy','tuchoi','thuhoi'].includes(cf[1])){
+      if(t.tt==='th'){t.tt='bl';t.thLy='';}
+      t.thId=null;t.log.push(lg(R().n,'Hồ sơ thôi học '+h.id+' — '+cf[2],'Lượt quay về theo dõi'))}
+     if(cf[1]==='thuhoi'){const L=LOP.find(x=>x.id===h.lop);if(L)L.ss++}
+     toast('Đã '+cf[2].toLowerCase());render()},'d']]);return}
+
+ if(a==='th_sua'){$('#mdl').classList.add('sm');
+  modal('✏️ Sửa hồ sơ','<div><b>Ngày hiệu lực</b><input class="fldi" id="fhl" value="'+(h.hl||'')+'"></div>'+
+   '<div style="margin-top:9px"><b>Lý do</b> <span style="color:var(--red)">*in vào quyết định</span><textarea class="fldi" id="fly" rows="3">'+(h.ly||'')+'</textarea></div>',
+   [['Hủy',0],['💾 Lưu',()=>{h.hl=$('#fhl').value.trim();h.ly=$('#fly').value.trim();h.log.push(lg(R().n,'Sửa hồ sơ',''));toast('Đã lưu');render()},'p']]);return}
+
+ if(a==='th_xoa'){$('#mdl').classList.add('sm');
+  modal('🗑 Xóa hồ sơ nháp','<div class="warn"><b>Chỉ Nháp mới xóa được.</b> Đã vào chuỗi thì hủy, không xóa.</div>',
+   [['Hủy',0],['🗑 Xóa',()=>{const t=luotOf(h);if(t)t.thId=null;TH=TH.filter(x=>x.id!==h.id);cur=null;toast('Đã xóa '+h.id);render()},'d']]);return}
+
+ if(a==='th_hoan'){$('#mdl').classList.add('sm');
+  modal('💸 Hoàn số dư tại M7.3','<div class="ro">Deep-link sang <b>M7.3 Điều chỉnh &amp; Hoàn tiền</b> mở sẵn phiếu hoàn <b>'+vnd(h.sd)+'</b> cho gia đình em '+h.n+'. '+
+   'Trong demo, bấm <b>Giả lập đã hoàn</b> để xem nút Đóng hồ sơ mở ra.</div>',
+   [['Hủy',0],['↗ Mở M7.3',()=>toast('Deep-link M7.3?ctx='+h.ma+'&action=tao&return=M1.6')],
+    ['Giả lập đã hoàn',()=>{h.log.push(lg('Kế toán (M7.3)','Hoàn số dư tạm giữ '+vnd(h.sd),'Phiếu hoàn lý do HT-TH'));h.sd=0;toast('Số dư về 0 · đóng hồ sơ được');render()},'p']]);return}
+
+ if(a==='th_dong'){
+  if(h.sd>0){$('#mdl').classList.add('sm');
+   modal('⛔ Chưa đóng hồ sơ được','<div class="danger" style="margin-bottom:0">Trường còn giữ <b>'+vnd(h.sd)+'</b> của gia đình. Hoàn tại <b>M7.3</b> trước. '+
+    '<button class="btn xs" data-go="M7.3">↗ M7.3</button></div>',[['Đóng',0]]);return}
+  h.tt='dong';h.log.push(lg(R().n,'Đóng hồ sơ thôi học','Số dư tạm giữ đã về 0'));toast('Đã đóng hồ sơ '+h.id);render();return}
+
+ toast('Thao tác demo')}
+
+function kyTHXong(h,so,kyso){
+ h.ky={ai:'Hiệu trưởng',ngay:NGAY2,so:so,kyso:kyso};h.loaiChot=loaiTH(h);h.tt='dongcho';
+ const L=LOP.find(x=>x.id===h.lop);if(L)L.ss--;
+ h.log.push(lg(R().n,(kyso?'Duyệt và ký số quyết định thôi học ':'Duyệt và ký KHÔNG dùng chữ ký số — ')+so,'Loại chốt: '+h.loaiChot+(kyso?'':' · bypass Nhóm A · đồng bộ M4.11')));
+ h.log.push(lg('Hệ thống','Hệ quả sau ký','M1.1 Đã thôi học từ '+h.hl+' · lớp '+h.lop+' trừ 1 · dừng thu M7.2 · rà soát hoàn tiền M7.3 · hủy dịch vụ · rời nhóm chat lớp · đẩy CSDL ngành'));
+ const t=luotOf(h);if(t){t.tt='th';t.thLy=h.ly;t.log.push(lg('Hệ thống','Hồ sơ thôi học '+h.id+' đã ký '+so,'Lượt kết thúc — Đã cho thôi học'))}
+ toast('Đã ký '+so+' · '+h.n+' Đã thôi học · '+(h.sd?'chờ hoàn '+vnd(h.sd)+' rồi đóng hồ sơ':'chờ đóng hồ sơ'));render()}
+
+/* chip của tab 4 */
+document.body.addEventListener('click',e=>{const x=e.target.closest('[data-fth]');if(x){fTH=x.dataset.fth;cur=null;tuDongCho=0;render()}});
+
 render();
 </script>
 </body>

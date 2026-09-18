@@ -253,6 +253,24 @@ tr:hover td.stick{background:#f8fafc}
 .kqi{background:var(--bg);border-radius:7px;padding:3px 9px;font-size:11.5px}
 .kqi b{font-size:13px}
 .frm{background:#f8fafc;border:1px solid var(--line);border-radius:9px;padding:8px 12px;font-size:11.5px;color:var(--ink2);font-family:ui-monospace,monospace;margin-bottom:11px}
+
+/* ===== v4.3 — Nguon chuong trinh: mon CT GDPT vs mon CUA TRUONG ===== */
+/* nhan ★ mon chuyen — DAN XUAT tu "Mon chuyen cua he" (M10.2 R27), khong dung toi cong thuc nao */
+.csx{color:#b45309;font-weight:800;font-size:11px;cursor:help}
+/* nhan nhom "Chuong trinh GDPT" tren hang gom nhom cua bang */
+.ctg{background:#c7d2fe;color:#312e81;font-size:9px;font-weight:800;padding:0 4px;border-radius:3px;margin-left:4px;letter-spacing:0}
+/* dai PHAM VI PHEP TINH — con so nguoi ky chot can thay TRUOC khi ky */
+.ptbar{display:flex;gap:9px;align-items:flex-start;background:#eef2ff;border:1px solid #c7d2fe;
+ color:#312e81;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:12px}
+.ptbar .ic{font-size:15px;line-height:1.2}
+.ptbar .sub{color:#4338ca;font-size:11.5px;margin-top:3px;line-height:1.55}
+.ptbar code{background:#fff;border:1px solid #c7d2fe;border-radius:3px;padding:0 3px;font-size:11px}
+/* KHOI MON CUA TRUONG — duong phan cach NANG, khong an cot, chi dua ra khoi day duoc tinh */
+.gtb th.sept,.gtb td.sept{border-left:3px solid var(--violet)}
+.gtb thead tr.hgrp th.sept{background:#ede9fe;color:#5b21b6}
+.gtb th.thtr{background:#faf5ff}
+.gtb td.tdtr{background:#faf5ff;color:#5b21b6}
+.gvi.tr{background:#faf5ff;border-color:#ddd6fe}
 </style>
 </head>
 <body>
@@ -261,14 +279,15 @@ tr:hover td.stick{background:#f8fafc}
 
 <div class="rolebar">
   <b>Chức danh:</b>
+  <button class="rb on" data-r="FULL">🔓 Đủ quyền (demo)</button>
   <button class="rb" data-r="GVCN9A">GVCN 9A</button>
   <button class="rb" data-r="GVCN4A">GVCN 4A · Tiểu học</button>
   <button class="rb" data-r="GVBM">GVBM Toán</button>
   <button class="rb" data-r="PHT_A">PHT_ĐT · A</button>
   <button class="rb" data-r="PHT_B">PHT_ĐT · B</button>
   <button class="rb" data-r="PHT_CM">PHT_CM</button>
-  <button class="rb on" data-r="HT">HT — đầy đủ quyền</button>
-  <span class="note">Demo mở mặc định ở vai trò <b>Hiệu trưởng — đầy đủ quyền</b> để thao tác mọi chức năng. Khác biệt hiển thị theo vai trò xem tài liệu §2.3 và §8.</span>
+  <button class="rb" data-r="HT">HT</button>
+  <span class="note">Demo mở mặc định ở <b>🔓 Đủ quyền (demo)</b> để thao tác mọi chức năng — <b>kể cả «⟳ Chạy tính hàng loạt», thứ vai HT thật KHÔNG có</b> (năng lực <code>batch</code> chỉ thuộc PHT Điểm trường). Các vai chức danh thật giữ nguyên bên cạnh để thử phân quyền; khác biệt hiển thị theo vai xem tài liệu §2.3 và §8.</span>
 </div>
 
 <header class="hdr">
@@ -302,35 +321,44 @@ const HOM='27/08/2026';
 const NAV=[
  ['dh','🏠 Trung tâm điều hành',[['M0.1','Bảng điều khiển'],['M0.2','Việc cần làm'],['M0.3','Thông báo'],['M0.4','Trang cá nhân']]],
  ['hs','👥 Học sinh',[['M1.1','Hồ sơ học sinh'],['M1.2','Đối tượng ưu tiên'],['M1.3','Học bạ điện tử'],['M1.7','Lớp học &amp; Chuyển lớp']]],
- ['lh','📚 Lớp học hàng ngày',[['M2.5','Nhập điểm thường xuyên'],['M2.6','Bảng điểm môn'],['M2.8','Kỳ thi định kỳ'],['M2.9','Không gian lớp học']]],
+ ['lh','📚 Lớp học hàng ngày',[['M2.5','Nhập điểm thường xuyên'],['M2.5','Bảng điểm môn'],['M2.8','Kỳ thi định kỳ'],['M2.9','Không gian lớp học']]],
  ['kq','🎓 Kết quả &amp; Cuối năm',[['M3.1','Tổng kết và xếp loại','x'],['M3.2','Rèn luyện hè'],['M3.3','Xét duyệt lên lớp'],['M3.4','Xét duyệt tốt nghiệp']]],
  ['qt','⚙️ Quản trị',[['M10.1','Hồ sơ năm học']]],
 ];
 const ROLE={
+ /* Vai demo — HOP NHAT moi nang luc cua menu nay, dat mac dinh (CLAUDE.md §14.4).
+    Chu y: HT that KHONG co `batch` (chay tinh hang loat) — nang luc do chi thuoc
+    PHT Diem truong. Nen truoc 5/9/2026 demo mo mac dinh o HT thi tinh nang do
+    KHONG AI THAY, dung ca nguoi duyet. Vai FULL = HT + batch.
+    Khong lay `gvcn` va `gvbm`: hai co do la THU HEP theo scope (lop cua minh /
+    mon cua minh), khong phai nang luc — gan vao vai school-scope thi vo nghia. */
+ FULL:{n:'Lê Quang Vinh — Đủ quyền (demo)',av:'LV',sc:'school',
+   tabs:['lop','danhhieu','duyet'],
+   moPHT:1,moHT:1,kyChot:1,chotDH:1,binhbau:1,ycxl:1,moc:1,batch:1,menu:'all'},
  HT:{n:'Lê Quang Vinh — Hiệu trưởng',av:'LV',sc:'school',
    tabs:['lop','danhhieu','duyet'],
    moPHT:1,moHT:1,kyChot:1,chotDH:1,binhbau:1,ycxl:1,moc:1,menu:'all'},
  PHT_CM:{n:'Trần Văn Sơn — PHT Chuyên môn',av:'TS',sc:'school',
    tabs:['lop','danhhieu','duyet'],
    moPHT:1,kyChot:1,chotDH:1,ycxl:1,moc:1,
-   menu:['M0.1','M0.2','M0.3','M0.4','M1.1','M1.2','M1.3','M2.5','M2.6','M2.8','M2.9','M3.1','M3.2','M3.3','M3.4','M10.1']},
+   menu:['M0.1','M0.2','M0.3','M0.4','M1.1','M1.2','M1.3','M2.5','M2.5','M2.8','M2.9','M3.1','M3.2','M3.3','M3.4','M10.1']},
  PHT_A:{n:'Trần Thị Hoa — PHT Điểm trường A',av:'TH',sc:'branch',dt:'Điểm trường A',
    tabs:['lop','danhhieu','duyet'],moPHT:1,batch:1,ycxl:1,moc:1,
    menu:['M0.1','M0.2','M0.3','M0.4','M1.1','M1.3','M1.7','M2.9','M3.1','M3.2','M3.3','M10.1']},
  GVCN9A:{n:'Nguyễn Thị Mai — GVCN 9A',av:'NM',sc:'class',lop:'9A',dt:'Điểm trường A',
    tabs:['lop','danhhieu','duyet'],gvcn:1,binhbau:1,
-   menu:['M0.1','M0.2','M0.3','M0.4','M1.1','M1.3','M2.5','M2.6','M2.9','M3.1','M3.2','M3.3']},
+   menu:['M0.1','M0.2','M0.3','M0.4','M1.1','M1.3','M2.5','M2.5','M2.9','M3.1','M3.2','M3.3']},
  GVCN4A:{n:'Phạm Thu Hà — GVCN 4A',av:'PH',sc:'class',lop:'4A',dt:'Điểm trường A',
    tabs:['lop','danhhieu','duyet'],gvcn:1,binhbau:1,
-   menu:['M0.1','M0.2','M0.3','M0.4','M1.1','M1.3','M2.5','M2.6','M2.9','M3.1','M3.3']},
+   menu:['M0.1','M0.2','M0.3','M0.4','M1.1','M1.3','M2.5','M2.5','M2.9','M3.1','M3.3']},
  PHT_B:{n:'Ngô Văn Kiên — PHT Điểm trường B',av:'NK',sc:'branch',dt:'Điểm trường B',
    tabs:['lop','danhhieu','duyet'],moPHT:1,batch:1,ycxl:1,moc:1,
    menu:['M0.1','M0.2','M0.3','M0.4','M1.1','M1.3','M1.7','M2.9','M3.1','M3.2','M3.3','M10.1']},
- /* GVBM khong con tab nao o M3.1 sau khi bo Tra cuu — viec cua ho o M2.6.
+ /* GVBM khong con tab nao o M3.1 sau khi bo Tra cuu — viec cua ho o M2.5.
     Giu vai tro trong thanh demo de thay ro dieu do. */
  GVBM:{n:'Nguyễn Văn Hùng — GVBM Toán',av:'NH',sc:'class',mon:'Toán',lops:['6A','9A','9B','7A'],dt:'Điểm trường A',
    tabs:[],gvbm:1,
-   menu:['M0.1','M0.2','M0.3','M0.4','M2.5','M2.6','M3.2']},
+   menu:['M0.1','M0.2','M0.3','M0.4','M2.5','M2.5','M3.2']},
 };
 const TABN={lop:'📌 Chốt tổng kết theo lớp',danhhieu:'🏅 Xét danh hiệu khen thưởng',duyet:'🖊 Chờ tôi duyệt'};
 
@@ -350,39 +378,87 @@ const GVTH_MAP={'Tiếng Việt':'Phạm Thu Hà','Toán':'Phạm Thu Hà','Ngo�
  'Khoa học':'Phạm Thu Hà','Lịch sử và Địa lí':'Phạm Thu Hà','Tin học và Công nghệ':'Đinh Văn Sơn',
  'Giáo dục thể chất':'Bùi Văn Khoa','Nghệ thuật':'Lý Thị Vân','HĐ trải nghiệm':'Phạm Thu Hà'};
 function monCua(L){return L.cap==='TH'?MON_TH:MON_D.concat(MON_N)}
-function gvCua(L,m){return L.cap==='TH'?(GVTH_MAP[m]||L.gvcn):(GVBM_MAP[m]||'—')}
+
+/* ===== NGUON CHUONG TRINH — M10.2 §5.10.4. M3.1 CHI DOC (D1), khong co o sua =====
+   MOT truong that:   Nguon chuong trinh = CT GDPT | Cua truong
+                      -> quyet dinh DTB, xep loai (TT 22 D.9 / TT 27 D.9) va danh hieu (D.15 / D.13)
+   MOT nhan dan xuat: ★ mon chuyen  (mon == he.Mon chuyen cua he — M10.2 R27)
+                      -> KHONG dung toi mot cong thuc nao. Mon chuyen day 7 tiet VAN LA mon Toan
+                         cua Chuong trinh GDPT, diem TINH DU (TT 05/2023: chuyen sau la NOI DUNG
+                         BEN TRONG mot mon, khong phai mot mon moi).
+   Truong "Muc noi dung" o ban dau da BO 9/9/2026 (_phan-loai-mon-hoc-he-chuyen.md §3.2b).
+   LOC THEO BAT CU GI NGOAI "Nguon chuong trinh" LA LOC SAI — o menu nay loc sai nghia la
+   loai diem mon chuyen cua hoc sinh truong chuyen ra khoi danh hieu cua chinh em ay. */
+const MONTR={'Chuyên đề Toán học':{kieu:'diem',gv:'Nguyễn Văn Hùng'},
+ 'Tiếng Anh tăng cường':{kieu:'diem',gv:'Phạm Thị Nga'},
+ 'STEM':{kieu:'muc',gv:'Đinh Văn Sơn'}};
+const nguonCT=m=>!MONTR[m];
+/* Mon chuyen cua he — M10.2 §5.5, Master, 0..1. Doc tu he dao tao cua lop. */
+const MONCHUYEN={'Chuyên Toán':'Toán','Chuyên Tin':'Tin học','Chuyên Văn':'Ngữ văn'};
+const laCS=(L,m)=>MONCHUYEN[L.he]===m;
+/* mon CUA TRUONG cua lop — khai o M10.2 tab (5) theo Khoi × He × Nam */
+function monTr(L){return (L.mtr||[]).filter(m=>!nguonCT(m))}
+/* moi mon AP DUNG cua lop = CT GDPT + cua truong. Dung cho widget GV va viec chot so. */
+function monAll(L){return monCua(L).concat(monTr(L))}
+/* hai phep dem TACH BACH — khong bao gio tron */
+function chuaChotCT(L){return L.chuaChot.filter(nguonCT)}
+function chuaChotTr(L){return L.chuaChot.filter(m=>!nguonCT(m))}
+function gvCua(L,m){if(MONTR[m])return MONTR[m].gv;
+ return L.cap==='TH'?(GVTH_MAP[m]||L.gvcn):(GVBM_MAP[m]||'—')}
+/* nhan ★ — dan xuat, khong luu o M3.1. Tooltip noi ro no KHONG doi cong thuc nao. */
+function csTag(L,m){return laCS(L,m)
+ ?` <span class="csx" title="★ môn chuyên của hệ ${L.he} — nhãn DẪN XUẤT từ Môn chuyên của hệ (M10.2 R27), không phải một trường ai khai. Lớp học nội dung chuyên sâu và ${MONCHUYEN[L.he]} khai 7 tiết/tuần thay vì 4, nhưng vẫn là môn của Chương trình GDPT ⇒ điểm TÍNH ĐỦ vào ĐTB, xếp loại và danh hiệu (TT 05/2023).">★</span>`:''}
 
 /* ===== lop ===== */
 let LOP=[
- {id:'4A',dt:'Điểm trường A',khoi:'Khối 4',cap:'TH',gvcn:'Phạm Thu Hà',ss:38,
+ {id:'4A',dt:'Điểm trường A',khoi:'Khối 4',cap:'TH',he:'Đại trà',gvcn:'Phạm Thu Hà',ss:38,
   chuaChot:['Tin học và Công nghệ'],chotRL:false,daTinh:false,kyChot:null,hb:null,laiThoi:false,
   sp:[{i:4,ten:'Nguyễn Gia Hân',monC:['Toán']}]},
- {id:'4B',dt:'Điểm trường A',khoi:'Khối 4',cap:'TH',gvcn:'Lê Thị Nga',ss:36,
+ {id:'4B',dt:'Điểm trường A',khoi:'Khối 4',cap:'TH',he:'Đại trà',gvcn:'Lê Thị Nga',ss:36,
   chuaChot:[],chotRL:true,daTinh:true,kyChot:null,hb:null,laiThoi:false,
   sp:[{i:7,ten:'Phạm Đức Duy',monC:['Tiếng Việt']}]},
- {id:'6A',dt:'Điểm trường A',khoi:'Khối 6',cap:'THCS',gvcn:'Trần Văn Long',ss:42,
+ {id:'6A',dt:'Điểm trường A',khoi:'Khối 6',cap:'THCS',he:'Đại trà',gvcn:'Trần Văn Long',ss:42,
   chuaChot:['Ngữ văn','Tin học'],chotRL:false,daTinh:false,kyChot:null,hb:null,laiThoi:false,
   sp:[{i:9,ten:'Ngô Văn Tài',nghi:48,rl:'Đạt'}]},
- {id:'9A',dt:'Điểm trường A',khoi:'Khối 9',cap:'THCS',gvcn:'Nguyễn Thị Mai',ss:42,
+ {id:'9A',dt:'Điểm trường A',khoi:'Khối 9',cap:'THCS',he:'Đại trà',gvcn:'Nguyễn Thị Mai',ss:42,
   chuaChot:[],chotRL:true,daTinh:true,kyChot:null,hb:'chot',laiThoi:false,
   sp:[{i:3,ten:'Trần Minh Quân',fix:{'Toán':3.2,'KHTN':4.8},rl:'Đạt',nghi:12,nghiKP:3},
       {i:11,ten:'Lê Hoài Nam',rl:'Chưa đạt',nghi:9},
       {i:20,ten:'Vũ Thị Hồng',rl:'Chưa đạt',nghi:6}]},
- {id:'9B',dt:'Điểm trường A',khoi:'Khối 9',cap:'THCS',gvcn:'Đỗ Thị Hạnh',ss:40,
-  chuaChot:[],chotRL:true,daTinh:false,kyChot:null,hb:null,laiThoi:false,
+ /* 9B — he CLC co mon CUA TRUONG 'Tieng Anh tang cuong' CHUA CHOT.
+    Ca chung minh cau §4.6: lop van chay tinh va van KY CHOT duoc — mon do khong vao cong thuc nao. */
+ {id:'9B',dt:'Điểm trường A',khoi:'Khối 9',cap:'THCS',he:'Chất lượng cao',gvcn:'Đỗ Thị Hạnh',ss:40,
+  mtr:['Tiếng Anh tăng cường'],
+  chuaChot:['Tiếng Anh tăng cường'],chotRL:true,daTinh:false,kyChot:null,hb:null,laiThoi:false,
   sp:[{i:5,ten:'Đỗ Thị Ngân',fix:{'Ngữ văn':4.6,'Lịch sử và Địa lí':4.4,'GDCD':4.9},rl:'Đạt',nghi:6}]},
- {id:'5B',dt:'Điểm trường B',khoi:'Khối 5',cap:'TH',gvcn:'Trịnh Mai Anh',ss:35,
+ /* 5B — Tieu hoc co mon cua truong 'STEM'. Em Trinh Bao Ngan: moi mon CT GDPT muc T,
+    STEM muc C -> VAN 'Hoan thanh xuat sac' + 🏆 Xuat sac (TT 27 D.9/D.13 chi doc mon CT GDPT). */
+ {id:'5B',dt:'Điểm trường B',khoi:'Khối 5',cap:'TH',he:'Song ngữ',gvcn:'Trịnh Mai Anh',ss:35,
+  mtr:['STEM'],
   chuaChot:[],chotRL:true,daTinh:true,kyChot:{by:'Lê Quang Vinh (HT)',at:'20/08/2026 08:40',m:'Ký số USB Token'},hb:null,laiThoi:false,
-  sp:[{i:12,ten:'Đặng Khánh Ngọc',monC:['Toán']}]},
- {id:'7A',dt:'Điểm trường B',khoi:'Khối 7',cap:'THCS',gvcn:'Vũ Minh Tuấn',ss:41,
+  sp:[{i:12,ten:'Đặng Khánh Ngọc',monC:['Toán']},
+      {i:18,ten:'Trịnh Bảo Ngân',epT:1,mtrV:{'STEM':'C'}}]},
+ {id:'7A',dt:'Điểm trường B',khoi:'Khối 7',cap:'THCS',he:'Đại trà',gvcn:'Vũ Minh Tuấn',ss:41,
   chuaChot:[],chotRL:true,daTinh:true,kyChot:{by:'Lê Quang Vinh (HT)',at:'20/08/2026 09:12',m:'Ký số USB Token'},hb:null,laiThoi:false,
   sp:[{i:14,ten:'Bùi Quang Huy',fix:{'Toán':4.5,'Tin học':3.1},rl:'Chưa đạt',nghi:15}]},
- {id:'10A',dt:'Điểm trường B',khoi:'Khối 10',cap:'THPT',gvcn:'Bùi Thị Lan',ss:44,
+ {id:'10A',dt:'Điểm trường B',khoi:'Khối 10',cap:'THPT',he:'Đại trà',gvcn:'Bùi Thị Lan',ss:44,
   chuaChot:[],chotRL:true,daTinh:true,kyChot:{by:'Lê Quang Vinh (HT)',at:'20/08/2026 10:30',m:'Ký số USB Token'},hb:'chot',laiThoi:false,
   sp:[{i:6,ten:'Vũ Thị Hồng',fix:{'Toán':3.4,'Tin học':4.5},rl:'Đạt',nghi:4},
       {i:21,ten:'Lý Thị Diệp',nghi:52,rl:'Đạt'},
       {i:30,ten:'Ngô Bảo Lâm',rl:'Chưa đạt',nghi:5}]},
- {id:'12A',dt:'Điểm trường B',khoi:'Khối 12',cap:'THPT',gvcn:'Hoàng Văn Nam',ss:43,
+ /* 10 Toan — LOP CHUYEN. Mon Toan mang nhan ★ (dan xuat tu he), 7 tiet/tuan, VAN TINH DU.
+    Mon 'Chuyen de Toan hoc' la mon CUA TRUONG, da co diem, KHONG vao cong thuc nao.
+    Em Nguyen Minh Khue: 6 mon CT GDPT >= 9,0 + Chuyen de Toan hoc 4,5 -> VAN 🏆 Xuat sac. */
+ {id:'10 Toán',dt:'Điểm trường B',khoi:'Khối 10',cap:'THPT',he:'Chuyên Toán',gvcn:'Đỗ Quang Vinh',ss:32,
+  mtr:['Chuyên đề Toán học'],
+  chuaChot:[],chotRL:true,daTinh:true,kyChot:{by:'Lê Quang Vinh (HT)',at:'20/08/2026 11:05',m:'Ký số USB Token'},hb:null,laiThoi:false,
+  sp:[{i:2,ten:'Nguyễn Minh Khuê',rl:'Tốt',nghi:1,
+       fix:{'Toán':9.6,'Ngữ văn':9.1,'Ngoại ngữ 1':9.3,'GDCD':9.5,'Lịch sử và Địa lí':9.0,'KHTN':9.2,'Công nghệ':8.6,'Tin học':8.8},
+       mtrV:{'Chuyên đề Toán học':4.5}},
+      {i:9,ten:'Trần Hải Đăng',rl:'Tốt',nghi:2,
+       fix:{'Toán':9.8,'Ngữ văn':8.2,'Ngoại ngữ 1':8.9,'GDCD':9.4,'Lịch sử và Địa lí':8.1,'KHTN':9.3,'Công nghệ':8.0,'Tin học':9.1},
+       mtrV:{'Chuyên đề Toán học':9.4}}]},
+ {id:'12A',dt:'Điểm trường B',khoi:'Khối 12',cap:'THPT',he:'Đại trà',gvcn:'Hoàng Văn Nam',ss:43,
   chuaChot:[],chotRL:true,daTinh:true,kyChot:{by:'Lê Quang Vinh (HT)',at:'19/08/2026 15:40',m:'Bỏ qua ký số — chưa cấp chứng thư'},hb:'chot',laiThoi:false,
   sp:[{i:8,ten:'Hoàng Minh Khang',rl:'Chưa đạt',nghi:7}]},
 ];
@@ -392,16 +468,16 @@ let MOC=[
  {ky:'HK2',dt:'Điểm trường A',han:'25/05/2026 17:00',qua:1},
  {ky:'HK2',dt:'Điểm trường B',han:'28/05/2026 17:00',qua:1},
 ];
-/* ===== yeu cau mo khoa — gui tu M2.6 / M2.9-T7 ===== */
+/* ===== yeu cau mo khoa — gui tu M2.5 / M2.9-T7 ===== */
 let YEUCAU=[
- {id:'YC-001',loai:'diem',lop:'9A',mon:'Toán',dt:'Điểm trường A',nguon:'M2.6',
+ {id:'YC-001',loai:'diem',lop:'9A',mon:'Toán',dt:'Điểm trường A',nguon:'M2.5',
   boi:'Nguyễn Văn Hùng (GVBM Toán)',ngay:'26/08/2026',hs:'Trần Minh Quân',ma:'9A-04',cu:'3,2',dk:'5,4',
   canCu:'Bai kiem tra cuoi ky 2 - ban goc.pdf',
   ly:'Nhập lệch dòng khi vào điểm cuối kỳ 2 — điểm 3,2 là của học sinh liền kề. Đã đối chiếu bài làm gốc và sổ điểm cá nhân.',tt:'cho'},
  {id:'YC-002',loai:'ren',lop:'12A',dt:'Điểm trường B',nguon:'M2.9/T7',
   boi:'Hoàng Văn Nam (GVCN 12A)',ngay:'25/08/2026',hs:'Đặng Thu Hà',ma:'12A-23',cu:'Khá',dk:'Tốt',
   ly:'Bỏ sót thành tích đội tuyển học sinh giỏi cấp tỉnh và công tác Đoàn học kỳ 2.',tt:'cho'},
- {id:'YC-003',loai:'diem',lop:'12A',mon:'Ngữ văn',dt:'Điểm trường B',nguon:'M2.6',
+ {id:'YC-003',loai:'diem',lop:'12A',mon:'Ngữ văn',dt:'Điểm trường B',nguon:'M2.5',
   boi:'Lê Thu Trang (GVBM Ngữ văn)',ngay:'03/08/2026',hs:'Hoàng Minh Khang',ma:'12A-09',cu:'6,5',dk:'7,1',
   ly:'Gia đình đề nghị xem lại bài kiểm tra cuối kỳ.',tt:'tuchoi',
   ldTC:'Không có căn cứ chấm lại; bài đã qua thời hiệu phúc khảo nội bộ. Đây là đề nghị của gia đình, không phải sai sót nhập liệu.'},
@@ -424,7 +500,7 @@ let DHBG=null;       /* {at,n} — ban giao M2.7 */
 let YCXL=[];         /* yeu cau xem lai — BGH sinh viec, khong ghi du lieu */
 
 /* ===== trang thai runtime ===== */
-let role='HT', tab='lop', ky='cn', curLop=null, curHS=null, curDH=null, curWk=null;
+let role='FULL', tab='lop', ky='cn', curLop=null, curHS=null, curDH=null, curWk=null;
 let q='', fTT='Tất cả', fDH='Tất cả', selL=new Set();
 const R=()=>ROLE[role];
 
@@ -454,7 +530,7 @@ function buildHS(){
    if(L.cap==='TH'){
     /* phan tang truoc roi moi sinh chi tiet — de ti le 'Hoan thanh tot' sat thuc te (~35%),
        neu sinh ngau nhien tung o thi xac suat ca 10 mon deu T gan nhu bang 0 */
-    const gioi=rnd(sd+21)<0.35;
+    const gioi=sp.epT?true:rnd(sd+21)<0.35;
     h.mon={}; MON_TH.forEach((m,mi)=>{const v=rnd(sd+30+mi);
       h.mon[m]=(sp.monC&&sp.monC.indexOf(m)>=0)?'C':(gioi?'T':(v>0.55?'T':'H'))});
     h.pc={};PC.forEach((p,pi)=>h.pc[p]=L.chotRL?(gioi||rnd(sd+50+pi)>0.5?'Tốt':'Đạt'):null);
@@ -469,6 +545,16 @@ function buildHS(){
     h.monN={};MON_N.forEach(m=>h.monN[m]='Đạt');
     h.rl=sp.rl||(L.chotRL?(ab>8.1?'Tốt':ab>6.8?'Khá':'Đạt'):null);
    }
+   /* diem mon CUA TRUONG — giu trong MOT CAU TRUC RIENG h.mtr, khong bao gio tron vao h.mon.
+      Day la cach thi hanh bo loc: khong cong thuc nao doc h.mtr, nen khong the "lot" vao. */
+   h.mtr={};
+   monTr(L).forEach((m,mi)=>{
+    if(sp.mtrV&&sp.mtrV[m]!==undefined){h.mtr[m]=sp.mtrV[m];return}
+    if(L.chuaChot.indexOf(m)>=0){h.mtr[m]=null;return}   /* chua chot -> chua co diem */
+    h.mtr[m]=MONTR[m].kieu==='diem'
+      ? r1(Math.max(5.0,Math.min(9.9,6.4+3.2*rnd(sd+90+mi))))
+      : (rnd(sd+90+mi)>0.45?'T':'H');
+   });
    arr.push(h);
   }
   HS[L.id]=arr;
@@ -478,7 +564,14 @@ function buildHS(){
 }
 buildHS();
 
-/* ===== TT 22/2021 Dieu 9 khoan 2 ===== */
+/* ===== TT 22/2021 Dieu 9 khoan 2 =====
+   ⛔ CHI CHAY TREN MON 'Nguon chuong trinh = CT GDPT'.
+   TT 22 D.4: danh gia CAN CU YEU CAU CAN DAT QUY DINH TRONG CHUONG TRINH GDPT — mon truong
+   tu mo khong co yeu cau can dat trong CT GDPT nen khong co can cu de vao cong thuc.
+   D.9 lai dung chu "TAT CA cac mon hoc": mot mon cua truong co cot diem so binh thuong thi
+   chu "tat ca" TU NUOT NO VAO. Hai cau chi hoa giai duoc theo mot cach: mon 'Cua truong'
+   NAM NGOAI KHUON TT 22. Vi vay MON_D / MON_N chi chua mon CT GDPT, con diem mon cua truong
+   nam o h.mtr va KHONG ham nao duoi day doc toi. */
 function kqHocTap(h){
  const ds=MON_D.map(m=>h.mon[m]);
  const nxCD=MON_N.filter(m=>h.monN[m]!=='Đạt').length;
@@ -489,6 +582,9 @@ function kqHocTap(h){
  if(nxCD<=1&&n50>=6&&!duoi35)return 'Đạt';
  return 'Chưa đạt';
 }
+/* TT 27/2020 Dieu 9 — CUNG MOT BO LOC. Nhanh Tieu hoc KHONG duoc bo qua:
+   muc 'Hoan thanh tot' doi MOI mon muc T, nen mot mon cua truong cham 'C' se keo em xuong
+   'Chua hoan thanh' va day em sang danh gia bo sung trong he — sai luat nang hon nhanh THCS. */
 function kqTieuHoc(h){
  const mv=MON_TH.map(m=>h.mon[m]);
  const pcv=[...PC.map(p=>h.pc[p]),...NLC.map(p=>h.nlc[p]),...NLD.map(p=>h.nld[p])];
@@ -536,9 +632,12 @@ function moDuoc(L,r){const c=capMo(L);return (c==='HT'&&r.moHT)||(c==='PHT'&&r.m
 function ycCho(lop){return YEUCAU.filter(y=>y.lop===lop&&y.tt==='cho')}
 function monChot(L,m){return L.chuaChot.indexOf(m)<0}
 
-/* trang thai chot so cua mot lop */
+/* trang thai chot so cua mot lop.
+   ⚠ CHI dem mon CT GDPT. Mon 'Cua truong' chua chot KHONG keo lop ve 'Chua hoan thanh chot so'
+   va KHONG chan ky chot — no khong vao mot cong thuc nao trong ba o duoc ky
+   (Ket qua hoc tap · Ket qua ren luyen · Ket luan cuoi nam). Xem tai lieu §7 rang buoc 34. */
 function ttLop(L){
- if(L.chuaChot.length||!L.chotRL)return {k:'chuachot',t:'Chưa hoàn thành chốt sổ',c:'r'};
+ if(chuaChotCT(L).length||!L.chotRL)return {k:'chuachot',t:'Chưa hoàn thành chốt sổ',c:'r'};
  if(L.laiThoi)return {k:'laithoi',t:'Kết quả lỗi thời — cần chạy tính lại',c:'r'};
  if(!L.daTinh)return {k:'chuatinh',t:'Chưa chạy tính tổng kết',c:'w'};
  if(L.kyChot)return {k:'daky',t:'Đã ký chốt kết quả tổng kết',c:'o'};
@@ -568,7 +667,7 @@ function dsBanGiaoHe(){
 /* ================= F1 — Chot tong ket theo lop ================= */
 function scopeText(){
  const r=R();
- if(r.gvbm)return `Bạn là <b>giáo viên bộ môn ${r.mon}</b> — chỉ thấy tab <b>Tra cứu</b> và chỉ thấy <b>cột môn ${r.mon}</b>. Việc ký chốt điểm và gửi yêu cầu mở khóa ở <b>M2.6</b>.`;
+ if(r.gvbm)return `Bạn là <b>giáo viên bộ môn ${r.mon}</b> — chỉ thấy tab <b>Tra cứu</b> và chỉ thấy <b>cột môn ${r.mon}</b>. Việc ký chốt điểm và gửi yêu cầu mở khóa ở <b>M2.5</b>.`;
  if(r.sc==='class')return `Bạn là <b>GVCN lớp ${r.lop}</b>. Nhập kết quả rèn luyện và ký chốt ở <b>M2.9/T7</b>. Ở đây bạn rà bảng lớp, chạy tính, và <b>ghi nhận bình bầu của lớp</b> cho danh hiệu Tiêu biểu (Tiểu học).`;
  if(r.sc==='branch')return `Scope <span class="ct2">Branch</span> — chỉ lớp thuộc <b>${r.dt}</b>. Bạn mở khóa được khi <b>học bạ chưa vào Phiên ký</b>; lớp đã ký chốt học bạ thì cấp mở là <b>HT</b>.`;
  return `Scope <span class="ct2">School</span> — toàn trường, 3 cấp học. Bảng tổng kết <b>đổi cấu trúc cột theo cấp học</b>: TT 27/2020 cho Tiểu học, TT 22/2021 cho THCS · THPT.`;
@@ -649,11 +748,11 @@ function theLop(L){
    <div class="spacer"></div>
    ${L.kyChot?`<span class="st2 o">✔ ${L.kyChot.m.startsWith('Bỏ qua')?'Ký nghiệp vụ':'Ký số'}</span>`:''}
   </div>
-  <div class="rmeta">GVCN ${L.gvcn} · ${L.ss} học sinh${moc?' · mốc chốt '+moc.han.split(' ')[0]+(moc.qua?' <b style="color:var(--amber)">đã qua hạn</b>':''):''}</div>`;
- /* trang thai chot so */
+  <div class="rmeta">GVCN ${L.gvcn} · ${L.ss} học sinh · hệ <b>${L.he}</b>${MONCHUYEN[L.he]?` <span class="csx" title="Hệ có Môn chuyên của hệ = ${MONCHUYEN[L.he]} (M10.2 §5.5)">★ ${MONCHUYEN[L.he]}</span>`:''}${moc?' · mốc chốt '+moc.han.split(' ')[0]+(moc.qua?' <b style="color:var(--amber)">đã qua hạn</b>':''):''}</div>`;
+ /* trang thai chot so — DEM TACH: mon CT GDPT chan, mon cua truong chi canh bao */
  if(t.k==='chuachot'){
   h+=`<div class="flags">`;
-  if(L.chuaChot.length)h+=`<span class="fl r" data-x="thieumon" data-lop="${L.id}">⚠ ${L.chuaChot.length} môn chưa chốt điểm</span>`;
+  if(chuaChotCT(L).length)h+=`<span class="fl r" data-x="thieumon" data-lop="${L.id}">⚠ ${chuaChotCT(L).length} môn Chương trình GDPT chưa chốt điểm</span>`;
   if(!L.chotRL)h+=`<span class="fl r">⚠ Chưa chốt ${L.cap==='TH'?'đánh giá phẩm chất — năng lực':'đánh giá rèn luyện'}</span>`;
   h+=`</div>`;
  }else if(t.k==='chuatinh'){
@@ -675,7 +774,12 @@ function theLop(L){
     ${c.nh[5]?`<span>📗 ${c.nh[5]} đánh giá bổ sung</span>`:''}
     ${c.nh[4]?`<span style="background:var(--red-soft);color:#991b1b">⛔ ${c.nh[4]} không đủ ĐK</span>`:''}
     ${c.nh[0]?`<span style="background:var(--amber-soft);color:#92400e">? ${c.nh[0]} chưa phân loại</span>`:''}</div>`}
-  if(L.kyChot)h+=`<div class="rmeta" style="color:var(--green)">✔ Đã ký chốt · ${L.kyChot.by} · ${L.kyChot.at} · ${L.kyChot.m}</div>`;
+  if(L.kyChot)h+=`<div class="rmeta" style="color:var(--green)">✔ Đã ký chốt · ${L.kyChot.by} · ${L.kyChot.at} · ${L.kyChot.m}${L.kyThieuTr?` · <b style="color:var(--amber)">ký khi còn ${L.kyThieuTr} môn của trường chưa chốt</b>`:''}</div>`;
+ }
+ /* mon CUA TRUONG chua chot — CANH BAO, KHONG CHAN (§7 rang buoc 34).
+    De o day de no khong bi quen: khong ai bi chan nen phai co cho nhin thay. */
+ if(chuaChotTr(L).length){
+  h+=`<div class="flags"><span class="fl w" data-x="thieutr" data-lop="${L.id}">⚠ ${chuaChotTr(L).length} môn của trường chưa chốt điểm — <b>không chặn ký chốt</b></span></div>`;
  }
  /* yeu cau mo khoa — TANG 1 CHI THONG BAO, khong thao tac */
  if(yc.length){
@@ -692,7 +796,7 @@ function theLop(L){
  if(yc.length)b.push(`<button class="btn xs p" data-lop="${L.id}">🔔 Vào bảng lớp để xử lý ${yc.length} yêu cầu</button>`);
  else b.push(`<button class="btn xs" data-lop="${L.id}">👁 ${t.k==='chuachot'?'Xem bảng lớp':'Vào bảng lớp'}</button>`);
  if(t.k==='chuachot'){
-  if(L.chuaChot.length)b.push(`<button class="btn xs" data-x="nhacbm" data-lop="${L.id}">🔔 Nhắc GVBM</button>`);
+  if(chuaChotCT(L).length)b.push(`<button class="btn xs" data-x="nhacbm" data-lop="${L.id}">🔔 Nhắc GVBM</button>`);
   if(!L.chotRL)b.push(mine?`<button class="btn xs p" data-go="M2.9?tab=T7&ctx=${L.id}&action=ky">↗ M2.9/T7 để chốt</button>`
     :`<button class="btn xs" data-x="nhaccn" data-lop="${L.id}">🔔 Nhắc GVCN</button>`);
  }else if(t.k==='chuatinh'||t.k==='laithoi'){
@@ -716,21 +820,43 @@ function bangLop(){
  h+=`<div class="gvw">
   <div class="gvi cn" data-x="noop"><div class="m">👤 GVCN</div><div class="g">${L.gvcn}</div>
    <span class="colst ${L.chotRL?'ok':'no'}">${L.chotRL?'✔ đã chốt đánh giá':'⚠ CHƯA CHỐT'}</span></div>
-  ${monCua(L).map(m=>{
-   const chot=monChot(L,m),co=yc.some(y=>y.loai==='diem'&&y.mon===m);
-   return `<div class="gvi ${co?'yc':chot?'ok':'no'}" data-col="${m}"><div class="m">${m}</div>
+  ${monAll(L).map(m=>{
+   const chot=monChot(L,m),co=yc.some(y=>y.loai==='diem'&&y.mon===m),tr=!nguonCT(m);
+   return `<div class="gvi ${tr?'tr':co?'yc':chot?'ok':'no'}" data-col="${m}"><div class="m">${m}${csTag(L,m)}${tr?' <span class="st2 v" style="font-size:9.5px;padding:0 4px">Của trường</span>':''}</div>
     <div class="g">${gvCua(L,m)}</div>
-    <span class="colst ${co?'yc':chot?'ok':'no'}">${co?'🔔 xin mở khóa':chot?'✔ đã chốt':'⚠ CHƯA CHỐT'}</span></div>`}).join('')}
+    <span class="colst ${co?'yc':chot?'ok':'no'}">${co?'🔔 xin mở khóa':chot?'✔ đã chốt':tr?'⚠ chưa chốt · không chặn':'⚠ CHƯA CHỐT'}</span></div>`}).join('')}
  </div>`;
  /* dai trang thai */
  h+=`<div class="${t.k==='chuachot'||t.k==='laithoi'?'warn':L.kyChot?'ok':'ro'}" style="line-height:1.9">
   📅 <b>Mốc chốt điểm:</b> ${moc?moc.han:'—'} — ${moc&&moc.qua?'<b>đã qua hạn, điểm đã khóa</b>':'chưa tới hạn'}<br>
-  📋 <b>Chốt sổ:</b> ${monCua(L).length-L.chuaChot.length}/${monCua(L).length} môn đã chốt điểm ·
+  📋 <b>Chốt sổ:</b> ${monCua(L).length-chuaChotCT(L).length}/${monCua(L).length} môn Chương trình GDPT đã chốt điểm ·
    ${L.cap==='TH'?'phẩm chất — năng lực':'đánh giá rèn luyện'} ${L.chotRL?'<b style="color:var(--green)">đã chốt</b>':'<b style="color:var(--red)">chưa chốt</b>'}<br>
   ⟳ <b>Chạy tính:</b> ${L.daTinh?'28/05/2026 09:14 — kết quả <b>'+(moc&&moc.qua?'Chính thức':'Tạm tính')+'</b>':'<b>chưa chạy tính</b>'}
    ${L.laiThoi?' · <b style="color:var(--red)">⚠ LỖI THỜI — có mục vừa chốt lại sau lần tính</b>':''}<br>
   🖊 <b>Ký chốt kết quả tổng kết lớp:</b> ${L.kyChot?`<b style="color:var(--green)">đã ký</b> · ${L.kyChot.by} · ${L.kyChot.at} · ${L.kyChot.m}`:'<b>chưa ký</b>'}
  </div>`;
+ /* ⛔ DONG PHAM VI PHEP TINH — con so nguoi KY CHOT can thay TRUOC khi ky.
+    Nam tren dai trang thai chu KHONG nam trong tooltip: nguoi ky ma khong biet minh dang chot
+    mot phep tinh CO LOAI TRU thi chu ky do khong con nghia gi. */
+ {
+  const nCT=monCua(L).length,tr=monTr(L),nTr=tr.length,keTr=chuaChotTr(L);
+  h+=`<div class="ptbar">
+   <span class="ic">🎓</span>
+   <div><b>Đang tính trên ${nCT} môn Chương trình GDPT</b>${nTr?` · <b>bỏ ngoài ${nTr} môn của trường</b> <i>(${tr.join(', ')})</i>`:' · lớp này không có môn nào của trường'}
+    <div class="sub">Công thức ĐTB, xếp loại và danh hiệu <b>chỉ đọc môn <code>Nguồn chương trình = CT GDPT</code></b> —
+     ${L.cap==='TH'?'TT 27/2020 Điều 9 · Điều 13':'TT 22/2021 Điều 4 · Điều 9 · Điều 15'}.
+     ${MONCHUYEN[L.he]?`Môn <b>${MONCHUYEN[L.he]} ★</b> là môn chuyên của hệ, dạy 7 tiết/tuần — <b>vẫn tính đủ</b>, vì đó chính là môn ${MONCHUYEN[L.he]} của Chương trình GDPT.`:''}
+     <button class="btn xs" data-x="cancu-loc">📖 Căn cứ</button>
+     <span class="rolnk" data-go="M10.2?tab=danh_muc_mon&return=M3.1">🔗 → M10.2 Danh mục môn</span></div>
+   </div></div>`;
+  if(keTr.length)h+=`<div class="warn" style="margin-top:9px"><b>⚠ ${keTr.length} môn của trường chưa chốt điểm: ${keTr.join(', ')}</b>
+    <div style="margin-top:5px;font-size:11.5px">Việc này <b>KHÔNG chặn ký chốt kết quả tổng kết lớp</b> — môn của trường không vào một ô nào
+     trong ba ô được ký. Nhưng nó <b>vẫn là việc chưa xong</b>: chữ ký sẽ ghi kèm con số này, và việc nằm ở
+     <b>🖊 Chờ tôi duyệt</b> của GVCN và PHT_CM cho tới khi chốt xong.
+     <b>Ký chốt không khóa cột này</b> — GVBM nhập và ký chốt tiếp ở M2.5, không cần mở khóa.</div>
+    <div style="margin-top:6px">${keTr.map(m=>`<button class="btn xs" data-go="M2.5?ctx=${L.id}|${m}">↗ M2.5 · ${m}</button>`).join(' ')}
+     <button class="btn xs" data-x="nhactr" data-lop="${L.id}">🔔 Nhắc GVBM</button></div></div>`;
+ }
  /* yeu cau mo khoa */
  yc.forEach(y=>h+=`<div class="ycbox">
    <b>🔔 Yêu cầu mở khóa · ${y.loai==='diem'?'Điểm môn '+y.mon:'Đánh giá rèn luyện'}</b> · ${y.boi} · gửi từ ${y.nguon} · ${y.ngay}<br>
@@ -742,7 +868,7 @@ function bangLop(){
      :`<span style="color:var(--ink3);font-size:11.5px">Chờ <b>${capMo(L)}</b> xử lý</span>`}</div></div>`);
  h+=`<div class="frm">${L.cap==='TH'
    ?'TT 27/2020 · Môn học: Hoàn thành tốt (T) / Hoàn thành (H) / Chưa hoàn thành (C) · Phẩm chất &amp; năng lực: Tốt / Đạt / Cần cố gắng'
-   :'TT 22/2021 · ĐTBmHK = (ĐGtx TB + 2×ĐGgk + 3×ĐGck)/6 · ĐTBmCN = (HK1 + 2×HK2)/3 · Cấu hình tại M10.1'}</div>`;
+   :'TT 22/2021 Điều 9 · ĐTBmHK = (Σ ĐĐGtx + 2×ĐĐGgk + 3×ĐĐGck)/(N + 5) — ĐĐGtx là các ô chính thức của từng em, N = số cột ĐGtx (M10.1 ⑥) · ĐTBmCN = (HK1 + 2×HK2)/3 · Cấu hình tại M10.1'}</div>`;
  /* thanh thao tac */
  h+=`<div class="bar" style="padding-top:0">
   ${['hk1','hk2','cn'].map(k=>`<button class="chip ${ky===k?'on':''}" data-ky="${k}">${kyName(k)}</button>`).join('')}
@@ -762,7 +888,16 @@ function bangLop(){
     :`<span><b style="color:var(--red)">Nền đỏ</b> = dưới 3,5 → kết quả học tập Chưa đạt bất kể môn khác</span>
       <span><b style="color:var(--amber)">Cam</b> = dưới 5,0</span>`}
    <span style="border-left:1px solid var(--line);padding-left:14px"><span class="mtag">TH</span> = được miễn phần thực hành, kết quả đến từ bài lý thuyết thay thế — <b>vẫn tính bình thường</b></span>
+   ${MONCHUYEN[L.he]?`<span style="border-left:1px solid var(--line);padding-left:14px"><span class="csx">★</span> = môn chuyên của hệ ${L.he} — <b>vẫn tính đủ</b>, đó chính là môn ${MONCHUYEN[L.he]} của Chương trình GDPT</span>`:''}
+   ${monTr(L).length?`<span style="border-left:1px solid var(--line);padding-left:14px"><b class="tdtr" style="padding:1px 5px;border-radius:4px">Khối cuối bảng</b> = môn của trường — hiển thị đầy đủ nhưng <b>không vào</b> ĐTB, xếp loại và danh hiệu</span>`:''}
  </div></div>`;
+ /* ⛔ Mon CUA TRUONG: KHONG AN. Truong da day va da cham; an di thi giao vien tuong mat diem.
+    Van de khong phai no hien ra, ma la no NAM LAN trong day duoc tinh. */
+ if(monTr(L).length)h+=`<div class="ro" style="margin:9px 0 0">
+   <b>Vì sao vẫn hiển thị môn của trường.</b> Trường đã tổ chức dạy và đã chấm — ẩn cột đi thì giáo viên tưởng hệ thống làm mất điểm.
+   Điểm này <b>có thật và tra cứu được</b>, chỉ là nó <b>không chảy vào</b> ĐTB, xếp loại, danh hiệu
+   ${L.cap==='TH'?'(TT 27/2020 Điều 9 · Điều 13)':'(TT 22/2021 Điều 9 · Điều 15)'}, không in vào học bạ số và không đẩy lên CSDL ngành.
+   Nơi in ra là <b>Phiếu kết quả môn học của nhà trường</b> ở <span class="rolnk" data-go="M1.3">🔗 M1.3</span>.</div>`;
  /* danh sach mien phan thuc hanh */
  const mien=MIEN.filter(m=>m.lop===L.id);
  h+=`<div class="listw" style="margin-top:13px"><div class="ph"><div><h2>Học sinh được miễn phần thực hành</h2>
@@ -780,27 +915,32 @@ function bangLop(){
 function tblTHCS(L){
  const yc=ycCho(L.id);
  const ycRen=yc.some(y=>y.loai==='ren');
+ const tr=monTr(L);   /* khoi mon CUA TRUONG — tach hoan toan, dat SAU khoi tong hop */
  let h=`<table class="gtb"><thead>
   <tr class="hgrp">
    <th class="stick" rowspan="2">Học sinh</th><th rowspan="2">Mã học sinh</th>
-   <th colspan="${MON_D.length}">Môn học đánh giá bằng nhận xét kết hợp điểm số</th>
-   <th colspan="${MON_N.length}" class="sep">Môn học đánh giá bằng nhận xét</th>
+   <th colspan="${MON_D.length}">Môn học đánh giá bằng nhận xét kết hợp điểm số <span class="ctg">Chương trình GDPT</span></th>
+   <th colspan="${MON_N.length}" class="sep">Môn học đánh giá bằng nhận xét <span class="ctg">Chương trình GDPT</span></th>
    <th colspan="${ky==='cn'?4:3}" class="sep">Tổng hợp cuối ${ky==='cn'?'năm':'kỳ'}</th>
+   ${tr.length?`<th colspan="${tr.length}" class="sept">Môn của trường — không vào tổng kết</th>`:''}
   </tr>
   <tr>
    ${MON_D.map(m=>{const chot=monChot(L,m),co=yc.some(y=>y.loai==='diem'&&y.mon===m);
-    return `<th class="${co?'th-yc':''}" ${co?'data-x="ycxem" data-mon="'+m+'" data-lop="'+L.id+'"':''}>${m}
+    return `<th class="${co?'th-yc':''}" ${co?'data-x="ycxem" data-mon="'+m+'" data-lop="'+L.id+'"':''}>${m}${csTag(L,m)}
      <span class="gv">${gvCua(L,m)}</span>
      <span class="colst ${co?'yc':chot?'ok':'no'}">${co?'🔔 xin mở khóa':chot?'✔ đã chốt điểm':'⚠ chưa chốt điểm'}</span></th>`}).join('')}
    ${MON_N.map((m,k)=>{const chot=monChot(L,m);
     return `<th class="${k===0?'sep':''}">${m}<span class="gv">${gvCua(L,m)}</span>
      <span class="colst ${chot?'ok':'no'}">${chot?'✔ đã chốt':'⚠ chưa chốt'}</span></th>`}).join('')}
-   <th class="sep">Kết quả học tập<span class="gv">TT 22 Điều 9</span></th>
+   <th class="sep">Kết quả học tập<span class="gv">TT 22 Điều 9 · ${MON_D.length+MON_N.length} môn CT GDPT</span></th>
    <th class="${ycRen?'th-yc':''}" ${ycRen?'data-x="ycxem" data-ren="1" data-lop="'+L.id+'"':''}>Kết quả rèn luyện
     <span class="gv">GVCN ${L.gvcn}</span>
     <span class="colst ${ycRen?'yc':L.chotRL?'ok':'no'}">${ycRen?'🔔 xin mở khóa':L.chotRL?'✔ đã chốt':'⚠ chưa chốt'}</span></th>
    <th>Số buổi nghỉ<span class="gv">tối đa 45</span></th>
    ${ky==='cn'?'<th>Kết luận cuối năm</th>':''}
+   ${tr.map((m,k)=>{const chot=monChot(L,m);
+    return `<th class="${k===0?'sept':''} thtr">${m}<span class="gv">${gvCua(L,m)}</span>
+     <span class="colst ${chot?'ok':'w'}">${chot?'✔ đã chốt':'⚠ chưa chốt · không chặn'}</span></th>`}).join('')}
   </tr></thead><tbody>`;
  HS[L.id].forEach(h2=>{
   const ht=kqHocTap(h2),rl=rlHienHanh(h2);
@@ -811,25 +951,32 @@ function tblTHCS(L){
    <td class="sep"><span class="st2 ${ht==='Chưa đạt'?'r':ht==='Đạt'?'n':'o'}">${ht}</span></td>
    <td>${rl?`<span class="st2 ${rl==='Chưa đạt'?'r':rl==='Đạt'?'n':'o'}">${rl}</span>`:'<span class="st2 w">chưa có</span>'}</td>
    <td style="${h2.nghi>45?'color:var(--red);font-weight:800':''}">${h2.nghi}</td>
-   ${ky==='cn'?`<td>${nhBadge(nhanh(h2))}</td>`:''}</tr>`;
+   ${ky==='cn'?`<td>${nhBadge(nhanh(h2))}</td>`:''}
+   ${tr.map((m,k)=>{const v=h2.mtr[m];
+     return `<td class="tdtr ${k===0?'sept':''}">${v==null?'<span style="color:var(--ink3)">chưa có</span>':(+v).toFixed(1).replace('.',',')}</td>`}).join('')}</tr>`;
  });
  return h+'</tbody></table>';
 }
 function tblTH(L){
+ const tr=monTr(L);
  let h=`<table class="gtb"><thead>
   <tr class="hgrp">
    <th class="stick" rowspan="2">Học sinh</th>
-   <th colspan="${MON_TH.length}">Môn học và hoạt động giáo dục</th>
+   <th colspan="${MON_TH.length}">Môn học và hoạt động giáo dục <span class="ctg">Chương trình GDPT</span></th>
    <th colspan="${PC.length}" class="sep">Phẩm chất chủ yếu</th>
    <th colspan="${NLC.length}" class="sep">Năng lực chung</th>
    ${ky==='cn'?'<th rowspan="2" class="sep">Kết quả giáo dục</th>':''}
+   ${tr.length?`<th colspan="${tr.length}" class="sept">Môn của trường — không vào tổng kết</th>`:''}
   </tr>
   <tr>
    ${MON_TH.map(m=>{const chot=monChot(L,m);
-    return `<th>${m}<span class="gv">${gvCua(L,m)}</span>
+    return `<th>${m}${csTag(L,m)}<span class="gv">${gvCua(L,m)}</span>
      <span class="colst ${chot?'ok':'no'}">${chot?'✔ đã chốt':'⚠ chưa chốt'}</span></th>`}).join('')}
    ${PC.map((p,k)=>`<th class="${k===0?'sep':''}">${p}</th>`).join('')}
    ${NLC.map((p,k)=>`<th class="${k===0?'sep':''}">${p.replace(/&amp;/g,'và')}</th>`).join('')}
+   ${tr.map((m,k)=>{const chot=monChot(L,m);
+    return `<th class="${k===0?'sept':''} thtr">${m}<span class="gv">${gvCua(L,m)}</span>
+     <span class="colst ${chot?'ok':'w'}">${chot?'✔ đã chốt':'⚠ chưa chốt · không chặn'}</span></th>`}).join('')}
   </tr></thead><tbody>`;
  HS[L.id].forEach(h2=>{
   const k=kqTieuHoc(h2);
@@ -839,7 +986,9 @@ function tblTH(L){
        title="${v==='T'?'Hoàn thành tốt':v==='H'?'Hoàn thành':'Chưa hoàn thành'}">${v}${h2.pdt[m]?'<span class="mtag">TH</span>':''}</td>`}).join('')}
    ${PC.map((p,i2)=>cellPC(h2,'pc',p,i2===0)).join('')}
    ${NLC.map((p,i2)=>cellPC(h2,'nlc',p,i2===0)).join('')}
-   ${ky==='cn'?`<td class="sep">${k?`<span class="st2 ${k==='Chưa hoàn thành'?'r':k==='Hoàn thành'?'n':'o'}">${k}</span>`:'<span class="st2 w">chưa đủ đánh giá</span>'}</td>`:''}</tr>`;
+   ${ky==='cn'?`<td class="sep">${k?`<span class="st2 ${k==='Chưa hoàn thành'?'r':k==='Hoàn thành'?'n':'o'}">${k}</span>`:'<span class="st2 w">chưa đủ đánh giá</span>'}</td>`:''}
+   ${tr.map((m,i2)=>{const v=h2.mtr[m];
+     return `<td class="nx tdtr ${i2===0?'sept':''}" style="color:${v==='C'?'var(--red)':v==='T'?'var(--green)':'var(--ink2)'}">${v==null?'<span style="color:var(--ink3)">chưa có</span>':v}</td>`}).join('')}</tr>`;
  });
  return h+'</tbody></table>';
 }
@@ -851,6 +1000,8 @@ function cellPC(h2,grp,p,sep){const v=h2[grp][p];
 /* TT 22/2021 D.15 (THCS·THPT) · TT 27/2020 D.13 (Tieu hoc).
    TT 19/2025 D.21 chi thay the TT 08/TT 1988 — KHONG bo danh hieu cua hai thong tu tren. */
 function sdOf(h){let s=0;for(let i=0;i<h.ma.length;i++)s+=h.ma.charCodeAt(i)*(i+3);return s}
+/* TT 27 D.13 k.2 — "thanh tich xuat sac ve it nhat MOT MON HOC".
+   Mon do cung phai la mon CT GDPT: neu khong thi mot mon truong tu mo keo duoc danh hieu. */
 function xsMonCua(h){const s=sdOf(h);return MON_TH.filter((m,mi)=>h.mon[m]==='T'&&rnd(s+mi*7+5)>0.86)}
 function tienBoCua(h){const s=sdOf(h),all=PC.concat(NLC);return all.filter((p,i)=>rnd(s+i*11+41)>0.90)}
 function dhCua(h,L){
@@ -869,11 +1020,14 @@ function dhCua(h,L){
  const rl=rlHienHanh(h); if(!rl)return null;
  const ht=kqHocTap(h);
  if(rl!=='Tốt'||ht!=='Tốt')return null;
+ /* phep dem nay CHI chay tren MON_D — mon CT GDPT danh gia bang diem so.
+    Con so in ra dong 'Can cu' phai NOI RO la mon Chuong trinh GDPT: day la cau giao vien
+    doc de giai thich voi phu huynh, sai tu cho hien thi la sai o cho te nhat. */
  const n9=MON_D.filter(m=>h.mon[m]>=9.0);
  if(n9.length>=6)return {k:'xs',t:'🏆 Học sinh Xuất sắc',cs:'TT 22/2021 Điều 15 khoản 1',
-   cc:`Rèn luyện <b>Tốt</b> · học tập <b>Tốt</b> · <b>${n9.length} môn</b> ĐTBmcn ≥ 9,0`,n9:n9};
+   cc:`Rèn luyện <b>Tốt</b> · học tập <b>Tốt</b> · <b>${n9.length} môn Chương trình GDPT</b> ĐTBmcn ≥ 9,0`,n9:n9};
  return {k:'gioi',t:'🥇 Học sinh Giỏi',cs:'TT 22/2021 Điều 15 khoản 1',
-   cc:`Rèn luyện <b>Tốt</b> · học tập <b>Tốt</b> · ${n9.length} môn ≥ 9,0 <span style="color:var(--ink3)">(cần 6 môn mới lên Xuất sắc)</span>`,n9:n9};
+   cc:`Rèn luyện <b>Tốt</b> · học tập <b>Tốt</b> · ${n9.length} môn Chương trình GDPT ≥ 9,0 <span style="color:var(--ink3)">(cần 6 môn mới lên Xuất sắc)</span>`,n9:n9};
 }
 function dsDH(){const out=[];
  lopVisible().forEach(L=>{ if(!L.kyChot)return;
@@ -1042,8 +1196,13 @@ function viec(){
     s:`Đã chốt sổ và đã chạy tính · ${L.ss} học sinh`,lop:L.id});
   if(r.moc&&t.k==='chuachot'){const m=mocOf(L);
    if(m&&m.qua)v.push({id:'mc|'+L.id,ic:'⏰',t:`Lớp ${L.id} quá mốc chốt mà chưa chốt sổ`,
-     s:(L.chuaChot.length?L.chuaChot.length+' môn chưa chốt điểm':'')+(!L.chotRL?' · chưa chốt đánh giá rèn luyện':''),lop:L.id})}
+     s:(chuaChotCT(L).length?chuaChotCT(L).length+' môn Chương trình GDPT chưa chốt điểm':'')+(!L.chotRL?' · chưa chốt đánh giá rèn luyện':''),lop:L.id})}
   if(r.moc&&t.k==='chuatinh')v.push({id:'ct|'+L.id,ic:'⟳',t:`Lớp ${L.id} chốt sổ xong mà chưa chạy tính`,s:`GVCN ${L.gvcn}`,lop:L.id});
+  /* Mon CUA TRUONG chua chot — KHONG CHAN AI, nen phai co CHU SO HUU VIEC, khong thi khong ai nho.
+     Day la ve doi trong cua cau tra loi "canh bao chu khong chan" (§7 rang buoc 34). */
+  if(chuaChotTr(L).length&&(r.moc||(r.gvcn&&r.lop===L.id)))
+   v.push({id:'tr|'+L.id,ic:'🏫',t:`Lớp ${L.id} còn ${chuaChotTr(L).length} môn của trường chưa chốt điểm`,
+     s:`${chuaChotTr(L).join(', ')} · không chặn ký chốt và không vào tổng kết — nhưng vẫn là việc chưa xong`+(L.kyChot?' · lớp ĐÃ ký chốt':''),lop:L.id});
   if(L.laiThoi)v.push({id:'lt|'+L.id,ic:'⚠',t:`Lớp ${L.id} có kết quả lỗi thời`,s:'Có mục vừa chốt lại sau lần tính — cần chạy tính lại',lop:L.id});
  });
  if(ky==='cn'&&!DHCHOT){
@@ -1109,9 +1268,9 @@ function render(){
  $('#tabs').innerHTML=T.map(t=>`<button class="tab1 ${tab===t?'on':''}" data-t1="${t}">${TABN[t]}
    ${t==='duyet'&&nv?`<span class="b">${nv}</span>`:''}</button>`).join('');
  if(!T.length){$('#content').innerHTML=`<div class="listw"><div class="empty">
-   <b>Bạn không có việc nào tại M3.1.</b><br><br>Giáo viên bộ môn nhập điểm và ký chốt điểm môn tại <b>M2.6</b>;
+   <b>Bạn không có việc nào tại M3.1.</b><br><br>Giáo viên bộ môn nhập điểm và ký chốt điểm môn tại <b>M2.5</b>;
    tra cứu kết quả của một học sinh tại <b>M1.3 Học bạ điện tử</b>.
-   <div style="margin-top:11px"><button class="btn sm p" data-go="M2.6?return=M3.1">↗ Mở M2.6</button></div></div></div>`;return}
+   <div style="margin-top:11px"><button class="btn sm p" data-go="M2.5?return=M3.1">↗ Mở M2.5</button></div></div></div>`;return}
  $('#content').innerHTML= tab==='lop'?tabLop():tab==='danhhieu'?tabDanhHieu():tabDuyet();
 }
 function modal(t,body,btns,sm){
@@ -1141,27 +1300,65 @@ function act(a,d){
   modal('Môn chưa chốt điểm — lớp '+L.id,
    `<div class="ro">Chưa chốt điểm nghĩa là <b>giáo viên bộ môn chưa ký chốt</b> tại M2.6. Chưa chốt hết thì <b>không chạy tính được</b>.</div>
     ${L.chuaChot.map(m=>`<div class="fitem"><span class="nm"><b>${m}</b> · GVBM ${gvCua(L,m)}</span>
-      <button class="btn xs" data-go="M2.6?ctx=${L.id}|${m}">↗ M2.6</button>
+      <button class="btn xs" data-go="M2.5?ctx=${L.id}|${m}">↗ M2.5</button>
       <button class="btn xs" data-x="nhacbm" data-lop="${L.id}">🔔 Nhắc</button></div>`).join('')}`,
    [['Đóng',null,'']],1);return}
- if(a==='nhacbm'){const L=LOP.find(x=>x.id===d.lop);toast('Đã nhắc giáo viên bộ môn của '+L.chuaChot.join(', ')+' — lớp '+L.id);return}
+ if(a==='thieutr'){const L=LOP.find(x=>x.id===d.lop),ke=chuaChotTr(L);
+  modal('Môn của trường chưa chốt điểm — lớp '+L.id,
+   `<div class="info">Những môn này có <code>Nguồn chương trình = Của trường</code> <i>(M10.2 §5.10.4)</i>.
+     Chúng <b>không vào</b> ĐTB, xếp loại và danh hiệu, nên <b>không chặn</b> ký chốt kết quả tổng kết lớp —
+     chữ ký chốt xác nhận <b>kết quả xếp loại</b>, mà kết quả đó không phụ thuộc môn này.</div>
+    ${ke.map(m=>`<div class="fitem"><span class="nm"><b>${m}</b> · GVBM ${gvCua(L,m)}</span>
+      <button class="btn xs" data-go="M2.5?ctx=${L.id}|${m}">↗ M2.5</button>
+      <button class="btn xs" data-x="nhactr" data-lop="${L.id}">🔔 Nhắc</button></div>`).join('')}
+    <div class="ro">Không chặn <b>không có nghĩa là bỏ quên</b>: việc này nằm ở <b>🖊 Chờ tôi duyệt</b> của GVCN và PHT_CM
+     cho tới khi chốt xong, và nếu lớp ký chốt trước thì chữ ký <b>ghi kèm con số môn còn dở</b>.
+     <b>Ký chốt không khóa cột này</b> — GVBM nhập tiếp ở M2.5 mà <b>không cần mở khóa</b>, và việc chốt lại
+     <b>không bật cờ Kết quả lỗi thời</b> vì đầu vào của công thức không đổi.</div>`,
+   [['Đóng',null,'']],1);return}
+ if(a==='nhactr'){const L=LOP.find(x=>x.id===d.lop);toast('Đã nhắc GVBM chốt điểm môn của trường: '+chuaChotTr(L).join(', ')+' — lớp '+L.id);return}
+ if(a==='cancu-loc'){
+  modal('📖 Căn cứ — vì sao công thức chỉ chạy trên môn Chương trình GDPT',
+   `<div class="kv">
+     <div class="k">TT 22/2021 Điều 4</div><div>Đánh giá <b>căn cứ yêu cầu cần đạt được quy định trong Chương trình GDPT</b>.
+      Môn do trường tự mở <b>không có yêu cầu cần đạt trong CT GDPT</b> ⇒ không có căn cứ để vào công thức</div>
+     <div class="k">TT 22/2021 Điều 9</div><div><i>"<b>Tất cả</b> các môn học đánh giá bằng nhận xét kết hợp điểm số có ĐTBmhk ≥ 6,5,
+      trong đó <b>ít nhất 06 môn</b> ≥ 8,0"</i> — chữ <b>"tất cả"</b> nghĩa là một môn có cột điểm số bình thường thì công thức <b>tự nuốt nó vào</b></div>
+     <div class="k">Hai câu hòa giải thế nào</div><div>Chỉ theo một cách: môn <code>Của trường</code> <b>nằm ngoài khuôn TT 22</b> —
+      nó không phải <i>"môn học"</i> trong nghĩa của thông tư này</div>
+     <div class="k">TT 22/2021 Điều 15</div><div>Xuất sắc = rèn luyện Tốt + học tập Tốt + <b>ít nhất 06 môn</b> ĐTBmcn ≥ 9,0 — phép đếm chạy trên môn <b>CT GDPT</b></div>
+     <div class="k">TT 27/2020 Điều 9 · 13</div><div>Nhánh Tiểu học cùng một bộ lọc. <b>Không được bỏ qua</b>: mức <i>Hoàn thành tốt</i> đòi
+      <b>mọi môn mức T</b>, nên một môn của trường chấm <b>C</b> sẽ kéo em xuống <i>Chưa hoàn thành</i> và đẩy em sang đánh giá bổ sung trong hè</div>
+     <div class="k">TT 05/2023</div><div>Trường chuyên thực hiện <b>chương trình GDPT</b> cộng <b>nội dung dạy học chuyên sâu môn chuyên</b>.
+      Chuyên sâu là <b>nội dung bên trong một môn</b> ⇒ điểm môn chuyên <b>vẫn tính đủ</b></div></div>
+    <div class="danger" style="margin-top:10px"><b>⚠ Vế cực dễ nói sai.</b> Cái bị loại <b>KHÔNG phải "môn chuyên"</b> mà là
+     <b>"môn không thuộc Chương trình GDPT"</b>:
+     <div class="li"><span class="x">✗</span><span>Môn <b>Của trường</b> <i>(chuyên đề riêng của trường)</i> — <b>KHÔNG</b> vào ĐTB, xếp loại, danh hiệu</span></div>
+     <div class="li"><span class="x" style="color:var(--green)">✓</span><span>Môn chuyên <b>★</b> theo phương án đang chạy — Toán dạy chuyên sâu 7 tiết —
+      <b>CÓ, tính đủ</b>, vì đó <b>chính là điểm môn Toán</b> của Chương trình GDPT</span></div></div>
+    <div class="ro">Menu chủ của <code>Nguồn chương trình</code> là <b>M10.2</b> <i>(quy ước D1)</i>. Trường này <b>dẫn xuất, không ai sửa được</b>,
+     kể cả Hiệu trưởng — sửa được thì sớm muộn sẽ có người đánh dấu một môn tự mở là <code>CT GDPT</code> để nó vào được học bạ.
+     M3.1 <b>chỉ đọc</b>.</div>`,
+   [['Đóng',null,'']]);return}
+ if(a==='nhacbm'){const L=LOP.find(x=>x.id===d.lop);toast('Đã nhắc giáo viên bộ môn của '+chuaChotCT(L).join(', ')+' — lớp '+L.id);return}
  if(a==='nhaccn'){const L=LOP.find(x=>x.id===d.lop);toast('Đã nhắc '+L.gvcn+' chốt đánh giá rèn luyện lớp '+L.id);return}
  if(a==='tinh'){const L=LOP.find(x=>x.id===d.lop);
-  if(L.chuaChot.length||!L.chotRL){modal('Chưa chạy tính được',
+  if(chuaChotCT(L).length||!L.chotRL){modal('Chưa chạy tính được',
    `<div class="blk"><b>Lớp ${L.id} chưa hoàn thành chốt sổ</b>
-     ${L.chuaChot.map(m=>`<div class="li"><span class="x">✗</span><span>${m} — GVBM ${gvCua(L,m)} chưa ký chốt điểm</span>
-       <span class="spacer"></span><button class="btn xs" data-go="M2.6?ctx=${L.id}|${m}">↗ M2.6</button></div>`).join('')}
+     ${chuaChotCT(L).map(m=>`<div class="li"><span class="x">✗</span><span>${m} — GVBM ${gvCua(L,m)} chưa ký chốt điểm</span>
+       <span class="spacer"></span><button class="btn xs" data-go="M2.5?ctx=${L.id}|${m}">↗ M2.5</button></div>`).join('')}
      ${!L.chotRL?`<div class="li"><span class="x">✗</span><span>Chưa chốt ${L.cap==='TH'?'đánh giá phẩm chất — năng lực':'đánh giá rèn luyện'} — GVCN ${L.gvcn}</span>
        <span class="spacer"></span><button class="btn xs" data-go="M2.9?tab=T7&ctx=${L.id}">↗ M2.9/T7</button></div>`:''}</div>`,
    [['Đóng',null,'']],1);return}
   L.daTinh=true;L.laiThoi=false;
-  const moc=mocOf(L);
-  toast(`Đã chạy tính tổng kết lớp ${L.id} — kết quả ${moc&&moc.qua?'Chính thức':'Tạm tính'} · ghi audit`);
+  const moc=mocOf(L),nTr=monTr(L).length;
+  toast(`Đã chạy tính tổng kết lớp ${L.id} — kết quả ${moc&&moc.qua?'Chính thức':'Tạm tính'} · `+
+   `tính trên ${monCua(L).length} môn Chương trình GDPT${nTr?`, bỏ ngoài ${nTr} môn của trường`:''} · ghi audit`);
   render();return}
  if(a==='batch'){const ok=[],sk=[];
   [...selL].forEach(id=>{const L=LOP.find(x=>x.id===id);
-   if(L.chuaChot.length||!L.chotRL)sk.push(`<b>${id}</b> · chưa chốt sổ: ${L.chuaChot.join(', ')||''}${!L.chotRL?(L.chuaChot.length?' · ':'')+'chưa chốt đánh giá rèn luyện':''} <span class="spacer"></span><button class="btn xs" data-lop="${id}">↗ mở</button>`);
-   else{L.daTinh=true;L.laiThoi=false;ok.push(`<b>${id}</b> · ${L.ss} học sinh`)}});
+   if(chuaChotCT(L).length||!L.chotRL)sk.push(`<b>${id}</b> · chưa chốt sổ: ${chuaChotCT(L).join(', ')||''}${!L.chotRL?(chuaChotCT(L).length?' · ':'')+'chưa chốt đánh giá rèn luyện':''} <span class="spacer"></span><button class="btn xs" data-lop="${id}">↗ mở</button>`);
+   else{L.daTinh=true;L.laiThoi=false;ok.push(`<b>${id}</b> · ${L.ss} học sinh · tính trên ${monCua(L).length} môn CT GDPT${monTr(L).length?`, bỏ ngoài ${monTr(L).length} môn của trường`:''}`)}});
   modal(`Đã chạy tính ${selL.size} lớp`,
    `<div class="ro">Thao tác hàng loạt luôn tách rõ <b>dòng thành công</b> và <b>dòng bị bỏ qua kèm lý do</b>.</div>`+resTable('Thành công',ok,'Bỏ qua',sk),
    [['Đóng',null,'']]);selL.clear();render();return}
@@ -1199,17 +1396,29 @@ function act(a,d){
  /* --- ky chot ket qua tong ket lop --- */
  if(a==='chanky'){const L=LOP.find(x=>x.id===d.lop);
   const li=[];
-  L.chuaChot.forEach(m=>li.push(`<div class="li"><span class="x">✗</span><span>${m} chưa chốt điểm — GVBM ${gvCua(L,m)}</span><span class="spacer"></span><button class="btn xs" data-go="M2.6?ctx=${L.id}|${m}">↗ M2.6</button></div>`));
+  /* CHI mon CT GDPT vao danh sach chan. Mon cua truong -> canh bao rieng ben duoi. */
+  chuaChotCT(L).forEach(m=>li.push(`<div class="li"><span class="x">✗</span><span>${m} chưa chốt điểm — GVBM ${gvCua(L,m)}</span><span class="spacer"></span><button class="btn xs" data-go="M2.5?ctx=${L.id}|${m}">↗ M2.5</button></div>`));
   if(!L.chotRL)li.push(`<div class="li"><span class="x">✗</span><span>Chưa chốt đánh giá rèn luyện — GVCN ${L.gvcn}</span><span class="spacer"></span><button class="btn xs" data-go="M2.9?tab=T7&ctx=${L.id}">↗ M2.9/T7</button></div>`);
   if(ycCho(L.id).length)li.push(`<div class="li"><span class="x">✗</span><span>${ycCho(L.id).length} yêu cầu mở khóa đang chờ xử lý</span></div>`);
   if(!L.daTinh)li.push(`<div class="li"><span class="x">✗</span><span>Chưa chạy tính tổng kết</span></div>`);
   if(L.laiThoi)li.push(`<div class="li"><span class="x">✗</span><span>Kết quả lỗi thời — cần chạy tính lại</span></div>`);
-  modal('Chưa ký chốt được',`<div class="blk"><b>Còn ${li.length} việc chưa xong</b>${li.join('')}</div>`,[['Đóng',null,'']],1);return}
+  const keTr=chuaChotTr(L);
+  modal('Chưa ký chốt được',`<div class="blk"><b>Còn ${li.length} việc chưa xong</b>${li.join('')}</div>`+
+   (keTr.length?`<div class="ro"><b>Không tính vào danh sách trên:</b> ${keTr.length} môn của trường chưa chốt
+     <i>(${keTr.join(', ')})</i> — môn <code>Của trường</code> <b>không chặn ký chốt</b>, xem <b>📖 Căn cứ</b> ở dải phép tính.</div>`:''),
+   [['Đóng',null,'']],1);return}
  if(a==='rasoat'){const L=LOP.find(x=>x.id===d.lop);
-  if(L.chuaChot.length||!L.chotRL||ycCho(L.id).length||!L.daTinh||L.laiThoi)return act('chanky',d);
+  if(chuaChotCT(L).length||!L.chotRL||ycCho(L.id).length||!L.daTinh||L.laiThoi)return act('chanky',d);
   const risky=HS[L.id].filter(h=>[2,3,4,23,5].indexOf(nhanh(h).id)>=0);
+  const keTr=chuaChotTr(L),trAll=monTr(L);
   modal(`Rà soát trước khi ký chốt — lớp ${L.id} · ${L.ss} học sinh`,
    `<div class="info">Ký một chữ ký phủ <b>${L.ss} học sinh</b> thì phải nhìn đủ ${L.ss} em một lần.</div>
+    <div class="ptbar" style="margin:9px 0"><span class="ic">🎓</span><div>
+     <b>Chữ ký này phủ kết quả tính trên ${monCua(L).length} môn Chương trình GDPT</b>${trAll.length?` · <b>bỏ ngoài ${trAll.length} môn của trường</b> <i>(${trAll.join(', ')})</i>`:''}
+     <div class="sub">Người ký cần thấy con số này <b>trước khi ký</b> — ký mà không biết mình đang chốt một phép tính <b>có loại trừ</b> thì chữ ký ấy không còn nghĩa gì.</div></div></div>
+    ${keTr.length?`<div class="warn"><b>⚠ Còn ${keTr.length} môn của trường chưa chốt điểm: ${keTr.join(', ')}</b>
+      <div style="margin-top:4px;font-size:11.5px">Việc này <b>không chặn</b> chữ ký — nhưng chữ ký sẽ <b>ghi kèm con số này vào audit</b>,
+       và việc vẫn nằm ở <b>🖊 Chờ tôi duyệt</b> cho tới khi chốt xong. Ký chốt <b>không khóa cột đó</b>.</div></div>`:''}
     ${risky.length?`<div class="warn"><b>${risky.length} học sinh cần đọc kỹ:</b> ${risky.map(h=>h.n+' — '+nhanh(h).t).join(' · ')}</div>`:''}
     <div class="wrapx" style="max-height:340px;overflow-y:auto"><table class="gtb"><thead><tr>
      <th class="stick">Học sinh</th>${L.cap==='TH'?'<th>Môn Chưa hoàn thành</th>':'<th>KQ học tập</th><th>KQ rèn luyện</th>'}<th>Nghỉ</th><th>Kết luận</th></tr></thead><tbody>
@@ -1223,6 +1432,8 @@ function act(a,d){
   modal('Ký chốt kết quả tổng kết lớp '+L.id,
    `<div class="info"><b>Ký số Option — Nhóm A.</b> Bỏ qua thì vẫn ghi nhận chữ ký nghiệp vụ, ghi audit lý do và đồng bộ M4.11.</div>
     <div class="kv"><div class="k">Đơn vị ký</div><div><b>Lớp ${L.id} × ${kyName(ky)}</b> — một chữ ký phủ ${L.ss} học sinh</div>
+     <div class="k">Phạm vi phép tính</div><div><b>${monCua(L).length} môn Chương trình GDPT</b>${monTr(L).length?` · bỏ ngoài <b>${monTr(L).length} môn của trường</b> <i>(${monTr(L).join(', ')})</i>`:''}
+      ${chuaChotTr(L).length?`<br><b style="color:var(--amber)">Còn ${chuaChotTr(L).length} môn của trường chưa chốt — không chặn, nhưng ghi vào audit của chữ ký</b>`:''}</div>
      <div class="k">Đây KHÔNG phải chữ ký học bạ</div><div>Học bạ ký theo <b>Phiên ký cấp lớp tại M1.3</b>. Chữ ký này phủ <b>bảng kết quả tổng kết của lớp</b> — cổng chặn cho mọi nghiệp vụ cuối năm</div>
      <div class="k">Sau khi ký</div><div>Kết quả có hiệu lực · đẩy vào M1.3 · học sinh nhánh 3 xuất hiện ở tab <b>Đăng ký rèn luyện hè</b> · bàn giao được M3.2 và M3.3</div></div>`,
    [['Hủy',null,''],
@@ -1242,8 +1453,16 @@ function doMo(y,ks){
  const L=LOP.find(x=>x.id===y.lop);
  if(y.loai==='diem'){if(L.chuaChot.indexOf(y.mon)<0)L.chuaChot.push(y.mon)}
  else L.chotRL=false;
+ /* Mo khoa mot mon CUA TRUONG KHONG lam mat hieu luc chu ky va KHONG bat co loi thoi:
+    dau vao cua cong thuc khong doi mot bit nao. Doi xung voi viec no khong chan ky chot. */
+ if(y.loai==='diem'&&!nguonCT(y.mon)){
+  toast(`Đã mở khóa điểm môn ${y.mon} (Của trường) lớp ${y.lop} — <b>kết quả tổng kết và chữ ký chốt KHÔNG đổi</b>, `+
+   `vì môn này không vào một ô nào được ký · ${y.boi} sửa và ký lại tại ${y.nguon}`);
+  y.tt='daMo';y.moNgay=HOM;y.moBoi=R().n.split('—')[0].trim();y.ks=ks?'Ký số USB Token':'';
+  render();return;
+ }
  L.daTinh=false;L.laiThoi=false;
- const mat=!!L.kyChot; L.kyChot=null;
+ const mat=!!L.kyChot; L.kyChot=null;L.kyThieuTr=0;
  y.tt='daMo';y.moNgay=HOM;y.moBoi=R().n.split('—')[0].trim();y.ks=ks?'Ký số USB Token':(L.hb==='chot'?'Bỏ qua ký số':'');
  toast(`Đã mở khóa · ${y.loai==='diem'?'môn '+y.mon:'đánh giá rèn luyện'} lớp ${y.lop} nay tính là CHƯA CHỐT`+
    (mat?' · chữ ký chốt kết quả tổng kết MẤT HIỆU LỰC':'')+
@@ -1251,8 +1470,13 @@ function doMo(y,ks){
  render();
 }
 function doKy(L,m){
- L.kyChot={by:R().n.split('—')[0].trim()+' ('+(role==='HT'?'HT':'PHT_CM')+')',at:HOM+' 09:30',m:m};
- toast('Đã ký chốt kết quả tổng kết lớp '+L.id+' · kết quả có hiệu lực · học sinh đủ tiêu chuẩn đã vào tab Xét danh hiệu · bàn giao được sang M3.2 và M3.3');
+ L.kyChot={by:R().n.split('—')[0].trim()+' ('+(role==='HT'||role==='FULL'?'HT':'PHT_CM')+')',at:HOM+' 09:30',m:m};
+ /* ghi audit con so mon cua truong con do — khuon §15: khai duoc, canh bao neu can cu, GHI AUDIT khi van tiep tuc */
+ L.kyThieuTr=chuaChotTr(L).length||0;
+ toast('Đã ký chốt kết quả tổng kết lớp '+L.id+' · tính trên '+monCua(L).length+' môn Chương trình GDPT'+
+  (monTr(L).length?', bỏ ngoài '+monTr(L).length+' môn của trường':'')+
+  (L.kyThieuTr?' · <b>ghi audit: ký khi còn '+L.kyThieuTr+' môn của trường chưa chốt</b>':'')+
+  ' · kết quả có hiệu lực · bàn giao được sang M3.2 và M3.3');
  render();
 }
 
@@ -1323,7 +1547,7 @@ function actB(a,d){
     <div class="ro">M3.1 <b>chỉ chốt ai đạt danh hiệu gì</b>. Việc <b>khen bằng hình thức nào</b> — giấy khen Hiệu trưởng, tuyên dương, thư khen —
      là của <b>M2.7</b> theo TT 19/2025.</div>`,
    [['Hủy',null,''],['🔒 Chốt danh sách',()=>{
-     DHCHOT={by:r.n.split('—')[0].trim()+' ('+(role==='HT'?'HT':'PHT_CM')+')',at:HOM+' 15:20',n:c.xs+c.gioi+c.tb};
+     DHCHOT={by:r.n.split('—')[0].trim()+' ('+(role==='HT'||role==='FULL'?'HT':'PHT_CM')+')',at:HOM+' 15:20',n:c.xs+c.gioi+c.tb};
      toast(`Đã chốt danh sách đạt danh hiệu · ${DHCHOT.n} học sinh · danh sách khóa lại`);render()}]]);
   return}
  if(a==='bangiao'){
@@ -1367,7 +1591,7 @@ function actB(a,d){
  /* --- phu tro --- */
  /* --- phu tro --- */
  if(a==='pdf'||a==='pdfhs'){modal('Xuất PDF',
-   `<div class="ro">Dữ liệu cá nhân trẻ em — NĐ 13/2023. <b>Bắt buộc chọn mục đích</b>; lượt xuất ghi audit kèm mục đích.</div>
+   `<div class="ro">Dữ liệu cá nhân trẻ em — Luật BVDLCN 91/2025. <b>Bắt buộc chọn mục đích</b>; lượt xuất ghi audit kèm mục đích.</div>
     <select class="fldi"><option>Lưu hồ sơ nội bộ của trường</option><option>Gửi Phòng / Sở Giáo dục</option><option>Cung cấp cho gia đình theo yêu cầu</option><option>Phục vụ thanh tra, kiểm tra</option></select>`,
    [['Hủy',null,''],['⬇ Xuất PDF',()=>toast('Đã xuất PDF · ghi audit: người xuất, phạm vi, mục đích')]],1);return}
  if(a==='xemfile'){modal('👁 '+d.f,
@@ -1395,7 +1619,7 @@ function actB(a,d){
   modal('Lịch sử thao tác — lớp '+L.id,
    `<div class="ro">Lịch sử <b>hợp nhất ba menu</b>, mỗi dòng ghi rõ xảy ra ở đâu. Truy được vết kể cả khi người thực hiện đã nghỉ việc.</div>
     <div class="tl">
-     ${monCua(L).filter(m=>monChot(L,m)).slice(0,3).map(m=>`<div class="tli g"><b><span class="ct2">M2.6</span> GVBM ký chốt điểm (${L.id} × ${m})</b><div class="mm">${gvCua(L,m)} · 27/05/2026</div></div>`).join('')}
+     ${monCua(L).filter(m=>monChot(L,m)).slice(0,3).map(m=>`<div class="tli g"><b><span class="ct2">M2.5</span> GVBM ký chốt điểm (${L.id} × ${m})</b><div class="mm">${gvCua(L,m)} · 27/05/2026</div></div>`).join('')}
      ${L.chotRL?`<div class="tli g"><b><span class="ct2">M2.9/T7</span> GVCN ký chốt đánh giá rèn luyện (${L.id} × Năm)</b><div class="mm">${L.gvcn} · 28/05/2026</div></div>`:''}
      ${L.daTinh?`<div class="tli"><b><span class="ct2">M3.1</span> Chạy tính tổng kết cả năm</b><div class="mm">28/05/2026 09:14 · kết quả Chính thức</div></div>`:''}
      ${YEUCAU.filter(y=>y.lop===L.id).map(y=>`<div class="tli ${y.tt==='tuchoi'?'r':y.tt==='daMo'?'w':''}"><b><span class="ct2">${y.nguon}</span> Yêu cầu mở khóa ${y.loai==='diem'?'điểm môn '+y.mon:'đánh giá rèn luyện'} — ${y.tt==='cho'?'chờ xử lý':y.tt==='daMo'?'ĐÃ MỞ KHÓA':'BỊ TỪ CHỐI'}</b><div class="mm">${y.boi} · ${y.ngay} · ${y.hs}: ${y.cu} → ${y.dk}${y.moBoi?' · mở bởi '+y.moBoi+' '+y.moNgay+(y.ks?' · '+y.ks:''):''}${y.ldTC?' · lý do từ chối: '+y.ldTC:''}</div></div>`).join('')}

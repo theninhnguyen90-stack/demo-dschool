@@ -58,6 +58,8 @@ h1{font-size:19px;font-weight:700}
 
 .scopebar{background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;padding:7px 11px;border-radius:9px;font-size:12px;margin:0 0 10px;display:flex;gap:8px;align-items:flex-start}
 .scopebar code{background:#e0e7ff;padding:0 4px;border-radius:3px;font-size:11.5px}
+.scopebar.kiem{background:#fff7ed;border-color:#fdba74;color:#9a3412}
+.scopebar.kiem code{background:#ffedd5}
 .info{background:var(--brand-soft);border:1px solid #bfdbfe;color:#1e40af;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:12px}
 .warn{background:var(--amber-soft);border:1px solid #fde68a;color:#92400e;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:12px}
 .danger{background:var(--red-soft);border:1px solid #fecaca;color:#991b1b;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:12px}
@@ -269,10 +271,13 @@ body.nn .dnote{display:none!important}
 <div class="rolebar">
   <b>Chức danh:</b>
   <button class="rb on" data-r="FULL">🔓 Đủ quyền (demo)</button>
-  <button class="rb" data-r="GVCN">GVCN</button>
-  <button class="rb" data-r="PHT_DT">PHT điểm trường</button>
+  <button class="rb" data-r="GVCN8">GVCN 8A1</button>
+  <button class="rb" data-r="GVCN9">GVCN 9A2</button>
+  <button class="rb" data-r="KIEM">GVCN 9A1 kiêm PHT điểm trường A</button>
+  <button class="rb" data-r="PHT_DT">PHT điểm trường B</button>
   <button class="rb" data-r="HT">Hiệu trưởng</button>
   <button class="rb" data-r="PHT_CM">PHT_CM</button>
+  <button class="rb" data-r="GVBM">GVBM</button>
   <span class="note">Demo chạy ở vai <b>Đủ quyền</b> — thao tác được mọi chức năng. Phân quyền thật xem <b>§13</b> tài liệu mô tả</span>
   <button class="ntg" id="btnNote">💡 Ghi chú thiết kế: TẮT</button>
 </div>
@@ -292,7 +297,7 @@ body.nn .dnote{display:none!important}
   <main class="main">
     <div class="tophd"><h1>Đơn xin nghỉ của học sinh</h1><div class="spacer"></div>
       <button class="btn" id="btnNew">+ Tạo đơn hộ phụ huynh</button>
-      <button class="btn" data-x="xuat">⬇ Xuất báo cáo</button></div>
+      <button class="btn" id="btnXuat" data-x="xuat">⬇ Xuất báo cáo</button></div>
     <div class="tabs" id="tabs"></div>
     <div id="content"></div>
   </main>
@@ -323,11 +328,13 @@ function cacNgayHoc(tu,den){const a=[];for(let d=tu;d<=den;d++)if(laNgayHoc(d))a
 /* ===== DANH MUC ===== */
 const DT={A:'Điểm trường A — Nguyễn Tất Thành',B:'Điểm trường B — Lê Quý Đôn'};
 const LOP={
- '9A2':{ss:38,dt:'A',cn:'lan'}, '9A1':{ss:40,dt:'A',cn:'lan'},
+ '9A2':{ss:38,dt:'A',cn:'lan'}, '9A1':{ss:40,dt:'A',cn:'son'},
  '8A1':{ss:41,dt:'A',cn:'chi'}, '8B1':{ss:37,dt:'B',cn:'tuan'},
  '6A1':{ss:36,dt:'A',cn:'ngan'},
 };
-const GV={lan:'Trần Thị Lan',chi:'Bùi Linh Chi',tuan:'Vũ Anh Tuấn',ngan:'Lý Thu Ngân'};
+/* 9A1 truoc day cung ghi cn:'lan' — mot GV chu nhiem hai lop la sai nghiep vu. Nay 9A1 do
+   PHT diem truong A kiem chu nhiem (vai KIEM — ca kiem nhiem cua P21). */
+const GV={lan:'Trần Thị Lan',chi:'Bùi Linh Chi',tuan:'Vũ Anh Tuấn',ngan:'Lý Thu Ngân',son:'Nguyễn Văn Sơn'};
 const LYDO=['Sức khỏe','Việc gia đình','Đi du lịch','Đi thi','Khác'];
 
 const HS={};
@@ -410,7 +417,7 @@ DON.push(
     gui:10,log:[['27/8 06:30','Phụ huynh Hồ Gia Bách','Gửi đơn từ App','Nghỉ 28/8 – 30/8 · Đi du lịch']]}),
  D({hs:hsTen('Phạm Đức Duy'),lop:'9A2',tu:7,den:7,buoi:'ca',ld:'Việc gia đình',
     gc:'Ông nội cháu mất, gia đình xin phép cho cháu nghỉ.',tep:'',nguon:'giay',tt:'cho',
-    gui:10,nhaphobo:'lan',
+    gui:10,taoBoi:'Trần Thị Lan',nguonHo:'giấy viết tay',
     log:[['27/8 09:20','Trần Thị Lan — GVCN 9A2','Tạo đơn hộ phụ huynh','Nguồn: giấy viết tay · phụ huynh gửi qua sổ liên lạc']]}),
  /* Don DAI NGAY cua lop 9A2 — de GVCN demo duoc luong "thay don nhung khong duyet, chi neu y kien" */
  D({hs:hsTen('Trần Gia Bảo'),lop:'9A2',tu:11,den:17,buoi:'ca',ld:'Việc gia đình',
@@ -427,6 +434,16 @@ DON.push(
  D({hs:hsTen('Võ Ngọc Mai'),lop:'8A1',tu:-4,den:-4,buoi:'ca',ld:'Sức khỏe',
     gc:'Cháu ốm hôm đó, nay gia đình mới gửi đơn.',tep:'',nguon:'app',tt:'cho',gui:10,
     log:[['27/8 08:40','Phụ huynh Võ Ngọc Mai','Gửi đơn từ App','Nghỉ 13/8 · nộp sau 14 ngày']]}),
+ /* P21 — lop 8A1 du bon nguon/loai de thay pham vi CLASS khac OWN: GVCN 8A1 thay ca don
+    phu huynh gui tu App (Kiet · Han · Mai), khong chi don co tu tao ho (Phuc). */
+ D({hs:hsTen('Phan Tuấn Kiệt'),lop:'8A1',tu:11,den:12,buoi:'ca',ld:'Sức khỏe',
+    gc:'Cháu bị viêm họng, bác sĩ cho nghỉ hai ngày.',tep:'don-thuoc.jpg',nguon:'app',tt:'cho',gui:10,
+    log:[['27/8 06:45','Phụ huynh Phan Tuấn Kiệt','Gửi đơn từ App','Nghỉ 28/8 – 29/8 · Sức khỏe']]}),
+ D({hs:hsTen('Dương Bá Phúc'),lop:'8A1',tu:10,den:10,buoi:'ca',ld:'Việc gia đình',
+    gc:'Mẹ cháu gọi điện sáng nay: gia đình có đám cưới ở quê.',tep:'',nguon:'giay',tt:'duyet',gui:10,
+    taoBoi:'Bùi Linh Chi',nguonHo:'tin nhắn / gọi điện',nguoiDuyet:'Bùi Linh Chi — GVCN lớp 8A1',khiDuyet:'27/8 07:20',
+    log:[['27/8 07:10','Bùi Linh Chi — GVCN lớp 8A1','Tạo đơn hộ phụ huynh','Nguồn: tin nhắn / gọi điện · KHÔNG có ảnh đính kèm'],
+         ['27/8 07:20','Bùi Linh Chi — GVCN lớp 8A1','✓ Duyệt đơn','Ghi Vắng có phép 1 ngày học']]}),
  /* Da duyet — de demo he qua va nut Ket thuc som */
  D({hs:hsTen('Nguyễn Minh An'),lop:'9A2',tu:10,den:14,buoi:'ca',ld:'Sức khỏe',
     gc:'Cháu bị thủy đậu, bác sĩ yêu cầu cách ly.',tep:'giay-nghi-om.jpg',nguon:'app',tt:'duyet',
@@ -462,19 +479,39 @@ const byId=id=>DON.find(x=>x.id===id);
 /* Nang luc mo hinh bang MANG, kiem tra bang .includes() — vai Du quyen nhan du mang.
    QUY DINH CUNG: demo dung theo vai TOAN QUYEN, moi chuc nang deu thao tac duoc.
    Vai nao duoc lam gi thi ghi o file .md mo ta giao dien (§13), khong phai viec cua demo. */
+/* P21 (14/9/2026) — moi vai la DANH SACH CHUC DANH dang giu (kiem nhiem), moi chuc danh mang
+   nang luc + PHAM VI RIENG. Hop quyen theo M10.4 §2.5 diem 3: TREN TUNG O (Feature × quyen),
+   lay pham vi rong nhat TRONG SO cac chuc danh CO quyen do — khong phai "pham vi rong nhat thang
+   tren toan bo". Vi du: GVCN 9A1 kiem PHT diem truong A -> Xem/Duyet = Branch A (PHT gop),
+   nhung Tao don ho = Class 9A1 (chi GVCN co T o menu nay, PHT khong co gi de gop).
+   GVCN pham vi CLASS (lop phu trach, M4.5) — KHONG phai OWN (chi don minh tao/dung ten). */
+const Q_GVCN=['xem','duyet_ngan','ykien','nhapho','ketthuc','xuat'];
+const Q_PHTDT=['xem','duyet_ngan','duyet_dai','ketthuc','xuat'];
 const ROLE={
- FULL:  {n:'Đỗ Quang Minh',cd:'Vai Đủ quyền (demo) — thao tác được mọi chức năng',sc:'school',dt:null,dtLock:0,
-         q:['duyet_ngan','duyet_dai','duyet_ratdai','ykien','nhapho','ketthuc','cauhinh','xuat']},
- GVCN:  {n:'Trần Thị Lan',cd:'GVCN lớp 9A2',sc:'class',lopCN:'9A2',dt:'A',dtLock:1,
-         q:['duyet_ngan','ykien','nhapho','ketthuc','xuat']},
- PHT_DT:{n:'Nguyễn Văn Sơn',cd:'Phó hiệu trưởng điểm trường A',sc:'branch',dt:'A',dtLock:1,
-         q:['duyet_ngan','duyet_dai','ketthuc','xuat']},
- HT:    {n:'Đỗ Quang Minh',cd:'Hiệu trưởng',sc:'school',dt:null,dtLock:0,
-         q:['duyet_ngan','duyet_dai','duyet_ratdai','ketthuc','cauhinh','xuat']},
- PHT_CM:{n:'Hoàng Văn Khoa',cd:'Phó hiệu trưởng chuyên môn',sc:'school',dt:null,dtLock:0,
-         q:['xuat']},
+ FULL:  {n:'Đỗ Quang Minh',cd:'Vai Đủ quyền (demo) — thao tác được mọi chức năng',
+         cds:[{ma:'FULL',sc:'school',q:['xem','duyet_ngan','duyet_dai','duyet_ratdai','ykien','nhapho','ketthuc','cauhinh','xuat']}]},
+ GVCN8: {n:'Bùi Linh Chi',cd:'GVCN lớp 8A1',cds:[{ma:'GVCN',sc:'class',lop:'8A1',q:Q_GVCN}]},
+ GVCN9: {n:'Trần Thị Lan',cd:'GVCN lớp 9A2',cds:[{ma:'GVCN',sc:'class',lop:'9A2',q:Q_GVCN}]},
+ KIEM:  {n:'Nguyễn Văn Sơn',cd:'PHT điểm trường A kiêm GVCN lớp 9A1',
+         cds:[{ma:'GVCN',sc:'class',lop:'9A1',q:Q_GVCN},{ma:'PHT_DT',sc:'branch',dt:'A',q:Q_PHTDT}]},
+ PHT_DT:{n:'Lê Văn Hải',cd:'Phó hiệu trưởng điểm trường B',cds:[{ma:'PHT_DT',sc:'branch',dt:'B',q:Q_PHTDT}]},
+ HT:    {n:'Đỗ Quang Minh',cd:'Hiệu trưởng',
+         cds:[{ma:'HT',sc:'school',q:['xem','duyet_ngan','duyet_dai','duyet_ratdai','ketthuc','cauhinh','xuat']}]},
+ PHT_CM:{n:'Hoàng Văn Khoa',cd:'Phó hiệu trưởng chuyên môn',cds:[{ma:'PHT_CM',sc:'school',q:['xem','xuat']}]},
+ /* §13: GVBM KHONG co dong nao — khong co X thi Feature khong ton tai voi ho (M10.4 §2.5 diem 2) */
+ GVBM:  {n:'Phạm Thu Trang',cd:'GVBM Toán — dạy 8A1, 9A2',cds:[]},
 };
-const co=k=>R().q.indexOf(k)>=0;
+const TENCD={GVCN:'GVCN',PHT_DT:'PHT điểm trường',HT:'Hiệu trưởng',PHT_CM:'PHT chuyên môn',FULL:'Đủ quyền'};
+const SCR={class:1,branch:2,school:3};
+const dtCua=c=>c.sc==='branch'?c.dt:c.sc==='class'?LOP[c.lop].dt:null;
+/* Chuc danh c co phu ban ghi x khong — RANG BUOC DU LIEU, khong phai an nut */
+const phu=(c,x)=>c.sc==='school'||(c.sc==='branch'&&LOP[x.lop].dt===c.dt)||(c.sc==='class'&&x.lop===c.lop);
+const co=k=>R().cds.some(c=>c.q.includes(k));
+const coTren=(k,x)=>R().cds.some(c=>c.q.includes(k)&&phu(c,x));
+/* Pham vi hieu luc cua MOT nang luc = chuc danh rong nhat trong so chuc danh CO nang luc do */
+function scQ(k){let b=null;R().cds.forEach(c=>{if(c.q.includes(k)&&(!b||SCR[c.sc]>SCR[b.sc]))b=c});return b}
+/* Nam trong Danh sach nguoi duoc duyet cua don x (theo chuc danh VA pham vi cua chuc danh do) */
+const trongDS=x=>R().cds.some(c=>c.ma==='FULL'||(dsDuyet(x).includes(c.ma)&&phu(c,x)));
 /* N va cac nguong — CAU HINH DUOC, doi N la hai tab tu chia lai */
 let CFG={N:3, ratdai:30, muon:7};
 let role='FULL', tab='ngan', cur=null, truc='don', khoang='Tháng này', fTT='Tất cả', fCho=1;
@@ -485,15 +522,13 @@ const R=()=>ROLE[role];
 const KHOANG={'Tuần này':7,'Tháng này':31,'Học kỳ này':200};
 
 /* ===== PHAM VI ===== */
-function trongPhamVi(x){
- const r=R();
- if(r.sc==='class') return x.lop===r.lopCN;
- if(r.sc==='branch') return LOP[x.lop].dt===r.dt;
- return true;
-}
-/* Duyet duoc don nay khong: phai co NANG LUC tuong ung voi loai don VA trong pham vi */
+/* Don ngoai pham vi KHONG CO trong du lieu tra ve — moi danh sach deu loc qua ham nay */
+const trongPhamVi=x=>coTren('xem',x);
+/* Duyet duoc don nay khong: MOT chuc danh phai vua co NANG LUC cua loai don VUA phu don do.
+   Kiem nhiem hop theo tung o: GVCN 9A1 kiem PHT A duyet duoc don dai ngay lop 6A1 — o D dai ngay
+   den tu PHT (Branch A), khong phai tu GVCN. */
 function duyetDuoc(x){
- return x.tt==='cho' && co(quaHan(x)?'duyet_ratdai':QUYENDUYET[loaiDon(x)]) && trongPhamVi(x);
+ return x.tt==='cho' && coTren(quaHan(x)?'duyet_ratdai':QUYENDUYET[loaiDon(x)], x);
 }
 /* HANG DOI: quet CA NAM, khong cat theo khoang dang xem (khung-menu §11).
    Don nop muon cho tuan truoc van phai hien — bo sot la hoc sinh mang an vang khong phep oan. */
@@ -532,31 +567,41 @@ function vangCuaHS(h){
 /* ===== SIDEBAR + HEADER ===== */
 const NAV=[
  ['','🏠 Trung tâm điều hành',[['M0.1','Bảng điều khiển'],['M0.2','Việc cần làm','4'],['M0.3','Thông báo'],['M0.4','Trang cá nhân']]],
- ['hs','👥 Học sinh',[['M1.1','Hồ sơ học sinh'],['M1.5','Bảo lưu & tái nhập học'],['M1.3','Học bạ điện tử']]],
- ['lop','📚 Lớp học hàng ngày',[['M2.1','Lịch dạy & học'],['M2.2','Sổ đầu bài'],['M2.3','Bài tập về nhà'],
-   ['M2.4','Đơn xin nghỉ của HS'],['M2.5','Bảng điểm môn học'],
-   ['M2.7','Khen thưởng & Kỷ luật'],['M2.8','Kỳ thi định kỳ'],['M2.9','Không gian lớp học']]],
- ['vh','🏫 Vận hành',[['M6.1','Bán trú']]],
+ /* Dot 1 muc 27 (14/9/2026): M2.4 sang nhom Hoc sinh, dung sau M1.7 — PROMPT-DOT1-00 §2.1.
+    Node #side an; sidebar that nam o index.html (chi P1/PZ ghi). */
+ ['hs','👥 Học sinh',[['M1.1','Hồ sơ học sinh'],['M1.3','Học bạ điện tử'],['M1.5','Bảo lưu & tái nhập học'],
+   ['M1.7','Chuyển lớp'],['M2.4','Đơn xin nghỉ của HS']]],
+ ['lop','📚 Giảng dạy hằng ngày',[['M2.1','Lịch dạy & học'],['M2.2','Sổ đầu bài'],['M2.3','Bài tập về nhà'],
+   ['M2.5','Bảng điểm môn học'],['M2.9','Danh sách lớp học']]],
+ ['vh','🏫 Vận hành & dịch vụ',[['M6.1','Bán trú']]],
 ];
 function sidebar(){
- const r=R();
+ const sc=(scQ('xem')||{}).sc;
  $('#side').innerHTML=NAV.map(([k,ten,items])=>
   `<div class="grp">${ten}</div>`+items.map(([m,t,b])=>{
     const on=m==='M2.4';
-    const mo = m==='M2.4' || m==='M0.1'||m==='M0.2'||m==='M0.3'||m==='M0.4'
-      || (k==='hs'&&r.sc!=='class') || (k==='lop'&&r.sc!=='branch') || (k==='vh'&&(r.bantru||r.sc==='school'));
+    const mo = (m==='M2.4'&&sc) || m==='M0.1'||m==='M0.2'||m==='M0.3'||m==='M0.4'
+      || (k==='hs'&&sc&&sc!=='class') || k==='lop' || (k==='vh'&&sc==='school');
     return `<div class="nav ${on?'on':''} ${mo?'':'off'}"><span class="mm">${m}</span>${t}
       ${b?`<span class="nb">${b}</span>`:''}</div>`}).join('')).join('');
 }
 function header(){
- const r=R();
- const opts=Object.keys(DT).map(k=>`<option value="${k}" ${r.dt===k?'selected':''}>${DT[k]}</option>`).join('');
- $('#hdt').innerHTML = r.dtLock?opts:`<option value="">Mọi điểm trường</option>`+opts;
- $('#hdt').disabled = !!r.dtLock;
- $('#lk').innerHTML = r.dtLock?'🔒':'';
- $('#ava').textContent=r.n.split(' ').slice(-2).map(x=>x[0]).join('');
+ const r=R(), x=scQ('xem');
+ /* Vai Class/Branch KHOA bo chon diem truong ve dung pham vi (CLAUDE.md). Kiem nhiem GVCN 9A1 +
+    PHT A: ca hai chuc danh cung o diem truong A nen khoa ve A. */
+ const cx=r.cds.filter(c=>c.q.includes('xem'));
+ const lock = !!x && x.sc!=='school';
+ /* Khoa theo HOP cac diem truong ma cac chuc danh phu (§12.3) — mot diem truong thi khoa cung */
+ const dts=lock?[...new Set(cx.map(dtCua))]:[], dt=dts.length===1?dts[0]:null;
+ const opts=Object.keys(DT).filter(k=>!lock||dts.includes(k)).map(k=>`<option value="${k}" ${dt===k?'selected':''}>${DT[k]}</option>`).join('');
+ $('#hdt').innerHTML = lock&&dt?opts:`<option value="">Mọi điểm trường${lock?' trong phạm vi':''}</option>`+opts;
+ $('#hdt').disabled = !!dt;
+ $('#lk').innerHTML = lock?'🔒':'';
+ $('#lk').title = lock?'Phạm vi '+(x.sc==='class'?'Lớp phụ trách':'Điểm trường')+' — bộ chọn khóa theo phạm vi':'';
+ $('#ava').textContent=r.n.split(' ').slice(-2).map(k=>k[0]).join('');
  $('#bell').textContent=String(choToiDuyet().length||1);
  $('#btnNew').style.display = co('nhapho')?'':'none';
+ $('#btnXuat').style.display = co('xuat')?'':'none';
 }
 
 /* ===== TABS ===== */
@@ -574,22 +619,48 @@ function tabs(){
 
 /* ===== SCOPE BAND ===== */
 function scopeNote(){
- const r=R();
- if(r.sc==='class') return `<div class="scopebar">🏫<div><b>Phạm vi: Lớp ${esc(r.lopCN)} · bộ lọc <code>all</code>.</b>
-   Bạn duyệt được đơn <b>≤ 3 ngày học</b>. Đơn dài hơn bạn <b>vẫn thấy</b> và <b>nêu ý kiến</b> được —
-   nhưng người duyệt là PHT điểm trường.</div></div>`;
- if(r.sc==='branch') return `<div class="scopebar">🏫<div><b>Phạm vi: ${esc(DT[r.dt])} · <code>all</code>.</b>
-   Bạn duyệt được đơn <b>≤ 30 ngày học</b> của mọi lớp trong điểm trường. Đơn > 30 ngày do Hiệu trưởng duyệt.</div></div>`;
+ const r=R(), x=scQ('xem');
+ if(!x) return `<div class="scopebar">🚫<div><b>${esc(r.cd)} — không có quyền nào ở menu này.</b>
+   Không có dữ liệu trả về; trên hệ thống thật menu <b>không hiện trên sidebar</b> của bạn.</div></div>`;
+ const ds=DON.filter(trongPhamVi), app=ds.filter(d=>d.nguon==='app').length;
+ const cuaToi=ds.filter(d=>d.taoBoi===r.n).length;
+ const nguonDem=`<b>${ds.length} đơn</b> — ${app} phụ huynh gửi từ App · ${ds.length-app} nhà trường tạo hộ`;
+ if(r.cds.length>1){
+  /* KIEM NHIEM — noi ro pham vi den tu chuc danh nao, tren tung nang luc */
+  const hep=r.cds.filter(c=>c!==x), t=scQ('nhapho');
+  return `<div class="scopebar kiem">🏫<div><b>Phạm vi: ${esc(DT[dtCua(x)])} — bạn đang thấy toàn điểm trường vì kiêm chức danh ${TENCD[x.ma]}.</b>
+   ${nguonDem}. Duyệt ngắn ngày và dài ngày: mọi lớp của điểm trường <i>(từ ${TENCD[x.ma]})</i>.
+   ${t?`<b>Tạo đơn hộ: chỉ lớp ${esc(t.lop||'')}</b> — quyền <code>T</code> chỉ đến từ chức danh ${TENCD[t.ma]}.`:''}
+   <div class="hint dnote">Hợp quyền <b>trên từng ô</b> Feature × quyền (M10.4 §2.5): ô nào cả hai chức danh cùng có thì lấy phạm vi rộng hơn;
+    ô chỉ ${hep.map(c=>TENCD[c.ma]+' '+(c.lop||'')).join(', ')} có thì giữ phạm vi của chức danh đó.</div></div></div>`;
+ }
+ if(x.sc==='class') return `<div class="scopebar">🏫<div><b>Phạm vi: Lớp phụ trách ${esc(x.lop)} <code>Class</code> · bộ lọc <code>all</code>.</b>
+   ${nguonDem} — mọi đơn của học sinh lớp mình, không chỉ đơn bạn tạo hộ.
+   Bạn duyệt được đơn <b>≤ ${CFG.N} ngày học</b>; đơn dài hơn bạn <b>vẫn thấy</b> và <b>nêu ý kiến</b> được.
+   <div class="hint dnote">Vì sao là <code>Class</code>, không phải <code>Own</code>: <code>Own</code> chỉ trả về đơn do chính bạn tạo
+    hoặc đứng tên — ở đây là <b>${cuaToi}/${ds.length}</b> đơn. Lớp phụ trách lấy từ phân công chủ nhiệm ở <b>M4.5</b>.</div></div></div>`;
+ if(x.sc==='branch') return `<div class="scopebar">🏫<div><b>Phạm vi: ${esc(DT[x.dt])} <code>Branch</code> · <code>all</code>.</b>
+   ${nguonDem}. Bạn duyệt được đơn <b>≤ ${CFG.ratdai} ngày học</b> của mọi lớp trong điểm trường. Đơn > ${CFG.ratdai} ngày do Hiệu trưởng duyệt.</div></div>`;
  if(!co('duyet_ngan')&&!co('duyet_dai')) return `<div class="scopebar">🌐<div><b>Phạm vi: Toàn trường · <code>all</code> · chỉ đọc.</b>
    Bạn <b>không nằm trong Danh sách người được duyệt</b> của bất kỳ loại đơn nào — không có nút duyệt.</div></div>`;
  return `<div class="scopebar">🌐<div><b>Phạm vi: Toàn trường · <code>all</code>.</b>
-   Bạn duyệt được <b>mọi đơn</b>; riêng đơn <b>> 30 ngày học</b> chỉ Hiệu trưởng duyệt.</div></div>`;
+   Bạn duyệt được <b>mọi đơn</b>; riêng đơn <b>> ${CFG.ratdai} ngày học</b> chỉ Hiệu trưởng duyệt.</div></div>`;
+}
+/* GVBM thuan: §13 khong co dong nao. Demo van mo menu de thay LY DO — he thong that khong tra ve gi. */
+function viewKhongQuyen(){
+ return scopeNote()+`<div class="listw" style="padding:16px 18px"><div class="card"><div class="ch">Vì sao GVBM không có quyền ở M2.4</div><div class="cb p">
+   <table class="tb">
+    <tr><td style="width:190px">Dữ liệu trả về</td><td><b>0 đơn</b> — phạm vi là ràng buộc dữ liệu, không phải ẩn nút</td></tr>
+    <tr><td>Biết em nào vắng có phép</td><td>Qua <b>điểm danh</b> ở Sổ đầu bài <b>M2.2</b> 🔗 — đơn duyệt xong đã ghi <b>Vắng có phép</b> vào đó</td></tr>
+    <tr><td>Không thấy đơn</td><td>Đơn chứa <b>lý do nghỉ và giấy tờ y tế</b> — dữ liệu sức khỏe trẻ em (Luật BVDLCN 91/2025); GVBM không cần để dạy</td></tr>
+    <tr><td>Kiêm GVCN</td><td>Thì có quyền của GVCN ở menu này — phạm vi <b>lớp mình chủ nhiệm</b></td></tr>
+   </table></div></div></div>`;
 }
 
 /* ===== RENDER ===== */
 function render(){
  sidebar(); header(); tabs();
- $('#content').innerHTML = tab==='cfg'?viewCfg() : tab==='tong'?viewTong() : viewLoai(tab);
+ $('#content').innerHTML = !scQ('xem')?viewKhongQuyen() : tab==='cfg'?viewCfg() : tab==='tong'?viewTong() : viewLoai(tab);
  wire();
 }
 
@@ -678,11 +749,11 @@ function panelDon(){
  let acts=[];
  if(coQuyen){acts.push(['duyet','✓ Duyệt đơn','p']);acts.push(['bosung','📎 Yêu cầu bổ sung','']);
    acts.push(['tuchoi','✕ Từ chối','d']);}
- else if(x.tt==='cho'&&co('ykien')&&dsDuyet(x).indexOf(role)<0) acts.push(['ykien','💬 Nêu ý kiến','']);
+ else if(x.tt==='cho'&&coTren('ykien',x)&&!trongDS(x)) acts.push(['ykien','💬 Nêu ý kiến','']);
  /* Chot 29/8/2026 — D6: chi GVCN cua lop do va NGUOI DA DUYET moi ket thuc som duoc.
     GVCN la nguoi NHIN THAY em den lop — ho la nguon su that cho chuyen can. */
  const ktDuoc = conTuongLai && co('ketthuc') &&
-   (role==='FULL' || (R().sc==='class'&&x.lop===R().lopCN)
+   (role==='FULL' || R().cds.some(c=>c.ma==='GVCN'&&c.lop===x.lop)
     || (x.nguoiDuyet&&x.nguoiDuyet.indexOf(R().n)===0));
  if(ktDuoc) acts.push(['ketthuc','⏹ Kết thúc sớm','']);
  if(x.ycKT&&ktDuoc) acts.push(['xacnhanKT','✓ Xác nhận em đã đi học lại','p']);
@@ -707,7 +778,7 @@ function panelDon(){
    ${x.tt==='cho'&&!coQuyen?`<div class="info"><b>Bạn không duyệt được đơn này.</b>
      Đơn <b>${TENLOAI[loaiDon(x)]}</b> (${x.nh} ngày học) — Danh sách người được duyệt:
      <b>${dsDuyet(x).map(k=>k==='GVCN'?'GVCN lớp '+x.lop:k==='PHT_DT'?'PHT điểm trường':'Hiệu trưởng').join(' · ')}</b>.
-     ${co('ykien')&&dsDuyet(x).indexOf(role)<0?'Bạn <b>nêu ý kiến</b> được — ý kiến không chặn việc duyệt.':''}
+     ${coTren('ykien',x)&&!trongDS(x)?'Bạn <b>nêu ý kiến</b> được — ý kiến không chặn việc duyệt.':''}
      ${!co('duyet_ngan')&&!co('duyet_dai')?'Vai trò của bạn <b>không nằm trong Danh sách người được duyệt</b> của bất kỳ loại đơn nào.':''}
     </div>`:''}
    ${x.ycKT&&x.tt==='duyet'?`<div class="warn"><b>📱 Phụ huynh báo trên App: em đi học lại từ ${dow(x.ycKT)} ${dstr(x.ycKT)}.</b>
@@ -717,7 +788,7 @@ function panelDon(){
       ngược lợi ích của chính gia đình.</div>
      ${!ktDuoc?'<div class="hint"><b>Bạn không xác nhận được</b> — bạn không phải GVCN lớp này và cũng không phải người đã duyệt đơn.</div>':''}</div>`:''}
    ${x.tt!=='cho'?`<div class="info"><b>${t.t}</b>${x.nguoiDuyet?` bởi <b>${esc(x.nguoiDuyet)}</b> lúc ${esc(x.khiDuyet||'')}`:''}.
-     ${x.tt==='duyet'&&dsDuyet(x).indexOf(role)>=0&&!laNguoiDuyetCu
+     ${x.tt==='duyet'&&trongDS(x)&&!laNguoiDuyetCu
        ?'<br><b>Bạn cũng nằm trong Danh sách người được duyệt</b> nhưng người khác đã duyệt trước — nút duyệt không còn. <b>Ai duyệt trước có hiệu lực.</b>':''}
      ${x.lydoTuChoi?'<br><b>Lý do từ chối:</b> '+esc(x.lydoTuChoi):''}
      ${x.canBoSung?'<br><b>Cần bổ sung:</b> '+esc(x.canBoSung):''}
@@ -744,7 +815,7 @@ function panelDon(){
      <tr><td>Ghi chú</td><td>${esc(x.gc)||'<span style="color:var(--ink3)">Không có</span>'}</td></tr>
      <tr><td>Nguồn đơn</td><td>${x.nguon==='app'
         ?'Phụ huynh gửi từ <b>App</b>'
-        :'<b>Tạo đơn hộ phụ huynh</b> bởi '+esc(GV[x.nhaphobo]||'GVCN')+' — phụ huynh gửi qua sổ liên lạc'}</td></tr>
+        :'<b>Đơn do nhà trường tạo hộ</b> — bởi '+esc(x.taoBoi||'GVCN')+' · nguồn: '+esc(x.nguonHo||'giấy viết tay')}</td></tr>
      <tr><td>Danh sách người<br>được duyệt</td><td>${dsDuyet(x).map(k=>`<span class="pill">${k==='GVCN'?'GVCN lớp':k==='PHT_DT'?'PHT điểm trường':'Hiệu trưởng'}</span>`).join(' ')}
        <div class="hint">Ai duyệt trước có hiệu lực — không chờ tuần tự.</div></td></tr>
     </table>
@@ -752,7 +823,7 @@ function panelDon(){
 
    <div class="card"><div class="ch">Giấy tờ đính kèm</div><div class="cb p">
     ${x.tep?`<div class="roblk dnote" style="margin-bottom:9px">Giấy tờ y tế là <b>dữ liệu sức khỏe của trẻ em</b> —
-      mọi lượt xem và tải <b>đều ghi audit</b> theo NĐ 13/2023.</div>
+      mọi lượt xem và tải <b>đều ghi audit</b> theo Luật BVDLCN 91/2025.</div>
      <div class="drop" style="text-align:left">📎 <b>${esc(x.tep)}</b>
       <button class="btn xs" data-x="xemtep" style="margin-left:8px">👁 Xem</button>
       <button class="btn xs" data-x="taitep">⬇ Tải</button></div>`
@@ -774,7 +845,7 @@ function panelDon(){
 
    ${loaiDon(x)!=='ngan'?`<div class="card"><div class="ch">Ý kiến giáo viên chủ nhiệm</div><div class="cb p">
      ${x.ykien?`<div class="info" style="margin:0"><b>${esc(GV[LOP[x.lop].cn])}</b> · ${esc(x.ykienLuc||'')}<br>${esc(x.ykien)}</div>`
-      :`<div class="warn" style="margin:0"><b>GVCN chưa nêu ý kiến${coQuyen?' — bạn vẫn duyệt được':R().ykien?' — bạn có thể nêu, không bắt buộc':''}.</b>
+      :`<div class="warn" style="margin:0"><b>GVCN chưa nêu ý kiến${coQuyen?' — bạn vẫn duyệt được':coTren('ykien',x)?' — bạn có thể nêu, không bắt buộc':''}.</b>
         Ý kiến GVCN là <b>tuỳ chọn</b>, không phải một bước bắt buộc: đơn xin nghỉ là việc gấp,
         một mắt xích bắt buộc mà người đó đang vắng thì đơn treo.
         ${coQuyen?'<button class="rolnk" data-x="hoiykien" style="margin-left:6px">🔔 Hỏi ý kiến GVCN</button>':''}</div>`}
@@ -877,7 +948,7 @@ function viewTong(){
     <div class="rt">${BANTRU.has(x.hs)?'<span class="st2 n">🍚</span>':''}<span class="st2 ${t.c}">${t.t}</span></div></div>`};
  const sx=L.slice().sort((a,b)=>b.tu-a.tu);
  /* Gom nhom theo LOP khi pham vi co nhieu lop — va BO GOM khi dang tim (danh sach phang) */
- const gomNhom = !tim && r.sc!=='class' && [...new Set(sx.map(x=>x.lop))].length>1;
+ const gomNhom = !tim && (scQ('xem')||{}).sc!=='class' &&[...new Set(sx.map(x=>x.lop))].length>1;
  let rows;
  if(gomNhom){
   const lops=[...new Set(sx.map(x=>x.lop))].sort();
@@ -923,6 +994,8 @@ function apDungDuyet(x){
 }
 function act(a,id){
  if(a==='close'){cur=null;render();return}
+ /* Xuat bao cao o thanh tieu de khong can don dang mo — truoc day nam sau chot !x nen bam la bao "chua chon don" */
+ if(a==='xuat'){moXuat();return}
  const x=byId(id||cur);
  /* Moi hanh dong duoi day deu thao tac tren MOT don. Khong co don dang mo thi
     khong lam gi — truoc day thieu chot nay nen bam nut sau khi dong panel la vo. */
@@ -930,7 +1003,7 @@ function act(a,id){
  if(a==='xemtep'||a==='taitep'){
    ghiLog(x,a==='xemtep'?'👁 Xem giấy tờ đính kèm':'⬇ Tải giấy tờ đính kèm',x.tep);
    render();
-   toast((a==='xemtep'?'👁 Mở giấy tờ ngay trong màn hình':'⬇ Đã tải')+' · <b>đã ghi Lịch sử</b> — dữ liệu sức khỏe trẻ em, NĐ 13/2023');
+   toast((a==='xemtep'?'👁 Mở giấy tờ ngay trong màn hình':'⬇ Đã tải')+' · <b>đã ghi Lịch sử</b> — dữ liệu sức khỏe trẻ em, Luật BVDLCN 91/2025');
    return}
  if(a==='taichinh'){
   const suat=BANTRU.has(x.hs)&&x.buoi!=='sang'?x.nh:0;
@@ -1056,10 +1129,11 @@ function act(a,id){
    }]]);
   return}
 
- if(a==='xuat'){
+}
+function moXuat(){
   modal('⬇ Xuất báo cáo đơn xin nghỉ',
    `<div class="danger"><b>Bản xuất chứa họ tên học sinh, lý do nghỉ và giấy tờ y tế.</b>
-     Đây là <b>dữ liệu cá nhân của trẻ em</b>, trong đó có <b>dữ liệu sức khỏe</b> — thuộc <b>NĐ 13/2023</b>.</div>
+     Đây là <b>dữ liệu cá nhân của trẻ em</b>, trong đó có <b>dữ liệu sức khỏe</b> — thuộc <b>Luật BVDLCN 91/2025</b>.</div>
     <div class="fld"><label>Mục đích xuất <span class="req">*</span></label>
      <select class="fldi" id="lmd"><option value="">— Chọn mục đích —</option>
       <option>Báo cáo chuyên cần định kỳ cho Ban giám hiệu</option>
@@ -1071,16 +1145,20 @@ function act(a,id){
      if(!$('#lmd').value){toast('⛔ Phải chọn mục đích xuất');return}
      closeM(); toast('⬇ Đã xuất · <b>đã ghi nhật ký</b> mục đích, người xuất và thời điểm');
    }]]);
-  return}
 }
 
 /* ===== TAO DON HO PHU HUYNH ===== */
 /* Dinh kem la TUY CHON (chot 29/8/2026) — bien nay giu trang thai o form */
 let TEP_TAM='';
 function nhapHo(){
- const lops=R().sc==='class'?[R().lopCN]:Object.keys(LOP);
+ /* Pham vi cua O T — chi chuc danh co 'nhapho' gop vao. Kiem nhiem GVCN 9A1 + PHT A: chi 9A1. */
+ const lops=Object.keys(LOP).filter(l=>coTren('nhapho',{lop:l}));
+ const tSc=scQ('nhapho');
  modal('+ Tạo đơn hộ phụ huynh',
-  `<div class="info"><b>GVCN có quyền <code>T</code> ở Menu này</b> <i>(chốt 29/8/2026)</i>.
+  `${R().cds.length>1&&tSc&&tSc.sc==='class'?`<div class="warn"><b>Chỉ học sinh lớp ${esc(tSc.lop)}.</b>
+    Bạn thấy đơn toàn điểm trường nhờ chức danh PHT, nhưng quyền <code>T</code> ở menu này chỉ đến từ chức danh GVCN —
+    hợp quyền theo từng ô, không cộng phạm vi của ô Xem sang ô Tạo.</div>`:''}
+   <div class="info"><b>GVCN có quyền <code>T</code> ở Menu này</b> <i>(chốt 29/8/2026)</i>.
     Phụ huynh nhắn tin, gọi điện hay gửi giấy viết tay đều <b>vào được hệ thống</b> — không thì em học sinh
     mang <b>Vắng không phép</b> oan. <b>Không giới hạn độ dài đơn</b>: đơn dài vẫn đi đúng tầng duyệt của nó.</div>
    <div class="fld"><label>Học sinh <span class="req">*</span></label>
@@ -1123,12 +1201,12 @@ function nhapHo(){
     const d=D({hs:h,lop:HS[h].lop,tu,den,buoi:bu,ld:$('#nld').value,gc:$('#ngc').value.trim(),
       antrua:bu==='sang'?($('#nan').checked?1:0):0,
       tep:TEP_TAM,nguon:'giay',tt:'cho',gui:HOMNAY,
-      nhaphobo:'lan'});
+      taoBoi:R().n,nguonHo:({giay:'giấy viết tay',tin:'tin nhắn / gọi điện',truc:'trực tiếp tại trường'})[ngn]});
     d.log.push([dstr(HOMNAY)+' 09:05',R().n+' — '+R().cd,'Tạo đơn hộ phụ huynh',
       'Nguồn: '+({giay:'giấy viết tay',tin:'tin nhắn / gọi điện',truc:'trực tiếp tại trường'})[ngn]+
       (bu==='sang'?' · nghỉ sáng · '+($('#nan').checked?'vẫn ăn trưa':'không ăn trưa'):'')+
       (TEP_TAM?' · có ảnh đính kèm':' · KHÔNG có ảnh đính kèm')]);
-    DON.unshift(d); closeM(); cur=d.id; tab='duyet'; render();
+    DON.unshift(d); closeM(); cur=d.id; tab=tabCua(d); fCho=1; render();
     toast('✓ Đã tạo đơn '+d.id+' · <b>'+nh+' ngày học</b> → đơn <b>'+TENLOAI[loaiDon(d)]+'</b> · người duyệt: '+
       dsDuyet(d).map(k=>k==='GVCN'?'GVCN':k==='PHT_DT'?'PHT điểm trường':'HT').join(' / '));
   }]]);

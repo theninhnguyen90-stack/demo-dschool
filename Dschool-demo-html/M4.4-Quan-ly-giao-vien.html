@@ -258,7 +258,7 @@ const NAV=[
    ['M4.4','Quản lý giáo viên','4'],['M4.5','Phân công giảng dạy'],['M4.6','Thời khóa biểu'],
    ['M4.7','Lịch giảng dạy & Dạy thay'],['M4.8','Nghỉ phép'],['M4.9','Chấm công nhân sự'],
    ['M4.10','Khen thưởng & Kỷ luật NS'],['M4.11','Chứng thư số']]],
- ['qt','⚙️ Quản trị',[['M10.2','Cơ cấu tổ chức'],['M10.4','Chức danh & Phân quyền'],['M10.7','Nhật ký hệ thống'],['M10.8','Đồng bộ CSDL ngành']]],
+ ['qt','⚙️ Quản trị',[['M10.1','Hồ sơ năm học'],['M10.2','Thông tin trường'],['M10.4','Chức danh & Phân quyền'],['M10.7','Nhật ký hệ thống'],['M10.8','Đồng bộ CSDL ngành']]],
 ];
 
 /* ================= VAI TRÒ =================
@@ -266,13 +266,13 @@ const NAV=[
 const ROLE={
  FULL:{n:'Đủ quyền — rà luồng nghiệp vụ',menu:'all',ava:'DQ',pv:'school',
    viec:['mon','dinhmuc','capTay','template','duyetNgoaiLe','kyBanHanh','import','xuat'],
-   mchu:['M4.3','M4.5','M4.1','M10.2','M4.2','M4.9','M10.4']},
+   mchu:['M4.3','M4.5','M4.1','M10.2','M10.1','M4.2','M4.9','M10.4']},
  PCM:{n:'Nguyễn Thị Lan — Phó HT Chuyên môn',menu:'all',ava:'NL',pv:'school',
-   viec:['mon','dinhmuc','capTay','template','import','xuat'],mchu:['M4.3','M4.5','M4.1','M10.2','M4.9']},
+   viec:['mon','dinhmuc','capTay','template','import','xuat'],mchu:['M4.3','M4.5','M4.1','M10.2','M10.1','M4.9']},
  TTCM:{n:'Lê Minh Tuấn — Tổ trưởng Tổ Toán — Tin',menu:['','lh','ns','hs'],ava:'LT',pv:'to',to:'T1',
-   viec:['mon','xuat'],dexuat:1,mchu:['M4.5','M10.2']},
+   viec:['mon','xuat'],dexuat:1,mchu:['M4.5','M10.2','M10.1']},
  HT:{n:'Trần Văn Hùng — Hiệu trưởng',menu:'all',ava:'TH',pv:'school',
-   viec:['dinhmuc','template','duyetNgoaiLe','kyBanHanh','xuat'],mchu:['M4.3','M4.5','M4.1','M4.2','M10.2']},
+   viec:['dinhmuc','template','duyetNgoaiLe','kyBanHanh','xuat'],mchu:['M4.3','M4.5','M4.1','M4.2','M10.2','M10.1']},
  TCNS:{n:'Nguyễn Thị Tuyết Nhung — Tổ chức nhân sự',menu:'all',ava:'TN',pv:'school',
    viec:['xuat'],mchu:['M4.1','M4.2','M4.3']},
  GV:{n:'Trịnh Thu Hà — Giáo viên Tiếng Anh',menu:['','lh','ns'],ava:'TH',pv:'own',gvid:8,
@@ -373,10 +373,37 @@ const TIET={THCS:{'Toán':4,'Ngữ văn':4,'Tiếng Anh':3,'KHTN':4,'Lịch sử
             THPT:{'Toán':3,'Ngữ văn':3,'Tiếng Anh':3,'Vật lí':2,'Hóa học':2,'Lịch sử':2,'Tin học':2}};
 const capLop=l=>parseInt(l)>=10?'THPT':'THCS';
 
+/* ========= R-cap — CẤP HỌC TRƯỜNG THỰC SỰ CÓ (GY18-F · TĐ-04) =========
+   Nguồn DUY NHẤT: union cấp học của các điểm trường khai ở M10.1 mục ② của HỒ SƠ
+   NĂM HỌC đang chọn ở header — đúng nguồn M10.2 §4.3 đang dùng.
+   M4.4 KHÔNG khai thêm một ô "cấp học của trường": một ô nhập tay ở menu nhân sự
+   sẽ có ngày ghi THPT trong khi M10.1 đang mở khối 6 — đúng thứ M10.2 §4.3 đã
+   tránh bằng cách để nó dẫn xuất.
+   ẨN chứ KHÔNG xóa: giá trị đã khai của cấp đang ẩn còn nguyên, không lượt dọn nào đụng tới. */
+const CAP_HET=['Tiểu học','THCS','THPT'];
+const DIEMTRUONG={
+ '2026-2027':[['ĐT Nguyễn Tất Thành',['THCS','THPT']],['ĐT Vĩnh Lộc',['THCS','THPT']],['ĐT Tân Hội',['THCS']]],
+ '2025-2026':[['ĐT Nguyễn Tất Thành',['THCS']]],   /* trước sáp nhập — trường chỉ có THCS */
+};
+let namHoc='2026-2027';
+let hienMoiCap=false;            /* công tắc "Hiện tất cả các cấp" — MẶC ĐỊNH TẮT */
+/* Lọc theo PHẠM VI CỦA VAI, không theo union toàn trường: vai Branch chỉ thấy cấp
+   của điểm trường mình. Ở M4.4 không vai nào có phạm vi Branch (§7 — menu không
+   theo điểm trường) nên union luôn là toàn trường; hàm vẫn viết theo phạm vi để
+   luật R-cap dùng lại nguyên vẹn ở menu có vai Branch. */
+const dtTrongPV=()=>{const r=R(),ds=DIEMTRUONG[namHoc]||[];
+ return r.pv==='branch'&&r.dt?ds.filter(x=>x[0]===r.dt):ds};
+const capTruong=()=>CAP_HET.filter(c=>dtTrongPV().some(x=>x[1].includes(c)));
+const capAn=()=>CAP_HET.filter(c=>!capTruong().includes(c));
+const capHien=()=>hienMoiCap?CAP_HET.slice():capTruong();
+const hienCap=c=>!c||[].concat(c).some(x=>capHien().includes(x));
+
 /* ================= CẤU HÌNH ================= */
 let CFG={
  chuan:{'Tiểu học':23,'THCS':19,'THPT':17},bgh:{'Hiệu trưởng':2,'Phó Hiệu trưởng':4},tran:50,
- giamCV:[['Tổ trưởng chuyên môn',3],['Tổ phó chuyên môn',1],['GVCN Tiểu học',3],['GVCN THCS · THPT',4]],
+ /* ô thứ 3 = siêu dữ liệu R-cap: cap = dòng chỉ có nghĩa với cấp đó; kh = khoản giảm khớp ở M4.3 */
+ giamCV:[['Tổ trưởng chuyên môn',3,{kh:'Tổ trưởng CM'}],['Tổ phó chuyên môn',1,{kh:'Tổ phó CM'}],
+   ['GVCN Tiểu học',3,{cap:['Tiểu học'],gvcn:1}],['GVCN THCS · THPT',4,{cap:['THCS','THPT'],gvcn:1}]],
  giamKN:[['Bí thư Đảng bộ · Chi bộ',4],['Chủ tịch Công đoàn',2],['Phó Chủ tịch Công đoàn',1],['Tổng phụ trách Đội',2]],
  quydoi:[['Dự giờ đồng nghiệp','1 tiết / buổi'],['Chấm bài kiểm tra tập trung','1 tiết / 40 bài'],
    ['Coi thi tập trung','1 tiết / buổi'],['Sinh hoạt chuyên môn chuyên đề','1 tiết / chuyên đề'],
@@ -416,11 +443,40 @@ function dinhMuc(p){
   return {cap:c,chuan:v,giam:[],dx:v,ad:v,bgh:1}}
  const chuan=c.cap?CFG.chuan[c.cap]:null;
  const giam=p.giam.slice();
- if(p.gvcn) giam.push(['Giáo viên chủ nhiệm',c.cap==='Tiểu học'?3:4]);
+ if(p.gvcn){const g=CFG.giamCV.find(x=>x[2]&&x[2].gvcn&&x[2].cap.includes(c.cap));
+  if(g) giam.push(['Giáo viên chủ nhiệm',g[1]]);}
  const tong=giam.reduce((a,x)=>a+x[1],0);
  const dx=chuan===null?null:Math.max(chuan-tong,0);
  return {cap:c,chuan,giam,tongGiam:tong,dx,ad:p.dmGhiDe!=null?p.dmGhiDe:dx,ex:p.dmGhiDe!=null};
 }
+function ocfg(k){const i=k.indexOf('.'),g=i<0?k:k.slice(0,i),x=i<0?'':k.slice(i+1);
+ if(g==='chuan')  return {v:CFG.chuan[x],nhan:'Khung chuẩn '+x,cap:x};
+ if(g==='bgh')    return {v:CFG.bgh[x],nhan:x,cap:null};
+ if(g==='tran')   return {v:CFG.tran,nhan:'Trần vượt định mức',cap:null};
+ if(g==='giamCV'){const e=CFG.giamCV[+x];return {v:e[1],nhan:e[0],cap:(e[2]||{}).cap||null}}
+ if(g==='giamKN'){const e=CFG.giamKN[+x];return {v:e[1],nhan:e[0],cap:null}}
+ return {v:null,nhan:k,cap:null}}
+function setcfg(k,v){const i=k.indexOf('.'),g=i<0?k:k.slice(0,i),x=i<0?'':k.slice(i+1);
+ if(g==='chuan')CFG.chuan[x]=v;else if(g==='bgh')CFG.bgh[x]=v;else if(g==='tran')CFG.tran=v;
+ else if(g==='giamCV')CFG.giamCV[+x][1]=v;else if(g==='giamKN')CFG.giamKN[+x][1]=v}
+/* Số người bị ảnh hưởng khi sửa MỘT dòng template.
+   Người có ngoại lệ KHÔNG bị ghi đè (ràng buộc 10) nên không đếm.
+   Dòng của cấp trường không có ⇒ 0 người — nói ra để người dùng không nghĩ là lỗi. */
+function anhHuong(k){
+ const i=k.indexOf('.'),g=i<0?k:k.slice(0,i),x=i<0?'':k.slice(i+1);
+ return NS.filter(p=>{
+  if(p.dmGhiDe!=null) return false;
+  if(g==='bgh') return p.bgh===(x==='Hiệu trưởng'?'HT':'PHT');
+  if(p.bgh) return false;
+  const cap=dinhMuc(p).cap.cap;
+  if(g==='chuan') return cap===x;
+  if(g==='tran')  return true;
+  if(g==='giamCV'){const m=CFG.giamCV[+x][2]||{};
+   if(m.gvcn) return !!p.gvcn&&m.cap.includes(cap);
+   return p.giam.some(y=>y[0]===m.kh)}
+  if(g==='giamKN') return p.giam.some(y=>y[0]===CFG.giamKN[+x][0]);
+  return false})}
+let SUA={};                      /* ô ⚙ đã đổi, chờ Lưu template */
 const coNgoaiLe=()=>NS.filter(p=>p.dmGhiDe!=null);
 const choDuyetNgoaiLe=()=>NS.filter(p=>p.dmGhiDe!=null&&!p.duyetNgoaiLe);
 
@@ -478,7 +534,7 @@ function scopeBar(){
  else                 s=`Phạm vi <b>School — toàn trường</b>.`;
  return `<div class="scope">🔎 <span class="sp">${s}
    Menu này <b>không chịu bộ chọn Điểm trường</b> — giáo viên thuộc <b>trường</b>, không thuộc điểm trường; môn được phép dạy và định mức đều tính toàn trường.</span>
-   <span class="chip">Môn được phép dạy: <b>Master</b></span><span class="chip">Khối lớp phụ trách nay ở <b>M4.5</b> — là bố trí của năm, không phải năng lực</span></div>`;
+   <span class="chip">Môn được phép dạy: <b>Master</b></span><span class="chip" title="R-cap">Cấp học: <b>${capTruong().join(' · ')||'—'}</b> · năm ${namHoc} — union M10.1 ②</span><span class="chip">Khối lớp phụ trách nay ở <b>M4.5</b> — là bố trí của năm, không phải năng lực</span></div>`;
 }
 
 /* ================= DẢI CẢNH BÁO ================= */
@@ -590,7 +646,7 @@ function panelGV(p){
        :'<span class="src">Chưa thuộc tổ nào — vì chưa có môn</span>'}</div></div>
    <div class="f"><div class="k">Cơ chế</div><div class="v" style="font-weight:400">
      Suy ra từ môn được phép dạy — <b>không nhập tay</b>. Bản cũ suy từ phân công giảng dạy, tạo vòng lặp
-     không có điểm khởi đầu ${dlink('M10.2','M10.2')}</div></div></div></div>
+     không có điểm khởi đầu ${dlink('M10.1','M10.1 ⑤ Tổ bộ môn','muc=5&return=M4.4')}</div></div></div></div>
 
   <div class="card"><div class="ch">Định mức <span class="sp"></span>
     ${dm.ex?'<span class="st2 w">⚠ Có ngoại lệ</span>':'<span class="st2 o">Theo template</span>'}</div><div class="cb">
@@ -619,6 +675,10 @@ function dmTab(){
  const kc=NS.filter(p=>!p.bgh&&!dinhMuc(p).cap.cap);
  if(kc.length) a.push(`<div class="alert r">⛔<span class="sp"><b>${kc.length} người chưa xác định được cấp học tính định mức</b> — ${
    kc.map(p=>p.n).join(', ')}. Chưa có phân công ở M4.5 nên không suy ra được — <b>khai báo tay</b> bằng nút 🎓 Cấp học</span></div>`);
+ const nc=NS.filter(p=>!p.bgh&&dinhMuc(p).cap.cap&&!capTruong().includes(dinhMuc(p).cap.cap));
+ if(nc.length) a.push(`<div class="alert w">⚠<span class="sp"><b>${nc.length} người đang tính định mức theo cấp trường không có trong năm ${namHoc}</b> — ${
+   nc.map(p=>p.n+' ('+dinhMuc(p).cap.cap+')').join(', ')}. <b>R-cap chỉ ẩn dòng cấu hình ở ⚙, không đụng con số đã tính</b> —
+   bảng này là dữ liệu của người, ẩn đi thì mất dấu vết thù lao vượt giờ ở ${dlink('M4.9','M4.9')}</span></div>`);
  const tie=NS.filter(p=>dinhMuc(p).cap.tie);
  if(tie.length) a.push(`<div class="alert w">⚠<span class="sp"><b>${tie.length} người có hai cấp bằng số tiết</b> — ${
    tie.map(p=>p.n).join(', ')}. Không có quy tắc chọn, phải khai báo tay</span></div>`);
@@ -627,7 +687,9 @@ function dmTab(){
  const row=p=>{const d=dinhMuc(p);
   return `<tr class="${d.ex&&!p.duyetNgoaiLe?'warnrow':!d.cap.cap&&!p.bgh?'badrow':''}" data-gv="${p.id}" style="cursor:pointer">
    <td><b>${p.n}</b><div class="src">${p.cv||'Giáo viên bộ môn'}${p.gvcn?' · CN '+p.gvcn:''}</div></td>
-   <td>${d.cap.cap||'<span style="color:var(--red)">?</span>'}${d.cap.tie?' ⚠':''}<div class="src">${d.cap.src.slice(0,42)}</div></td>
+   <td>${d.cap.cap||'<span style="color:var(--red)">?</span>'}${d.cap.tie?' ⚠':''}${
+     d.cap.cap&&!capTruong().includes(d.cap.cap)?` <span class="tg b" title="R-cap — ⚙ đang ẩn dòng khung chuẩn của cấp này, nhưng định mức đã tính giữ nguyên">⚠ ngoài cấp năm ${namHoc}</span>`:''
+    }<div class="src">${d.cap.src.slice(0,42)}</div></td>
    <td class="num">${d.chuan??'—'}</td>
    <td>${d.giam&&d.giam.length?d.giam.map(x=>`<span class="tg a">${x[0]} −${x[1]}</span>`).join(' '):'<span class="src">—</span>'}</td>
    <td class="num">${d.dx??'—'}</td>
@@ -661,8 +723,26 @@ function dmTab(){
 /* ================= T3 — ⚙ ================= */
 function cfTab(){
  const rw=co('template');
- const n=(v,k)=>`<input class="numi" type="number" value="${v}" data-cfg="${k}" ${rw?'':'disabled'}>`;
- return `<div class="ro">Dữ liệu <b>Master</b> — không theo năm học, không theo điểm trường.
+ const n=(v,k)=>`<input class="numi" type="number" value="${SUA[k]!=null?SUA[k]:v}" data-cfg="${k}" ${rw?'':'disabled'}${SUA[k]!=null&&SUA[k]!==v?' style="border-color:var(--red);font-weight:700"':''}>`;
+ const an=capAn(),ct=capTruong(),dt=dtTrongPV();
+ /* ---- R-cap: dải nói rõ đang ẩn gì + công tắc Hiện tất cả các cấp (mặc định TẮT) ---- */
+ const dangAn=an.length&&!hienMoiCap;
+ const dai=`<div class="${dangAn?'warn':'info'}" style="display:flex;align-items:center;gap:11px;flex-wrap:wrap">
+   <span style="flex:1;min-width:300px">${dangAn
+    ?`<b>Đang ẩn ${an.length} cấp trường không có trong năm ${namHoc}</b> — ${an.join(' · ')}.
+      Năm này trường có <b>${ct.join(' · ')||'—'}</b> — union cấp học của <b>${dt.length} điểm trường</b>
+      (${dt.map(x=>x[0]+' '+x[1].join('+')).join(' · ')||'chưa khai điểm trường nào'}).`
+    :`<b>Đang hiện tất cả ${CAP_HET.length} cấp.</b> Năm ${namHoc} trường thực có <b>${ct.join(' · ')||'—'}</b>
+      — ${an.length} cấp còn lại vẫn hiện vì công tắc đang bật.`}
+    ${dlink('M10.1','M10.1 ② — cấp học từng điểm trường','muc=2')}</span>
+   <label style="display:flex;align-items:center;gap:6px;font-weight:700;white-space:nowrap;cursor:pointer">
+    <input type="checkbox" id="togcap" ${hienMoiCap?'checked':''}> Hiện tất cả các cấp</label>
+   <div class="src" style="flex-basis:100%;margin-top:2px">
+    <b>Ẩn chứ không xóa</b> — giá trị đã khai của cấp đang ẩn còn nguyên, mở thêm cấp hoặc sáp nhập thì dòng tự hiện lại.
+    Bảng ⚙ này là <b>Master</b> (không thuộc năm học nào) còn cấp học là <b>Yearly</b> (theo hồ sơ năm học), nên đổi năm ở
+    header sẽ làm bảng lúc ẩn lúc hiện dòng — dải này nói ra để người cấu hình không tưởng hệ thống hỏng.
+    Công tắc là lối vào cho <b>trường liên cấp</b>: sáp nhập thêm cấp từ năm sau thì vào đây khai khung chuẩn <b>trước</b> khi mở cấp ở M10.1 ②.</div></div>`;
+ return dai+`<div class="ro">Dữ liệu <b>Master</b> — không theo năm học, không theo điểm trường.
    ${BANHANH?`Hiệu trưởng ký ban hành ${BANHANH}.`:'<b>Chưa ký ban hành.</b>'}</div>
   ${rw?`<div class="warn">Đổi template sẽ <b>tính lại định mức cho ${NS.filter(p=>!p.bgh).length} giáo viên</b>.
     <b>${coNgoaiLe().length} người có ngoại lệ sẽ KHÔNG bị ghi đè</b> — ngoại lệ đã qua Hiệu trưởng duyệt.</div>`
@@ -670,11 +750,17 @@ function cfTab(){
  <div style="display:flex;gap:13px;flex-wrap:wrap">
   <div style="flex:1;min-width:330px">
    <div class="card"><div class="ch">Khung chuẩn theo cấp <span class="sp"></span><span class="tg c">TT 05/2025</span></div><div class="cb">
-    ${Object.entries(CFG.chuan).map(([k,v])=>`<div class="f"><div class="k">${k}</div><div class="v">${n(v,'chuan.'+k)} <span class="src">tiết/tuần</span></div></div>`).join('')}
+    ${Object.entries(CFG.chuan).filter(([k])=>hienCap(k)).map(([k,v])=>`<div class="f"><div class="k">${k}${
+      capTruong().includes(k)?'':' <span class="tg b">trường không có</span>'}</div><div class="v">${n(v,'chuan.'+k)} <span class="src">tiết/tuần</span></div></div>`).join('')}
+    ${capAn().length&&!hienMoiCap?`<div class="f"><div class="k src">Ẩn theo R-cap: ${capAn().join(' · ')}</div><div class="v src">giá trị còn nguyên</div></div>`:''}
     ${Object.entries(CFG.bgh).map(([k,v])=>`<div class="f"><div class="k">${k}</div><div class="v">${n(v,'bgh.'+k)} <span class="src">tiết/tuần</span></div></div>`).join('')}
     <div class="f"><div class="k">Trần vượt định mức</div><div class="v">${n(CFG.tran,'tran')} <span class="src">% — vượt hơn thì M4.5 cảnh báo</span></div></div></div></div>
    <div class="card"><div class="ch">Template giảm theo chức vụ <span class="sp"></span><span class="tg c">TT 05/2025</span></div><div class="cb">
-    ${CFG.giamCV.map(([k,v],i)=>`<div class="f"><div class="k">${k}</div><div class="v">−${n(v,'giamCV.'+i)} <span class="src">tiết/tuần</span></div></div>`).join('')}</div></div>
+    ${CFG.giamCV.map((e,i)=>[e,i]).filter(([e])=>hienCap(e[2]&&e[2].cap)).map(([e,i])=>`<div class="f"><div class="k">${e[0]}${
+      e[2]&&e[2].cap&&!e[2].cap.some(c=>capTruong().includes(c))?' <span class="tg b">trường không có cấp này</span>':''}</div><div class="v">−${n(e[1],'giamCV.'+i)} <span class="src">tiết/tuần</span></div></div>`).join('')}
+    ${CFG.giamCV.some(e=>!hienCap(e[2]&&e[2].cap))?`<div class="f"><div class="k src">Ẩn theo R-cap: ${
+      CFG.giamCV.filter(e=>!hienCap(e[2]&&e[2].cap)).map(e=>e[0]).join(' · ')}</div><div class="v src">giá trị còn nguyên</div></div>`:''}
+    <div class="src" style="padding:0 11px 9px">TTCM · TPCM <b>không theo cấp</b> nên luôn hiện. Dòng Hiệu trưởng · Phó Hiệu trưởng ở khối trên cũng vậy.</div></div></div>
    <div class="card"><div class="ch">Template giảm theo kiêm nhiệm <span class="sp"></span><span class="tg b">Trường cấu hình</span></div><div class="cb">
     ${CFG.giamKN.map(([k,v],i)=>`<div class="f"><div class="k">${k}</div><div class="v">−${n(v,'giamKN.'+i)} <span class="src">tiết/tuần</span></div></div>`).join('')}</div></div>
   </div>
@@ -690,8 +776,9 @@ function cfTab(){
      <div style="background:#fff;border-radius:7px;padding:8px 10px;margin-top:7px;font-family:ui-monospace,Consolas,monospace;font-size:11.5px;line-height:1.8">
       Ngưỡng phải đạt&nbsp;&nbsp; = Định mức chuẩn − Giảm định mức<br>
       Khối lượng đã làm = Tiết lên lớp + Quy đổi hoạt động</div></div></div>
-   <div class="card"><div class="ch">Cấp học tính định mức — trường liên cấp</div>
-    <div class="info" style="margin:11px">Trường sau sáp nhập có <b>ba khung chuẩn cùng lúc</b>. Thứ tự xác định:
+   <div class="card"><div class="ch">Cấp học tính định mức</div>
+    <div class="info" style="margin:11px">Năm <b>${namHoc}</b> trường có <b>${ct.length} khung chuẩn</b>
+     (${ct.map(c=>c+' '+CFG.chuan[c]).join(' · ')||'—'}). Thứ tự xác định:
      <br>1. <b>Khai báo tay</b> tại menu này — thắng mọi suy luận
      <br>2. Suy từ <b>cấp có nhiều tiết nhất</b> trong phân công (M4.5)
      <br><br><b>Bước "suy từ khối phụ trách" đã bỏ 28/8/2026</b> — khối lớp phụ trách chuyển sang <b>M4.5</b>
@@ -750,7 +837,8 @@ function moThemMon(id){
 function moCapTay(id){
  const p=NS.find(z=>z.id===id),c=capGV(p);
  modal(`Cấp học tính định mức — ${p.n}`,
-  `<div class="info">Trường liên cấp có <b>ba khung chuẩn cùng lúc</b> (Tiểu học 23 · THCS 19 · THPT 17).
+  `<div class="info">Năm <b>${namHoc}</b> trường có <b>${capTruong().length} khung chuẩn</b>
+    (${capTruong().map(k=>k+' '+CFG.chuan[k]).join(' · ')||'—'}) — <b>R-cap</b>: chỉ hiện cấp trường thực sự có.
     Cấp học của một giáo viên quyết định khung chuẩn áp cho họ — và qua đó quyết định <b>thù lao vượt giờ</b> ở M4.9.</div>
    <div class="ro">Đang xác định theo: <b>${c.src}</b>${c.tie?' — <b style="color:var(--red)">hai cấp bằng số tiết, không có quy tắc chọn</b>':''}</div>
    <div class="ro">Bước <b>suy từ khối phụ trách</b> đã bỏ 28/8/2026: khối lớp phụ trách nay thuộc <b>M4.5</b>,
@@ -758,7 +846,10 @@ function moCapTay(id){
    <label class="lbl">Cấp học tính định mức</label>
    <select class="fldi" id="ctNew">
      <option value="">— Để hệ thống suy từ phân công —</option>
-     ${Object.keys(CFG.chuan).map(k=>`<option ${p.capTay===k?'selected':''}>${k}</option>`).join('')}</select>`,
+     ${CAP_HET.filter(k=>capHien().includes(k)||p.capTay===k).map(k=>`<option ${p.capTay===k?'selected':''}>${k}${
+       capTruong().includes(k)?'':' — trường không có (giá trị cũ, giữ nguyên)'}</option>`).join('')}</select>
+   <div class="src" style="margin-top:7px">Bộ chọn chỉ liệt kê cấp trường có trong năm đang chọn. Người đã khai một cấp
+    nay trường không còn thì <b>giá trị giữ nguyên</b> và vẫn hiện ở đây — ẩn chứ không xóa.</div>`,
   `<button class="btn" data-x="close">Hủy</button>
    <button class="btn p" data-x="ok-cap-tay" data-gv="${id}">Lưu</button>`);
 }
@@ -882,12 +973,21 @@ document.addEventListener('click',e=>{
   BANHANH=d2s(HOMNAY);closeModal();render();
   toast('✍ Đã ký ban hành bảng định mức · Ký số Nhóm A · ghi audit và đồng bộ M4.11');return}
  if(x==='luu-cfg'){
+  const ks=Object.keys(SUA);
+  if(!ks.length){toast('Chưa ô nào đổi giá trị — sửa một ô rồi mới lưu được');return}
   modal('Xác nhận lưu template',
-   `<div class="warn">Sẽ tính lại định mức cho <b>${NS.filter(p=>!p.bgh).length} giáo viên</b>.</div>
-    ${coNgoaiLe().length?`<div class="info"><b>${coNgoaiLe().length} người có ngoại lệ KHÔNG bị ghi đè</b> —
+   ks.map(k=>{const o=ocfg(k),ng=anhHuong(k),cap=o.cap?[].concat(o.cap):null,
+     an=cap&&!cap.some(c=>capTruong().includes(c));
+    return `<div class="${ng.length?'warn':'info'}"><b>${o.nhan}</b>: ${o.v} → <b>${SUA[k]}</b><br>
+     ${ng.length?`Tính lại định mức cho <b>${ng.length} giáo viên</b> — ${ng.map(p=>p.n).join(', ')}.`
+      :`<b>0 người bị ảnh hưởng.</b>${an?` Năm ${namHoc} trường <b>không có cấp ${cap.join(' · ')}</b> nên chưa ai tính định mức theo dòng này —
+        <b>đây không phải lỗi</b>. Con số vẫn được lưu; mở thêm cấp đó ở M10.1 ② thì nó có hiệu lực ngay.`:''}`}</div>`}).join('')
+   +`${coNgoaiLe().length?`<div class="info"><b>${coNgoaiLe().length} người có ngoại lệ KHÔNG bị ghi đè</b> —
       ${coNgoaiLe().map(p=>p.n).join(', ')}. Ngoại lệ đã qua Hiệu trưởng duyệt, một lần sửa template không được xoá nó.</div>`:''}`,
    `<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="ok-cfg">Lưu và tính lại</button>`);return}
- if(x==='ok-cfg'){closeModal();render();toast('✓ Đã lưu template · đã tính lại định mức · người có ngoại lệ giữ nguyên');return}
+ if(x==='ok-cfg'){const ks=Object.keys(SUA);ks.forEach(k=>setcfg(k,SUA[k]));SUA={};
+  closeModal();render();
+  toast(`✓ Đã lưu ${ks.length} ô template · đã tính lại định mức · người có ngoại lệ giữ nguyên`);return}
 
  if(x==='xuat'){
   modal('Xuất dữ liệu',
@@ -910,6 +1010,14 @@ document.addEventListener('change',e=>{
  if(el.id==='fto'){fTo=el.value;render();return}
  if(el.id==='fmon'){fMon=el.value;render();return}
  if(el.id==='ftt'){fTT=el.value;render();return}
+ if(el.id==='togcap'){hienMoiCap=el.checked;render();
+  toast(hienMoiCap?'Đang hiện <b>tất cả các cấp</b> — kể cả cấp trường không có'
+   :`Trở lại <b>chỉ cấp trường có</b> — ẩn ${capAn().join(' · ')||'không cấp nào'}`);return}
+ if(el.id==='hnam'){namHoc=el.value.replace('Năm học ','');cur=null;render();
+  toast(`Năm học <b>${namHoc}</b> — ⚙ lọc lại theo cấp trường có: <b>${capTruong().join(' · ')||'—'}</b>`);return}
+ if(el.dataset.cfg){const k=el.dataset.cfg,v=+el.value;
+  if(v===ocfg(k).v) delete SUA[k]; else SUA[k]=v;
+  render();return}
 });
 document.addEventListener('input',e=>{if(e.target.id==='q'){q=e.target.value;render();
  const el=$('#q');if(el){el.value=q;el.focus();el.setSelectionRange(q.length,q.length)}}});

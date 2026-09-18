@@ -252,22 +252,22 @@ const NAV=[
    ['M4.7','Lịch giảng dạy & Dạy thay'],['M4.8','Nghỉ phép'],['M4.9','Chấm công nhân sự'],
    ['M4.10','Khen thưởng & Kỷ luật NS'],['M4.11','Chứng thư số']]],
  ['vh','🏫 Vận hành',[['M6.4','Cơ sở vật chất']]],
- ['qt','⚙️ Quản trị',[['M10.2','Cơ cấu tổ chức'],['M10.6','Trung tâm cấu hình']]],
+ ['qt','⚙️ Quản trị',[['M10.1','Hồ sơ năm học'],['M10.2','Thông tin trường'],['M10.6','Trung tâm cấu hình']]],
 ];
 
 /* ================= VAI TRÒ =================
  viec: xep · auto · duyet · ky · capnhat(⚙) · dichuyen · xuat */
 const ROLE={
  FULL:{n:'Đủ quyền — rà luồng nghiệp vụ',menu:'all',ava:'DQ',pv:'school',
-   viec:['xep','auto','duyet','ky','capnhat','dichuyen','xuat'],mchu:['M4.5','M4.7','M10.2','M6.4','M2.1','M4.6']},
+   viec:['xep','auto','duyet','ky','capnhat','dichuyen','xuat'],mchu:['M4.5','M4.7','M10.2','M10.1','M5.1','M6.4','M2.1','M4.6']},
  VT:{n:'Ngô Thị Bích — Văn thư Điểm trường A',menu:['','lh','ns','vh'],ava:'NB',pv:'branch',dt:'Điểm trường A',
    viec:['xep','auto','xuat'],mchu:['M4.5','M4.7','M6.4']},
  PDT:{n:'Phạm Đức Thắng — Phó HT Điểm trường A',menu:'all',ava:'PT',pv:'branch',dt:'Điểm trường A',
    viec:['xep','auto','duyet','capnhat','xuat'],mchu:['M4.5','M4.7','M6.4','M2.1']},
  PCM:{n:'Nguyễn Thị Lan — Phó HT Chuyên môn',menu:'all',ava:'NL',pv:'school',
-   viec:['xep','auto','capnhat','xuat'],mchu:['M4.5','M4.7','M10.2']},
+   viec:['xep','auto','capnhat','xuat'],mchu:['M4.5','M4.7','M10.2','M10.1','M5.1']},
  HT:{n:'Trần Văn Hùng — Hiệu trưởng',menu:'all',ava:'TH',pv:'school',
-   viec:['ky','capnhat','dichuyen','xuat'],mchu:['M4.5','M4.7','M10.2','M6.4']},
+   viec:['ky','capnhat','dichuyen','xuat'],mchu:['M4.5','M4.7','M10.2','M10.1','M5.1','M6.4']},
  GV:{n:'Phạm Thị Hòa — Giáo viên Toán',menu:['','lh','ns'],ava:'PH',pv:'own',gvid:2,
    viec:[],mchu:['M2.1','M4.7']},
 };
@@ -353,17 +353,106 @@ const SPEC=[
 let PC=[];SPEC.forEach(([g,m,ls])=>ls.forEach(l=>PC.push({gv:g,lop:l,mon:m})));
 const gvCua=(lId,m)=>{const p=PC.find(x=>x.lop===lId&&x.mon===m);return p?p.gv:null};
 
-/* ================= KHUNG TIẾT — Master ================= */
-let KHUNG=[
- {n:1,b:'S',bd:'07:00',kt:'07:45'},{n:2,b:'S',bd:'07:50',kt:'08:35'},{n:3,b:'S',bd:'08:50',kt:'09:35'},
- {n:4,b:'S',bd:'09:40',kt:'10:25'},{n:5,b:'S',bd:'10:30',kt:'11:15'},
- {n:6,b:'C',bd:'13:30',kt:'14:15'},{n:7,b:'C',bd:'14:20',kt:'15:05'},{n:8,b:'C',bd:'15:20',kt:'16:05'},
-];
+/* ================= KHUNG TIẾT — Master =================
+   GY18-A (18/9/2026 — góp ý TĐ-01): khung tiết học nay là một DANH SÁCH BỘ GIỜ
+   theo khoảng hiệu lực (M4.6 §8.1c). Trường miền Bắc đổi giờ vào học hai lần mỗi năm.
+   🛑 SỐ TIẾT · BUỔI · SỐ NGÀY DẠY là của ĐIỂM TRƯỜNG — mọi bộ dùng chung (§8.1c.1);
+   chỉ GIỜ được khác. Cấu trúc dữ liệu tự nó bảo đảm điều đó: giờ khai theo KHÓA SỐ TIẾT
+   của bộ xương chung, nên không có cách nào cho một bộ nhiều tiết hơn bộ kia. */
+const NAMHOC={tu:'22/08/2026',den:'31/05/2027'};   /* 🔗 M10.1 Hồ sơ năm học */
+let curDT='Điểm trường A';   /* khai sớm: syncKhung() chạy trước khối TRẠNG THÁI */
+const pdate=x=>{const[a,b,c]=x.split('/').map(Number);return new Date(c,b-1,a)};
+const dcong=(d,n)=>{const z=new Date(d);z.setDate(z.getDate()+n);return z};
+/* bộ xương SỐ TIẾT — không còn giờ */
+let TIETKH=[{n:1,b:'S'},{n:2,b:'S'},{n:3,b:'S'},{n:4,b:'S'},{n:5,b:'S'},
+ {n:6,b:'C'},{n:7,b:'C'},{n:8,b:'C'}];
+/* mỗi điểm trường một DANH SÁCH bộ giờ.  kh = danh sách khoảng hiệu lực (xem ghi chú A-4) */
+const _GIO_HE={1:['07:00','07:45'],2:['07:50','08:35'],3:['08:50','09:35'],4:['09:40','10:25'],
+ 5:['10:30','11:15'],6:['13:30','14:15'],7:['14:20','15:05'],8:['15:20','16:05']};
+const _GIO_DONG={1:['07:30','08:15'],2:['08:20','09:05'],3:['09:20','10:05'],4:['10:10','10:55'],
+ 5:['11:00','11:45'],6:['14:00','14:45'],7:['14:50','15:35'],8:['15:50','16:35']};
+let BOGIO={
+ 'Điểm trường A':[
+  {ma:'HE',  ten:'Mùa hè',   gio:JSON.parse(JSON.stringify(_GIO_HE)),
+   kh:[['22/08/2026','14/10/2026'],['15/04/2027','31/05/2027']],ky:'Trần Văn Hùng · 20/08/2026'},
+  {ma:'DONG',ten:'Mùa đông', gio:JSON.parse(JSON.stringify(_GIO_DONG)),
+   kh:[['15/10/2026','14/04/2027']],ky:'Trần Văn Hùng · 20/08/2026'},
+ ],
+ /* Điểm trường B chỉ MỘT bộ — để thấy rõ: một bộ thì KHÔNG hiện nhãn tên bộ ở đâu cả */
+ 'Điểm trường B':[
+  {ma:'CN',  ten:'Giờ cả năm',gio:JSON.parse(JSON.stringify(_GIO_HE)),
+   kh:[['22/08/2026','31/05/2027']],ky:'Trần Văn Hùng · 20/08/2026'},
+ ],
+};
+let boSeq=0;
+const dsBo=dt=>BOGIO[dt]||[];
+const boMa=(dt,ma)=>dsBo(dt).find(b=>b.ma===ma);
+const trongKh=(b,d)=>b.kh.some(([t,k])=>d>=pdate(t)&&d<=pdate(k));
+const boNgay=(dt,d)=>dsBo(dt).find(b=>trongKh(b,d))||null;
+const boHomNay=dt=>boNgay(dt,HOMNAY)||dsBo(dt)[0]||null;
+let boXem={};                       /* dt -> mã bộ đang mở ở tab ⚙ */
+function maXem(dt){const ds=dsBo(dt);
+ if(!boXem[dt]||!ds.some(b=>b.ma===boXem[dt]))boXem[dt]=(boHomNay(dt)||ds[0]||{}).ma;
+ return boXem[dt]}
+const boDangXem=dt=>boMa(dt,maXem(dt))||dsBo(dt)[0]||null;
+/* giờ của MỘT tiết ở MỘT bộ — đây là nơi duy nhất đọc bảng giờ */
+const gioBo=(b,n)=>(b&&b.gio[n])?b.gio[n]:['--:--','--:--'];
+
 const THU2=()=>NGAYDAY===6?[2,3,4,5,6,7]:[2,3,4,5,6];
 const thuTen=t=>t===7?'Thứ 7':'Thứ '+t;
-const tiet=n=>KHUNG.find(x=>x.n===n);
 const phut=hm=>{const[a,b]=hm.split(':').map(Number);return a*60+b};
 const themPhut=(hm,m)=>{const t=phut(hm)+m;return p2(Math.floor(t/60))+':'+p2(t%60)};
+/* KHUNG = bản dựng lại của bộ đang xem ở điểm trường đang xem — mọi chỗ vẽ lưới đọc nó.
+   Dựng lại ở đầu render() và sau mỗi lần đổi bộ / đổi điểm trường / sửa giờ. */
+let KHUNG=[];
+function syncKhung(){const b=boDangXem(dtHien());
+ KHUNG=TIETKH.map(k=>{const g=gioBo(b,k.n);return {n:k.n,b:k.b,bd:g[0],kt:g[1]}})}
+const tiet=n=>KHUNG.find(x=>x.n===n);
+/* nhãn tên bộ — CHỈ hiện khi điểm trường có ≥ 2 bộ (M4.7 rb 35: đừng thêm chữ cho trường không cần) */
+const nhanBo=dt=>dsBo(dt).length>=2?(boDangXem(dt)||{}).ten:'';
+
+/* ---- KIỂM: khoảng hiệu lực phải PHỦ KÍN năm học và KHÔNG chồng nhau (§8.1c.2) ---- */
+function kiemPhu(dt){
+ const T=pdate(NAMHOC.tu),D=pdate(NAMHOC.den),ds=[];
+ dsBo(dt).forEach(b=>b.kh.forEach(([t,k])=>ds.push({b,t:pdate(t),k:pdate(k)})));
+ ds.sort((a,b)=>a.t-b.t);
+ const trong=[],chong=[];
+ let moc=T,truoc=null;
+ ds.forEach(x=>{
+  if(x.k<T||x.t>D)return;
+  const t=x.t<T?T:x.t;
+  if(t>moc) trong.push([new Date(moc),dcong(t,-1)]);
+  if(t<moc) chong.push({a:truoc,b:x.b,so:Math.round((moc-t)/86400000),tu:t,den:dcong(moc,-1)});
+  if(x.k>=moc){moc=dcong(x.k,1);truoc=x.b}
+ });
+ if(moc<=D) trong.push([new Date(moc),new Date(D)]);
+ return {trong,chong};
+}
+const dmy=d=>p2(d.getDate())+'/'+p2(d.getMonth()+1)+'/'+d.getFullYear();
+
+/* ---- 🔗 M4.9 §4f.7 khối ① — bản chiếu CHỈ ĐỌC của điểm chấm công theo phòng.
+   M4.6 KHÔNG khai cửa sổ nhận; nó chỉ ĐỌC để chặn ở nguồn (§8.2c · rb 5g). ---- */
+const DIEMCC=[
+ {phong:'P.101',truoc:15,sau:20},{phong:'P.102',truoc:15,sau:20},{phong:'P.201',truoc:15,sau:20},
+ {phong:'P.202',truoc:15,sau:20},{phong:'P.301',truoc:20,sau:25},{phong:'P.302',truoc:15,sau:20},
+ {phong:'P.303',truoc:15,sau:20},{phong:'B.101',truoc:15,sau:20},{phong:'B.201',truoc:15,sau:20},
+];
+const dccCua=dt=>DIEMCC.filter(d=>{const p=phg(d.phong);return p&&p.dt===dt});
+/* khoảng cách nhỏ nhất giữa GIỜ BẮT ĐẦU hai tiết liền nhau CÙNG BUỔI của một bộ */
+function gapBo(b){let m=999,cap=null;
+ for(let i=1;i<TIETKH.length;i++){
+  if(TIETKH[i].b!==TIETKH[i-1].b)continue;
+  const d=phut(gioBo(b,TIETKH[i].n)[0])-phut(gioBo(b,TIETKH[i-1].n)[0]);
+  if(d<m){m=d;cap=[TIETKH[i-1].n,TIETKH[i].n]}}
+ return {gap:m,cap}}
+/* min trên MỌI bộ của MỌI điểm trường — con số M4.7 §3b.3 · M4.9 rb 29 đọc */
+function gapMin(){let m=999;Object.keys(BOGIO).forEach(dt=>dsBo(dt).forEach(b=>{
+ const g=gapBo(b).gap;if(g<m)m=g}));return m}
+/* cửa chặn §8.2c: bộ giờ không được làm gap ≤ trước+sau của BẤT KỲ điểm chấm công nào của điểm trường đó */
+function viPhamCuaSo(dt,b){
+ const {gap,cap}=gapBo(b);
+ return dccCua(dt).filter(d=>d.truoc+d.sau>=gap).map(d=>({...d,gap,cap}));
+}
 /* thời gian di chuyển giữa điểm trường — Master, HT cấu hình */
 let DICHUYEN={'Điểm trường A|Điểm trường B':25};
 const dcPhut=(a,b)=>a===b?0:(DICHUYEN[a+'|'+b]??DICHUYEN[b+'|'+a]??0);
@@ -381,8 +470,7 @@ let RB=[
 ];
 const rb=id=>RB.find(x=>x.id===id);
 const laCung=id=>rb(id).loai==='cung';
-let NGAYDAY=6;   /* 5 hoặc 6 ngày dạy */
-let BANHANH=null;
+let NGAYDAY=6;   /* 5 hoặc 6 ngày dạy — của ĐIỂM TRƯỜNG, áp cho mọi bộ giờ */
 
 /* ================= BẢN NHÁP ================= */
 let BAN=[
@@ -398,6 +486,19 @@ let TKB={B1:[],B2:[],B3:[]};
 /* ================= XUNG ĐỘT ================= */
 const oCua=(b,lId,t,n)=>TKB[b].find(x=>x.lop===lId&&x.thu===t&&x.tiet===n);
 const gvSlot=(b,g,t,n)=>TKB[b].filter(x=>x.gv===g&&x.thu===t&&x.tiet===n);
+/* khoảng nghỉ nhỏ nhất giữa (dtA, tiết tA) và (dtB, tiết tB) trên mọi cặp bộ giờ GIAO NHAU về ngày.
+   Hai bộ không bao giờ cùng hiệu lực thì không có ngày nào người ấy phải chạy giữa hai giờ đó. */
+function nghiXauNhat(dtA,tA,dtB,tB){
+ const giao=(x,y)=>x.kh.some(([a1,a2])=>y.kh.some(([b1,b2])=>
+   pdate(a1)<=pdate(b2)&&pdate(b1)<=pdate(a2)));
+ let m=null;
+ dsBo(dtA).forEach(x=>dsBo(dtB).forEach(y=>{
+  if(!giao(x,y))return;
+  const d=phut(gioBo(y,tB)[0])-phut(gioBo(x,tA)[1]);
+  if(m==null||d<m)m=d;
+ }));
+ return m;
+}
 function kiemDat(b,lId,m,g,t,n){
  const L=lop(lId),cung=[],mem=[];
  const day=(id,msg)=>{(laCung(id)?cung:mem).push(msg)};
@@ -416,12 +517,15 @@ function kiemDat(b,lId,m,g,t,n){
  TKB[b].filter(x=>x.gv===g&&x.thu===t).forEach(x=>{
   const dtX=lop(x.lop).dt; if(dtX===L.dt)return;
   const can=dcPhut(dtX,L.dt); if(!can)return;
-  const [a1,a2]=x.tiet<n?[x,{tiet:n}]:[{tiet:n},x];
-  if(!tiet(a1.tiet)||!tiet(a2.tiet))return;
-  const nghi=phut(tiet(a2.tiet).bd)-phut(tiet(a1.tiet).kt);
+  const truoc=x.tiet<n, dtA=truoc?dtX:L.dt, dtB=truoc?L.dt:dtX;
+  const tA=truoc?x.tiet:n, tB=truoc?n:x.tiet;
+  /* GY18-A: mỗi điểm trường có NHIỀU bộ giờ. Khoảng nghỉ phải đủ ở MỌI cặp bộ
+     có khoảng hiệu lực GIAO NHAU — lấy giá trị xấu nhất, vì mẫu tuần áp cho cả năm. */
+  const nghi=nghiXauNhat(dtA,tA,dtB,tB);
+  if(nghi==null)return;
   if(nghi<can) day('dichuyen',
-   `Không kịp di chuyển: ${ns(g).n} có tiết ${a1.tiet} ở <b>${x.tiet<n?dtX:L.dt}</b> (kết thúc ${tiet(a1.tiet).kt})
-    rồi tiết ${a2.tiet} ở <b>${x.tiet<n?L.dt:dtX}</b> (bắt đầu ${tiet(a2.tiet).bd}) — chỉ có <b>${nghi} phút</b>, cần <b>${can} phút</b>`);
+   `Không kịp di chuyển: ${ns(g).n} có tiết ${tA} ở <b>${dtA}</b> rồi tiết ${tB} ở <b>${dtB}</b>
+    — khoảng nghỉ hẹp nhất trên các bộ giờ chỉ <b>${nghi} phút</b>, cần <b>${can} phút</b>`);
  });
  const cungMon=TKB[b].filter(x=>x.lop===lId&&x.thu===t&&x.mon===m);
  if(cungMon.some(x=>Math.abs(x.tiet-n)===1)) day('lienNhau',`Hai tiết ${m} liền nhau trong ${thuTen(t)}`);
@@ -467,6 +571,7 @@ const phongCho=(lId,m)=>{const L=lop(lId),ph=MONPHONG[m];
  return ph.find(p=>p.startsWith(L.dt==='Điểm trường A'?'P':'B'))||ph[0]};
 
 /* khởi tạo: B1 xếp đầy, B2/B3 kế thừa rồi bỏ bớt vài tiết */
+syncKhung();
 greedy('B1',LOP.filter(coCauHinh).map(l=>l.id));
 TKB.B2=TKB.B1.map(x=>({...x}));
 TKB.B3=TKB.B1.map(x=>({...x}));
@@ -479,7 +584,7 @@ TKB.B2=TKB.B2.filter(x=>!(x.lop==='6A1'&&['KHTN','Tiếng Anh','GDCD'].includes(
 TKB.B3=TKB.B3.filter(x=>!(lop(x.lop).k===6&&x.tiet>=6));
 
 /* ================= TRẠNG THÁI ================= */
-let tab='apdung',moBan=null,curDT='Điểm trường A',curLop='6A1',selMon=null,xemGoc='lop',xemAi='6A1',fKhoi='';
+let tab='apdung',moBan=null,curLop='6A1',selMon=null,xemGoc='lop',xemAi='6A1',fKhoi='';
 function dtHien(){const r=R();return r.pv==='branch'?r.dt:curDT}
 const stBAN={nhap:['Nháp','n'],cho:['Chờ duyệt','w'],duyet:['Đã duyệt','b'],
  congbo:['Đã công bố','v'],apdung:['Đang áp dụng','o'],ketthuc:['Đã kết thúc','n']};
@@ -517,6 +622,7 @@ function scopeBar(){
  else                   s=`Phạm vi <b>School</b> — mọi điểm trường.`;
  return `<div class="scope">🔎 <span class="sp">${s}
    <b>TKB là mẫu tuần</b> — điểm danh, sổ đầu bài, nhập điểm đọc từ ${dlink('M4.7','M4.7 Lịch giảng dạy')}, không đọc trực tiếp ở đây.</span>
+   ${nhanBo(dtHien())?`<span class="chip" title="Điểm trường này có nhiều bộ giờ — giờ trên lưới là của bộ đang chọn ở tab ⚙. Giờ THẬT của một tiết cụ thể giải theo NGÀY ở M4.7 §3b.4">⏰ giờ <b>${nhanBo(dtHien())}</b></span>`:''}
    <span class="chip">Năm học 2026-2027</span></div>`;
 }
 
@@ -559,9 +665,9 @@ function xepTab(){
    ${khong.length?`<div class="ro" style="margin:6px 0 0;font-size:11.5px">⛔ <b>${khong.length} môn chưa có giáo viên</b>
      — ${khong.join(', ')}. Không sinh được tiết để xếp ${dlink('M4.5','M4.5')}</div>`:''}
    ${cx.some(x=>!x.khgd)?`<div class="ro" style="margin:6px 0 0;font-size:11.5px;border-color:#fde68a;background:var(--amber-soft);color:#92400e">
-     ⚠ Môn hiện <b>-- tiết</b> là <b>chưa phân kế hoạch giảng dạy</b> — đặt được nhưng không đếm được đủ hay thiếu ${dlink('M10.2','M10.2')}</div>`:''}
+     ⚠ Môn hiện <b>-- tiết</b> là <b>chưa phân kế hoạch giảng dạy</b> — đặt được nhưng không đếm được đủ hay thiếu ${dlink('M5.1','M5.1 Kế hoạch giảng dạy')}</div>`:''}
    ${chuaCH.length?`<div class="ro" style="margin:6px 0 0;font-size:11.5px">ℹ ${chuaCH.length} lớp chưa cấu hình môn học
-     — ${chuaCH.map(l=>l.id).join(', ')} ${dlink('M10.2','M10.2')}</div>`:''}
+     — ${chuaCH.map(l=>l.id).join(', ')} ${dlink('M10.1','M10.1 ⑥ Môn theo lớp','muc=6&action=sua&return=M4.6')}</div>`:''}
    </div></div>`;
 
  const grid=`<div class="gridw"><table class="tkb">
@@ -821,26 +927,73 @@ function cfTab(){
  const rw=co('capnhat'),rwdc=co('dichuyen');
  const dungTiet=n=>Object.keys(TKB).reduce((a,k)=>a+TKB[k].filter(x=>x.tiet===n).length,0);
  const dungThu=t=>Object.keys(TKB).reduce((a,k)=>a+TKB[k].filter(x=>x.thu===t).length,0);
- const S=KHUNG.filter(k=>k.b==='S'),C=KHUNG.filter(k=>k.b==='C');
+ const S=TIETKH.filter(k=>k.b==='S'),C=TIETKH.filter(k=>k.b==='C');
 
- const khung=`<div class="card"><div class="ch">Khung tiết học <span class="sp"></span>
-   ${BANHANH?`<span class="st2 o">Đã ký ban hành ${BANHANH}</span>`:'<span class="st2 w">Chưa ký ban hành</span>'}</div>
-  <table><thead><tr><th>Tiết</th><th>Buổi</th><th>Bắt đầu</th><th>Kết thúc</th><th class="num">Đang dùng</th><th></th></tr></thead><tbody>
-  ${KHUNG.map(k=>`<tr><td><b>Tiết ${k.n}</b></td><td>${k.b==='S'?'Sáng':'Chiều'}</td>
-    <td><input class="timei" value="${k.bd}" data-kt="${k.n}|bd" ${rw?'':'disabled'}></td>
-    <td><input class="timei" value="${k.kt}" data-kt="${k.n}|kt" ${rw?'':'disabled'}></td>
+ /* ===== GY18-A: khối Khung tiết học nay là DANH SÁCH BỘ GIỜ của điểm trường ===== */
+ const dtc=dtHien(), ds=dsBo(dtc), bo=boDangXem(dtc), pk=kiemPhu(dtc), vp=bo?viPhamCuaSo(dtc,bo):[];
+ const boHN=boHomNay(dtc);
+ const khoangTxt=b=>b.kh.map(([t,k])=>`${t} – ${k}`).join(' · ');
+ const khung=`<div class="card"><div class="ch">Khung tiết học — <b>bộ giờ theo khoảng hiệu lực</b>
+   <span class="sp"></span><span class="mini">${dtc} · ${ds.length} bộ</span></div>
+  <div class="cb" style="padding-bottom:0">
+   <div class="${pk.trong.length||pk.chong.length?'danger':'okbox'}" style="margin:0 0 9px">
+    ${pk.trong.length||pk.chong.length
+      ? `⛔ <b>Khoảng hiệu lực chưa hợp lệ</b> — năm học ${NAMHOC.tu} – ${NAMHOC.den}
+         ${pk.trong.map(([a,b])=>`<div>· <b>chưa có bộ giờ cho ${dmy(a)} – ${dmy(b)}</b> — mọi tiết trong khoảng này
+            <b>không có giờ</b>: sổ đầu bài M2.2 không tính được mốc chốt 24h, M4.9 không có cửa sổ nhận
+            ⇒ tiết rơi vào <i>Ngoài phạm vi</i> <b>trong im lặng</b></div>`).join('')}
+         ${pk.chong.map(c=>`<div>· <b>${c.a?c.a.ten:'?'}</b> chồng <b>${c.b.ten}</b> <b>${c.so} ngày</b>
+            — ${dmy(c.tu)} – ${dmy(c.den)}: một ngày không thể có hai bộ giờ</div>`).join('')}`
+      : `✓ <b>Phủ kín năm học ${NAMHOC.tu} – ${NAMHOC.den}</b>, không khoảng nào chồng nhau.
+         Hôm nay ${d2s(HOMNAY)} đang chạy <b>${boHN?boHN.ten:'—'}</b>.`}</div>
+   <div class="cact" style="padding:0 0 9px;border:0">
+    ${ds.map(b=>`<button class="dayb ${b.ma===maXem(dtc)?'on':''}" data-bo="${b.ma}">${b.ten}
+      <span class="mini2">${khoangTxt(b)}</span>${boHN&&b.ma===boHN.ma?' <span class="tg a">đang chạy</span>':''}</button>`).join('')}
+    ${rw?`<button class="rolnk" data-x="them-bo">＋ Thêm bộ giờ</button>`:''}</div></div>
+  ${bo?`<table><thead><tr><th>Tiết</th><th>Buổi</th><th>Bắt đầu</th><th>Kết thúc</th>
+    ${ds.length>1?`<th>Lệch với <b>${(ds.find(z=>z.ma!==bo.ma)||{}).ten||''}</b></th>`:''}
+    <th class="num">Đang dùng</th><th></th></tr></thead><tbody>
+  ${TIETKH.map(k=>{const g=gioBo(bo,k.n);
+    const k2=ds.find(z=>z.ma!==bo.ma), lech=k2?phut(gioBo(bo,k.n)[0])-phut(gioBo(k2,k.n)[0]):0;
+    return `<tr><td><b>Tiết ${k.n}</b></td><td>${k.b==='S'?'Sáng':'Chiều'}</td>
+    <td><input class="timei" value="${g[0]}" data-kt="${bo.ma}|${k.n}|0" ${rw?'':'disabled'}></td>
+    <td><input class="timei" value="${g[1]}" data-kt="${bo.ma}|${k.n}|1" ${rw?'':'disabled'}></td>
+    ${ds.length>1?`<td class="mini">${lech>0?'+':''}${lech}′</td>`:''}
     <td class="num">${dungTiet(k.n)} tiết</td>
-    <td style="text-align:right">${rw?`<button class="btn xs" data-x="xoa-tiet" data-n="${k.n}">🗑</button>`:''}</td></tr>`).join('')}
+    <td style="text-align:right">${rw?`<button class="btn xs" data-x="xoa-tiet" data-n="${k.n}">🗑</button>`:''}</td></tr>`}).join('')}
   </tbody></table>
-  ${rw?`<div class="cact">
-    <button class="btn xs" data-x="them-tiet" data-b="S">+ Thêm tiết sáng</button>
-    <button class="btn xs" data-x="them-tiet" data-b="C">+ Thêm tiết chiều</button>
-    <span class="mini">Sáng ${S.length} tiết · chiều ${C.length} tiết</span></div>`:''}
+  <div class="cact"><span class="flab">Khoảng hiệu lực của <b>${bo.ten}</b></span>
+    <span class="mini">ngày cụ thể theo hồ sơ năm học ${dlink('M10.1','M10.1')} — không phải mốc lặp hằng năm (điểm A-1)</span></div>
+  <div class="cb" style="padding-top:0">${bo.kh.map((kh,i)=>`<div class="f">
+     <div class="k">Khoảng ${i+1}</div><div class="v">
+      <input class="fldi" style="width:118px;display:inline-block;margin:0" value="${kh[0]}" data-kh="${bo.ma}|${i}|0" ${rw?'':'disabled'}>
+      <span class="mini"> – </span>
+      <input class="fldi" style="width:118px;display:inline-block;margin:0" value="${kh[1]}" data-kh="${bo.ma}|${i}|1" ${rw?'':'disabled'}>
+      ${rw?`<button class="btn xs" data-x="xoa-kh" data-b="${bo.ma}" data-i="${i}">🗑</button>`:''}</div></div>`).join('')}
+   ${rw?`<div class="cact" style="border:0;padding-left:0"><button class="btn xs" data-x="them-kh" data-b="${bo.ma}">+ Thêm khoảng hiệu lực</button>
+     ${ds.length>1?`<button class="btn xs d" data-x="xoa-bogio" data-b="${bo.ma}">🗑 Xóa bộ giờ này</button>`:''}</div>`:''}</div>
+  ${vp.length?`<div class="danger" style="margin:0 12px 10px">⛔ <b>Bộ giờ này đang vi phạm cửa sổ nhận của chấm công</b> —
+    ${vp.map(v=>`<div>· tiết ${v.cap[0]} sang tiết ${v.cap[1]} cách nhau <b>${v.gap}′</b>; phòng <b>${v.phong}</b> khai
+      <b>trước ${v.truoc}′ + sau ${v.sau}′ = ${v.truoc+v.sau}′</b></div>`).join('')}
+    <div class="mini" style="margin-top:4px">Một lượt quẹt gán được vào <b>hai tiết</b> — cả tầng ② của hợp đồng chấm công mất nghĩa.
+      ${dlink('M4.9','M4.9 ⚙ Điểm chấm công','muc=4f.7')}</div></div>`:''}
+  <div class="cact">
+    ${rw?`<button class="btn xs" data-x="them-tiet" data-b="S">+ Thêm tiết sáng</button>
+    <button class="btn xs" data-x="them-tiet" data-b="C">+ Thêm tiết chiều</button>`:''}
+    <span class="mini">Sáng ${S.length} tiết · chiều ${C.length} tiết —
+     🛑 <b>số tiết là của ĐIỂM TRƯỜNG, áp cho MỌI bộ giờ</b>. Cho bộ này 4 tiết sáng và bộ kia 5 tiết
+     là <b>đổi cả thời khóa biểu theo mùa</b> — việc đó phải đi qua công bố TKB mới, không đi qua cấu hình giờ.</span></div>
   <div class="cact"><span class="flab">Số ngày dạy</span>
    ${[5,6].map(d=>`<button class="dayb ${NGAYDAY===d?'on':''}" ${rw?`data-ngay="${d}"`:'disabled'}>${d} ngày${d===6?' (T2–T7)':' (T2–T6)'}</button>`).join('')}
-   <span class="mini">Thứ 7 đang có <b>${dungThu(7)}</b> tiết</span></div>
-  ${rw&&co('ky')?`<div class="cact"><button class="btn p" data-x="ky-khung">✍ Ký ban hành khung tiết</button>
-    <span class="mini">Đổi khung tiết làm <b>đổi giờ của mọi tiết đã xếp</b> — cần ký lại.</span></div>`:''}</div>`;
+   <span class="mini">Thứ 7 đang có <b>${dungThu(7)}</b> tiết · cũng là của điểm trường</span></div>
+  <div class="cact">${bo.ky?`<span class="st2 o">Đã ký ban hành ${bo.ky}</span>`:'<span class="st2 w">Chưa ký ban hành</span>'}
+   ${rw&&co('ky')?`<button class="btn p" data-x="ky-bo" data-b="${bo.ma}">✍ Ký ban hành bộ ${bo.ten}</button>`:''}
+   <span class="mini">Ký ban hành bộ giờ <b>KHÔNG sinh lại thời khóa biểu</b> — số tiết không đổi nên mẫu tuần không đổi.
+    <b>Chỉ giờ của tiết TƯƠNG LAI đổi theo</b>; tiết đã diễn ra và tiết đã có kết luận chấm công <b>giữ nguyên giờ đã ghi</b>
+    ${dlink('M4.7','M4.7 — xem tiết bị đổi giờ','nhom=doi_gio')}</span></div>`
+  :'<div class="empty">Điểm trường này chưa có bộ giờ nào</div>'}
+  <div class="cact"><span class="mini">⏱ Khoảng cách nhỏ nhất giữa hai tiết liền nhau trên <b>MỌI bộ giờ</b>:
+    <b>${gapMin()}′</b> — đây là con số <b>M4.7 §3b.3</b> và <b>M4.9 ràng buộc 29</b> đọc, không ai khai tay bên đó.</span></div></div>`;
 
  const dc=`<div class="card"><div class="ch">Thời gian di chuyển giữa điểm trường <span class="sp"></span>
    <span class="st2 ${laCung('dichuyen')?'r':'w'}">${laCung('dichuyen')?'Đang là ràng buộc CỨNG':'Đang là ràng buộc MỀM'}</span></div>
@@ -925,10 +1078,49 @@ function veDsPhong(q){
      ${p.loai==='Phòng bộ môn'?'<span class="tg a">bộ môn</span>':'<span class="tg c">phòng học</span>'}</div>`).join('')).join('');
 }
 
+/* ===== GY18-A — hai hộp thoại của bộ giờ ===== */
+function moChanCuaSo(dt,b,vp,daHoan,gio){
+ const v0=vp[0], g=gio||[gioBo(b,v0.cap[0])[0],gioBo(b,v0.cap[1])[0]];
+ modal('⛔ Không lưu được bộ giờ — '+b.ten,
+  `<div class="danger">
+     Tiết <b>${v0.cap[0]}</b> (${g[0]}) sang tiết <b>${v0.cap[1]}</b> (${g[1]}) cách nhau <b>${v0.gap}′</b>.
+     <div style="margin-top:6px">${vp.length} phòng đang khai cửa sổ nhận rộng hơn hoặc bằng khoảng cách đó:</div>
+     ${vp.map(v=>`<div>· phòng <b>${v.phong}</b> — <b>trước ${v.truoc}′ + sau ${v.sau}′ = ${v.truoc+v.sau}′</b></div>`).join('')}</div>
+   <div class="ro">Một lượt quẹt sẽ gán được vào <b>hai tiết</b>, và máy không còn cách nào chọn đúng —
+    <b>cả tầng ② của hợp đồng chấm công mất nghĩa</b>.
+    Chặn ở đây chứ không ở M4.9 vì M4.9 là bên <b>đọc</b> con số này; để lưu xong rồi mới báo lỗi bên kia
+    thì giữa hai thời điểm ấy dữ liệu đã hỏng.
+    ${daHoan?'<br><b>Giá trị vừa nhập đã được hoàn lại.</b>':''}</div>`,
+  `<button class="btn" data-x="close">Đóng</button>
+   ${dlink('M4.9','M4.9 ⚙ Điểm chấm công','muc=4f.7')}`);
+}
+function moKyBo(dt,b){
+ /* tiết TƯƠNG LAI của điểm trường này nằm trong khoảng hiệu lực của bộ — con số minh họa */
+ const soLop=LOP.filter(l=>l.dt===dt&&coCauHinh(l)).length;
+ const B=banApDung(), soTiet=B?TKB[B.id].filter(x=>lop(x.lop).dt===dt).length:0;
+ const tuong=Math.round(soTiet*2.4);
+ modal(`Ký ban hành bộ giờ — ${b.ten}`,
+  `<div class="info">Bộ <b>${b.ten}</b> · ${dt} · hiệu lực ${b.kh.map(k=>k[0]+' – '+k[1]).join(' · ')}</div>
+   <table><thead><tr><th>Nhóm</th><th class="num">Số tiết</th><th>Ứng xử</th></tr></thead><tbody>
+    <tr><td><b>Thời khóa biểu</b> (mẫu tuần)</td><td class="num">—</td>
+      <td>✓ <b>KHÔNG sinh lại</b> — số tiết không đổi nên mẫu tuần không đổi</td></tr>
+    <tr><td>Tiết <b>đã diễn ra</b></td><td class="num">—</td><td>✓ <b>Giữ nguyên giờ đã ghi</b></td></tr>
+    <tr><td>Tiết đã có <b>kết luận chấm công</b></td><td class="num">—</td><td>✓ <b>Giữ nguyên</b> — không sửa căn cứ của một kết luận đã ra</td></tr>
+    <tr class="warnrow"><td><b>Tiết TƯƠNG LAI</b> trong khoảng hiệu lực</td><td class="num">~${tuong}</td>
+      <td><b>Đổi giờ theo bộ mới</b> — danh sách và audit ở M4.7 §7</td></tr>
+   </tbody></table>
+   <div class="ro" style="margin-top:11px">${soLop} lớp của ${dt}.
+    <b>Đổi giờ hồi tố là sửa căn cứ của một kết luận đã ra</b> — nhãn «ghi sổ muộn» ở M2.2 đếm từ giờ kết thúc tiết,
+    kết luận chấm công ở M4.9 đo từ giờ bắt đầu tiết.</div>`,
+  `<button class="btn" data-x="close">Hủy</button>
+   ${dlink('M4.7','Xem danh sách tiết bị đổi giờ','nhom=doi_gio')}
+   <button class="btn p" data-x="ok-ky-bo" data-b="${b.ma}">✍ Ký ban hành</button>`);
+}
+
 /* ================= SỰ KIỆN ================= */
 document.addEventListener('click',e=>{
  if(e.target.matches('input,select,textarea'))return;
- const t=e.target.closest('[data-r],[data-tab],[data-x],[data-tm],[data-o],[data-ban],[data-xg],[data-rbl],[data-ngay],[data-pk]');
+ const t=e.target.closest('[data-r],[data-tab],[data-x],[data-tm],[data-o],[data-ban],[data-xg],[data-rbl],[data-ngay],[data-pk],[data-bo]');
  if(!t)return;
  const x=t.dataset.x;
  if(t.dataset.r){role=t.dataset.r;selMon=null;
@@ -1034,24 +1226,46 @@ document.addEventListener('click',e=>{
         <div class="ro">Gỡ hết tiết Thứ 7 ở bàn xếp trước, rồi mới đổi số ngày dạy.</div>`,
        `<button class="btn" data-x="close">Đóng</button>`);return}}
    NGAYDAY=d;render();toast(`Số ngày dạy: <b>${d} ngày</b> · lưới xếp cập nhật ngay`);return}
- if(x==='them-tiet'){
-   const b0=t.dataset.b,mx=Math.max(...KHUNG.map(k=>k.n));
-   const last=KHUNG.filter(k=>k.b===b0).slice(-1)[0];
-   const bd=last?themPhut(last.kt,5):(b0==='S'?'07:00':'13:30');
-   KHUNG.push({n:mx+1,b:b0,bd,kt:themPhut(bd,45)});
-   KHUNG.sort((a,b)=>(a.b===b.b?0:a.b==='S'?-1:1)||a.n-b.n);
-   render();toast(`+ Thêm <b>tiết ${mx+1}</b> buổi ${b0==='S'?'sáng':'chiều'} · ${bd} → ${themPhut(bd,45)}`);return}
- if(x==='xoa-tiet'){
-   const n=+t.dataset.n;
-   const d=Object.keys(TKB).reduce((a,k)=>a+TKB[k].filter(z=>z.tiet===n).length,0);
-   if(d){modal('⛔ Không xóa được tiết này',
-     `<div class="danger">Tiết ${n} đang được dùng ở <b>${d} chỗ</b> trong các bản thời khóa biểu.</div>
-      <div class="ro">Gỡ hết tiết đó ở bàn xếp trước. Xóa thẳng thì <b>mất tiết mà không ai biết</b> —
-       đúng kiểu lỗi chỉ phát hiện khi giáo viên đến lớp.</div>`,
-     `<button class="btn" data-x="close">Đóng</button>`);return}
-   KHUNG=KHUNG.filter(k=>k.n!==n);render();toast(`Đã xóa tiết ${n} khỏi khung`);return}
- if(x==='ky-khung'){BANHANH=d2s(HOMNAY);render();
-   toast('✍ Đã ký ban hành khung tiết học · Ký số Nhóm A · ghi audit và đồng bộ M4.11');return}
+ /* ===== GY18-A — BỘ GIỜ ===== */
+ if(t.dataset.bo){boXem[dtHien()]=t.dataset.bo;render();return}
+ if(x==='them-bo'){
+   const dt=dtHien(),ma='BO'+(++boSeq);
+   BOGIO[dt].push({ma,ten:'Bộ giờ mới '+boSeq,gio:JSON.parse(JSON.stringify((boDangXem(dt)||{gio:{}}).gio)),
+     kh:[],ky:null});
+   boXem[dt]=ma;render();
+   toast(`＋ Đã thêm <b>bộ giờ mới</b> · giờ chép từ bộ đang xem · <b>chưa có khoảng hiệu lực</b> — khai khoảng rồi mới ký ban hành`);return}
+ if(x==='xoa-bogio'){
+   const dt=dtHien(),b=boMa(dt,t.dataset.b);
+   if(dsBo(dt).length<=1){toast('⛔ Điểm trường phải còn ít nhất một bộ giờ');return}
+   modal('Xóa bộ giờ',
+    `<div class="warn">Xóa bộ <b>${b.ten}</b> của ${dt}.</div>
+     <div class="ro">Khoảng hiệu lực của nó sẽ thành <b>khoảng trống</b> — hệ thống chặn cho tới khi bộ khác phủ kín.</div>`,
+    `<button class="btn" data-x="close">Hủy</button>
+     <button class="btn d" data-x="ok-xoa-bogio" data-b="${b.ma}">Xóa</button>`);return}
+ if(x==='ok-xoa-bogio'){const dt=dtHien(),ten=boMa(dt,t.dataset.b).ten;
+   BOGIO[dt]=BOGIO[dt].filter(z=>z.ma!==t.dataset.b);delete boXem[dt];closeModal();render();
+   toast(`Đã xóa bộ giờ <b>${ten}</b>`);return}
+ if(x==='them-kh'){const dt=dtHien(),b=boMa(dt,t.dataset.b);
+   b.kh.push([NAMHOC.tu,NAMHOC.den]);render();
+   toast('+ Thêm một khoảng hiệu lực — sửa hai ngày cho đúng, hệ thống kiểm phủ kín và chồng khoảng ngay');return}
+ if(x==='xoa-kh'){const dt=dtHien(),b=boMa(dt,t.dataset.b);
+   b.kh.splice(+t.dataset.i,1);render();
+   const pk=kiemPhu(dt);
+   toast(pk.trong.length?`Đã bỏ một khoảng — ⛔ <b>năm học không còn phủ kín</b>, xem hộp đỏ ở đầu khối`
+     :'Đã bỏ một khoảng hiệu lực');return}
+ if(x==='ky-bo'){
+   const dt=dtHien(),b=boMa(dt,t.dataset.b),pk=kiemPhu(dt),vp=viPhamCuaSo(dt,b);
+   if(!b.kh.length){toast('⛔ Bộ giờ chưa có khoảng hiệu lực nào — không ký ban hành được');return}
+   if(pk.trong.length||pk.chong.length){
+     modal('⛔ Không ký ban hành được',
+      `<div class="danger">Khoảng hiệu lực của <b>${dt}</b> chưa hợp lệ.
+        ${pk.trong.map(([a,c])=>`<div>· chưa có bộ giờ cho <b>${dmy(a)} – ${dmy(c)}</b></div>`).join('')}
+        ${pk.chong.map(c=>`<div>· <b>${c.a?c.a.ten:'?'}</b> chồng <b>${c.b.ten}</b> <b>${c.so} ngày</b> (${dmy(c.tu)} – ${dmy(c.den)})</div>`).join('')}</div>
+       <div class="ro">Một ngày không có bộ giờ thì mọi tiết ngày đó <b>không có giờ</b> — sổ đầu bài không tính được
+        mốc chốt 24h, chấm công không có cửa sổ nhận.</div>`,
+      `<button class="btn" data-x="close">Đóng</button>`);return}
+   if(vp.length){moChanCuaSo(dt,b,vp);return}
+   moKyBo(dt,b);return}
  if(x==='them-mp'){const m=$('#mpMon').value;if(!m)return;
    MONPHONG[m]=[];render();moChonPhong(m);
    toast(`Môn <b>${m}</b> nay cần phòng chuyên dụng — chọn phòng từ danh mục M6.4`);return}
@@ -1068,6 +1282,11 @@ document.addEventListener('click',e=>{
    toast(`Đã bỏ phòng <b>${t.dataset.p}</b> khỏi môn ${m}`);return}
  if(x==='xoa-mp'){delete MONPHONG[t.dataset.m];render();
    toast(`<b>${t.dataset.m}</b> nay dùng phòng cố định của lớp, không kiểm trùng phòng nữa`);return}
+
+ if(x==='ok-ky-bo'){const dt=dtHien(),b=boMa(dt,t.dataset.b);
+   b.ky='Trần Văn Hùng · '+d2s(HOMNAY);closeModal();render();
+   toast(`✍ Đã ký ban hành bộ giờ <b>${b.ten}</b> · Ký số Nhóm A · ghi audit và đồng bộ M4.11 ·
+     <b>không sinh lại TKB</b> · chỉ tiết <b>tương lai</b> đổi giờ`);return}
 
  if(x==='xuat'){
    modal('Xuất thời khóa biểu',
@@ -1095,10 +1314,24 @@ document.addEventListener('change',e=>{
    toast('Đã đổi trần — mọi tiết đã xếp tính lại vi phạm mềm');return}
  if(el.dataset.rbds){rb(el.dataset.rbds).ds=el.value.split(',').map(x=>x.trim()).filter(Boolean);render();
    toast('Đã đổi danh sách môn tránh tiết cuối');return}
- if(el.dataset.kt){const[n,w]=el.dataset.kt.split('|');const k=tiet(+n);
+ /* ===== GY18-A: giờ ghi vào BỘ GIỜ, và CHẶN Ở NGUỒN nếu hẹp hơn cửa sổ nhận (§8.2c) ===== */
+ if(el.dataset.kt){const[ma,n,w]=el.dataset.kt.split('|');const dt=dtHien(),b=boMa(dt,ma);
    if(!/^\d{1,2}:\d{2}$/.test(el.value)){toast('⛔ Giờ phải theo dạng HH:MM');render();return}
-   k[w]=el.value;render();
-   toast(`Tiết ${n} nay ${k.bd} → ${k.kt} · <b>ràng buộc thời gian di chuyển tính lại</b>`);return}
+   const cu=b.gio[n][+w];
+   b.gio[n][+w]=el.value;
+   const vp=viPhamCuaSo(dt,b);
+   if(vp.length){const g=[gioBo(b,vp[0].cap[0])[0],gioBo(b,vp[0].cap[1])[0]];
+     b.gio[n][+w]=cu;render();moChanCuaSo(dt,b,vp,true,g);return}
+   syncKhung();render();
+   toast(`Tiết ${n} của bộ <b>${b.ten}</b> nay ${b.gio[n][0]} → ${b.gio[n][1]} ·
+     <b>ràng buộc thời gian di chuyển tính lại</b> · chỉ tiết <b>tương lai</b> đổi giờ theo`);return}
+ if(el.dataset.kh){const[ma,i,w]=el.dataset.kh.split('|');const dt=dtHien(),b=boMa(dt,ma);
+   if(!/^\d{2}\/\d{2}\/\d{4}$/.test(el.value)){toast('⛔ Ngày phải theo dạng DD/MM/YYYY');render();return}
+   b.kh[+i][+w]=el.value;render();
+   const pk=kiemPhu(dt);
+   toast(pk.trong.length||pk.chong.length
+     ? '⛔ Khoảng hiệu lực <b>chưa hợp lệ</b> — xem hộp đỏ ở đầu khối Khung tiết học'
+     : '✓ Đã đổi khoảng hiệu lực · năm học vẫn phủ kín');return}
 });
 /* kéo thả */
 document.addEventListener('dragstart',e=>{const c=e.target.closest('[data-tm]');
@@ -1110,6 +1343,7 @@ document.addEventListener('drop',e=>{const c=e.target.closest('[data-o]');if(!c)
  e.preventDefault();c.classList.remove('drop');const[a,b]=c.dataset.o.split('|');datTiet(+a,+b)});
 
 function render(){
+ syncKhung();          /* GY18-A: KHUNG là bản dựng của bộ giờ đang xem ở điểm trường đang xem */
  sidebar();tabs();
  $('#topact').innerHTML=co('xuat')?'<button class="btn" data-x="xuat">⬇ Xuất</button>':'';
  const n=BAN.filter(b=>b.tt==='nhap'||b.tt==='cho').length;

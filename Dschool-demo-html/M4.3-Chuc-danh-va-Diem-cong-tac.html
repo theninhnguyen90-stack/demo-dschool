@@ -277,7 +277,7 @@ function modal(t,b,f){$('#mh').innerHTML=t;$('#mb').innerHTML=b;$('#mf').innerHT
 /* ===== SIDEBAR ===== */
 const NAV=[['NHÂN SỰ',[['M4.1','Hồ sơ nhân sự'],['M4.2','Biến động nhân sự'],['M4.3','Chức danh & Điểm công tác'],
  ['M4.4','Quản lý giáo viên'],['M4.5','Phân công giảng dạy'],['M4.8','Nghỉ phép']]],
- ['QUẢN TRỊ',[['M10.1','Hồ sơ năm học'],['M10.2','Cơ cấu tổ chức'],['M10.4','Chức danh & Phân quyền'],
+ ['QUẢN TRỊ',[['M10.1','Hồ sơ năm học'],['M10.2','Thông tin trường'],['M10.4','Chức danh & Phân quyền'],
  ['M10.5','Tài khoản & Bảo mật'],['M10.7','Nhật ký hệ thống'],['M10.8','Đồng bộ CSDL ngành']]]];
 
 /* ===== ĐƠN VỊ — chiếu từ M10.2, chỉ đọc ===== */
@@ -287,11 +287,14 @@ const DT=[{id:'DT1',ten:'Cơ sở chính',vt:'CS chính'},
 const TO=[{id:'T1',ten:'Tổ Toán — Tin'},{id:'T2',ten:'Tổ Ngữ văn'},{id:'T3',ten:'Tổ Ngoại ngữ'},
  {id:'T4',ten:'Tổ Khoa học tự nhiên'},{id:'T5',ten:'Tổ Khoa học xã hội'},{id:'T6',ten:'Tổ Thể dục — Nghệ thuật'}];
 const dtBy=i=>DT.filter(x=>x.id===i)[0];
-const toBy=i=>TO.filter(x=>x.id===i)[0];
+/* 15/9/2026 — tổ văn phòng: đơn vị gắn chức danh TTVP (TT 15/2026 — mỗi trường MỘT tổ văn phòng, tổ trưởng do HT bổ nhiệm).
+   ⏳ M10.1 ⑤ chưa khai tổ văn phòng — demo đặt cứng một đơn vị 'VP' (phiếu M10.4-chuc-danh mục E). */
+const VP={id:'VP',ten:'Tổ văn phòng'};
+const toBy=i=>i==='VP'?VP:TO.filter(x=>x.id===i)[0];
 const dvTen=i=>!i?'Toàn trường':(dtBy(i)?dtBy(i).ten:(toBy(i)?toBy(i).ten:i));
 const dvVt =i=>!i?'Toàn trường':(dtBy(i)?dtBy(i).vt:(toBy(i)?toBy(i).ten:i));
 
-/* ===== 20 CHỨC DANH — 3 nhóm ===== */
+/* ===== 21 CHỨC DANH CHUẨN — 3 nhóm (TTVP thêm 15/9/2026) · 8 chức danh phụ mẫu nhóm ④ ở M10.4, chưa vẽ ở demo này ===== */
 const CD=[
  {ma:'HT',    ten:'Hiệu trưởng',                 nhom:1,don:1,dv:'',  mn:47},
  {ma:'PHT_CM',ten:'Phó HT Chuyên môn',           nhom:1,don:1,dv:'',  mn:31},
@@ -300,7 +303,6 @@ const CD=[
  {ma:'TQ',    ten:'Thủ quỹ',                     nhom:1,don:1,dv:'',  mn:7},
  {ma:'QLCSVC',ten:'Quản lý cơ sở vật chất',      nhom:1,don:1,dv:'',  mn:6},
  {ma:'YT',    ten:'Y tế học đường',              nhom:1,don:1,dv:'',  mn:6},
- {ma:'TV',    ten:'Thư viện',                    nhom:1,don:1,dv:'',  mn:5},
  {ma:'BT',    ten:'Bảo trì thiết bị',            nhom:1,don:1,dv:'',  mn:5},
  {ma:'TPT',   ten:'Tổng phụ trách Đội',          nhom:1,don:1,dv:'',  mn:12},
  {ma:'BTD',   ten:'Bí thư Đoàn trường',          nhom:1,don:1,dv:'',  mn:10},
@@ -308,14 +310,16 @@ const CD=[
  {ma:'VT',    ten:'Văn thư',                     nhom:1,don:0,dv:'dt',mn:9},
  {ma:'BV',    ten:'Bảo vệ',                      nhom:1,don:0,dv:'dt',mn:5},
  {ma:'GT',    ten:'Giám thị',                    nhom:1,don:0,dv:'dt',mn:8},
+ {ma:'TV',    ten:'Thư viện',                    nhom:1,don:0,dv:'dt',mn:6},   /* PZ4 15/9/2026 — M6.19: nhiều người theo điểm trường, Branch (§2.2); +1 menu */
  {ma:'PHT_DT',ten:'Phó HT phụ trách điểm trường',nhom:2,don:1,dv:'dt',mn:28},
  {ma:'TTCM',  ten:'Tổ trưởng chuyên môn',        nhom:2,don:1,dv:'to',mn:22},
  {ma:'TPCM',  ten:'Tổ phó chuyên môn',           nhom:2,don:0,dv:'to',mn:19},
+ {ma:'TTVP',  ten:'Tổ trưởng tổ văn phòng',      nhom:2,don:1,dv:'vp',mn:10},
  {ma:'GVCN',  ten:'Giáo viên chủ nhiệm',         nhom:3,don:0,dv:'lop',mn:18},
  {ma:'GVBM',  ten:'Giáo viên bộ môn',            nhom:3,don:0,dv:'', mn:13}];
 const cdBy=m=>CD.filter(x=>x.ma===m)[0];
 const laBN=m=>{const c=cdBy(m);return c&&c.nhom<3};      /* nhóm bổ nhiệm — siết chứng cứ */
-const dsDV=m=>{const c=cdBy(m);return c.dv==='dt'?DT.map(x=>x.id):(c.dv==='to'?TO.map(x=>x.id):[''])};
+const dsDV=m=>{const c=cdBy(m);return c.dv==='dt'?DT.map(x=>x.id):(c.dv==='to'?TO.map(x=>x.id):(c.dv==='vp'?['VP']:['']))};
 
 /* ===== NHÂN SỰ ===== */
 let NS=[
@@ -364,7 +368,6 @@ bn('N05','TCNS','','33/QĐ-NTT','01/08/2019');
 bn('N06','KT','','92/QĐ-NTT','15/08/2014','01/01/2026','Nghỉ hưu theo chế độ');
 bn('N07','KT','','41/QĐ-NTT','02/01/2026');
 bn('N22','QLCSVC','','58/QĐ-NTT','01/09/2020');
-bn('N16','TV','','61/QĐ-NTT','01/09/2021');
 bn('N17','BT','','44/QĐ-NTT','01/04/2019');
 bn('N27','TPT','','39/QĐ-NTT','01/09/2015','30/06/2018','Chuyển sang công tác chuyên môn');
 bn('N15','TPT','','72/QĐ-NTT','05/09/2018');
@@ -379,6 +382,10 @@ bn('N26','BV','DT3','55/QĐ-NTT','01/09/2020');
 bn('N17','BV','DT1','44/QĐ-NTT','01/04/2019');
 bn('N27','GT','DT1','52/QĐ-NTT','01/09/2018');
 bn('N14','GT','DT2','60/QĐ-NTT','01/09/2021');
+/* TV theo điểm trường (PZ4 15/9/2026 — M6.19 mỗi điểm trường một kho). Một người giữ thư viện HAI điểm trường = kiêm nhiệm
+   (TT 16/2022 Đ.9) ⇒ HAI bản ghi Branch, không phải một bản ghi School. CS3 chưa có người — T3 hiện «chưa bố trí». */
+bn('N16','TV','DT1','61/QĐ-NTT','01/09/2021');
+bn('N16','TV','DT2','125/QĐ-NTT','01/09/2025');
 /* nhóm ② gắn đơn vị */
 bn('N03','PHT_DT','DT2','131/QĐ-UBND','15/08/2017');
 bn('N04','PHT_DT','DT3','139/QĐ-UBND','01/09/2018');
@@ -394,6 +401,7 @@ bn('N04','TPCM','T2','112/QĐ-NTT','01/09/2021');
 bn('N27','TPCM','T5','115/QĐ-NTT','01/09/2022');
 bn('N28','TPCM','T6','116/QĐ-NTT','01/09/2023');
 bn('N19','TPCM','T4','114/QĐ-NTT','01/09/2023');
+bn('N08','TTVP','VP','120/QĐ-NTT','01/09/2024');   /* 15/9/2026 — Văn thư CS chính kiêm tổ trưởng tổ văn phòng (VT không đơn nhất nên không vướng chặn kiêm nhiệm chéo) */
 /* nhóm ③ — phân công chuyên môn */
 ['N09','N11','N13','N14','N18','N10','N27','N28','N19','N12'].forEach(function(x,i){
  bn(x,'GVCN','', '', '15/08/2026')});
@@ -708,6 +716,7 @@ function ungVien(cd,dv){
   if(trung.length){no.push([p,'đang giữ '+trung.map(b=>cdBy(b.cd).ten+(b.dv?' — '+dvVt(b.dv):'')).join(', ')]);return}
   if(cdBy(cd).dv==='to'&&p.to!==dv){no.push([p,p.to?'thuộc '+toBy(p.to).ten+', không phải '+dvTen(dv)
    :'không thuộc tổ chuyên môn nào — không thể làm Tổ trưởng, Tổ phó']);return}
+  if(cdBy(cd).dv==='vp'&&p.to){no.push([p,'thuộc '+toBy(p.to).ten+' — tổ văn phòng gồm nhân sự văn thư, kế toán, thủ quỹ, y tế, CNTT, giáo vụ, bảo vệ… (TT 15/2026)']);return}
   ok.push(p)});
  return {ok:ok,no:no}}
 function selNguoi(cd,dv,id){
@@ -760,7 +769,7 @@ function drawThem(){
    CD.filter(c=>c.nhom===n).map(c=>'<option value="'+c.ma+'"'+(F.cd===c.ma?' selected':'')+'>'+esc(c.ten)+'</option>').join('')+'</optgroup>'}).join('')+
   '</select>';
  if(F.cd){const c=cdBy(F.cd);
-  if(c.dv){h+='<label class="lbl">'+(c.dv==='dt'?'Điểm trường':'Tổ chuyên môn')+' <b>*</b></label>'+
+  if(c.dv){h+='<label class="lbl">'+(c.dv==='dt'?'Điểm trường':(c.dv==='vp'?'Tổ':'Tổ chuyên môn'))+' <b>*</b></label>'+
    '<select class="din" data-f="dv"><option value="">— chọn đơn vị —</option>'+
    dsDV(c.ma).map(d=>'<option value="'+d+'"'+(F.dv===d?' selected':'')+'>'+esc(dvTen(d))+'</option>').join('')+'</select>'}
   if(c.nhom===3)h+='<div class="ro" style="margin-top:9px">Chức danh nhóm ③ <b>không chọn phạm vi ở đây</b> — '+
@@ -967,7 +976,7 @@ function mNhatKy(id){const p=nsBy(id),l=NKDT[id]||[];
 function xemQD(bId){const b=BN.filter(x=>x.id===bId)[0];
  modal('👁 '+esc(b.qd)+' — '+esc(cdBy(b.cd).ten),
   '<div class="info">Xem được <b>ngay trong màn hình</b>, không bắt tải về rồi mở bằng ứng dụng khác. '+
-  'Lượt xem và lượt tải đều <b>ghi audit</b> theo <b>NĐ 13/2023</b>.</div>'+
+  'Lượt xem và lượt tải đều <b>ghi audit</b> theo <b>Luật BVDLCN 91/2025</b>.</div>'+
   '<div style="background:#334155;border-radius:10px;padding:22px;display:grid;place-items:center">'+
   '<div style="background:#fff;width:78%;padding:16px 20px;font-size:10px;color:#334155;line-height:1.9;border-radius:3px">'+
   '<div style="text-align:center;font-weight:800;font-size:11px">QUYẾT ĐỊNH</div>'+
@@ -1000,7 +1009,7 @@ function aiSua(){
   AIS.map(x=>'<tr><td><b>'+esc(x.ten)+'</b></td><td>'+esc(x.cd)+'</td></tr>').join('')+'</table>'+
   '<div class="ro" style="margin-top:12px"><b>MVP không chặn thẩm quyền ở mức trường dữ liệu.</b> Hàng rào nằm ở <b>ma trận quyền</b>: '+
   'chỉ <code>HT</code> và <code>TCNS</code> có <code>S</code>, cấu hình tại '+dlink('M10.4')+'.'+
-  '<div style="margin-top:7px">Chặn từng chức danh trong màn hình này thì hoặc Hiệu trưởng ngồi gõ 18 chức danh mỗi đầu năm — '+
+  '<div style="margin-top:7px">Chặn từng chức danh trong màn hình này thì hoặc Hiệu trưởng ngồi gõ 19 chức danh mỗi đầu năm — '+
   'chuyện sẽ không xảy ra — <b>hoặc Hiệu trưởng đưa mật khẩu cho văn thư</b>. Cửa thứ hai phá hủy toàn bộ giá trị của Audit Log.</div>'+
   '<div style="margin-top:7px">Bù lại: mọi thao tác ghi audit, và tự cấp cho chính mình gắn cờ <code>⚑ tự cấp</code> lọc được ở '+dlink('M10.7')+'.</div></div>',
   '<button class="btn" data-x="close">Đóng</button>')}
@@ -1064,7 +1073,7 @@ function render(){
   $('#content').innerHTML='<div class="noacc"><h3>🚫 Vai trò '+esc(R().ten)+' không truy cập được Menu này</h3>'+
   '<p>Chức danh quyết định <b>ai truy cập được menu nào</b>. Danh sách <i>ai đang giữ chức danh gì</i> là thông tin quản trị, '+
   'không phải thông tin ai cũng cần tra.</p>'+
-  '<p>Muốn biết <b>Tổ trưởng tổ mình là ai</b> thì xem ở '+dlink('M10.2','M10.2 tab Tổ chuyên môn')+'. '+
+  '<p>Muốn biết <b>Tổ trưởng tổ mình là ai</b> thì xem ở '+dlink('M10.1','M10.1 ⑤ Tổ bộ môn')+'. '+
   'Muốn xem <b>chức danh của chính mình</b> thì vào '+dlink('M0.4','Trang cá nhân')+'.</p></div>';return}
  tabsHtml();
  $('#content').innerHTML=scopeBar()+(tab==='cd'?cdTab():tab==='dt'?dtTab():bmTab());
@@ -1083,7 +1092,7 @@ document.addEventListener('click',function(e){
   if(x==='dl'){toast('Mở <b>'+el.dataset.m+'</b> — deep-link <code>/'+el.dataset.m+'?return=M4.3</code>');return}
   if(x==='dong'){cur=null;curDV=null;render();return}
   if(x==='ghiChu'){ghiChu();return}
-  if(x==='xuat'){modal('⬇ Xuất dữ liệu','<div class="warn">⚠ <b>Bắt buộc chọn mục đích</b> — dữ liệu cá nhân theo <b>NĐ 13/2023</b>. Lượt xuất ghi audit.</div>'+
+  if(x==='xuat'){modal('⬇ Xuất dữ liệu','<div class="warn">⚠ <b>Bắt buộc chọn mục đích</b> — dữ liệu cá nhân theo <b>Luật BVDLCN 91/2025</b>. Lượt xuất ghi audit.</div>'+
    '<label class="lbl">Bản xuất</label><select class="din"><option>Danh sách chức danh toàn trường</option>'+
    '<option>Bộ máy tại ngày '+d2s(NGAY)+'</option><option>Danh sách theo một chức danh</option>'+
    '<option>Lịch sử thay đổi theo khoảng thời gian</option></select>'+
@@ -1101,7 +1110,7 @@ document.addEventListener('click',function(e){
   if(x==='xemChuaPC'){xemChuaPC();return}
   if(x==='viSaoLoai'){viSaoLoai(c,d);return}
   if(x==='xemQD'){xemQD(el.dataset.b);return}
-  if(x==='taiQD'){toast('Đã tải · <b>ghi audit</b>: người tải, thời điểm, tệp — NĐ 13/2023');return}
+  if(x==='taiQD'){toast('Đã tải · <b>ghi audit</b>: người tải, thời điểm, tệp — Luật BVDLCN 91/2025');return}
   if(x==='msTog'){$('#mspCD').classList.toggle('on');return}
   if(x==='mThem'){mThem();return}
   if(x==='luuThem'){luuThem();return}

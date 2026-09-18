@@ -187,6 +187,17 @@ tr:last-child td{border-bottom:none}
 .lgd{display:flex;gap:14px;font-size:11.5px;color:var(--ink3);padding:9px 13px;border-top:1px solid var(--line);flex-wrap:wrap;align-items:center}
 .noacc{padding:50px 30px;text-align:center}
 .noacc .ic{font-size:38px;margin-bottom:12px}
+
+/* ===== v2.1 — phan loai mon hoc (9/9/2026) ===== */
+.secth{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;margin:0 0 7px}
+.sub{color:var(--ink3);font-size:11px}
+.quote{padding:10px 12px;font-size:12.5px;line-height:1.75}
+.csx{color:#b45309;font-weight:800;cursor:help}
+.gdptbar{padding:8px 12px;background:var(--brand-soft);border-bottom:1px solid var(--line);
+ font-size:11.5px;line-height:1.6;color:var(--ink2)}
+.hb.truong{border-color:#c4b5fd}
+.hb.truong>.hbh{background:#f5f3ff;color:#5b21b6}
+.trbar{padding:8px 12px;background:#faf5ff;border-bottom:1px solid #e9d5ff;font-size:11.5px;line-height:1.6;color:#5b21b6}
 </style>
 </head>
 <body>
@@ -195,10 +206,11 @@ tr:last-child td{border-bottom:none}
 
 <div class="rolebar">
   <b>Chức danh:</b>
+  <button class="rb on" data-r="DQ">🔓 Đủ quyền (demo)</button>
   <button class="rb" data-r="GVCN">GVCN 9A2</button>
   <button class="rb" data-r="GVBM">GVBM</button>
   <button class="rb" data-r="VT">VT</button>
-  <button class="rb on" data-r="PHT_A">PHT_ĐT · Điểm trường A</button>
+  <button class="rb" data-r="PHT_A">PHT_ĐT · Điểm trường A</button>
   <button class="rb" data-r="PHT_B">PHT_ĐT · Điểm trường B</button>
   <button class="rb" data-r="PHT_CM">PHT_CM</button>
   <button class="rb" data-r="HT">HT</button>
@@ -243,6 +255,7 @@ const NAV=[
  ['vb','📄 Văn bản',[['M4.11','Văn bản đi']]],
 ];
 const ROLE={
+ DQ:{n:'Đủ quyền (demo)',sc:'school',menu:'all',ky:34,pht:'DT',dexuatDC:1,duyetDC:1,kyDC:1,xuat:1},
  GVCN:{n:'GVCN lớp 9A2',sc:'class',lop:'9A2',dt:'Điểm trường A',menu:['hs','lop'],ky:0,dexuatDC:1},
  GVBM:{n:'GV bộ môn Vật lí',sc:'class',menu:['lop'],ky:0,chan:1},
  VT:{n:'Văn thư',sc:'branch',dt:'Điểm trường A',menu:['hs','vb'],ky:0,xuat:1},
@@ -252,12 +265,18 @@ const ROLE={
  HT:{n:'Hiệu trưởng',sc:'school',menu:'all',ky:4,kyDC:1},
 };
 const TABN={tra:'📚 Tra cứu học bạ',nam:'✍️ Chốt học bạ theo năm',duyet:'🖊 Chờ tôi duyệt'};
-let role='PHT_A', tab='nam', cur=null, curHS=null, curWk=null, openG={}, fRoi='Đang theo học', fTang='Tất cả', t3By='PHT_DT';
+let role='DQ', tab='nam', cur=null, curHS=null, curWk=null, openG={}, fRoi='Đang theo học', fTang='Tất cả', t3By='PHT_DT';
 const R=()=>ROLE[role];
-const kyCua=()=>{const r=R(); if(r.ky===4)return 4;
+/* vai Du quyen ky duoc CA tang 3 lan tang 4 — nang luc la mang, khong phai mot so don */
+const kyCua=(l)=>{const r=R();
+ if(r.ky===34){if(!l)return 3; const k=tangKe(l); return (k===3||k===4)?k:0}
+ if(r.ky===4)return 4;
  if(r.ky===3&&r.pht===(t3By==='PHT_DT'?'DT':'CM'))return 3; return 0};
 
 let LOP=[
+ {id:'10 Toán',dt:'Điểm trường A',gvcn:'Đỗ Quang Vinh',ss:32,cap:'THPT',he:'Chuyên Toán',
+  mtr:['Chuyên đề Toán học'],
+  t1:{ky:10,tong:10,thieu:[]},t2:{ok:1,ai:'Đỗ Quang Vinh',ngay:'21/8/2026'},t3:{ok:0},t4:{ok:0}},
  {id:'9A2',dt:'Điểm trường A',gvcn:'Trần Thị Mai',ss:35,
   t1:{ky:10,tong:12,thieu:[['Vật lí','Nguyễn Văn Hùng'],['Lịch sử và Địa lí','Trần Thị Lan']]},
   t2:{ok:1,ai:'Trần Thị Mai',ngay:'20/8/2026'},t3:{ok:0},t4:{ok:0}},
@@ -266,13 +285,29 @@ let LOP=[
  {id:'7A3',dt:'Điểm trường A',gvcn:'Lý Thanh Vân',ss:31,
   t1:{ky:7,tong:12,thieu:[['Hóa học','Vũ Đình Nam'],['Sinh học','Bùi Thị Hạnh'],['Tin học','Ngô Văn Sơn'],['Công nghệ','Đặng Minh Tú'],['Nghệ thuật','Lê Thị Yến']]},
   t2:{ok:0},t3:{ok:0},t4:{ok:0}},
- {id:'8A1',dt:'Điểm trường B',gvcn:'Phạm Văn Đức',ss:34,
+ {id:'8A1',dt:'Điểm trường B',gvcn:'Phạm Văn Đức',ss:34,he:'Chất lượng cao',
+  mtr:['Tiếng Anh tăng cường'],
   t1:{ky:12,tong:12,thieu:[]},t2:{ok:1,ai:'Phạm Văn Đức',ngay:'18/8/2026'},t3:{ok:0},t4:{ok:0}},
  {id:'8A2',dt:'Điểm trường B',gvcn:'Hoàng Thu Trang',ss:33,
   t1:{ky:12,tong:12,thieu:[]},t2:{ok:1,ai:'Hoàng Thu Trang',ngay:'17/8/2026'},
   t3:{ok:1,ai:'PHT Điểm trường B',ngay:'22/8/2026',phien:'PK-2026-0032'},t4:{ok:0}},
 ];
 const HB=[
+ /* Lop 10 Toan — he Chuyen Toan. Mon Toan mang Muc noi dung = Chuyen sau (7 tiet)
+    NHUNG van la mon cua CT GDPT ⇒ IN BINH THUONG vao hoc ba so.
+    Mon "Chuyen de Toan hoc" la mon Cua truong ⇒ KHONG in vao hoc ba so. */
+ {ma:'HS-2026-1002',n:'Hoàng Nhật Minh',lop:'10 Toán',gt:'Nam',ns:'14/03/2010',
+  diem:{'Toán':9.5,'Ngữ văn':7.6,'Tiếng Anh':8.8,'Lịch sử':7.9,'Vật lí':9.0,'Hóa học':8.4,'Sinh học':7.8,'Tin học':9.1,'GDKT&PL':8.2,'GDTC':'Đạt'},
+  dtr:{'Chuyên đề Toán học':9.3},
+  hk:'Tốt',hl:'Tốt',kl:'Được lên lớp',cb:[]},
+ {ma:'HS-2026-1007',n:'Vương Khánh Chi',lop:'10 Toán',gt:'Nữ',ns:'22/08/2010',
+  diem:{'Toán':9.2,'Ngữ văn':8.4,'Tiếng Anh':9.0,'Lịch sử':8.1,'Vật lí':8.6,'Hóa học':8.8,'Sinh học':8.0,'Tin học':8.7,'GDKT&PL':8.5,'GDTC':'Đạt'},
+  dtr:{'Chuyên đề Toán học':8.9},
+  hk:'Tốt',hl:'Tốt',kl:'Được lên lớp',cb:[]},
+ {ma:'HS-2026-1015',n:'Lê Anh Tuấn',lop:'10 Toán',gt:'Nam',ns:'06/01/2010',
+  diem:{'Toán':8.8,'Ngữ văn':7.1,'Tiếng Anh':7.4,'Lịch sử':7.0,'Vật lí':8.2,'Hóa học':7.6,'Sinh học':7.2,'Tin học':8.5,'GDKT&PL':7.5,'GDTC':'Đạt'},
+  dtr:{},   /* chua co diem mon Cua truong — Phieu ket qua phai dong dau BAN CHUA DAY DU */
+  hk:'Tốt',hl:'Khá',kl:'Được lên lớp',cb:[]},
  {ma:'HS-2026-0412',n:'Nguyễn Minh Anh',lop:'9A2',gt:'Nữ',ns:'12/04/2011',
   diem:{'Toán':8.4,'Ngữ văn':7.8,'Tiếng Anh':9.1,'Vật lí':8.0,'Hóa học':7.5,'Sinh học':8.2,'Lịch sử và Địa lí':7.9,'GDCD':8.8,'Tin học':9.0,'Công nghệ':8.1,'GDTC':'Đạt','Nghệ thuật':'Đạt'},
   hk:'Tốt',hl:'Tốt',kl:'Được lên lớp',cb:[]},
@@ -291,12 +326,13 @@ const HB=[
  {ma:'HS-2026-0402',n:'Ngô Bảo Châu',lop:'9A1',gt:'Nữ',ns:'19/05/2011',
   diem:{'Toán':7.5,'Ngữ văn':7.9,'Tiếng Anh':8.2,'Vật lí':7.1,'Hóa học':7.4,'Sinh học':7.8,'Lịch sử và Địa lí':8.0,'GDCD':8.4,'Tin học':8.1,'Công nghệ':7.6,'GDTC':'Đạt','Nghệ thuật':'Đạt'},
   hk:'Tốt',hl:'Khá',kl:'Được lên lớp',cb:[],
-  void1:{mon:'Toán',ly:'Điểm Toán sửa 7.1 → 7.5 ngày 24/8/2026 qua luồng duyệt sửa sau chốt tại M2.6'}},
+  void1:{mon:'Toán',ly:'Điểm Toán sửa 7.1 → 7.5 ngày 24/8/2026 qua luồng duyệt sửa sau chốt tại M2.5'}},
  {ma:'HS-2026-0407',n:'Đinh Thùy Linh',lop:'9A1',gt:'Nữ',ns:'30/09/2011',
   diem:{'Toán':6.8,'Ngữ văn':7.0,'Tiếng Anh':7.3,'Vật lí':6.5,'Hóa học':6.9,'Sinh học':7.1,'Lịch sử và Địa lí':7.4,'GDCD':7.8,'Tin học':7.5,'Công nghệ':7.0,'GDTC':'Đạt','Nghệ thuật':'Đạt'},
   hk:'Khá',hl:'Khá',kl:'—',cb:['⚠ Chưa có kết luận cuối năm — M3.3 chưa xét lên lớp']},
  {ma:'HS-2026-0511',n:'Đỗ Nam Khánh',lop:'8A1',gt:'Nam',ns:'11/07/2012',
   diem:{'Toán':7.0,'Ngữ văn':6.8,'Tiếng Anh':7.5,'Vật lí':6.9,'Hóa học':7.2,'Sinh học':7.1,'Lịch sử và Địa lí':7.3,'GDCD':7.9,'Tin học':7.7,'Công nghệ':7.4,'GDTC':'Đạt','Nghệ thuật':'Đạt'},
+  dtr:{'Tiếng Anh tăng cường':8.3},
   hk:'Tốt',hl:'Khá',kl:'Được lên lớp',cb:[]},
  {ma:'HS-2026-0523',n:'Hoàng Bảo Ngọc',lop:'8A2',gt:'Nữ',ns:'02/12/2012',
   diem:{'Toán':8.2,'Ngữ văn':8.6,'Tiếng Anh':8.9,'Vật lí':7.8,'Hóa học':8.0,'Sinh học':8.3,'Lịch sử và Địa lí':8.5,'GDCD':9.1,'Tin học':8.8,'Công nghệ':8.4,'GDTC':'Đạt','Nghệ thuật':'Đạt'},
@@ -309,6 +345,9 @@ const HB=[
   hk:'Tốt',hl:'Khá',kl:'Chuyển trường giữa năm',cb:[]},
 ];
 const NAMHOC={
+ 'HS-2026-1002':[['2025-2026','10 Toán','Được lên lớp','cho']],
+ 'HS-2026-1007':[['2025-2026','10 Toán','Được lên lớp','cho']],
+ 'HS-2026-1015':[['2025-2026','10 Toán','Được lên lớp','cho']],
  'HS-2026-0412':[['2025-2026','9A2','Được lên lớp','cho'],['2024-2025','8A2','Được lên lớp','ht'],['2023-2024','7A1','Được lên lớp','ht'],['2022-2023','6A2','Được lên lớp','tk']],
  'HS-2026-0418':[['2025-2026','9A2','Được lên lớp','cho'],['2024-2025','8A2','Được lên lớp','ht']],
  'HS-2026-0425':[['2025-2026','9A2','Được lên lớp','cho'],['2024-2025','8A1','Được lên lớp','dc']],
@@ -353,6 +392,33 @@ function scopeHS(){
  return HB.filter(h=>ids.has(h.lop))}
 const dtOf=h=>{const l=LOP.find(x=>x.id===h.lop);return l?l.dt:'Điểm trường A'};
 
+/* ===== PHAN LOAI MON — doc tu M10.2 (D1: M10.2 la menu chu, M1.3 CHI DOC) =====
+   MOT truong that:  Nguon chuong trinh = CT GDPT | Cua truong  -> quyet dinh HOC BA
+   MOT nhan dan xuat: ★ mon chuyen  (mon == he.Mon chuyen cua he) -> KHONG dung toi hoc ba
+   M1.3 doc DUY NHAT "Nguon chuong trinh". Loc hoc ba theo nhan ★
+   = xoa mon Toan khoi hoc ba cua hoc sinh chuyen Toan. */
+/* Mon chuyen cua he — M10.2 §5.5, Master, 0..1. Doc tu he dao tao cua lop. */
+const MONCHUYEN={'Chuyên Toán':'Toán','Chuyên Tin':'Tin học','Chuyên Văn':'Ngữ văn'};
+const lopOf=id=>LOP.find(x=>x.id===id)||{};
+const monTruong=id=>lopOf(id).mtr||[];
+/* Nhan ★ mon chuyen — DAN XUAT (M10.2 R27), khong co o nhap, khong luu o M1.3.
+   Ban dau tep quyet dinh co truong "Muc noi dung" khai tay; da bo 9/9/2026
+   (_phan-loai-mon-hoc-he-chuyen.md §3.2b) vi khong hanh vi nao can toi no. */
+const laCS=(id,mon)=>MONCHUYEN[lopOf(id).he]===mon;
+const dtrOf=h=>h.dtr||{};
+const thieuTr=id=>{const hs=HB.filter(h=>h.lop===id&&!h.roi);
+ return monTruong(id).map(m=>({m,co:hs.filter(h=>dtrOf(h)[m]!=null).length,tong:hs.length}))};
+const canhBaoTr=id=>{const T=thieuTr(id); if(!T.length)return '';
+ const ke=T.filter(t=>t.co<t.tong);
+ return `<div class="warn"><b>⚠ Lớp ${id} có ${T.length} môn không thuộc Chương trình GDPT</b>
+   ${T.map(t=>`<div style="margin-top:4px">• <b>${t.m}</b> — ${t.co}/${t.tong} em đã có điểm${t.co<t.tong?` <span style="color:var(--red)">⚠ còn ${t.tong-t.co} em trống</span>`:''}</div>`).join('')}
+   <div style="margin-top:7px;font-size:11.5px">Các môn này <b>KHÔNG in vào học bạ số</b> — cấu trúc trường dữ liệu do Bộ quy định
+    (<b>TT 70/2026</b> Điều 6). Điểm nằm ở <b>Phiếu kết quả môn học của nhà trường</b>, xuất riêng ở F6, <b>không ký cùng học bạ</b>.
+    ${ke.length?'Phiếu in lúc này sẽ mang dấu <b>BẢN CHƯA ĐẦY ĐỦ</b>.':''}</div>
+   <div style="margin-top:7px"><button class="btn xs" data-x="canccu">📖 Căn cứ</button>
+    <button class="btn xs" data-x="phieu" data-lop="${id}">🖨 Phiếu kết quả môn của trường</button>
+    <span class="rolnk" data-go="M10.2?tab=danh_muc_mon&return=M1.3">🔗 → M10.2 Danh mục môn</span></div></div>`};
+
 function tierState(l,t){
  if(t===1)return l.t1.ky===l.t1.tong?['ok','✓ đủ '+l.t1.tong]:['part',l.t1.ky+'/'+l.t1.tong];
  const x=l['t'+t];
@@ -363,12 +429,12 @@ const tangKe=l=>l.t1.ky<l.t1.tong?1:!l.t2.ok?2:!l.t3.ok?3:!l.t4.ok?4:0;
 const lopTT=l=>{const k=tangKe(l);
  return k===0?['Hoàn tất','o']:k===4?['Chờ HT ký chốt','w']:k===3?['Chờ PHT duyệt','w']
   :k===2?['Chờ GVCN ký','n']:['Chờ GVBM ký '+(l.t1.tong-l.t1.ky)+' môn','n']};
-const toiKyLop=l=>!!kyCua()&&tangKe(l)===kyCua()&&dukien(l);
+const toiKyLop=l=>!!kyCua(l)&&tangKe(l)===kyCua(l)&&dukien(l);
 
 function viec(){
  const out=[], L=scopeLop();
  L.filter(toiKyLop).forEach(l=>out.push({k:'phien',l}));
- LE.filter(x=>x.tang===kyCua()&&L.some(l=>l.id===x.lop)).forEach(x=>out.push({k:'le',x}));
+ LE.filter(x=>(R().ky===34?[3,4].includes(x.tang):x.tang===kyCua())&&L.some(l=>l.id===x.lop)).forEach(x=>out.push({k:'le',x}));
  DC.forEach(d=>{
   if(R().sc!=='school'&&d.dt!==R().dt)return;
   if(d.tt==='cho_duyet'&&R().duyetDC)out.push({k:'dc',d});
@@ -486,7 +552,7 @@ function tabNam(){
   return k===0};
  const LL=L.filter(f), my=kyCua();
  const dts=[...new Set(LL.map(l=>l.dt))].sort();
- const cell=(l,t)=>{const [c,x]=tierState(l,t), isMine=my===t&&tangKe(l)===t&&dukien(l);
+ const cell=(l,t)=>{const [c,x]=tierState(l,t), isMine=kyCua(l)===t&&tangKe(l)===t&&dukien(l);
   return `<div class="lcol"><span class="tier ${isMine?'mine':''}"><span class="dotx ${c}"></span>${x}</span></div>`};
  let body=dts.map(d=>{const rd=LL.filter(l=>l.dt===d),k='n-'+d,op=openG[k]!==false;
   return `<div class="grow" data-g="${k}"><span class="ar">${op?'▼':'▶'}</span>${d}
@@ -524,19 +590,22 @@ function tabNam(){
 /* ===== PANEL LOP — dung chung cho tab 2 va tab 3 ===== */
 function panelLop(lopId){
  const l=LOP.find(x=>x.id===lopId); if(!l)return'';
- const du=dukien(l), k=tangKe(l), my=kyCua(), toiKy=toiKyLop(l);
+ const du=dukien(l), k=tangKe(l), my=kyCua(l), toiKy=toiKyLop(l);
  const hs=HB.filter(h=>h.lop===l.id&&!h.roi);
  const le=LE.filter(x=>x.lop===l.id);
- const MC=['Toán','Ngữ văn','Tiếng Anh','Vật lí'];
+ const MC=Object.keys((hs[0]||{diem:{}}).diem).slice(0,4);
  return `<div class="ph"><div><h2>Lớp ${l.id}</h2>
    <div class="m"><span class="pill">${l.dt}</span><span class="pill">GVCN ${l.gvcn}</span>
     <span class="pill">${l.ss} học bạ</span><span class="st2 ${lopTT(l)[1]}">${lopTT(l)[0]}</span></div></div>
    <div class="spacer"></div><button class="btn sm" id="pclose">✕ Đóng</button></div>
   <div class="pbody">
    ${!du?`<div class="danger"><b>⛔ Chưa mở được Phiên ký cho lớp ${l.id}</b>
-     ${l.t1.thieu.length?`<div style="margin-top:7px"><b>Tầng 1 — còn ${l.t1.thieu.length} môn chưa có chữ ký giáo viên bộ môn:</b>
-      ${l.t1.thieu.map(m=>`<div style="margin-top:3px">• ${m[0]} — GV ${m[1]} <span class="rolnk" data-go="M2.6">→ M2.6</span></div>`).join('')}</div>`:''}
+     ${l.t1.thieu.length?`<div style="margin-top:7px"><b>Tầng 1 — còn ${l.t1.thieu.length} / ${l.t1.tong} môn Chương trình GDPT chưa có chữ ký giáo viên bộ môn:</b>
+      ${l.t1.thieu.map(m=>`<div style="margin-top:3px">• ${m[0]} — GV ${m[1]} <span class="rolnk" data-go="M2.5">→ M2.5</span></div>`).join('')}</div>`:''}
      <div style="margin-top:7px"><b>Tầng 2 — GVCN:</b> ${l.t2.ok?'✓ đã ký '+l.t2.ngay:'<b>chưa ký</b> <span class="rolnk" data-go="M2.8">→ M2.8</span>'}</div>
+     ${monTruong(l.id).length?`<div style="margin-top:7px;font-size:11.5px">Mẫu số <b>${l.t1.tong}</b> <b>chỉ đếm môn Chương trình GDPT</b> —
+      ${monTruong(l.id).length} môn của trường <b>không nằm trong phép đếm này</b> và <b>không chặn mở Phiên ký</b>:
+      chúng không cấu thành học bạ số nên trạng thái của chúng không đổi gì trong cái đang được ký.</div>`:''}
      <div style="margin-top:9px"><button class="btn xs" data-x="nhacthieu">🔔 Nhắc người còn thiếu</button></div></div>`
     :toiKy?`<div class="ok"><b>✓ Đủ điều kiện — bạn là tầng ${my} · ${my===3?'Duyệt':'Ký chốt'}</b><br>
       Rà bảng bên dưới rồi ký ngay tại đây, <b>không phải chuyển tab</b>.
@@ -548,9 +617,9 @@ function panelLop(lopId){
    ${le.length?`<div class="warn"><b>${le.length} học bạ lẻ chờ ký riêng</b> — không nằm trong phiên của lớp:
      ${le.map(x=>{const h=HB.find(y=>y.ma===x.ma);return `<div style="margin-top:4px">• <b>${h?h.n:x.ma}</b> — ${x.ly}</div>`}).join('')}
      <div style="margin-top:5px;font-size:11.5px">Xử lý ở tab <b>Chờ tôi duyệt</b>.</div></div>`:''}
-   <div style="font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;margin:14px 0 7px">
-    Tình hình học bạ cả lớp — ${hs.length} / ${l.ss} học sinh</div>
-   <div class="wrapx"><table><tr><th>Học sinh</th>${MC.map(m=>`<th>${m}</th>`).join('')}
+   ${canhBaoTr(l.id)}
+   <div class="secth" style="margin-top:14px">Tình hình học bạ cả lớp — ${hs.length} / ${l.ss} học sinh</div>
+   <div class="wrapx"><table><tr><th>Học sinh</th>${MC.map(m=>`<th>${m}${laCS(l.id,m)?' <span class="csx">★</span>':''}</th>`).join('')}
      <th>Học lực</th><th>Rèn luyện</th><th>Kết luận</th><th>Cảnh báo</th><th></th></tr>
     ${hs.map(h=>`<tr style="${h.cb.length||h.void1?'background:var(--amber-soft)':''}">
      <td><b>${h.n}</b><br><span style="color:var(--ink3);font-size:11px">${h.ma}</span></td>
@@ -572,7 +641,7 @@ function tabDuyet(){
  const wkHTML=v=>{
   if(v.k==='phien'){const l=v.l;
    return `<div class="wk ${curWk==='phien:'+l.id?'on':''}" data-wk="phien:${l.id}"><div class="ic">🖊</div>
-    <div class="bd"><b>Phiên ký lớp ${l.id} — tầng ${kyCua()} · ${kyCua()===3?'Duyệt':'Ký chốt'}</b>
+    <div class="bd"><b>Phiên ký lớp ${l.id} — tầng ${kyCua(l)} · ${kyCua(l)===3?'Duyệt':'Ký chốt'}</b>
      <div style="font-size:12px;color:var(--ink2);margin-top:2px">${l.dt} · GVCN ${l.gvcn} · ${l.ss} học bạ</div>
      <div style="margin-top:4px;font-size:11.5px;color:var(--ink3)">Bấm để mở <b>tình hình học bạ cả lớp</b> bên phải — rà xong ký ngay tại đó</div></div>
     <div><span class="st2 w">chờ 3 ngày</span></div></div>`}
@@ -635,7 +704,7 @@ function panelLe(ma){
    <div class="danger"><b>Vì sao em này không nằm trong phiên ký của lớp</b><br>${x.ly}<br><br>
     Không có hàng đợi này thì em bị loại khỏi phiên sẽ <b>biến mất</b> — lớp hiện đã ký xong mà một học bạ vẫn treo, không ai thấy.</div>
    ${h.void1?`<div class="warn"><b>Chữ ký tầng 1 mất hiệu lực</b> — môn ${h.void1.mon}. ${h.void1.ly}<br>
-     Giáo viên bộ môn phải ký lại riêng em này tại <b>M2.6</b> trước.<span class="rolnk" data-go="M2.6">→ M2.6</span></div>`:''}
+     Giáo viên bộ môn phải ký lại riêng em này tại <b>M2.5</b> trước.<span class="rolnk" data-go="M2.5">→ M2.5</span></div>`:''}
    <div class="hb"><div class="hbh">Kết quả năm học</div>
     <table><tr><th>Môn</th><th>TB cả năm</th></tr>
      ${Object.entries(h.diem).slice(0,6).map(([m,v])=>`<tr><td>${m}</td><td><b>${typeof v==='number'?v.toFixed(1):v}</b></td></tr>`).join('')}</table>
@@ -659,12 +728,15 @@ function hbNam(ma,nam){
  return {ma,n:h.n,ns:h.ns,gt:h.gt,nam,lop:y[1],kl:y[2],tt:y[3],diem,
   hl:cur0?h.hl:XL[(seed+1)%3],hk:cur0?h.hk:XL[seed%3],
   gvcn:cur0?((LOP.find(l=>l.id===y[1])||{}).gvcn||'—'):['Trần Thị Mai','Lê Minh Quang','Phạm Văn Đức','Hoàng Thu Trang'][seed%4],
+  dtr:cur0?(h.dtr||{}):{},
   cb:cur0?h.cb:[],void1:cur0?h.void1:null,cur:cur0}}
 
 function xemHB(ma,nam){
  nam=nam||(NAMHOC[ma]||[['2025-2026']])[0][0];
  const h=hbNam(ma,nam); if(!h)return;
  const l=h.cur?LOP.find(x=>x.id===h.lop):null, st=STN[h.tt];
+ const csList=Object.keys(h.diem).filter(m=>laCS(h.lop,m));
+ const mtr=h.cur?monTruong(h.lop):[];
  $('#mdl').classList.remove('sm');
  modal(`🎓 Học bạ ${nam} — ${h.n} <span class="st2 ${st[1]}" style="margin-left:7px">${st[0]}</span>`,
   `${h.tt==='tk'?`<div class="warn"><b>Học bạ nhận từ trường khác — chỉ đọc tuyệt đối.</b>
@@ -680,14 +752,35 @@ function xemHB(ma,nam){
     <div class="f2"><div class="k">Giáo viên chủ nhiệm</div><div class="v">${h.gvcn}</div></div></div>
    <div class="hb"><div class="hbh">Kết quả học tập<span class="sp"></span>
      <span style="font-weight:400;font-size:11px;color:var(--ink3)">Nguồn: M3.1 Tổng kết</span></div>
+    <div class="gdptbar">📘 <b>${Object.keys(h.diem).length} môn thuộc Chương trình GDPT</b> —
+     phần cấu thành <b>học bạ số</b> theo <b>TT 70/2026</b>.
+     ${csList.length?`Môn <b>${csList.join(', ')}</b> là <b>môn chuyên của hệ ${lopOf(h.lop).he}</b>, dạy theo
+       <b>nội dung chuyên sâu môn chuyên</b> (TT 05/2023) — <b>vẫn là môn của Chương trình GDPT, in bình thường</b>,
+       chỉ khác số tiết. Nhãn <b>★</b> là <b>dẫn xuất</b>, không phải một trường ai đó khai.`:''}</div>
     <div class="wrapx"><table><tr><th>Môn học</th><th>TB kỳ 1</th><th>TB kỳ 2</th><th>TB cả năm</th></tr>
-     ${Object.entries(h.diem).map(([m,d])=>{const num=typeof d==='number', vo=h.void1&&h.void1.mon===m;
-      return `<tr${vo?' style="background:var(--red-soft)"':''}><td><b>${m}</b>${vo?' <span class="st2 r">ký lại</span>':''}</td>
+     ${Object.entries(h.diem).map(([m,d])=>{const num=typeof d==='number', vo=h.void1&&h.void1.mon===m, cs=laCS(h.lop,m);
+      return `<tr${vo?' style="background:var(--red-soft)"':''}><td><b>${m}</b>${cs?' <span class="csx" title="★ môn chuyên — nhãn DẪN XUẤT từ Môn chuyên của hệ (M10.2 R27), không phải một trường khai tay. Lớp học theo nội dung chuyên sâu môn chuyên (TT 05/2023) nhưng vẫn là môn của Chương trình GDPT ⇒ in vào học bạ bình thường.">★</span>':''}${vo?' <span class="st2 r">ký lại</span>':''}</td>
       <td>${num?(d-0.3).toFixed(1):d}</td><td>${num?(d+0.15).toFixed(1):d}</td><td><b>${num?d.toFixed(1):d}</b></td></tr>`}).join('')}
     </table></div>
     <div style="padding:9px 12px;border-top:1px solid var(--line)">
      <div class="ct">TBmHK = (Tổng ĐGtx + 2×ĐGgk + 3×ĐGck) / (Số ĐGtx + 5)</div>
-     <div class="ct">TBmnăm = (TBmHK1 + 2×TBmHK2) / 3</div></div></div>
+     <div class="ct">TBmnăm = (TBmHK1 + 2×TBmHK2) / 3</div>
+     <div style="font-size:11.5px;color:var(--ink3);margin-top:6px">Đang tính trên <b>${Object.keys(h.diem).length}</b> môn Chương trình GDPT${mtr.length?` · <b>bỏ ngoài ${mtr.length}</b> môn của trường`:''} — cùng phép đếm với <b>M3.1</b> §6.2.2.
+      ${csList.length?'Nhãn <b>★ môn chuyên</b> <b>không</b> đụng công thức này.':''}</div></div></div>
+   ${mtr.length?`<div class="hb truong"><div class="hbh">🏫 Môn học của nhà trường — KHÔNG thuộc học bạ số<span class="sp"></span>
+     <span style="font-weight:400;font-size:11px">🔗 M10.2</span></div>
+    <div class="trbar"><b>Khối này không phải một phần của học bạ số.</b>
+     Điểm ở đây <b>không tính vào ĐTB, xếp loại và danh hiệu</b> (TT 22/2021 Điều 4),
+     <b>không đẩy lên CSDL ngành</b>, và <b>không có trong Bản chuyển trường</b>.
+     Cấu trúc trường dữ liệu của học bạ số do Bộ quy định — <b>TT 70/2026</b> Điều 6.</div>
+    <div class="wrapx"><table><tr><th>Môn học</th><th>Nguồn chương trình</th><th>TB cả năm</th></tr>
+     ${mtr.map(m=>{const d=h.dtr[m];
+      return `<tr><td><b>${m}</b></td><td><span class="st2 v">Của trường</span></td>
+       <td>${d==null?'<span style="color:var(--red)">chưa có điểm</span>':`<b>${(+d).toFixed(1)}</b>`}</td></tr>`}).join('')}
+    </table></div>
+    <div style="padding:9px 12px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink3)">
+     <b>Không có chuỗi chữ ký</b> — khối này không đi qua Phiên ký, không có mã phiên, không vào Sổ phiên ký.
+     Muốn có bản giấy thì xuất <b>Phiếu kết quả môn học của nhà trường</b> ở F6.</div></div>`:''}
    <div class="hb"><div class="hbh">Kết luận cuối năm</div>
     <div class="f2"><div class="k">Xếp loại học tập</div><div class="v">${h.hl}</div></div>
     <div class="f2"><div class="k">Xếp loại rèn luyện</div><div class="v">${h.hk}</div></div>
@@ -697,7 +790,7 @@ function xemHB(ma,nam){
    <div class="hb"><div class="hbh">Chuỗi chữ ký${h.cur?'':' — '+nam}</div><div style="padding:10px 12px"><div class="sigs">
     ${h.cur?`
      <div class="sig ${h.void1?'void':'done'}"><span class="t">Tầng 1 · GVBM</span>
-      <span>${h.void1?`<b>Mất hiệu lực với em này</b> — môn ${h.void1.mon}`:'Đã ký · đơn vị (Lớp × Môn) tại <b>M2.6</b>'}</span></div>
+      <span>${h.void1?`<b>Mất hiệu lực với em này</b> — môn ${h.void1.mon}`:'Đã ký · đơn vị (Lớp × Môn) tại <b>M2.5</b>'}</span></div>
      <div class="sig ${l&&l.t2.ok?'done':''}"><span class="t">Tầng 2 · GVCN</span>
       <span>${l&&l.t2.ok?`${l.t2.ai} · ${l.t2.ngay} · tại <b>M2.8</b>`:'Chưa ký'}</span></div>
      <div class="sig ${l&&l.t3.ok?'done':''}"><span class="t">Tầng 3 · PHT</span>
@@ -710,12 +803,13 @@ function xemHB(ma,nam){
         <span>${['ht','dc'].includes(h.tt)?'Đã ký · năm học đã chốt':'Chưa hoàn tất'}</span></div>`).join(''))}
    </div></div></div>`,
   [['Đóng',0],['📘 Học bạ trọn khóa',()=>tronKhoa(ma)],
-   ['⬇ Xuất PDF',()=>toast('Đã xuất PDF học bạ '+nam+' · có mã tra cứu và QR · ghi audit')]])}
+   ['⬇ Xuất PDF',()=>act('pdf',{ma})]]
+  .concat(mtr.length?[['🖨 Phiếu môn của trường',()=>act('phieu',{lop:h.lop})]]:[]))}
 
 function tronKhoa(ma){
  const h=HB.find(x=>x.ma===ma), ns=NAMHOC[ma]||[];
  const rows=ns.map(y=>hbNam(ma,y[0])).filter(Boolean);
- const mc=['Toán','Ngữ văn','Tiếng Anh','Vật lí','Hóa học','Lịch sử và Địa lí'];
+ const mc=Object.keys((rows[0]||{diem:{}}).diem).slice(0,6);
  $('#mdl').classList.remove('sm');
  modal(`📘 Học bạ trọn khóa — ${h.n}`,
   `<div class="info"><b>Bản Master xuyên năm</b> (<code>nh1.2</code> §1) — gom mọi năm học thành một artefact.
@@ -749,12 +843,13 @@ function moPhien(lopId){
 
 function renderPhien(l){
  const hs=HB.filter(h=>h.lop===l.id&&!h.roi), con=hs.filter(h=>!loai.has(h.ma));
- const MC=['Toán','Ngữ văn','Tiếng Anh','Vật lí'];
+ const MC=Object.keys((hs[0]||{diem:{}}).diem).slice(0,4);
  $('#mdl').classList.remove('sm');
- modal(`🖊 Phiên ký lớp ${l.id} — tầng ${kyCua()} · ${kyCua()===3?'Duyệt':'Ký chốt'} <span class="st2 b" style="margin-left:7px">${l.dt}</span>`,
+ modal(`🖊 Phiên ký lớp ${l.id} — tầng ${kyCua(l)} · ${kyCua(l)===3?'Duyệt':'Ký chốt'} <span class="st2 b" style="margin-left:7px">${l.dt}</span>`,
   `<div class="info"><b>Xác nhận lần cuối.</b> Bảng chi tiết cả lớp bạn vừa xem ở panel bên phải — đây là bước chọn ai bị loại rồi ký.</div>
+   ${canhBaoTr(l.id)}
    <div class="wrapx"><table>
-    <tr><th style="width:26px"></th><th>Học sinh</th>${MC.map(m=>`<th>${m}</th>`).join('')}
+    <tr><th style="width:26px"></th><th>Học sinh</th>${MC.map(m=>`<th>${m}${laCS(l.id,m)?' <span class="csx">★</span>':''}</th>`).join('')}
      <th>Học lực</th><th>Rèn luyện</th><th>Kết luận</th></tr>
     ${hs.map(h=>{const out=loai.has(h.ma);
      return `<tr style="${out?'opacity:.4;text-decoration:line-through':''}${h.cb.length||h.void1?';background:var(--amber-soft)':''}">
@@ -768,7 +863,7 @@ function renderPhien(l){
     Em bị loại chuyển sang <b>hàng đợi Học bạ lẻ chờ ký</b> ở tab này, <b>không biến mất</b>.</div>
    <div class="ro" style="margin-bottom:0">Đang ký <b>${con.length}</b> học bạ${loai.size?` · <b>${loai.size}</b> em chuyển sang hàng đợi lẻ`:''}.</div>`,
   [['Hủy',0],['↩ Trả về tầng trước',()=>act('trave'),'d'],
-   [`🖊 Ký ${con.length} học bạ`,()=>kySo({l,n:con.length,loaiList:[...loai]})]])}
+   [`🖊 Ký ${con.length} học bạ`,()=>kySo({l,n:con.length,tang:kyCua(l),loaiList:[...loai]})]])}
 
 function kySo(ctx){
  window.__ctx=ctx; $('#mdl').classList.add('sm');
@@ -784,11 +879,11 @@ function kySo(ctx){
 function hoanTat(boqua){
  const c=window.__ctx; if(!c)return;
  $('#mask').classList.remove('on');
- if(c.l){const t='t'+kyCua(), ma='PK-2026-00'+(60+PHIEN.length);
+ if(c.l){const tg=c.tang||kyCua(c.l), t='t'+tg, ma='PK-2026-00'+(60+PHIEN.length);
   c.l[t]={ok:1,ai:R().n,ngay:'25/8/2026',phien:ma,boqua:boqua?1:0};
-  PHIEN.unshift({ma,lop:c.l.id,dt:c.l.dt,tang:kyCua(),ai:R().n,ngay:'25/8/2026',so:c.n,kyso:boqua?0:1});
+  PHIEN.unshift({ma,lop:c.l.id,dt:c.l.dt,tang:tg,ai:R().n,ngay:'25/8/2026',so:c.n,kyso:boqua?0:1});
   (c.loaiList||[]).forEach(m=>{if(!LE.some(x=>x.ma===m))
-   LE.push({ma:m,lop:c.l.id,dt:c.l.dt,tang:kyCua(),ly:'Bị loại khỏi phiên '+ma+' ngày 25/8/2026 — cần rà lại trước khi ký'})});
+   LE.push({ma:m,lop:c.l.id,dt:c.l.dt,tang:tg,ly:'Bị loại khỏi phiên '+ma+' ngày 25/8/2026 — cần rà lại trước khi ký'})});
   toast(`Đã ký phiên ${ma} · ${c.n} học bạ${boqua?' · BỎ QUA ký số, đã audit và đồng bộ M4.11':''}`
    +((c.loaiList||[]).length?` · ${c.loaiList.length} em vào hàng đợi Học bạ lẻ`:''))}
  else if(c.dc){c.dc.tt='xong';DC=DC.filter(x=>x.id!==c.dc.id);
@@ -803,7 +898,10 @@ function render(){
  $('#t3by').value=t3By;
  const hdt=$('#hdt');
  if(r.sc==='branch'||r.sc==='class'){hdt.value=r.dt||'Điểm trường A';hdt.disabled=true}
- else hdt.disabled=false;
+ else{if(hdt.disabled)hdt.value='Toàn trường';hdt.disabled=false}
+ /* ^ vai scope School nhan lai bo chon thi TRA VE Toan truong. Khong tra thi
+    doi tu PHT_DT sang Du quyen se am tham giu nguyen mot diem truong — dung loai
+    "khong thay chuc nang" ma quy uoc vai Du quyen sinh ra de tranh. */
  sidebar();
  if(r.chan){$('#tabs').innerHTML='';
   $('#content').innerHTML=`<div class="listw" style="margin-top:14px"><div class="noacc"><div class="ic">🔒</div>
@@ -811,8 +909,8 @@ function render(){
    <div style="color:var(--ink2);max-width:560px;margin:0 auto;font-size:13px;line-height:1.7">
     Học bạ chứa kết quả <b>mọi môn</b> cộng hạnh kiểm và nhận xét của giáo viên chủ nhiệm — cho giáo viên bộ môn xem là
     <b>để lộ dữ liệu ngoài phạm vi chuyên môn</b>.<br><br>
-    Tra cứu môn mình dạy tại <b>M2.6 Bảng điểm môn</b>, cũng là nơi ký tầng 1 theo đơn vị (Lớp × Môn).
-    <div style="margin-top:14px"><button class="btn p sm" data-go="M2.6">→ Mở M2.6</button></div></div></div></div>`;return}
+    Tra cứu môn mình dạy tại <b>M2.5 Bảng điểm môn học</b>, cũng là nơi ký tầng 1 theo đơn vị (Lớp × Môn).
+    <div style="margin-top:14px"><button class="btn p sm" data-go="M2.5">→ Mở M2.5</button></div></div></div></div>`;return}
  const T=['tra','nam']; if(kyCua()||r.duyetDC||r.kyDC)T.push('duyet');
  if(!T.includes(tab))tab=T[0];
  const nv=viec().length;
@@ -862,9 +960,9 @@ function act(a,d){
  if(a==='mophien'){moPhien(d.lop);return}
  if(a==='kythat'){hoanTat(0);return}
  if(a==='boqua'){hoanTat(1);return}
- if(a==='nhacthieu'){toast('Đã nhắc các giáo viên bộ môn còn thiếu chữ ký · kèm deep-link M2.6');return}
+ if(a==='nhacthieu'){toast('Đã nhắc các giáo viên bộ môn còn thiếu chữ ký · kèm deep-link M2.5');return}
  if(a==='kyle'){const h=HB.find(y=>y.ma===d.ma);
-  if(h&&h.void1){toast('Chưa ký được — tầng 1 của em này chưa được ký lại tại M2.6');return}
+  if(h&&h.void1){toast('Chưa ký được — tầng 1 của em này chưa được ký lại tại M2.5');return}
   kySo({le:d.ma,title:'Học bạ lẻ — '+(h?h.n:d.ma)});return}
  if(a==='duyetdc'){const dd=DC.find(y=>y.id===d.id);dd.tt='cho_ky';dd.duyet=R().n+' · 25/8/2026';
   curWk=null;toast('Đã duyệt '+dd.id+' · chuyển Hiệu trưởng ký');render();return}
@@ -915,18 +1013,94 @@ function act(a,d){
       <div style="text-align:right;margin-top:22px;padding-right:14px">Ký tên</div></div></div>
     <div class="ro" style="margin:12px 0 0">Thu phóng, xoay, chuyển trang, toàn màn hình. Mọi lượt mở xem và tải <b>ghi audit</b>.</div>`,
    [['Đóng',0],['⬇ Tải',()=>toast('Đã tải · ghi audit')]]);return}
- if(a==='inall'||a==='pdf'){$('#mdl').classList.add('sm');
-  const h=HB.find(x=>x.ma===curHS)||HB[0], ns=NAMHOC[h.ma]||[], chua=ns.filter(y=>['cho','doi'].includes(y[3]));
+ if(a==='inall'||a==='pdf'){$('#mdl').classList.remove('sm');
+  const h=HB.find(x=>x.ma===(d.ma||curHS))||HB[0], ns=NAMHOC[h.ma]||[], chua=ns.filter(y=>['cho','doi'].includes(y[3]));
+  const mtrX=monTruong(h.lop), TX=thieuTr(h.lop), keX=TX.filter(t=>t.co<t.tong);
   modal('🖨 Xuất học bạ — '+h.n,
    `<div class="ro">Bản in gồm <b>${ns.length} năm học</b>, có <b>mã tra cứu và QR</b> ở mỗi trang để bên nhận xác thực.</div>
     ${chua.length?`<div class="warn"><b>${chua.length} năm chưa Hoàn tất</b> — bản in đóng dấu
       <b>"BẢN CHƯA CÓ HIỆU LỰC PHÁP LÝ"</b> lên đúng các trang đó.</div>`:''}
-    <div style="margin-bottom:11px"><b>Phạm vi</b><select class="fldi">
+    <div class="secth">Bản xuất — bản nào chứa gì</div>
+    <div class="wrapx"><table><tr><th style="width:26px"></th><th>Bản xuất</th><th>Môn <i>Của trường</i></th><th>Chữ ký số</th></tr>
+     <tr><td><input type="radio" name="bx" checked style="width:15px;height:15px"></td>
+      <td><b>Học bạ một năm</b><br><span class="sub">Đúng mẫu theo cấp</span></td>
+      <td>${mtrX.length?'<span class="st2 w">kèm phiếu rời — tắt được</span>':'<span class="sub">lớp không có</span>'}</td>
+      <td>chuỗi ký học bạ</td></tr>
+     <tr><td><input type="radio" name="bx" style="width:15px;height:15px"></td>
+      <td><b>Học bạ đầy đủ</b><br><span class="sub">Mọi năm, kèm năm nhận từ trường khác</span></td>
+      <td>${mtrX.length?'<span class="st2 w">kèm phiếu rời — tắt được</span>':'<span class="sub">lớp không có</span>'}</td>
+      <td>chuỗi ký học bạ</td></tr>
+     <tr><td><input type="radio" name="bx" style="width:15px;height:15px"></td>
+      <td><b>Bản chuyển trường</b><br><span class="sub">Dùng ở M1.5</span></td>
+      <td><b style="color:var(--red)">KHÔNG BAO GIỜ</b><br><span class="sub">khóa cứng, không có công tắc</span></td>
+      <td>HT + chữ ký số tổ chức</td></tr>
+     ${mtrX.length?`<tr><td><input type="radio" name="bx" style="width:15px;height:15px"></td>
+      <td><b>🏫 Phiếu kết quả môn học của nhà trường</b><br><span class="sub">Chỉ môn Của trường — in rời</span></td>
+      <td>chính nó</td><td><b>không có ô ký số nào</b></td></tr>`:''}
+    </table></div>
+    <div class="danger" style="margin-top:11px"><b>Vì sao Bản chuyển trường không có công tắc để bật.</b>
+     Trường nhận đọc bản đó <b>như một học bạ hợp lệ</b> — đó là toàn bộ công dụng của nó. Nhét một môn ngoài chuẩn
+     vào vùng có <b>chữ ký số HT và chữ ký số tổ chức</b> làm bản ấy <b>không còn "đúng chuẩn dữ liệu"</b> theo
+     <b>TT 70/2026</b> Điều 4 khoản 2 — tức tự tay hạ giá trị pháp lý của chính bản mình vừa ký.
+     Một công tắc ở đây là công tắc chỉ dùng để làm sai.</div>
+    ${mtrX.length&&keX.length?`<div class="warn"><b>Phiếu môn của trường sẽ mang dấu "BẢN CHƯA ĐẦY ĐỦ"</b> —
+      còn ${keX.length} môn chưa đủ kết quả (${keX.map(t=>t.m+': thiếu '+(t.tong-t.co)+' em').join(' · ')}).
+      <b>Không chặn xuất</b> — chốt chặn của việc thiếu kết quả đặt ở đây, <b>không phải ở Phiên ký</b>.</div>`:''}
+    <div style="margin:11px 0"><b>Phạm vi</b><select class="fldi">
       <option>Toàn bộ ${ns.length} năm</option><option>Chỉ các năm học tại trường mình</option><option>Chọn từng năm…</option></select></div>
-    <div><b>Mục đích xuất</b> <span style="color:var(--red)">*bắt buộc — ghi audit</span>
+    <div><b>Mục đích xuất</b> <span style="color:var(--red)">*bắt buộc — ghi audit (Luật BVDLCN 91/2025)</span>
      <select class="fldi"><option>Cấp bản sao theo yêu cầu gia đình</option><option>Hồ sơ chuyển trường</option>
       <option>Hồ sơ xét tuyển đầu cấp</option><option>Yêu cầu của cơ quan quản lý</option></select></div>`,
    [['Hủy',0],['🖨 Xuất',()=>toast('Đã xuất · ghi audit kèm mục đích')]]);return}
+ if(a==='canccu'){$('#mdl').classList.remove('sm');
+  modal('📖 Căn cứ — vì sao môn của trường không có cột trong học bạ số',
+   `<div class="hb"><div class="hbh">TT 70/2026/TT-BGDĐT — hiệu lực 8/10/2026</div>
+     <div class="quote"><b>Điều 6.</b> <i>"Học bạ số gồm các trường dữ liệu theo quy định của Bộ Giáo dục và Đào tạo"</i>;
+      cấu trúc, định dạng, <b>quy tắc hiển thị</b> và quy tắc mã hóa <b>do Bộ quy định chi tiết riêng</b>.<br><br>
+      <b>Điều 4 khoản 2.</b> Học bạ số có giá trị pháp lý như học bạ giấy khi được lập <i>"đúng thẩm quyền,
+      đúng quy trình, <b>đúng chuẩn dữ liệu</b>, có đầy đủ nội dung theo quy định và <b>được ký số</b>"</i>.</div></div>
+    <div class="warn"><b>Nói cho chính xác:</b> TT 70/2026 <b>không có câu nào cấm thẳng</b> việc thêm trường dữ liệu.
+     Lập luận đúng đi qua <b>Điều 4 khoản 2</b> — thêm một cột môn ⇒ bản đó <b>không đúng chuẩn dữ liệu</b> ⇒
+     <b>mất chính cái giá trị pháp lý</b> mà học bạ số sinh ra để có. Khuôn đóng <b>vì hệ quả của việc phá khuôn</b>,
+     không vì có một điều cấm. Trích sai một lần thì người dùng thôi tin mọi căn cứ khác.</div>
+    <div class="hb"><div class="hbh">TT 22/2021 Điều 4 · TT 05/2023</div>
+     <div class="quote"><b>TT 22/2021 Điều 4.</b> Đánh giá <b>căn cứ yêu cầu cần đạt quy định trong Chương trình GDPT</b>
+      — môn trường tự mở không có yêu cầu cần đạt nào để căn cứ.<br><br>
+      <b>TT 05/2023.</b> Trường chuyên thực hiện <b>chương trình GDPT</b> cộng <b>nội dung dạy học chuyên sâu môn chuyên</b>
+      ⇒ môn mang nhãn <b>★</b> vẫn là môn của Chương trình GDPT, <b>in vào học bạ bình thường</b>.</div></div>
+    <div class="ro" style="margin-bottom:0">Menu chủ của <b>Nguồn chương trình</b> là <b>M10.2</b> tab <b>Danh mục môn</b> (quy tắc <code>D1</code>).
+     M1.3 <b>chỉ đọc</b> — không có ô sửa ở đây. Nhãn <b>★</b> là <b>dẫn xuất</b> từ <i>Môn chuyên của hệ</i>, không ai khai.</div>`,
+   [['Đóng',0],['🔗 Mở M10.2',()=>toast('Deep-link → /M10.2?tab=danh_muc_mon&return=M1.3 — tab Danh mục môn')]]);return}
+
+ if(a==='phieu'){const lid=d.lop||(HB.find(x=>x.ma===curHS)||{}).lop;
+  const mtrP=monTruong(lid), TP=thieuTr(lid), keP=TP.filter(t=>t.co<t.tong);
+  const hsP=HB.filter(x=>x.lop===lid&&!x.roi);
+  $('#mdl').classList.remove('sm');
+  modal('🏫 Phiếu kết quả môn học của nhà trường — lớp '+lid,
+   `<div class="danger"><b>Phiếu này KHÔNG PHẢI học bạ</b> và không phải một phần của học bạ số.
+     Kết quả ghi ở đây thuộc môn học <b>do nhà trường tự tổ chức</b>, <b>không thuộc Chương trình GDPT</b>,
+     <b>không dùng để xét lên lớp, xét tốt nghiệp hoặc tuyển sinh</b>.
+     <div style="margin-top:6px;font-size:11.5px">↑ Dòng này in ở <b>đầu trang</b> của bản giấy, trong khung.</div></div>
+    <div class="ro"><b>Bốn thứ làm nó tự phân biệt với học bạ — phải có đủ cả bốn:</b>
+     <div style="margin-top:5px">① Tiêu đề <b>không chứa chữ "học bạ"</b> ở bất kỳ đâu trên phiếu.</div>
+     <div>② Dòng nói rõ giá trị in ở <b>đầu trang</b>, trong khung.</div>
+     <div>③ <b>Không có ô chữ ký số nào</b> — không qua Phiên ký, không có mã phiên, không vào Sổ phiên ký.
+       Chỉ ký tay và đóng dấu trường theo thẩm quyền hành chính.</div>
+     <div>④ <b>Không mang mã tra cứu và QR</b> của học bạ — QR đó là cơ chế xác thực <i>học bạ</i>; dán lên phiếu
+       là mời bên nhận quét rồi kết luận tờ giấy này "đã được xác thực".</div></div>
+    ${keP.length?`<div class="warn"><b>Bản in mang dấu "BẢN CHƯA ĐẦY ĐỦ — còn ${keP.length} môn chưa có kết quả"</b>
+      — cùng khuôn với dấu <i>BẢN CHƯA CÓ HIỆU LỰC PHÁP LÝ</i>. <b>Không chặn xuất.</b></div>`:''}
+    <div class="wrapx"><table><tr><th>Học sinh</th>${mtrP.map(m=>`<th>${m} <span class="st2 v">Của trường</span></th>`).join('')}</tr>
+     ${hsP.map(x=>`<tr><td><b>${x.n}</b><br><span class="sub">${x.ma}</span></td>
+      ${mtrP.map(m=>{const v=dtrOf(x)[m];return `<td>${v==null?'<span style="color:var(--red)">chưa có</span>':'<b>'+(+v).toFixed(1)+'</b>'}</td>`}).join('')}</tr>`).join('')}
+    </table></div>
+    <div style="margin-top:12px"><b>Mục đích xuất</b> <span style="color:var(--red)">*bắt buộc — ghi audit</span>
+     <select class="fldi"><option>Cấp cho gia đình theo yêu cầu</option><option>Lưu hồ sơ nội bộ của trường</option>
+      <option>Yêu cầu của cơ quan quản lý</option></select>
+     <div style="font-size:11.5px;color:var(--ink3);margin-top:6px">Luật BVDLCN 91/2025 áp cho <b>mọi</b> lượt xuất dữ liệu
+      học sinh — <b>không miễn cho phiếu</b> chỉ vì nó không phải học bạ.</div></div>`,
+   [['Hủy',0],['🖨 Xuất phiếu',()=>toast('Đã xuất Phiếu kết quả môn học của nhà trường'+(keP.length?' · đóng dấu BẢN CHƯA ĐẦY ĐỦ':'')+' · không có chữ ký số, không có QR · ghi audit kèm mục đích')]]);return}
+
  if(a==='chotcd'){const h=HB.find(x=>x.ma===curHS), ns=NAMHOC[curHS]||[], chua=ns.filter(y=>['cho','doi'].includes(y[3]));
   $('#mdl').classList.add('sm');
   modal('📤 Chốt và bàn giao học bạ — '+h.n,

@@ -70,6 +70,9 @@ h1{font-size:19px;font-weight:700}
 .tag.r{background:var(--red-soft);color:var(--red)}
 .tag.a{background:var(--amber-soft);color:var(--amber)}
 .tag.g{background:var(--bg);color:var(--ink2)}
+/* GY18-E — ô cột Hạn: dòng trên là mốc thật (dd/mm/yyyy, kèm HH:mm khi hạn có giờ), dòng dưới là nhãn khẩn */
+.hanc{display:flex;flex-direction:column;gap:3px;align-items:flex-start}
+.hanc b{font-size:11.5px;font-weight:700;color:var(--ink);white-space:nowrap;letter-spacing:.1px}
 .chain{font-size:11.5px;color:var(--ink2);text-align:center;font-weight:600}
 .marks{display:flex;gap:3px;justify-content:center;font-size:12px}
 .acts{display:flex;gap:5px;justify-content:flex-end;flex-wrap:wrap}
@@ -141,14 +144,22 @@ textarea{width:100%;border:1px solid var(--line2);border-radius:8px;padding:9px;
 
 <div class="rolebar">
   <b>Demo — chọn vai trò:</b>
-  <button class="rb on" data-r="HT">HT</button>
+  <button class="rb on" data-r="FULL">🔓 Đủ quyền (demo)</button>
+  <button class="rb" data-r="HT" title="Hiệu trưởng — ca YKDD: Nguyễn Quang Huy">HT</button>
   <button class="rb" data-r="PHT_DT">PHT_DT</button>
-  <button class="rb" data-r="TTCM">TTCM</button>
-  <button class="rb" data-r="GVCN">GVCN</button>
-  <button class="rb" data-r="GVBM">GVBM</button>
+  <button class="rb" data-r="TTCM" title="Lê Minh Tuấn — Tổ Toán — Tin">TTCM</button>
+  <button class="rb" data-r="GVCN" title="Bùi Quốc Hải — GVCN 9A2 · ca DD1 lớp trực tuần 7 · ca DD6 nhập hộ xếp loại">GVCN · 9A2</button>
+  <button class="rb" data-r="GVBM" title="Hà Minh Đức — ca S8 (nhận đề nghị đổi ngày)">GVBM · S8</button>
   <button class="rb" data-r="TCNS">TCNS</button>
   <button class="rb" data-r="KT">Kế toán</button>
-  <span class="note">Chỉ hiện ticket routing tới chính user — HT không thấy ticket đang chờ PHT duyệt</span>
+  <button class="rb" data-r="BTD" title="Vũ Đình Trung — ca DD1 · DD3 · DD6 · DD7">BTĐ</button>
+  <button class="rb" data-r="TPT" title="Đỗ Thị Bích Ngọc — ca DD7 (phiếu bị trả lại)">TPT</button>
+  <button class="rb" data-r="TUNG" title="Ngô Thanh Tùng — ca DD8: đã báo hoàn thành">DD8 · Tùng</button>
+  <button class="rb" data-r="MAI" title="Vũ Thị Mai — ca DD8: quá hạn">DD8 · Mai</button>
+  <button class="rb" data-r="NHUNG" title="Hoàng Thị Nhung — ca DD8: đang làm">DD8 · Nhung</button>
+  <button class="rb" data-r="AN" title="Nguyễn Văn An — ca DD9: hai việc">DD9 · An</button>
+  <button class="rb" data-r="DUNG" title="Lê Văn Dũng — ca DD9: đã báo">DD9 · Dũng</button>
+  <span class="note">Chỉ hiện ticket routing tới chính user — HT không thấy ticket đang chờ PHT duyệt · ca DD: ngày quy đổi tương đối theo hôm nay của demo này (25/8)</span>
 </div>
 
 <header class="hdr">
@@ -172,7 +183,7 @@ textarea{width:100%;border:1px solid var(--line2);border-radius:8px;padding:9px;
     <div class="bar">
       <input class="inp" placeholder="🔍 Tìm theo nội dung, người gửi, mã ticket…" id="q">
       <select class="fs" id="f1"><option>Tất cả nhóm menu</option></select>
-      <select class="fs" id="f2"><option>Mọi mức khẩn</option><option>Quá hạn</option><option>Hôm nay</option><option>Trong tuần</option></select>
+      <select class="fs" id="f2" autocomplete="off" title="Mức khẩn — số đếm theo tab đang mở; mở menu không tự lọc"><option value="">Mức khẩn</option><option value="qua_han">Quá hạn</option><option value="hom_nay">Hôm nay</option><option value="7ngay">Trong 7 ngày tới</option><option value="xa">Còn hạn &gt; 7 ngày</option><option value="khong_han">Không có hạn</option></select>
       <select class="fs" id="f3"><option>Mọi loại thao tác</option><option>Duyệt nhanh được</option><option>Cần ký số</option><option>Bước chốt cuối</option></select>
       <div class="spacer"></div>
       <button class="btn" id="exp">⬇ Xuất danh sách</button>
@@ -211,96 +222,254 @@ textarea{width:100%;border:1px solid var(--line2);border-radius:8px;padding:9px;
 /* ======= DỮ LIỆU TICKET =======
  f: cho_phep_duyet_nhanh | k: cần ký số | c: bước chốt cuối | grp: nhóm menu  */
 const T=[
- {id:'TK-2418',m:'M2.4',mn:'Đơn xin nghỉ của HS',grp:'Lớp học',
+ {id:'TK-2418',h:1,m:'M2.4',mn:'Đơn xin nghỉ của HS',grp:'Lớp học',
   t:'Phạm Gia Huy · 9A2 · nghỉ 3 ngày',s:'Lý do: ốm, có giấy khám bệnh',
   w:'Phạm Thị Nga',wr:'Phụ huynh',d:'26/8',u:'a',ud:'Còn 1 ngày',ch:'1/1',f:1,k:0,c:0,
   role:['GVCN','PHT_DT']},
- {id:'TK-2419',m:'M2.4',mn:'Đơn xin nghỉ của HS',grp:'Lớp học',
+ {id:'TK-2419',h:0,m:'M2.4',mn:'Đơn xin nghỉ của HS',grp:'Lớp học',
   t:'Vũ Khánh Linh · 9A1 · nghỉ 1 ngày',s:'Lý do: việc gia đình',
   w:'Vũ Đức Trung',wr:'Phụ huynh',d:'25/8',u:'a',ud:'Hôm nay',ch:'1/1',f:1,k:0,c:0,
   role:['GVCN','PHT_DT']},
- {id:'TK-2420',m:'M2.4',mn:'Đơn xin nghỉ của HS',grp:'Lớp học',
+ {id:'TK-2420',h:2,m:'M2.4',mn:'Đơn xin nghỉ của HS',grp:'Lớp học',
   t:'Đỗ Nam Khánh · 8A3 · nghỉ 5 ngày',s:'Lý do: về quê có việc',
   w:'Đỗ Văn Sơn',wr:'Phụ huynh',d:'27/8',u:'g',ud:'Còn 2 ngày',ch:'2/2',f:1,k:0,c:0,
   role:['PHT_DT']},
- {id:'TK-2421',m:'M6.9',mn:'Văn thư — Công văn',grp:'Vận hành',
+ {id:'TK-2421',h:-2,m:'M6.9',mn:'Công văn',grp:'Vận hành',
   t:'Công văn Đi · Báo cáo đầu năm gửi Sở GDĐT',s:'Số 87/BC-NTT · VT soạn thảo',
   w:'Lê Thu Hằng',wr:'Văn thư',d:'23/8',u:'r',ud:'Quá hạn 2 ngày',ch:'3/3',f:0,k:1,c:1,
   role:['HT']},
- {id:'TK-2422',m:'M8.1',mn:'Thông báo chủ động',grp:'Giao tiếp',
+ {id:'TK-2422',h:0,m:'M8.1',mn:'Thông báo chủ động',grp:'Giao tiếp',
   t:'Thông báo toàn trường · Lịch khai giảng 2026-2027',s:'Gửi PH + HS toàn trường',
   w:'Trần Thị Bình',wr:'PHT Chuyên môn',d:'25/8',u:'a',ud:'Hôm nay',ch:'1/1',f:1,k:0,c:0,
   role:['HT']},
- {id:'TK-2423',m:'M2.7',mn:'Khen thưởng & Kỷ luật HS',grp:'Lớp học',
+ {id:'TK-2423',h:1,m:'M2.7',mn:'Kỷ luật học sinh',grp:'Lớp học',
   t:'Quyết định kỷ luật mức 3 · HS Trần Văn Đ · 9A3',s:'Hành vi: gây gổ đánh nhau · GVCN đề xuất',
   w:'Ngô Minh Tú',wr:'GVCN 9A3',d:'26/8',u:'a',ud:'Còn 1 ngày',ch:'2/2',f:0,k:1,c:1,
   role:['HT']},
- {id:'TK-2424',m:'M1.7',mn:'Lớp học & Chuyển lớp',grp:'Học sinh',
+ {id:'TK-2424',h:2,m:'M1.7',mn:'Lớp học & Chuyển lớp',grp:'Học sinh',
   t:'Chuyển lớp khác ĐT · HS Lý Thu M · 8A1 → 8B2',s:'ĐT A → ĐT B · PHT_DT B đã xác nhận còn chỗ',
   w:'Hoàng Văn Kiên',wr:'GVCN 8A1',d:'27/8',u:'g',ud:'Còn 2 ngày',ch:'3/3',f:0,k:1,c:1,
   role:['HT']},
- {id:'TK-2425',m:'M4.8',mn:'Nghỉ phép',grp:'Nhân sự',
-  t:'Đơn nghỉ phép · GV Nguyễn Thị Hoa · 9 ngày',s:'Việc riêng · đã đề xuất GV dạy thay',
-  w:'Nguyễn Thị Hoa',wr:'GV Ngữ văn',d:'27/8',u:'g',ud:'Còn 2 ngày',ch:'3/3',f:0,k:1,c:1,
+ /* YKNP 17/9/2026 — đơn nghỉ nhân sự BỎ DUYỆT. Ba vé cũ TK-2425…2427 đổi loại theo bảng tên ca mẫu (NP-S4).
+    Ngày theo D0 = 25/8 của demo này, đếm NGÀY LÀM VIỆC bỏ Chủ nhật như demo M4.8. Mã đơn theo M4.8 (chủ). */
+ /* S7 — đơn ghi_nhan_quyet_dinh: ĐÃ có hiệu lực; vé là QUYẾT ĐỊNH chờ HT ký (Nhóm B) — k:1 ⇒ không duyệt nhanh */
+ {id:'TK-2425',h:36,m:'M4.8',mn:'Nghỉ phép',grp:'Nhân sự',ctx:'NP-2026-146',
+  t:'🔏 Quyết định nghỉ chờ ký · GV Nguyễn Văn Chiến · nghỉ ốm dài ngày 10 ngày',s:'28/08 – 08/09 · đơn NP-2026-146 ĐÃ có hiệu lực — ký chậm không chặn nghỉ, chỉ chặn chốt lương',
+  w:'Nguyễn Văn Chiến',wr:'GV Tổ Ngữ văn — Sử — Địa',d:'24/8',u:'a',ud:'Trước chốt lương T9',ch:'1/1',f:0,k:1,c:1,
+  ghi:'Khối 🔏 của M4.8 tab Đơn nghỉ cần xử lý. Đơn không chờ ai — thầy Chiến nghỉ từ 28/08 dù quyết định chưa ký.',
   role:['HT']},
- {id:'TK-2426',m:'M4.8',mn:'Nghỉ phép',grp:'Nhân sự',
-  t:'Đơn nghỉ phép · GV Trần Văn Nam · 2 ngày',s:'Nghỉ ốm có giấy',
-  w:'Trần Văn Nam',wr:'GV Vật lý',d:'25/8',u:'a',ud:'Hôm nay',ch:'1/2',f:1,k:0,c:0,
-  role:['TTCM','PHT_DT']},
- {id:'TK-2427',m:'M4.8',mn:'Nghỉ phép',grp:'Nhân sự',
-  t:'Đơn nghỉ phép · GV Phạm Đức Anh · 4 ngày',s:'Dự tập huấn cấp Sở',
-  w:'Phạm Đức Anh',wr:'GV Hóa học',d:'28/8',u:'g',ud:'Còn 3 ngày',ch:'1/2',f:1,k:0,c:0,
-  role:['TTCM']},
- {id:'TK-2428',m:'M5.2',mn:'Giáo án',grp:'Chuyên môn',
+ /* S6 — nghỉ KHÔNG hưởng lương ⇒ cơ chế can_thoa_thuan (bắt buộc) ⇒ Chờ đồng ý. Một người đồng ý là đủ: PHT_DT A hoặc HT.
+    Chuỗi MỘT bước ⇒ bước chốt cuối (M0.2 §4.4.1, làm rõ 7/9) ⇒ cho_phep_duyet_nhanh = false */
+ {id:'TK-2426',h:8,m:'M4.8',mn:'Nghỉ phép',grp:'Nhân sự',ctx:'NP-2026-145',
+  t:'Đơn nghỉ chờ đồng ý · GV Lý Thị Thu · nghỉ không lương 3 ngày',s:'02/09 – 04/09 · «Chăm mẹ phẫu thuật ở bệnh viện tỉnh» · cơ chế Cần thỏa thuận',
+  w:'Lý Thị Thu',wr:'GV Tổ Ngữ văn — Sử — Địa · Điểm trường A',d:'25/8',u:'a',ud:'Trước 02/09',ch:'1/1',f:0,k:0,c:1,
+  ghi:'Khối 🟡 của M4.8. Người được đồng ý: PHT_DT Điểm trường A (Phạm Đức Thắng) HOẶC Hiệu trưởng — ai bấm trước thì vé rời hàng đợi người kia. Ở M4.8 hai nút là Đồng ý / Không đồng ý (bắt buộc lý do) — không có Từ chối, không có Yêu cầu bổ sung.',
+  role:['PHT_DT','HT']},
+ /* TK-2427 (S8 — đề nghị đổi ngày nhận được) KHÔNG còn là vé duyệt: chuyển sang tab «Việc của tôi» — người nhận không có D trên gì cả */
+ {id:'TK-2428',h:1,m:'M5.2',mn:'Giáo án',grp:'Chuyên môn',
   t:'Duyệt giáo án · Toán 9 · Chương II Bài 5',s:'GV Lê Hoàng Minh · tổ Toán - Tin',
   w:'Lê Hoàng Minh',wr:'GV Toán',d:'26/8',u:'a',ud:'Còn 1 ngày',ch:'1/1',f:1,k:0,c:0,
   role:['TTCM']},
- {id:'TK-2429',m:'M5.2',mn:'Giáo án',grp:'Chuyên môn',
+ {id:'TK-2429',h:2,m:'M5.2',mn:'Giáo án',grp:'Chuyên môn',
   t:'Duyệt giáo án · Toán 8 · Chương I Bài 12',s:'GV Đặng Thu Trang · tổ Toán - Tin',
   w:'Đặng Thu Trang',wr:'GV Toán',d:'27/8',u:'g',ud:'Còn 2 ngày',ch:'1/1',f:1,k:0,c:0,
   role:['TTCM']},
- {id:'TK-2430',m:'M4.1',mn:'Hồ sơ nhân sự',grp:'Nhân sự',
+ {id:'TK-2430',h:1,m:'M4.1',mn:'Hồ sơ nhân sự',grp:'Nhân sự',
   t:'Yêu cầu cập nhật hồ sơ · GV Đỗ Thị Lan',s:'Đổi số CCCD · có ảnh CCCD mới đính kèm',
   w:'Đỗ Thị Lan',wr:'GV Lịch sử',d:'26/8',u:'a',ud:'Còn 1 ngày',ch:'1/1',f:1,k:0,c:0,
   role:['TCNS']},
- {id:'TK-2431',m:'M4.1',mn:'Hồ sơ nhân sự',grp:'Nhân sự',
+ {id:'TK-2431',h:1,m:'M4.1',mn:'Hồ sơ nhân sự',grp:'Nhân sự',
   t:'Yêu cầu cập nhật hồ sơ · GV Vũ Minh Tuấn',s:'Đổi số tài khoản ngân hàng · có xác nhận NH',
   w:'Vũ Minh Tuấn',wr:'GV Địa lý',d:'26/8',u:'a',ud:'Còn 1 ngày',ch:'1/1',f:1,k:0,c:0,
   role:['TCNS']},
- {id:'TK-2432',m:'M2.5',mn:'Nhập điểm thường xuyên',grp:'Lớp học',
+ /* YK01-Z1 — bốn hàng đợi chấm công tiết dạy của M4.9 (§4f.6). Chỉ vai có D ở hàng đợi: TCNS · NVCC (demo này không có vai NVCC).
+    f:0 — không duyệt nhanh: kết luận bắt buộc lý do, gán người cần xem ngữ cảnh. Dữ liệu chép demo M4.9 ngày 28/8/2026. */
+ {id:'TK-2440',h:6,m:'M4.9',mn:'Chấm công nhân sự',grp:'Nhân sự',
+  t:'Tiết chưa có kết luận chấm công · Tiết 6 · P.302',s:'Máy ghép: Không có dữ liệu — thiết bị đang chạy, không có sự kiện trong cửa sổ nhận',
+  w:'Hệ thống — thiết bị cửa lớp',wr:'M4.9 tầng ②',d:'28/8',u:'a',ud:'Chốt công tháng 8',ch:'1/1',f:0,k:0,c:0,
+  role:['TCNS']},
+ {id:'TK-2441',h:6,m:'M4.9',mn:'Chấm công nhân sự',grp:'Nhân sự',
+  t:'Tiết lệch người — nghi dạy thay chưa khai · Tiết 4 · P.101 · Toán 6A1',s:'Sự kiện 09:36 là của Trần Thị Bích, lịch ghi Lê Minh Tuấn — lập dạy thay ở M4.7 nếu đúng',
+  w:'Hệ thống — thiết bị cửa lớp',wr:'M4.9 tầng ②',d:'28/8',u:'a',ud:'Chốt công tháng 8',ch:'1/1',f:0,k:0,c:0,
+  role:['TCNS']},
+ {id:'TK-2442',h:6,m:'M4.9',mn:'Chấm công nhân sự',grp:'Nhân sự',
+  t:'Loạt tiết mất dữ liệu thiết bị · TB-A03 · P.201 · 06:58–11:20',s:'4 tiết — một vé cho một thiết bị × khung giờ · báo hỏng ở M6.11',
+  w:'Hệ thống — mất heartbeat',wr:'M4.9 thiet_bi_ngung',d:'28/8',u:'a',ud:'Chốt công tháng 8',ch:'1/1',f:0,k:0,c:0,
+  role:['TCNS']},
+ {id:'TK-2443',h:null,m:'M4.9',mn:'Chấm công nhân sự',grp:'Nhân sự',
+  t:'Sự kiện không nhận ra người · P.102 · 13:24',s:'Độ tin cậy 0.41 · không giữ ảnh — gán theo ngữ cảnh (phòng · khung giờ · lịch · sổ đầu bài) hoặc bỏ qua',
+  w:'Hệ thống — thiết bị cửa lớp',wr:'M4.9 tầng ①',d:'28/8',u:'g',ud:'Không hạn',ch:'1/1',f:0,k:0,c:0,
+  role:['TCNS']},
+ {id:'TK-2432',h:2,m:'M2.5',mn:'Bảng điểm môn học',grp:'Lớp học',
   t:'Đề nghị sửa điểm sau mốc chốt · HS Bùi Thu Hà · 9A2',s:'Toán · ĐGtx lần 3 · 5.0 → 7.0 · nhầm khi nhập',
   w:'Lê Hoàng Minh',wr:'GV Toán',d:'27/8',u:'g',ud:'Còn 2 ngày',ch:'1/3',f:0,k:0,c:0,
   role:['TTCM']},
- {id:'TK-2433',m:'M6.5',mn:'Yêu cầu CSVC',grp:'Vận hành',
+ {id:'TK-2433',h:1,m:'M6.11',mn:'Luân chuyển & Sửa chữa',grp:'CSVC',
   t:'Sửa chữa · Điều hòa phòng 204 hỏng',s:'Chi phí ước tính 2.400.000đ',
   w:'Lê Hoàng Minh',wr:'GV Toán',d:'26/8',u:'a',ud:'Còn 1 ngày',ch:'1/2',f:1,k:0,c:0,
   role:['PHT_DT']},
- {id:'TK-2434',m:'M2.9',mn:'Không gian lớp học',grp:'Lớp học',
+ {id:'TK-2434',h:1,m:'M2.9',mn:'Danh sách lớp học',grp:'Lớp học',
   t:'Đề nghị sửa điểm danh sau tuần · Lớp 9A1',s:'HS Ngô Bảo Châu · 21/8 · Vắng KP → Vắng CP',
   w:'Trịnh Văn Hùng',wr:'GVCN 9A1',d:'26/8',u:'a',ud:'Còn 1 ngày',ch:'1/1',f:1,k:0,c:0,
   role:['PHT_DT']},
+ /* ══ YKDD 17/9/2026 — dòng nhóm «Đoàn - Đội» (M0.2 §4.1.2b · DD-D1…D9). Nguồn: mục E PHIEU-YKDD-1A · 1B · 1C · 1D.
+    Dữ liệu CHÉP trạng thái demo menu chủ (HOMNAY 23/10/2026) — ngày QUY ĐỔI TƯƠNG ĐỐI sang hôm nay của demo này (25/8): D−n ↔ 25/8−n.
+    Cả chín loại f:0 (không duyệt nhanh) — lý do ở ghi. link = khuôn D3 của tài liệu · href = tệp demo menu chủ (kèm ?vai= để mở đúng vai). */
+ /* DD1 · 1A E3 — tuần 6 đã chốt, chưa công bố; hạn «trước chào cờ Thứ Hai tuần 7» đã qua 4 ngày */
+ {id:'DD-2601',h:-4,m:'M6.13',mn:'Theo dõi thi đua',grp:'Đoàn - Đội',ctx:'6|A',
+  t:'Tuần nền nếp 6 — Điểm trường A đã chốt — chờ công bố',s:'Chốt bởi Đỗ Thị Bích Ngọc · bảng xếp hạng tuần chưa ra toàn trường',
+  w:'Đỗ Thị Bích Ngọc',wr:'Tổng phụ trách Đội',d:'19/8',u:'r',ud:'Quá hạn 4 ngày',ch:'1/1',f:0,k:0,c:1,
+  ghi:'Hạn = trước giờ chào cờ Thứ Hai tuần sau. Người chấm (BTĐ · TPT) chốt nhưng KHÔNG tự công bố — HT hoặc PHT điểm trường công bố. Bước chốt cuối ⇒ không duyệt nhanh; link mở sẵn hộp công bố ở M6.13.',
+  link:'/M6.13?tab=cham_nen_nep&ctx=6|A&action=duyet&return=M0.2',href:'M6.13-Theo-doi-thi-dua.html?tab=cham_nen_nep&ctx=6|A&action=duyet&return=M0.2&vai=HT',
+  role:['HT','PHT_DT']},
+ {id:'DD-2602',h:-4,m:'M6.13',mn:'Theo dõi thi đua',grp:'Đoàn - Đội',ctx:'6|B',
+  t:'Tuần nền nếp 6 — Điểm trường B đã chốt — chờ công bố',s:'Chốt bởi Vũ Đình Trung',
+  w:'Vũ Đình Trung',wr:'Bí thư Đoàn trường',d:'19/8',u:'r',ud:'Quá hạn 4 ngày',ch:'1/1',f:0,k:0,c:1,
+  ghi:'Vé của Điểm trường B — PHT Điểm trường A không nhận (phạm vi Branch); HT nhận cả hai.',
+  link:'/M6.13?tab=cham_nen_nep&ctx=6|B&action=duyet&return=M0.2',href:'M6.13-Theo-doi-thi-dua.html?tab=cham_nen_nep&ctx=6|B&action=duyet&return=M0.2&vai=HT',
+  role:['HT']},
+ /* DD6 · 1D E.1 — một vé MỘT chi đoàn; 9B1 đã gửi, còn 3 đoàn viên chưa công nhận; hạn công nhận 20/11 = D+28 */
+ {id:'DD-2603',h:28,m:'M6.3',mn:'Hoạt động Đoàn - Đội',grp:'Đoàn - Đội',ctx:'DG-2627|CDO-9B1',
+  t:'Chi đoàn 9B1 đã gửi đề xuất xếp loại — chờ BCH Đoàn trường công nhận',s:'Đợt 2026–2027 · 3 đoàn viên chưa công nhận · chi đoàn tự đề xuất «Hoàn thành tốt»',
+  w:'Ngô Thị Lan',wr:'GVCN 9B1 — nhập hộ theo biên bản chi đoàn',d:'24/8',u:'g',ud:'Còn 28 ngày',ch:'1/1',f:0,k:0,c:1,
+  ghi:'Chỉ BTĐ có D ở m6.3.danh_gia_xep_loai — BTĐ bấm thay BCH Đoàn trường theo biên bản (XL-2). Cần xem từng đoàn viên (chặn mềm kỷ luật Đoàn · lý do khi công nhận khác đề xuất) ⇒ không duyệt nhanh.',
+  link:'/M6.3?tab=xeploai&ctx=DG-2627&cd=CDO-9B1&action=duyet&return=M0.2',href:'M6.3-Hoat-dong-Doan-Doi.html?tab=xeploai&ctx=DG-2627&cd=CDO-9B1&action=duyet&return=M0.2&vai=BTD',
+  role:['BTD']},
+ /* DD7 · 1C E1 · E2 — 🛑 chạm tiền: không duyệt nhanh (C5 · QH-16). ctx = mã phiếu của demo M6.17 */
+ {id:'DD-2604',h:null,m:'M6.17',mn:'Quỹ hoạt động',grp:'Đoàn - Đội',ctx:'doan-chi-2627-02',
+  t:'Phiếu đoàn phí PC 02/26-27 — chờ duyệt · 120.000đ',s:'Chi từ phần giữ lại · in giấy chứng nhận và mua huy hiệu Đoàn cho đoàn viên mới đợt kết nạp tháng 11',
+  w:'Vũ Đình Trung',wr:'Bí thư Đoàn trường — người lập',d:'23/8',u:'g',ud:'Không có hạn',ch:'1/1',f:0,k:0,c:1,
+  ghi:'🛑 Chạm tiền — bắt buộc mở M6.17: người duyệt phải thấy chứng từ và số dư phần giữ lại (M6.17 chặn «chi vượt phần giữ lại» ngay ở màn hình duyệt). D của M6.17 không đi theo ủy quyền M0.5 (QH-16). Người nhận ≠ người lập.',
+  link:'/M6.17?so=doan&ctx=doan-chi-2627-02&return=M0.2',href:'M6.17-Quy-hoat-dong.html?so=doan&ctx=doan-chi-2627-02&return=M0.2&vai=HT',
+  role:['HT']},
+ {id:'DD-2605',h:null,m:'M6.17',mn:'Quỹ hoạt động',grp:'Đoàn - Đội',ctx:'doi-thu-2627-03',
+  t:'Phiếu sổ quỹ Liên đội PT 03/26-27 — chờ duyệt · 1.000.000đ',s:'Thu · kinh phí nhà trường cấp bổ sung cho Hội thi Nghi thức Đội',
+  w:'Đỗ Thị Bích Ngọc',wr:'Tổng phụ trách Đội — người lập',d:'24/8',u:'g',ud:'Không có hạn',ch:'1/1',f:0,k:0,c:1,
+  ghi:'🛑 Chạm tiền — bắt buộc mở M6.17. Người nhận: HT · PHT được giao sổ Liên đội (ca DD: PHT Điểm trường A).',
+  link:'/M6.17?so=doi&ctx=doi-thu-2627-03&return=M0.2',href:'M6.17-Quy-hoat-dong.html?so=doi&ctx=doi-thu-2627-03&return=M0.2&vai=HT',
+  role:['HT','PHT_DT']},
+ {id:'DD-2606',h:null,m:'M6.17',mn:'Quỹ hoạt động',grp:'Đoàn - Đội',ctx:'doi-chi-2627-06',
+  t:'Phiếu sổ quỹ Liên đội PC 06/26-27 — chờ duyệt · 350.000đ',s:'Chi · in 3 giấy khen và khung cho ba đội đạt giải Hội thi Nghi thức Đội',
+  w:'Đỗ Thị Bích Ngọc',wr:'Tổng phụ trách Đội — người lập',d:'23/8',u:'g',ud:'Không có hạn',ch:'1/1',f:0,k:0,c:1,
+  ghi:'🛑 Chạm tiền — bắt buộc mở M6.17.',
+  link:'/M6.17?so=doi&ctx=doi-chi-2627-06&return=M0.2',href:'M6.17-Quy-hoat-dong.html?so=doi&ctx=doi-chi-2627-06&return=M0.2&vai=HT',
+  role:['HT','PHT_DT']},
+ /* DD3 · 1B E.1 — CLB-07 bảo trợ Đoàn đang chờ BTĐ góp ý. Góp ý xong ⇒ vé rời BTĐ, sinh vé «chờ duyệt» cho HT (như CLB-08 · CLB-09 dưới) */
+ {id:'DD-2607',h:null,m:'M6.16',mn:'CLB, đội, nhóm',grp:'Đoàn - Đội',ctx:'CLB-07',
+  t:'Đề xuất thành lập «CLB Sách và Hành động» — chờ góp ý',s:'Bảo trợ Đoàn · khối 9 · có kế hoạch năm học 2026–2027',
+  w:'Trần Thị Vân',wr:'GV GDCD · GVCN 9A1',d:'21/8',u:'g',ud:'Không có hạn',ch:'1/2',f:0,k:0,c:0,
+  ghi:'Tổ chức bảo trợ Đoàn ⇒ Bí thư Đoàn trường góp ý (bảo trợ Đội ⇒ TPT; Chung ⇒ không qua góp ý). Góp ý bắt buộc nội dung ⇒ mở M6.16. ⚠ Góp ý là quyền S, không phải D — đang để ở tab này theo bản chốt §4 (M0.2 §7 điểm 6 — ✅ anh Ninh chốt 17/9). Góp ý xong vé chuyển sang Hiệu trưởng Nguyễn Quang Huy duyệt (ca DD3).',
+  link:'/M6.16?ctx=CLB-07&action=gop_y&return=M0.2',href:'M6.16-Quan-ly-CLB.html?ctx=CLB-07&action=gop_y&return=M0.2&vai=BTD',
+  role:['BTD']},
+ {id:'DD-2608',h:null,m:'M6.16',mn:'CLB, đội, nhóm',grp:'Đoàn - Đội',ctx:'CLB-08',
+  t:'Đề xuất thành lập «CLB Cờ tướng» — chờ duyệt',s:'Bảo trợ Chung — lên thẳng Hiệu trưởng, không qua góp ý',
+  w:'Phạm Thu Hà',wr:'GV Tiếng Anh',d:'23/8',u:'g',ud:'Không có hạn',ch:'1/1',f:0,k:0,c:1,
+  ghi:'Chỉ HT có D ở m6.16.danh_sach_clb (P4). Duyệt phải chọn quyết định thành lập đã phát hành ở M6.9 ⇒ cần nhập thêm dữ liệu + bước chốt cuối ⇒ không duyệt nhanh.',
+  link:'/M6.16?ctx=CLB-08&action=duyet&return=M0.2',href:'M6.16-Quan-ly-CLB.html?ctx=CLB-08&action=duyet&return=M0.2&vai=HT',
+  role:['HT']},
+ {id:'DD-2609',h:null,m:'M6.16',mn:'CLB, đội, nhóm',grp:'Đoàn - Đội',ctx:'CLB-09',
+  t:'Đề xuất thành lập «CLB Bóng rổ» — chờ duyệt',s:'Bảo trợ Đội · TPT Đỗ Thị Bích Ngọc đã góp ý: sân bóng rổ đang cải tạo tới hết tháng 12',
+  w:'Lê Quang Vinh',wr:'GV Giáo dục thể chất',d:'18/8',u:'g',ud:'Không có hạn',ch:'2/2',f:0,k:0,c:1,
+  ghi:'Như CLB Cờ tướng. Hiệu trưởng thấy góp ý của TPT ngay trong màn hình duyệt ở M6.16.',
+  link:'/M6.16?ctx=CLB-09&action=duyet&return=M0.2',href:'M6.16-Quan-ly-CLB.html?ctx=CLB-09&action=duyet&return=M0.2&vai=HT',
+  role:['HT']},
+ {id:'DD-2610',h:null,m:'M6.16',mn:'CLB, đội, nhóm',grp:'Đoàn - Đội',ctx:'CLB-03',
+  t:'Đề nghị giải thể «CLB STEM – Robotics» — chờ duyệt',s:'Bảo trợ Chung · CLB vẫn Đang hoạt động tới khi HT duyệt · bộ robot mượn phải trả',
+  w:'Lê Văn Minh',wr:'GV Tin học — GV phụ trách (cố vấn)',d:'22/8',u:'g',ud:'Không có hạn',ch:'1/1',f:0,k:0,c:1,
+  ghi:'Giải thể là trạng thái cuối và tự đóng dòng thành viên — không đảo ngược ⇒ bước chốt cuối, mở M6.16.',
+  link:'/M6.16?ctx=CLB-03&action=duyet&return=M0.2',href:'M6.16-Quan-ly-CLB.html?ctx=CLB-03&action=duyet&return=M0.2&vai=HT',
+  role:['HT']},
 ];
 
 /* ======= VIỆC CỦA TÔI ======= */
 const V=[
- {m:'M2.2',mn:'Sổ đầu bài',t:'Tiết 2 · Toán · 9A2 · hôm nay chưa ký',cx:'9A2 · Toán',d:'Quá 40 phút',u:'r',p:'',role:['GVBM','GVCN']},
- {m:'M2.2',mn:'Sổ đầu bài',t:'Tiết 3 · Toán · 8A3 · 24/8 chưa ký',cx:'8A3 · Toán',d:'Hôm qua',u:'r',p:'',role:['GVBM']},
- {m:'M2.9',mn:'Không gian lớp học',t:'Điểm danh buổi sáng chưa thực hiện',cx:'Lớp 9A2',d:'Quá hạn 08:00',u:'r',p:'',role:['GVCN']},
- {m:'M2.5',mn:'Nhập điểm thường xuyên',t:'Chưa đủ lượt ĐGtx môn Toán',cx:'9A2 · Toán',d:'Chốt sau 6 ngày',u:'a',p:'2/4 lượt',role:['GVBM']},
- {m:'M2.3',mn:'Bài tập về nhà',t:'BTVN chưa chấm · Ôn tập chương II',cx:'9A2 · Toán',d:'Hạn nộp đã qua 2 ngày',u:'a',p:'32/35 đã nộp',role:['GVBM']},
- {m:'M2.9',mn:'Không gian lớp học',t:'Báo cáo học tập tuần chưa publish',cx:'Lớp 9A2 · Tuần 51',d:'Quá hạn 1 ngày',u:'r',p:'',role:['GVCN']},
- {m:'M0.4',mn:'Trang cá nhân',t:'Yêu cầu cập nhật hồ sơ bị trả về · cần bổ sung minh chứng',cx:'Số tài khoản ngân hàng',d:'Còn 4 ngày',u:'a',p:'',role:['GVBM','GVCN','TTCM','TCNS','HT','PHT_DT']},
- {m:'M4.11',mn:'Chứng thư số',t:'Chứng thư số sắp hết hạn · Viettel-CA',cx:'Của tôi',d:'Còn 24 ngày',u:'a',p:'',role:['HT']},
- {m:'M2.1',mn:'Lịch dạy & học',t:'Lịch của bạn có 3 thay đổi chưa xem',cx:'Dạy thay · đổi tiết · tiết bị hủy',d:'7 ngày qua',u:'a',p:'',role:['GVBM']},
- {m:'M5.6',mn:'Đào tạo & BDTX',t:'Tự đánh giá BDTX cuối năm',cx:'Năm học 2026-2027',d:'Còn 9 ngày',u:'g',p:'',role:['GVBM','GVCN','TTCM']},
- {m:'M6.9',mn:'Văn thư — Công văn',t:'Công văn Đến được chỉ định xử lý',cx:'CV 412/SGDĐT',d:'Quá hạn 2 ngày',u:'r',p:'',role:['HT','PHT_DT']},
- {m:'M5.3',mn:'Dự giờ',t:'Biên bản dự giờ chưa viết',cx:'Tiết 4 · Vật lý · 9A1 · 22/8',d:'Còn 3 ngày',u:'g',p:'',role:['TTCM']},
+ /* GY18-E — hg = giờ của hạn do MENU CHỦ trả. M2.2 neo mốc vào GIỜ KẾT THÚC TIẾT (§8.6.1); tiết 2 kết thúc 08:35 */
+ {m:'M2.2',mn:'Sổ đầu bài',h:-0.1,hg:'08:35',t:'Tiết 2 · Toán · 9A2 · hôm nay chưa ghi sổ',cx:'9A2 · Toán',d:'Quá 40 phút',u:'r',p:'',role:['GVBM','GVCN']},
+ {m:'M2.2',mn:'Sổ đầu bài',h:-1,t:'Tiết 3 · Toán · 8A3 · 24/8 chưa ghi sổ',cx:'8A3 · Toán',d:'Hôm qua',u:'r',p:'',role:['GVBM']},
+ {m:'M2.9',mn:'Danh sách lớp học',h:-0.1,hg:'08:00',t:'Điểm danh buổi sáng chưa thực hiện',cx:'Lớp 9A2',d:'Quá hạn 08:00',u:'r',p:'',role:['GVCN']},
+ {m:'M2.5',mn:'Bảng điểm môn học',h:6,t:'Chưa đủ lượt ĐGtx môn Toán',cx:'9A2 · Toán',d:'Chốt sau 6 ngày',u:'a',p:'2/4 lượt',role:['GVBM']},
+ {m:'M2.3',mn:'Bài tập về nhà',h:1,t:'BTVN chưa chấm · Ôn tập chương II',cx:'9A2 · Toán',d:'Chấm trước 26/8 · hạn nộp đã qua 2 ngày',u:'a',p:'32/35 đã nộp',role:['GVBM']},
+ {m:'M2.9',mn:'Danh sách lớp học',h:-1,t:'Báo cáo học tập tuần chưa publish',cx:'Lớp 9A2 · Tuần 51',d:'Quá hạn 1 ngày',u:'r',p:'',role:['GVCN']},
+ {m:'M0.4',mn:'Trang cá nhân',h:4,t:'Yêu cầu cập nhật hồ sơ bị trả về · cần bổ sung minh chứng',cx:'Số tài khoản ngân hàng',d:'Còn 4 ngày',u:'a',p:'',role:['GVBM','GVCN','TTCM','TCNS','HT','PHT_DT']},
+ {m:'M4.11',mn:'Chứng thư số',h:24,t:'Chứng thư số sắp hết hạn · Viettel-CA',cx:'Của tôi',d:'Còn 24 ngày',u:'a',p:'',role:['HT']},
+ {m:'M2.1',mn:'Lịch dạy & học',h:null,t:'Lịch của bạn có 3 thay đổi chưa xem (7 ngày qua)',cx:'Dạy thay · đổi tiết · tiết bị hủy',d:'Không có hạn',u:'a',p:'',role:['GVBM']},
+ {m:'M5.6',mn:'Đào tạo & BDTX',h:9,t:'Tự đánh giá BDTX cuối năm',cx:'Năm học 2026-2027',d:'Còn 9 ngày',u:'g',p:'',role:['GVBM','GVCN','TTCM']},
+ {m:'M6.9',mn:'Công văn',h:-2,t:'Công văn Đến được chỉ định xử lý',cx:'CV 412/SGDĐT',d:'Quá hạn 2 ngày',u:'r',p:'',role:['HT','PHT_DT']},
+ {m:'M5.3',mn:'Dự giờ',h:3,t:'Biên bản dự giờ chưa viết',cx:'Tiết 4 · Vật lý · 9A1 · 22/8',d:'Còn 3 ngày',u:'g',p:'',role:['TTCM']},
+ /* GY18-E ca E1 — hai việc hạn HÔM NAY mà menu chủ CHỈ trả ngày, không trả giờ.
+    Không bịa 00:00: cột Hạn chỉ ghi 25/08/2026, và hai dòng này xếp CUỐI ngày — sau mọi dòng có giờ của cùng ngày. */
+ {m:'M5.3',mn:'Dự giờ',h:0,t:'Biên bản dự giờ chưa viết',cx:'Tiết 2 · Hóa học · 10A2 · 18/8',d:'Hôm nay',u:'a',p:'',role:['TTCM']},
+ {m:'M2.5',mn:'Bảng điểm môn học',h:0,t:'Chưa đủ lượt ĐGtx môn Toán',cx:'8A1 · Toán',d:'Hôm nay',u:'a',p:'3/4 lượt',role:['GVBM']},
+ /* YKNP 17/9/2026 — TTCM: tiết chưa xử lý của GV vắng → M4.7 tab Giáo viên vắng. MỘT việc cho MỘT đợt vắng, CHỈ tiết thuộc tổ (neo tiết).
+    Vai TTCM của demo = Lê Minh Tuấn (Tổ Toán — Tin). Ca S2: Đặng Văn Long (Vật lí, T4) có thêm tiết Toán ⇒ lát Toán thuộc Tổ Toán — Tin. */
+ {m:'M4.7',mn:'Lịch giảng dạy & Dạy thay',h:1,hg:'07:50',t:'Tiết chưa xử lý của GV vắng · Đặng Văn Long',cx:'26 – 27/08 · lát Toán 11B1 của tổ mình · lát Vật lí thuộc TTCM KHTN (không đếm)',d:'Còn 1 ngày · tiết sớm nhất',u:'a',p:'0/2 tiết',role:['TTCM'],
+  link:'/M4.7?tab=giao_vien_vang&ctx=NP-2026-142&return=M0.2'},
+ /* GY18-E ca E2 — đợt vắng trong NGÀY: hạn = giờ bắt đầu tiết sớm nhất chưa có người (tiết 4 · 09:40) ⇒ còn 30 phút.
+    Đây là dòng cho thấy vì sao phải hiện giờ: cùng nhãn «Hôm nay» với dòng lớp trực 17:00, nhưng còn nửa tiếng. */
+ {m:'M4.7',mn:'Lịch giảng dạy & Dạy thay',h:0,hg:'09:40',t:'Tiết chưa xử lý của GV vắng · Cao Thị Nhung',cx:'Hôm nay 25/08 · lát Toán 9A1 của tổ mình · tiết 4 chưa có người',d:'tiết sớm nhất chưa có người',u:'a',p:'0/1 tiết',role:['TTCM'],
+  link:'/M4.7?tab=giao_vien_vang&ctx=BV-2026-018&return=M0.2'},
+ /* YKNP 17/9/2026 — TK-2427 đổi loại: S8 ↩ Đề nghị đổi ngày nhận được (người xin nghỉ). Không có nút «Đã xem» (HDNP không có trường đó) —
+    rời danh sách khi ngày bị đề nghị đã rút hoặc đã qua. Vai GVBM của demo = Hà Minh Đức (Tổ Toán — Tin). */
+ {id:'TK-2427',m:'M0.4',mn:'Trang cá nhân',h:6,t:'↩ Đề nghị đổi ngày nhận được · đơn NP-2026-147 · ngày 31/08',cx:'Lê Minh Tuấn (TTCM) · «ngày đó thầy có tên coi thi khảo sát đầu năm khối 9»',d:'Ngày nghỉ 31/08',u:'a',p:'Đơn vẫn hiệu lực',role:['GVBM'],
+  link:'/M0.4?muc=don_nghi&ctx=NP-2026-147&return=M0.2'},
  /* --- Tiền của gia đình: hai nguồn việc mới từ M7.3 (29/8/2026) ---
     Sinh TỰ ĐỘNG từ sự kiện, không chờ phụ huynh đề nghị — App PH-HS không có nút Đề nghị hoàn tiền. */
- {m:'M7.3',mn:'Điều chỉnh & Hoàn tiền',t:'Rà soát hoàn tiền — bảo lưu',cx:'Nguyễn Thùy Dương · 8B1 · QĐ bảo lưu 04/QĐ-NTT',d:'Còn 5 ngày',u:'a',p:'',role:['KT'],tien:1},
- {m:'M7.3',mn:'Điều chỉnh & Hoàn tiền',t:'Rà soát hoàn tiền — rời trường',cx:'Bùi Thảo My · 10A1 · đã chuyển đi 20/09',d:'Quá hạn 3 ngày',u:'r',p:'',role:['KT'],tien:1},
- {m:'M7.3',mn:'Điều chỉnh & Hoàn tiền',t:'Rà soát hoàn tiền — ngừng dịch vụ',cx:'Lâm Bảo Trâm · 3C1 · ngừng bán trú 20/09',d:'Còn 8 ngày',u:'g',p:'',role:['KT'],tien:1},
- {m:'M7.3',mn:'Điều chỉnh & Hoàn tiền',t:'Số dư tạm giữ nằm im quá 60 ngày',cx:'Cao Thùy Linh · 5C2 · 200.000đ ngăn gia đình · bút toán cuối 16/09',d:'Không có hạn',u:'a',p:'',role:['KT'],tien:1},
+ {m:'M7.3',mn:'Điều chỉnh & Hoàn tiền',h:5,t:'Rà soát hoàn tiền — bảo lưu',cx:'Nguyễn Thùy Dương · 8B1 · QĐ bảo lưu 04/QĐ-NTT',d:'Còn 5 ngày',u:'a',p:'',role:['KT'],tien:1},
+ {m:'M7.3',mn:'Điều chỉnh & Hoàn tiền',h:-3,t:'Rà soát hoàn tiền — rời trường',cx:'Bùi Thảo My · 10A1 · đã chuyển đi 20/09',d:'Quá hạn 3 ngày',u:'r',p:'',role:['KT'],tien:1},
+ {m:'M7.3',mn:'Điều chỉnh & Hoàn tiền',h:8,t:'Rà soát hoàn tiền — ngừng dịch vụ',cx:'Lâm Bảo Trâm · 3C1 · ngừng bán trú 20/09',d:'Còn 8 ngày',u:'g',p:'',role:['KT'],tien:1},
+ {m:'M7.3',mn:'Điều chỉnh & Hoàn tiền',h:null,t:'Số dư tạm giữ nằm im quá 60 ngày',cx:'Cao Thùy Linh · 5C2 · 200.000đ ngăn gia đình · bút toán cuối 16/09',d:'Không có hạn',u:'a',p:'',role:['KT'],tien:1},
+ /* ══ YKDD 17/9/2026 — dòng nhóm «Đoàn - Đội» (M0.2 §4.2.2b · DD-V1…V12). Trạng thái chép demo menu chủ (HOMNAY 23/10/2026),
+    ngày QUY ĐỔI TƯƠNG ĐỐI sang 25/8 của demo này. Không nút hoàn thành — việc rời khi điều kiện sinh hết đúng. ══ */
+ /* DD1 · 1A E1 — GVCN lớp trực (Bùi Quốc Hải, 9A2). Hạn Thứ Sáu 17:00 = hôm nay của demo M6.13 */
+ {m:'M6.13',mn:'Theo dõi thi đua',h:0,hg:'17:00',t:'Tuần này lớp bạn trực — nộp phiếu tổng hợp cho Bí thư Đoàn trường trước chiều thứ Sáu',cx:'Tuần 7 · Điểm trường A · lớp 9A2 (lớp Đoàn ⇒ nộp Bí thư Đoàn)',d:'Hôm nay 17:00',u:'a',p:'',role:['GVCN'],
+  link:'/M6.13?tab=lich_truc&ctx=7|9A2&return=M0.2',href:'M6.13-Theo-doi-thi-dua.html?tab=lich_truc&ctx=7|9A2&return=M0.2&vai=GVCN92'},
+ /* 1A E2 — hạn = mốc chốt tuần (Thứ Bảy) = D+1; hai điểm trường, tổ chức Đội + Đoàn đều bật ⇒ TPT và BTĐ cùng nhận */
+ {m:'M6.13',mn:'Theo dõi thi đua',h:1,t:'Tuần nền nếp 7 — Điểm trường A: chưa chấm đủ lớp (còn 3)',cx:'6A3 · 7A2 · 9A2 chưa có phiếu tuần',d:'Còn 1 ngày · mốc chốt tuần',u:'a',p:'',role:['BTD','TPT'],
+  link:'/M6.13?tab=cham_nen_nep&ctx=7|A&return=M0.2',href:'M6.13-Theo-doi-thi-dua.html?tab=cham_nen_nep&ctx=7|A&return=M0.2&vai=BTD'},
+ {m:'M6.13',mn:'Theo dõi thi đua',h:1,t:'Tuần nền nếp 7 — Điểm trường B: chưa chấm đủ lớp (còn 1)',cx:'7B1 chưa có phiếu tuần',d:'Còn 1 ngày · mốc chốt tuần',u:'a',p:'',role:['BTD','TPT'],
+  link:'/M6.13?tab=cham_nen_nep&ctx=7|B&return=M0.2',href:'M6.13-Theo-doi-thi-dua.html?tab=cham_nen_nep&ctx=7|B&return=M0.2&vai=TPT'},
+ /* 1B E.1 — chu kỳ «Giữa HK I» kết thúc 24/10 = D+1. BTĐ đếm CLB Đoàn + Chung (CLB-01 nháp · CLB-03 chưa); TPT đếm Đội + Chung (+ CLB-04) */
+ {m:'M6.16',mn:'CLB, đội, nhóm',h:1,t:'Chu kỳ đánh giá CLB «Giữa học kỳ I 2026–2027» còn 2 phiếu chưa chấm',cx:'CLB Tiếng Anh (nháp) · CLB STEM – Robotics',d:'Còn 1 ngày',u:'a',p:'1/3 phiếu hoàn tất',role:['BTD'],
+  link:'/M6.16?tab=danhgia&ck=CK-2627-G1&return=M0.2',href:'M6.16-Quan-ly-CLB.html?tab=danhgia&ck=CK-2627-G1&return=M0.2&vai=BTD'},
+ {m:'M6.16',mn:'CLB, đội, nhóm',h:1,t:'Chu kỳ đánh giá CLB «Giữa học kỳ I 2026–2027» còn 3 phiếu chưa chấm',cx:'CLB Tiếng Anh (nháp) · CLB STEM – Robotics · CLB Văn nghệ «Sao Mai»',d:'Còn 1 ngày',u:'a',p:'1/4 phiếu hoàn tất',role:['TPT'],
+  link:'/M6.16?tab=danhgia&ck=CK-2627-G1&return=M0.2',href:'M6.16-Quan-ly-CLB.html?tab=danhgia&ck=CK-2627-G1&return=M0.2&vai=TPT'},
+ /* 1B E.1 — GV phụ trách (cố vấn) KHÔNG nhận việc «không còn GV» (chính họ đã rời) */
+ {m:'M6.16',mn:'CLB, đội, nhóm',h:null,t:'«CLB Cờ vua» không còn GV phụ trách (cố vấn) đang công tác',cx:'Bảo trợ Đội · Điểm trường B · đang tạm dừng — người phụ trách duy nhất đã chuyển công tác',d:'Không có hạn',u:'g',p:'',role:['TPT'],
+  link:'/M6.16?ctx=CLB-05&action=kien_toan&return=M0.2',href:'M6.16-Quan-ly-CLB.html?ctx=CLB-05&action=kien_toan&return=M0.2&vai=TPT'},
+ /* 1B E.1 — việc DUY NHẤT GV phụ trách (cố vấn) nhận; demo này không có vai Lê Quang Vinh — Đủ quyền thấy */
+ {m:'M6.16',mn:'CLB, đội, nhóm',h:null,t:'«CLB Bóng đá» chưa có kế hoạch năm học 2026–2027',cx:'Bảo trợ Đội · người nhận: TPT + GV phụ trách (cố vấn) Lê Quang Vinh',d:'Không có hạn',u:'g',p:'',role:['TPT'],
+  link:'/M6.16?ctx=CLB-02&action=ke_hoach&return=M0.2',href:'M6.16-Quan-ly-CLB.html?ctx=CLB-02&action=ke_hoach&return=M0.2&vai=TPT'},
+ /* DD7 · 1C E3 — người lập nhận phiếu bị trả lại */
+ {m:'M6.17',mn:'Quỹ hoạt động',h:null,t:'Phiếu quỹ PC 05/26-27 bị trả lại · 420.000đ',cx:'Sổ Liên đội · PHT Lý Thanh Bình: chứng từ là giấy biên nhận viết tay, không có tên và chữ ký người bán',d:'Không có hạn',u:'g',p:'',role:['TPT'],
+  link:'/M6.17?so=doi&ctx=doi-chi-2627-05&return=M0.2',href:'M6.17-Quy-hoat-dong.html?so=doi&ctx=doi-chi-2627-05&return=M0.2&vai=TPT'},
+ /* DD7 · 1C E5 · E6 — BTĐ Vũ Đình Trung. Hạn trích nộp Q1 30/10 = D+7 ⇒ «Trong 7 ngày tới». E6 MỘT DÒNG MỖI CHI ĐOÀN (2A chốt) */
+ {m:'M6.17',mn:'Quỹ hoạt động',h:7,t:'Hạn trích nộp 1/3 đoàn phí — Quý 1 · 2026-2027',cx:'Tổng nhận 61.000đ · phải trích nộp 20.333đ lên Đoàn cấp trên',d:'Còn 7 ngày',u:'a',p:'Chưa ghi trích nộp',role:['BTD'],
+  link:'/M6.17?so=doan&ky=doan-2627-q1&return=M0.2',href:'M6.17-Quy-hoat-dong.html?so=doan&ky=doan-2627-q1&return=M0.2&vai=BTD'},
+ {m:'M6.17',mn:'Quỹ hoạt động',h:7,t:'Chi đoàn 9A2 (sinh hoạt ghép 9A1) — nộp thiếu 2.000đ · Quý 1',cx:'Phải nộp 8.000đ · thực nhận 6.000đ ≈ thiếu 1 đoàn viên',d:'Còn 7 ngày',u:'a',p:'6.000 / 8.000đ',role:['BTD'],
+  link:'/M6.17?so=doan&ky=doan-2627-q1&cd=CDO-9A2&return=M0.2',href:'M6.17-Quy-hoat-dong.html?so=doan&ky=doan-2627-q1&cd=CDO-9A2&return=M0.2&vai=BTD'},
+ {m:'M6.17',mn:'Quỹ hoạt động',h:7,t:'Chi đoàn 9B1 — chưa ghi nộp đoàn phí · Quý 1',cx:'Chưa có dòng nộp từ chi đoàn quý này',d:'Còn 7 ngày',u:'a',p:'0 / 1 dòng nộp',role:['BTD'],
+  link:'/M6.17?so=doan&ky=doan-2627-q1&cd=CDO-9B1&return=M0.2',href:'M6.17-Quy-hoat-dong.html?so=doan&ky=doan-2627-q1&cd=CDO-9B1&return=M0.2&vai=BTD'},
+ /* DD6 · 1D E.1 — hạn công nhận 20/11 = D+28 · hạn đề xuất 06/11 = D+14 */
+ {m:'M6.3',mn:'Hoạt động Đoàn - Đội',h:28,t:'Đợt đánh giá xếp loại «2026–2027» chưa hoàn tất',cx:'Chi đoàn giáo viên đã công nhận · 9B1 chờ công nhận · 9A2 chưa gửi',d:'Còn 28 ngày',u:'g',p:'1/3 chi đoàn',role:['BTD'],
+  link:'/M6.3?tab=xeploai&ctx=DG-2627&return=M0.2',href:'M6.3-Hoat-dong-Doan-Doi.html?tab=xeploai&ctx=DG-2627&return=M0.2&vai=BTD'},
+ {m:'M6.3',mn:'Hoạt động Đoàn - Đội',h:14,t:'Chi đoàn 9A2 (sinh hoạt ghép 9A1): còn 1 đoàn viên chưa có mức đề xuất',cx:'Đợt 2026–2027 · em còn lại có kỷ luật Đoàn cảnh cáo — đề xuất từ «Hoàn thành» trở lên phải nêu lý do',d:'Còn 14 ngày',u:'g',p:'4/5 đoàn viên',role:['GVCN'],
+  link:'/M6.3?tab=xeploai&ctx=DG-2627&cd=CDO-9A2&action=sua&return=M0.2',href:'M6.3-Hoat-dong-Doan-Doi.html?tab=xeploai&ctx=DG-2627&cd=CDO-9A2&action=sua&return=M0.2&vai=GVCN9A2'},
+ /* ══ YKDD — «Được giao — kết luận họp» (M0.2 §4.2.2c · HDDD ①). Một dòng MỖI việc, cho NGƯỜI THỰC HIỆN, chỉ khi biên bản đã xác nhận.
+    p = nhãn (biên bản đang sửa · đã trả lại · đã báo — chờ nghiệm thu). Đã báo ⇒ h:null («Không có hạn» — §7 điểm 7 ✅), không bao giờ Quá hạn. ══ */
+ /* DD8 · 2E E1 — HOP-15 (demo M6.18 HOMNAY 28/12): họp D−7, chủ trì Vũ Đình Trung. Tùng hạn D−2 đã báo D−3 · Mai hạn D−3 QUÁ HẠN · Nhung hạn D+11 */
+ {m:'M6.18',mn:'Lịch họp',h:null,t:'Hoàn thiện kế hoạch Ngày hội «Xuân tình nguyện» 2027, gửi Bí thư Đoàn trường',cx:'Kết luận «Họp BCH Đoàn trường tháng 12/2026» · chủ trì Vũ Đình Trung',hx:-2,d:'đã báo 22/8 — chờ nghiệm thu',u:'g',p:'đã báo — chờ nghiệm thu',role:['TUNG'],
+  link:'/M6.18?tab=cuoc_hop&ctx=HOP-15&muc=ket_luan&return=M0.2',href:'M6.18-Lich-hop.html?tab=cuoc_hop&ctx=HOP-15&muc=ket_luan&return=M0.2&vai=FULL&nhin=tung'},
+ {m:'M6.18',mn:'Lịch họp',h:-3,t:'Kiểm tra sổ chi đoàn 9A1 · 9A2, báo kết quả cho BCH',cx:'Kết luận «Họp BCH Đoàn trường tháng 12/2026» · chủ trì Vũ Đình Trung',d:'Quá hạn 3 ngày',u:'r',p:'',role:['MAI'],
+  link:'/M6.18?tab=cuoc_hop&ctx=HOP-15&muc=ket_luan&return=M0.2',href:'M6.18-Lich-hop.html?tab=cuoc_hop&ctx=HOP-15&muc=ket_luan&return=M0.2&vai=FULL&nhin=vtmai'},
+ {m:'M6.18',mn:'Lịch họp',h:11,t:'Rà danh sách đoàn viên Điểm trường B chuẩn bị đợt đánh giá xếp loại',cx:'Kết luận «Họp BCH Đoàn trường tháng 12/2026» · chủ trì Vũ Đình Trung',d:'Còn 11 ngày · báo trong cuộc họp sau',u:'g',p:'',role:['NHUNG'],
+  link:'/M6.18?tab=cuoc_hop&ctx=HOP-15&muc=ket_luan&return=M0.2',href:'M6.18-Lich-hop.html?tab=cuoc_hop&ctx=HOP-15&muc=ket_luan&return=M0.2&vai=FULL&nhin=nhung'},
+ /* DD9 · 2F E1 · E2 — buổi S8 Tổ Toán — Tin (demo M5.4 HOMNAY 20/11): buổi D−14 · An việc 1 hạn D−7 bị trả lại D−7 · An việc 2 không hạn báo buổi sau · Dũng hạn D0 đã báo D−1 */
+ {m:'M5.4',mn:'Sinh hoạt chuyên môn',h:-7,t:'Lập lại danh sách học sinh lớp 8 cần hỗ trợ phần hình học — đủ các lớp khối 8',cx:'Sinh hoạt chuyên môn · Tổ Toán — Tin · buổi 11/08/2026',d:'Quá hạn 7 ngày',u:'r',p:'đã trả lại',role:['AN'],
+  link:'/M5.4?ctx=S8&muc=ket_luan&return=M0.2',href:'M5.4-Sinh-hoat-chuyen-mon.html?ctx=S8&muc=ket_luan&return=M0.2'},
+ {m:'M5.4',mn:'Sinh hoạt chuyên môn',h:null,t:'Thử phiếu phân vai nhóm ở một tiết Toán 8 và kể lại kết quả',cx:'Sinh hoạt chuyên môn · Tổ Toán — Tin · buổi 11/08/2026',d:'Không có hạn · báo trong buổi sinh hoạt sau',u:'g',p:'',role:['AN'],
+  link:'/M5.4?ctx=S8&muc=ket_luan&return=M0.2',href:'M5.4-Sinh-hoat-chuyen-mon.html?ctx=S8&muc=ket_luan&return=M0.2'},
+ {m:'M5.4',mn:'Sinh hoạt chuyên môn',h:null,t:'Hoàn thiện 20 câu hỏi vận dụng Toán 7 đóng góp kho học liệu của cụm',cx:'Sinh hoạt chuyên môn · Tổ Toán — Tin · buổi 11/08/2026',hx:0,d:'đã báo 24/8 — chờ nghiệm thu',u:'g',p:'đã báo — chờ nghiệm thu',role:['DUNG'],
+  link:'/M5.4?ctx=S8&muc=ket_luan&return=M0.2',href:'M5.4-Sinh-hoat-chuyen-mon.html?ctx=S8&muc=ket_luan&return=M0.2'},
 ];
 
 /* Việc thuộc nhóm "Tiền của gia đình" có một ràng buộc khác mọi việc còn lại:
@@ -309,28 +478,82 @@ const V=[
 const NAV=[
  ['','🏠 Trung tâm điều hành',[['M0.1','Bảng điều khiển'],['M0.2','Việc cần làm','B'],['M0.3','Thông báo của tôi'],['M0.4','Trang cá nhân']]],
  ['hs','👥 Học sinh',[['M1.1','Hồ sơ học sinh'],['M1.3','Học bạ điện tử'],['M1.4','Tuyển sinh đầu cấp'],['M1.5','Chuyển trường'],['M1.7','Lớp học & Chuyển lớp']]],
- ['lop','📚 Lớp học hàng ngày',[['M2.1','Lịch dạy & học'],['M2.2','Sổ đầu bài'],['M2.3','Bài tập về nhà'],['M2.4','Đơn xin nghỉ của HS'],['M2.5','Nhập điểm thường xuyên'],['M2.6','Bảng điểm môn'],['M2.7','Khen thưởng & Kỷ luật HS'],['M2.9','Không gian lớp học']]],
+ ['lop','📚 Lớp học hàng ngày',[['M2.1','Lịch dạy & học'],['M2.2','Sổ đầu bài'],['M2.3','Bài tập về nhà'],['M2.4','Đơn xin nghỉ của HS'],['M2.5','Bảng điểm môn học'],['M2.10','Khen thưởng học sinh'],['M2.7','Kỷ luật học sinh'],['M2.9','Danh sách lớp học']]],
  ['ns','👨‍🏫 Nhân sự',[['M4.1','Hồ sơ nhân sự'],['M4.7','Lịch giảng dạy & Dạy thay'],['M4.8','Nghỉ phép'],
    ['M4.11','Chứng thư số']]],
  ['cm','📖 Chuyên môn',[['M5.2','Giáo án'],['M5.3','Dự giờ'],['M5.6','Đào tạo & BDTX']]],
- ['vh','🏫 Vận hành',[['M6.5','Yêu cầu CSVC'],['M6.9','Văn thư — Công văn']]],
+ ['vh','🏫 Vận hành',[['M6.5','Mượn phòng & thiết bị'],['M6.9','Công văn']]],
  ['tc','💰 Tài chính',[['M7.2','Theo dõi thực hiện khoản thu'],['M7.3','Điều chỉnh & Hoàn tiền']]],
  ['gt','💬 Giao tiếp',[['M8.1','Thông báo chủ động'],['M8.2','Nhắn tin']]],
  ['bc','📊 Báo cáo',[['M9','Báo cáo tổng hợp']]],
 ];
-const RM={HT:'all',PHT_DT:['hs','lop','ns','vh','gt','bc'],TTCM:['lop','ns','cm','gt'],
- GVCN:['hs','lop','gt'],GVBM:['lop','cm','gt'],TCNS:['ns','gt','bc'],KT:['hs','vh','tc','gt','bc']};
-const RN={HT:'Hiệu trưởng',PHT_DT:'Phó HT Điểm trường',TTCM:'Tổ trưởng chuyên môn',
- GVCN:'Giáo viên chủ nhiệm',GVBM:'Giáo viên bộ môn',TCNS:'Tổ chức nhân sự',KT:'Kế toán'};
+const RM={FULL:'all',HT:'all',PHT_DT:['hs','lop','ns','vh','gt','bc'],TTCM:['lop','ns','cm','gt'],
+ GVCN:['hs','lop','gt'],GVBM:['lop','cm','gt'],TCNS:['ns','gt','bc'],KT:['hs','vh','tc','gt','bc'],
+ BTD:['ns','vh','gt'],TPT:['ns','vh','gt'],TUNG:['ns','gt'],MAI:['ns','gt'],NHUNG:['lop','ns','gt'],AN:['lop','cm','gt'],DUNG:['lop','cm','gt']};
+const RN={FULL:'Đủ quyền (demo)',HT:'Hiệu trưởng',PHT_DT:'Phó HT Điểm trường',TTCM:'Tổ trưởng chuyên môn',
+ GVCN:'Giáo viên chủ nhiệm',GVBM:'Giáo viên bộ môn',TCNS:'Tổ chức nhân sự',KT:'Kế toán',
+ BTD:'Bí thư Đoàn trường',TPT:'Tổng phụ trách Đội',TUNG:'Ngô Thanh Tùng',MAI:'Vũ Thị Mai',NHUNG:'Hoàng Thị Nhung',AN:'Nguyễn Văn An',DUNG:'Lê Văn Dũng'};
+/* TTCM demo = Lê Minh Tuấn · GVBM demo = Hà Minh Đức (YKNP ca mẫu).
+   YKDD ca mẫu: HT = Nguyễn Quang Huy · GVCN = Bùi Quốc Hải (GVCN 9A2 — lớp trực tuần 7) · BTD = Vũ Đình Trung · TPT = Đỗ Thị Bích Ngọc ·
+   TUNG · MAI · NHUNG = người thực hiện kết luận họp BCH (DD8) · AN · DUNG = người thực hiện kết luận sinh hoạt tổ Toán — Tin (DD9) */
 
-let role='HT', tab=0, sel=new Set(), removed=new Set(), lastAct=null;
+/* ======= MỨC KHẨN — M0.2 §4.3.1b (VC-C1…3) =======
+   h = số ngày tới hạn so với hôm nay của demo (25/8) · h<0 quá hạn (kể cả qua giờ trong hôm nay: -0.1) · null = không có hạn.
+   Năm mức KHÔNG CHỒNG NHAU. Quá hạn dẫn xuất theo luật menu chủ đã tính sẵn vào h (việc kết luận «đã báo» mang h:null). */
+const MK=[['qua_han','Quá hạn'],['hom_nay','Hôm nay'],['7ngay','Trong 7 ngày tới'],['xa','Còn hạn > 7 ngày'],['khong_han','Không có hạn']];
+const mucKhan=x=>x.h==null?'khong_han':x.h<0?'qua_han':x.h===0?'hom_nay':x.h<=7?'7ngay':'xa';
+
+/* ======= HẠN CÓ GIỜ — M0.2 §4.1.1b (GY18-E · góp ý GY-5EHT) =======
+   hg = giờ 'HH:mm' của hạn, CÓ thì menu chủ đã trả giờ; KHÔNG có trường hg ⇒ hạn chỉ có ngày.
+   🛑 Không bịa 00:00 cho dòng không có giờ — một con số bịa ở cột hạn là mời người dùng tin vào mốc không ai đặt ra.
+   Mức khẩn vẫn tính theo NGÀY qua h (§4.3.1b · VC-C2) — thêm giờ KHÔNG đổi mức của bất kỳ dòng nào. */
+const HOMNAY=new Date(2026,7,25), GIO_DEMO='09:10';   /* đồng hồ demo cố định để ca E1…E5 lặp lại được */
+const phut=hm=>{const[a,b]=hm.split(':').map(Number);return a*60+b};
+const ngayHan=x=>x.h==null?null:new Date(HOMNAY.getFullYear(),HOMNAY.getMonth(),HOMNAY.getDate()+Math.ceil(x.h));
+const dmy=d=>`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+/* Cột Hạn: <dd/mm/yyyy> kèm HH:mm khi hạn có giờ; hạn chỉ có ngày thì hiện như cũ */
+const oHan=x=>{const d=ngayHan(x.hx!==undefined?{h:x.hx}:x);return d?dmy(d)+(x.hg?` · ${x.hg}`:''):'Không có hạn'};
+/* Phút còn lại tới hạn — chỉ tính được khi hạn có giờ */
+const conPhut=x=>Math.ceil(x.h)*1440+phut(x.hg)-phut(GIO_DEMO);
+/* Nhãn khẩn của một dòng. Dòng có giờ ở mức Hôm nay / Quá hạn trong ngày thì nhãn DẪN XUẤT theo giờ;
+   ngưỡng đổi giờ ↔ phút là 60 phút (E-1), áp cả hai chiều. Dòng còn lại giữ nguyên chữ của menu chủ. */
+function nhanKhan(x){
+  const g=mucKhan(x), tho=x.ud||x.d;
+  if(x.hg&&Math.ceil(x.h)===0){
+    const p=conPhut(x);
+    if(g==='hom_nay') return p<60?`còn ${p} phút`:`còn ${Math.floor(p/60)} giờ`;
+    return -p<60?`quá ${-p} phút`:`quá ${Math.floor(-p/60)} giờ`;   /* mới quá trong ngày */
+  }
+  if(g==='qua_han'&&Math.ceil(x.h)<0) return `quá ${-Math.ceil(x.h)} ngày`;
+  return tho;
+}
+const oHanCell=x=>`<div class="hanc"><b>${oHan(x)}</b><span class="tag ${x.u}">${nhanKhan(x)}</span></div>`;
+/* Sắp xếp Hạn xử lý: so theo (ngày, giờ); dòng KHÔNG có giờ xếp CUỐI ngày của nó —
+   không có giờ nghĩa là «trong ngày hôm đó», đặt nó trước một việc có mốc 08:00 sáng là nói sai mức khẩn. */
+const khoaHan=x=>x.h==null?Infinity:Math.ceil(x.h)*1440+(x.hg?phut(x.hg):1439);
+function veLocKhan(rows){          /* số đếm tính trên dòng của TAB ĐANG MỞ, sau các bộ lọc khác, TRƯỚC chính bộ lọc này */
+  const f=$('#f2'), v=f.value, dem={}; MK.forEach(([k])=>dem[k]=0); rows.forEach(x=>dem[mucKhan(x)]++);
+  f.innerHTML=`<option value="">Mức khẩn${dem.qua_han?` · 🔴 ${dem.qua_han}`:''}</option>`+
+    MK.map(([k,n])=>`<option value="${k}">${n} · ${dem[k]}</option>`).join('');
+  f.value=v; return dem;
+}
+
+let role='FULL', tab=0, sel=new Set(), removed=new Set(), lastAct=null;
+/* FULL = vai mặc định của demo (quy ước dự án): gom việc của MỌI vai vào một màn hình để rà trọn luồng.
+   Trên hệ thống thật không có vai này — mỗi người chỉ thấy việc của chính mình. */
+const duQuyen=()=>role==='FULL';
 const $=s=>document.querySelector(s);
 function toast(m,undo){const t=$('#toast');$('#tmsg').textContent=m;
   $('#tundo').style.display=undo?'':'none';t.classList.add('on');
   clearTimeout(t._);t._=setTimeout(()=>t.classList.remove('on'),undo?5000:2400)}
+/* YKDD — vé / việc có tệp demo menu chủ: toast kèm link mở THẬT (tên tệp html + ?vai= của demo đó); để lâu hơn cho kịp bấm */
+function toastLink(m,href){const t=$('#toast');$('#tmsg').innerHTML=m.replace(/&/g,'&amp;').replace(/</g,'&lt;')+
+  ` · <a href="${href}" style="color:#93c5fd;font-weight:700">↗ Mở demo ${href.split('-')[0]}</a>`;
+  $('#tundo').style.display='none';t.classList.add('on');clearTimeout(t._);t._=setTimeout(()=>t.classList.remove('on'),7000)}
+const NHAN_KL=['đã báo — chờ nghiệm thu','đã trả lại','biên bản đang sửa'];   /* nhãn việc kết luận — HDDD ① · M0.2 §4.2.2c */
 
-const myT=()=>T.filter(x=>x.role.includes(role)&&!removed.has(x.id));
-const myV=()=>V.filter(x=>x.role.includes(role));
+const myT=()=>T.filter(x=>(duQuyen()||x.role.includes(role))&&!removed.has(x.id));
+const myV=()=>V.filter(x=>duQuyen()||x.role.includes(role));
 
 function sidebar(){
   const a=RM[role], full=a==='all';
@@ -348,18 +571,18 @@ function canQuick(x){return x.f===1&&x.k===0&&x.c===0}
 
 function render(){
   $('#b0').textContent=myT().length; $('#b1').textContent=myV().length;
-  $('#ava').textContent=role==='PHT_DT'?'PD':role.slice(0,2);
+  $('#ava').textContent=duQuyen()?'ĐQ':role==='PHT_DT'?'PD':role.slice(0,2);
   $('#lg').style.display=tab===0?'':'none';
   const q=($('#q').value||'').toLowerCase(), fu=$('#f2').value, ft=$('#f3').value;
 
   if(tab===0){
     let rows=myT().filter(x=>!q||(x.t+x.w+x.id).toLowerCase().includes(q));
-    if(fu==='Quá hạn')rows=rows.filter(x=>x.u==='r');
-    if(fu==='Hôm nay')rows=rows.filter(x=>x.ud==='Hôm nay');
     if(ft==='Duyệt nhanh được')rows=rows.filter(canQuick);
     if(ft==='Cần ký số')rows=rows.filter(x=>x.k);
     if(ft==='Bước chốt cuối')rows=rows.filter(x=>x.c);
-    rows.sort((a,b)=>({r:0,a:1,g:2}[a.u])-({r:0,a:1,g:2}[b.u]));
+    veLocKhan(rows);
+    if(fu)rows=rows.filter(x=>mucKhan(x)===fu);
+    rows.sort((a,b)=>({r:0,a:1,g:2}[a.u])-({r:0,a:1,g:2}[b.u])||khoaHan(a)-khoaHan(b));
     $('#tbl').innerHTML = rows.length? `<div class="th">
       <div></div><div>Nguồn</div><div>Nội dung</div><div>Người gửi</div><div>Hạn xử lý</div><div>Chuỗi</div><div style="text-align:right">Thao tác</div></div>`+
       rows.map(x=>{const qk=canQuick(x);
@@ -369,7 +592,7 @@ function render(){
         <div class="src"><code>${x.m}</code> <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x.mn}</span></div>
         <div class="ttl"><b>${x.t}</b><i>${x.s}</i></div>
         <div class="who">${x.w}<i>${x.wr}</i></div>
-        <div><span class="tag ${x.u}">${x.ud}</span></div>
+        <div>${oHanCell(x)}</div>
         <div class="chain" title="Chuỗi duyệt">${x.ch}<div class="marks">${x.k?'🔏':''}${x.c?'🔒':''}</div></div>
         <div class="acts">${qk
           ? `<button class="mini ok" data-a="ok" data-id="${x.id}">✓ Duyệt</button>
@@ -380,16 +603,17 @@ function render(){
       : `<div class="empty"><div class="e">🎉</div><b>Không có việc nào chờ bạn duyệt</b></div>`;
   } else {
     let rows=myV().filter(x=>!q||x.t.toLowerCase().includes(q));
-    if(fu==='Quá hạn')rows=rows.filter(x=>x.u==='r');
-    rows.sort((a,b)=>({r:0,a:1,g:2}[a.u])-({r:0,a:1,g:2}[b.u]));
-    $('#tbl').innerHTML = rows.length? `<div class="th" style="grid-template-columns:1.55fr 3fr 1.3fr 1.1fr 1fr">
+    veLocKhan(rows);
+    if(fu)rows=rows.filter(x=>mucKhan(x)===fu);
+    rows.sort((a,b)=>({r:0,a:1,g:2}[a.u])-({r:0,a:1,g:2}[b.u])||khoaHan(a)-khoaHan(b));
+    $('#tbl').innerHTML = rows.length? `<div class="th" style="grid-template-columns:1.55fr 3fr 1.3fr 1.25fr 1fr">
       <div>Nguồn</div><div>Việc</div><div>Ngữ cảnh</div><div>Hạn</div><div>Tiến độ</div></div>`+
-      rows.map(x=>`<div class="tr" style="grid-template-columns:1.55fr 3fr 1.3fr 1.1fr 1fr" data-go="${x.m}">
+      rows.map(x=>`<div class="tr" style="grid-template-columns:1.55fr 3fr 1.3fr 1.25fr 1fr" data-go="${x.m}" ${x.link?`data-link="${x.link}"`:''} ${x.href?`data-href="${x.href}"`:''}>
         <div class="src"><code>${x.m}</code> <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${x.mn}</span></div>
         <div class="ttl"><b>${x.t}</b></div>
         <div class="who">${x.cx}</div>
-        <div><span class="tag ${x.u}">${x.d}</span></div>
-        <div style="font-size:12.5px;color:var(--ink2);font-weight:600">${x.p||'—'}</div></div>`).join('')
+        <div>${oHanCell(x)}</div>
+        <div style="font-size:12.5px;color:var(--ink2);font-weight:600">${x.p?(NHAN_KL.includes(x.p)?`<span class="tag ${x.p==='đã trả lại'?'r':x.p==='biên bản đang sửa'?'a':'g'}">${x.p}</span>`:x.p):'—'}</div></div>`).join('')
       : `<div class="empty"><div class="e">✅</div><b>Bạn không còn việc tồn đọng</b></div>`;
     sel.clear();
   }
@@ -415,7 +639,7 @@ function openPanel(id){
   $('#pb').innerHTML=`<div class="ro">🔒 Panel xem nhanh — <b>chỉ đọc</b>. Menu M0.2 không sửa nội dung ticket.</div>
     <div class="fld"><label>Nội dung</label><b>${x.t}</b><div style="color:var(--ink2);margin-top:2px">${x.s}</div></div>
     <div class="fld"><label>Người gửi</label>${x.w} · ${x.wr}</div>
-    <div class="fld"><label>Ngày gửi · Hạn xử lý</label>${x.d} · <span class="tag ${x.u}">${x.ud}</span></div>
+    <div class="fld"><label>Ngày gửi · Hạn xử lý</label>${x.d} · <b>${oHan(x)}</b> <span class="tag ${x.u}">${nhanKhan(x)}</span></div>
     <div class="fld"><label>Nguồn</label><code style="background:var(--bg);padding:2px 6px;border-radius:4px">${x.m}</code> ${x.mn}</div>
     <div class="fld"><label>Chuỗi duyệt (${x.ch})</label>
       <div class="steps">
@@ -425,7 +649,8 @@ function openPanel(id){
       </div></div>
     ${(x.k||x.c)?`<div class="ro" style="background:var(--red-soft);border-color:#fecaca;color:#991b1b">
       ${x.k?'🔏 Ticket này <b>cần ký số</b>. ':''}${x.c?'🔒 Đây là <b>bước chốt cuối</b>. ':''}
-      Không duyệt nhanh được tại M0.2 — bắt buộc mở menu nghiệp vụ.</div>`:''}`;
+      Không duyệt nhanh được tại M0.2 — bắt buộc mở menu nghiệp vụ.</div>`:''}
+    ${x.ghi?`<div class="fld"><label>Ghi chú nguồn</label><div style="color:var(--ink2);line-height:1.55">${x.ghi}</div></div>`:''}`;
   $('#pf').innerHTML = qk
     ? `<button class="btn p" style="flex:1" data-a="ok" data-id="${x.id}">✓ Duyệt</button>
        <button class="btn" data-a="no" data-id="${x.id}">✕ Từ chối</button>
@@ -460,13 +685,15 @@ document.body.addEventListener('click',e=>{
         ()=>{removed.add(id);render();toast(`Đã yêu cầu bổ sung ${id}`)},'Gửi yêu cầu');
       $('#panel').classList.remove('on');
     } else if(a.dataset.a==='open'){
-      const why = x.k?'cần ký số':'là bước chốt cuối';
-      toast(`Deep-link → ${x.m}?ctx=${id}&action=duyet&return=M0.2 (ticket ${why})`);
+      const why = x.k?'cần ký số':x.c?'là bước chốt cuối':'cần nhập thêm dữ liệu ở menu chủ';
+      if(x.href) toastLink(`Deep-link → ${x.link} (ticket ${why})`,x.href);
+      else toast(`Deep-link → /${x.m}?ctx=${x.ctx||id}&action=duyet&return=M0.2 (ticket ${why})`);
       $('#panel').classList.remove('on');
     }
     e.stopPropagation(); return}
   const tr=e.target.closest('.tr');
-  if(tr){ if(tr.dataset.go){toast(`Deep-link → ${tr.dataset.go} · mở đúng ngữ cảnh · return=M0.2`);return}
+  if(tr){ if(tr.dataset.go){if(tr.dataset.href){toastLink(`Deep-link → ${tr.dataset.link}`,tr.dataset.href);return}
+    toast(tr.dataset.link?`Deep-link → ${tr.dataset.link}`:`Deep-link → ${tr.dataset.go} · mở đúng ngữ cảnh · return=M0.2`);return}
     openPanel(tr.dataset.id); return}
 });
 

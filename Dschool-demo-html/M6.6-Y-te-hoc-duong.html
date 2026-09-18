@@ -337,6 +337,7 @@ const k2s=k=>d2s(k2d(k));
 const kThu=k=>THU[k2d(k).getDay()];
 const thuSo=k=>k2d(k).getDay()+1;          /* T2=2 … T7=7, CN=1 */
 const HOMNAY='2026-12-28';                 /* Thứ Hai — cuối năm ngân sách, đang kiểm kê */
+const GIONAY='08:15';
 
 /* ========== DỮ LIỆU NỀN ========== */
 const DT={A:'Điểm trường A',B:'Điểm trường B',C:'Điểm trường C'};
@@ -345,8 +346,8 @@ const vnd=n=>vn(n)+'đ';
 /* ══════════════════════════════════════════════════════════════════
    M6.6 — Y TẾ HỌC ĐƯỜNG
    ★ Đây là menu chạm DỮ LIỆU NHẠY CẢM NHẤT của cả hệ thống.
-     NĐ 13/2023 Đ.2 k.4: dữ liệu về tình trạng sức khỏe là DỮ LIỆU CÁ NHÂN NHẠY CẢM.
-     NĐ 13/2023 Đ.20: dữ liệu của trẻ em phải có sự đồng ý của cha mẹ / người giám hộ,
+     Luật BVDLCN 91/2025: dữ liệu về tình trạng sức khỏe là DỮ LIỆU CÁ NHÂN NHẠY CẢM.
+     Luật BVDLCN 91/2025: dữ liệu của trẻ em phải có sự đồng ý của cha mẹ / người giám hộ,
      và của chính trẻ em từ đủ 7 tuổi trở lên.
    ★ Hệ quả thiết kế xuyên suốt: quyền ở đây KHÔNG chỉ lọc DÒNG, nó lọc cả CỘT.
    ══════════════════════════════════════════════════════════════════ */
@@ -373,7 +374,12 @@ const tenDu=m=>tenNS(m)+' — '+cdNS(m);
 
 /* ── Vai ──
    ★ Ba lớp dữ liệu, và quyền đọc KHÁC NHAU trên từng lớp:
-       Lớp 1 SINH TỒN   — nhóm máu · dị ứng · bệnh nền · liên hệ khẩn cấp
+       Lớp 1 SỨC KHỎE CƠ BẢN — nhóm máu · dị ứng · bệnh nền · liên hệ khẩn cấp
+   ★ ĐỌC Lớp 1 và GHI Lớp 1 là HAI NĂNG LỰC KHÁC NHAU: 'sinhton' vs 'suaST'.
+     GVCN đọc được Lớp 1 của lớp mình — thứ cần để xử lý một tình huống ngay
+     tại lớp — nhưng KHÔNG SỬA: họ không có bản gốc trong tay để đối chiếu
+     (sổ y tế, giấy xét nghiệm nhóm máu). Gộp hai thứ này làm một là chỗ dễ
+     sai nhất, vì «đọc được» trông rất giống «phụ trách».
        Lớp 2 KHÁM ĐỊNH KỲ — chiều cao, cân nặng, thị lực, tim mạch…
        Lớp 3 SỰ KIỆN Y TẾ — triệu chứng, xử trí, thuốc đã dùng
    ★ PHT và Hiệu trưởng KHÔNG đọc hồ sơ y tế của từng em. Họ quản lý bằng
@@ -381,11 +387,11 @@ const tenDu=m=>tenNS(m)+' — '+cdNS(m);
      cá nhân hơn — đó là chỗ dễ làm sai nhất ở một menu y tế. */
 const ROLES={
  FULL:{ma:'duc',  cd:'🔓 Đủ quyền (demo)',sc:'School',dt:null,lop:null,
-   q:['xem','sinhton','ketqua','sukien','ghiSK','doiKham','tuthuoc','dich','baocao','kyBC','duyetKH','cauhinh','xuat','khancap'],rec:'all'},
+   q:['xem','sinhton','suaST','ketqua','sukien','ghiSK','doiKham','tuthuoc','dich','baocao','kyBC','duyetKH','cauhinh','xuat','khancap'],rec:'all'},
  YTA :{ma:'thao', cd:'Y tế — Điểm trường A',sc:'Branch',dt:'A',lop:null,
-   q:['xem','sinhton','ketqua','sukien','ghiSK','doiKham','tuthuoc','dich','baocao','cauhinh','xuat','khancap'],rec:'all'},
+   q:['xem','sinhton','suaST','ketqua','sukien','ghiSK','doiKham','tuthuoc','dich','baocao','cauhinh','xuat','khancap'],rec:'all'},
  YTB :{ma:'loan', cd:'Y tế — Điểm trường B',sc:'Branch',dt:'B',lop:null,
-   q:['xem','sinhton','ketqua','sukien','ghiSK','doiKham','tuthuoc','dich','baocao','cauhinh','xuat','khancap'],rec:'all'},
+   q:['xem','sinhton','suaST','ketqua','sukien','ghiSK','doiKham','tuthuoc','dich','baocao','cauhinh','xuat','khancap'],rec:'all'},
  GVCN:{ma:'hoa',  cd:'GVCN 6A1',sc:'Class',dt:'A',lop:'6A1',
    q:['xem','sinhton','sukien','khancap'],rec:'lop'},
  BT  :{ma:'tam',  cd:'Phụ trách bán trú',sc:'Branch',dt:'A',lop:null,
@@ -395,7 +401,7 @@ const ROLES={
  HT  :{ma:'huy',  cd:'Hiệu trưởng',sc:'School',dt:null,lop:null,
    q:['xem','tonghop','duyetKH','kyBC','kyDich','xuat'],rec:'all'}
 };
-let role='FULL', ST={dt:'ALL',tab:null};
+let role='FULL', ST={dt:'ALL',tab:null,suaST:null,fST:null,dxTick:{},dxLy:{}};
 const R=()=>ROLES[role];
 const can=q=>R().q.includes(q);
 const toiLa=()=>R().ma;
@@ -452,9 +458,17 @@ const tuoiTai=(ns,moc)=>{const a=k2d(ns),b=k2d(moc);
  return t};
 
 /* ══════════════════════════════════════════════════════════════════
-   LỚP 1 — HỒ SƠ SINH TỒN  (Master, chiếu từ M1.1 Phần C)
+   LỚP 1 — HỒ SƠ SỨC KHỎE CƠ BẢN  (Master — ★ MENU NÀY SỞ HỮU)
    ★ Đây là lớp DUY NHẤT mà GVCN và tra cứu khẩn cấp đọc được.
      Nó cố tình NGẮN: bốn thứ cứu được một em trong năm phút đầu.
+   ★ Sửa 7/9/2026 — GỠ VÒNG LẶP «CHỈ ĐỌC» của bốn tệp:
+       nh4.5 §2.1 → nh1.1 ; M6.6 §5.1 → M1.1 ; mà M1.1 §396 lại chiếu
+       ngược về M6.6. Không menu nào nhận ⇒ vi phạm D1 theo chiều ngược.
+     Căn cứ chốt: CSDL ngành (hướng dẫn BGDĐT 3/2026) KHÔNG lưu nhóm máu,
+     dị ứng, bệnh nền, liên hệ khẩn cấp. Nhà pháp lý của chúng là Sổ theo
+     dõi sức khỏe học sinh (TTLT 13/2016) — y tế trường giữ.
+   ★ Ba đường ghi, đúng ba: Y tế sửa trực tiếp · Y tế xác nhận đề xuất từ
+     App · nhập lúc tuyển sinh. Đường nào cũng SINH MỘT PHIÊN BẢN.
    ══════════════════════════════════════════════════════════════════ */
 const NHOMMAU=['O','A','B','AB'];
 const SINHTON={};
@@ -467,7 +481,8 @@ const SINHTON={};
   const s=h.id.charCodeAt(2)*31+h.id.charCodeAt(3)*7+i*17;
   const o={nhomMau:NHOMMAU[s%4]+(s%3===0?'+':'-'),diUngTA:[],diUngKhac:[],benhNen:[],
    lh:{ten:'',qh:s%2?'Mẹ':'Bố',sdt:'09'+String(10000000+(s*7919)%89999999)},
-   nguon:'M1.1 Phần C',capNhat:'2026-08-'+p2((s%28)+1)};
+   bietBoi:(s%5===0?'chua':(s%3===0?'khong':'co')),
+   nguon:'Hồ sơ tuyển sinh',capNhat:'2026-08-'+p2((s%28)+1)};
   o.lh.ten=h.ten.split(' ').slice(0,2).join(' ')+' '+(s%2?'Hạnh':'Cường');
   if(s%7===0) o.diUngTA.push(dnTA[s%dnTA.length]);
   if(s%11===0) o.diUngTA.push(dnTA[(s+2)%dnTA.length]);
@@ -477,8 +492,86 @@ const SINHTON={};
   SINHTON[h.id]=o;
  });
 })();
-const stCua=id=>SINHTON[id]||{nhomMau:'—',diUngTA:[],diUngKhac:[],benhNen:[],lh:{}};
+const stCua=id=>SINHTON[id]||{nhomMau:'—',diUngTA:[],diUngKhac:[],benhNen:[],lh:{},bietBoi:'chua'};
 const coLuuY=id=>{const o=stCua(id); return o.diUngTA.length+o.diUngKhac.length+o.benhNen.length>0};
+const BIETBOI={co:['Có','o'],khong:['Không','w'],chua:['Chưa khảo sát','n']};
+const NGUON_ST=['Gia đình khai (App)','Gia đình khai (trực tiếp)','Sổ y tế / giấy tờ y tế','Hồ sơ tuyển sinh'];
+
+/* ══════════════════════════════════════════════════════════════════
+   ★★ LỊCH SỬ PHIÊN BẢN CỦA LỚP 1 — KHÔNG GHI ĐÈ, KHÔNG XÓA ĐƯỢC
+   Ghi đè xong thì hồ sơ vẫn đúng hôm nay, và không ai biết HÔM QUA NÓ
+   GHI GÌ. Với nhóm máu, đó chính là câu phải trả lời khi có chuyện.
+   ★ Lưu TÊN và CHỨC DANH TẠI THỜI ĐIỂM thao tác, không phải khóa ngoại
+     trỏ vào bảng nhân sự hiện thời — để truy được vết kể cả khi người
+     thực hiện đã nghỉ việc (CLAUDE.md · Luật BVDLCN 91/2025).
+   ══════════════════════════════════════════════════════════════════ */
+const LSST={};   /* hsId -> [{luc, ai, cd, nguon, thayDoi:[[truong,cu,moi]]}] */
+function ghiPhienBan(hid,thayDoi,nguon,ai,cd,luc){
+ if(!thayDoi.length) return;
+ (LSST[hid]=LSST[hid]||[]).unshift({luc:luc||(k2s(HOMNAY)+' '+GIONAY),
+  ai:ai||tenNS(toiLa()), cd:cd||cdNS(toiLa()), nguon:nguon, thayDoi:thayDoi});
+}
+const lsCua=id=>LSST[id]||[];
+
+/* ══════════════════════════════════════════════════════════════════
+   ★★ HÀNG ĐỢI ĐỀ XUẤT CHỈNH SỬA TỪ APP PH-HS
+   Nguồn của bốn trường này là GIA ĐÌNH (nh4.5 §8 — «PH (App): Cung cấp»),
+   nên App có một đường gửi. Trước 7/9/2026 đường đó KHÔNG CÓ PHÍA NHẬN.
+   ★ Cơ chế: ĐỀ XUẤT rồi XÁC NHẬN, không ghi thẳng — nhóm máu và dị ứng
+     là thứ y tế dựa vào để xử trí trong năm phút đầu.
+   ★ Hạn 3 ngày làm việc (đỏ) · 7 ngày (báo HT). Quá hạn KHÔNG tự xác
+     nhận, KHÔNG tự hủy: im lặng không phải sự đồng ý, cũng không phải
+     sự từ chối.
+   ══════════════════════════════════════════════════════════════════ */
+const DEXUAT=[]; let MDX=0;
+function themDX(o){DEXUAT.push({id:'DX-'+p2(++MDX),tt:'cho',...o})}
+(function seedDX(){
+ const g=(lop,i)=>{const ds=hsCuaLop(lop); return ds[i%ds.length]};
+ const a=g('6A1',3), b=g('7A1',5), c=g('9A1',2), d=g('6A2',1);
+ themDX({hs:a.id,guiBoi:'Mẹ '+a.ten.split(' ').slice(0,2).join(' ')+' Hạnh',qh:'Mẹ',
+  ngay:'2026-12-18',kem:'anh-so-y-te-'+a.id+'.jpg',
+  sua:[['diUngKhac','Thuốc kháng sinh nhóm Penicillin','them'],
+       ['nhomMau','O+','sua']]});
+ themDX({hs:b.id,guiBoi:'Bố '+b.ten.split(' ').slice(0,2).join(' ')+' Cường',qh:'Bố',
+  ngay:'2026-12-21',kem:'',
+  sua:[['diUngTA','Nhộng tằm','them'],['lhsdt','0913884277','sua']]});
+ themDX({hs:c.id,guiBoi:'Mẹ '+c.ten.split(' ').slice(0,2).join(' ')+' Lan',qh:'Mẹ',
+  ngay:'2026-12-24',kem:'ket-qua-xet-nghiem-'+c.id+'.pdf',
+  sua:[['benhNen','Hen phế quản','them']]});
+ themDX({hs:d.id,guiBoi:'Mẹ '+d.ten.split(' ').slice(0,2).join(' ')+' Thu',qh:'Mẹ',
+  ngay:'2026-12-26',kem:'',
+  sua:[['bietBoi','co','sua']]});
+})();
+const TRUONG_ST={nhomMau:'Nhóm máu',diUngTA:'Dị ứng thức ăn',diUngKhac:'Dị ứng khác',
+ benhNen:'Bệnh nền',lhsdt:'SĐT liên hệ khẩn cấp',bietBoi:'Biết bơi'};
+function giaTriHienTai(hid,truong){
+ const o=stCua(hid);
+ if(truong==='nhomMau') return o.nhomMau;
+ if(truong==='lhsdt')   return o.lh.sdt||'—';
+ if(truong==='bietBoi') return BIETBOI[o.bietBoi||'chua'][0];
+ return (o[truong]||[]).join(' · ')||'—';
+}
+function giaTriDeNghi(hid,truong,gt,kieu){
+ if(truong==='bietBoi') return BIETBOI[gt]?BIETBOI[gt][0]:gt;
+ if(kieu==='them'){const cu=giaTriHienTai(hid,truong);
+  return cu==='—'?gt:cu+' · '+gt}
+ return gt;
+}
+/* ★ Ngày làm việc — T2..T7, không tính Chủ nhật */
+function ngayLamViec(tu,den){
+ let a=k2d(tu), b=k2d(den), n=0;
+ a.setDate(a.getDate()+1);
+ while(a<=b){ if(a.getDay()!==0) n++; a.setDate(a.getDate()+1) }
+ return n;
+}
+const HAN_DX=3, HAN_DX_HT=7;
+const dxCho=()=>DEXUAT.filter(x=>x.tt==='cho'&&hsById(x.hs));
+function dxTrongPhamVi(){
+ const ds=hsTrongPhamVi().map(h=>h.id);
+ return dxCho().filter(x=>ds.includes(x.hs));
+}
+const dxCuaHS=id=>dxCho().filter(x=>x.hs===id);
+const dxQuaHan=()=>dxTrongPhamVi().filter(x=>ngayLamViec(x.ngay,HOMNAY)>HAN_DX);
 
 
 /* ══════════════════════════════════════════════════════════════════
@@ -551,6 +644,11 @@ const KETQUA={};
     timMach:s%53===0?'Nghe tiếng thổi nhẹ — đề nghị khám chuyên khoa':'Bình thường',
     hoHap:s%47===0?'Ran rít nhẹ hai đáy phổi':'Bình thường',
     cotSong:s%29===0?'Vẹo nhẹ cột sống ngực':'Bình thường',
+    /* ★ «Bệnh về mắt» KHÔNG suy được từ thị lực: thị lực 8/10 là một SỐ ĐO,
+       «có bệnh về mắt» là một KẾT LUẬN. Suy tự động là để hệ thống chẩn
+       đoán bệnh — đúng thứ §2.10 cấm. Ô này do NGƯỜI KHÁM điền.
+       Trường bắt buộc của CSDL ngành (4.5.1). */
+    matBenh:s%31===0?'Viêm kết mạc dị ứng':(s%17===0?'Cận thị':''),
     ketLuan:kl[s%kl.length],
     bacSi:['BS. Phan Thị Hồng','BS. Lê Quốc Trung','BS. Nguyễn Văn Bảo'][s%3],
     ngay:d.tuNgay, nguon:s%4===0?'nhaptay':'import'
@@ -559,6 +657,92 @@ const KETQUA={};
  });
 })();
 const kqCua=(did,hid)=>KETQUA[did+'|'+hid];
+
+/* ══════════════════════════════════════════════════════════════════
+   ★ ĐỢT ĐO THỂ LỰC — LOẠI ĐỢT THỨ HAI của tab 3, VÒNG ĐỜI RIÊNG
+   Sáu nội dung của QĐ 53/2008/QĐ-BGDĐT (đánh giá, xếp loại thể lực học
+   sinh, sinh viên) — tên và đơn vị lấy NGUYÊN VĂN, không đặt tên tự do:
+   đặt tên khác thì đến lúc ánh xạ sang CSDL ngành sẽ phải đoán.
+   ★ KHÔNG GỘP vào đợt khám: ràng buộc «không hoàn tất khi còn em chưa có
+     kết quả» sẽ khóa đợt khám vì GV thể dục chưa đo xong sáu bài — một
+     việc bị chặn bởi một việc khác không liên quan.
+   ★ Không có bước DUYỆT: không thuê ngoài thì không có gì để duyệt.
+   ★ Xếp loại là số DẪN XUẤT từ bảng chuẩn theo tuổi và giới — không có
+     ô nhập, cùng nguyên tắc với BMI.
+   ══════════════════════════════════════════════════════════════════ */
+const NDTL=[
+ ['luc' ,'① Lực bóp tay thuận'      ,'kg'],
+ ['bung','② Nằm ngửa gập bụng'      ,'lần/30 giây'],
+ ['batxa','③ Bật xa tại chỗ'        ,'cm'],
+ ['c30' ,'④ Chạy 30m XPC'           ,'giây'],
+ ['thoi','⑤ Chạy con thoi 4×10m'    ,'giây'],
+ ['c5p' ,'⑥ Chạy tùy sức 5 phút'    ,'m']
+];
+/* Ngưỡng RÚT GỌN từ QĐ 53/2008 (nam, 12–15 tuổi) — bản thật cần bảng đầy
+   đủ theo từng tuổi và giới; xem điểm cần xác nhận M. */
+const CHUAN_TL={
+ luc :{tot:32,dat:26,cao:true}, bung:{tot:18,dat:14,cao:true},
+ batxa:{tot:184,dat:163,cao:true}, c30:{tot:5.4,dat:6.2,cao:false},
+ thoi:{tot:11.7,dat:12.6,cao:false}, c5p:{tot:970,dat:850,cao:true}
+};
+function xepLoaiTL(k,v,tuoi,nu){
+ const c=CHUAN_TL[k]; if(v==null||!c) return ['—','n'];
+ let tot=c.tot, dat=c.dat;
+ if(nu){ const h=c.cao?0.82:1.12; tot*=h; dat*=h }
+ /* QĐ 53/2008 cho bảng theo TỪNG TUỔI, và ngưỡng chênh nhau rất nhiều
+    giữa 11 và 15 tuổi — dùng một hệ số phẳng thì học sinh lớp 6 «chưa đạt»
+    hàng loạt, và một cảnh báo chiếm đa số thì hết là cảnh báo. */
+ const d=(tuoi-13)*(c.cao?0.11:-0.035); tot*=(1+d); dat*=(1+d);
+ const ok=x=>c.cao?v>=x:v<=x;
+ return ok(tot)?['Tốt','o']:(ok(dat)?['Đạt','b']:['Chưa đạt','w']);
+}
+const TT_TL={kehoach:['Đang lập kế hoạch','n'],dangdo:['Đang đo','b'],
+ nhapkq:['Đang nhập kết quả','b'],xong:['Đã hoàn tất','o']};
+const DOTTL=[
+ {id:'TL-01',ten:'Đo thể lực đầu năm — Điểm trường A',dt:'A',ngay:'2026-09-28',
+  khoi:[6,7,8,9],tt:'xong',gv:'dungtd',boi:'thao',
+  ls:[['2026-09-20','Lập kế hoạch đợt đo','thao'],['2026-09-28','GV thể dục nộp phiếu đo','dungtd'],
+      ['2026-09-30','Đối soát và lưu kết quả','thao'],['2026-09-30','Hoàn tất đợt','thao']]},
+ {id:'TL-02',ten:'Đo thể lực đầu năm — Điểm trường B',dt:'B',ngay:'2026-11-16',
+  khoi:[6,7,8,9],tt:'nhapkq',gv:'dungtd',boi:'loan',
+  ls:[['2026-11-10','Lập kế hoạch đợt đo','loan'],['2026-11-16','GV thể dục nộp phiếu đo','dungtd']]}
+];
+const dotTLById=id=>DOTTL.find(d=>d.id===id);
+const hsCuaDotTL=d=>HS.filter(h=>h.dt===d.dt&&d.khoi.includes(+h.lop[0]));
+const KQTL={};
+(function seedTL(){
+ const miens=['Hen phế quản — có chỉ định của bác sĩ, không vận động mạnh',
+  'Tim bẩm sinh đã phẫu thuật — miễn theo giấy của cơ sở y tế'];
+ [['TL-01',1],['TL-02',0.55]].forEach(([did,tyLe])=>{
+  const d=dotTLById(did);
+  hsCuaDotTL(d).forEach((h,i)=>{
+   const s=h.id.charCodeAt(2)*19+h.id.charCodeAt(3)*13+i*5;
+   if((s%100)/100>tyLe) return;
+   const tuoi=tuoiTai(h.ns,d.ngay), nu=h.nu, f=nu?0.84:1;
+   if(s%37===0){KQTL[did+'|'+h.id]={mien:true,lyDo:miens[s%2]}; return}
+   KQTL[did+'|'+h.id]={
+    luc  :Math.round((24+(tuoi-11)*2.6+(s%9)-4)*f*10)/10,
+    bung :Math.round((13+(tuoi-11)*1.2+(s%7)-3)*f),
+    batxa:Math.round((155+(tuoi-11)*9+(s%17)-8)*f),
+    c30  :Math.round((5.9-(tuoi-11)*0.11+((s%11)-5)*0.06)/f*100)/100,
+    thoi :Math.round((12.4-(tuoi-11)*0.14+((s%13)-6)*0.07)/f*100)/100,
+    c5p  :Math.round((880+(tuoi-11)*28+((s%19)-9)*11)*f),
+    nguon:s%4===0?'nhaptay':'phieu'
+   };
+  });
+ });
+})();
+const tlCua=(did,hid)=>KQTL[did+'|'+hid];
+const dotTLTrongPhamVi=()=>{const d=dtHieuLuc(); return DOTTL.filter(x=>d==='ALL'||x.dt===d)};
+/* ★ Em được MIỄN không tính vào MẪU SỐ — «trống» và «miễn» là hai chuyện
+   khác nhau, và chỉ cái thứ hai giải trình được. */
+function tienDoTL(d){
+ const ds=hsCuaDotTL(d);
+ const mien=ds.filter(h=>{const r=tlCua(d.id,h.id); return r&&r.mien}).length;
+ const co=ds.filter(h=>{const r=tlCua(d.id,h.id); return r&&!r.mien}).length;
+ const tong=ds.length-mien;
+ return {co,tong,mien,thieu:tong-co,pc:tong?Math.round(co/tong*100):0};
+}
 
 /* ══════════════════════════════════════════════════════════════════
    LỚP 3 — SỔ Y TẾ (sự kiện trong giờ học)
@@ -793,6 +977,7 @@ function batThuong(kq,h,d){
  [['timMach','Tim mạch'],['hoHap','Hô hấp'],['cotSong','Cột sống']].forEach(([k,n])=>{
   if(kq[k]&&kq[k]!=='Bình thường') out.push([n,kq[k],'kham']);
  });
+ if(kq.matBenh) out.push(['Bệnh về mắt',kq.matBenh,'kham']);
  [['tlT','Thị lực mắt trái'],['tlP','Thị lực mắt phải']].forEach(([k,n])=>{
   const v=kq[k]; if(v&&v!=='10/10') out.push([n,v,'kham']);
  });
@@ -892,9 +1077,9 @@ function rolebar(){
  +'<button class="ntg" id="btnNote">💡 Ghi chú thiết kế: TẮT</button>';
 }
 const NAV=[['🏫 Vận hành &amp; Dịch vụ',[['M6.1','Bán trú',0],['M6.2','Học ngoại khóa',0],
-  ['M6.3','Hoạt động Đoàn — Đội',0],['M6.4','Danh mục &amp; Kiểm kê CSVC',0],['M6.5','Yêu cầu CSVC',0],
+  ['M6.3','Hồ sơ HS thành viên',0],['M6.4','Danh mục &amp; Kiểm kê',0],['M6.5','Mượn phòng &amp; thiết bị',0],
   ['M6.6','Y tế học đường',1],['M6.7','Camera an ninh',0],['M6.8','Sự kiện trường học',0]]],
- ['👨‍🎓 Học sinh',[['M1.1','Hồ sơ học sinh',0],['M2.2','Điểm danh',0],['M2.9','Không gian lớp học',0]]],
+ ['👨‍🎓 Học sinh',[['M1.1','Hồ sơ học sinh',0],['M2.2','Điểm danh',0],['M2.9','Danh sách lớp học',0]]],
  ['🗄 Hệ thống',[['M4.11','Đối chiếu ký số',0],['M10.1','Lưu trữ &amp; năm học',0]]]];
 function sidebar(){
  const n=viecCanLam();
@@ -971,7 +1156,7 @@ function dnote(html){return '<div class="dnote">💡 <b>Ghi chú thiết kế.</
 const rolnk=t=>'<span class="rolnk">'+t+'</span>';
 /* dải nhắc về dữ liệu nhạy cảm — hiện ở mọi màn hình có dữ liệu cá nhân */
 const banner13=()=>'<div class="warn">🔒 <b>Dữ liệu sức khỏe của trẻ em.</b> '
- +'Theo <b>NĐ 13/2023/NĐ-CP</b> đây là <b>dữ liệu cá nhân nhạy cảm</b> (Đ.2 k.4), và dữ liệu của trẻ em '
+ +'Theo <b>Luật BVDLCN 91/2025/QH15</b> đây là <b>dữ liệu cá nhân nhạy cảm</b>, và dữ liệu của trẻ em '
  +'còn được bảo vệ riêng (Đ.20). <b>Mọi lượt xem, tải, xuất đều ghi nhật ký truy cập</b> — xem tab Cấu hình.</div>';
 
 /* ══════════════════════════════════════════════════════════════════
@@ -1008,6 +1193,22 @@ function veKhanCap(){
    +'<tr class="okrow"><th>Liên hệ khẩn cấp</th><td><b style="font-size:17px">'+esc(o.lh.sdt)+'</b> — '
      +esc(o.lh.ten)+' <span class="pill">'+esc(o.lh.qh)+'</span></td></tr>'
    +'</table></div>';
+  /* ★★ Đề xuất CHƯA xác nhận vẫn HIỆN — ở khối riêng, màu vàng.
+     Giấu nó đi là để một dị ứng vừa được khai KHÔNG TỚI TAY người đang
+     cứu. Trộn vào khối chính là để một dòng chưa ai kiểm mang dáng dấp
+     đã kiểm. Tách khối giải được cả hai. */
+  const dxs=dxCuaHS(h.id);
+  if(dxs.length){
+   b+='<div class="tbw" style="margin-top:8px"><div class="ch" style="background:var(--amber-soft)">'
+    +'⚠️ Gia đình vừa khai — <b>CHƯA ĐỐI CHIẾU</b></div><table>'
+    +dxs.map(dx=>dx.sua.map(([tr,gt,kieu])=>'<tr class="warnrow"><th style="width:150px">'
+      +TRUONG_ST[tr]+'</th><td><b>'+esc(giaTriDeNghi(h.id,tr,gt,kieu))+'</b> '
+      +'<span class="xs">— gửi '+k2s(dx.ngay)+', chưa có người đối chiếu</span></td></tr>').join('')).join('')
+    +'</table></div>';
+   b+='<div class="warn">Khối này <b>tách riêng có chủ ý</b>. Giấu nó tới khi có người ký là để '
+    +'<b>một dị ứng vừa được khai không tới tay người đang cứu</b>; trộn vào khối trên là để '
+    +'<b>một dòng chưa ai kiểm mang dáng dấp đã kiểm</b>.</div>';
+  }
   b+='<div class="ro">Đây là <b>bốn thứ cứu được một em trong năm phút đầu</b>. '
    +'Kết quả khám định kỳ và sổ y tế <b>không hiện ở đây</b> — chúng không giúp gì cho việc đang xảy ra, '
    +'và mở rộng thứ đọc được trong chế độ khẩn cấp là mở rộng đúng cái dễ bị lạm dụng nhất.</div>';
@@ -1018,7 +1219,8 @@ function veKhanCap(){
   b+='<div class="tbw" style="margin-top:10px"><table>'
    +ds.map(h=>'<tr class="rw" data-khanhs="'+h.id+'"><td><b>'+esc(h.ten)+'</b></td>'
      +'<td>'+h.lop+'</td><td>'+DT[h.dt]+'</td>'
-     +'<td>'+(coLuuY(h.id)?'<span class="tg r">có lưu ý y tế</span>':'')+'</td></tr>').join('')
+     +'<td>'+(coLuuY(h.id)?'<span class="tg r">có lưu ý y tế</span>':'')
+     +(dxCuaHS(h.id).length?' <span class="tg w">✎ gia đình vừa khai</span>':'')+'</td></tr>').join('')
    +'</table></div>';
  }else if(q) b+='<div class="info">Không tìm thấy học sinh nào khớp trong phạm vi của bạn.</div>';
  modal('🚨 Tra cứu khẩn cấp',b,
@@ -1121,7 +1323,7 @@ function veTongHopSK(){
   +'</table></div>';
  h+=dnote('Đây là chỗ dễ làm sai nhất ở một menu y tế: <b>cho Hiệu trưởng đọc mọi hồ sơ vì «quyền cao nhất»</b>. '
   +'Quyền quản lý và quyền đọc dữ liệu cá nhân là <b>hai trục khác nhau</b>. Hiệu trưởng cần biết '
-  +'<b>tuần này có ba ca nặng</b>, không cần biết <b>em nào bị gì</b> — và <b>NĐ 13/2023</b> đo bằng '
+  +'<b>tuần này có ba ca nặng</b>, không cần biết <b>em nào bị gì</b> — và <b>Luật BVDLCN 91/2025</b> đo bằng '
   +'nguyên tắc <b>tối thiểu hóa dữ liệu</b>, không đo bằng chức vụ.');
  return h;
 }
@@ -1185,14 +1387,25 @@ function veHoSo(){
  let ds=hsTrongPhamVi();
  if(q) ds=ds.filter(h=>kd(h.ten).includes(q)||kd(h.id).includes(q)||kd(h.lop).includes(q));
  if(ST.chipHS==='luuy') ds=ds.filter(h=>coLuuY(h.id));
+ if(ST.chipHS==='dx')   ds=ds.filter(h=>dxCuaHS(h.id).length);
 
  let h=scopeBar()+banner13();
+ /* ★ Đề xuất quá hạn là một CHỈ SỐ trên màn hình — không phải một việc
+    ai nhớ thì làm. Cùng cơ chế với nghĩa vụ thông báo phụ huynh (§2.7). */
+ const qh=dxQuaHan();
+ if(qh.length&&can('suaST')) h+='<div class="danger"><b>⚠️ '+qh.length
+  +' đề xuất chỉnh sửa từ phụ huynh quá '+HAN_DX+' ngày làm việc chưa xử lý.</b> '
+  +qh.map(x=>esc(hsById(x.hs).ten)+' <span class="pill">'+ngayLamViec(x.ngay,HOMNAY)+' ngày</span>').join(' · ')
+  +'<br><span class="xs">Quá hạn <b>không tự xác nhận và không tự hủy</b> — im lặng không phải sự đồng ý, '
+  +'cũng không phải sự từ chối. Quá '+HAN_DX_HT+' ngày thì Hiệu trưởng cũng nhận thông báo.</span>'
+  +' <button class="btn xs p" data-chhs="dx">Lọc ra ngay ▸</button></div>';
  h+='<div class="bar"><input class="inp" id="timHS" value="'+esc(ST.timHS||'')
   +'" placeholder="Tìm tên, mã học sinh, lớp…">'
   +'<span class="sp"></span>'
   +(can('xuat')?'<button class="btn" id="xuatHS">📤 Xuất</button>':'')+'</div>';
  h+='<div class="filter">'
   +[['all','Tất cả',hsTrongPhamVi().length],['luuy','⚠ Có lưu ý y tế',hsTrongPhamVi().filter(x=>coLuuY(x.id)).length]]
+   .concat(can('suaST')?[['dx','✎ Có đề xuất từ App',dxTrongPhamVi().length]]:[])
    .map(([k,n,c])=>'<button class="chip'+((ST.chipHS||'all')===k?' on':'')+'" data-chhs="'+k+'">'+n+' <b>'+c+'</b></button>').join('')
   +'</div>';
 
@@ -1200,11 +1413,12 @@ function veHoSo(){
  h+='<div class="tbw"><div class="ch">Hồ sơ sức khỏe <span class="tg b">'+ds.length+' học sinh</span>'
   +'<span class="sp"></span><span class="xs">đơn vị dòng: <b>một học sinh</b></span></div><div class="tbx"><table>'
   +'<tr><th>Học sinh</th><th>Lớp</th><th>Nhóm máu</th><th>Dị ứng</th><th>Bệnh nền</th>'
-  +(can('ketqua')?'<th>Khám gần nhất</th>':'')+'</tr>';
+  +(can('ketqua')?'<th>Khám gần nhất</th>':'')+(can('suaST')?'<th>Đề xuất</th>':'')+'</tr>';
  const gom=(rows,keyFn,ve)=>{
   if(q||R().sc==='Class') return rows.map(ve).join('');
   const g={}; rows.forEach(r=>{const k=keyFn(r); (g[k]=g[k]||[]).push(r)});
-  return Object.keys(g).sort().map(k=>'<tr class="hdrow2"><td colspan="'+(can('ketqua')?6:5)+'">'
+  const nc=5+(can('ketqua')?1:0)+(can('suaST')?1:0);
+  return Object.keys(g).sort().map(k=>'<tr class="hdrow2"><td colspan="'+nc+'">'
    +'<b>'+DT[lopById(k).dt]+' · Lớp '+k+'</b> <span class="pill">'+g[k].length+' em</span>'
    +' <span class="xs">GVCN '+esc(tenNS(lopById(k).gvcn))+'</span></td></tr>'+g[k].map(ve).join('')).join('');
  };
@@ -1217,11 +1431,17 @@ function veHoSo(){
       ?'<span class="tg r">'+esc(o.diUngTA.concat(o.diUngKhac).join(' · '))+'</span>':'—')+'</td>'
     +'<td style="font-size:11.5px">'+(o.benhNen.length?'<span class="tg w">'+esc(o.benhNen.join(' · '))+'</span>':'—')+'</td>'
     +(can('ketqua')?'<td>'+(kq?k2s(kq.kq.ngay)+'<br><span class="xs">'+esc(kq.d.id)+'</span>'
-      :'<span class="tg n">chưa có</span>')+'</td>':'')+'</tr>'})
-  :'<tr><td colspan="6" class="empty">Không có học sinh nào khớp.</td></tr>')
+      :'<span class="tg n">chưa có</span>')+'</td>':'')
+    +(can('suaST')?'<td>'+(dxCuaHS(x.id).length
+      ?'<span class="tg '+(ngayLamViec(dxCuaHS(x.id)[0].ngay,HOMNAY)>HAN_DX?'r':'w')+'">✎ '
+        +dxCuaHS(x.id).length+' đề xuất</span>':'')+'</td>':'')+'</tr>'})
+  :'<tr><td colspan="7" class="empty">Không có học sinh nào khớp.</td></tr>')
   +'</table></div></div>';
- h+=dnote('Hồ sơ ở đây là <b>chiếu từ M1.1 Phần C</b> — nhóm máu, dị ứng, bệnh nền, liên hệ khẩn cấp do '
-  +'<b>cha mẹ cung cấp</b> và nhà trường xác nhận. Menu này <b>không sở hữu</b> chúng, chỉ đọc và dùng.<br>'
+ h+=dnote('<b>Menu này SỞ HỮU hồ sơ sức khỏe cơ bản</b> — nhóm máu, dị ứng, bệnh nền, liên hệ khẩn cấp. '
+  +'<b>M1.1 chỉ hiển thị bản chiếu chỉ đọc</b> có 🔗 dẫn về đây.<br>'
+  +'Trước 7/9/2026 cả hai tệp cùng ghi «chỉ đọc, sửa ở bên kia» — <b>một vòng kín, không menu nào nhận</b>, '
+  +'vi phạm quy tắc <b>D1</b> theo chiều ngược. Căn cứ chốt: <b>CSDL ngành không lưu bốn trường này</b>; '
+  +'nhà pháp lý của chúng là <b>Sổ theo dõi sức khỏe học sinh (TTLT 13/2016)</b> — y tế trường giữ.<br>'
   +'Danh sách <b>gom theo lớp</b> và <b>tự duỗi phẳng khi đang tìm</b> — vì khi tìm một em cụ thể '
   +'thì tiêu đề nhóm chỉ làm chậm mắt.');
  h+='</div>'+panelHS()+'</div>';
@@ -1265,21 +1485,39 @@ function panelHS(){
  let h='<div class="panel"><div class="ph"><b>'+esc(x.ten)+'</b>'
   +'<span class="pill">'+x.lop+'</span><span class="pill">'+tuoiTai(x.ns,HOMNAY)+' tuổi</span>'
   +'<span class="sp"></span><button class="btn xs" data-closehs="1">✕ Đóng</button></div><div class="pbody">';
- h+='<div class="tbw"><div class="ch">Lớp 1 · Hồ sơ sinh tồn <span class="tg c">chiếu từ M1.1 Phần C</span></div><table>'
-  +'<tr><th style="width:150px">Nhóm máu</th><td><b style="font-size:16px">'+esc(o.nhomMau)+'</b></td></tr>'
-  +'<tr><th>Dị ứng thức ăn</th><td>'+(o.diUngTA.length?'<b style="color:var(--red)">'+o.diUngTA.map(esc).join(' · ')+'</b>':'—')+'</td></tr>'
-  +'<tr><th>Dị ứng khác</th><td>'+(o.diUngKhac.length?'<b style="color:var(--red)">'+o.diUngKhac.map(esc).join(' · ')+'</b>':'—')+'</td></tr>'
-  +'<tr><th>Bệnh nền</th><td>'+(o.benhNen.length?'<b style="color:var(--amber)">'+o.benhNen.map(esc).join(' · ')+'</b>':'—')+'</td></tr>'
-  +'<tr class="okrow"><th>Liên hệ khẩn cấp</th><td><b>'+esc(o.lh.sdt)+'</b> — '+esc(o.lh.ten)
-   +' <span class="pill">'+esc(o.lh.qh)+'</span></td></tr>'
-  +'<tr><th>Cập nhật</th><td><span class="xs">'+k2s(o.capNhat)+' · nguồn <b>'+esc(o.nguon)+'</b></span></td></tr>'
-  +'</table><div class="lgd"><span class="chip">Sửa nội dung này ở <b>M1.1</b> '+rolnk('🔗 M1.1 Phần C')+'</span></div></div>';
+ /* ★★ MENU NÀY LÀ MENU CHỦ — không còn dải «sửa ở M1.1». */
+ if(ST.suaST===x.id&&can('suaST')) h+=veSuaST(x,o);
+ else {
+  h+='<div class="tbw"><div class="ch">Lớp 1 · Hồ sơ sức khỏe cơ bản '
+   +'<span class="tg o">menu chủ</span></div><table>'
+   +'<tr><th style="width:150px">Nhóm máu</th><td><b style="font-size:16px">'+esc(o.nhomMau)+'</b></td></tr>'
+   +'<tr><th>Dị ứng thức ăn</th><td>'+(o.diUngTA.length?'<b style="color:var(--red)">'+o.diUngTA.map(esc).join(' · ')+'</b>':'—')+'</td></tr>'
+   +'<tr><th>Dị ứng khác</th><td>'+(o.diUngKhac.length?'<b style="color:var(--red)">'+o.diUngKhac.map(esc).join(' · ')+'</b>':'—')+'</td></tr>'
+   +'<tr><th>Bệnh nền</th><td>'+(o.benhNen.length?'<b style="color:var(--amber)">'+o.benhNen.map(esc).join(' · ')+'</b>':'—')+'</td></tr>'
+   +'<tr class="okrow"><th>Liên hệ khẩn cấp</th><td><b>'+esc(o.lh.sdt)+'</b> — '+esc(o.lh.ten)
+    +' <span class="pill">'+esc(o.lh.qh)+'</span></td></tr>'
+   +'<tr><th>Biết bơi <span class="xs">năm '+NAMHOC+'</span></th><td>'
+    +'<span class="tg '+BIETBOI[o.bietBoi||'chua'][1]+'">'+BIETBOI[o.bietBoi||'chua'][0]+'</span>'
+    +' <span class="xs">— trường bắt buộc của <b>CSDL ngành</b>, đẩy lên ở M10.8</span></td></tr>'
+   +'<tr><th>Cập nhật</th><td><span class="xs">'+k2s(o.capNhat)+' · nguồn <b>'+esc(o.nguon)+'</b></span></td></tr>'
+   +'</table><div class="lgd">'
+   +(can('suaST')?'<button class="btn xs p" data-suast="'+x.id+'">✎ Sửa</button>':'')
+   +'<button class="btn xs" data-lsst="'+x.id+'">🕘 Lịch sử thay đổi ('+lsCua(x.id).length+')</button>'
+   +'<span class="chip"><b>M6.6 là menu chủ</b> của bốn trường này — M1.1 chỉ có bản chiếu chỉ đọc</span>'
+   +(can('suaST')?'':'<span class="chip">Vai của bạn <b>chỉ đọc</b> — và <b>không có deep-link</b> sang menu khác, '
+     +'vì không menu nào khác sửa được nó</span>')
+   +'</div></div>';
+ }
+ /* ★ Hàng đợi đề xuất từ App — NGAY TRONG TAB 2, không thành tab thứ tám:
+    việc rà chính là mở hồ sơ em đó, thứ đã nằm sẵn ở đây. */
+ if(can('suaST')) dxCuaHS(x.id).forEach(dx=>{h+=veDeXuat(dx,x)});
 
  if(qd.l2){
   const ds=DOTKHAM.map(d=>({d,kq:kqCua(d.id,x.id)})).filter(z=>z.kq)
    .sort((a,b)=>b.kq.ngay.localeCompare(a.kq.ngay));
-  h+='<div class="tbw" style="margin-top:11px"><div class="ch">Lớp 2 · Kết quả khám định kỳ '
-   +'<span class="tg b">'+ds.length+' đợt</span></div>';
+  h+='<div class="tbw" style="margin-top:11px"><div class="ch">Lớp 2 · Kết quả khám định kỳ và thể lực '
+   +'<span class="tg b">'+ds.length+' đợt khám</span>'
+   +'<span class="tg n">'+DOTTL.filter(d=>tlCua(d.id,x.id)).length+' đợt đo thể lực</span></div>';
   if(!ds.length) h+='<div class="empty">Chưa có kết quả khám nào trong năm học này.</div>';
   ds.forEach(({d,kq})=>{
    const b=bmi(kq.cao,kq.nang), pl=phanLoaiBMI(b,tuoiTai(x.ns,d.tuNgay),x.nu), bt=batThuong(kq,x,d);
@@ -1292,7 +1530,9 @@ function panelHS(){
      +'<th>Thị lực T/P</th><td>'+esc(kq.tlT)+' · '+esc(kq.tlP)+'</td></tr>'
     +'<tr><th>Răng miệng</th><td>'+esc(kq.rangMieng)+'</td><th>Thính lực</th><td>'+esc(kq.thinhLuc)+'</td></tr>'
     +'<tr><th>Tim mạch</th><td>'+esc(kq.timMach)+'</td><th>Hô hấp</th><td>'+esc(kq.hoHap)+'</td></tr>'
-    +'<tr><th>Cột sống</th><td colspan="3">'+esc(kq.cotSong)+'</td></tr>'
+    +'<tr><th>Cột sống</th><td>'+esc(kq.cotSong)+'</td>'
+     +'<th>Bệnh về mắt <span class="xs">bác sĩ điền</span></th><td>'
+     +(kq.matBenh?'<b style="color:var(--red)">'+esc(kq.matBenh)+'</b>':'Không')+'</td></tr>'
     +'<tr class="totrow"><th>Kết luận của bác sĩ</th><td colspan="3"><b>'+esc(kq.ketLuan)+'</b></td></tr>'
     +'</table>';
    if(bt.length) h+='<div class="'+(canKhamCK(bt)?'danger':'warn')+'">'
@@ -1300,9 +1540,24 @@ function panelHS(){
     +(canKhamCK(bt)?' · <u>có mục cần khám chuyên khoa</u>':'')+':</b><br>'
     +bt.map(([a,c,m])=>(m==='kham'?'🔴 ':'🟡 ')+'<b>'+a+'</b>: '+esc(c)).join('<br>')+'</div>';
   });
+  /* ★ Sáu nội dung thể lực — QĐ 53/2008/QĐ-BGDĐT. Trường BẮT BUỘC của CSDL ngành (4.7). */
+  DOTTL.forEach(d=>{const r=tlCua(d.id,x.id); if(!r) return;
+   h+='<table style="margin-bottom:6px"><tr><th colspan="4" style="background:var(--bg)">'
+    +'🏃 '+esc(d.ten)+' — '+k2s(d.ngay)+' · '+esc(tenNS(d.gv))+'</th></tr>';
+   if(r.mien) h+='<tr class="warnrow"><th style="width:150px">Được miễn</th><td colspan="3">'
+     +'<b>'+esc(r.lyDo)+'</b> <span class="xs">— «Miễn» khác «để trống», và em này '
+     +'<b>không tính vào mẫu số</b> tiến độ</span></td></tr>';
+   else NDTL.forEach(([k,n,dv])=>{const xl=xepLoaiTL(k,r[k],tuoiTai(x.ns,d.ngay),x.nu);
+    h+='<tr><th style="width:190px">'+n+'</th><td style="width:90px"><b>'+r[k]+'</b> '
+     +'<span class="xs">'+dv+'</span></td>'
+     +'<td colspan="2"><span class="tg '+xl[1]+'">'+xl[0]+'</span> '
+     +'<span class="xs">— xếp loại <b>dẫn xuất</b> từ bảng chuẩn theo tuổi và giới</span></td></tr>'});
+   h+='</table>'});
   h+='<div class="lgd"><span class="chip"><b>BMI và phân loại thể lực là số DẪN XUẤT</b> — '
    +'không có ô nhập BMI ở đâu cả</span>'
-   +'<span class="chip"><b>Máy gợi ý, bác sĩ kết luận</b> — hai dòng đứng cạnh nhau</span></div></div>';
+   +'<span class="chip"><b>Máy gợi ý, bác sĩ kết luận</b> — hai dòng đứng cạnh nhau</span>'
+   +'<span class="chip"><b>Sáu nội dung thể lực</b> theo <b>QĐ 53/2008/QĐ-BGDĐT</b> — '
+   +'trường bắt buộc của CSDL ngành, đẩy lên ở <b>M10.8</b></span></div></div>';
  }
  if(qd.l3){
   const ds=skCuaHS(x.id);
@@ -1323,13 +1578,142 @@ function panelHS(){
 
 
 /* ══════════════════════════════════════════════════════════════════
+   ★ MÀN HÌNH SỬA LỚP 1 — panel TẠI CHỖ, không phải hộp thoại
+   Người sửa cần nhìn thấy sổ y tế và các ca cũ của chính em đó trong
+   lúc gõ; một hộp thoại che mất đúng thứ dùng để đối chiếu.
+   ★ «Chưa xác định» là MỘT GIÁ TRỊ, khác «để trống»: một cái là
+     «chưa ai hỏi», cái kia là «đã hỏi, gia đình không biết» — hai câu
+     dẫn tới hai hành động khác nhau lúc khẩn cấp.
+   ══════════════════════════════════════════════════════════════════ */
+const NHOMMAU_CHON=['O+','O-','A+','A-','B+','B-','AB+','AB-','Chưa xác định'];
+function veSuaST(x,o){
+ const f=ST.fST;
+ let h='<div class="tbw"><div class="ch" style="background:var(--amber-soft)">'
+  +'✎ Sửa hồ sơ sức khỏe cơ bản — '+esc(x.ten)+'</div><div class="pbody">';
+ h+='<div class="ro">Panel <b>sửa tại chỗ</b>, không phải hộp thoại — danh sách bên trái và '
+  +'sổ y tế của em này <b>vẫn đọc được</b> trong lúc gõ.</div>';
+ h+='<label class="lbl">Nhóm máu</label><select class="fldi" id="fNM">'
+  +NHOMMAU_CHON.map(v=>'<option'+(f.nhomMau===v?' selected':'')+'>'+v+'</option>').join('')+'</select>'
+  +'<div class="xs" style="margin-top:3px">⛔ Không có ô nhập tự do. '
+  +'<b>«Chưa xác định» là một giá trị</b>, khác để trống — «đã hỏi, gia đình không biết» '
+  +'thì đừng mất năm giây gọi điện hỏi lại lúc đang cứu.</div>';
+ h+='<label class="lbl">Dị ứng thức ăn <span class="xs">— mỗi món một dòng</span></label>'
+  +'<textarea class="fldi" id="fTA" rows="2">'+esc(f.diUngTA.join('\n'))+'</textarea>';
+ h+='<label class="lbl">Dị ứng khác</label>'
+  +'<textarea class="fldi" id="fDK" rows="2">'+esc(f.diUngKhac.join('\n'))+'</textarea>';
+ h+='<label class="lbl">Bệnh nền</label>'
+  +'<textarea class="fldi" id="fBN" rows="2">'+esc(f.benhNen.join('\n'))+'</textarea>';
+ h+='<div class="frow"><div style="flex:1"><label class="lbl">Liên hệ khẩn cấp — họ tên</label>'
+  +'<input class="fldi" id="fLHT" value="'+esc(f.lhTen)+'"></div>'
+  +'<div style="width:150px"><label class="lbl">Số điện thoại <span style="color:var(--red)">*</span></label>'
+  +'<input class="fldi" id="fLHS" value="'+esc(f.lhSdt)+'"></div></div>';
+ h+='<label class="lbl">Biết bơi <span class="xs">— giá trị theo NĂM HỌC '+NAMHOC+'</span></label>'
+  +'<select class="fldi" id="fBB">'
+  +Object.keys(BIETBOI).map(k=>'<option value="'+k+'"'+(f.bietBoi===k?' selected':'')+'>'+BIETBOI[k][0]+'</option>').join('')
+  +'</select>';
+ h+='<label class="lbl">Nguồn <span style="color:var(--red)">*</span> '
+  +'<span class="xs">— nhóm máu lấy từ giấy xét nghiệm và nhóm máu cha mẹ nhớ mang máng '
+  +'có độ tin khác nhau</span></label><select class="fldi" id="fNG">'
+  +'<option value="">— chọn nguồn —</option>'
+  +NGUON_ST.map(v=>'<option'+(f.nguon===v?' selected':'')+'>'+v+'</option>').join('')+'</select>';
+ const sdtOK=/^0\d{9}$/.test((f.lhSdt||'').trim());
+ const thieu=[]; if(!f.nguon) thieu.push('nguồn'); if(!sdtOK) thieu.push('số điện thoại hợp lệ');
+ if(thieu.length) h+='<div class="warn" style="margin-top:9px"><b>Chưa lưu được — còn thiếu: '
+  +thieu.join(', ')+'.</b></div>';
+ else if(!f.lhTen.trim()) h+='<div class="warn" style="margin-top:9px">Chỉ có số điện thoại mà '
+  +'<b>chưa có tên người liên hệ</b> — cảnh báo mềm, vẫn lưu được.</div>';
+ h+='<div class="frow" style="margin-top:11px">'
+  +'<button class="btn'+(thieu.length?' off':' p')+'" data-luust="'+x.id+'"'+(thieu.length?' disabled':'')
+  +'>💾 Lưu — sinh một phiên bản</button>'
+  +'<button class="btn" data-huyst="1">Hủy</button></div>';
+ return h+'</div></div>';
+}
+/* ★ Một đề xuất từ App — ba khối chồng, xác nhận TỪNG TRƯỜNG */
+function veDeXuat(dx,x){
+ const ng=ngayLamViec(dx.ngay,HOMNAY), tre=ng>HAN_DX;
+ const tick=ST.dxTick[dx.id]||(ST.dxTick[dx.id]=dx.sua.map(()=>true));
+ let h='<div class="tbw" style="margin-top:11px"><div class="ch" style="background:var(--amber-soft)">'
+  +'✎ Đề xuất chỉnh sửa từ App <span class="tg '+(tre?'r':'w')+'">'+dx.id+' · đã chờ '+ng+' ngày làm việc</span>'
+  +'</div><div class="pbody">';
+ if(tre) h+='<div class="danger"><b>Quá hạn '+HAN_DX+' ngày làm việc.</b> '
+  +'Hệ thống <b>không tự xác nhận và không tự hủy</b> — im lặng không phải sự đồng ý, '
+  +'cũng không phải sự từ chối.'+(ng>HAN_DX_HT?' Đã báo <b>Hiệu trưởng</b>.':'')+'</div>';
+ h+='<table><tr><th style="width:34px"></th><th style="width:150px">Trường</th>'
+  +'<th>Hiện tại</th><th>Gia đình đề nghị</th></tr>'
+  +dx.sua.map(([tr,gt,kieu],i)=>'<tr class="'+(kieu==='them'?'okrow':'warnrow')+'">'
+   +'<td><input type="checkbox" data-dxtick="'+dx.id+'|'+i+'"'+(tick[i]?' checked':'')+'></td>'
+   +'<td><b>'+TRUONG_ST[tr]+'</b></td>'
+   +'<td style="font-size:11.5px">'+esc(giaTriHienTai(x.id,tr))+'</td>'
+   +'<td style="font-size:11.5px"><b>'+esc(giaTriDeNghi(x.id,tr,gt,kieu))+'</b> '
+   +'<span class="tg '+(kieu==='them'?'o':'w')+'">'+(kieu==='them'?'thêm mới':'sửa')+'</span></td></tr>').join('')
+  +'</table>';
+ h+='<div class="kv" style="margin-top:9px">'
+  +'<div><span>Ai gửi</span><b>'+esc(dx.guiBoi)+'</b> <span class="pill">'+esc(dx.qh)+'</span></div>'
+  +'<div><span>Lúc nào</span><b>'+k2s(dx.ngay)+'</b> — đã chờ '+ng+' ngày làm việc</div>'
+  +'<div><span>Tệp kèm</span>'+(dx.kem
+    ?'<b>'+esc(dx.kem)+'</b> <button class="btn xs p" data-xemkem="'+dx.id+'">👁 Xem</button>'
+     +'<button class="btn xs" data-taikem="'+dx.id+'">⬇ Tải</button>'
+    :'<span class="tg n">không có</span>')+'</div></div>';
+ h+='<label class="lbl">Lý do từ chối <span class="xs">— bắt buộc nếu từ chối, và '
+  +'<b>lý do hiện trên App</b></span></label>'
+  +'<input class="fldi" id="dxLy_'+dx.id+'" value="'+esc(ST.dxLy[dx.id]||'')+'" '
+  +'placeholder="Ví dụ: giấy xét nghiệm mờ, không đọc được nhóm máu — nhờ gia đình chụp lại">';
+ const soTick=tick.filter(Boolean).length;
+ h+='<div class="frow" style="margin-top:11px">'
+  +'<button class="btn'+(soTick?' p':' off')+'" data-dxok="'+dx.id+'"'+(soTick?'':' disabled')
+  +'>✓ Xác nhận '+soTick+'/'+dx.sua.length+' trường</button>'
+  +'<button class="btn'+((ST.dxLy[dx.id]||'').trim()?'':' off')+'" data-dxno="'+dx.id+'"'
+  +((ST.dxLy[dx.id]||'').trim()?'':' disabled')+'>✗ Từ chối</button></div>';
+ h+='<div class="lgd">'
+  +'<span class="chip"><b>Xác nhận được từng trường</b> — trường chưa đối chiếu được <b>ở lại hàng đợi</b>, '
+  +'không bị nuốt theo</span>'
+  +'<span class="chip"><b>Từ chối bắt nêu lý do</b> — không thì gia đình sẽ gửi lại đúng nội dung cũ</span>'
+  +'<span class="chip">Không ghi thẳng vì <b>sai một chữ trong ô dị ứng có thể đổi cách cứu</b></span></div>';
+ return h+'</div></div>';
+}
+function moLichSuST(hid){
+ const ds=lsCua(hid), x=hsById(hid);
+ let b='<div class="info">Mỗi lượt ghi Lớp 1 <b>sinh một phiên bản</b> — không ghi đè. '
+  +'Bảng này <b>không xóa được</b>, kể cả bởi vai đủ quyền.<br>'
+  +'Cột <b>Ai</b> lưu <b>tên và chức danh tại thời điểm thao tác</b>, không phải khóa ngoại trỏ vào '
+  +'bảng nhân sự hiện thời — để truy được vết <b>kể cả khi người thực hiện đã nghỉ việc</b> '
+  +'(<b>Luật BVDLCN 91/2025</b> — dữ liệu cá nhân của trẻ em).</div>';
+ b+='<div class="tbw"><div class="ch">🕘 Lịch sử thay đổi — '+esc(x.ten)
+  +' <span class="tg b">'+ds.length+' phiên bản</span></div><div class="tbx"><table>'
+  +'<tr><th style="width:120px">Lúc</th><th style="width:130px">Trường</th><th>Giá trị cũ</th>'
+  +'<th>Giá trị mới</th><th style="width:150px">Ai</th><th style="width:130px">Nguồn</th></tr>'
+  +(ds.length?ds.map(v=>v.thayDoi.map(([tr,cu,moi],i)=>'<tr>'
+    +(i?'':'<td rowspan="'+v.thayDoi.length+'">'+esc(v.luc)+'</td>')
+    +'<td><b>'+(TRUONG_ST[tr]||tr)+'</b></td>'
+    +'<td style="font-size:11.5px"><s style="color:var(--ink3)">'+esc(cu)+'</s></td>'
+    +'<td style="font-size:11.5px"><b>'+esc(moi)+'</b></td>'
+    +(i?'':'<td rowspan="'+v.thayDoi.length+'">'+esc(v.ai)+'<br><span class="xs">'+esc(v.cd)+'</span></td>'
+       +'<td rowspan="'+v.thayDoi.length+'"><span class="tg '+(v.nguon==='App'?'w':'n')+'">'+esc(v.nguon)+'</span></td>')
+    +'</tr>').join('')).join('')
+   :'<tr><td colspan="6" class="empty">Chưa có thay đổi nào — hồ sơ giữ nguyên từ lúc nhập tuyển sinh.</td></tr>')
+  +'</table></div><div class="lgd">'
+  +'<span class="chip">Không có nút xóa dòng nào — <b>kể cả với vai Đủ quyền</b></span>'
+  +'<span class="chip">Trường <b>không đổi</b> thì không vào phiên bản</span></div></div>';
+ modal('🕘 Lịch sử thay đổi hồ sơ sức khỏe cơ bản',b,'<button class="btn" data-mb="close">Đóng</button>');
+}
+
+/* ══════════════════════════════════════════════════════════════════
    TAB 3 — ĐỢT KHÁM SỨC KHỎE
    ★ Kế hoạch và kết quả là HAI GIAI ĐOẠN CỦA MỘT ĐỢT, không phải hai tab.
    ══════════════════════════════════════════════════════════════════ */
 function veDotKham(){
  const ds=dotTrongPhamVi();
  let h=scopeBar();
+ if(ST.curDotTL) return h+veMotDotTL(dotTLById(ST.curDotTL));
  if(ST.curDot) return h+veMotDot(dotById(ST.curDot));
+ /* ★ Bộ chọn LOẠI ĐỢT — hai vòng đời tách hẳn, cùng một tab vì cùng trả
+    lời câu «đợt tháng này tới đâu rồi». */
+ h+='<div class="filter">'
+  +[['kham','🩺 Khám sức khỏe',dotTrongPhamVi().length],
+    ['tl','🏃 Đo thể lực',dotTLTrongPhamVi().length]]
+   .map(([k,n,c])=>'<button class="chip'+((ST.loaiDot||'kham')===k?' on':'')+'" data-ldot="'+k+'">'
+     +n+' <b>'+c+'</b></button>').join('')+'</div>';
+ if((ST.loaiDot||'kham')==='tl') return h+veDotTL();
 
  /* ★ Nghĩa vụ pháp lý thành một CHỈ SỐ, không phải một việc ai nhớ thì làm */
  const dtl=dtHieuLuc()==='ALL'?['A','B']:[dtHieuLuc()];
@@ -1424,6 +1808,104 @@ function veMotDot(d){
   if(t.thieu) h+='<span class="xs">Còn <b>'+t.thieu+'</b> em chưa có kết quả — chưa hoàn tất được.</span>';
  }
  if(can('xuat')&&d.tt==='xong') h+='<button class="btn" id="xuatDot">📤 Xuất danh sách kết quả</button>';
+ h+='</div></div></div>';
+ return h;
+}
+/* ══════════════════════════════════════════════════════════════════
+   ★ ĐỢT ĐO THỂ LỰC — sáu nội dung QĐ 53/2008/QĐ-BGDĐT
+   ══════════════════════════════════════════════════════════════════ */
+function veDotTL(){
+ const ds=dotTLTrongPhamVi();
+ let h='<div class="info"><b>Đo thể lực là một ĐỢT RIÊNG, không phải một phần của đợt khám.</b> '
+  +'Người đo là <b>giáo viên thể dục</b> ở <b>sân trường</b>, thường <b>đầu và cuối năm</b>; '
+  +'đơn vị khám thuê ngoài không làm việc này.<br>'
+  +'Gộp hai đợt làm một thì ràng buộc <i>«không hoàn tất khi còn em chưa có kết quả»</i> sẽ '
+  +'<b>khóa đợt khám vì GV thể dục chưa đo xong sáu bài</b> — một việc bị chặn bởi một việc '
+  +'khác không liên quan. Nên: <b>hai đợt, hai thanh tiến độ, hai nút hoàn tất</b>.</div>';
+ h+='<div class="bar">'+(can('doiKham')?'<button class="btn p" id="themDotTL">➕ Lập đợt đo thể lực</button>':'')+'</div>';
+ h+='<div class="tbw"><div class="ch">Đợt đo thể lực — năm học '+NAMHOC+' <span class="tg b">'+ds.length+'</span>'
+  +'<span class="sp"></span><span class="xs">⛔ <b>không có bước Duyệt</b> — không thuê ngoài thì không có gì để duyệt</span>'
+  +'</div><div class="tbx"><table>'
+  +'<tr><th>Mã</th><th>Nội dung</th><th>Ngày đo</th><th>Người đo</th><th class="num">Tiến độ nhập</th>'
+  +'<th>Trạng thái</th><th></th></tr>'
+  +(ds.length?ds.map(d=>{const t=tienDoTL(d), [n,c]=TT_TL[d.tt];
+    return '<tr class="rw"><td><b>'+d.id+'</b></td>'
+     +'<td>'+esc(d.ten)+'<br><span class="xs">khối '+d.khoi.join(', ')+' · '+t.tong+' em'
+      +(t.mien?' <b>(+'+t.mien+' được miễn)</b>':'')+'</span></td>'
+     +'<td>'+k2s(d.ngay)+'</td><td style="font-size:11.5px">'+esc(tenDu(d.gv))+'</td>'
+     +'<td class="num"><b>'+t.co+'/'+t.tong+'</b>'
+      +'<div style="height:8px;border-radius:4px;background:var(--line);margin-top:3px">'
+      +'<div style="height:8px;border-radius:4px;background:var(--brand);width:'+t.pc+'%"></div></div></td>'
+     +'<td><span class="tg '+c+'">'+n+'</span></td>'
+     +'<td><button class="btn xs p" data-dottl="'+d.id+'">Mở ▸</button></td></tr>'}).join('')
+   :'<tr><td colspan="7" class="empty">Chưa có đợt đo nào.</td></tr>')
+  +'</table></div><div class="lgd">'
+  +'<span class="chip">Em <b>được miễn</b> không tính vào <b>mẫu số</b> — «trống» và «miễn» là hai chuyện khác nhau</span>'
+  +'<span class="chip">Sáu nội dung theo <b>QĐ 53/2008/QĐ-BGDĐT</b>, tên và đơn vị <b>nguyên văn</b></span>'
+  +'<span class="chip">Trường bắt buộc của <b>CSDL ngành 4.7</b> — đường đẩy ở <b>M10.8</b></span></div></div>';
+ h+=dnote('Trước <b>7/9/2026</b> tài liệu nghiệp vụ <b>không có sáu trường này</b>, nên <b>M10.8</b> '
+  +'không có gì để đẩy và trường phải <b>gõ lại lần hai trên cổng Sở</b>. Đó là loại thiếu sót '
+  +'<b>không ai báo lỗi</b>: hệ thống vẫn chạy đúng, chỉ có người thì làm việc hai lần.');
+ return h;
+}
+function veMotDotTL(d){
+ if(!d) return '';
+ const t=tienDoTL(d), [n,c]=TT_TL[d.tt];
+ let h='<div class="crumb"><a data-backdottl="1">Đợt đo thể lực</a> › <b>'+d.id+'</b></div>';
+ h+='<div class="tbw"><div class="ch">'+esc(d.ten)+' <span class="tg '+c+'">'+n+'</span>'
+  +'<span class="sp"></span><span class="pill">'+DT[d.dt]+'</span></div><div class="pbody">';
+ h+='<div class="kv"><div><span>Ngày đo</span><b>'+k2s(d.ngay)+'</b></div>'
+  +'<div><span>Đối tượng</span><b>Khối '+d.khoi.join(', ')+'</b> — '+t.tong+' em'
+   +(t.mien?' <span class="tg w">+'+t.mien+' được miễn</span>':'')+'</div>'
+  +'<div><span>Người đo</span><b>'+esc(tenDu(d.gv))+'</b></div>'
+  +'<div><span>Người lưu kết quả</span><b>'+esc(tenNS(d.boi))+'</b></div></div>';
+ const order=['kehoach','dangdo','nhapkq','xong'];
+ h+='<div class="steps">'+[['Lập kế hoạch','kehoach'],['Tổ chức đo','dangdo'],
+   ['Đối soát · nhập kết quả','nhapkq'],['Hoàn tất','xong']].map(([nm,k])=>{
+   const i=order.indexOf(k), j=order.indexOf(d.tt);
+   return '<div class="stp '+(i<j?'done':i===j?'now':'off')+'">'+nm+'</div>'}).join('')+'</div>';
+ h+='<div class="ro">⛔ <b>Không có bước Duyệt</b> ở đây, khác đợt khám — đợt khám phải duyệt vì nó '
+  +'<b>thuê đơn vị ngoài vào trường</b>; đợt đo do chính GV thể dục của trường làm.<br>'
+  +'⛔ Và <b>không có ô nhập «xếp loại»</b>: QĐ 53/2008 cho bảng chuẩn theo <b>tuổi và giới</b>, '
+  +'nên xếp loại là <b>số dẫn xuất</b> — cùng nguyên tắc với BMI.</div>';
+ h+='<div class="frow" style="margin:11px 0">'
+  +[['Đã có kết quả',t.co,'o'],['Còn thiếu',t.thieu,t.thieu?'r':'o'],
+    ['Được miễn',t.mien,'w'],['Hoàn thành',t.pc+'%','c']]
+   .map(([a,b,cc])=>'<div class="card"><div class="cb"><div class="xs">'+a+'</div>'
+    +'<div class="num '+cc+'" style="font-size:22px;font-weight:800">'+b+'</div></div></div>').join('')+'</div>';
+ if(can('ketqua')){
+  const ds=hsCuaDotTL(d).map(x=>({x,r:tlCua(d.id,x.id)})).filter(z=>z.r).slice(0,14);
+  h+='<div class="tbw"><div class="ch">Kết quả đo — sáu nội dung <span class="tg b">'+t.co+' em</span>'
+   +'<span class="sp"></span><span class="xs">QĐ 53/2008/QĐ-BGDĐT</span></div><div class="tbx"><table>'
+   +'<tr><th>Học sinh</th>'+NDTL.map(([k,n2,dv])=>'<th class="num">'+n2.replace(/^. /,'')
+     +'<br><span class="xs">'+dv+'</span></th>').join('')+'<th>Xếp loại</th></tr>'
+   +ds.map(({x,r})=>{
+     if(r.mien) return '<tr class="warnrow"><td><b>'+esc(x.ten)+'</b> <span class="pill">'+x.lop+'</span></td>'
+      +'<td colspan="7"><b>Miễn</b> — '+esc(r.lyDo)+' <span class="xs">(không tính vào mẫu số)</span></td></tr>';
+     const tuoi=tuoiTai(x.ns,d.ngay);
+     const xls=NDTL.map(([k])=>xepLoaiTL(k,r[k],tuoi,x.nu));
+     const chua=xls.filter(z=>z[0]==='Chưa đạt').length;
+     return '<tr'+(chua?' class="warnrow"':'')+'><td><b>'+esc(x.ten)+'</b> <span class="pill">'+x.lop+'</span></td>'
+      +NDTL.map(([k],i)=>'<td class="num">'+r[k]+'<br><span class="tg '+xls[i][1]+'">'+xls[i][0]+'</span></td>').join('')
+      +'<td>'+(chua?'<span class="tg w">'+chua+' nội dung chưa đạt</span>':'<span class="tg o">đạt cả sáu</span>')+'</td></tr>'
+    }).join('')
+   +(t.co>14?'<tr><td colspan="8" class="xs">… và '+(t.co-14)+' em nữa</td></tr>':'')
+   +'</table></div><div class="lgd">'
+   +'<span class="chip">Cột <b>xếp loại là dẫn xuất</b> — không có ô nhập, đổi số đo thì xếp loại đổi theo</span>'
+   +'<span class="chip">Ngưỡng trong demo là <b>bảng rút gọn</b>; bản thật cần bảng đầy đủ theo tuổi và giới '
+   +'— xem điểm cần xác nhận <b>M</b></span></div></div>';
+ }
+ h+='<div class="tbw" style="margin-top:11px"><div class="ch">Vết xử lý</div><table>'
+  +'<tr><th style="width:104px">Ngày</th><th>Việc</th><th style="width:170px">Bởi</th></tr>'
+  +(d.ls||[]).map(([a,b,c2])=>'<tr><td>'+k2s(a)+'</td><td>'+esc(b)+'</td><td>'+esc(tenLS(c2))+'</td></tr>').join('')
+  +'</table></div>';
+ h+='<div class="frow" style="margin-top:11px">';
+ if(can('doiKham')&&d.tt==='nhapkq'){
+  h+='<button class="btn p" data-importtl="'+d.id+'">📥 Đối soát phiếu đo của GV thể dục</button>';
+  h+='<button class="btn'+(t.thieu?' off':' p')+'" data-xongtl="'+d.id+'"'+(t.thieu?' disabled':'')
+   +'>✓ Hoàn tất đợt đo</button>';
+  if(t.thieu) h+='<span class="xs">Còn <b>'+t.thieu+'</b> em chưa có kết quả — chưa hoàn tất được.</span>';
+ }
  h+='</div></div></div>';
  return h;
 }
@@ -1628,9 +2110,9 @@ function veCauHinh(){
   +'</table></div><div class="lgd"><span class="chip">Đổi định mức thì cảnh báo «dưới định mức» '
   +'<b>tính lại ngay</b> — nó là mốc so sánh sống, không đóng băng</span></div></div>';
 
- /* ★ NHẬT KÝ TRUY CẬP — trái tim của NĐ 13/2023 ở menu này */
+ /* ★ NHẬT KÝ TRUY CẬP — trái tim của Luật BVDLCN 91/2025 ở menu này */
  h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">3 · Nhật ký truy cập dữ liệu sức khỏe '
-  +'<span class="tg r">NĐ 13/2023</span><span class="sp"></span>'
+  +'<span class="tg r">Luật BVDLCN 91/2025</span><span class="sp"></span>'
   +'<span class="xs">'+AUDIT.length+' lượt</span></div><div class="tbx"><table>'
   +'<tr><th style="width:130px">Lúc</th><th>Ai</th><th>Việc</th><th>Học sinh</th><th>Mục đích</th></tr>'
   +AUDIT.slice(0,25).map(a=>{const hs=a.hs?hsById(a.hs):null;
@@ -1645,7 +2127,15 @@ function veCauHinh(){
 
  h+='<div class="tbw"><div class="ch">4 · Ranh giới với menu khác</div><table>'
   +'<tr><th style="width:270px">Việc</th><th>Ở đâu</th></tr>'
-  +'<tr><td>Nhóm máu · dị ứng · bệnh nền · liên hệ khẩn cấp</td><td><b>M1.1 Phần C</b> — cha mẹ cung cấp, menu này <b>chỉ đọc</b></td></tr>'
+  +'<tr class="okrow"><td><b>Nhóm máu · dị ứng · bệnh nền · liên hệ khẩn cấp</b></td>'
+   +'<td><b>CHÍNH MENU NÀY</b> — tab 2. M1.1 chỉ có <b>bản chiếu chỉ đọc</b> có 🔗. '
+   +'<span class="xs">Sửa 7/9/2026 — trước đó hai tệp cùng ghi «chỉ đọc, sửa ở bên kia»</span></td></tr>'
+  +'<tr><td>Đề xuất chỉnh sửa hồ sơ sức khỏe cơ bản từ phụ huynh</td>'
+   +'<td><b>Tab 2</b> — App PH-HS gửi vào đây, Y tế xác nhận. <span class="xs">Hạn '+HAN_DX
+   +' ngày làm việc; quá hạn <b>không tự áp dụng, không tự hủy</b></span></td></tr>'
+  +'<tr><td>Đẩy chỉ số sức khỏe · thể lực lên CSDL ngành</td>'
+   +'<td><b>M10.8</b> — nhóm dữ liệu <b>Sức khỏe – Thể lực</b>, chỉ đẩy không kéo. '
+   +'<span class="xs">Bốn trường trên <b>không đẩy đi đâu</b> — CSDL ngành không có chỗ nhận</span></td></tr>'
   +'<tr><td>Học sinh nghỉ ốm</td><td><b>M2.2 / M2.4</b> — menu này chỉ <b>gợi ý deep-link</b>, không tự ghi nghỉ</td></tr>'
   +'<tr><td>Thực đơn · suất ăn theo dị ứng</td><td><b>M6.1 Bán trú</b></td></tr>'
   +'<tr><td>Thiết bị y tế của phòng y tế</td><td><b>M6.4</b> — tủ thuốc ở đây là <b>vật tư tiêu hao</b>, khác tài sản</td></tr>'
@@ -1859,6 +2349,50 @@ function moImport(id){
  };
 }
 /* ★ Ký số Nhóm A — hai nút, lối bỏ qua ghi audit và đối chiếu ở M4.11 */
+/* ★ Phiếu đo của GV thể dục cũng phải QUA ĐỐI SOÁT — đúng như kết quả
+   của đơn vị khám thuê ngoài. GV thể dục KHÔNG ghi thẳng vào hồ sơ y tế:
+   cho họ quyền đó là mở Lớp 2 cho một vai không đọc được Lớp 2. */
+function moImportTL(id){
+ const d=dotTLById(id);
+ const thieu=hsCuaDotTL(d).filter(h=>!tlCua(d.id,h.id));
+ const rows=thieu.slice(0,10).map((h,i)=>{
+  const s=h.id.charCodeAt(3)+i;
+  if(s%7===0) return {h,ok:false,ly:'thiếu «Chạy tùy sức 5 phút» — phiếu bỏ trống, không suy được'};
+  if(s%11===0) return {h,ok:false,ly:'«Bật xa tại chỗ» ghi 0 — không phân biệt được «đo được 0» với «không đo»'};
+  return {h,ok:true};
+ });
+ const nhan=rows.filter(r=>r.ok).length, bo=rows.length-nhan;
+ let b='<div class="warn"><b>Nhập từ phiếu đo PHẢI qua bước đối soát</b> — mỗi dòng bỏ qua '
+  +'<b>nêu lý do cụ thể</b>, không phải một dòng toast.</div>';
+ b+='<div class="tbw"><div class="ch">Đối soát từng dòng</div><div class="tbx"><table>'
+  +'<tr><th>Học sinh</th><th>Lớp</th><th>Kết quả đối soát</th></tr>'
+  +rows.map(r=>'<tr class="'+(r.ok?'okrow':'badrow')+'"><td><b>'+esc(r.h.ten)+'</b></td>'
+    +'<td>'+r.h.lop+'</td><td>'+(r.ok?'✓ nhận':'⛔ bỏ qua — '+esc(r.ly))+'</td></tr>').join('')
+  +'</table></div></div>';
+ b+='<div class="info">Sẽ nhận <b>'+nhan+'</b> · bỏ qua <b>'+bo+'</b> · '
+  +'còn thiếu sau khi nhập <b>'+(tienDoTL(d).thieu-nhan)+'</b></div>';
+ ST.tlImport={id,rows};
+ modal('📥 Đối soát phiếu đo — '+d.id,b,
+  '<button class="btn" data-mb="close">Đóng</button>'
+  +'<button class="btn p" data-mb="NhanTL">✓ Nhận '+nhan+' dòng</button>');
+}
+mfns.bNhanTL=()=>{
+ const {id,rows}=ST.tlImport, d=dotTLById(id);
+ rows.filter(r=>r.ok).forEach(({h})=>{
+  const s=h.id.charCodeAt(2)*19+h.id.charCodeAt(3)*13, tuoi=tuoiTai(h.ns,d.ngay), f=h.nu?0.84:1;
+  KQTL[d.id+'|'+h.id]={
+   luc:Math.round((24+(tuoi-11)*2.6+(s%9)-4)*f*10)/10,
+   bung:Math.round((13+(tuoi-11)*1.2+(s%7)-3)*f),
+   batxa:Math.round((155+(tuoi-11)*9+(s%17)-8)*f),
+   c30:Math.round((5.9-(tuoi-11)*0.11)/f*100)/100,
+   thoi:Math.round((12.4-(tuoi-11)*0.14)/f*100)/100,
+   c5p:Math.round((880+(tuoi-11)*28)*f), nguon:'phieu'};
+ });
+ ghiLS(d,'Đối soát và lưu '+rows.filter(r=>r.ok).length+' dòng từ phiếu đo');
+ closeM(); render();
+ toast('✓ Đã nhận <b>'+rows.filter(r=>r.ok).length+'</b> dòng, bỏ qua <b>'
+  +rows.filter(r=>!r.ok).length+'</b> dòng <b>kèm lý do cụ thể</b>.');
+};
 function moKyBC(id){
  const b=bcById(id);
  modal('✍️ Ký ban hành — '+b.id,
@@ -1893,7 +2427,7 @@ function moNghiOm(id){
 function xuat(what){
  modal('📤 Xuất dữ liệu — bắt buộc chọn mục đích',
   '<div class="danger">🔒 Đây là <b>dữ liệu sức khỏe của trẻ em</b>. Mọi lượt xuất <b>ghi nhật ký</b> '
-  +'kèm <b>tên người xuất, thời điểm và mục đích</b> — <b>NĐ 13/2023</b>.</div>'
+  +'kèm <b>tên người xuất, thời điểm và mục đích</b> — <b>Luật BVDLCN 91/2025</b>.</div>'
   +'<label class="lbl">Nội dung xuất</label><select class="fldi"><option>'+esc(what)+'</option></select>'
   +'<label class="lbl">Mức chi tiết</label><select class="fldi" id="xMuc">'
   +'<option value="tong">Chỉ số tổng hợp — không có tên học sinh</option>'
@@ -1933,8 +2467,80 @@ function render(){
  const t2=$('#timHS'); if(t2) t2.oninput=()=>{ST.timHS=t2.value; render();
   const e=$('#timHS'); if(e){e.focus(); e.setSelectionRange(e.value.length,e.value.length)}};
  const cm=$('#chiMo'); if(cm) cm.onchange=()=>{ST.chiMo=cm.checked; render()};
+ gSuaST(); gDX();
 }
-function doiTab(t){ST.tab=t; ST.curSK=null; ST.curHS=null; ST.curDot=null; ST.curDich=null}
+/* ★ Giữ nguyên nội dung đang gõ qua mỗi lần render — form sửa Lớp 1 */
+function gSuaST(){
+ if(!ST.fST) return;
+ const f=ST.fST;
+ const bindV=(id,k)=>{const e=$(id); if(!e) return; e.onchange=()=>{f[k]=e.value; render()}};
+ const bindT=(id,k)=>{const e=$(id); if(!e) return;
+  e.oninput=()=>{f[k]=e.value.split('\n').map(z=>z.trim()).filter(Boolean)}};
+ const bindI=(id,k)=>{const e=$(id); if(!e) return;
+  e.oninput=()=>{f[k]=e.value; const th=$('[data-luust]');
+   if(th){const ok=/^0\d{9}$/.test((f.lhSdt||'').trim())&&f.nguon; th.disabled=!ok;
+    th.classList.toggle('off',!ok); th.classList.toggle('p',!!ok)}}};
+ bindV('#fNM','nhomMau'); bindV('#fBB','bietBoi'); bindV('#fNG','nguon');
+ bindT('#fTA','diUngTA'); bindT('#fDK','diUngKhac'); bindT('#fBN','benhNen');
+ bindI('#fLHT','lhTen'); bindI('#fLHS','lhSdt');
+}
+function gDX(){
+ dxCho().forEach(dx=>{const e=$('#dxLy_'+dx.id); if(!e) return;
+  e.oninput=()=>{ST.dxLy[dx.id]=e.value; const b=$('[data-dxno="'+dx.id+'"]');
+   if(b){const ok=!!e.value.trim(); b.disabled=!ok; b.classList.toggle('off',!ok)}}});
+}
+/* ★ Lưu Lớp 1 — SINH MỘT PHIÊN BẢN, không ghi đè im lặng */
+function luuST(hid){
+ const f=ST.fST, o=SINHTON[hid], td=[];
+ const soS=a=>a.join(' · ')||'—';
+ if(f.nhomMau!==o.nhomMau) td.push(['nhomMau',o.nhomMau,f.nhomMau]);
+ if(soS(f.diUngTA)!==soS(o.diUngTA)) td.push(['diUngTA',soS(o.diUngTA),soS(f.diUngTA)]);
+ if(soS(f.diUngKhac)!==soS(o.diUngKhac)) td.push(['diUngKhac',soS(o.diUngKhac),soS(f.diUngKhac)]);
+ if(soS(f.benhNen)!==soS(o.benhNen)) td.push(['benhNen',soS(o.benhNen),soS(f.benhNen)]);
+ if(f.lhSdt!==o.lh.sdt) td.push(['lhsdt',o.lh.sdt||'—',f.lhSdt]);
+ if(f.bietBoi!==o.bietBoi) td.push(['bietBoi',BIETBOI[o.bietBoi][0],BIETBOI[f.bietBoi][0]]);
+ if(!td.length){ST.suaST=null; ST.fST=null; render(); toast('Không có trường nào đổi — <b>không sinh phiên bản</b>.'); return}
+ o.nhomMau=f.nhomMau; o.diUngTA=f.diUngTA.slice(); o.diUngKhac=f.diUngKhac.slice();
+ o.benhNen=f.benhNen.slice(); o.lh.ten=f.lhTen; o.lh.sdt=f.lhSdt; o.bietBoi=f.bietBoi;
+ o.nguon=f.nguon; o.capNhat=HOMNAY;
+ ghiPhienBan(hid,td,'Y tế sửa trực tiếp');
+ ghiAudit('Sửa hồ sơ sức khỏe cơ bản',hid,'Nguồn: '+f.nguon,false);
+ ST.suaST=null; ST.fST=null; render();
+ toast('💾 Đã lưu — <b>sinh một phiên bản</b> ghi '+td.length+' trường đổi. Bản cũ <b>không mất</b>.');
+}
+/* ★ Xác nhận TỪNG TRƯỜNG — trường chưa đối chiếu được ở lại hàng đợi */
+function xacNhanDX(id){
+ const dx=DEXUAT.find(z=>z.id===id), o=SINHTON[dx.hs], tick=ST.dxTick[id]||[];
+ const td=[], conLai=[];
+ dx.sua.forEach(([tr,gt,kieu],i)=>{
+  if(!tick[i]){conLai.push([tr,gt,kieu]); return}
+  const cu=giaTriHienTai(dx.hs,tr);
+  if(tr==='nhomMau') o.nhomMau=gt;
+  else if(tr==='lhsdt') o.lh.sdt=gt;
+  else if(tr==='bietBoi') o.bietBoi=gt;
+  else if(kieu==='them'){ if(!o[tr].includes(gt)) o[tr].push(gt) }
+  else o[tr]=[gt];
+  td.push([tr,cu,giaTriHienTai(dx.hs,tr)]);
+ });
+ o.nguon='Gia đình khai (App)'; o.capNhat=HOMNAY;
+ ghiPhienBan(dx.hs,td,'App');
+ ghiAudit('Xác nhận đề xuất từ App',dx.hs,'Đề xuất '+dx.id+' — '+td.length+' trường',false);
+ if(conLai.length){dx.sua=conLai; ST.dxTick[id]=conLai.map(()=>true);
+  render(); toast('✓ Đã ghi <b>'+td.length+' trường</b>. Còn <b>'+conLai.length
+   +'</b> trường chưa đối chiếu — <b>ở lại hàng đợi</b>, không bị nuốt theo.'); return}
+ dx.tt='ok'; render();
+ toast('✓ Đã xác nhận <b>'+dx.id+'</b> — ghi vào hồ sơ và <b>sinh một phiên bản</b>. App đổi trạng thái.');
+}
+function tuChoiDX(id){
+ const dx=DEXUAT.find(z=>z.id===id), ly=(ST.dxLy[id]||'').trim();
+ if(!ly){toast('⚠️ Chưa từ chối được — <b>bắt buộc nêu lý do</b>.'); return}
+ dx.tt='no'; dx.lyDo=ly;
+ ghiAudit('Từ chối đề xuất từ App',dx.hs,'Đề xuất '+dx.id+' — '+ly,false);
+ render();
+ toast('✗ Đã từ chối <b>'+dx.id+'</b>. <b>Lý do hiện trên App</b> — không thì gia đình sẽ gửi lại đúng nội dung cũ.');
+}
+function doiTab(t){ST.tab=t; ST.curSK=null; ST.curHS=null; ST.curDot=null; ST.curDotTL=null;
+ ST.curDich=null; ST.suaST=null; ST.fST=null}
 function gCfg(){
  const g=(id,f)=>{const el=$(id); if(el) el.onchange=()=>{f(el.value); render();
   toast('⚙️ Đã đổi tham số — <b>số liệu liên quan tính lại ngay</b>.')}};
@@ -1964,6 +2570,36 @@ document.addEventListener('click',e=>{
  const sk=t.closest('[data-sk]'); if(sk){ST.tab='sk'; ST.curSK=sk.dataset.sk; ST.curHS=null; render(); return}
  const hs=t.closest('[data-hs]'); if(hs){ST.curHS=hs.dataset.hs;
   ghiAudit('Xem hồ sơ sức khỏe',ST.curHS,'Tra cứu thường quy',false); render(); return}
+ /* ── Lớp 1: sửa · lịch sử · hàng đợi đề xuất ── */
+ const ss1=t.closest('[data-suast]'); if(ss1){const id=ss1.dataset.suast, o=stCua(id);
+  ST.suaST=id; ST.fST={nhomMau:o.nhomMau,diUngTA:o.diUngTA.slice(),diUngKhac:o.diUngKhac.slice(),
+   benhNen:o.benhNen.slice(),lhTen:o.lh.ten||'',lhSdt:o.lh.sdt||'',bietBoi:o.bietBoi||'chua',nguon:''};
+  render(); return}
+ if(t.closest('[data-huyst]')){ST.suaST=null; ST.fST=null; render(); return}
+ const ls1=t.closest('[data-lsst]'); if(ls1){moLichSuST(ls1.dataset.lsst); return}
+ const lu1=t.closest('[data-luust]'); if(lu1){luuST(lu1.dataset.luust); return}
+ const dtk=t.closest('[data-dxtick]'); if(dtk){const[id,i]=dtk.dataset.dxtick.split('|');
+  ST.dxTick[id][+i]=!ST.dxTick[id][+i]; render(); return}
+ const dok=t.closest('[data-dxok]'); if(dok){xacNhanDX(dok.dataset.dxok); return}
+ const dno=t.closest('[data-dxno]'); if(dno){tuChoiDX(dno.dataset.dxno); return}
+ const xk=t.closest('[data-xemkem]'); if(xk){const dx=DEXUAT.find(z=>z.id===xk.dataset.xemkem);
+  modal('👁 '+esc(dx.kem),'<div class="ro">Bản demo không nhúng tệp thật. Điểm cần thấy: '
+   +'<b>👁 Xem đứng TRƯỚC ⬇ Tải</b> — bắt người ta tích «đã đối chiếu» mà không cho mở tệp '
+   +'ngay trong màn hình là vô nghĩa.</div><div class="info">Lượt xem tệp này <b>đã ghi vào '
+   +'nhật ký truy cập</b> — dữ liệu cá nhân trẻ em, Luật BVDLCN 91/2025.</div>',
+   '<button class="btn" data-mb="close">Đóng</button>');
+  ghiAudit('Xem tệp kèm đề xuất từ App',dx.hs,'Đối chiếu đề xuất '+dx.id,false); return}
+ const tk=t.closest('[data-taikem]'); if(tk){const dx=DEXUAT.find(z=>z.id===tk.dataset.taikem);
+  ghiAudit('Tải tệp kèm đề xuất từ App',dx.hs,'Đối chiếu đề xuất '+dx.id,false);
+  render(); toast('⬇ Đã tải — <b>lượt tải cũng ghi nhật ký truy cập</b>.'); return}
+ const ld=t.closest('[data-ldot]'); if(ld){ST.loaiDot=ld.dataset.ldot;
+  ST.curDot=null; ST.curDotTL=null; render(); return}
+ const dtl2=t.closest('[data-dottl]'); if(dtl2){ST.curDotTL=dtl2.dataset.dottl; render(); return}
+ if(t.closest('[data-backdottl]')){ST.curDotTL=null; render(); return}
+ const itl=t.closest('[data-importtl]'); if(itl){moImportTL(itl.dataset.importtl); return}
+ const xtl=t.closest('[data-xongtl]'); if(xtl){const d=dotTLById(xtl.dataset.xongtl);
+  d.tt='xong'; ghiLS(d,'Hoàn tất đợt đo thể lực'); render();
+  toast('✅ Đã hoàn tất đợt đo <b>'+d.id+'</b> — sáu nội dung sẵn sàng đẩy lên CSDL ngành ở <b>M10.8</b>.'); return}
  const dt=t.closest('[data-dot]'); if(dt){ST.curDot=dt.dataset.dot; render(); return}
  const dh=t.closest('[data-dich]'); if(dh){ST.curDich=dh.dataset.dich; render(); return}
  if(t.id==='themSK'){moThemSK(); return}

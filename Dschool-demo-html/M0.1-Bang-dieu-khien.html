@@ -146,6 +146,16 @@ a{color:var(--brand);text-decoration:none}
   background:#0f172a;color:#fff;padding:10px 17px;border-radius:9px;font-size:13px;
   z-index:80;transition:transform .22s;box-shadow:0 8px 24px rgba(0,0,0,.2);max-width:90vw}
 .toast.on{transform:translateX(-50%)}
+/* YKNP 17/9/2026 — F1b thẻ «Đơn nghỉ của tôi» */
+.dnt{display:flex;gap:14px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-left:4px solid #6366f1;border-radius:10px;padding:10px 14px;margin:0 0 14px;font-size:12.5px}
+.dnt.rong{align-items:center;padding:7px 14px}
+.dnh{font-weight:700;white-space:nowrap;min-width:140px}
+.dnb{flex:1;display:flex;flex-direction:column;gap:5px;line-height:1.55}
+.dnr a.dnl{color:var(--brand);text-decoration:none}
+.dnred{background:#fef2f2;border:1px solid #fecaca;border-radius:7px;padding:5px 9px;color:#991b1b}
+.dnm{color:var(--ink3);font-size:11.5px}
+.tag.hl{background:#dcfce7;color:#166534}
+.dnf .btnlk{display:inline-block;border:1px solid var(--brand);color:var(--brand);border-radius:8px;padding:5px 11px;font-weight:700;text-decoration:none;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -154,11 +164,13 @@ a{color:var(--brand);text-decoration:none}
 
 <div class="rolebar">
   <b>Demo — chọn vai trò:</b>
-  <button class="rb on" data-r="HT">HT</button>
+  <button class="rb on" data-r="FULL">🔓 Đủ quyền (demo)</button>
+  <button class="rb" data-r="HT">HT</button>
   <button class="rb" data-r="PHT_DT">PHT_DT</button>
   <button class="rb" data-r="PHT_CM">PHT_CM</button>
+  <button class="rb" data-r="TTCM" title="Lê Minh Tuấn — Tổ Toán — Tin">TTCM</button>
   <button class="rb" data-r="GVCN">GVCN</button>
-  <button class="rb" data-r="GVBM">GVBM</button>
+  <button class="rb" data-r="GVBM" title="Hà Minh Đức — ca S8 (nhận đề nghị đổi ngày)">GVBM · S8</button>
   <button class="rb" data-r="TCNS">TCNS</button>
   <button class="rb" data-r="KT">KT</button>
   <button class="rb" data-r="VT">VT</button>
@@ -200,6 +212,7 @@ a{color:var(--brand);text-decoration:none}
       <div class="spacer"></div>
       <button class="btn" id="cfgbtn">⚙ Tùy chỉnh</button>
     </div>
+    <div id="dnt"></div>
     <div class="cols" id="cols">
       <div><div class="colhd">Việc cần xử lý</div><div id="colL"></div></div>
       <div id="wrapR"><div class="colhd">Số liệu tháng 8/2026</div><div id="colR"></div></div>
@@ -224,7 +237,7 @@ const A = {
  'W-A01':{i:'📚',t:'Tiết dạy hôm nay',m:'M2.1',lv:'ok',n:4,rows:[
    ['Tiết 1 · Toán · 9A2 · P.204','07:00',''],['Tiết 2 · Toán · 9A2 · P.204','07:50',''],
    ['Tiết 4 · Toán · 8A1 · P.301','09:40','Dạy thay'],['Tiết 5 · Toán · 8A3 · P.301','10:30','']]},
- 'W-A02':{i:'📖',t:'Sổ đầu bài chưa ký',m:'M2.2',lv:'warn',n:7,rows:[
+ 'W-A02':{i:'📖',t:'Sổ đầu bài chưa ghi',m:'M2.2',lv:'warn',n:7,rows:[
    ['Tiết 2 · Toán · 9A2 · hôm nay','Quá 40 phút','r'],['Tiết 1 · Toán · 8A1 · hôm nay','Quá 15 phút','a'],
    ['Tiết 3 · Toán · 8A3 · 24/8','Hôm qua','r'],['Tiết 5 · Toán · 9A1 · 24/8','Hôm qua','r'],
    ['Tiết 2 · Toán · 9A2 · 23/8','2 ngày trước','r']]},
@@ -251,16 +264,21 @@ const A = {
    ['Thông báo toàn trường · Lịch khai giảng','Hôm nay','a'],
    ['QĐ kỷ luật mức 3 · HS Trần Văn Đ · 9A3','Còn 1 ngày','a'],
    ['Chuyển lớp khác ĐT · HS Lý Thu M · 8A1→8B2','Còn 2 ngày','g'],
-   ['Đơn nghỉ phép · GV Nguyễn Thị H · 9 ngày','Còn 2 ngày','g']]},
- 'W-A10':{i:'🏖️',t:'Đơn nghỉ phép NS chờ duyệt',m:'M4.8',lv:'warn',n:4,rows:[
-   ['GV Nguyễn Thị Hoa · 9 ngày · Việc riêng','Còn 1 ngày','a'],
-   ['GV Trần Văn Nam · 2 ngày · Nghỉ ốm','Hôm nay','a'],
-   ['NV Lê Thị Mai · 1 ngày · Việc riêng','Còn 2 ngày','g'],
-   ['GV Phạm Đức Anh · 4 ngày · Tập huấn','Còn 3 ngày','g']]},
- 'W-A11':{i:'⚠️',t:'Tiết chưa bố trí GV dạy thay',m:'M4.7',lv:'urg',n:3,rows:[
-   ['Tiết 3 · Vật lý · 9A1 · 26/8','Còn 21 giờ','r'],
-   ['Tiết 4 · Vật lý · 9A3 · 26/8','Còn 22 giờ','r'],
-   ['Tiết 2 · Hóa · 8A2 · 27/8','Còn 2 ngày','a']]},
+   ['🔏 QĐ nghỉ dài ngày · GV Nguyễn Văn Chiến · 10 ngày — đơn đã hiệu lực','Chặn chốt lương','a','/M4.8?ctx=NP-2026-146&action=duyet&return=M0.1']]},
+ /* YKNP 17/9/2026 — W-A10 đổi tên «Đơn nghỉ chờ đồng ý»: CHỈ đơn loại can_thoa_thuan đang cho_dong_y (M4.8 khối 🟡).
+    Vai: PHT_DT (Branch neo điểm trường của NGƯỜI) · HT. TTCM · PHT_CM · TCNS rời widget. Ca S6 — ngày làm việc tính từ D0 = 25/8 (bỏ Chủ nhật như M4.8). */
+ 'W-A10':{i:'🏖️',t:'Đơn nghỉ chờ đồng ý',m:'M4.8',lv:'warn',n:1,rows:[
+   ['Lý Thị Thu · Tổ Ngữ văn — Sử — Địa · nghỉ không lương 02/09 – 04/09 · 3 ngày','Chờ đồng ý','a','/M4.8?ctx=NP-2026-145&action=duyet&return=M0.1']]},
+ /* YKNP 17/9/2026 — W-A11 dùng lại khuôn, đổi thành «Tiết chưa xử lý của GV vắng» → M4.7 tab Giáo viên vắng.
+    Mỗi dòng = MỘT ĐỢT VẮNG; số lượng = số tiết chưa xếp người. TTCM chỉ đếm tiết THUỘC TỔ (neo tiết — HDNP ⑦). */
+ 'W-A11':{i:'⚠️',t:'Tiết chưa xử lý của GV vắng',m:'M4.7',lv:'urg',n:14,rows:[
+   /* GY18-E — nhãn khẩn hiện thêm GIỜ khi nguồn có giờ. Hạn của một đợt vắng = giờ bắt đầu tiết sớm nhất
+      chưa có người (M4.7 tab Giáo viên vắng) ⇒ nhãn ghi «Hôm nay · 09:40», không chỉ «Hôm nay». Màu và số nhãn giữ nguyên. */
+   ['Nguyễn Thị Mai · Ngữ văn · 25/8 · đề xuất Tạ Thị Quyên — chờ xác nhận một nút','Hôm nay · 09:40','r','/M4.7?tab=giao_vien_vang&ctx=NP-2026-141&return=M0.1'],
+   ['Đặng Văn Long · Vật lí + Toán · 26 – 27/8','Còn 1 ngày','a','/M4.7?tab=giao_vien_vang&ctx=NP-2026-142&return=M0.1'],
+   ['Nguyễn Văn Chiến · Ngữ văn · 28/8 – 08/9 · 🔏 QĐ chờ ký, không chặn nghỉ','Còn 3 ngày','g','/M4.7?tab=giao_vien_vang&ctx=NP-2026-146&return=M0.1']],
+   vai:{TTCM:{n:2,rows:[
+   ['Đặng Văn Long · lát Toán 11B1 · 26 – 27/8 · 2 tiết thuộc tổ — lát Vật lí do Cao Thị Nhung xử lý','Còn 1 ngày','a','/M4.7?tab=giao_vien_vang&ctx=NP-2026-142&return=M0.1']]}}},
  'W-A12':{i:'📮',t:'Công văn quá hạn xử lý',m:'M6.9',lv:'urg',n:2,rows:[
    ['CV 412/SGDĐT · Báo cáo sĩ số đầu năm','Quá hạn 2 ngày','r'],
    ['CV 398/UBND · Rà soát PCCC','Quá hạn 5 ngày','r']]},
@@ -295,7 +313,15 @@ const A = {
  'W-A20':{i:'📌',t:'Việc của tôi',m:'M0.2',lv:'warn',n:6,rows:[
    ['Yêu cầu cập nhật hồ sơ bị trả về · cần bổ sung minh chứng','Còn 4 ngày','a'],
    ['Tự đánh giá BDTX cuối năm','Còn 9 ngày','g'],
-   ['Xác nhận lịch dạy thay ngày 27/8','Còn 1 ngày','a']]}
+   ['Biên bản dự giờ chưa viết · Toán 8A1 · 22/8','Còn 3 ngày','g']]},   /* YKNP 17/9: bỏ dòng «Xác nhận lịch dạy thay» — bước xác nhận dạy thay không tồn tại từ 26/8 */
+ /* 13/9/2026 — nguồn M6.10 tab 6 Theo dõi ăn. DẪN XUẤT: học sinh nội trú có
+    ít nhất một bữa "Không ăn không phép" HÔM QUA hoặc HÔM NAY. Không có nút
+    "đã xử lý" — hết hai ngày tự rơi khỏi danh sách. Đếm theo HỌC SINH, không
+    theo bữa: một em bỏ ba bữa là MỘT việc cần nhìn, không phải ba.
+    Trường mẫu của M0.1 là THCS không có KTX — dòng dưới là dữ liệu minh họa. */
+ 'W-A21':{i:'🍽',t:'HS nội trú không ăn không phép (2 ngày)',m:'M6.10/T6',lv:'urg',n:2,rows:[
+   ['Vũ Hoàng Nam · A-204 · tối 22/10, sáng 23/10','Hôm nay','r'],
+   ['Cao Khánh Trang · B-104 · trưa 23/10','Hôm nay','r']]}
 };
 
 /* ====== CATALOG WIDGET SỐ LIỆU (F2) ====== */
@@ -315,27 +341,35 @@ const S = {
  'W-S07':{i:'📚',t:'Hoạt động chuyên môn',big:'142',lbl:'giáo án đã duyệt tháng 8',
    kv:[['Tiết dự giờ','24'],['Buổi sinh hoạt tổ','9']]},
  'W-S08':{i:'🏫',t:'Lớp 9A2 của tôi',big:'35',lbl:'học sinh',
-   kv:[['Chuyên cần tháng','97,1%'],['Điểm TB lớp','7,68'],['Xếp hạng sao đỏ','3/12']]}
+   kv:[['Chuyên cần tháng','97,1%'],['Điểm TB lớp','7,68'],['Xếp hạng nền nếp','3/12']]}
 };
 
 /* ====== BỘ MẶC ĐỊNH THEO VAI TRÒ (§4.1.3) ====== */
 const R = {
- HT:{n:'Hiệu trưởng',L:['W-A09','W-A15','W-A12','W-A13','W-A11','W-A14'],
+ /* Vai mặc định của demo (quy ước dự án): thấy TRỌN bộ widget và TRỌN sidebar, để người duyệt rà được mọi thứ
+    trên một màn hình. Danh sách widget lấy bằng hợp của mọi vai thật — thêm widget mới cho vai nào thì vai này
+    tự có, không phải sửa hai chỗ. */
+ FULL:{n:'Đủ quyền (demo)',L:[],Rr:[],menu:['all'],bell:5},
+ HT:{n:'Hiệu trưởng',L:['W-A09','W-A15','W-A12','W-A13','W-A11','W-A14','W-A10'],
      Rr:['W-S01','W-S02','W-S03','W-S04','W-S06'],
      menu:['all'],bell:5},
- PHT_DT:{n:'Phó HT Điểm trường',L:['W-A09','W-A05','W-A03','W-A08','W-A11','W-A19'],
+ PHT_DT:{n:'Phó HT Điểm trường',L:['W-A09','W-A10','W-A05','W-A03','W-A21','W-A08','W-A11','W-A19'],
      Rr:['W-S01','W-S02','W-S05'],
      menu:['hs','lop','kq','ns','vh','gt','bc'],bell:4},
- PHT_CM:{n:'Phó HT Chuyên môn',L:['W-A09','W-A06','W-A11','W-A10','W-A02'],
+ PHT_CM:{n:'Phó HT Chuyên môn',L:['W-A09','W-A06','W-A11','W-A02'],
      Rr:['W-S02','W-S06','W-S07'],
      menu:['hs','lop','kq','ns','cm','gt','bc'],bell:3},
  GVCN:{n:'Giáo viên chủ nhiệm',L:['W-A01','W-A03','W-A04','W-A05','W-A08','W-A02'],
      Rr:['W-S08'],
      menu:['hs','lop','gt'],bell:6},
+ /* YKNP 17/9 — vai TTCM (Lê Minh Tuấn, Tổ Toán — Tin): W-A11 lên đầu, không còn W-A10 */
+ TTCM:{n:'Tổ trưởng chuyên môn',L:['W-A09','W-A11','W-A06'],
+     Rr:['W-S07'],
+     menu:['lop','ns','cm','gt'],bell:3},
  GVBM:{n:'Giáo viên bộ môn',L:['W-A01','W-A02','W-A07','W-A06','W-A20'],
      Rr:[],
      menu:['lop','cm','gt'],bell:2},
- TCNS:{n:'Tổ chức nhân sự',L:['W-A16','W-A17','W-A10','W-A20'],
+ TCNS:{n:'Tổ chức nhân sự',L:['W-A16','W-A17','W-A20'],
      Rr:['W-S03'],
      menu:['ns','gt','bc'],bell:3},
  KT:{n:'Kế toán',L:['W-A18','W-A09','W-A20'],
@@ -354,19 +388,20 @@ const NAV=[
    ['M1.4','Tuyển sinh đầu cấp'],['M1.5','Chuyển trường'],['M1.6','Bảo lưu / Tái nhập'],
    ['M1.7','Lớp học & Chuyển lớp']]],
  ['lop','📚 Lớp học hàng ngày',[['M2.1','Lịch dạy & học'],['M2.2','Sổ đầu bài'],['M2.3','Bài tập về nhà'],
-   ['M2.4','Đơn xin nghỉ của HS'],['M2.5','Nhập điểm thường xuyên'],['M2.6','Bảng điểm môn'],
-   ['M2.7','Khen thưởng & Kỷ luật HS'],['M2.8','Kỳ thi định kỳ'],['M2.9','Không gian lớp học']]],
+   ['M2.4','Đơn xin nghỉ của HS'],['M2.5','Bảng điểm môn học'],
+   ['M2.10','Khen thưởng học sinh'],['M2.7','Kỷ luật học sinh'],['M2.8','Kỳ thi định kỳ'],['M2.9','Danh sách lớp học']]],
  ['kq','🎓 Kết quả & Cuối năm',[['M3.1','Tổng kết và xếp loại'],['M3.2','Rèn luyện hè'],
    ['M3.3','Xét duyệt lên lớp'],['M3.4','Xét duyệt tốt nghiệp']]],
  ['ns','👨‍🏫 Nhân sự',[['M4.1','Hồ sơ nhân sự'],['M4.2','Biến động nhân sự'],['M4.3','Chức danh & Điểm công tác'],
    ['M4.4','Quản lý giáo viên'],['M4.5','Phân công giảng dạy'],['M4.6','Thời khóa biểu'],
    ['M4.7','Lịch giảng dạy & Dạy thay'],['M4.8','Nghỉ phép'],['M4.9','Chấm công nhân sự'],
-   ['M4.10','Khen thưởng & Kỷ luật NS'],['M4.11','Chứng thư số']]],
+   ['M4.10','Khen thưởng & Kỷ luật NS'],['M4.11','Chứng thư số'],['M6.18','Lịch họp']]],
  ['cm','📖 Chuyên môn',[['M5.1','Kế hoạch giảng dạy'],['M5.2','Giáo án'],['M5.3','Dự giờ'],
    ['M5.4','Sinh hoạt chuyên môn'],['M5.5','Đánh giá GV cuối năm'],['M5.6','Đào tạo & BDTX']]],
- ['vh','🏫 Vận hành & Dịch vụ',[['M6.1','Bán trú'],['M6.2','Học ngoại khóa'],['M6.3','Hoạt động Đoàn - Đội'],
-   ['M6.4','Danh mục & Kiểm kê CSVC'],['M6.5','Yêu cầu CSVC'],['M6.6','Y tế học đường'],
-   ['M6.7','Camera an ninh'],['M6.8','Sự kiện trường học'],['M6.9','Văn thư — Công văn']]],
+ ['vh','🏫 Vận hành & Dịch vụ',[['M6.1','Bán trú'],['M6.2','Học ngoại khóa'],['M6.3','Hồ sơ HS thành viên'],
+   ['M6.13','Theo dõi thi đua'],['M6.14','Hoạt động & sự kiện'],
+   ['M6.4','Danh mục & Kiểm kê'],['M6.11','Luân chuyển & Sửa chữa'],['M6.5','Mượn phòng & thiết bị'],['M6.6','Y tế học đường'],
+   ['M6.7','Camera an ninh'],['M6.8','Sự kiện trường học'],['M6.9','Công văn']]],
  ['tc','💰 Tài chính',[['M7.1','Danh mục khoản thu'],['M7.2','Theo dõi thực hiện khoản thu'],['M7.3','Điều chỉnh & Hoàn tiền'],['M7.4','Chính sách miễn giảm'],
    ['M7.5','Thu chi & Báo cáo TC'],['M7.6','Dữ liệu KPI tính lương']]],
  ['gt','💬 Giao tiếp',[['M8.1','Thông báo chủ động'],['M8.2','Nhắn tin'],['M8.3','Giám sát & Kiểm duyệt chat']]],
@@ -376,7 +411,10 @@ const NAV=[
    ['M10.6','Trung tâm cấu hình'],['M10.7','Nhật ký hệ thống'],['M10.8','Đồng bộ CSDL ngành']]]
 ];
 
-let role='HT', cfg={};
+let role='FULL', cfg={};
+/* hợp của mọi vai thật — tính sau khi R đã khai đủ */
+R.FULL.L = Object.keys(A).filter(k=>Object.keys(R).some(r=>r!=='FULL'&&R[r].L.includes(k)));
+R.FULL.Rr = Object.keys(S).filter(k=>Object.keys(R).some(r=>r!=='FULL'&&R[r].Rr.includes(k)));
 const $=s=>document.querySelector(s);
 const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.add('on');
   clearTimeout(t._);t._=setTimeout(()=>t.classList.remove('on'),2300)};
@@ -400,11 +438,12 @@ function sidebar(){
 }
 
 function widgetA(k){
-  const w=A[k], show=w.rows.slice(0,5), rest=w.n-show.length;
+  /* biến thể theo vai (vd. W-A11 của TTCM chỉ đếm tiết thuộc tổ) — nguồn vẫn là một widget */
+  const w=Object.assign({},A[k],(A[k].vai||{})[role]||{}), show=w.rows.slice(0,5), rest=w.n-show.length;
   return `<div class="w ${w.lv}">
     <div class="wh"><span class="ic">${w.i}</span><span class="t">${w.t}</span>
       <span class="c">${w.n}</span><button class="kebab" data-k="${k}">⋮</button></div>
-    <div class="wb">${show.map(r=>`<div class="row" data-go="${w.m}">
+    <div class="wb">${show.map(r=>`<div class="row" data-go="${w.m}" ${r[3]?`data-link="${r[3]}"`:''}>
       <span class="d">${r[0]}</span>${r[2]?`<span class="tag ${r[2]||'g'}">${r[1]}</span>`:`<span class="s">${r[1]}</span>`}
       </div>`).join('')}
       ${rest>0?`<div class="more">và ${rest} mục khác</div>`:''}</div>
@@ -422,7 +461,43 @@ function widgetS(k){
     <div class="wf"><a href="#" data-rep="${w.t}">Xem chi tiết →</a></div></div>`;
 }
 
+/* ====== F1b — THẺ «ĐƠN NGHỈ CỦA TÔI» (YKNP 17/9/2026 · §4.1b) ======
+   Bản chiếu 🔗 M0.4 F6 (chủ bản ghi đơn: M4.8). Hôm nay của demo này 25/8 = D0 của demo M0.4 ⇒ dữ liệu chép nguyên M0.4.
+   Hiện với vai có T ở m0.4.don_nghi_cua_toi (mọi nhân sự). KHÔNG tự ẩn khi rỗng — mang lối tắt «＋ Xin nghỉ phép».
+   «Đề nghị đổi ngày chờ tôi xem» là DẪN XUẤT (ngày chưa qua, chưa rút) — không có nút «Đã xem» (anh Ninh chốt 17/9, PHIEU-YKNP-1C P2). */
+const M04='M0.4-Trang-ca-nhan-cua-toi.html';
+const DN_S4={id:'NP-2026-138',nguoi:'Bùi Văn Khánh',loai:'Việc riêng có lương',hl:'25/08 – 27/08',rut:0,
+  phu:'đề xuất Đỗ Thị Yến dạy thay',qd:false,nhapHo:false};
+const DN_S8={id:'NP-2026-147',nguoi:'Hà Minh Đức',loai:'Việc riêng có lương',hl:'31/08',rut:0,phu:'gửi trên App 22/08 20:15',qd:false,nhapHo:false};
+const DNDN_S8={don:'NP-2026-147',ngay:'31/08',boi:'Lê Minh Tuấn — TTCM Tổ Toán — Tin',luc:'25/08 10:05',
+  ly:'Ngày 31/08/2026 thầy Đức có tên trong danh sách coi thi khảo sát đầu năm khối 9 — đề nghị thầy xem có đổi được ngày khác không.'};
+const DN={
+ FULL:{don:[DN_S4,DN_S8],dn:[DNDN_S8],ghi:'Vai Đủ quyền gộp ca S4 (Bùi Văn Khánh) và S8 (Hà Minh Đức) — giống vai Đủ quyền của M0.4. Người thật chỉ thấy đơn của chính mình.'},
+ GVBM:{don:[DN_S8],dn:[DNDN_S8],ghi:'Vai GVBM của demo = Hà Minh Đức (Tổ Toán — Tin) — ca S8.'},
+};
+const coTaoDon=()=>true;   /* mọi chức danh nhân sự có T ở m0.4.don_nghi_cua_toi (PHIEU-YKNP-1C §Q) */
+function theNghi(){
+  const el=$('#dnt'); if(!el)return;
+  if(!coTaoDon()){el.innerHTML='';el.style.display='none';return}
+  const d=DN[role]||{don:[],dn:[]}, rong=!d.don.length&&!d.dn.length;
+  const lk=(q,t,cls)=>`<a class="dnl ${cls||''}" href="${M04}?${q}&return=M0.1" title="/M0.4?${q}&return=M0.1">${t}</a>`;
+  el.innerHTML=`<div class="dnt ${rong?'rong':''}">
+    <div class="dnh">🏖 Đơn nghỉ của tôi</div>
+    <div class="dnb">${rong?'<span class="dnm">Bạn không có đơn nghỉ nào đang hiệu lực.</span>':''}
+     ${d.don.slice(0,2).map(x=>`<div class="dnr">${lk('muc=don_nghi&ctx='+x.id,`<b>${x.id}</b>`)} · ${x.loai} · <b>${x.hl}</b>
+        <span class="tag hl">có hiệu lực</span>${x.nhapHo?' <span class="tag a">nhập hộ</span>':''}${x.rut?` <span class="dnm">đã rút ${x.rut} ngày</span>`:''}${x.qd?' <span class="tag a">🔏 QĐ chờ HT ký — không chặn nghỉ</span>':''}
+        <span class="dnm">· ${x.phu}${role==='FULL'?' · '+x.nguoi:''}</span></div>`).join('')}
+     ${d.don.length>2?`<div class="dnm">và ${d.don.length-2} đơn khác</div>`:''}
+     ${d.dn.map(x=>`<div class="dnr dnred">↩ <b>Đề nghị đổi ngày ${x.ngay}</b> chờ bạn xem — ${x.boi} · ${x.luc}
+        <span class="dnm">«${x.ly.length>90?x.ly.slice(0,90)+'…':x.ly}»</span> · <b>Đơn vẫn có hiệu lực cho tới khi bạn rút</b>
+        ${lk('muc=don_nghi&ctx='+x.don,'Mở đơn '+x.don+' →')}</div>`).join('')}
+     ${d.ghi?`<div class="dnm" style="font-style:italic">${d.ghi}</div>`:''}
+    </div>
+    <div class="dnf">${lk('muc=don_nghi&action=tao','＋ Xin nghỉ phép','btnlk')}</div></div>`;
+}
+
 function render(){
+  theNghi();
   const c=cfg[role];
   const L=R[role].L.filter(k=>c.L[k]), Rr=R[role].Rr.filter(k=>c.R[k]);
   $('#colL').innerHTML = L.length ? L.map(widgetA).join('')
@@ -464,7 +539,7 @@ document.querySelectorAll('.rb').forEach(b=>b.onclick=()=>{
 });
 document.body.addEventListener('click',e=>{
   const row=e.target.closest('.row');
-  if(row){toast(`Deep-link → ${row.dataset.go} · mở đúng bản ghi · return=M0.1`);return}
+  if(row){toast(row.dataset.link?`Deep-link → ${row.dataset.link}`:`Deep-link → ${row.dataset.go} · mở đúng bản ghi · return=M0.1`);return}
   const all=e.target.closest('[data-all]');
   if(all){e.preventDefault();toast(`→ M0.2 Việc cần làm · filter "${all.dataset.all}"`);return}
   const rep=e.target.closest('[data-rep]');
@@ -486,6 +561,7 @@ $('#year').onchange=e=>{
   const closed=e.target.value.includes('Đã kết thúc');
   $('#c1').textContent='📅 '+e.target.value.split(' · ')[0].replace('Năm học ','');
   $('#colL').style.display=closed?'none':'';
+  $('#dnt').style.display=closed?'none':'';   /* F1b ẩn cùng cột trái khi năm học đã kết thúc */
   $('#colL').previousElementSibling.style.display=closed?'none':'';
   toast(closed?'Năm học Đã kết thúc — cột việc cần xử lý được ẩn':'Đã tải lại toàn bộ widget');
 };

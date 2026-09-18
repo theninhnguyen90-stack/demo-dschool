@@ -483,7 +483,7 @@ const DTS={
  C:{ten:'Điểm trường C — Cơ sở Sóc Sơn'},
 };
 const LOP={
- '5A1':{dt:'A'},'9A2':{dt:'A'},'10A1':{dt:'A'},
+ '5A1':{dt:'A'},'9A1':{dt:'A'},'9A2':{dt:'A'},'10A1':{dt:'A'},
  '6B2':{dt:'B'},'8B1':{dt:'B'},
  '3C1':{dt:'C'},'5C2':{dt:'C'},
 };
@@ -548,7 +548,18 @@ const HS=[
   gh:[['Phùng Văn Mạnh','Bố','001095xxxxxx']]},
  {ma:'HS26-0703',ten:'Tạ Minh Quang',lop:'3C1', ph:'Tạ Minh Hoàng',sdt:'0985 114 279',tt:'thoihoc',
   gh:[['Tạ Minh Hoàng','Bố','001096xxxxxx']]},
+ /* Hai trạng thái rời còn thiếu — bổ sung 7/9/2026 khi rà lại §9.3 theo G49 vế ⑤.
+    Tiêu đề cũ ghi "đã chuyển đi hoặc thôi học", hẹp hơn thực tế: có BỐN đường ra khỏi
+    dòng chảy hằng ngày của trường, và cả bốn đều để lại số dư y như nhau. */
+ {ma:'HS22-0155',ten:'Lương Thị Hoài',lop:'9A1',ph:'Lương Văn Đài',sdt:'0912 553 077',tt:'ratruong',
+  gh:[['Lương Văn Đài','Bố','001071xxxxxx']]},
+ {ma:'HS24-0402',ten:'Sùng A Dí',lop:'6B2',ph:'Sùng A Chứ',sdt:'0329 447 015',tt:'dongtam',
+  gh:[['Sùng A Chứ','Bố','001073xxxxxx']]},
 ];
+/* Bốn trạng thái rời — đường xử lý hoàn tiền là MỘT với cả bốn (§9.3.1). */
+const ROIT={chuyendi:['Đã chuyển đi','r','M1.5'],thoihoc:['Đã thôi học','r','M1.6'],
+ ratruong:['Đã ra trường','b','M3.4'],dongtam:['Đóng hồ sơ tạm','w','M1.6']};
+const daRoi=h=>!!ROIT[h.tt];
 HS.forEach(h=>{h.dt=LOP[h.lop].dt; h.dien=h.dien||[];});
 const HSC=m=>HS.find(x=>x.ma===m);
 
@@ -661,8 +672,12 @@ let VIEC=[
   mo:'Đơn ngừng bán trú được duyệt, hiệu lực 20/09/2026 — em đã nộp trọn tháng 9',luc:'01/10/2026 08:15'},
  {id:'VRS-2627-0045',nguon:'M7.2',ly:'HT-THUA',hs:'HS22-0801',dt:'C',tt:'mo',
   mo:'Đối soát ngày 12/09 phát hiện hai giao dịch trùng cho hóa đơn đồng phục — FT26272905511 và FT26272905847',luc:'02/10/2026 17:40'},
- {id:'VRS-2627-0046',nguon:'M1.5',ly:'HT-TH',hs:'HS26-0703',dt:'C',tt:'mo',
+ {id:'VRS-2627-0046',nguon:'M1.6',ly:'HT-TH',hs:'HS26-0703',dt:'C',tt:'mo',
   mo:'Quyết định thôi học hiệu lực 25/09/2026 — kiểm tra các khoản đã nộp chưa sử dụng',luc:'03/10/2026 09:05'},
+ {id:'VRS-2627-0047',nguon:'M3.4',ly:'HT-TH',hs:'HS22-0155',dt:'A',tt:'mo',
+  mo:'Công bố tốt nghiệp khối 9 ngày 30/05/2026 — quyết toán bán trú tháng 5 theo số buổi thực tế sinh số dư nhỏ cho 27 em. Đây là ca của F11 hoàn tiền hàng loạt: MỘT quyết định, N lần chi, mỗi lần một chữ ký người nhận.',luc:'03/10/2026 14:10'},
+ {id:'VRS-2627-0048',nguon:'M1.6',ly:'HT-BL',hs:'HS24-0402',dt:'B',tt:'mo',
+  mo:'Chuyển sang Đóng hồ sơ tạm ngày 02/03/2026 sau khi hết hạn bảo lưu và mất liên lạc. ⚠ Hồ sơ này MỞ LẠI ĐƯỢC — hỏi gia đình trước khi lập phiếu, hoàn hết rồi em quay lại thì phải thu lại từ đầu.',luc:'03/10/2026 15:30'},
 ];
 const vHSC=v=>HSC(v.hs);
 
@@ -865,7 +880,7 @@ const TABDEF=[
 ];
 const tabsCua=()=>TABDEF.filter(t=>t.r.indexOf(RK)>=0);
 
-let S={tab:'dc',screen:null,sc:null,fdc:'all',fht:'all',
+let S={tab:'dc',screen:null,sc:null,fdc:'all',fht:'all',froi:'all',
        kh:{ngay:1,ly:1,sodu:1,khoan:0,xuat:0},kytk:'Tháng 10/2026',
        nw:null};   /* nw = phiếu đang tạo mới / hàng loạt */
 
@@ -1116,7 +1131,10 @@ function heQua(p){
 /* ==================== TAB 2 — HOÀN TIỀN ==================== */
 const CHIPHT=[['all','Tất cả'],['nhap','Nháp'],['cho_duyet','Chờ duyệt & ký'],
               ['cho_chi','Chờ chi'],['ngoai','⏸ Chờ thu hồi ngoài'],['da_chi','Đã chi'],['hoantat','Hoàn tất'],['huy','Đã hủy']];
-const NGUONVC={'M1.5':'Chuyển trường / thôi học','M1.6':'Bảo lưu','M6.1':'Ngừng bán trú','M6.2':'Ngừng ngoại khóa',
+/* Sửa 7/9/2026: "thôi học" và "đóng hồ sơ tạm" do M1.6 ký, không phải M1.5 — trước gộp nhầm.
+   Thêm M3.4: cả khối lớp 9 và 12 ra trường cùng một ngày là ca hoàn tiền ĐÔNG nhất, dễ quên nhất. */
+const NGUONVC={'M1.5':'Chuyển trường','M1.6':'Bảo lưu · thôi học · đóng hồ sơ tạm','M3.4':'Ra trường — công bố tốt nghiệp',
+               'M6.1':'Ngừng bán trú','M6.2':'Ngừng ngoại khóa',
                'M7.2':'Đối soát phát hiện','M7.3':'Hệ quả điều chỉnh'};
 function vHT(){
  const all=dsPHT().filter(trongPV);
@@ -1129,20 +1147,48 @@ function vHT(){
  /* --- hàng đợi việc rà soát tự sinh --- */
  h+='<div class="sech2">Việc rà soát hoàn tiền <span style="font-weight:400;text-transform:none;letter-spacing:0">— tự sinh từ menu khác · '+
   vcm.length+' đang mở · '+(vc.length-vcm.length)+' đã đóng</span></div>';
+ /* Bộ lọc Trạng thái rời — §9.3.1. Bốn trạng thái, MỘT đường xử lý; nên đây là bộ lọc,
+    không phải bốn màn hình. */
+ const nRoi=vc.filter(v=>daRoi(HSC(v.hs))).length;
+ h+='<div class="bar" style="padding-top:0;flex-wrap:wrap;gap:5px"><span style="font-size:11.5px;color:var(--ink3);align-self:center">Trạng thái rời:</span>'+
+  '<button class="chip '+(S.froi==='all'||!S.froi?'on':'')+'" data-x="froi" data-f="all">Tất cả ('+vc.length+')</button>'+
+  '<button class="chip '+(S.froi==='roi'?'on':'')+'" data-x="froi" data-f="roi">🚪 Học sinh đã rời trường ('+nRoi+')</button>'+
+  Object.keys(ROIT).map(k=>'<button class="chip '+(S.froi===k?'on':'')+'" data-x="froi" data-f="'+k+'">'+ROIT[k][0]+
+   ' ('+vc.filter(v=>HSC(v.hs).tt===k).length+')</button>').join('')+'</div>';
  h+='<div class="info">Trường <b>không chờ phụ huynh xin</b>. Mọi sự kiện làm phát sinh khả năng hoàn tiền — bảo lưu, chuyển trường, thôi học, '+
   'ngừng dịch vụ, đối soát phát hiện trùng — <b>tự sinh một việc</b> ở đây và ở M0.2 Việc cần làm. '+
   'Trên App PH-HS <b>không có nút “Đề nghị hoàn tiền”</b>; phụ huynh có <b>“Phản ánh về khoản thu”</b> gắn vào từng hóa đơn, và phản ánh đó đi vào <b>M7.2</b>.</div>';
- if(!vc.length) h+='<div class="ro">Không có việc nào trong phạm vi đang xem.</div>';
+ const vcL=vc.filter(v=>{const t=HSC(v.hs).tt;
+  return !S.froi||S.froi==='all'||(S.froi==='roi'?daRoi(HSC(v.hs)):t===S.froi);});
+ if(!vcL.length) h+='<div class="ro">Không có việc nào khớp bộ lọc trong phạm vi đang xem.'+
+  (vc.length?' Tổng cộng còn <b>'+vc.length+'</b> việc — bỏ lọc để xem.':'')+'</div>';
  else{
   h+='<div class="listw">';
-  vc.forEach(v=>{const hs=HSC(v.hs);
+  vcL.forEach(v=>{const hs=HSC(v.hs);
    h+='<div class="row"><div class="rh">'+
     '<span class="pctag ht">VIỆC</span><b>'+esc(hs.ten)+'</b><span class="pill">'+hs.lop+'</span>'+
     '<span class="ct2">'+v.id+'</span>'+
+    (daRoi(hs)?'<span class="st2 '+ROIT[hs.tt][1]+'">🚪 '+ROIT[hs.tt][0]+'</span>':'')+
     '<span class="st2 b">🔗 '+v.nguon+' · '+NGUONVC[v.nguon]+'</span>'+
     '<span class="st2 '+(v.tt==='mo'?'w':'n')+'">'+(v.tt==='mo'?'Đang mở':'Đã đóng')+'</span>'+
     '<span style="margin-left:auto;font-size:11.5px;color:var(--ink3)">'+v.luc+'</span></div>'+
     '<div style="padding:0 13px 10px;font-size:12.5px">'+esc(v.mo)+'</div>'+
+    /* Đóng hồ sơ tạm — chốt 7/9/2026 (G49-a): vẫn sinh việc, nhưng KHÔNG tự dựng bảng tính hoàn. */
+    (hs.tt==='dongtam'
+     ?'<div class="pcw" style="background:var(--amber-soft,#fffbeb);border-color:#fde68a;color:#92400e">'+
+      '⚠ <b>Hồ sơ này MỞ LẠI ĐƯỢC</b> — hỏi gia đình trước khi lập phiếu. Hoàn hết rồi em quay lại thì gia đình <b>phải nộp lại từ đầu</b>.<br>'+
+      '<b>Bảng tính hoàn để TRỐNG</b>, máy không đề nghị số nào: bảng tính có sẵn luôn đọc như một lời khuyên, và người bận sẽ bấm theo nó. '+
+      'Ô trống buộc phải có <b>một cuộc gọi trước khi có một con số</b>. '+
+      '<span class="rolnk" data-x="dl" data-m="M1.6">↗ M1.6</span></div>'
+     :'')+
+    (v.nguon==='M3.4'
+     ?'<div class="pcw" style="background:#eef2ff;border-color:#c7d2fe;color:#3730a3">'+
+      '👥 <b>Ca của F11 hoàn tiền hàng loạt.</b> F11 gom được <b>bảng tính</b> và <b>quyết định</b> — một quyết định, một chữ ký ⚖. '+
+      '⛔ Không gom được <b>chữ ký người nhận</b>: mỗi dòng một chữ ký, mỗi dòng một phiếu chi. '+
+      'Chi sai thủ tục <b>không rẻ đi vì số tiền nhỏ</b> — nó chỉ khó phát hiện hơn.<br>'+
+      'Chỗ đúng để giảm gánh nặng là <b>hình thức hoàn</b>: hoàn <b>chuyển khoản về đúng tài khoản đã chuyển đến</b> thì không cần gặp mặt, '+
+      'và phần lớn hóa đơn bán trú đã trả qua App nên đa số dòng đi được đường này.</div>'
+     :'')+
     (v.tt==='dong'
      ? '<div class="pcw" style="background:var(--bg);border-color:var(--line);color:var(--ink2)">Đóng bởi '+esc(v.dong.by)+' lúc '+v.dong.luc+' — '+esc(v.dong.vi)+'</div>'
      : (can('viec')?'<div style="padding:0 13px 11px;display:flex;gap:7px">'+
@@ -1153,6 +1199,16 @@ function vHT(){
   });
   h+='</div>';
  }
+ h+='<div class="info" style="margin-top:10px"><b>Bốn trạng thái rời, không phải hai.</b> '+
+  'Tiêu đề cũ của §9.3 ghi <i>"đã chuyển đi hoặc thôi học"</i> — hẹp hơn thực tế. '+
+  '<b>Đã ra trường</b> là ca <b>đông nhất và dễ quên nhất</b>: cả khối lớp 9 hoặc 12 rời cùng một ngày, quyết toán bán trú tháng 5 theo số buổi thực tế sinh <b>hàng chục số dư nhỏ</b>. '+
+  '<b>Đóng hồ sơ tạm</b> thì ngược lại — em <b>có thể quay lại</b>, nên hỏi gia đình trước khi lập phiếu.<br>'+
+  'Đường xử lý là <b>MỘT</b> với cả bốn: cùng bảng tính hoàn, cùng chuỗi duyệt, cùng hình thức hoàn, cùng người ký nhận. Vì vậy đây là <b>một bộ lọc</b>, không phải bốn màn hình.</div>';
+ h+='<div class="info" style="margin-top:8px"><b>Đối xứng với chiều ngược lại — M7.2 khối G.</b> '+
+  'Menu này lo chiều <b>trường nợ gia đình</b>: hàng đợi <i>Tiền chờ hoàn quá hạn</i> · trạng thái <i>Không liên lạc được</i> bắt ghi các lần đã liên hệ · chốt cứng <b>không tự chuyển tiền vào quỹ trường</b>.<br>'+
+  'Chiều <b>gia đình nợ trường</b> từ 7/9/2026 có <b>M7.2 F19 truy thu</b> dựng đúng ba thứ đó, soi gương — và chốt cứng của nó là <b>không có nút xóa nợ</b>. '+
+  'Hai chốt cứng ấy là <b>cùng một câu</b>: tiền của gia đình không thành tiền của trường vì hết hạn, và khoản nợ của gia đình không biến mất vì hồ sơ đã đóng. '+
+  '<span class="rolnk" data-x="dl" data-m="M7.2">↗ M7.2 khối G</span></div>';
  h+=D('<b>Bỏ nút “Đề nghị hoàn tiền” trên App, không bắt phụ huynh đến trường.</b> Phần lớn ca hoàn tiền <b>trường biết trước phụ huynh</b> — quyết định bảo lưu, chuyển trường, đơn ngừng bán trú đều do chính trường ký. '+
   'Bắt gia đình xin lại tiền của họ là đặt gánh nặng sai chỗ, và nếu họ không biết mà xin thì tiền <b>nằm im vĩnh viễn</b> — im lặng đó có lợi cho trường nên nó sẽ không tự sửa. '+
   'Việc gặp mặt vẫn cần, nhưng đặt ở <b>bước chi tiền</b>, không đặt ở bước xin tiền. '+
@@ -1729,7 +1785,7 @@ function mSoDu(hsma){
 function xuatFile(w){
  modal('Xuất tệp — chọn mục đích sử dụng',
   '<div class="ro" style="margin-top:0">Phiếu hoàn tiền chứa <b>số CCCD và chữ ký của người giám hộ</b> — nhóm dữ liệu nhạy cảm hơn cả M7.2. '+
-  'Nghị định 13/2023/NĐ-CP: mọi lần xuất phải ghi nhật ký <b>ai xuất · lúc nào · để làm gì</b>.</div>'+
+  'Luật BVDLCN 91/2025/QH15: mọi lần xuất phải ghi nhật ký <b>ai xuất · lúc nào · để làm gì</b>.</div>'+
   '<div class="fld">Mục đích<select class="fldi" id="mdich">'+
   '<option>Nhập vào phần mềm kế toán MISA / Bravo</option>'+
   '<option>Báo cáo Phòng / Sở Giáo dục</option>'+
@@ -1761,6 +1817,7 @@ document.addEventListener('click',e=>{
  if(x==='gopht'){S.tab='ht';S.screen='pht';S.sc=i;render();return;}
  if(x==='fdc'){S.fdc=el.dataset.f;render();return;}
  if(x==='fht'){S.fht=el.dataset.f;render();return;}
+ if(x==='froi'){S.froi=el.dataset.f;render();return;}
  if(x==='khoi'){const k=el.dataset.k;S.kh[k]=S.kh[k]?0:1;render();return;}
  if(x==='dl'){const m=el.dataset.m;
   modal('Liên kết sâu sang '+m,'<div class="ro" style="margin-top:0">Mở <b>'+m+'</b> với ngữ cảnh mang theo, làm xong quay lại đúng chỗ này.</div>'+
@@ -1768,7 +1825,7 @@ document.addEventListener('click',e=>{
    '<div class="hint">Vai không có quyền tại menu chủ thì <b>không nhìn thấy</b> liên kết này.</div>');return;}
  if(x==='xemtep'){modal('Xem tệp — '+el.dataset.s,
    '<div class="ro" style="margin-top:0">Xem <b>ngay trong màn hình</b>, <code>👁 Xem</code> đứng trước <code>⬇ Tải</code>. '+
-   'Mỗi lần xem và tải đều <b>ghi nhật ký</b> theo NĐ 13/2023, và tệp có chữ ký / CCCD thì <b>bắt chọn mục đích</b>.</div>'+
+   'Mỗi lần xem và tải đều <b>ghi nhật ký</b> theo Luật BVDLCN 91/2025, và tệp có chữ ký / CCCD thì <b>bắt chọn mục đích</b>.</div>'+
    '<div class="bl"><div class="blh"><div class="t">'+esc(el.dataset.s)+'</div><div class="s">bản xem trước</div></div>'+
    '<div class="blb" style="text-align:center;color:var(--ink3);padding:34px 14px">— nội dung tệp —</div></div>',
    '<button class="btn" data-x="close">Đóng</button><button class="btn" data-x="taitep" data-s="'+esc(el.dataset.s)+'">⬇ Tải</button>');return;}

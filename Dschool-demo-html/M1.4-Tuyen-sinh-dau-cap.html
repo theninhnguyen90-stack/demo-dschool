@@ -220,14 +220,15 @@ tr.cut{border-top:2px dashed var(--red)}
 
 <div class="rolebar">
   <b>Chức danh:</b>
+  <button class="rb on" data-r="FULL">🔓 Đủ quyền (demo)</button>
   <button class="rb" data-r="VT">VT · ĐT A</button>
-  <button class="rb on" data-r="PHT_A">PHT_ĐT · A</button>
+  <button class="rb" data-r="PHT_A">PHT_ĐT · A</button>
   <button class="rb" data-r="PHT_B">PHT_ĐT · B</button>
   <button class="rb" data-r="PHT_CM">PHT_CM</button>
   <button class="rb" data-r="HT">HT</button>
   <button class="rb" data-r="HDTS">Thành viên Hội đồng TS</button>
   <button class="rb" data-r="KT">KT</button>
-  <span class="note">Phụ huynh nộp hồ sơ và xác nhận nhập học từ App riêng — không có mặt trong menu</span>
+  <span class="note">Gia đình đăng ký ở Cổng Tuyển sinh riêng và xác nhận nhập học trực tiếp tại trường — không có vai phụ huynh trong menu</span>
 </div>
 
 <header class="hdr">
@@ -265,6 +266,10 @@ const NAV=[
 ];
 /* sc: branch | school | own  —  own = chi thay dot co ten minh trong Hoi dong TS */
 const ROLE={
+ /* Vai mặc định của demo (quy ước dự án): phạm vi toàn trường + bật mọi năng lực của menu — làm hồ sơ, duyệt,
+    cấu hình đợt, nhập và duyệt điểm, ký, xem chi phí — để người duyệt rà trọn luồng trên một màn hình.
+    `ten` mượn hồ sơ một thành viên Hội đồng tuyển sinh để thao tác nhập điểm chạy được. Hệ thống thật không có vai này. */
+ FULL:{n:'Đủ quyền (demo)',sc:'school',menu:'all',lam:1,duyet:1,duyetDiem:1,nhapdiem:1,cauhinh:1,ky:1,chiPhi:1,ten:'Nguyễn Văn Hùng'},
  VT:{n:'Văn thư Điểm trường A',sc:'branch',dt:'Điểm trường A',menu:['hs','ch'],lam:1},
  PHT_A:{n:'PHT Điểm trường A',sc:'branch',dt:'Điểm trường A',menu:['hs'],duyet:1,lam:1,duyetDiem:1},
  PHT_B:{n:'PHT Điểm trường B',sc:'branch',dt:'Điểm trường B',menu:['hs'],duyet:1,lam:1,duyetDiem:1},
@@ -277,7 +282,7 @@ const TABN={dot:'📋 Đợt tuyển sinh',lop:'🎯 Phân lớp học sinh mớ
 const CASEN={A:'Công lập đại trà — Sở phân tuyến, trường KHÔNG được từ chối HS',
  B:'Chất lượng cao — trường tự tuyển',C:'Tư thục — nhiều đợt trong năm',
  D:'THPT công lập — Sở tổ chức thi, trả kết quả về'};
-let role='PHT_A', tab='dot', curDot=null, sub='', curWk=null, fTT='Tất cả', fHS='Đang xử lý';
+let role='FULL', tab='dot', curDot=null, sub='', curWk=null, fTT='Tất cả', fHS='Đang xử lý';
 let plKhoi='Khối 6', plHe='Đại trà', curHS=null;
 /* ===== Tim kiem dung chung cho MOI tab: ho ten (co dau va khong dau), SDT lien he, ma ho so ===== */
 let qTim='';
@@ -417,7 +422,7 @@ function sinhHoSo(dotId,list,off){
        {ten:HO[(i+3)%HO.length]+' '+TEN_ME[i%TEN_ME.length],qh:'Mẹ',sdt:'09'+(80000000+i*211013),nn:'Giáo viên',chinh:0}],
    files,cung:{},yc:{},
    log:[[x.ngay||'20/6/2026',i%3===0?'Lê Thu Hằng (VT)':(x.n.split(' ').slice(-1)[0]+' — phụ huynh'),
-     i%3===0?'Nhập tay từ hồ sơ giấy':'Phụ huynh nộp qua App','']]};
+     i%3===0?'Nhập tay từ hồ sơ giấy':'Nhận từ Cổng Tuyển sinh','']]};
   if(k===3)h.yc={'Học bạ Tiểu học':'Ảnh mờ, không đọc được phần điểm tổng kết lớp 5'};
   return h})}
 
@@ -447,7 +452,7 @@ function cungOf(h,d){
  const req=gtOf(d).filter(g=>g.cung);
  const C=h.cung||{};
  return {req:req.length,co:req.filter(g=>C[g.ten]).length,thieu:req.filter(g=>!C[g.ten]).map(g=>g.ten),ds:req}}
-const NGUON={so:'Sở gửi · 12/6/2026',vt:'VT nhập tay · 18/6/2026',ph:'PH nộp qua App'};
+const NGUON={so:'Sở gửi · 12/6/2026',vt:'VT nhập tay · 18/6/2026',ph:'Cổng TS · 12/6/2026'};
 
 /* Thi sinh Case B — hien 14 ho so QUANH VACH CAT hang 65-78, chi tieu 70.
    Tong = Toan x2 + Ngu van x2 + Tieng Anh x1 + Diem uu tien.  Diem liet: mon nao < 2.0 */
@@ -520,16 +525,16 @@ let fD={min:'',max:'',liet:'Tất cả',uu:'Tất cả',vt:'Tất cả',tt:'Tấ
 let selD=new Set();
 
 let XN=[
- {ma:'DT-2027-0001',n:'Nguyễn Bảo An',tt:'xn',nguon:'PH xác nhận qua App · 12/7',hsm:'HS-2027-0114',phi:'da'},
- {ma:'DT-2027-0002',n:'Trần Khánh Chi',tt:'xn',nguon:'PH xác nhận qua App · 11/7',hsm:'HS-2027-0115',phi:'da'},
+ {ma:'DT-2027-0001',n:'Nguyễn Bảo An',tt:'xn',nguon:'VT tuyển sinh · 12/7',hsm:'HS-2027-0114',phi:'da'},
+ {ma:'DT-2027-0002',n:'Trần Khánh Chi',tt:'xn',nguon:'VT tuyển sinh · 11/7',hsm:'HS-2027-0115',phi:'da'},
  {ma:'DT-2027-0005',n:'Vũ Minh Hải',tt:'xn',nguon:'VT ghi nhận · 14/7',hsm:'HS-2027-0118',phi:'chua'},
  {ma:'DT-2027-0010',n:'Trịnh Gia Bảo',tt:'cho',nguon:'—',hsm:'',phi:'chua'},
  {ma:'DT-2027-0007',n:'Bùi Anh Khoa',tt:'quahan',nguon:'—',hsm:'',phi:'chua',lienhe:[]},
  {ma:'DT-2027-0008',n:'Hoàng Diệu Linh',tt:'quahan',nguon:'—',hsm:'',phi:'chua',
   lienhe:[['16/7/2026','Gọi điện — không liên lạc được']]},
- {ma:'DT-2027-0009',n:'Ngô Gia Bảo',tt:'tuchoi',nguon:'PH từ chối qua App · 13/7',hsm:'',phi:'chua'},
+ {ma:'DT-2027-0009',n:'Ngô Gia Bảo',tt:'tuchoi',nguon:'Gia đình từ chối tại trường · 13/7',hsm:'',phi:'chua'},
 ];
-const XNTT={xn:['Đã xác nhận','o'],cho:['Chờ xác nhận','w'],quahan:['Quá hạn chưa xác nhận','r'],tuchoi:['Từ chối nhập học','n']};
+const XNTT={xn:['Đã xác nhận','o'],cho:['Chờ xác nhận','w'],quahan:['Hết hạn chờ xử lý','r'],tuchoi:['Từ chối nhập học','n']};
 
 /* phan lop */
 let LOPMOI={'Khối 6|Đại trà':[{id:'6A1',max:40,hs:[]},{id:'6A2',max:40,hs:[]},{id:'6A3',max:40,hs:[]},{id:'6A4',max:40,hs:[]}],
@@ -753,7 +758,7 @@ function panelHoSo(d){
        <td>${x.chinh?'<span class="st2 b">Liên hệ chính</span>':''}</td></tr>`).join('')}
      </table></div>
      <div style="padding:8px 12px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink3)">
-      <b>Số điện thoại liên hệ chính là tên đăng nhập tài khoản App phụ huynh</b> khi hồ sơ chuyển thành hồ sơ học sinh
+      <b>Số điện thoại liên hệ chính là số nhận tin nhắn kết quả từ Cổng Tuyển sinh</b>, và là tên đăng nhập tài khoản App phụ huynh khi hồ sơ chuyển thành hồ sơ học sinh
       (<code>nh6.3</code> §3.2). Nhập sai số thì gia đình không nhận được thông báo trúng tuyển.</div>`
      :'<div class="f2"><div class="k">—</div><div class="v" style="color:var(--red)">Chưa có thông tin liên hệ</div></div>'}
    </div>
@@ -1066,7 +1071,7 @@ function subXacNhan(d){
  return `<div class="kpi">
    <div class="kbox"><div class="v">${d.tt2}</div><div class="l">${d.cas==='A'||d.cas==='D'?'Đủ điều kiện':'Trúng tuyển'}</div></div>
    <div class="kbox"><div class="v" style="color:var(--green)">${d.nh}</div><div class="l">Đã xác nhận nhập học</div></div>
-   <div class="kbox"><div class="v" style="color:var(--red)">${d.quahan}</div><div class="l">Quá hạn chưa xác nhận</div></div>
+   <div class="kbox"><div class="v" style="color:var(--red)">${d.quahan}</div><div class="l">Hết hạn chờ xử lý</div></div>
    <div class="kbox"><div class="v" style="color:var(--amber)">${d.tt2-d.nh}</div><div class="l">Suất trống</div></div></div>
   <div class="info"><b>Xác nhận nhập học là bước đóng luồng.</b> Ngay khi xác nhận, hệ thống <b>tự tạo hồ sơ học sinh</b> ở M1.1
    ở trạng thái <b>Chờ xếp lớp</b>, gán điểm trường theo nguyện vọng, tạo hoặc gắn tài khoản App phụ huynh theo số điện thoại,
@@ -1105,7 +1110,10 @@ function subXacNhan(d){
   </table></div>
   <div class="lgd"><span><b>Nút đổi theo trạng thái.</b> Chưa xác nhận → <b>✎ Ghi nhận xác nhận</b> (hộp thoại ba phần).
    Đã xác nhận rồi thì không còn nút đó nữa — thay bằng <b>💰 Ghi nhận thu phí</b> nếu chưa thu,
-   <b>📎 Quản lý</b> giấy tờ bản cứng, và <b>↩ Đính chính</b> nếu ghi nhầm.</span></div></div>`}
+   <b>📎 Quản lý</b> giấy tờ bản cứng, và <b>↩ Đính chính</b> nếu ghi nhầm.<br>
+   <b>Ca <span style="color:var(--red)">Hết hạn chờ xử lý</span> KHÔNG bị khóa</b> — vẫn mở đúng hộp thoại ba phần,
+   vẫn <b>xác nhận nhập học được</b> nếu gia đình đến muộn và trường đồng ý nhận. Hết hạn là để
+   <b>khoanh vùng liên hệ</b>, không phải một kết luận.</span></div></div>`}
 
 /* ===== TAB PHAN LOP — keo tha ===== */
 function tabLop(){
@@ -1180,7 +1188,7 @@ function tabTK(){
     <td>${d.nh?((d.nh*d.phiNH+d.hs*d.phiDT)/1000000).toFixed(1)+'tr':'—'}</td></tr>`}).join('')}
   </table></div>
   <div class="lgd"><button class="btn xs" data-x="xuattk">⬇ Xuất Excel</button>
-   <span>Mọi lượt xuất <b>ghi audit kèm mục đích</b> — NĐ 13/2023</span></div></div>`}
+   <span>Mọi lượt xuất <b>ghi audit kèm mục đích</b> — Luật BVDLCN 91/2025</span></div></div>`}
 
 /* ===== TAB CHO TOI DUYET ===== */
 function tabDuyet2(){
@@ -1210,13 +1218,22 @@ function panelViec(k,d){
  let body='';
  if(k==='duyet')body=subDuyet(d);
  else if(k==='kycb')body=subKQ(d);
- else if(k==='bosung')body=`<div class="danger"><b>${d.quahan} học sinh quá hạn xác nhận.</b>
-    <b>Bắt buộc có vết liên hệ</b> trước khi hủy suất.</div>
+ else if(k==='bosung')body=`<div class="danger"><b>${d.quahan} học sinh ở trạng thái Hết hạn chờ xử lý.</b>
+    Trạng thái này <b>chưa kết luận gì</b> — mỗi em vẫn <b>xác nhận nhập học được</b> nếu gia đình đến muộn.
+    <b>Bắt buộc có vết liên hệ</b> trước khi hủy suất từng em.</div>
    <table><tr><th>Học sinh</th><th>Vết liên hệ</th><th></th></tr>
    ${XN.filter(x=>x.tt==='quahan').map(x=>`<tr><td><b>${x.n}</b></td>
     <td>${x.lienhe&&x.lienhe.length?x.lienhe.map(l=>`${l[0]} — ${l[1]}`).join('<br>'):'<span style="color:var(--red)">chưa có</span>'}</td>
-    <td style="text-align:right"><button class="btn xs d" data-x="huysuat" data-ma="${x.ma}">✕ Hủy suất</button></td></tr>`).join('')}</table>
-   <div style="margin-top:12px"><button class="btn p" data-x="goibosung">📞 Gọi bổ sung — ${d.tt2-d.nh} suất trống</button></div>`;
+    <td style="text-align:right;white-space:nowrap">
+     <button class="btn xs p" data-x="ghinhan" data-ma="${x.ma}">✎ Ghi nhận xác nhận</button>
+     <button class="btn xs d" data-x="huysuat" data-ma="${x.ma}">✕ Hủy suất</button></td></tr>`).join('')}</table>
+   <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:12px">
+    <button class="btn p" data-x="goibosung">📞 Gọi bổ sung — ${d.tt2-d.nh} suất trống</button>
+    ${R().duyet?`<button class="btn d" data-x="tuchoihl">✕✕ Từ chối tất cả ca hết hạn</button>`:''}</div>
+   <div class="lgd"><span><b>Từ chối hàng loạt</b> chỉ dành cho trường có chính sách <i>quá hạn là mất suất</i>.
+    Nó đi qua <b>bảng rà soát</b> nêu đích danh từng em (cảnh báo em chưa có vết liên hệ) rồi mới chạy,
+    và trả về <b>bảng kết quả tách dòng đã chuyển với dòng bị bỏ qua kèm lý do</b>.
+    Kết quả là <b>Từ chối nhập học</b> mang nguồn <b>Trường kết luận từ hết hạn</b> — khác với ca gia đình tự từ chối.</span></div>`;
  else body=`<div class="kpi"><div class="kbox"><div class="v">${d.nh}</div><div class="l">Đã nhập học</div></div>
     <div class="kbox"><div class="v">${d.pl}</div><div class="l">Đã phân lớp</div></div>
     <div class="kbox"><div class="v" style="color:var(--amber)">${d.choxl}</div><div class="l">Chưa phân lớp</div></div></div>
@@ -1253,7 +1270,9 @@ function render(){
     Sau khi triển khai, <b>Case tuyển sinh, chỉ tiêu và tiêu chí xét bị khóa</b>.</div>` : dotWorkspace();
   return}
  $('#head').innerHTML=`<div class="tophd"><h1>Tuyển sinh đầu cấp</h1></div>`;
- const T=r.chiPhi?['dot','tk']:['dot','lop','tk'];
+ /* Kế toán chỉ có hai tab (không phân lớp). Vai «Đủ quyền (demo)» tuy cũng bật chiPhi nhưng phải thấy ĐỦ tab —
+    quy ước demo: mọi chức năng của menu đều thao tác được từ vai mặc định. */
+ const T=(r.chiPhi&&role!=='FULL')?['dot','tk']:['dot','lop','tk'];
  if(viec().length)T.push('duyet');
  if(!T.includes(tab))tab=T[0];
  const nv=viec().length;
@@ -1378,18 +1397,18 @@ function act(a,d){
   modal('↩ Yêu cầu bổ sung — '+h.n,
    `<div class="info"><b>Hệ thống đã tự tích sẵn</b> những mục thiếu tệp và những tệp bị yêu cầu đổi —
      lấy từ checklist giấy tờ của hồ sơ, không phải người dùng tự nhớ. Thêm bớt được trước khi gửi.</div>
-    ${info.thieu.length?`<div class="cgrp"><div class="cgh">Chưa nộp tệp — App mở màn hình tải lên</div><div class="cgb">
+    ${info.thieu.length?`<div class="cgrp"><div class="cgh">Chưa nộp tệp — Cổng TS mở màn hình tải lên</div><div class="cgb">
       ${info.thieu.map(t=>`<label class="cko"><input type="checkbox" checked><span><b>${t}</b> — hệ thống phát hiện chưa có tệp</span></label>`).join('')}</div></div>`:''}
-    ${info.ycdoi.length?`<div class="cgrp"><div class="cgh">Cần gửi lại tệp — App mở màn hình tải lên</div><div class="cgb">
+    ${info.ycdoi.length?`<div class="cgrp"><div class="cgh">Cần gửi lại tệp — Cổng TS mở màn hình tải lên</div><div class="cgb">
       ${info.ycdoi.map(t=>`<label class="cko"><input type="checkbox" checked><span><b>${t}</b> — ${h.yc[t]}</span></label>`).join('')}</div></div>`:''}
-    <div class="cgrp"><div class="cgh">Cần bổ sung THÔNG TIN — App mở form khai</div><div class="cgb">
+    <div class="cgrp"><div class="cgh">Cần bổ sung THÔNG TIN — Cổng TS mở form khai</div><div class="cgb">
      ${['Thiếu mã định danh CSDL ngành','Thiếu số điện thoại phụ huynh','Thiếu địa chỉ thường trú']
       .map(o=>`<label class="cko"><input type="checkbox"><span>${o}</span></label>`).join('')}</div></div>
     <div><b>Ghi chú thêm cho gia đình</b><textarea class="fldi" rows="2"></textarea></div>`,
    [['Hủy',0],['Gửi yêu cầu',()=>{
      const n=[...document.querySelectorAll('#mb input:checked')].length;
      (h.log=h.log||[]).push(['25/8/2026','Lê Thu Hằng (VT)','Yêu cầu bổ sung',n+' vấn đề trong một thông báo']);
-     toast(`Đã gửi yêu cầu gồm ${n} vấn đề trong một thông báo · App mở đúng màn hình theo nhóm`);render()}]]);return}
+     toast(`Đã gửi yêu cầu gồm ${n} vấn đề trong một thông báo · Cổng TS mở đúng màn hình theo nhóm`);render()}]]);return}
  if(a==='themfile'||a==='doifile'){const h=HS.find(y=>y.ma===d.ma);const doi=a==='doifile';
   $('#mdl').classList.add('sm');
   modal((doi?'⟳ Đổi tệp khác — ':'+ Thêm tệp — ')+d.gt,
@@ -1411,7 +1430,7 @@ function act(a,d){
   toast('Đã đối chiếu hợp lệ · '+d.gt+' · trạng thái hồ sơ tự tính lại');render();return}
  if(a==='ycdoi'){const h=HS.find(y=>y.ma===d.ma);$('#mdl').classList.add('sm');
   modal('↩ Yêu cầu đổi tệp — '+d.gt,
-   `<div class="ro">Hồ sơ <b>${h.n}</b>. Gia đình nhận thông báo kèm lý do và <b>App mở thẳng màn hình tải lại tệp này</b>.</div>
+   `<div class="ro">Hồ sơ <b>${h.n}</b>. Gia đình nhận thông báo kèm lý do và <b>Cổng Tuyển sinh mở thẳng màn hình tải lại tệp này</b>.</div>
     <div><b>Lý do</b> <span style="color:var(--red)">*bắt buộc</span>
      <select class="fldi" id="ycly"><option>Ảnh mờ, không đọc được</option><option>Thiếu trang</option>
       <option>Chụp thiếu góc, mất dấu hoặc chữ ký</option><option>Sai loại giấy tờ</option>
@@ -1532,6 +1551,38 @@ function act(a,d){
       <option>Gia đình đã hẹn ngày đến trường</option><option>Gia đình xác nhận không nhập học</option></select></div>`,
    [['Hủy',0],['Ghi nhận',()=>{x.lienhe=x.lienhe||[];x.lienhe.push(['25/8/2026','Gọi điện — không liên lạc được']);
      toast('Đã ghi nhận vết liên hệ');render()}]]);return}
+ if(a==='tuchoihl'){
+  const ds=XN.filter(x=>x.tt==='quahan');
+  if(!ds.length){toast('Không còn ca Hết hạn chờ xử lý nào');return}
+  const chuaLH=ds.filter(x=>!x.lienhe||!x.lienhe.length);
+  modal('✕✕ Từ chối tất cả ca hết hạn — bước 1/2: rà soát',
+   `<div class="warn"><b>${ds.length} học sinh</b> sẽ chuyển sang <b>Từ chối nhập học</b>
+     với nguồn kết luận <b>Trường kết luận từ hết hạn</b>.
+     ${chuaLH.length?`<br><br><b style="color:var(--red)">${chuaLH.length} em chưa có vết liên hệ nào.</b>
+      Thao tác vẫn chạy được — hạn xác nhận là điều kiện đã công bố và hệ thống đã tự nhắc trước hạn 3 ngày —
+      nhưng người ký cần nhìn thấy con số này trước khi quyết.`:''}</div>
+    <table><tr><th>Học sinh</th><th>Mã hồ sơ</th><th>Đã liên hệ</th></tr>
+    ${ds.map(x=>`<tr><td><b>${x.n}</b></td><td>${x.ma}</td>
+      <td>${x.lienhe&&x.lienhe.length?`${x.lienhe.length} lần`:'<span style="color:var(--red)"><b>chưa có</b></span>'}</td></tr>`).join('')}</table>
+    <div style="margin-top:11px"><b>Lý do từ chối</b> <span style="color:var(--red)">*bắt buộc</span>
+     <textarea class="fldi" rows="2">Chính sách của đợt — quá hạn xác nhận nhập học</textarea></div>
+    <div class="ro" style="margin-top:11px;margin-bottom:0">Gia đình đến sau vẫn xử lý được bằng
+     <b>↩ Đính chính</b> để đưa về <b>Chờ xác nhận</b> rồi xác nhận bình thường.</div>`,
+   [['Hủy',0],['✕✕ Từ chối '+ds.length+' hồ sơ',()=>{
+     const bo=[],xong=[];
+     ds.forEach(x=>{
+      if(x.lienhe&&x.lienhe.some(l=>/hẹn/i.test(l[1]))){bo.push([x,'Gia đình đã hẹn ngày đến trường']);return}
+      x.tt='tuchoi';x.nguon='Trường kết luận từ hết hạn · 25/8';xong.push(x)});
+     $('#mdl').classList.add('sm');
+     modal('Kết quả — bước 2/2',
+      `<div class="ro"><b>Đã chuyển ${xong.length} hồ sơ</b> sang Từ chối nhập học.</div>
+       ${xong.length?`<table><tr><th>Đã chuyển</th><th>Nguồn kết luận</th></tr>
+        ${xong.map(x=>`<tr><td>${x.n}</td><td>Trường kết luận từ hết hạn</td></tr>`).join('')}</table>`:''}
+       ${bo.length?`<div class="warn" style="margin-top:11px"><b>Bỏ qua ${bo.length} hồ sơ</b> — nêu rõ lý do từng dòng:</div>
+        <table><tr><th>Bỏ qua</th><th>Lý do</th></tr>
+        ${bo.map(b=>`<tr><td>${b[0].n}</td><td>${b[1]}</td></tr>`).join('')}</table>`:''}
+       <div class="ro" style="margin-top:11px;margin-bottom:0">Mỗi dòng ghi audit riêng, truy được thao tác hàng loạt đã sinh ra nó.</div>`,
+      [['Đóng',()=>render()]])},'d']]);return}
  if(a==='huysuat'){const x=XN.find(y=>y.ma===d.ma);$('#mdl').classList.add('sm');
   if(!x.lienhe||!x.lienhe.length){
    modal('⛔ Chưa hủy được suất — '+x.n,
@@ -1850,7 +1901,7 @@ function act(a,d){
    [['Hủy',0]]);return}
  if(a==='kythat'||a==='boquaky'){const dd=DOT.find(x=>x.id===curDot);if(dd)dd.tt='nhaphoc';
   toast('Đã ban hành'+(a==='boquaky'?' · BỎ QUA ký số, đã audit và đồng bộ M4.11':' · ký số hợp lệ')
-   +' · danh sách khóa cứng · thông báo tới gia đình qua App');curWk=null;render();return}
+   +' · danh sách khóa cứng · Cổng Tuyển sinh nhắn tin cho gia đình');curWk=null;render();return}
  if(a==='goibosung'){const dd=DOT.find(x=>x.id===curDot)||DOT[0];$('#mdl').classList.remove('sm');
   modal('📞 Gọi bổ sung — '+dd.ten,
    `<div class="info"><b>${dd.tt2-dd.nh} suất trống.</b> Gọi tiếp từ danh sách chưa trúng tuyển theo <b>thứ hạng</b>.</div>

@@ -266,6 +266,7 @@ body.showdsg .dsg{display:block}
 .hdtag{font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:4px;white-space:nowrap}
 .hdtag.gop{background:#e0e7ff;color:#3730a3}
 .hdtag.rieng{background:#ffedd5;color:#9a3412}
+.hdtag.phu{background:#fae8ff;color:#86198f}
 .hdbox{border:1px solid var(--line);border-radius:11px;padding:11px 13px;background:#f8fafc;margin-bottom:11px}
 .hdbox .t{font-size:13px;font-weight:700;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .hdbox .m{font-size:11.5px;color:var(--ink2);margin-top:4px;line-height:1.55}
@@ -291,7 +292,8 @@ body.showdsg .dsg{display:block}
 .tts.thieu{background:var(--amber-soft);color:var(--amber)}
 .tts.chua{background:var(--bg);color:var(--ink2)}
 .tts.chuaqh{background:var(--red-soft);color:var(--red)}
-.tts.bu{background:#dbeafe;color:#1e40af}
+.tts.huy{background:#f1f5f9;color:#475569;text-decoration:line-through}
+.hdgrp.huy{opacity:.72;border-style:dashed}
 .hdchip{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;border:1px solid;white-space:nowrap;cursor:pointer}
 .hdchip.du{background:var(--green-soft);color:#065f46;border-color:#a7f3d0}
 .hdchip.thieu{background:var(--amber-soft);color:#92400e;border-color:#fde68a}
@@ -661,26 +663,61 @@ function tinhHet(){
 }
 tinhHet();
 
+/* ==================== HAI CA DO M7.3 SINH RA (M7.2 §3 · §9.5) ====================
+   Hai trạng thái hóa đơn mà App PH-HS bắt buộc phải hiểu. Trước đây demo không dựng ca nào,
+   nên không nhìn được hệ quả trên màn hình — nhất là việc VÔ HIỆU MÃ QR. */
+(function caM73(){
+ /* ---- ① GIẢM VỀ 0 trên hóa đơn CHƯA THU ĐỒNG NÀO → `Đã hủy theo phiếu` + vô hiệu QR ----
+    Lê Thu Hà ngừng bán trú từ giữa tháng 9; phiếu điều chỉnh đưa số phải đóng về 0. */
+ const hd=HD.find(o=>o.id==='HDR-09-HS26-0419-AN-BT');
+ if(hd&&hd.thu===0){
+  hd.tt='huy'; hd.phieu='PĐC-2627-0047'; hd.huyLuc='22/09/2026';
+  hd.huyLy='Gia đình ngừng đăng ký bán trú từ 21/09/2026 — M6.1 bàn giao lại số buổi = 0';
+  hd.dong.forEach(d=>{d.phaiDong=0;d.daTT=0;d.duCuoi=0;d.duGD=0;});
+  hd.phai=0;
+ }
+ /* ---- ② TĂNG trên hóa đơn ĐÃ ĐÓNG ĐỦ → HÓA ĐƠN PHỤ, mã QR riêng, hạn riêng ----
+    Trần Gia Bảo: KNS tăng 120.000đ sau khi đã thu đủ. Biên lai gốc VẪN ĐÚNG, không thu hồi. */
+ const goc=HD.find(o=>o.id==='HDR-09-HS26-0418-KNS');
+ if(goc&&goc.thu>=goc.phai&&goc.phai>0){
+  const so=120000, hsO=HS.find(x=>x.ma==='HS26-0418');
+  /* dòng hiển thị của hóa đơn phụ — KHÔNG đẩy vào BG: bản ghi phải thu gốc vẫn là một
+     (HS × Khoản × Tháng) duy nhất (ràng buộc 1); điều chỉnh là DÒNG CỘNG THÊM (M7.3 §6.3) */
+  const d={hs:hsO.ma,ma:'KNS',th:goc.th,dt:hsO.dt,nhom:'dk',dg:so,slPH:null,slTT:null,
+           goc:so,mg:null,mgBo:[],mgSo:0,phaiDong:so,daTT:0,duCuoi:null,duNS:0,duGD:0,dc:1};
+  HD.push({id:'HDP-09-HS26-0418-KNS',loai:'phu',tt:'phu',hs:hsO.ma,dt:hsO.dt,th:goc.th,ma:'KNS',
+   dong:[d],phai:so,thu:0,han:'19/10/2026',ph:'04/10/2026',
+   goc:goc.id,phieu:'PĐC-2627-0052',
+   qtc:false,tuChoi:false});
+ }
+})();
+
 /* ==================== TRẠNG THÁI THANH TOÁN ==================== */
+/* BA trạng thái — M7.2 §3.4. `Dư đủ bù — không phải đóng` ĐÃ BỎ HẲN (v1.3) cùng với ①:
+   nó là hệ quả của việc TỰ KHẤU TRỪ dư đầu kỳ, mà số dư của gia đình thì KHÔNG tự trừ.
+   Số dư sinh một CHIP LỌC `Có số dư đủ trả — chờ PH xác nhận`, không phải trạng thái thứ tư. */
 const TTP={
  du   :{t:'Đã đóng đủ',c:'du'},
  thieu:{t:'Đóng thiếu',c:'thieu'},
  chua :{t:'Chưa đóng',c:'chua'},
- bu   :{t:'Dư đủ bù — không phải đóng',c:'bu'},   /* không còn phát sinh sau khi bỏ ① */
+};
+/* Trạng thái HÓA ĐƠN do M7.3 sinh ra — độc lập với ba trạng thái thanh toán ở trên (M7.2 §9.5) */
+const HDTT={
+ huy:{t:'Đã hủy theo phiếu',c:'huy'},
+ phu:{t:'Hóa đơn phụ',c:'phu'},
 };
 function ttBG(o){
- if(o.phaiDong===0&&o.duDau>0) return 'bu';   /* dư NGÂN SÁCH đủ bù */
  if(o.daTT>=o.phaiDong&&o.phaiDong>0) return 'du';
  if(o.phaiDong===0) return 'du';
  if(o.daTT>0) return 'thieu';
  return 'chua';
 }
 function ttHD(o){
- if(o.phai===0&&o.dong.some(d=>d.duDau>0)) return 'bu';
  if(o.thu>=o.phai) return 'du';
  if(o.thu>0) return 'thieu';
  return 'chua';
 }
+const daHuy=o=>o.tt==='huy';
 const chePhu=o=>conNoRaw(o)>0&&sdGD(o.hs)>=conNoRaw(o);
 const conNoRaw=o=>o.tuChoi?0:Math.max(0,o.phai-o.thu);
 /* SỬA 29/8/2026 — KHÔNG tính quá hạn phần được Số dư tạm giữ ngăn gia đình che phủ.
@@ -771,12 +808,12 @@ let PHIENT=[
  {id:'C|Tháng 9/2026',dt:'C',th:'Tháng 9/2026',tt:'chua'},
 ];
 function tongThang(dt,th){
- const hs=HD.filter(o=>o.dt===dt&&o.th===th);
+ const hs=HD.filter(o=>o.dt===dt&&o.th===th&&!daHuy(o));
  const bgs=BG.filter(o=>o.dt===dt&&o.th===th);
  const mat=GD.filter(g=>g.dt===dt&&g.pt==='mat'&&hs.some(o=>o.id===g.hd)).reduce((a,b)=>a+b.so,0);
  const ck=GD.filter(g=>g.dt===dt&&g.pt==='sepay'&&hs.some(o=>o.id===g.hd)).reduce((a,b)=>a+b.so,0);
  return {phai:hs.reduce((a,b)=>a+b.phai,0),thu:hs.reduce((a,b)=>a+b.thu,0),mat,ck,
-  mg:bgs.reduce((a,b)=>a+b.mgSo,0),duDau:bgs.reduce((a,b)=>a+b.duDau,0),
+  mg:bgs.reduce((a,b)=>a+b.mgSo,0),
   duCuoi:bgs.reduce((a,b)=>a+(b.duCuoi>0?b.duCuoi:0),0),
   no:hs.reduce((a,b)=>a+conNo(b),0),hd:hs.length};
 }
@@ -848,7 +885,7 @@ let S={tab:'theodoi',sel:null,selhd:null,q:'',mo:{},screen:null,sc:null,
 function render(){
  const r=R();
  $('#ava').textContent=r.av;
- const v=hdPV().filter(o=>quaHan(o)>0).length;
+ const v=hdPV().filter(o=>!daHuy(o)&&quaHan(o)>0).length;
  $('#bell').textContent=v||'';$('#bell').style.display=v?'grid':'none';
  sidebar();
  const ds=$('#dtsel'),khoa=!!r.dt;
@@ -884,15 +921,19 @@ function kySel(){
 
 /* ==================== TAB 1 — THEO DÕI & XÁC NHẬN ĐÓNG TIỀN ==================== */
 function ttHSKy(h){
- const hs=hdCua(h.ma,KYCUR); if(!hs.length) return null;
+ const tat=hdCua(h.ma,KYCUR); if(!tat.length) return null;
+ /* Hóa đơn `Đã hủy theo phiếu` KHÔNG vào bất kỳ phép tính tiền nào — nếu để nó đếm là
+    `Đã đóng đủ` (vì phai=0, thu=0) thì tỷ lệ thu bị thổi lên bằng một khoản chưa ai
+    trả đồng nào. Đây đúng là ca M7.3 §6.4 ③ cảnh báo. */
+ const hs=tat.filter(o=>!daHuy(o));
  const phai=hs.reduce((a,b)=>a+b.phai,0), thu=hs.reduce((a,b)=>a+b.thu,0);
- const bu=hs.some(o=>ttHD(o)==='bu')&&hs.every(o=>['bu','du'].includes(ttHD(o)));
- let k= bu?'bu':(thu>=phai?'du':(thu>0?'thieu':'chua'));
- if(phai===0&&!bu)k='du';
- const bgs=bgCua(h.ma,KYCUR);
+ let k= thu>=phai?'du':(thu>0?'thieu':'chua');
+ if(phai===0)k='du';
+ const bgs=bgCua(h.ma,KYCUR).filter(o=>o.phaiDong>0||o.daTT>0);
  return {k,phai,thu,no:hs.reduce((a,b)=>a+conNo(b),0),
    qh:Math.max.apply(null,[0].concat(hs.map(o=>quaHan(o)))),
-   nKhoan:bgs.length, nXong:bgs.filter(o=>['du','bu'].includes(ttBG(o))).length};
+   nHuy:tat.length-hs.length,
+   nKhoan:bgs.length, nXong:bgs.filter(o=>ttBG(o)==='du').length};
 }
 function hsLoc(){
  const q=S.q.trim().toLowerCase();
@@ -925,7 +966,7 @@ function vTheoDoi(){
    'Kỳ <b>'+KYCUR+'</b> chưa có khoản thu nào phát sinh.'+
    (daPhatHanh(KYCUR)?'':'<div style="font-size:12px;margin-top:6px">Mốc công bố là <b>'+NGAYCB[KYCUR]+'</b>, chưa tới ngày. Xem điều kiện phát hành ở tab <b>Thống kê thực hiện khoản thu</b>.</div>')+'</div>';
  h+='<div class="bar" style="padding-top:0">'+
-  ['du','thieu','chua','bu'].map(k=>'<button class="chip '+(S.chips[k]?'on':'')+'" data-x="chip" data-c="'+k+'">'+TTP[k].t+
+  ['du','thieu','chua'].map(k=>'<button class="chip '+(S.chips[k]?'on':'')+'" data-x="chip" data-c="'+k+'">'+TTP[k].t+
    ' ('+all.filter(x=>ttHSKy(x).k===k).length+')</button>').join('')+
   '<span style="margin-left:8px;padding-left:10px;border-left:1px solid var(--line2);font-size:11.5px;color:var(--ink3);align-self:center">Lọc thêm</span>'+
   '<button class="chip '+(S.qh?'on':'')+'" data-x="fqh">Quá hạn ('+all.filter(x=>ttHSKy(x).qh>0).length+')</button>'+
@@ -933,7 +974,7 @@ function vTheoDoi(){
   '<button class="chip '+(S.sd?'on':'')+'" data-x="fsd">Có số dư đủ trả — chờ PH xác nhận ('+
    all.filter(x=>{const t=ttHSKy(x);return sdGD(x.ma)>0&&t.no>0&&sdGD(x.ma)>=t.no;}).length+')</button>'+
   (!S.q.trim()?'<button class="btn sm" data-x="'+(dangThu()?'moall':'thuall')+'">'+(dangThu()?'⊞ Mở tất cả':'⊟ Thu tất cả')+'</button>':'')+'</div>';
- if(gv) h+='<div class="ro">👁 Vai <b>GVCN</b> thấy bản <b>rút gọn</b>: tổng còn nợ và số ngày quá hạn, <b>không có chi tiết từng khoản</b> — NĐ 13/2023.</div>';
+ if(gv) h+='<div class="ro">👁 Vai <b>GVCN</b> thấy bản <b>rút gọn</b>: tổng còn nợ và số ngày quá hạn, <b>không có chi tiết từng khoản</b> — Luật BVDLCN 91/2025.</div>';
  else h+=D('<b>Có số dư đủ trả là một CHIP LỌC, không phải một trạng thái thanh toán.</b> Hóa đơn vẫn <i>Chưa đóng</i> vì phụ huynh chưa bấm dùng số dư — '+
   'nhưng <b>không tính quá hạn</b> phần được số dư che phủ, và <b>nhắc nợ đổi nội dung</b> thành lời mời dùng số dư. '+
   'Trường không được coi là chậm nộp phần tiền mà chính trường đang giữ.')+
@@ -983,7 +1024,6 @@ function rowHS(h,flat,gv){
   (t.qh>0?'<span><b style="color:var(--red)">quá hạn '+t.qh+' ngày · bậc '+bacNhac(t.qh)+'</b></span>':'')+
   (h.tt!=='hoc'?'<span style="color:var(--amber)">'+(h.tt==='chuyendi'?'đã chuyển đi':'đang bảo lưu')+'</span>':'')+
   (h.dien.length&&!gv?'<span style="color:var(--violet)">'+h.dien.join(' · ')+'</span>':'')+
-  (!gv&&bgCua(h.ma,KYCUR).some(o=>o.duDau>0)?'<span style="color:#1e40af">có dư đầu kỳ (ngân sách)</span>':'')+
   (sdGD(h.ma)>0?'<span style="color:var(--green)"><b>số dư tạm giữ '+M(sdGD(h.ma))+'</b>'+
     (t.no>0&&sdGD(h.ma)>=t.no?' — đủ trả, chờ PH xác nhận':'')+'</span>':'')+'</div></div>';
  return s;
@@ -995,6 +1035,7 @@ const LOAIC={bb:'r',dv:'b',tn:'n'};
 function panelHS(){
  const h=HSC(S.sel); if(!h) return '';
  const hs=hdCua(h.ma,KYCUR), bgs=bgCua(h.ma,KYCUR), t=ttHSKy(h);
+ const nHuy=hs.filter(daHuy).length;
  const gv=RK==='GVCN';
  let s='<div class="panel"><div class="ph"><div style="flex:1;min-width:0"><h2>'+esc(h.ten)+'</h2>'+
   '<div class="m"><span class="pill">'+h.lop+'</span><span class="pill">'+DTS[h.dt].ten.split('—')[0].trim()+'</span>'+
@@ -1005,7 +1046,7 @@ function panelHS(){
    '<div><div class="l">Quá hạn</div><div class="v">'+(t.qh||0)+'<span style="font-size:11px"> ngày</span></div></div>'+
    '<div><div class="l">Bậc nhắc</div><div class="v">'+(t.qh>0?bacNhac(t.qh):'—')+'</div></div>'+
    '<div><div class="l">Phụ huynh</div><div class="v mut">'+h.sdt+'</div></div></div>'+
-   '<div class="ro">Vai GVCN chỉ thấy đến đây. Chi tiết từng khoản thuộc phạm vi Kế toán — NĐ 13/2023.</div></div></div>';
+   '<div class="ro">Vai GVCN chỉ thấy đến đây. Chi tiết từng khoản thuộc phạm vi Kế toán — Luật BVDLCN 91/2025.</div></div></div>';
 
  s+='<div class="n4"><div><div class="l">Phải đóng kỳ này</div><div class="v">'+M0(t.phai)+'</div><div class="s">'+t.nKhoan+' khoản · '+hs.length+' hóa đơn</div></div>'+
   '<div><div class="l">Đã đóng</div><div class="v pos">'+M0(t.thu)+'</div><div class="s">'+t.nXong+'/'+t.nKhoan+' khoản xong</div></div>'+
@@ -1029,18 +1070,29 @@ function panelHS(){
  hs.forEach(o=>{
   const k=ttHD(o), qh=quaHan(o), con=conNo(o);
   const gds=GD.filter(g=>g.hd===o.id);
-  s+='<div class="hdgrp '+(k==='du'?'du':(qh>0?'qh':''))+'">'+
+  const huy=daHuy(o), phu=(o.loai==='phu');
+  s+='<div class="hdgrp '+(huy?'huy':(k==='du'?'du':(qh>0?'qh':'')))+'">'+
    '<div class="hdgh">'+
-    '<span class="hdtag '+(o.loai==='gop'?'gop':'rieng')+'">'+(o.loai==='gop'?'HĐ gộp':'HĐ riêng')+'</span>'+
-    '<b>'+(o.loai==='gop'?'Các khoản Thu đồng loạt ('+o.dong.length+' khoản)':esc(KD(o.ma).ten))+'</b>'+
+    '<span class="hdtag '+(phu?'phu':(o.loai==='gop'?'gop':'rieng'))+'">'+(phu?'HĐ phụ':(o.loai==='gop'?'HĐ gộp':'HĐ riêng'))+'</span>'+
+    '<b>'+(o.loai==='gop'?'Các khoản Thu đồng loạt ('+o.dong.length+' khoản)':esc(KD(o.ma).ten))+
+      (phu?' <span style="font-weight:600;color:var(--ink2)">— phần điều chỉnh tăng</span>':'')+'</b>'+
     '<span class="ct2">'+o.id+'</span>'+
-    '<span class="tts '+(qh>0&&k!=='du'?'chuaqh':TTP[k].c)+'">'+TTP[k].t+'</span>'+
+    (huy?'<span class="tts huy">'+HDTT.huy.t+'</span>'
+        :'<span class="tts '+(qh>0&&k!=='du'?'chuaqh':TTP[k].c)+'">'+TTP[k].t+'</span>')+
     (o.tuChoi?'<span class="ctag" style="background:#dcfce7;color:#166534">PH đã từ chối đóng — không tính nợ</span>':(o.qtc?'<span class="ctag">có quyền từ chối đóng</span>':''))+
-    '<span style="margin-left:auto" class="money '+(qh>0?'due':'')+'">'+M(con||o.phai)+'</span>'+
+    '<span style="margin-left:auto" class="money '+(qh>0&&!huy?'due':'')+'">'+M(huy?0:(con||o.phai))+'</span>'+
    '</div>'+
-   '<div class="hdgm">phải đóng <b>'+M(o.phai)+'</b> · đã đóng <b>'+M(o.thu)+'</b> · còn <b>'+M(con)+'</b> · hạn '+o.han+
-    (qh>0?' · <b style="color:var(--red)">quá hạn '+qh+' ngày</b>':'')+
-    (gds.length?' · '+gds.length+' giao dịch':' · <i>chưa có giao dịch nào</i>')+'</div>';
+   (huy
+    ? '<div class="hdgm">Hủy theo phiếu <b>'+esc(o.phieu)+'</b> ngày '+o.huyLuc+' · '+esc(o.huyLy)+'</div>'
+    : '<div class="hdgm">phải đóng <b>'+M(o.phai)+'</b> · đã đóng <b>'+M(o.thu)+'</b> · còn <b>'+M(con)+'</b> · hạn '+o.han+
+      (phu?' <span class="ctag" style="background:#fae8ff;color:#86198f">hạn riêng · mã QR riêng</span>':'')+
+      (qh>0?' · <b style="color:var(--red)">quá hạn '+qh+' ngày</b>':'')+
+      (gds.length?' · '+gds.length+' giao dịch':' · <i>chưa có giao dịch nào</i>')+'</div>');
+  if(huy) s+='<div class="warn">⛔ <b>Mã QR của hóa đơn này đã bị vô hiệu</b> — App PH-HS báo rõ tại chỗ. '+
+   'Không tắt thì phụ huynh vẫn quét được, tiền vẫn về, thành thu thừa và thành một bút toán số dư vì một cái nút không ai tắt. '+
+   '<i>Giảm về 0 phải là <b>Đã hủy</b>, không phải <b>Đã đóng đủ</b> — gọi sai thì tỷ lệ thu của lớp bị thổi lên bằng một khoản chưa ai trả đồng nào (M7.3 §6.4).</i></div>';
+  if(phu) s+='<div class="ok">Hóa đơn gốc <b>'+esc(o.goc)+'</b> và biên lai của nó <b>giữ nguyên</b> — biên lai chứng nhận số tiền đã nhận thật cho nội dung lúc đó, nó không sai. '+
+   'Phần tăng đi hóa đơn phụ với <b>mã QR riêng và hạn riêng</b>, đúng chốt <b>B3a</b>: mỗi hóa đơn một giao dịch riêng (M7.3 §6.4 ②).</div>';
   /* dòng khoản */
   s+='<div class="wrapx"><table class="ktb"><thead><tr><th>Khoản thu</th><th>Loại</th><th>Cách tính</th>'+
    '<th class="n">② Phải đóng</th><th class="n">③ Đã đóng</th><th class="n">④ Chênh lệch QT</th><th>Trạng thái</th></tr></thead><tbody>';
@@ -1054,7 +1106,7 @@ function panelHS(){
       '<div class="hint">thực tế '+(d.slTT===null?'<b style="color:var(--amber)">chưa chốt</b>':d.slTT+' '+kk.donvi)+' 🔗 '+NGUONDK[kk.dk]+'</div>'
       :M(d.dg))+'</td>'+
 
-    '<td class="n"><b>'+M(d.phaiDong)+'</b>'+(d.phaiDong===0&&d.duDau>0?'<div class="hint">dư bù hết</div>':'')+'</td>'+
+    '<td class="n"><b>'+M(d.phaiDong)+'</b>'+(d.dc?'<div class="hint" style="color:#86198f">dòng điều chỉnh tăng 🔗 M7.3</div>':'')+'</td>'+
     '<td class="n">'+M(d.daTT)+'</td>'+
     '<td class="n">'+(d.duCuoi===null?'<i style="color:var(--amber);font-size:11px">chờ số thực tế</i>'
       :(d.duCuoi>0?'<b style="color:var(--green)">+'+M(d.duCuoi)+'</b>':(d.duCuoi<0?'<b style="color:var(--red)">'+M(d.duCuoi)+'</b>':'0đ')))+
@@ -1064,11 +1116,13 @@ function panelHS(){
   s+='</tbody></table></div>';
   /* thao tác trên hóa đơn */
   s+='<div class="hdga">';
-  if(con>0&&can('thutienmat'))
+  /* Hóa đơn `Đã hủy theo phiếu` là CHỈ ĐỌC — không thu, không nhắc nợ (M7.2 §9.5) */
+  if(!huy&&con>0&&can('thutienmat'))
    s+='<button class="btn sm g" data-x="xacnhan" data-i="'+o.id+'">✓ Xác nhận đã nộp'+(o.loai==='gop'?' (cả '+o.dong.length+' khoản)':'')+'</button>';
-  if(con>0&&can('nhacno')&&!o.tuChoi)
+  if(!huy&&con>0&&can('nhacno')&&!o.tuChoi)
    s+='<button class="btn sm" data-x="nhac1" data-i="'+h.ma+'">🔔 Nhắc nợ</button>';
-  if(con===0&&o.phai>0&&can('ctdt_phathanh')&&!CTDT.some(c=>c.hd===o.id))
+  if(huy) s+='<button class="btn sm" data-x="dl" data-m="M7.3">👁 Xem phiếu '+esc(o.phieu)+'</button>';
+  if(!huy&&con===0&&o.phai>0&&can('ctdt_phathanh')&&!CTDT.some(c=>c.hd===o.id))
    s+='<button class="btn sm" data-x="phct" data-i="'+o.id+'">Phát hành chứng từ</button>';
   const cts=CTDT.filter(c=>c.hd===o.id);
   cts.forEach(c=>s+='<span class="ctag">'+esc(c.so)+' '+(c.tt==='daky'?'✓ đã ký':'chờ ký')+'</span>'+
@@ -1152,12 +1206,12 @@ function khoi(id,ic,ten,phu,noi){
 }
 function tkLop(dt,lp){
  const hs=HS.filter(x=>x.dt===dt&&(!lp||x.lop===lp));
- let phai=0,thu=0,mg=0,duDau=0,no=0,qh=0,nHD=0,nKhoan=0;
+ let phai=0,thu=0,mg=0,no=0,qh=0,nHD=0,nKhoan=0;
  hs.forEach(h=>{const t=ttHSKy(h); if(!t) return;
   phai+=t.phai;thu+=t.thu;no+=t.no;nKhoan+=t.nKhoan;if(t.qh>0)qh++;});
- bgCua2(dt,lp).forEach(o=>{mg+=o.mgSo;duDau+=o.duDau;});
- nHD=HD.filter(o=>o.th===KYCUR&&o.dt===dt&&(!lp||HSC(o.hs).lop===lp)).length;
- return {siso:hs.length,phai,thu,mg,duDau,no,qh,nHD,nKhoan,tl:phai?Math.round(thu/phai*100):0};
+ bgCua2(dt,lp).forEach(o=>{mg+=o.mgSo;});
+ nHD=HD.filter(o=>o.th===KYCUR&&o.dt===dt&&!daHuy(o)&&(!lp||HSC(o.hs).lop===lp)).length;
+ return {siso:hs.length,phai,thu,mg,no,qh,nHD,nKhoan,tl:phai?Math.round(thu/phai*100):0};
 }
 const bgCua2=(dt,lp)=>BG.filter(o=>o.th===KYCUR&&o.dt===dt&&(!lp||HSC(o.hs).lop===lp));
 
@@ -1166,9 +1220,9 @@ function vThongKe(){
   (can('xuat')?'<button class="btn" data-x="xuatkt">⬇ Xuất tệp cho phần mềm kế toán</button>':'')+
   (can('baocao')?'<button class="btn p" data-x="kybc">✍️ Ký báo cáo kỳ</button>':'')+'</div>';
  /* ô số tổng */
- let T={phai:0,thu:0,mg:0,duDau:0,no:0,nHD:0,nKhoan:0,qh:0};
- dtOK().forEach(dt=>{const t=tkLop(dt,null);['phai','thu','mg','duDau','no','nHD','nKhoan','qh'].forEach(k=>T[k]+=t[k]);});
- const tuchoi=hdPV().filter(o=>o.th===KYCUR&&o.tuChoi).reduce((a,b)=>a+b.phai,0);
+ let T={phai:0,thu:0,mg:0,no:0,nHD:0,nKhoan:0,qh:0};
+ dtOK().forEach(dt=>{const t=tkLop(dt,null);['phai','thu','mg','no','nHD','nKhoan','qh'].forEach(k=>T[k]+=t[k]);});
+ const tuchoi=hdPV().filter(o=>o.th===KYCUR&&o.tuChoi&&!daHuy(o)).reduce((a,b)=>a+b.phai,0);
  const mauSo=T.phai-tuchoi;
  const duCuoi=BG.filter(o=>o.th===KYCUR&&dtOK().includes(o.dt)).reduce((a,b)=>a+(b.duGD>0?b.duGD:0),0);
  h+='<div class="n4"><div><div class="l">Tổng phải thu</div><div class="v">'+M0(T.phai)+'</div><div class="s">'+M0(T.nKhoan)+' khoản · '+M0(T.nHD)+' hóa đơn</div></div>'+
@@ -1346,6 +1400,152 @@ function vThongKe(){
   '<td>Lê Quang Vinh — Hiệu trưởng</td><td><button class="btn xs" data-x="xembc">👁 Xem</button></td></tr></tbody></table></div>'+
   D('Tệp cũ <b>không xóa</b>, đánh dấu <i>Đã thay thế bởi lần xuất #n</i> — tránh kế toán dùng nhầm file cũ sau khi đã sửa số. Báo cáo đã ký <b>chốt cứng số liệu tại thời điểm ký</b>.');
  h+=khoi('xuat','📤','Xuất tệp kế toán và báo cáo đã ký',XUATLS.length+' lần xuất · 1 báo cáo đã ký',f);
+
+ /* --- khối G: truy thu học sinh đã rời trường (mới 7/9/2026) --- */
+ const gA=dsRoi();
+ if(gA.length&&S.kh.roi===undefined)S.kh.roi=1;   /* tự mở khi có dòng — nhóm không ai đi tìm */
+ h+=khoi('roi','🧾','Truy thu công nợ học sinh đã rời trường',
+   gA.length+' học sinh · nợ ròng '+M(gA.reduce((a,b)=>a+roiNoRong(b),0))+
+   ' · '+gA.filter(x=>!x.qd).length+' không có căn cứ · '+gA.filter(x=>!x.lh.length).length+' chưa liên hệ',
+   vKhoiRoi());
+ return h;
+}
+
+/* ==================== KHỐI G — TRUY THU HỌC SINH ĐÃ RỜI TRƯỜNG (mới 7/9/2026) ====================
+   Đóng 🔴-5. M1.5 §459 GIỮ NGUYÊN công nợ khi cho chuyển kèm cam kết, F12 §2.8 của App lại BỎ QUA
+   nhóm "đã chuyển trường" khi nhắc nợ hàng loạt, và trước 7/9 M7.2 không Feature nào có màn hình
+   đòi nợ học sinh đã đóng hồ sơ ⇒ nợ giữ lại có chủ ý rồi không ai đòi.
+   Đối xứng có chủ ý với M7.3 §9.3 (đường TRẢ tiền cho người đã đi). */
+const ROILOAI={chuyendi:['Đã chuyển đi','r','M1.5'],thoihoc:['Đã thôi học','r','M1.6'],
+ ratruong:['Đã ra trường','b','M3.4'],dongtam:['Đóng hồ sơ tạm','w','M1.6']};
+
+/* Hồ sơ của các năm trước — không còn trong sổ kỳ này, nên phải có dữ liệu riêng.
+   Đây chính là lý do khối G phải tồn tại: nếu không liệt kê thì không màn hình nào nhìn thấy họ. */
+let ROIDS=[
+ {ma:'HS25-0488',ten:'Phạm Gia Bảo',lop:'7A1',dt:'A',loai:'chuyendi',ngay:'05/09/2026',
+  no:144000,sodu:0,qd:'QĐ-2026-0234',ph:'Phạm Quốc Trung',sdt:'0908 447 216',
+  ct:'Bán trú tháng 8/2026 · Nước uống HK I — đã bù trừ 318.000đ số dư',lh:[]},
+ {ma:'HS22-0155',ten:'Lương Thị Hoài',lop:'9A1',dt:'A',loai:'ratruong',ngay:'30/05/2026',
+  no:265000,sodu:0,qd:'',ph:'Lương Văn Đài',sdt:'0912 553 077',
+  ct:'Bán trú tháng 5/2026 chưa nộp',
+  lh:[{ngay:'12/06/2026',kenh:'Điện thoại',ai:'Nguyễn Thị Bích (KT)',kq:'Gia đình hẹn nộp trước 30/6'},
+      {ngay:'02/07/2026',kenh:'Điện thoại',ai:'Nguyễn Thị Bích (KT)',kq:'Không nghe máy'}]},
+ {ma:'HS22-0163',ten:'Trịnh Quốc Đại',lop:'9A2',dt:'A',loai:'ratruong',ngay:'30/05/2026',
+  no:88000,sodu:0,qd:'',ph:'Trịnh Quốc Bảo',sdt:'0938 116 274',
+  ct:'Nước uống học kỳ II',lh:[]},
+ {ma:'HS24-0377',ten:'Hà Minh Tuệ',lop:'8B1',dt:'B',loai:'thoihoc',ngay:'18/04/2026',
+  no:530000,sodu:0,qd:'QĐ-2026-0119',ph:'Hà Minh Cường',sdt:'0977 204 883',
+  ct:'Bán trú tháng 3 và 4/2026',
+  lh:[{ngay:'05/05/2026',kenh:'Gặp mặt',ai:'Nguyễn Thị Bích (KT)',kq:'Gia đình khó khăn, xin trả dần'}],
+  tamdung:{ly:'Gia đình thuộc hộ nghèo, đang làm hồ sơ đề nghị miễn giảm ở M7.4',xem:'15/10/2026',by:'Lê Quang Vinh — Hiệu trưởng'}},
+ /* Dòng vượt mốc 365 ngày — để thấy băng ĐỎ của cột số ngày (chốt 7/9/2026, điểm 12).
+    Đây là nhóm cần QUYẾT ĐỊNH: truy thu tiếp, hay đưa sang M7.4 xét miễn giảm. */
+ {ma:'HS21-0092',ten:'Đỗ Văn Thắng',lop:'9A2',dt:'A',loai:'ratruong',ngay:'30/05/2025',
+  no:198000,sodu:0,qd:'',ph:'Đỗ Văn Hiếu',sdt:'0916 774 208',
+  ct:'Bán trú tháng 4 và 5/2025 — dữ liệu di trú từ hệ thống cũ',
+  lh:[{ngay:'20/08/2025',kenh:'Điện thoại',ai:'Nguyễn Thị Bích (KT)',kq:'Số máy không liên lạc được'},
+      {ngay:'14/09/2025',kenh:'Thư gửi gia đình',ai:'Nguyễn Thị Bích (KT)',kq:'Thư trả lại — gia đình đã chuyển nơi ở'}]},
+ {ma:'HS24-0402',ten:'Sùng A Dí',lop:'6B2',dt:'B',loai:'dongtam',ngay:'02/03/2026',
+  no:176000,sodu:84000,qd:'',ph:'Sùng A Chứ',sdt:'0329 447 015',
+  ct:'Bán trú tháng 2/2026 · còn 84.000đ số dư BHYT chưa dùng',lh:[]},
+];
+let ROIF={loai:{},cancu:'',lh:'',td:0};
+
+/* Học sinh vẫn nằm trong sổ kỳ này nhưng đã rời trường — nợ tính từ hóa đơn THẬT. */
+function roiTuHS(){
+ return HS.filter(h=>h.tt==='chuyendi').map(h=>({ma:h.ma,ten:h.ten,lop:h.lop,dt:h.dt,loai:'chuyendi',
+  ngay:'12/09/2026',no:noHS(h.ma),sodu:sdGD(h.ma),qd:'',ph:h.ph,sdt:h.sdt,
+  ct:'Hóa đơn còn nợ trong sổ kỳ này',lh:h._lh||(h._lh=[]),tamdung:h._td,live:1}));
+}
+const roiNoRong=x=>Math.max(0,x.no-x.sodu);
+function dsRoi(){
+ return ROIDS.concat(roiTuHS()).filter(x=>dtOK().includes(x.dt)&&roiNoRong(x)>0)
+  .sort((a,b)=>pd(a.ngay)-pd(b.ngay));
+}
+function dsRoiLoc(){
+ const L=Object.keys(ROIF.loai).filter(k=>ROIF.loai[k]);
+ return dsRoi().filter(x=>
+  (!L.length||L.includes(x.loai))&&
+  (!ROIF.cancu||(ROIF.cancu==='co'?!!x.qd:!x.qd))&&
+  (!ROIF.lh||(ROIF.lh==='chua'?!x.lh.length:!!x.lh.length))&&
+  (!ROIF.td||!!x.tamdung));
+}
+const roiTim=m=>dsRoi().find(x=>x.ma===m);
+const soNgayRoi=x=>dd(pd(x.ngay),HOMD);
+
+function vKhoiRoi(){
+ const A=dsRoi(), L=dsRoiLoc();
+ const tong=A.reduce((a,b)=>a+roiNoRong(b),0);
+ const khongCC=A.filter(x=>!x.qd).length, chuaLH=A.filter(x=>!x.lh.length).length;
+ const chip=(k,t,on)=>'<button class="chip'+(on?' on':'')+'" data-x="roif" data-k="'+k+'">'+t+'</button>';
+ const nTD=A.filter(x=>x.tamdung).length, tienTD=A.filter(x=>x.tamdung).reduce((a,b)=>a+roiNoRong(b),0);
+ const nCu=A.filter(x=>soNgayRoi(x)>=365).length;
+ let h='<div class="n4"><div><div class="l">Học sinh đang truy thu</div><div class="v">'+A.length+'</div>'+
+   '<div class="s">'+nCu+' em đã rời quá 365 ngày</div></div>'+
+  '<div><div class="l">Tổng nợ ròng</div><div class="v neg">'+M0(tong)+'</div></div>'+
+  '<div><div class="l">Không có căn cứ giữ nợ</div><div class="v" style="color:var(--red)">'+khongCC+'</div>'+
+   '<div class="s">hồ sơ đã đóng SAI — bấm để lọc</div></div>'+
+  '<div><div class="l">Chưa liên hệ lần nào</div><div class="v" style="color:var(--amber)">'+chuaLH+'</div>'+
+   '<div class="s">việc, không phải số liệu</div></div></div>'+
+  /* Tạm dừng KHÔNG có trần thời gian, nhưng KHÔNG giấu được — chốt 7/9/2026 (điểm 13). */
+  (nTD?'<div class="ro" style="margin-bottom:9px">⏸ <b>'+nTD+' học sinh đang tạm dừng truy thu · '+M(tienTD)+'.</b> '+
+    'Tạm dừng <b>không có trần thời gian</b> — trần cứng nghĩa là máy thay trường quyết một việc về tiền. '+
+    'Đổi lại, nó <b>không giấu được</b>: vẫn nằm trong sổ, vẫn vào báo cáo và tệp xuất kế toán, <b>đếm ở đây</b>, có <b>chip lọc riêng</b>, '+
+    'và <b>tự quay lại hàng đợi</b> đúng ngày xem lại.</div>':'');
+ h+='<div class="bar" style="flex-wrap:wrap;gap:5px">'+
+  Object.keys(ROILOAI).map(k=>chip('l:'+k,ROILOAI[k][0],!!ROIF.loai[k])).join('')+
+  '<span style="width:10px"></span>'+
+  chip('c:co','Có căn cứ giữ nợ',ROIF.cancu==='co')+chip('c:khong','⚠ Không có căn cứ',ROIF.cancu==='khong')+
+  chip('h:da','Đã liên hệ',ROIF.lh==='da')+chip('h:chua','⚠ Chưa liên hệ lần nào',ROIF.lh==='chua')+
+  chip('t:1','⏸ Đang tạm dừng truy thu',!!ROIF.td)+
+  (Object.keys(ROIF.loai).some(k=>ROIF.loai[k])||ROIF.cancu||ROIF.lh||ROIF.td
+   ?'<button class="btn xs" data-x="roif" data-k="reset">✕ Bỏ lọc</button>':'')+
+  '<div class="spacer"></div><button class="btn xs" data-x="roixuat">⬇ Xuất danh sách</button>'+
+  '<button class="btn xs" data-x="roilhhl">☎ Ghi nhận liên hệ hàng loạt</button></div>';
+ h+='<div class="wrapx"><table><thead><tr><th>Học sinh</th><th>Lớp cuối · ĐT</th><th>Trạng thái rời</th>'+
+  '<th>Ngày rời</th><th class="n">Còn nợ</th><th class="n">💠 Số dư</th><th class="n">Nợ ròng</th>'+
+  '<th>Căn cứ giữ nợ</th><th>Liên hệ gần nhất</th><th></th></tr></thead><tbody>';
+ h+=(L.length?L.map(x=>{
+  const [tn,tc]=ROILOAI[x.loai], n=roiNoRong(x), ng=soNgayRoi(x), lh=x.lh[x.lh.length-1];
+  return '<tr'+(x.tamdung?' style="background:#fafafa"':'')+'>'+
+   '<td><b>'+esc(x.ten)+'</b><div class="ct2">'+x.ma+'</div>'+
+    '<div class="hint">'+esc(x.ph)+' · '+x.sdt+'</div></td>'+
+   '<td>'+x.lop+'<div class="hint">'+DTS[x.dt].ten.split('—')[0].trim()+'</div></td>'+
+   '<td><span class="st2 '+tc+'">'+tn+'</span>'+(x.tamdung?'<div style="margin-top:3px"><span class="st2 n">⏸ Tạm dừng tới '+x.tamdung.xem+'</span></div>':'')+'</td>'+
+   '<td>'+x.ngay+'<div class="hint'+(ng>365?'" style="color:var(--red)':(ng>90?'" style="color:var(--amber)':'"'))+'">đã rời '+ng+' ngày</div></td>'+
+   '<td class="n money">'+M0(x.no)+'</td>'+
+   '<td class="n">'+(x.sodu?'<b style="color:var(--green)">'+M0(x.sodu)+'</b>':'—')+'</td>'+
+   '<td class="n"><b style="color:var(--red)">'+M0(n)+'</b></td>'+
+   '<td>'+(x.qd?'<span class="st2 o">'+x.qd+'</span><div class="hint">cam kết trả nợ</div>'
+     :'<span class="st2 r">⚠ Không có căn cứ</span><div class="hint">hồ sơ đóng sai / dữ liệu di trú</div>')+'</td>'+
+   '<td>'+(lh?lh.ngay+'<div class="hint">'+esc(lh.kenh)+' — '+esc(lh.kq)+'</div>'
+     :'<span class="st2 w">⚠ Chưa liên hệ lần nào</span>')+'</td>'+
+   '<td style="white-space:nowrap">'+
+    '<button class="btn xs" data-x="roilh" data-i="'+x.ma+'">☎ Ghi liên hệ</button>'+
+    (x.sodu?'<button class="btn xs p" data-x="roibutru" data-i="'+x.ma+'">⇄ Bù trừ</button>':'')+
+    '<button class="btn xs" data-x="roinop" data-i="'+x.ma+'">💰 Đã nộp</button>'+
+    (can('duyet_no30')&&!x.tamdung?'<button class="btn xs" data-x="roitam" data-i="'+x.ma+'">⏸ Tạm dừng</button>':'')+
+    '</td></tr>';
+ }).join('')
+ :'<tr><td colspan="10" style="text-align:center;color:var(--ink3);padding:14px">Không có dòng nào khớp bộ lọc. '+
+  (A.length?'Tổng cộng vẫn còn <b>'+A.length+'</b> học sinh đang truy thu — bỏ lọc để xem.':'Không có học sinh nào đã rời trường còn nợ.')+'</td></tr>');
+ h+='</tbody></table></div>';
+ h+='<div class="ro" style="margin-top:9px"><b>Cột <i>đã rời N ngày</i> đổi màu ở 90 và 365 ngày — và khối này KHÔNG sinh việc ở M0.2.</b> '+
+  'Truy thu là <b>chiến dịch theo đợt</b> (đầu năm học, trước quyết toán năm), không phải việc hằng ngày. '+
+  'Đổ mỗi dòng nợ cũ thành một việc trong M0.2 thì hàng đợi của kế toán có thêm hàng chục dòng <b>không có hạn, không đóng được, không ai xử lý hôm nay</b> — '+
+  'và chúng <b>làm loãng</b> những việc thật sự có hạn nằm cạnh. Một hàng đợi mà người dùng học được cách phớt lờ thì hỏng cho <b>mọi</b> việc trong đó.<br>'+
+  'Tín hiệu cấp bách nằm ở <b>màu của cột số ngày</b> và <b>ô tổng đầu khối</b> — người kế toán mở khối G khi đang làm đợt truy thu, và khi đó họ cần một <b>danh sách sắp xếp được</b>, không cần một chuông báo.</div>';
+ h+='<div class="ro" style="margin-top:9px"><b>⛔ Không có nút xóa nợ ở màn hình này.</b> Xóa nợ là <b>miễn giảm</b>, '+
+  'và miễn giảm có menu chủ riêng là <b>M7.4</b> với chuỗi duyệt riêng. Cùng lắm là <b>⏸ Tạm dừng truy thu</b> — '+
+  'HT duyệt, <b>lý do bắt buộc</b>, <b>ngày xem lại bắt buộc</b>; bản ghi vẫn nằm trong sổ và vẫn vào báo cáo, chỉ ra khỏi hàng đợi việc tới ngày đó.</div>';
+ h+='<div class="ro" style="margin-top:8px"><b>Nhắc nợ hàng loạt qua App KHÔNG bật cho nhóm này</b> — giữ nguyên ⛔ của F12 §2.8. '+
+  'Push tự động đòi nợ người đã rời trường là sai về quan hệ: em không còn là học sinh của trường. Việc này cần <b>một người gọi điện</b>, và cuộc gọi đó <b>phải được ghi vết</b>.<br>'+
+  'Gia đình vẫn <b>thấy</b> khoản nợ: App PH-HS vẫn vẽ hóa đơn và số dư của <b>trường cũ</b>, kèm nút <i>Dùng số dư trả hóa đơn</i> và <i>💬 Hỏi nhà trường</i>. '+
+  '<b>Thông tin thì có, thúc giục thì không.</b></div>';
+ h+=D('<b>Đối xứng có chủ ý với M7.3 §9.3.</b> Chiều <i>trả tiền cho người đã đi</i> đã có từ lâu: hàng đợi <i>Tiền chờ hoàn quá hạn</i>, '+
+  'trạng thái <i>Không liên lạc được</i> bắt ghi các lần đã liên hệ, và chốt cứng <b>không tự chuyển tiền vào quỹ trường</b>. '+
+  'Chiều <i>đòi tiền người đã đi</i> nay dựng đúng ba thứ đó, soi gương. Một chiều làm mất tiền gia đình, chiều kia làm mất tiền trường — '+
+  'cả hai đều là tiền của người khác đối với người vận hành hệ thống.');
  return h;
 }
 
@@ -1497,7 +1697,7 @@ function ghiThu(o,so,kieu){
 }
 function xuatFile(w){
  modal('Xuất tệp — chọn mục đích sử dụng',
-  '<div class="ro" style="margin-top:0">Dữ liệu xuất chứa <b>thông tin cá nhân của trẻ em</b> và <b>số liệu tài chính của gia đình</b>. Nghị định 13/2023/NĐ-CP: mọi lần xuất phải ghi nhật ký <b>ai xuất · lúc nào · để làm gì</b>.</div>'+
+  '<div class="ro" style="margin-top:0">Dữ liệu xuất chứa <b>thông tin cá nhân của trẻ em</b> và <b>số liệu tài chính của gia đình</b>. Luật BVDLCN 91/2025/QH15: mọi lần xuất phải ghi nhật ký <b>ai xuất · lúc nào · để làm gì</b>.</div>'+
   '<div class="fld">Mục đích<select class="fldi" id="mdich">'+
   '<option>Nhập vào phần mềm kế toán MISA / Bravo</option>'+
   '<option>Báo cáo Phòng / Sở Giáo dục</option>'+
@@ -1533,6 +1733,110 @@ document.addEventListener('click',e=>{
  if(x==='fqh'){S.qh=S.qh?0:1;S.sel=null;render();return;}
  if(x==='ftuchoi'){S.tuchoi=S.tuchoi?0:1;S.sel=null;render();return;}
  if(x==='fsd'){S.sd=S.sd?0:1;S.sel=null;render();return;}
+
+ /* ---------- KHỐI G — truy thu học sinh đã rời trường ---------- */
+ if(x==='roif'){const k=el.dataset.k;
+  if(k==='reset'){ROIF={loai:{},cancu:'',lh:'',td:0};}
+  else{const [a,b]=k.split(':');
+   if(a==='l')ROIF.loai[b]=ROIF.loai[b]?0:1;
+   if(a==='c')ROIF.cancu=ROIF.cancu===b?'':b;
+   if(a==='h')ROIF.lh=ROIF.lh===b?'':b;
+   if(a==='t')ROIF.td=ROIF.td?0:1;}
+  render();return;}
+
+ if(x==='roilh'){const r=roiTim(i);
+  modal('☎ Ghi nhận một lần liên hệ — '+esc(r.ten),
+   '<div class="ro">Liên hệ <b>'+esc(r.ph)+' · '+r.sdt+'</b> về khoản nợ <b>'+M(roiNoRong(r))+'</b>.<br>'+
+   'Bản ghi này <b>không sửa, không xóa</b> — kể cả Hiệu trưởng. Khi phải ra quyết định về nợ khó đòi, đây là <b>bằng chứng duy nhất</b> rằng trường đã cố gắng đòi.</div>'+
+   (r.lh.length?'<div class="sech2">Đã liên hệ '+r.lh.length+' lần</div><div class="wrapx"><table><thead><tr><th>Ngày</th><th>Kênh</th><th>Người thực hiện</th><th>Kết quả</th></tr></thead><tbody>'+
+     r.lh.map(l=>'<tr><td>'+l.ngay+'</td><td>'+esc(l.kenh)+'</td><td>'+esc(l.ai)+'</td><td>'+esc(l.kq)+'</td></tr>').join('')+'</tbody></table></div>'
+    :'<div class="warn">⚠ <b>Chưa liên hệ lần nào</b> kể từ khi em rời trường '+soNgayRoi(r)+' ngày trước.</div>')+
+   '<div class="sech2">Ghi lần liên hệ mới</div>'+
+   '<div class="frow"><div class="k">Kênh</div><div><select class="sel" id="lhk">'+
+    ['Điện thoại','Tin nhắn','Thư gửi gia đình','Gặp mặt tại trường'].map(k=>'<option>'+k+'</option>').join('')+'</select></div></div>'+
+   '<div class="frow"><div class="k">Kết quả <span style="color:var(--red)">*</span></div><div>'+
+    '<input class="inp" id="lhkq" placeholder="VD: gia đình hẹn nộp trước 30/10 · không nghe máy · đã đổi số"></div></div>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="roilhok" data-i="'+i+'">☎ Ghi nhận</button>');
+  return;}
+ if(x==='roilhok'){const r=roiTim(i), kq=($('#lhkq').value||'').trim();
+  if(!kq){toast('⛔ <b>Kết quả bắt buộc.</b> Ghi "đã gọi" mà không ghi họ nói gì thì bản ghi không có giá trị đối chứng.');return;}
+  r.lh.push({ngay:HOM,kenh:$('#lhk').value,ai:R().n,kq:kq});
+  closeM();toast('Đã ghi lần liên hệ thứ '+r.lh.length+' — bản ghi này không sửa, không xóa');render();return;}
+
+ if(x==='roibutru'){const r=roiTim(i), bu=Math.min(r.sodu,r.no);
+  modal('⇄ Bù trừ số dư vào công nợ — '+esc(r.ten),
+   '<div class="ro">Cùng bút toán mà <b>M1.5 §298</b> mô tả, và cùng cơ chế <b>F18</b> mà gia đình bấm từ App PH-HS — <i>chỉ khác người bấm</i>. '+
+   'Sinh <b>một bút toán NỢ</b> trong sổ số dư và <b>một giao dịch ghi thu</b> cho hóa đơn.</div>'+
+   '<div class="wrapx"><table><tbody>'+
+   '<tr><td>💠 Số dư tạm giữ</td><td class="n"><b style="color:var(--green)">'+M(r.sodu)+'</b></td></tr>'+
+   '<tr><td>Công nợ</td><td class="n"><b style="color:var(--red)">'+M(r.no)+'</b></td></tr>'+
+   '<tr><td><b>Bù trừ</b></td><td class="n"><b>'+M(bu)+'</b></td></tr>'+
+   '<tr><td>Sau bù trừ</td><td class="n">'+(r.no-bu>0?'còn nợ <b>'+M(r.no-bu)+'</b>':(r.sodu-bu>0?'trường còn giữ <b>'+M(r.sodu-bu)+'</b>':'<b>cân bằng</b>'))+'</td></tr>'+
+   '</tbody></table></div>'+
+   '<div class="warn"><b>Kỳ đã chốt sổ thì ghi thu theo NGÀY HÔM NAY, không sửa kỳ cũ.</b> '+
+   'Hóa đơn của học sinh đã rời trường gần như luôn thuộc kỳ đã khóa (vùng C+ — M7.3 §7.1). '+
+   'Giao dịch mang ngày phát sinh <b>'+HOM+'</b> và kỳ hạch toán là <b>kỳ hiện tại</b>; hóa đơn cũ chỉ đổi trạng thái thanh toán.</div>'+
+   '<div class="ro" style="margin-bottom:0">⛔ Nếu số dư này đang bị một <b>phiếu hoàn tiền Chờ chi</b> ở M7.3 giữ thì <b>không bù trừ được</b> — '+
+   'cùng một đồng tiền không thể vừa hẹn chi mặt vừa trừ vào hóa đơn.</div>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="roibutruok" data-i="'+i+'">⇄ Bù trừ '+M(bu)+'</button>');
+  return;}
+ if(x==='roibutruok'){const r=roiTim(i), bu=Math.min(r.sodu,r.no);
+  r.sodu-=bu;r.no-=bu;
+  r.lh.push({ngay:HOM,kenh:'Hệ thống',ai:R().n,kq:'Bù trừ '+M(bu)+' số dư vào công nợ — bút toán NỢ sổ số dư + ghi thu hóa đơn'});
+  closeM();toast('Đã bù trừ '+M(bu)+' · '+(roiNoRong(r)>0?'còn nợ '+M(roiNoRong(r)):'đã hết nợ — dòng rời khỏi khối G'));render();return;}
+
+ if(x==='roinop'){const r=roiTim(i);
+  modal('💰 Xác nhận đã nộp — '+esc(r.ten),
+   '<div class="ro">Gia đình mang tiền đến trả. Dùng <b>đúng F6 Xác nhận đã nộp</b> của menu này — '+
+   '<b>không dựng luồng thu riêng</b> cho nhóm đã rời trường: cùng phiếu thu, cùng phiên đối soát ngày, cùng chứng từ.</div>'+
+   '<div class="frow"><div class="k">Nợ ròng</div><div><b style="color:var(--red)">'+M(roiNoRong(r))+'</b></div></div>'+
+   '<div class="frow"><div class="k">Số tiền nhận</div><div><input class="inp" id="ronop" value="'+roiNoRong(r)+'"></div></div>'+
+   '<div class="ro" style="margin-bottom:0">Không nhận quá tổng còn nợ (ràng buộc 4). Nhận thừa thì phần thừa vào <b>sổ số dư tạm giữ</b>, không phải quỹ trường.</div>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="roinopok" data-i="'+i+'">💰 Ghi thu</button>');
+  return;}
+ if(x==='roinopok'){const r=roiTim(i), v=Math.min(+$('#ronop').value||0,roiNoRong(r));
+  if(v<=0){toast('⛔ Số tiền phải lớn hơn 0');return;}
+  r.no-=v;
+  r.lh.push({ngay:HOM,kenh:'Gặp mặt tại trường',ai:R().n,kq:'Gia đình nộp '+M(v)+' — phiếu thu tiền mặt, vào phiên đối soát ngày '+HOM});
+  closeM();toast('Đã ghi thu '+M(v)+' · '+(roiNoRong(r)>0?'còn nợ '+M(roiNoRong(r)):'đã trả hết — dòng rời khỏi khối G'));render();return;}
+
+ if(x==='roitam'){const r=roiTim(i);
+  modal('⏸ Tạm dừng truy thu — '+esc(r.ten),
+   '<div class="danger"><b>Đây KHÔNG phải xóa nợ.</b> Bản ghi vẫn nằm trong sổ, vẫn vào báo cáo, vẫn tìm ra được bằng chip <i>Đang tạm dừng truy thu</i>. '+
+   'Nó chỉ ra khỏi hàng đợi việc cho tới <b>ngày xem lại</b>, rồi <b>tự quay lại</b>.<br>'+
+   'Muốn <b>xóa</b> khoản nợ này thì đó là <b>miễn giảm</b> — menu chủ là <b>M7.4</b>, có chuỗi duyệt riêng.</div>'+
+   '<div class="frow"><div class="k">Lý do <span style="color:var(--red)">*</span></div><div>'+
+    '<input class="inp" id="tdly" placeholder="VD: gia đình thuộc hộ nghèo, đang làm hồ sơ miễn giảm ở M7.4"></div></div>'+
+   '<div class="frow"><div class="k">Ngày xem lại <span style="color:var(--red)">*</span></div><div>'+
+    '<input class="inp" id="tdxem" placeholder="dd/mm/yyyy" value="15/12/2026"></div></div>'+
+   '<div class="ro"><b>Không có trần thời gian cho ngày xem lại</b> — 3 tháng, 1 năm hay 5 năm đều được. '+
+   'Ca thật: gia đình hộ nghèo, hồ sơ miễn giảm ở M7.4 phải chờ quyết định của cơ quan quản lý, và cái chờ đó <b>không có lịch</b>. '+
+   'Máy ép ngày ngắn hơn thực tế chỉ đẻ ra một thao tác gia hạn lặp lại — tức là đúng một cái nút mà ai cũng bấm mà không đọc.</div>'+
+   '<div class="ro" style="margin-bottom:0">Quyết định này thuộc <b>Hiệu trưởng</b> — cùng hạng với quyết định nợ quá hạn 30+ ngày ở F11. '+
+   'Kế toán <b>đòi và ghi vết</b>; HT <b>quyết</b> khi nào ngừng đòi.</div>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="roitamok" data-i="'+i+'">⏸ Tạm dừng</button>');
+  return;}
+ if(x==='roitamok'){const r=roiTim(i), ly=($('#tdly').value||'').trim(), xem=($('#tdxem').value||'').trim();
+  if(!ly||!xem){toast('⛔ <b>Lý do và ngày xem lại đều bắt buộc.</b> Tạm dừng không lý do, không hạn, là xóa nợ trá hình.');return;}
+  r.tamdung={ly:ly,xem:xem,by:R().n};
+  r.lh.push({ngay:HOM,kenh:'Quyết định',ai:R().n,kq:'Tạm dừng truy thu tới '+xem+' — '+ly});
+  closeM();toast('Đã tạm dừng truy thu tới '+xem+' · bản ghi VẪN trong sổ, tìm bằng chip Đang tạm dừng');render();return;}
+
+ if(x==='roixuat'){const L=dsRoiLoc();
+  toast('⬇ Đã xuất <b>'+L.length+' dòng</b> · Truy-thu-HS-da-roi-truong-'+HOM.replace(/\//g,'')+'.xlsx — Luật BVDLCN 91/2025: lượt xuất đã ghi audit kèm mục đích');return;}
+ if(x==='roilhhl'){const L=dsRoiLoc(), ok=L.filter(z=>!z.tamdung), bo=L.filter(z=>z.tamdung);
+  modal('☎ Ghi nhận liên hệ hàng loạt — kết quả',
+   '<div class="ro">Ca thật của thao tác này: <b>gửi thư chung một đợt</b> cho nhóm đã rời trường. '+
+   'Không có <b>bù trừ hàng loạt</b> và không có <b>tạm dừng hàng loạt</b> — cả hai đều là quyết định về tiền của <b>từng gia đình</b>.</div>'+
+   '<div class="ok"><b>✅ Ghi được '+ok.length+' học sinh</b><div style="margin-top:5px">'+
+    (ok.map(z=>esc(z.ten)+' — '+M(roiNoRong(z))).join('<br>')||'—')+'</div></div>'+
+   (bo.length?'<div class="warn"><b>⛔ Bỏ qua '+bo.length+' học sinh</b><div style="margin-top:5px">'+
+    bo.map(z=>'• '+esc(z.ten)+' — đang <b>tạm dừng truy thu</b> tới '+z.tamdung.xem).join('<br>')+'</div></div>':''),
+   '<button class="btn" data-x="close">Đóng</button><button class="btn p" data-x="roilhhlok">☎ Ghi '+ok.length+' bản ghi</button>');
+  return;}
+ if(x==='roilhhlok'){const L=dsRoiLoc().filter(z=>!z.tamdung);
+  L.forEach(z=>z.lh.push({ngay:HOM,kenh:'Thư gửi gia đình',ai:R().n,kq:'Thư nhắc nợ đợt '+HOM+' — gửi hàng loạt'}));
+  closeM();toast('Đã ghi '+L.length+' bản ghi liên hệ');render();return;}
  if(x==='xemsd'){const h=HSC(i), l=SODU.filter(z=>z.hs===i);
   modal('Sổ số dư tạm giữ — '+esc(h.ten),
    '<div class="dumon" style="grid-template-columns:1fr"><div class="c"><div class="l">💠 Số dư tạm giữ</div><div class="v" style="color:var(--green)">'+M(sdGD(i))+'</div>'+
@@ -1730,17 +2034,34 @@ document.addEventListener('click',e=>{
    '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="nhacok">🔔 Gửi nhắc</button>');return;}
  if(x==='nhacok'){closeM();toast('✓ Đã gửi nhắc nợ và ghi nhật ký.');return;}
  if(x==='nhacloat'){
-  const ds=hsLoc().filter(h=>ttHSKy(h).qh>0);
+  /* Bốn nhóm BỎ QUA — F12 §2.8 của App. Bảng kết quả phải tách rõ dòng gửi được
+     và dòng bị bỏ qua KÈM LÝ DO, và mỗi lý do phải dẫn tới nơi có việc thật để làm. */
+  const qh=hsLoc().filter(h=>ttHSKy(h).qh>0);
+  const roi=qh.filter(h=>h.tt==='chuyendi');
+  const ds=qh.filter(h=>h.tt!=='chuyendi');
   const bo=hsLoc().filter(h=>ttHSKy(h).qh===0&&ttHSKy(h).no>0);
+  const tuchoiN=hdPV().filter(o=>o.th===KYCUR&&o.tuChoi&&!daHuy(o)).length;
   modal('Nhắc nợ hàng loạt — kỳ '+KYCUR,
-   '<div class="wrapx"><table><thead><tr><th>Nhóm</th><th class="n">Số HS</th><th>Xử lý</th></tr></thead><tbody>'+
+   '<div class="ok"><b>✅ Gửi được '+ds.length+' học sinh</b></div>'+
+   '<div class="wrapx"><table><thead><tr><th>Bậc</th><th class="n">Số HS</th><th>Kênh</th></tr></thead><tbody>'+
    [4,3,2].map(b=>{const n=ds.filter(h=>bacNhac(ttHSKy(h).qh)===b).length;
     return '<tr><td>Bậc '+b+(b===4?' — quá hạn ≥ 7 ngày':(b===3?' — quá hạn 3-6 ngày':' — quá hạn 1-2 ngày'))+'</td><td class="n">'+n+'</td>'+
-    '<td>Push App PH-HS'+(b>=3?' + việc cho GVCN':'')+'</td></tr>';}).join('')+
-   '<tr style="background:#fcfcfd"><td>Chưa quá hạn nhưng còn nợ</td><td class="n">'+bo.length+'</td><td><b>Bỏ qua</b> — chưa tới hạn thì chưa phải nợ</td></tr>'+
+    '<td>'+(b===4?'<b>Việc cho PHT_ĐT</b> — bậc này KHÔNG tới phụ huynh':'Push App PH-HS'+(b>=3?' + việc cho GVCN':''))+'</td></tr>';}).join('')+
    '</tbody></table></div>'+
-   '<div class="ro">Danh sách lấy đúng <b>bộ lọc đang xem</b>. Học sinh <b>đã chuyển đi / bảo lưu</b> vẫn nằm trong danh sách — hệ thống cảnh báo, người dùng quyết.</div>',
+   '<div class="warn" style="margin-top:10px"><b>⛔ Bỏ qua '+(roi.length+bo.length+tuchoiN)+' dòng</b>'+
+   '<div class="wrapx" style="margin-top:6px"><table><thead><tr><th class="n">Số</th><th>Lý do bỏ qua</th><th>Đi đâu</th></tr></thead><tbody>'+
+   '<tr><td class="n"><b>'+roi.length+'</b></td>'+
+    '<td><b>Đã rời trường — NỢ VẪN CÒN</b>, chỉ là kênh nhắc đổi<div class="hint">M1.5 §459 giữ nguyên công nợ khi cho chuyển kèm cam kết. Push tự động đòi nợ người đã rời trường là sai về quan hệ — việc này cần một người gọi điện, và cuộc gọi phải được ghi vết.</div></td>'+
+    '<td><button class="btn xs p" data-x="dikhoig">↗ Khối G — truy thu</button></td></tr>'+
+   '<tr><td class="n"><b>'+bo.length+'</b></td><td>Chưa quá hạn nhưng còn nợ<div class="hint">Chưa tới hạn thì chưa phải nợ</div></td><td>—</td></tr>'+
+   '<tr><td class="n"><b>'+tuchoiN+'</b></td><td>Khoản có <b>Quyền từ chối đóng = Có</b><div class="hint">Không đóng là hợp lệ — nhắc là sai nghiệp vụ, không phải chỉ phiền (M7.1 §5.3)</div></td><td>—</td></tr>'+
+   '</tbody></table></div></div>'+
+   '<div class="ro" style="margin-bottom:0">Danh sách lấy đúng <b>bộ lọc đang xem</b>. Hai nhóm bỏ qua còn lại của F12 §2.8 — <b>chưa cài App</b> và <b>đang có ticket điều chỉnh chờ duyệt ở M7.3</b> — không có dòng nào trong dữ liệu mẫu kỳ này.</div>',
    '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="nhacloatok" data-n="'+ds.length+'">🔔 Gửi '+ds.length+' lượt nhắc</button>');return;}
+ if(x==='dikhoig'){closeM();S.tab='thongke';S.kh.roi=1;render();
+  const g=[...document.querySelectorAll('.khoi')].find(k=>k.textContent.indexOf('Truy thu công nợ')>-1);
+  if(g)g.scrollIntoView({block:'start'});
+  toast('Khối G — <b>nợ của các em này không mất</b>, chỉ đổi cách đòi: liên hệ có người thật, ghi vết từng lần');return;}
  if(x==='nhacloatok'){closeM();toast('✓ Đã gửi <b>'+el.dataset.n+'</b> lượt nhắc và ghi nhật ký từng lượt.');return;}
 
  /* --- số dư chưa xử lý --- */
@@ -1788,7 +2109,7 @@ document.addEventListener('click',e=>{
    '<div class="k">Số tiền</div><div class="money" style="font-size:15px">'+M(c.tien)+'</div>'+
    '<div class="k">Ngày lập</div><div>'+c.ngay+'</div>'+
    '<div class="k">Chữ ký số</div><div>'+(c.tt==='daky'?'<span class="st2 o">✓ '+esc(c.kyBoi||'Lê Quang Vinh — Hiệu trưởng')+'</span>':'<span class="st2 w">Chưa ký</span>')+'</div></div></div></div>'+
-   '<div class="ro">Xem <b>ngay trong màn hình</b> trước khi tải. Mỗi lần xem / tải đều ghi nhật ký theo NĐ 13/2023.</div>',
+   '<div class="ro">Xem <b>ngay trong màn hình</b> trước khi tải. Mỗi lần xem / tải đều ghi nhật ký theo Luật BVDLCN 91/2025.</div>',
    '<button class="btn" data-x="close">Đóng</button><button class="btn" data-x="taict" data-s="'+esc(c.so)+'">⬇ Tải XML + PDF</button>');return;}
  if(x==='taict'){toast('⬇ Đã tải <b>'+el.dataset.s+'</b> (XML + PDF) · đã ghi nhật ký truy cập.');return;}
 
