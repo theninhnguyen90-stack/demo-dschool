@@ -1,0 +1,1252 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M4.4 Quản lý giáo viên — Dschool</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f1f5f9;--surface:#fff;--line:#e2e8f0;--line2:#cbd5e1;
+ --ink:#0f172a;--ink2:#475569;--ink3:#94a3b8;--brand:#1d4ed8;--brand-soft:#eff6ff;
+ --red:#dc2626;--red-soft:#fef2f2;--amber:#d97706;--amber-soft:#fffbeb;
+ --green:#059669;--green-soft:#ecfdf5;--violet:#7c3aed}
+body{font:14px/1.5 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font:inherit}
+
+.hdr{height:56px;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:13px;padding:0 15px;position:sticky;top:0;z-index:40}
+.logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px}
+.logo .mark{width:28px;height:28px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px}
+.school{color:var(--ink2);font-size:12.5px;border-left:1px solid var(--line);padding-left:13px;max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sel{border:1px solid var(--line2);border-radius:7px;padding:5px 9px;font-size:12.5px;background:#fff}
+.sel:disabled{background:#f1f5f9;color:var(--ink2);cursor:not-allowed}
+.spacer{flex:1}
+.icobtn{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;position:relative;font-size:15px}
+.icobtn:hover{background:var(--bg)}
+.dot{position:absolute;top:3px;right:3px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--violet);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700}
+.lockico{font-size:11px;color:var(--ink3)}
+
+.wrap{display:flex;min-height:calc(100vh - 56px)}
+.side{width:212px;flex:0 0 212px;background:var(--surface);border-right:1px solid var(--line);padding:10px 8px;position:sticky;top:56px;max-height:calc(100vh - 56px);overflow-y:auto}
+.sgrp{font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;padding:12px 10px 5px}
+.snav{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:var(--ink2);font-size:12.5px;margin-bottom:1px}
+.snav:hover{background:var(--bg)}
+.snav.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
+.snav .nb{margin-left:auto;flex:0 0 auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;min-width:18px;text-align:center;line-height:15px}
+.snav.off{opacity:.34;pointer-events:none}
+.main{flex:1;padding:15px 18px 40px;min-width:0}
+
+.tophd{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+h1{font-size:19px;font-weight:700}
+.btn{border:1px solid var(--line2);background:#fff;border-radius:8px;padding:7px 12px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--bg)}
+.btn.p{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn.p:hover{background:#1e40af}
+.btn.d{background:var(--red);color:#fff;border-color:var(--red)}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn.xs{padding:3px 8px;font-size:11.5px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.act{background:var(--brand-soft);border-color:var(--brand);color:var(--brand);font-weight:600}
+.tabs{display:flex;gap:3px;border-bottom:2px solid var(--line);margin:12px 0 0;flex-wrap:wrap}
+.tab1{padding:9px 15px;font-size:13.5px;font-weight:600;color:var(--ink2);border-bottom:2px solid transparent;margin-bottom:-2px;display:flex;align-items:center;gap:7px}
+.tab1.on{color:var(--brand);border-bottom-color:var(--brand)}
+.tab1 .b{background:var(--bg);color:var(--ink2);font-size:11px;font-weight:700;padding:1px 7px;border-radius:9px}
+.tab1.on .b{background:var(--brand);color:#fff}
+.tab1 .b.r{background:var(--red);color:#fff}
+
+.scope{display:flex;align-items:center;gap:9px;background:#f8fafc;border:1px solid var(--line);border-left:3px solid var(--brand);
+ border-radius:9px;padding:8px 12px;font-size:12px;color:var(--ink2);margin:12px 0 0;flex-wrap:wrap}
+.scope b{color:var(--ink)}
+.scope .sp{flex:1}
+
+.bar{display:flex;gap:7px;align-items:center;flex-wrap:wrap;padding:11px 0}
+.inp{border:1px solid var(--line2);border-radius:8px;padding:7px 11px;font-size:13px;background:#fff;min-width:230px}
+.fs{border:1px solid var(--line2);border-radius:8px;padding:7px 9px;font-size:12.5px;background:#fff}
+.sum{display:flex;gap:13px;font-size:12px;color:var(--ink2);margin-left:auto;flex-wrap:wrap}
+.sum b{color:var(--ink)}
+
+.alerts{display:flex;flex-direction:column;gap:7px;margin-bottom:11px}
+.alert{display:flex;align-items:center;gap:10px;padding:9px 13px;border-radius:10px;font-size:12.5px;font-weight:600}
+.alert .sp{flex:1;font-weight:400}
+.alert .sp b{font-weight:700}
+.alert.w{background:var(--amber-soft);border:1px solid #fde68a;color:#92400e}
+.alert.r{background:var(--red-soft);border:1px solid #fecaca;color:#991b1b}
+.alert.g{background:var(--green-soft);border:1px solid #a7f3d0;color:#065f46}
+.alert.b{background:var(--brand-soft);border:1px solid #bfdbfe;color:#1e40af}
+
+.stage{display:flex;gap:13px;align-items:flex-start}
+.listw{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.panel{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:none}
+.stage.open .panel{display:block}
+@media(max-width:1180px){.stage.open .listw{display:none}.stage.open .panel{flex:1}}
+
+.hrow{display:grid;gap:9px;padding:9px 13px;border-bottom:1px solid var(--line);cursor:pointer;align-items:center;border-left:3px solid transparent;font-size:13px;
+ grid-template-columns:1.7fr 1.15fr 2fr 1.15fr}
+.stage.open .hrow{grid-template-columns:1.7fr 1.6fr}
+.stage.open .hcol{display:none}
+.stage.open .hcol.keep{display:block}
+.hrow:hover{background:var(--brand-soft)}
+.hrow.on{background:#eff6ff;border-left-color:var(--brand)}
+.hrow.bad{border-left-color:var(--red);background:#fffafa}
+.hdrow{display:grid;gap:9px;padding:8px 13px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;
+ grid-template-columns:1.7fr 1.15fr 2fr 1.15fr}
+.stage.open .hdrow{grid-template-columns:1.7fr 1.6fr}
+.stage.open .hdrow div{display:none}
+.stage.open .hdrow div.kc{display:block}
+.who2{display:flex;gap:9px;align-items:center;min-width:0}
+.ava2{width:32px;height:32px;border-radius:50%;background:#e0e7ff;color:#3730a3;display:grid;place-items:center;font-size:11.5px;font-weight:700;flex:0 0 32px}
+.ava2.non{background:#fee2e2;color:#991b1b}
+.who2 .i{min-width:0}
+.who2 .i b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.who2 .i span{font-size:11px;color:var(--ink3)}
+
+.st2{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;white-space:nowrap;display:inline-block}
+.st2.o{background:var(--green-soft);color:var(--green)}
+.st2.w{background:var(--amber-soft);color:var(--amber)}
+.st2.r{background:var(--red-soft);color:var(--red)}
+.st2.n{background:var(--bg);color:var(--ink2)}
+.st2.b{background:#e0e7ff;color:#3730a3}
+
+.ph{padding:12px 15px;border-bottom:1px solid var(--line);display:flex;gap:13px;align-items:center;flex-wrap:wrap}
+.ava3{width:50px;height:50px;border-radius:50%;background:#e0e7ff;color:#3730a3;display:grid;place-items:center;font-size:17px;font-weight:700;flex:0 0 50px}
+.ph .n h2{font-size:16px;font-weight:700}
+.ph .n .m{font-size:12px;color:var(--ink2);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pill{font-size:10.5px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--ink2)}
+.pbody{padding:14px 15px;max-height:calc(100vh - 230px);overflow-y:auto}
+
+.card{border:1px solid var(--line);border-radius:11px;margin-bottom:12px;overflow:hidden}
+.card.bad{border-color:#fecaca}
+.ch{display:flex;align-items:center;gap:9px;padding:10px 12px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:13px;font-weight:700;flex-wrap:wrap}
+.ch .sp{flex:1}
+.cb{padding:4px 0}
+.f{display:grid;grid-template-columns:185px 1fr;gap:11px;align-items:start;padding:7px 12px;font-size:13px}
+.f+.f{border-top:1px solid #f1f5f9}
+.f .k{color:var(--ink2);font-size:12.5px}
+.f .v{font-weight:600;min-width:0;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.cact{display:flex;gap:6px;padding:9px 12px;border-top:1px solid var(--line);background:#fcfdfe;flex-wrap:wrap;align-items:center}
+.tg{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;white-space:nowrap}
+.tg.a{background:#e0e7ff;color:#3730a3}
+.tg.b{background:#fef3c7;color:#92400e}
+.tg.c{background:var(--bg);color:var(--ink2)}
+.tg.g{background:var(--green-soft);color:var(--green)}
+.tg.r{background:var(--red-soft);color:var(--red)}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:7px 9px;border-bottom:1px solid var(--line);background:#f8fafc;white-space:nowrap}
+td{padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr.warnrow{background:var(--amber-soft)}
+tr.badrow{background:var(--red-soft)}
+tr.grp td{background:#f8fafc;font-weight:700;font-size:11.5px}
+
+.info{background:var(--brand-soft);border:1px solid #bfdbfe;color:#1e40af;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:12px}
+.warn{background:var(--amber-soft);border:1px solid #fde68a;color:#92400e;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:12px}
+.danger{background:var(--red-soft);border:1px solid #fecaca;color:#991b1b;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:12px}
+.okbox{background:var(--green-soft);border:1px solid #a7f3d0;color:#065f46;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:12px}
+.ro{background:#f8fafc;border:1px solid var(--line);color:var(--ink2);padding:8px 11px;border-radius:9px;font-size:12px;margin-bottom:12px}
+.rolnk{font-size:10px;font-weight:700;color:var(--brand);background:#eef2ff;border:1px solid #c7d2fe;border-radius:999px;padding:1px 7px;cursor:pointer;white-space:nowrap}
+.rolnk:hover{background:#e0e7ff}
+.rolnk.off{color:var(--ink3);background:var(--bg);border-color:var(--line);cursor:not-allowed}
+
+.mask{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:60;display:none;place-items:center}
+.mask.on{display:grid}
+.modal{background:#fff;border-radius:13px;width:760px;max-width:94vw;max-height:88vh;display:flex;flex-direction:column}
+.mh{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700}
+.mb{padding:15px 18px;overflow-y:auto;font-size:13px}
+.mf{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;align-items:center}
+.fldi{width:100%;border:1px solid var(--line2);border-radius:8px;padding:8px 10px;margin-top:4px}
+.lbl{display:block;font-size:12px;color:var(--ink2);font-weight:600;margin-top:11px}
+
+.rolebar{background:#0f172a;color:#cbd5e1;padding:8px 15px;display:flex;align-items:center;gap:7px;font-size:12.5px;flex-wrap:wrap}
+.rolebar b{color:#fff}
+.rb{border:1px solid #334155;border-radius:999px;padding:3px 10px;font-size:12px;color:#cbd5e1}
+.rb:hover{background:#1e293b;color:#fff}
+.rb.on{background:#fff;color:#0f172a;border-color:#fff;font-weight:700}
+.note{margin-left:auto;color:#64748b;font-size:11.5px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(90px);background:#0f172a;color:#fff;padding:11px 17px;border-radius:9px;font-size:13px;z-index:80;transition:transform .22s;max-width:92vw}
+.toast.on{transform:translateX(-50%)}
+.empty{padding:38px;text-align:center;color:var(--ink3)}
+.lgd{display:flex;gap:14px;font-size:11.5px;color:var(--ink3);padding:9px 13px;border-top:1px solid var(--line);flex-wrap:wrap;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px 9px;color:var(--ink2)}
+
+/* --- rieng M4.4 --- */
+.mon{font-size:11px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;
+ background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3}
+.mon.kn{background:#fffbeb;border-color:#fde68a;color:#92400e}
+.mon .dm{font-size:9px;opacity:.75}
+.khoi{font-size:10.5px;font-weight:700;border-radius:5px;padding:1px 6px;background:var(--bg);border:1px solid var(--line);color:var(--ink2)}
+.mtx{overflow-x:auto}
+.mtx table{font-size:12px;min-width:760px}
+.mtx th.v{writing-mode:vertical-rl;transform:rotate(180deg);height:96px;padding:6px 3px;text-align:left;vertical-align:bottom;font-size:11px;text-transform:none;letter-spacing:0}
+.mtx th.tog{background:#eef2ff;color:#3730a3}
+.mtx td.c{text-align:center;cursor:pointer;padding:5px;user-select:none}
+.mtx td.c:hover{background:var(--brand-soft)}
+.mtx td.c.g0{color:#e2e8f0}
+.mtx td.c.g1{color:var(--brand);font-weight:800}
+.mtx td.c.g2{color:var(--amber);font-weight:800}
+.mtx td.c.lock{background:#f8fafc;color:#e2e8f0;cursor:not-allowed}
+.mtx td.nm{white-space:nowrap;font-weight:600}
+.mtx tr.zero td.nm{color:var(--red)}
+.kbox{display:flex;gap:5px;flex-wrap:wrap}
+.kb{font-size:11px;font-weight:700;border:1px solid var(--line2);border-radius:6px;padding:2px 8px;background:#fff;color:var(--ink2)}
+.kb.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.kb:disabled{opacity:.45;cursor:not-allowed}
+.dmv{font-variant-numeric:tabular-nums;font-weight:700}
+.dmv.ex{color:var(--amber)}
+.numi{width:64px;text-align:right;border:1px solid var(--line2);border-radius:7px;padding:5px 8px;font-variant-numeric:tabular-nums}
+.numi:disabled{background:#f1f5f9;color:var(--ink2)}
+.src{font-size:10.5px;color:var(--ink3)}
+
+/* --- cum GDDP (20/9/2026): cay «phuong thuc -> phan» + o n/N o ma tran --- */
+.chkb{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;cursor:pointer;
+ border:1px solid var(--line);border-radius:999px;padding:5px 12px;background:#fff;color:var(--ink2);user-select:none}
+.chkb:hover{border-color:var(--brand);color:var(--brand)}
+.chkb.on{background:var(--brand-soft);border-color:#bfdbfe;color:var(--brand)}
+td.c .src{font-size:9.5px;opacity:.7;display:inline}
+</style>
+</head>
+<body>
+<script>/* sidebar da chuyen ve index.html — node an giu cho JS cu khong vo */
+(function(){var n=document.createElement("nav");n.id="side";n.style.display="none";document.documentElement.appendChild(n)})();</script>
+
+<div class="rolebar">
+  <b>Chức danh:</b>
+  <button class="rb on" data-r="FULL">🔓 Đủ quyền (demo)</button>
+  <button class="rb" data-r="PCM">PHT Chuyên môn</button>
+  <button class="rb" data-r="TTCM">TTCM Toán — Tin</button>
+  <button class="rb" data-r="HT">Hiệu trưởng</button>
+  <button class="rb" data-r="TCNS">Tổ chức nhân sự</button>
+  <button class="rb" data-r="GV">Giáo viên bộ môn</button>
+  <span class="note">Điều kiện cần của <b>M4.5 Phân công giảng dạy</b> — không có dữ liệu ở đây thì M4.5 không lọc được ứng viên</span>
+</div>
+
+<header class="hdr">
+  <div class="logo"><span class="mark">DS</span> Dschool</div>
+  <div class="school">THCS &amp; THPT Nguyễn Tất Thành</div>
+  <select class="sel" id="hnam"><option>Năm học 2026-2027</option><option>Năm học 2025-2026</option></select>
+  <select class="sel" id="hdt" disabled><option>Toàn trường</option></select>
+  <span class="lockico" id="dtlock">🔒 menu không theo điểm trường</span>
+  <div class="spacer"></div>
+  <button class="icobtn">🔔<span class="dot" id="ndot">4</span></button>
+  <button class="icobtn">💬<span class="dot">2</span></button>
+  <div class="avatar" id="ava">DQ</div>
+</header>
+
+<div class="wrap">
+  <main class="main">
+    <div class="tophd"><h1>Quản lý giáo viên</h1><div class="spacer"></div><span id="topact"></span></div>
+    <div class="tabs" id="tabs"></div>
+    <div id="content"></div>
+  </main>
+</div>
+
+<div class="mask" id="mask"><div class="modal">
+  <div class="mh" id="mh"></div><div class="mb" id="mb"></div><div class="mf" id="mf"></div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const HOMNAY=new Date(2026,7,27);
+const p2=n=>String(n).padStart(2,'0');
+const d2s=d=>`${p2(d.getDate())}/${p2(d.getMonth()+1)}/${d.getFullYear()}`;
+const kd=s=>(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d');
+function toast(m){const t=$('#toast');t.innerHTML=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),4000)}
+function closeModal(){$('#mask').classList.remove('on')}
+function modal(t,b,f){$('#mh').innerHTML=t;$('#mb').innerHTML=b;$('#mf').innerHTML=f;$('#mask').classList.add('on')}
+
+const NAV=[
+ ['','🏠 Trung tâm điều hành',[['M0.1','Bảng điều khiển'],['M0.2','Việc cần làm','4'],['M0.3','Thông báo'],['M0.4','Trang cá nhân']]],
+ ['hs','👥 Học sinh',[['M1.7','Lớp học'],['M1.1','Hồ sơ học sinh']]],
+ ['lh','📚 Lớp học hàng ngày',[['M2.9','Không gian lớp học'],['M2.1','Sổ đầu bài']]],
+ ['ns','👨‍🏫 Nhân sự',[['M4.1','Hồ sơ nhân sự'],['M4.2','Biến động nhân sự'],['M4.3','Chức danh & Điểm công tác'],
+   ['M4.4','Quản lý giáo viên','4'],['M4.5','Phân công giảng dạy'],['M4.6','Thời khóa biểu'],
+   ['M4.7','Lịch giảng dạy & Dạy thay'],['M4.8','Nghỉ phép'],['M4.9','Chấm công nhân sự'],
+   ['M4.10','Khen thưởng & Kỷ luật NS'],['M4.11','Chứng thư số']]],
+ ['qt','⚙️ Quản trị',[['M10.1','Hồ sơ năm học'],['M10.2','Thông tin trường'],['M10.4','Chức danh & Phân quyền'],['M10.7','Nhật ký hệ thống'],['M10.8','Đồng bộ CSDL ngành']]],
+];
+
+/* ================= VAI TRÒ =================
+ viec: mon · khoi · dinhmuc · template · duyetNgoaiLe · kyBanHanh · import · xuat */
+const ROLE={
+ FULL:{n:'Đủ quyền — rà luồng nghiệp vụ',menu:'all',ava:'DQ',pv:'school',
+   viec:['mon','dinhmuc','capTay','template','duyetNgoaiLe','kyBanHanh','import','xuat'],
+   mchu:['M4.3','M4.5','M4.1','M10.2','M10.1','M4.2','M4.9','M10.4']},
+ PCM:{n:'Nguyễn Thị Lan — Phó HT Chuyên môn',menu:'all',ava:'NL',pv:'school',
+   viec:['mon','dinhmuc','capTay','template','import','xuat'],mchu:['M4.3','M4.5','M4.1','M10.2','M10.1','M4.9']},
+ TTCM:{n:'Lê Minh Tuấn — Tổ trưởng Tổ Toán — Tin',menu:['','lh','ns','hs'],ava:'LT',pv:'to',to:'T1',
+   viec:['mon','xuat'],dexuat:1,mchu:['M4.5','M10.2','M10.1']},
+ HT:{n:'Trần Văn Hùng — Hiệu trưởng',menu:'all',ava:'TH',pv:'school',
+   viec:['dinhmuc','template','duyetNgoaiLe','kyBanHanh','xuat'],mchu:['M4.3','M4.5','M4.1','M4.2','M10.2','M10.1']},
+ TCNS:{n:'Ngô Thị Hạnh — Tổ chức nhân sự',menu:'all',ava:'TH',pv:'school',
+   viec:['xuat'],mchu:['M4.1','M4.2','M4.3']},
+ GV:{n:'Trịnh Thu Hà — Giáo viên Tiếng Anh',menu:['','lh','ns'],ava:'TH',pv:'own',gvid:8,
+   viec:[],mchu:['M4.5']},
+};
+let role='FULL';
+const R=()=>ROLE[role];
+const co=v=>R().viec.includes(v);
+
+/* ================= DANH MỤC ================= */
+/* Môn áp dụng năm 2026-2027 — nguồn M10.2, theo Cấp × Hệ × Năm */
+const MON={
+ 'Toán':{to:'T1',cap:['THCS','THPT']},
+ 'Tin học':{to:'T1',cap:['THCS','THPT']},
+ 'Ngữ văn':{to:'T2',cap:['THCS','THPT']},
+ 'Lịch sử & Địa lí':{to:'T2',cap:['THCS']},
+ 'Lịch sử':{to:'T2',cap:['THPT']},
+ 'GDCD':{to:'T2',cap:['THCS']},
+ 'Tiếng Anh':{to:'T3',cap:['THCS','THPT']},
+ 'KHTN':{to:'T4',cap:['THCS']},
+ 'Vật lí':{to:'T4',cap:['THPT']},
+ 'Hóa học':{to:'T4',cap:['THPT']},
+ 'Công nghệ':{to:'T5',cap:['THCS']},
+ 'Nghệ thuật':{to:'T5',cap:['THCS']},
+ /* 🆕 cum GDDP (20/9/2026) — hai mon "nhieu giao vien cung day" cua chinh gop y GY-L5ML */
+ 'Nội dung giáo dục địa phương':{to:'T2',cap:['THCS','THPT']},
+ 'Hoạt động trải nghiệm, hướng nghiệp':{to:'T5',cap:['THCS','THPT']},
+};
+const MONS=Object.keys(MON);
+const TO={T1:'Tổ Toán — Tin',T2:'Tổ Ngữ văn — Sử — Địa — GDCD',T3:'Tổ Ngoại ngữ',
+          T4:'Tổ Khoa học tự nhiên',T5:'Tổ Công nghệ — Nghệ thuật'};
+const KHOI={THCS:[6,7,8,9],THPT:[10,11]};
+const ALLKHOI=[6,7,8,9,10,11];
+const capKhoi=k=>k<=9?'THCS':'THPT';
+/* Tổ trưởng đương nhiệm — nguồn M4.3, dùng để chặn gỡ môn cuối của tổ */
+const TT={T1:1,T2:3,T3:7,T4:9};
+
+/* ===== PHƯƠNG THỨC TỔ CHỨC KIẾN THỨC — bản chiếu 🔗 M10.2 tab ② (HDPC ① ②) =====
+   CHỈ ĐỌC ở menu này. Mọi môn có sẵn PT0 — Toàn môn, đúng một phần mã TOAN_MON mang tên môn.
+   Môn nào khai phương thức thứ hai thì môn đó CHIA PHẦN — dẫn xuất, không có cờ nào. */
+const PT={};
+function ptKhai(m,ma,ten,phan){(PT[m]=PT[m]||[]).push({ma,ten,phan:phan.map((x,i)=>({ma:x[0],ten:x[1],tt:i+1}))})}
+MONS.forEach(m=>ptKhai(m,'PT0','Toàn môn',[['TOAN_MON',m]]));
+ptKhai('KHTN','PT1','Ba phân môn Lí – Hóa – Sinh',[['P1','Vật lí'],['P2','Hóa học'],['P3','Sinh học']]);
+ptKhai('Nội dung giáo dục địa phương','PT1','Ba mạch nội dung',
+ [['P1','Văn hóa, lịch sử, truyền thống'],['P2','Địa lí, kinh tế, hướng nghiệp'],['P3','Chính trị – xã hội, môi trường']]);
+ptKhai('Lịch sử & Địa lí','PT1','Hai phân môn Lịch sử – Địa lí',[['P1','Lịch sử'],['P2','Địa lí']]);
+ptKhai('Hoạt động trải nghiệm, hướng nghiệp','PT1','Ba hợp phần',
+ [['P1','Sinh hoạt dưới cờ'],['P2','Sinh hoạt lớp'],['P3','Hoạt động giáo dục theo chủ đề']]);
+const ptCua=m=>PT[m]||[];
+const ptM=(m,pt)=>ptCua(m).find(x=>x.ma===pt);
+const phanM=(m,pt,ph)=>{const z=ptM(m,pt);return z?z.phan.find(x=>x.ma===ph):null};
+const coChiaPhan=m=>ptCua(m).length>1;
+const soPhan=m=>ptCua(m).reduce((n,z)=>n+z.phan.length,0);   /* tổng phần của MỌI phương thức */
+const tenPhan=(m,pt,ph)=>{const z=phanM(m,pt,ph);return z?z.ten:ph};
+const nhanPhan=(m,pt,ph)=>ptM(m,pt).ten+' · '+tenPhan(m,pt,ph);
+
+/* ================= NHÂN SỰ =================
+ mon: {tên môn: 1 chuyên môn chính | 2 dạy kiêm nhiệm}
+ khoi:{tên môn: [khối...]}          monChinh: trường Môn dạy chính ở M4.1 (đồng bộ CSDL ngành)
+ giam: các khoản giảm KHÔNG kể GVCN  capTay: cấp học khai báo tay (thắng mọi suy luận)
+ dmGhiDe / lyDo / duyetNgoaiLe */
+let NS=[
+ {id:1,n:'Lê Minh Tuấn',i:'LT',ma:'NS-2017-0052',cv:'Tổ trưởng CM',gvcn:0,monChinh:'Toán',
+  mon:{'Toán':1,'Tin học':2},khoi:{'Toán':[7,8,9],'Tin học':[6,7,8,9]},giam:[['Tổ trưởng CM',3]],qd:2},
+ {id:2,n:'Phạm Thị Hòa',i:'PH',ma:'NS-2018-0064',cv:'',gvcn:'11B1',monChinh:'Toán',
+  mon:{'Toán':1},khoi:{'Toán':[6,10,11]},giam:[],qd:0},
+ {id:3,n:'Nguyễn Thị Mai',i:'NM',ma:'NS-2014-0031',cv:'Tổ trưởng CM',gvcn:'6A2',monChinh:'Ngữ văn',
+  mon:{'Ngữ văn':1},khoi:{'Ngữ văn':[6,7]},giam:[['Tổ trưởng CM',3]],qd:0},
+ {id:4,n:'Trần Thị Bích',i:'TB',ma:'NS-2015-0044',cv:'',gvcn:'8A1',monChinh:'Ngữ văn',
+  mon:{'Ngữ văn':1},khoi:{'Ngữ văn':[8,9,10]},giam:[],qd:0},
+ {id:5,n:'Hoàng Văn Sơn',i:'HS',ma:'NS-2013-0019',cv:'',gvcn:'7A1',monChinh:'Lịch sử & Địa lí',
+  mon:{'Lịch sử & Địa lí':1,'Lịch sử':2},khoi:{'Lịch sử & Địa lí':[6,7,8,9],'Lịch sử':[10,11]},
+  giam:[['Chủ tịch Công đoàn',2]],qd:1},
+ {id:6,n:'Lý Thị Thu',i:'LTh',ma:'NS-2021-0096',cv:'',gvcn:'6A1',monChinh:'Lịch sử & Địa lí',
+  mon:{'GDCD':1,'Lịch sử':2},khoi:{'GDCD':[6,7,8,9],'Lịch sử':[]},giam:[],qd:0},
+ {id:7,n:'Ngô Thị Hương',i:'NH',ma:'NS-2016-0038',cv:'Tổ trưởng CM',gvcn:'7A2',monChinh:'Tiếng Anh',
+  mon:{'Tiếng Anh':1},khoi:{'Tiếng Anh':[6,7,8,9]},giam:[['Tổ trưởng CM',3]],qd:0},
+ {id:8,n:'Trịnh Thu Hà',i:'TH',ma:'NS-2022-0103',cv:'',gvcn:'10B1',monChinh:'Tiếng Anh',
+  mon:{'Tiếng Anh':1},khoi:{'Tiếng Anh':[10,11]},giam:[],qd:0},
+ {id:9,n:'Đặng Văn Long',i:'ĐL',ma:'NS-2015-0041',cv:'Tổ trưởng CM',gvcn:0,monChinh:'Vật lí',
+  mon:{'KHTN':1,'Vật lí':1},khoi:{'KHTN':[6,7],'Vật lí':[10,11]},giam:[['Tổ trưởng CM',3]],qd:2},
+ {id:10,n:'Cao Thị Nhung',i:'CN',ma:'NS-2019-0078',cv:'',gvcn:'9A1',monChinh:'Hóa học',
+  mon:{'KHTN':1,'Hóa học':1},khoi:{'KHTN':[7,8,9],'Hóa học':[]},giam:[],qd:0},
+ {id:11,n:'Mai Thị Vân',i:'MV',ma:'NS-2023-0111',cv:'',gvcn:0,monChinh:'Công nghệ',
+  mon:{'Công nghệ':1},khoi:{'Công nghệ':[]},giam:[],qd:0},
+ /* --- mới tuyển tháng 8/2026 — có chức danh GVBM nhưng CHƯA khai môn --- */
+ {id:15,n:'Bùi Minh Đức',i:'BĐ',ma:'NS-2026-0128',cv:'',gvcn:0,monChinh:'Tiếng Anh',moi:1,
+  mon:{},khoi:{},giam:[],qd:0},
+ {id:16,n:'Phan Văn Kiên',i:'PK',ma:'NS-2026-0129',cv:'',gvcn:0,monChinh:'KHTN',moi:1,
+  mon:{},khoi:{},giam:[],qd:0},
+ {id:17,n:'Đỗ Thị Ngọc',i:'ĐTN',ma:'NS-2026-0130',cv:'',gvcn:0,monChinh:'Ngữ văn',moi:1,
+  mon:{},khoi:{},giam:[],qd:0},
+ /* --- Ban giám hiệu: có giờ dạy, định mức theo chức vụ --- */
+ {id:12,n:'Trần Văn Hùng',i:'TVH',ma:'NS-2015-0007',cv:'Hiệu trưởng',gvcn:0,monChinh:'Lịch sử',bgh:'HT',
+  mon:{'Lịch sử':1},khoi:{'Lịch sử':[10]},giam:[],qd:0},
+ {id:13,n:'Nguyễn Thị Lan',i:'NL',ma:'NS-2016-0021',cv:'Phó HT Chuyên môn',gvcn:0,monChinh:'Ngữ văn',bgh:'PHT',
+  mon:{'Ngữ văn':1},khoi:{'Ngữ văn':[11]},giam:[],qd:0},
+ {id:14,n:'Vũ Thị Hồng',i:'VH',ma:'NS-2017-0059',cv:'Phó HT — Điểm trường B',gvcn:0,monChinh:'Tin học',bgh:'PHT',
+  mon:{'Tin học':1},khoi:{'Tin học':[10,11]},giam:[],qd:0},
+];
+const ns=id=>NS.find(x=>x.id===id);
+
+/* ===== DI TRÚ ⑧ — `Môn được phép dạy` đổi đơn vị MÔN → PHẦN (cụm GDDP, 20/9/2026) =====
+   Bản ghi năng lực nay là (giao_vien_id, mon_id, phuong_thuc_id, phan_ma).
+   MỌI bản ghi cũ (gv, môn) → (gv, môn, PT0, TOAN_MON). 🛑 KHÔNG ai mất năng lực.
+   `p.mon[m]` giữ nguyên nghĩa cũ — MỨC ĐỘ của môn (1 chuyên môn chính · 2 dạy kiêm nhiệm);
+   `p.ph[m]`  là tập phần người đó dạy được. Bất biến: p.mon[m] tồn tại ⟺ p.ph[m] khác rỗng. */
+NS.forEach(p=>{p.ph={};Object.keys(p.mon).forEach(m=>{p.ph[m]=[{pt:'PT0',ph:'TOAN_MON'}]})});
+const nlCo=(p,m,pt,ph)=>(p.ph[m]||[]).some(x=>x.pt===pt&&x.ph===ph);
+function nlThem(p,m,pt,ph,muc){
+ if(!p.mon[m]){p.mon[m]=muc||1;p.khoi[m]=p.khoi[m]||[]}
+ if(!nlCo(p,m,pt,ph))(p.ph[m]=p.ph[m]||[]).push({pt:pt,ph:ph});
+}
+function nlBo(p,m,pt,ph){
+ p.ph[m]=(p.ph[m]||[]).filter(x=>!(x.pt===pt&&x.ph===ph));
+ if(!p.ph[m].length){delete p.ph[m];delete p.mon[m];delete p.khoi[m];return true}
+ return false;
+}
+/* --- gieo: chủ trương của trường với Khoa học tự nhiên --- */
+/* PC8b — thầy Đặng Văn Long tích HAI ô trong cùng môn: PT0·Toàn môn (khối 6, 7)
+   và PT1·Vật lí (khối 8, 9) ⇒ «đã chọn 2/4 phần» */
+nlThem(ns(9),'KHTN','PT1','P1');
+/* PC8 — cô Cao Thị Nhung dạy Hóa: PT0·Toàn môn + PT1·Hóa học. KHÔNG có PT1·Vật lí
+   ⇒ ô chọn giáo viên cho phần Vật lí ở M4.5 KHÔNG liệt kê cô */
+nlThem(ns(10),'KHTN','PT1','P2');
+/* --- gieo: Nội dung giáo dục địa phương — đúng ca góp ý GY-L5ML của cô Thanh Thủy --- */
+nlThem(ns(5),'Nội dung giáo dục địa phương','PT1','P1',2);
+nlThem(ns(5),'Nội dung giáo dục địa phương','PT1','P2',2);
+nlThem(ns(6),'Nội dung giáo dục địa phương','PT1','P3',2);
+/* --- gieo: Lịch sử và Địa lí — thầy Hoàng Văn Sơn giữ CẢ HAI phân môn (E10 PHIEU-GDDP-1A) --- */
+nlThem(ns(5),'Lịch sử & Địa lí','PT1','P1');
+nlThem(ns(5),'Lịch sử & Địa lí','PT1','P2');
+/* --- gieo: Hoạt động trải nghiệm — một giáo viên dạy TOÀN MÔN, phương thức PT0 --- */
+nlThem(ns(11),'Hoạt động trải nghiệm, hướng nghiệp','PT0','TOAN_MON',2);
+
+/* Phân công đang áp dụng — chiếu từ M4.5, chỉ đọc. {gv: {môn:[lớp...]}} */
+const PC={
+ 1:{'Toán':['7A1','7A2','8A1','9A1','9A2'],'Tin học':['6A1','6A2','7A1','7A2','8A1','9A1']},
+ 2:{'Toán':['6A1','6A2','10B1','10B2','11B1']},
+ 3:{'Ngữ văn':['6A1','6A2','7A1','7A2']},
+ 4:{'Ngữ văn':['8A1','9A1','9A2','10B1','10B2']},
+ 5:{'Lịch sử & Địa lí':['6A1','6A2','7A1','7A2','8A1','9A1','9A2']},
+ 6:{'GDCD':['6A1','6A2','7A1','7A2','9A1','9A2'],'Lịch sử':['10B2']},
+ 7:{'Tiếng Anh':['6A1','6A2','7A1','7A2','8A1','9A1','9A2']},
+ 8:{'Tiếng Anh':['10B1','10B2','11B1']},
+ 9:{'KHTN':['6A1','6A2','7A1',{l:'8A1',pt:'PT1',ph:'P1',tn:45},{l:'9A1',pt:'PT1',ph:'P1',tn:45},{l:'9A2',pt:'PT1',ph:'P1',tn:45}],
+    'Vật lí':['10B1','10B2','11B1']},
+ 10:{'KHTN':['7A2',{l:'8A1',pt:'PT1',ph:'P2',tn:45},{l:'9A1',pt:'PT1',ph:'P2',tn:45},{l:'9A2',pt:'PT1',ph:'P2',tn:45}],
+     'Hóa học':['10B1','10B2','11B1']},
+ 11:{'Công nghệ':['6A1','6A2','7A1','7A2','9A1','9A2'],
+     'Hoạt động trải nghiệm, hướng nghiệp':['6A1','6A2']},
+ 12:{'Lịch sử':['10B1']},13:{'Ngữ văn':['11B1']},14:{'Tin học':['10B1','11B1']},
+ 5:{'Lịch sử & Địa lí':['6A1','6A2','7A1','7A2','8A1','9A1','9A2'],
+    'Nội dung giáo dục địa phương':[{l:'6A1',pt:'PT1',ph:'P1',tn:12},{l:'6A2',pt:'PT1',ph:'P1',tn:12},
+      {l:'6A1',pt:'PT1',ph:'P2',tn:12},{l:'6A2',pt:'PT1',ph:'P2',tn:12}]},
+ 6:{'GDCD':['6A1','6A2','7A1','7A2','9A1','9A2'],'Lịch sử':['10B2'],
+    'Nội dung giáo dục địa phương':[{l:'6A1',pt:'PT1',ph:'P3',tn:11},{l:'6A2',pt:'PT1',ph:'P3',tn:11}]},
+};
+/* mot DONG phan cong: 'lop'  (toàn môn — y hệt hôm nay)  |  {l,pt,ph,tn}  (Lớp × Môn × Phần).
+   HDPC ⑥ — số tiết của một dòng = so_tiet của phần đó ở bảng ④ của KHGD mà lớp đang dùng (M5.1),
+   M4.5 chỉ chuyển tiếp. M4.4 KHÔNG còn cộng số tiết từ M10.2. */
+const dongLop=d=>typeof d==='string'?d:d.l;
+const dongPhan=d=>typeof d==='string'?null:d;
+const TUAN_THUC_HOC=35;                                    /* TT 05/2025 Điều 13 */
+const dongTietTuan=(m,d,cap)=>{const o=dongPhan(d);
+ return o&&o.tn!=null?o.tn/TUAN_THUC_HOC:((TIET[cap]||{})[m]||0)};
+const dongNhan=(m,d)=>{const o=dongPhan(d);
+ return o?dongLop(d)+' · '+tenPhan(m,o.pt,o.ph):dongLop(d)};
+/* số tiết/tuần theo Môn × Cấp — nguồn M10.2 §4.2 */
+const TIET={THCS:{'Toán':4,'Ngữ văn':4,'Tiếng Anh':3,'KHTN':4,'Lịch sử & Địa lí':3,'GDCD':1,'Tin học':1,'Công nghệ':1,'Nghệ thuật':2,
+                  'Nội dung giáo dục địa phương':1,'Hoạt động trải nghiệm, hướng nghiệp':3},
+            THPT:{'Toán':3,'Ngữ văn':3,'Tiếng Anh':3,'Vật lí':2,'Hóa học':2,'Lịch sử':2,'Tin học':2,
+                  'Nội dung giáo dục địa phương':1,'Hoạt động trải nghiệm, hướng nghiệp':3}};
+const capLop=l=>parseInt(l)>=10?'THPT':'THCS';
+
+/* ========= R-cap — CẤP HỌC TRƯỜNG THỰC SỰ CÓ (GY18-F · TĐ-04) =========
+   Nguồn DUY NHẤT: union cấp học của các điểm trường khai ở M10.1 mục ② của HỒ SƠ
+   NĂM HỌC đang chọn ở header — đúng nguồn M10.2 §4.3 đang dùng.
+   M4.4 KHÔNG khai thêm một ô "cấp học của trường": một ô nhập tay ở menu nhân sự
+   sẽ có ngày ghi THPT trong khi M10.1 đang mở khối 6 — đúng thứ M10.2 §4.3 đã
+   tránh bằng cách để nó dẫn xuất.
+   ẨN chứ KHÔNG xóa: giá trị đã khai của cấp đang ẩn còn nguyên, không lượt dọn nào đụng tới. */
+const CAP_HET=['Tiểu học','THCS','THPT'];
+const DIEMTRUONG={
+ '2026-2027':[['ĐT Nguyễn Tất Thành',['THCS','THPT']],['ĐT Vĩnh Lộc',['THCS','THPT']],['ĐT Tân Hội',['THCS']]],
+ '2025-2026':[['ĐT Nguyễn Tất Thành',['THCS']]],   /* trước sáp nhập — trường chỉ có THCS */
+};
+let namHoc='2026-2027';
+let hienMoiCap=false;            /* công tắc "Hiện tất cả các cấp" — MẶC ĐỊNH TẮT */
+/* Lọc theo PHẠM VI CỦA VAI, không theo union toàn trường: vai Branch chỉ thấy cấp
+   của điểm trường mình. Ở M4.4 không vai nào có phạm vi Branch (§7 — menu không
+   theo điểm trường) nên union luôn là toàn trường; hàm vẫn viết theo phạm vi để
+   luật R-cap dùng lại nguyên vẹn ở menu có vai Branch. */
+const dtTrongPV=()=>{const r=R(),ds=DIEMTRUONG[namHoc]||[];
+ return r.pv==='branch'&&r.dt?ds.filter(x=>x[0]===r.dt):ds};
+const capTruong=()=>CAP_HET.filter(c=>dtTrongPV().some(x=>x[1].includes(c)));
+const capAn=()=>CAP_HET.filter(c=>!capTruong().includes(c));
+const capHien=()=>hienMoiCap?CAP_HET.slice():capTruong();
+const hienCap=c=>!c||[].concat(c).some(x=>capHien().includes(x));
+
+/* ================= CẤU HÌNH ================= */
+let CFG={
+ chuan:{'Tiểu học':23,'THCS':19,'THPT':17},bgh:{'Hiệu trưởng':2,'Phó Hiệu trưởng':4},tran:50,
+ /* ô thứ 3 = siêu dữ liệu R-cap: cap = dòng chỉ có nghĩa với cấp đó; kh = khoản giảm khớp ở M4.3 */
+ giamCV:[['Tổ trưởng chuyên môn',3,{kh:'Tổ trưởng CM'}],['Tổ phó chuyên môn',1,{kh:'Tổ phó CM'}],
+   ['GVCN Tiểu học',3,{cap:['Tiểu học'],gvcn:1}],['GVCN THCS · THPT',4,{cap:['THCS','THPT'],gvcn:1}]],
+ giamKN:[['Bí thư Đảng bộ · Chi bộ',4],['Chủ tịch Công đoàn',2],['Phó Chủ tịch Công đoàn',1],['Tổng phụ trách Đội',2]],
+ quydoi:[['Dự giờ đồng nghiệp','1 tiết / buổi'],['Chấm bài kiểm tra tập trung','1 tiết / 40 bài'],
+   ['Coi thi tập trung','1 tiết / buổi'],['Sinh hoạt chuyên môn chuyên đề','1 tiết / chuyên đề'],
+   ['Bồi dưỡng học sinh giỏi','2 tiết / tuần'],['Phụ đạo học sinh yếu','1 tiết / tuần']],
+};
+let BANHANH=null;
+
+/* ================= TÍNH TOÁN ================= */
+const monCua=p=>Object.keys(p.mon);
+const toCua=p=>[...new Set(monCua(p).map(m=>MON[m].to))];          /* DẪN XUẤT, không nhập tay */
+const chuaGanMon=()=>NS.filter(p=>!p.bgh&&!monCua(p).length);
+const monKhongAiDay=()=>MONS.filter(m=>!NS.some(p=>p.mon[m]));
+/* F4 đổi đơn vị theo ⑧: môn chia phần thì đếm ở mức PHẦN. Hai lần lọc để dải không kêu oan:
+   ① môn một phương thức — «phần TOAN_MON không ai dạy» trùng nghĩa «môn không ai dạy», bỏ để khỏi đếm hai lần;
+   ② phương thức mà trường CHƯA dùng (không một phần nào đã gán người) thì không phải lỗ thủng — chỉ là chưa dùng.
+      Trường dùng PT1 cho Nội dung giáo dục địa phương thì PT0 của môn ấy trống là ĐÚNG, không phải thiếu người. */
+const ptDaDung=(m,pt)=>ptM(m,pt).phan.some(x=>NS.some(p=>nlCo(p,m,pt,x.ma)));
+const phanKhongAiDay=()=>{const r=[];
+ MONS.filter(coChiaPhan).forEach(m=>ptCua(m).forEach(z=>{
+  if(!ptDaDung(m,z.ma))return;
+  z.phan.forEach(x=>{if(!NS.some(p=>nlCo(p,m,z.ma,x.ma)))r.push({m:m,pt:z.ma,ph:x.ma,ten:nhanPhan(m,z.ma,x.ma)})})}));
+ return r};
+const aiDayDuoc=(m,pt,ph)=>NS.filter(p=>nlCo(p,m,pt,ph));
+/* «đã chọn n/N phần» — N là tổng phần của MỌI phương thức của môn */
+const soPhanCua=(p,m)=>(p.ph[m]||[]).length;
+const lechMonChinh=()=>NS.filter(p=>monCua(p).length&&p.monChinh&&!p.mon[p.monChinh]);
+const dangDay=(id,m)=>(PC[id]&&PC[id][m])||[];
+
+/* Cấp học tính định mức — 3 bước ưu tiên */
+/* Cấp học tính định mức — 2 bước.
+   Bước "suy từ khối phụ trách" đã BỎ 28/8/2026 vì khối lớp phụ trách chuyển sang M4.5:
+   M4.4 là điều kiện cần của M4.5 nên không được đọc ngược. Thay bằng KHAI BÁO TAY. */
+function capGV(p){
+ if(p.bgh) return {cap:'—',src:'Theo chức vụ Ban giám hiệu',tie:0};
+ if(p.capTay) return {cap:p.capTay,src:'Khai báo tay',tie:0,tay:1};
+ const s={};
+ /* HDPC ⑧ — nguồn số tiết đổi: đọc «số tiết của DÒNG phân công Lớp × Môn × Phần»
+    (M5.1 ④ → M4.5 dòng phân công → M4.4 định mức → M4.9 thù lao vượt giờ),
+    KHÔNG còn cộng số tiết của MÔN từ M10.2. Dòng toàn môn cho đúng con số cũ ⇒ PC1 không đổi. */
+ Object.entries(PC[p.id]||{}).forEach(([m,ls])=>ls.forEach(d=>{
+   const c=capLop(dongLop(d));s[c]=(s[c]||0)+dongTietTuan(m,d,c)}));
+ const ks=Object.keys(s);
+ if(ks.length){
+  ks.sort((a,b)=>s[b]-s[a]);
+  const tie=ks.length>1&&s[ks[0]]===s[ks[1]];
+  const r1=v=>Math.round(v*10)/10;
+  return {cap:ks[0],src:'Suy từ phân công — '+ks.map(k=>k+' '+r1(s[k])+' tiết').join(' · '),tie,chi:s};
+ }
+ return {cap:null,src:'Chưa có phân công ở M4.5 — phải khai báo tay',tie:0};
+}
+function dinhMuc(p){
+ const c=capGV(p);
+ if(p.bgh){const v=p.bgh==='HT'?CFG.bgh['Hiệu trưởng']:CFG.bgh['Phó Hiệu trưởng'];
+  return {cap:c,chuan:v,giam:[],dx:v,ad:v,bgh:1}}
+ const chuan=c.cap?CFG.chuan[c.cap]:null;
+ const giam=p.giam.slice();
+ if(p.gvcn){const g=CFG.giamCV.find(x=>x[2]&&x[2].gvcn&&x[2].cap.includes(c.cap));
+  if(g) giam.push(['Giáo viên chủ nhiệm',g[1]]);}
+ const tong=giam.reduce((a,x)=>a+x[1],0);
+ const dx=chuan===null?null:Math.max(chuan-tong,0);
+ return {cap:c,chuan,giam,tongGiam:tong,dx,ad:p.dmGhiDe!=null?p.dmGhiDe:dx,ex:p.dmGhiDe!=null};
+}
+function ocfg(k){const i=k.indexOf('.'),g=i<0?k:k.slice(0,i),x=i<0?'':k.slice(i+1);
+ if(g==='chuan')  return {v:CFG.chuan[x],nhan:'Khung chuẩn '+x,cap:x};
+ if(g==='bgh')    return {v:CFG.bgh[x],nhan:x,cap:null};
+ if(g==='tran')   return {v:CFG.tran,nhan:'Trần vượt định mức',cap:null};
+ if(g==='giamCV'){const e=CFG.giamCV[+x];return {v:e[1],nhan:e[0],cap:(e[2]||{}).cap||null}}
+ if(g==='giamKN'){const e=CFG.giamKN[+x];return {v:e[1],nhan:e[0],cap:null}}
+ return {v:null,nhan:k,cap:null}}
+function setcfg(k,v){const i=k.indexOf('.'),g=i<0?k:k.slice(0,i),x=i<0?'':k.slice(i+1);
+ if(g==='chuan')CFG.chuan[x]=v;else if(g==='bgh')CFG.bgh[x]=v;else if(g==='tran')CFG.tran=v;
+ else if(g==='giamCV')CFG.giamCV[+x][1]=v;else if(g==='giamKN')CFG.giamKN[+x][1]=v}
+/* Số người bị ảnh hưởng khi sửa MỘT dòng template.
+   Người có ngoại lệ KHÔNG bị ghi đè (ràng buộc 10) nên không đếm.
+   Dòng của cấp trường không có ⇒ 0 người — nói ra để người dùng không nghĩ là lỗi. */
+function anhHuong(k){
+ const i=k.indexOf('.'),g=i<0?k:k.slice(0,i),x=i<0?'':k.slice(i+1);
+ return NS.filter(p=>{
+  if(p.dmGhiDe!=null) return false;
+  if(g==='bgh') return p.bgh===(x==='Hiệu trưởng'?'HT':'PHT');
+  if(p.bgh) return false;
+  const cap=dinhMuc(p).cap.cap;
+  if(g==='chuan') return cap===x;
+  if(g==='tran')  return true;
+  if(g==='giamCV'){const m=CFG.giamCV[+x][2]||{};
+   if(m.gvcn) return !!p.gvcn&&m.cap.includes(cap);
+   return p.giam.some(y=>y[0]===m.kh)}
+  if(g==='giamKN') return p.giam.some(y=>y[0]===CFG.giamKN[+x][0]);
+  return false})}
+let SUA={};                      /* ô ⚙ đã đổi, chờ Lưu template */
+const coNgoaiLe=()=>NS.filter(p=>p.dmGhiDe!=null);
+const choDuyetNgoaiLe=()=>NS.filter(p=>p.dmGhiDe!=null&&!p.duyetNgoaiLe);
+
+/* ================= PHẠM VI ================= */
+let tab='mon',cur=null,q='',fTo='',fMon='',fTT='',mtx=0;
+function trongPV(p){
+ const r=R();
+ if(r.pv==='own') return p.id===r.gvid;
+ if(r.pv==='to')  return toCua(p).includes(r.to)||(!monCua(p).length&&0);
+ return true;
+}
+function dsGV(){
+ let r=NS.filter(trongPV);
+ if(fTo)  r=r.filter(p=>toCua(p).includes(fTo));
+ if(fMon) r=r.filter(p=>!!p.mon[fMon]);
+ if(fTT==='chuaMon') r=r.filter(p=>!p.bgh&&!monCua(p).length);
+ if(fTT==='ngoaiLe') r=r.filter(p=>p.dmGhiDe!=null);
+ if(q){const k=kd(q);r=r.filter(p=>kd(p.n).includes(k)||kd(p.ma).includes(k)||monCua(p).some(m=>kd(m).includes(k)))}
+ return r;
+}
+
+/* ================= SHELL ================= */
+function dlink(menu,label,ctx){
+ if(!R().mchu.includes(menu))
+  return `<span class="rolnk off" title="Vai trò hiện tại không có quyền tại ${menu}">🔗 ${menu}</span>`;
+ return `<button class="rolnk" data-x="dl" data-m="${menu}" data-c="${ctx||''}">↗ ${label}</button>`;
+}
+function sidebar(){
+ const a=R().menu,full=a==='all';
+ const n=chuaGanMon().length+monKhongAiDay().length;
+ $('#side').innerHTML=NAV.map(([id,nm,items])=>{const on=full||id===''||a.includes(id);
+  return `<div class="sgrp">${nm}</div>`+items.map(it=>{const cu=it[0]==='M4.4';
+   return `<div class="snav ${cu?'on':''} ${on?'':'off'}">
+    <span style="font-size:10.5px;opacity:.55;min-width:32px">${it[0]}</span>
+    <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${it[1]}</span>
+    ${cu&&n?`<span class="nb">${n}</span>`:''}</div>`}).join('')}).join('');
+}
+function tabList(){
+ const t=[['mon','Môn được phép dạy',dsGV().filter(p=>!p.bgh).length,chuaGanMon().length?1:0]];
+ t.push(['dm','Định mức giảng dạy',dsGV().length,choDuyetNgoaiLe().length?1:0]);
+ if(R().pv!=='own') t.push(['cf','⚙ Khung chuẩn và template','',0]);
+ return t;
+}
+function tabs(){
+ const L=tabList();
+ if(!L.some(x=>x[0]===tab)) tab=L[0][0];
+ $('#tabs').innerHTML=L.map(([k,n,b,red])=>
+  `<button class="tab1 ${tab===k?'on':''}" data-tab="${k}">${n}${b!==''?`<span class="b ${red?'r':''}">${b}</span>`:''}</button>`).join('');
+}
+function scopeBar(){
+ const r=R();
+ let s;
+ if(r.pv==='own')     s=`Bạn thấy <b>hồ sơ giảng dạy của chính mình</b> — bộ lọc bản ghi <b>authored</b>, chỉ đọc.`;
+ else if(r.pv==='to') s=`Phạm vi <b>Group — ${TO[r.to]}</b>. Bạn chỉ thấy giáo viên có môn thuộc tổ mình. Thao tác của bạn là <b>đề xuất</b>, Phó HT Chuyên môn chốt.`;
+ else                 s=`Phạm vi <b>School — toàn trường</b>.`;
+ return `<div class="scope">🔎 <span class="sp">${s}
+   Menu này <b>không chịu bộ chọn Điểm trường</b> — giáo viên thuộc <b>trường</b>, không thuộc điểm trường; môn được phép dạy và định mức đều tính toàn trường.</span>
+   <span class="chip">Môn được phép dạy: <b>Master</b></span><span class="chip" title="R-cap">Cấp học: <b>${capTruong().join(' · ')||'—'}</b> · năm ${namHoc} — union M10.1 ②</span><span class="chip">Khối lớp phụ trách nay ở <b>M4.5</b> — là bố trí của năm, không phải năng lực</span></div>`;
+}
+
+/* ================= DẢI CẢNH BÁO ================= */
+function alertsMon(){
+ const a=[],cm=chuaGanMon(),mk=monKhongAiDay(),lc=lechMonChinh();
+ if(cm.length) a.push(`<div class="alert r">⛔<span class="sp"><b>${cm.length} giáo viên chưa gán môn được phép dạy</b> — ${
+   cm.map(p=>p.n).join(', ')}. Họ <b>không xuất hiện trong bất kỳ ô chọn nào ở ${'M4.5'}</b>: có chức danh mà không làm được việc</span>
+   <button class="btn xs" data-x="loc" data-v="chuaMon">Xem</button></div>`);
+ if(mk.length) a.push(`<div class="alert r">⛔<span class="sp"><b>${mk.length} môn không có giáo viên nào dạy được</b> — ${
+   mk.map(m=>`${m} (${MON[m].cap.join(', ')})`).join(' · ')}. Mọi lớp có môn này sẽ <b>thiếu giáo viên vĩnh viễn</b> ở M4.5 — đầu vào kế hoạch tuyển dụng ${dlink('M4.2','M4.2')}</span>
+   <button class="btn xs" data-x="mo-monkhuyet">Xem</button></div>`);
+ const pk=phanKhongAiDay();
+ if(pk.length) a.push(`<div class="alert r">⛔<span class="sp"><b>${pk.length} phần không có giáo viên nào dạy được</b> — ${
+   pk.map(x=>`${x.m} · ${x.ten}`).join(' · ')}. Môn thì có người, nhưng <b>phần ấy thì không</b> —
+   M4.5 sẽ để trống dòng <code>Lớp × Môn × Phần</code> đó, và ${dlink('M4.5','M4.5')} chặn ký công bố phân công khi còn phần chưa có người</span>
+   <button class="btn xs" data-x="mo-phankhuyet">Xem</button></div>`);
+ if(lc.length) a.push(`<div class="alert w">⚠<span class="sp"><b>${lc.length} người có <code>Môn dạy chính</code> lệch với tập môn được phép dạy</b> — ${
+   lc.map(p=>`${p.n} (${p.monChinh})`).join(', ')}. Đồng bộ CSDL ngành sẽ đẩy môn sai ${dlink('M4.1','M4.1')}</span>
+   <button class="btn xs" data-x="mo-lech">Xem</button></div>`);
+ return a.length?`<div class="alerts">${a.join('')}</div>`:
+   `<div class="alerts"><div class="alert g">✓<span class="sp">Mọi giáo viên đã có môn được phép dạy. M4.5 đủ dữ liệu để phân công.</span></div></div>`;
+}
+
+/* ================= T1 — MÔN VÀ KHỐI ================= */
+function monTab(){
+ const rows=dsGV().filter(p=>!p.bgh),bgh=dsGV().filter(p=>p.bgh);
+ const bar=`<div class="bar">
+  <input class="inp" id="q" placeholder="Tìm giáo viên · mã · môn…" value="${q}">
+  <select class="fs" id="fto"><option value="">Mọi tổ chuyên môn</option>${
+    Object.keys(TO).map(k=>`<option value="${k}" ${fTo===k?'selected':''}>${TO[k]}</option>`).join('')}</select>
+  <select class="fs" id="fmon"><option value="">Mọi môn</option>${
+    MONS.map(m=>`<option ${fMon===m?'selected':''}>${m}</option>`).join('')}</select>
+  <select class="fs" id="ftt"><option value="">Mọi trạng thái</option>
+    <option value="chuaMon" ${fTT==='chuaMon'?'selected':''}>Chưa gán môn</option>
+</select>
+  <button class="btn ${mtx?'act':''}" data-x="tog-mtx">🔲 Chế độ ma trận</button>
+  <button class="btn" data-x="mo-ungvien" title="Ô chọn giáo viên ở M4.5 lọc theo PHẦN — xem thử nó liệt kê ai">🔍 Ai dạy được phần…</button>
+  ${co('import')?`<button class="btn" data-x="import">📥 Import Excel</button>`:''}
+  <div class="sum"><span><b>${rows.length}</b> giáo viên</span>
+   <span><b>${MONS.length}</b> môn áp dụng</span></div></div>`;
+ if(mtx) return alertsMon()+bar+maTran();
+ const row=p=>{const ms=monCua(p),bad=!p.bgh&&!ms.length;
+  return `<div class="hrow ${bad?'bad':''} ${cur===p.id?'on':''}" data-gv="${p.id}">
+   <div class="who2"><div class="ava2 ${bad?'non':''}">${p.i}</div><div class="i"><b>${p.n}</b>
+     <span>${p.ma}${p.cv?' · '+p.cv:''}${p.moi?' · mới tuyển 8/2026':''}</span></div></div>
+   <div class="hcol keep">${toCua(p).length?toCua(p).map(t=>`<div style="font-size:11.5px">${TO[t]}</div>`).join('')
+     :'<span class="src">— chưa thuộc tổ nào —</span>'}<div class="src">dẫn xuất từ môn</div></div>
+   <div class="hcol">${ms.length?ms.map(m=>`<span class="mon ${p.mon[m]===2?'kn':''}">${m}<span class="dm">${p.mon[m]===2?'kn':'●'}</span></span>`).join(' ')
+     :'<span class="st2 r">⛔ Chưa gán môn</span>'}</div>
+   <div class="hcol">${p.monChinh?`<span class="mini">Môn dạy chính: </span>${p.monChinh}`:'—'}</div></div>`};
+ return alertsMon()+bar+`<div class="stage ${cur?'open':''}">
+  <div class="listw">
+   <div class="hdrow"><div class="kc">Giáo viên</div><div class="kc">Tổ chuyên môn</div>
+     <div>Môn được phép dạy</div><div>Môn dạy chính (M4.1)</div></div>
+   ${rows.length?rows.map(row).join(''):'<div class="empty">Không có giáo viên nào khớp bộ lọc</div>'}
+   ${bgh.length?`<div class="hdrow" style="text-transform:none;font-size:11.5px;color:var(--ink2)">
+     <div class="kc">Ban giám hiệu — có giờ dạy, định mức theo chức vụ</div><div></div><div></div><div></div></div>`
+     +bgh.map(row).join(''):''}
+   <div class="lgd"><span class="chip">● chuyên môn chính</span><span class="chip">kn dạy kiêm nhiệm</span>
+    <span class="chip">Tổ chuyên môn là con số dẫn xuất — nguồn của vòng lặp cũ</span></div></div>
+  <div class="panel">${cur?panelGV(ns(cur)):''}</div></div>`;
+}
+
+function maTran(){
+ const rows=dsGV().filter(p=>!p.bgh);
+ const cols=MONS.filter(m=>!fTo||MON[m].to===fTo);
+ const th=cols.map(m=>`<th class="v ${TT[MON[m].to]?'':''}">${m}<div class="src">${MON[m].cap.join('/')}</div></th>`).join('');
+ const body=rows.map(p=>{
+  const z=!monCua(p).length;
+  return `<tr class="${z?'zero':''}"><td class="nm">${p.n}${z?' ⛔':''}<div class="src">${p.ma}</div></td>`
+   +cols.map(m=>{const v=p.mon[m]||0,lock=!co('mon'),chia=coChiaPhan(m);
+     if(chia){const n=soPhanCua(p,m),N=soPhan(m);
+      return `<td class="c g${v} ${lock?'lock':''}" ${lock?'':`data-tree="${p.id}|${m}"`}
+       title="${p.n} — ${m}: đã chọn ${n}/${N} phần${n?' — '+(p.ph[m]||[]).map(z=>nhanPhan(m,z.pt,z.ph)).join(' · '):''}. Bấm để mở cây phương thức → phần">${
+        n?`<b>${n}</b><span class="src">/${N}</span>`:'·'}</td>`}
+     return `<td class="c g${v} ${lock?'lock':''}" ${lock?'':`data-cell="${p.id}|${m}"`}
+       title="${p.n} — ${m}${dangDay(p.id,m).length?' · đang dạy '+dangDay(p.id,m).length+' lớp':''}">${v===1?'●':v===2?'○':'·'}</td>`}).join('')
+   +`<td class="num" style="font-weight:700">${monCua(p).length}</td></tr>`}).join('');
+ const foot=cols.map(m=>{const c=NS.filter(p=>p.mon[m]).length;
+   return `<td class="c" style="font-weight:800;color:${c?'var(--ink2)':'var(--red)'}">${c}</td>`}).join('');
+ return `<div class="ro">Bấm vào ô để đổi: <b>·</b> không dạy → <b>●</b> chuyên môn chính → <b>○</b> dạy kiêm nhiệm → <b>·</b>.
+   Môn <b>chia phần</b> (có từ hai phương thức trở lên) hiện <b>n/N phần</b> — bấm mở <b>cây phương thức → phần</b>.
+   Dòng cuối đếm số giáo viên dạy được từng môn — <b>số 0 màu đỏ</b> là môn không ai dạy được.
+   ${co('mon')?'':'<b>Vai trò hiện tại chỉ xem.</b>'}</div>
+  <div class="listw mtx"><table>
+   <thead><tr><th style="min-width:150px">Giáo viên</th>${th}<th class="num">Số môn</th></tr></thead>
+   <tbody>${body}</tbody>
+   <tfoot><tr class="grp"><td>Số GV dạy được</td>${foot}<td></td></tr></tfoot></table>
+   <div class="lgd"><span class="chip">● chuyên môn chính</span><span class="chip">○ dạy kiêm nhiệm</span>
+    <span class="chip">· không dạy</span></div></div>`;
+}
+
+/* ---- Panel tầng 2 ---- */
+function panelGV(p){
+ const ms=monCua(p),dm=dinhMuc(p),c=dm.cap;
+ return `<div class="ph"><div class="ava3 ${ms.length?'':'non'}" ${ms.length?'':'style="background:#fee2e2;color:#991b1b"'}>${p.i}</div>
+  <div class="n"><h2>${p.n}</h2><div class="m">${p.ma}
+   ${p.cv?`<span class="pill">${p.cv}</span>`:''}${p.gvcn?`<span class="pill">Chủ nhiệm ${p.gvcn}</span>`:''}
+   ${p.moi?'<span class="pill">Mới tuyển 8/2026</span>':''}</div></div>
+  <div class="spacer"></div><button class="btn sm" data-x="close-panel">✕</button></div>
+ <div class="pbody">
+  ${!ms.length?`<div class="danger">⛔ <b>Chưa gán môn được phép dạy.</b> Người này có chức danh Giáo viên bộ môn nhưng
+    <b>không xuất hiện trong bất kỳ ô chọn nào ở M4.5</b> — có chức danh mà không làm được việc.</div>`:''}
+  <div class="card"><div class="ch">Môn được phép dạy <span class="sp"></span>
+    <span class="tg c">Master — không theo năm học</span></div>
+   ${ms.length?`<table><thead><tr><th>Môn</th><th>Mức độ</th><th>Phần được phép dạy</th><th>Tổ</th><th>Đang dạy</th><th></th></tr></thead><tbody>
+    ${ms.map(m=>{const dd=dangDay(p.id,m),chia=coChiaPhan(m);
+      return `<tr><td><b>${m}</b>${p.monChinh===m?'<div class="src">Môn dạy chính (M4.1)</div>':''}</td>
+      <td><span class="tg ${p.mon[m]===1?'a':'b'}">${p.mon[m]===1?'Chuyên môn chính':'Dạy kiêm nhiệm'}</span></td>
+      <td>${chia?`${(p.ph[m]||[]).map(z=>`<span class="mon">${nhanPhan(m,z.pt,z.ph)}</span>`).join(' ')}
+        <div class="src">đã chọn <b>${soPhanCua(p,m)}/${soPhan(m)}</b> phần${co('mon')?
+         ` · <button class="btn xs" data-x="tree" data-gv="${p.id}" data-mon="${m}">✎ Sửa phần</button>`:''}</div>`
+        :`<span class="mini">Toàn môn</span><div class="src">môn một phương thức — một ô tích như hôm nay</div>`}</td>
+      <td style="font-size:11.5px">${TO[MON[m].to]}</td>
+      <td>${dd.length?`${dd.length} dòng: ${dd.map(d=>dongNhan(m,d)).join(', ')} ${dlink('M4.5','M4.5')}`:'<span class="mini">chưa phân công</span>'}</td>
+      <td style="text-align:right">${co('mon')?`<button class="btn xs" data-x="go-mon" data-gv="${p.id}" data-mon="${m}">🗑 Gỡ</button>`:''}</td></tr>`}).join('')}
+    </tbody></table>
+    <div class="src" style="padding:7px 11px">Bản ghi năng lực là <b>(giáo viên, môn, phương thức, phần)</b> — HDPC ⑧.
+     Mọi bản ghi cũ <i>(gv, môn)</i> đã di trú thành <i>(gv, môn, PT0, TOAN_MON)</i>: <b>không ai mất năng lực</b>.
+     Danh mục phương thức là của ${dlink('M10.2','M10.2 tab ② Danh mục môn')} — menu này chỉ <b>tích ô</b>.</div>`
+    :'<div class="empty">Chưa gán môn nào</div>'}
+   ${co('mon')?`<div class="cact"><button class="btn sm p" data-x="them-mon" data-gv="${p.id}">+ Gán môn</button>
+     ${R().dexuat?'<span class="src">Thao tác của Tổ trưởng là <b>đề xuất</b> — Phó HT Chuyên môn chốt.</span>':''}</div>`:''}</div>
+
+  <div class="card"><div class="ch">Tổ chuyên môn <span class="sp"></span><span class="tg g">Dẫn xuất</span></div><div class="cb">
+   <div class="f"><div class="k">Thuộc tổ</div><div class="v" style="flex-direction:column;align-items:flex-start;gap:2px">
+     ${toCua(p).length?toCua(p).map(t=>`<span>${TO[t]}${TT[t]===p.id?' <span class="tg a">Tổ trưởng</span>':''}</span>`).join('')
+       :'<span class="src">Chưa thuộc tổ nào — vì chưa có môn</span>'}</div></div>
+   <div class="f"><div class="k">Cơ chế</div><div class="v" style="font-weight:400">
+     Suy ra từ môn được phép dạy — <b>không nhập tay</b>. Bản cũ suy từ phân công giảng dạy, tạo vòng lặp
+     không có điểm khởi đầu ${dlink('M10.1','M10.1 ⑤ Tổ bộ môn','muc=5&return=M4.4')}</div></div></div></div>
+
+  <div class="card"><div class="ch">Định mức <span class="sp"></span>
+    ${dm.ex?'<span class="st2 w">⚠ Có ngoại lệ</span>':'<span class="st2 o">Theo template</span>'}</div><div class="cb">
+   <div class="f"><div class="k">Cấp học tính định mức</div><div class="v">${c.cap||'<span style="color:var(--red)">Chưa xác định</span>'}
+     ${c.tie?'<span class="tg r">⚠ Hai cấp bằng tiết — phải khai tay</span>':''}
+     <div class="src" style="width:100%">${c.src}</div></div></div>
+   <div class="f"><div class="k">Khung chuẩn</div><div class="v">${dm.chuan??'—'} tiết/tuần</div></div>
+   <div class="f"><div class="k">Giảm định mức</div><div class="v">${dm.giam&&dm.giam.length
+     ?dm.giam.map(x=>`<span class="tg a">${x[0]} −${x[1]}</span>`).join(' '):'<span class="src">Không có</span>'}
+     <div class="src" style="width:100%">Đọc từ chức danh hiện tại ${dlink('M4.3','M4.3')} — tự tính lại khi chức danh đổi</div></div></div>
+   <div class="f"><div class="k">Định mức áp dụng</div><div class="v"><span class="dmv ${dm.ex?'ex':''}">${dm.ad??'—'} tiết/tuần</span>
+     ${dm.ex?`<span class="tg b">ghi đè từ ${dm.dx}</span>`:''}</div></div>
+   ${p.dmGhiDe!=null?`<div class="f"><div class="k">Lý do ngoại lệ</div><div class="v" style="font-weight:400">${p.lyDo}
+     <div class="src" style="width:100%">${p.duyetNgoaiLe?'✓ '+p.duyetNgoaiLe:'⏳ Chờ Hiệu trưởng duyệt'}</div></div></div>`:''}
+  </div></div>
+ </div>`;
+}
+
+/* ================= T2 — ĐỊNH MỨC ================= */
+function dmTab(){
+ const gv=dsGV().filter(p=>!p.bgh),bgh=dsGV().filter(p=>p.bgh);
+ const a=[];
+ const cd=choDuyetNgoaiLe();
+ if(cd.length) a.push(`<div class="alert w">⏳<span class="sp"><b>${cd.length} định mức ngoại lệ chờ Hiệu trưởng duyệt</b> — ${
+   cd.map(p=>p.n).join(', ')}. Đây là con số quyết định thù lao vượt giờ ở ${dlink('M4.9','M4.9')}</span></div>`);
+ const kc=NS.filter(p=>!p.bgh&&!dinhMuc(p).cap.cap);
+ if(kc.length) a.push(`<div class="alert r">⛔<span class="sp"><b>${kc.length} người chưa xác định được cấp học tính định mức</b> — ${
+   kc.map(p=>p.n).join(', ')}. Chưa có phân công ở M4.5 nên không suy ra được — <b>khai báo tay</b> bằng nút 🎓 Cấp học</span></div>`);
+ const nc=NS.filter(p=>!p.bgh&&dinhMuc(p).cap.cap&&!capTruong().includes(dinhMuc(p).cap.cap));
+ if(nc.length) a.push(`<div class="alert w">⚠<span class="sp"><b>${nc.length} người đang tính định mức theo cấp trường không có trong năm ${namHoc}</b> — ${
+   nc.map(p=>p.n+' ('+dinhMuc(p).cap.cap+')').join(', ')}. <b>R-cap chỉ ẩn dòng cấu hình ở ⚙, không đụng con số đã tính</b> —
+   bảng này là dữ liệu của người, ẩn đi thì mất dấu vết thù lao vượt giờ ở ${dlink('M4.9','M4.9')}</span></div>`);
+ const tie=NS.filter(p=>dinhMuc(p).cap.tie);
+ if(tie.length) a.push(`<div class="alert w">⚠<span class="sp"><b>${tie.length} người có hai cấp bằng số tiết</b> — ${
+   tie.map(p=>p.n).join(', ')}. Không có quy tắc chọn, phải khai báo tay</span></div>`);
+ if(BANHANH) a.push(`<div class="alert g">✓<span class="sp">Bảng định mức đã <b>ký ban hành ${BANHANH}</b></span></div>`);
+
+ const row=p=>{const d=dinhMuc(p);
+  return `<tr class="${d.ex&&!p.duyetNgoaiLe?'warnrow':!d.cap.cap&&!p.bgh?'badrow':''}" data-gv="${p.id}" style="cursor:pointer">
+   <td><b>${p.n}</b><div class="src">${p.cv||'Giáo viên bộ môn'}${p.gvcn?' · CN '+p.gvcn:''}</div></td>
+   <td>${d.cap.cap||'<span style="color:var(--red)">?</span>'}${d.cap.tie?' ⚠':''}${
+     d.cap.cap&&!capTruong().includes(d.cap.cap)?` <span class="tg b" title="R-cap — ⚙ đang ẩn dòng khung chuẩn của cấp này, nhưng định mức đã tính giữ nguyên">⚠ ngoài cấp năm ${namHoc}</span>`:''
+    }<div class="src">${d.cap.src.slice(0,42)}</div></td>
+   <td class="num">${d.chuan??'—'}</td>
+   <td>${d.giam&&d.giam.length?d.giam.map(x=>`<span class="tg a">${x[0]} −${x[1]}</span>`).join(' '):'<span class="src">—</span>'}</td>
+   <td class="num">${d.dx??'—'}</td>
+   <td class="num"><span class="dmv ${d.ex?'ex':''}">${d.ad??'—'}</span></td>
+   <td>${d.bgh?'<span class="tg c">Theo chức vụ</span>'
+     :d.ex?(p.duyetNgoaiLe?'<span class="st2 w">⚠ Ngoại lệ đã duyệt</span>':'<span class="st2 r">⏳ Chờ HT duyệt</span>')
+     :'<span class="st2 o">Theo template</span>'}</td>
+   <td style="text-align:right;white-space:nowrap">
+     ${co('capTay')&&!d.bgh?`<button class="btn xs" data-x="cap-tay" data-gv="${p.id}">🎓 Cấp học</button>`:''}
+     ${co('dinhmuc')&&!d.bgh?`<button class="btn xs" data-x="ghide" data-gv="${p.id}">✎ Ghi đè</button>`:''}
+     ${co('duyetNgoaiLe')&&d.ex&&!p.duyetNgoaiLe?`<button class="btn xs p" data-x="duyet-nl" data-gv="${p.id}">✓ Duyệt</button>`:''}</td></tr>`};
+ return (a.length?`<div class="alerts">${a.join('')}</div>`:'')
+  +`<div class="bar">
+    <select class="fs" id="ftt"><option value="">Mọi trạng thái</option>
+     <option value="ngoaiLe" ${fTT==='ngoaiLe'?'selected':''}>Có ngoại lệ</option></select>
+    ${co('kyBanHanh')?`<button class="btn p" data-x="ky-bh">✍ Ký ban hành bảng định mức</button>`:''}
+    ${co('xuat')?`<button class="btn" data-x="xuat">⬇ Xuất</button>`:''}
+    <div class="sum"><span><b>${coNgoaiLe().length}</b> ngoại lệ</span></div></div>
+   <div class="ro">Máy áp template và <b>đề xuất</b>; người <b>quyết</b>. Ghi đè bắt buộc nêu lý do và cần Hiệu trưởng duyệt —
+    đây là con số quyết định thù lao vượt giờ ở M4.9.</div>
+   <div class="listw"><table>
+    <thead><tr><th>Giáo viên</th><th>Cấp học</th><th class="num">Khung chuẩn</th><th>Giảm định mức</th>
+     <th class="num">Đề xuất</th><th class="num">Áp dụng</th><th>Trạng thái</th><th></th></tr></thead>
+    <tbody>${gv.map(row).join('')}
+     ${bgh.length?`<tr class="grp"><td colspan="8">Ban giám hiệu — định mức theo chức vụ (TT 05/2025), chỉ đọc</td></tr>`+bgh.map(row).join(''):''}
+    </tbody></table>
+    <div class="lgd"><span class="chip">Chế độ giảm đọc từ chức danh M4.3 — không nhập lại</span>
+     <span class="chip">Đổi chức danh thì định mức tự tính lại, không có nút bấm</span></div></div>`;
+}
+
+/* ================= T3 — ⚙ ================= */
+function cfTab(){
+ const rw=co('template');
+ const n=(v,k)=>`<input class="numi" type="number" value="${SUA[k]!=null?SUA[k]:v}" data-cfg="${k}" ${rw?'':'disabled'}${SUA[k]!=null&&SUA[k]!==v?' style="border-color:var(--red);font-weight:700"':''}>`;
+ const an=capAn(),ct=capTruong(),dt=dtTrongPV();
+ /* ---- R-cap: dải nói rõ đang ẩn gì + công tắc Hiện tất cả các cấp (mặc định TẮT) ---- */
+ const dangAn=an.length&&!hienMoiCap;
+ const dai=`<div class="${dangAn?'warn':'info'}" style="display:flex;align-items:center;gap:11px;flex-wrap:wrap">
+   <span style="flex:1;min-width:300px">${dangAn
+    ?`<b>Đang ẩn ${an.length} cấp trường không có trong năm ${namHoc}</b> — ${an.join(' · ')}.
+      Năm này trường có <b>${ct.join(' · ')||'—'}</b> — union cấp học của <b>${dt.length} điểm trường</b>
+      (${dt.map(x=>x[0]+' '+x[1].join('+')).join(' · ')||'chưa khai điểm trường nào'}).`
+    :`<b>Đang hiện tất cả ${CAP_HET.length} cấp.</b> Năm ${namHoc} trường thực có <b>${ct.join(' · ')||'—'}</b>
+      — ${an.length} cấp còn lại vẫn hiện vì công tắc đang bật.`}
+    ${dlink('M10.1','M10.1 ② — cấp học từng điểm trường','muc=2')}</span>
+   <label style="display:flex;align-items:center;gap:6px;font-weight:700;white-space:nowrap;cursor:pointer">
+    <input type="checkbox" id="togcap" ${hienMoiCap?'checked':''}> Hiện tất cả các cấp</label>
+   <div class="src" style="flex-basis:100%;margin-top:2px">
+    <b>Ẩn chứ không xóa</b> — giá trị đã khai của cấp đang ẩn còn nguyên, mở thêm cấp hoặc sáp nhập thì dòng tự hiện lại.
+    Bảng ⚙ này là <b>Master</b> (không thuộc năm học nào) còn cấp học là <b>Yearly</b> (theo hồ sơ năm học), nên đổi năm ở
+    header sẽ làm bảng lúc ẩn lúc hiện dòng — dải này nói ra để người cấu hình không tưởng hệ thống hỏng.
+    Công tắc là lối vào cho <b>trường liên cấp</b>: sáp nhập thêm cấp từ năm sau thì vào đây khai khung chuẩn <b>trước</b> khi mở cấp ở M10.1 ②.</div></div>`;
+ return dai+`<div class="ro">Dữ liệu <b>Master</b> — không theo năm học, không theo điểm trường.
+   ${BANHANH?`Hiệu trưởng ký ban hành ${BANHANH}.`:'<b>Chưa ký ban hành.</b>'}</div>
+  ${rw?`<div class="warn">Đổi template sẽ <b>tính lại định mức cho ${NS.filter(p=>!p.bgh).length} giáo viên</b>.
+    <b>${coNgoaiLe().length} người có ngoại lệ sẽ KHÔNG bị ghi đè</b> — ngoại lệ đã qua Hiệu trưởng duyệt.</div>`
+   :`<div class="ro">Vai trò hiện tại <b>chỉ xem</b>.</div>`}
+ <div style="display:flex;gap:13px;flex-wrap:wrap">
+  <div style="flex:1;min-width:330px">
+   <div class="card"><div class="ch">Khung chuẩn theo cấp <span class="sp"></span><span class="tg c">TT 05/2025</span></div><div class="cb">
+    ${Object.entries(CFG.chuan).filter(([k])=>hienCap(k)).map(([k,v])=>`<div class="f"><div class="k">${k}${
+      capTruong().includes(k)?'':' <span class="tg b">trường không có</span>'}</div><div class="v">${n(v,'chuan.'+k)} <span class="src">tiết/tuần</span></div></div>`).join('')}
+    ${capAn().length&&!hienMoiCap?`<div class="f"><div class="k src">Ẩn theo R-cap: ${capAn().join(' · ')}</div><div class="v src">giá trị còn nguyên</div></div>`:''}
+    ${Object.entries(CFG.bgh).map(([k,v])=>`<div class="f"><div class="k">${k}</div><div class="v">${n(v,'bgh.'+k)} <span class="src">tiết/tuần</span></div></div>`).join('')}
+    <div class="f"><div class="k">Trần vượt định mức</div><div class="v">${n(CFG.tran,'tran')} <span class="src">% — vượt hơn thì M4.5 cảnh báo</span></div></div></div></div>
+   <div class="card"><div class="ch">Template giảm theo chức vụ <span class="sp"></span><span class="tg c">TT 05/2025</span></div><div class="cb">
+    ${CFG.giamCV.map((e,i)=>[e,i]).filter(([e])=>hienCap(e[2]&&e[2].cap)).map(([e,i])=>`<div class="f"><div class="k">${e[0]}${
+      e[2]&&e[2].cap&&!e[2].cap.some(c=>capTruong().includes(c))?' <span class="tg b">trường không có cấp này</span>':''}</div><div class="v">−${n(e[1],'giamCV.'+i)} <span class="src">tiết/tuần</span></div></div>`).join('')}
+    ${CFG.giamCV.some(e=>!hienCap(e[2]&&e[2].cap))?`<div class="f"><div class="k src">Ẩn theo R-cap: ${
+      CFG.giamCV.filter(e=>!hienCap(e[2]&&e[2].cap)).map(e=>e[0]).join(' · ')}</div><div class="v src">giá trị còn nguyên</div></div>`:''}
+    <div class="src" style="padding:0 11px 9px">TTCM · TPCM <b>không theo cấp</b> nên luôn hiện. Dòng Hiệu trưởng · Phó Hiệu trưởng ở khối trên cũng vậy.</div></div></div>
+   <div class="card"><div class="ch">Template giảm theo kiêm nhiệm <span class="sp"></span><span class="tg b">Trường cấu hình</span></div><div class="cb">
+    ${CFG.giamKN.map(([k,v],i)=>`<div class="f"><div class="k">${k}</div><div class="v">−${n(v,'giamKN.'+i)} <span class="src">tiết/tuần</span></div></div>`).join('')}</div></div>
+  </div>
+  <div style="flex:1;min-width:330px">
+   <div class="card"><div class="ch">Quy đổi hoạt động ra tiết dạy <span class="sp"></span><span class="tg b">Trường cấu hình</span></div>
+    <table><thead><tr><th>Hoạt động</th><th>Quy đổi</th></tr></thead><tbody>
+    ${CFG.quydoi.map(([k,v])=>`<tr><td>${k}</td><td><b>${v}</b></td></tr>`).join('')}</tbody></table>
+    <div class="cact"><span class="src">Các con số này <b>ảnh hưởng trực tiếp tới thù lao vượt giờ</b> ở M4.9 — cần trường rà và Hiệu trưởng ký ban hành.</span></div></div>
+   <div class="card"><div class="ch">Công thức — đã sửa so với tài liệu nguồn</div>
+    <div class="warn" style="margin:11px">
+     <code>nh3.3.1</code> §5.1 bản gốc cộng quy đổi vào <b>ngưỡng phải đạt</b> — giáo viên dự giờ, coi thi càng nhiều thì
+     <b>bị đòi thêm giờ</b>. Công thức đúng:
+     <div style="background:#fff;border-radius:7px;padding:8px 10px;margin-top:7px;font-family:ui-monospace,Consolas,monospace;font-size:11.5px;line-height:1.8">
+      Ngưỡng phải đạt&nbsp;&nbsp; = Định mức chuẩn − Giảm định mức<br>
+      Khối lượng đã làm = Tiết lên lớp + Quy đổi hoạt động</div></div></div>
+   <div class="card"><div class="ch">Cấp học tính định mức</div>
+    <div class="info" style="margin:11px">Năm <b>${namHoc}</b> trường có <b>${ct.length} khung chuẩn</b>
+     (${ct.map(c=>c+' '+CFG.chuan[c]).join(' · ')||'—'}). Thứ tự xác định:
+     <br>1. <b>Khai báo tay</b> tại menu này — thắng mọi suy luận
+     <br>2. Suy từ <b>cấp có nhiều tiết nhất</b> trong phân công (M4.5)
+     <br><br><b>Bước "suy từ khối phụ trách" đã bỏ 28/8/2026</b> — khối lớp phụ trách chuyển sang <b>M4.5</b>
+     vì nó là <b>bố trí của một năm</b>, không phải năng lực. M4.4 là <b>điều kiện cần</b> của M4.5 nên
+     không được đọc ngược; thay bằng <b>khai báo tay</b> ở nút 🎓 Cấp học.</div></div>
+   ${rw?`<div class="card"><div class="ch">Ban hành</div><div class="cact">
+     <button class="btn p" data-x="luu-cfg">💾 Lưu template</button>
+     ${co('kyBanHanh')?`<button class="btn" data-x="ky-bh">✍ Ký ban hành</button>`:''}</div></div>`:''}
+  </div></div>`;
+}
+
+/* ================= THAO TÁC ================= */
+function thuGoMon(id,m,force){
+ const p=ns(id),dd=dangDay(id,m),t=MON[m].to;
+ const conLai=monCua(p).filter(x=>x!==m&&MON[x].to===t);
+ /* chặn cứng: gỡ môn cuối thuộc tổ mà người này đang làm Tổ trưởng */
+ if(TT[t]===id&&!conLai.length){
+  modal('⛔ Không gỡ được môn này',
+   `<div class="danger"><b>${p.n}</b> đang là <b>Tổ trưởng ${TO[t]}</b>, và <b>${m}</b> là môn cuối cùng
+     của tổ đó trong danh sách môn được phép dạy.<br><br>
+     Gỡ đi thì người này <b>rời tổ</b> nhưng vẫn là Tổ trưởng tổ đó — trạng thái không tồn tại được,
+     và để lọt thì cả M10.2 lẫn M4.5 cùng hỏng.</div>
+    <div class="ro">Phải <b>miễn nhiệm Tổ trưởng</b> ở M4.3 trước, rồi mới gỡ môn.</div>`,
+   `<button class="btn" data-x="close">Đóng</button>
+    <span style="margin-right:auto"></span>${dlink('M4.3','Miễn nhiệm Tổ trưởng tại M4.3','tt')}`);
+  return;
+ }
+ if(dd.length&&!force){
+  modal('⚠ Người này đang được phân công dạy môn đó',
+   `<div class="warn"><b>${p.n}</b> đang dạy <b>${m}</b> ở <b>${dd.length} dòng phân công</b>: ${dd.map(d=>dongNhan(m,d)).join(', ')}.<br><br>
+     Gỡ môn thì các phân công đó <b>vẫn còn</b> nhưng người dạy không còn được phép dạy môn ấy —
+     M4.5 sẽ hiện cảnh báo trên từng lớp.</div>
+    <div class="ro">Cùng nguyên tắc với M4.3 §6.2.3: <b>cảnh báo có xác nhận</b>, không chặn cứng.
+     Chặn cứng sẽ deadlock vì M4.5 có thể cần chỉ định người thay trước.</div>`,
+   `<button class="btn" data-x="close">Hủy — sang M4.5 gỡ phân công trước</button>
+    <button class="btn d" data-x="go-mon" data-gv="${id}" data-mon="${m}" data-force="1">⚠ Vẫn gỡ</button>`);
+  return;
+ }
+ const np=soPhanCua(p,m);
+ delete p.mon[m];delete p.khoi[m];delete p.ph[m];closeModal();render();
+ toast(`Đã gỡ môn <b>${m}</b> khỏi ${p.n}${np>1?` · gỡ cả ${np} phần`:''}${dd.length?` · ${dd.length} dòng phân công ở M4.5 nay mang cảnh báo`:''}${
+   toCua(p).includes(t)?'':` · rời ${TO[t]}`}`);
+}
+/* ===== CÂY «phương thức → phần» — chỉ mở cho môn có ≥ 2 phương thức (⑧) =====
+   🛑 Môn một phương thức vẫn là MỘT Ô TÍCH như hôm nay — không thêm một cú bấm nào. */
+function moCay(id,m){
+ const p=ns(id),N=soPhan(m),n=soPhanCua(p,m);
+ modal(`Phần được phép dạy — ${p.n} · ${m}`,
+  `<div class="info">Môn <b>${m}</b> có <b>${ptCua(m).length} phương thức tổ chức kiến thức</b>, cộng lại <b>${N} phần</b>.
+    Một giáo viên gắn được <b>nhiều phần</b>, kể cả <b>của nhiều phương thức khác nhau trong cùng một môn</b> —
+    ví dụ dạy <i>Toàn môn</i> cho khối 6, 7 và <i>Vật lí</i> cho khối 8, 9.</div>
+   ${ptCua(m).map(z=>`<div class="card"><div class="ch">${z.ten} <span class="tg c">${z.ma}</span><span class="sp"></span>
+     <span class="src">${z.phan.length} phần</span></div><div class="cb" style="flex-wrap:wrap;gap:7px;padding:9px 11px">
+     ${z.phan.map(x=>{const on=nlCo(p,m,z.ma,x.ma);
+       return `<label class="chkb ${on?'on':''}" data-x="cay-tick" data-gv="${id}" data-mon="${m}" data-pt="${z.ma}" data-ph="${x.ma}">
+         ${on?'☑':'☐'} ${x.ten}</label>`}).join('')}</div></div>`).join('')}
+   <div class="ro" id="cayDem">Đã chọn <b>${n}/${N}</b> phần.</div>
+   <div class="ro">🛑 Không đổi đơn vị này thì gán người cho <b>phần Vật lí</b> mà ô chọn ở M4.5 vẫn liệt kê <b>cả giáo viên Hóa</b> —
+    đúng loại lỗi M4.5 v1.1 đã mắc <i>(lọc theo tổ chuyên môn nên giáo viên Toán hiện ra cho môn Tin học)</i> và đã sửa.</div>`,
+  `<button class="btn p" data-x="close">Xong</button>`);
+}
+function moThemMon(id){
+ const p=ns(id),con=MONS.filter(m=>!p.mon[m]);
+ modal(`Gán môn được phép dạy — ${p.n}`,
+  `<label class="lbl">Môn</label><select class="fldi" id="nmMon">${
+    con.map(m=>`<option>${m}</option>`).join('')}</select>
+   <label class="lbl">Mức độ</label><select class="fldi" id="nmMuc">
+     <option value="1">Chuyên môn chính</option><option value="2">Dạy kiêm nhiệm</option></select>
+   <label class="lbl">Căn cứ</label><select class="fldi" id="nmCC">
+     <option>Bằng cấp chuyên ngành</option><option>Chứng chỉ bồi dưỡng</option><option>Quyết định phân công của trường</option></select>
+   <div class="info" style="margin-top:11px">Chỉ hiện môn <b>thuộc danh mục môn áp dụng</b> của cấp học trường đang có — nguồn M10.2.
+     Gán xong, người này <b>tự động thuộc tổ phụ trách môn đó</b>.</div>
+   <div class="ro">Môn <b>một phương thức</b> ⇒ gán xong là dạy được <b>Toàn môn</b>, y như hôm nay.
+    Môn <b>chia phần</b> ⇒ gán xong màn hình mở tiếp <b>cây phương thức → phần</b> để tích từng phần.</div>`,
+  `<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="ok-mon" data-gv="${id}">Gán môn</button>`);
+}
+function moCapTay(id){
+ const p=NS.find(z=>z.id===id),c=capGV(p);
+ modal(`Cấp học tính định mức — ${p.n}`,
+  `<div class="info">Năm <b>${namHoc}</b> trường có <b>${capTruong().length} khung chuẩn</b>
+    (${capTruong().map(k=>k+' '+CFG.chuan[k]).join(' · ')||'—'}) — <b>R-cap</b>: chỉ hiện cấp trường thực sự có.
+    Cấp học của một giáo viên quyết định khung chuẩn áp cho họ — và qua đó quyết định <b>thù lao vượt giờ</b> ở M4.9.</div>
+   <div class="ro">Đang xác định theo: <b>${c.src}</b>${c.tie?' — <b style="color:var(--red)">hai cấp bằng số tiết, không có quy tắc chọn</b>':''}</div>
+   <div class="ro">Bước <b>suy từ khối phụ trách</b> đã bỏ 28/8/2026: khối lớp phụ trách nay thuộc <b>M4.5</b>,
+    mà M4.4 là <b>điều kiện cần</b> của M4.5 nên không được đọc ngược. Thay bằng khai báo tay ở đây.</div>
+   <label class="lbl">Cấp học tính định mức</label>
+   <select class="fldi" id="ctNew">
+     <option value="">— Để hệ thống suy từ phân công —</option>
+     ${CAP_HET.filter(k=>capHien().includes(k)||p.capTay===k).map(k=>`<option ${p.capTay===k?'selected':''}>${k}${
+       capTruong().includes(k)?'':' — trường không có (giá trị cũ, giữ nguyên)'}</option>`).join('')}</select>
+   <div class="src" style="margin-top:7px">Bộ chọn chỉ liệt kê cấp trường có trong năm đang chọn. Người đã khai một cấp
+    nay trường không còn thì <b>giá trị giữ nguyên</b> và vẫn hiện ở đây — ẩn chứ không xóa.</div>`,
+  `<button class="btn" data-x="close">Hủy</button>
+   <button class="btn p" data-x="ok-cap-tay" data-gv="${id}">Lưu</button>`);
+}
+function moGhiDe(id){
+ const p=ns(id),d=dinhMuc(p);
+ modal(`Ghi đè định mức — ${p.n}`,
+  `<div class="info">Định mức đề xuất <b>${d.dx} tiết/tuần</b> = khung chuẩn ${d.chuan}
+    ${d.giam.length?'− '+d.giam.map(x=>x[0]+' '+x[1]).join(' − '):''}.
+    Máy đề xuất, người quyết — nhưng ghi đè phải nêu lý do và cần Hiệu trưởng duyệt.</div>
+   <label class="lbl">Định mức áp dụng <span style="color:var(--red)">*</span></label>
+   <input class="fldi" id="gdV" type="number" value="${d.ad}">
+   <label class="lbl">Lý do ngoại lệ <span style="color:var(--red)">*</span></label>
+   <textarea class="fldi" id="gdL" rows="3" placeholder="Nêu rõ căn cứ — đây là con số quyết định thù lao vượt giờ…"></textarea>`,
+  `<button class="btn" data-x="close">Hủy</button>
+   ${d.ex?`<button class="btn" data-x="bo-ghide" data-gv="${id}">↩ Bỏ ngoại lệ, dùng template</button>`:''}
+   <button class="btn p" data-x="ok-ghide" data-gv="${id}">Lưu ngoại lệ</button>`);
+}
+
+/* ===== TRA ỨNG VIÊN THEO PHẦN — bằng chứng của ca PC8 =====
+   M4.5 §4.2 ràng buộc 2 lọc ô chọn giáo viên theo `Môn được phép dạy`. Sau ⑧, đơn vị lọc là PHẦN:
+   gán người cho phần Vật lí thì ô chọn CHỈ liệt kê người có (gv, KHTN, PT1, P1). */
+let UV={m:'KHTN',pt:'PT1',ph:'P1'};
+function veUV(){
+ const m=UV.m,z=ptM(m,UV.pt)||ptCua(m)[0];
+ if(!z||!z.phan.some(x=>x.ma===UV.ph)){UV.pt=z?z.ma:'PT0';UV.ph=z?z.phan[0].ma:'TOAN_MON'}
+ const co_=aiDayDuoc(m,UV.pt,UV.ph),khong=NS.filter(p=>!p.bgh&&p.mon[m]&&!nlCo(p,m,UV.pt,UV.ph));
+ const cuMon=NS.filter(p=>p.mon[m]);
+ return `<label class="lbl">Môn</label><select class="fldi" id="uvM">${
+   MONS.map(x=>`<option ${x===m?'selected':''}>${x}</option>`).join('')}</select>
+  <label class="lbl">Phương thức tổ chức kiến thức <span class="src">— danh mục ở M10.2 tab ②</span></label>
+  <select class="fldi" id="uvPt">${ptCua(m).map(x=>`<option value="${x.ma}" ${x.ma===UV.pt?'selected':''}>${x.ten} (${x.phan.length} phần)</option>`).join('')}</select>
+  <label class="lbl">Phần</label><select class="fldi" id="uvPh">${
+   (ptM(m,UV.pt)||{phan:[]}).phan.map(x=>`<option value="${x.ma}" ${x.ma===UV.ph?'selected':''}>${x.ten}</option>`).join('')}</select>
+  <div class="card" style="margin-top:12px"><div class="ch">Ô chọn ở M4.5 sẽ liệt kê <span class="sp"></span>
+    <span class="tg ${co_.length?'a':'r'}">${co_.length} người</span></div><div class="cb" style="flex-direction:column;align-items:stretch;gap:6px">
+   ${co_.length?co_.map(x=>`<div><b>${x.n}</b> <span class="src">${x.ma}${x.cv?' · '+x.cv:''}</span></div>`).join('')
+    :`<div class="danger" style="margin:0">⛔ <b>Không giáo viên nào dạy được phần này.</b> Dòng <code>Lớp × Môn × Phần</code> đó
+      sẽ để trống ở M4.5, và ${dlink('M4.5','M4.5')} chặn ký công bố phân công khi còn phần chưa có người.
+      Đây là đầu vào kế hoạch tuyển dụng ${dlink('M4.2','M4.2')}.</div>`}</div></div>
+  ${coChiaPhan(m)?`<div class="card"><div class="ch">Có môn <b>${m}</b> nhưng <b>KHÔNG</b> có phần này <span class="sp"></span>
+    <span class="tg b">${khong.length} người</span></div><div class="cb" style="flex-direction:column;align-items:stretch;gap:6px">
+   ${khong.length?khong.map(x=>`<div><b>${x.n}</b> — giữ ${(x.ph[m]||[]).map(y=>nhanPhan(m,y.pt,y.ph)).join(' · ')}
+     <div class="src">⛔ ô chọn ở M4.5 <b>không liệt kê</b> người này cho phần <b>${tenPhan(m,UV.pt,UV.ph)}</b></div></div>`).join('')
+    :'<div class="src">Không ai.</div>'}</div></div>
+   <div class="ro">Trước ⑧, bộ lọc chỉ hỏi <i>«có môn ${m} không»</i> ⇒ cả <b>${cuMon.length} người</b> trên đều hiện ra cho phần
+    <b>${tenPhan(m,UV.pt,UV.ph)}</b>. Đó là <b>đúng loại lỗi M4.5 v1.1 đã mắc</b> — lọc theo tổ chuyên môn nên giáo viên Toán
+    hiện ra cho môn Tin học — và phiên này không được tái tạo nó ở tầng phần.</div>`
+   :`<div class="ro">Môn <b>${m}</b> chỉ có <b>PT0 — Toàn môn</b>, nên bộ lọc hỏi đúng một câu như hôm nay:
+     <i>«có môn ${m} trong Môn được phép dạy không»</i>. <b>Không có gì đổi</b> — ca PC1.</div>`}`;
+}
+function moUV(){modal('🔍 Ai dạy được phần này — ô chọn ứng viên của M4.5',veUV(),
+ `<button class="btn p" data-x="close">Đóng</button>`)}
+
+/* ================= SỰ KIỆN ================= */
+document.addEventListener('click',e=>{
+ if(e.target.matches('input,select,textarea'))return;
+ const t=e.target.closest('[data-r],[data-tab],[data-x],[data-gv],[data-cell]');
+ if(!t)return;
+ const x=t.dataset.x;
+
+ if(t.dataset.r){role=t.dataset.r;cur=null;q='';fTo='';fMon='';fTT='';mtx=0;
+  document.querySelectorAll('.rb').forEach(b=>b.classList.toggle('on',b.dataset.r===role));
+  $('#ava').textContent=R().ava;render();return}
+ if(t.dataset.tab){tab=t.dataset.tab;cur=null;render();return}
+ if(x==='close'||x==='close-panel'){if(x==='close')closeModal();else{cur=null;render()}return}
+ if(x==='dl'){closeModal();toast(`↗ Mở <b>${t.dataset.m}</b>${t.dataset.c?` · ngữ cảnh <code>${t.dataset.c}</code>`:''} · có nút quay lại M4.4`);return}
+ if(x==='loc'){tab='mon';fTT=t.dataset.v;mtx=0;cur=null;render();toast('Đã đặt bộ lọc — không mở màn hình khác');return}
+ if(x==='tog-mtx'){mtx=!mtx;cur=null;render();return}
+
+ /* --- ma trận: đổi mức độ --- */
+ if(t.dataset.cell){
+  const [id,m]=t.dataset.cell.split('|'),p=ns(+id),v=p.mon[m]||0;
+  if(v===0){p.mon[m]=1;p.khoi[m]=[];p.ph[m]=[{pt:'PT0',ph:'TOAN_MON'}];render();
+   toast(`✓ ${p.n} — <b>${m}</b> chuyên môn chính · tự thuộc ${TO[MON[m].to]}`)}
+  else if(v===1){p.mon[m]=2;render();toast(`${p.n} — <b>${m}</b> chuyển sang <b>dạy kiêm nhiệm</b>`)}
+  else thuGoMon(+id,m);
+  return}
+
+ /* --- cây phương thức → phần (⑧) --- */
+ if(t.dataset.tree){const [id,m]=t.dataset.tree.split('|');moCay(+id,m);return}
+ if(x==='tree'){moCay(+t.dataset.gv,t.dataset.mon);return}
+ if(x==='cay-tick'){
+  const p=ns(+t.dataset.gv),m=t.dataset.mon,pt=t.dataset.pt,ph=t.dataset.ph;
+  if(nlCo(p,m,pt,ph)){
+   /* Gỡ phần CUỐI = gỡ luôn môn ⇒ phải đi qua đúng hai ràng buộc cũ (§5.2):
+      chặn cứng Tổ trưởng mất môn cuối của tổ · cảnh báo có xác nhận khi đang có phân công.
+      Một đường code, không có cửa sau. */
+   if(soPhanCua(p,m)===1){thuGoMon(+t.dataset.gv,m);return}
+   nlBo(p,m,pt,ph);
+   toast(`Đã gỡ <b>${nhanPhan(m,pt,ph)}</b> khỏi ${p.n} — còn <b>${soPhanCua(p,m)}/${soPhan(m)}</b> phần`);
+  }else{
+   nlThem(p,m,pt,ph);
+   toast(`✓ ${p.n} dạy được <b>${nhanPhan(m,pt,ph)}</b> — đã chọn <b>${soPhanCua(p,m)}/${soPhan(m)}</b> phần · nay có trong ô chọn của M4.5 cho đúng phần này`);
+  }
+  moCay(+t.dataset.gv,m);render();return}
+ if(x==='mo-ungvien'){moUV();return}
+ if(x==='mo-phankhuyet'){
+  const pk=phanKhongAiDay();
+  modal('Phần không có giáo viên nào dạy được',
+   `<div class="danger">Môn thì có người dạy, nhưng <b>phần ấy thì không</b>. Sau khi đổi khóa phân công thành
+     <code>Lớp × Môn × Phần</code>, một môn "đủ người" ở mức môn vẫn có thể <b>thủng ở mức phần</b> —
+     đây là lớp kiểm soát mà bản cũ không có.</div>
+    <table><thead><tr><th>Môn</th><th>Phương thức</th><th>Phần</th><th>Ai đang giữ các phần khác</th></tr></thead><tbody>
+    ${pk.map(x=>`<tr class="badrow"><td><b>${x.m}</b></td><td>${ptM(x.m,x.pt).ten}</td><td><b>${tenPhan(x.m,x.pt,x.ph)}</b></td>
+      <td style="font-size:11.5px">${NS.filter(z=>z.mon[x.m]).map(z=>z.n).join(', ')||'—'}</td></tr>`).join('')}
+    </tbody></table>
+    <div class="ro" style="margin-top:11px">Hai hướng: <b>tích thêm phần</b> cho giáo viên hiện có (cây phương thức → phần ở tab này),
+     hoặc <b>tuyển bổ sung</b>.</div>`,
+   `<button class="btn" data-x="close">Đóng</button>${dlink('M4.2','Kế hoạch tuyển dụng M4.2','tuyendung')}`);return}
+ if(x==='them-mon'){moThemMon(+t.dataset.gv);return}
+ if(x==='ok-mon'){
+  const p=ns(+t.dataset.gv),m=$('#nmMon').value,mu=+$('#nmMuc').value;
+  /* mặc định gán PT0 · Toàn môn — đúng bản cũ. Môn chia phần thì mở tiếp cây để tích từng phần (⑧) */
+  p.mon[m]=mu;p.khoi[m]=[];p.ph[m]=[{pt:'PT0',ph:'TOAN_MON'}];
+  closeModal();render();
+  if(coChiaPhan(m)){moCay(+t.dataset.gv,m);
+   toast(`✓ Gán <b>${m}</b> cho ${p.n} · mặc định <b>PT0 · Toàn môn</b> — môn này chia phần, tích tiếp từng phần`)}
+  else toast(`✓ Gán <b>${m}</b> cho ${p.n} · tự thuộc ${TO[MON[m].to]} · nay xuất hiện trong ô chọn ứng viên ở M4.5`);
+  return}
+ if(x==='go-mon'){thuGoMon(+t.dataset.gv,t.dataset.mon,t.dataset.force);return}
+
+ if(x==='cap-tay'){moCapTay(+t.dataset.gv);return}
+ if(x==='ok-cap-tay'){const p=NS.find(z=>z.id===+t.dataset.gv),v=$('#ctNew').value;
+  if(v)p.capTay=v; else delete p.capTay;
+  closeModal();render();
+  toast(v?`✓ ${p.n} — cấp học tính định mức khai báo <b>${v}</b>`
+        :`${p.n} — trở lại <b>suy từ phân công</b>`);return}
+ if(x==='ghide'){moGhiDe(+t.dataset.gv);return}
+ if(x==='ok-ghide'){
+  const p=ns(+t.dataset.gv),v=+$('#gdV').value,l=$('#gdL').value.trim();
+  if(!l){toast('⛔ Bắt buộc nêu lý do ngoại lệ — đây là con số quyết định thù lao vượt giờ');return}
+  p.dmGhiDe=v;p.lyDo=l;p.duyetNgoaiLe=null;closeModal();render();
+  toast(`Đã ghi đè định mức ${p.n} = <b>${v} tiết/tuần</b> · cờ <b>Có ngoại lệ</b> · chờ Hiệu trưởng duyệt`);return}
+ if(x==='bo-ghide'){const p=ns(+t.dataset.gv);delete p.dmGhiDe;delete p.lyDo;delete p.duyetNgoaiLe;
+  closeModal();render();toast(`${p.n} trở lại <b>định mức theo template</b>`);return}
+ if(x==='duyet-nl'){const p=ns(+t.dataset.gv);p.duyetNgoaiLe='Hiệu trưởng duyệt · '+d2s(HOMNAY);render();
+  toast(`✓ Đã duyệt ngoại lệ định mức của ${p.n} · ghi audit`);return}
+
+ if(x==='mo-monkhuyet'){
+  const mk=monKhongAiDay();
+  modal('Môn không có giáo viên nào dạy được',
+   `<div class="danger">Mỗi môn dưới đây <b>không có ai trong trường được phép dạy</b>. Mọi lớp áp dụng môn đó
+     sẽ thiếu giáo viên ở M4.5 và <b>không xếp được Thời khóa biểu đủ tiết</b>.</div>
+    <table><thead><tr><th>Môn</th><th>Cấp áp dụng</th><th>Tổ phụ trách</th><th class="num">Lớp bị ảnh hưởng</th></tr></thead><tbody>
+    ${mk.map(m=>`<tr class="badrow"><td><b>${m}</b></td><td>${MON[m].cap.join(', ')}</td><td>${TO[MON[m].to]}</td>
+      <td class="num">${MON[m].cap.includes('THCS')?7:0}${MON[m].cap.includes('THPT')?'+3':''} lớp</td></tr>`).join('')}
+    </tbody></table>
+    <div class="ro" style="margin-top:11px">Hai hướng xử lý: <b>gán môn cho giáo viên hiện có</b> ở tab này,
+     hoặc <b>tuyển bổ sung</b> — đây chính là đầu vào kế hoạch tuyển dụng.</div>`,
+   `<button class="btn" data-x="close">Đóng</button>${dlink('M4.2','Kế hoạch tuyển dụng M4.2','tuyendung')}`);return}
+ if(x==='mo-lech'){
+  const lc=lechMonChinh();
+  modal('Lệch giữa Môn dạy chính và tập môn được phép dạy',
+   `<div class="warn"><code>Môn dạy chính</code> ở <b>M4.1 hồ sơ nhân sự</b> là trường <b>một giá trị</b>, dùng để
+     <b>đồng bộ CSDL ngành</b> (TT 42/2021). Menu này giữ <b>cả tập</b> môn được phép dạy.
+     Hai trường không gộp được, nhưng phải khớp nhau.</div>
+    <table><thead><tr><th>Giáo viên</th><th>Môn dạy chính (M4.1)</th><th>Môn được phép dạy (M4.4)</th></tr></thead><tbody>
+    ${lc.map(p=>`<tr class="warnrow"><td><b>${p.n}</b></td><td style="color:var(--red)">${p.monChinh}</td>
+      <td>${monCua(p).join(', ')||'—'}</td></tr>`).join('')}
+    </tbody></table>
+    <div class="ro" style="margin-top:11px">Hệ thống <b>không tự sửa bên nào</b> — chỉ cảnh báo. Sửa sai bên nào là quyết định của người dùng.</div>`,
+   `<button class="btn" data-x="close">Đóng</button>${dlink('M4.1','Sửa Môn dạy chính tại M4.1','monchinh')}`);return}
+
+
+ if(x==='import'){
+  modal('Import Excel — môn được phép dạy',
+   `<div class="ro">Import <b>bắt buộc qua bước đối soát</b>. Không bao giờ ghi thẳng.</div>
+    <div class="okbox">✓ <b>9 dòng</b> hợp lệ, sẽ được ghi</div>
+    <div class="danger"><b>Chặn cứng — 2 dòng</b>
+     <table style="margin-top:6px"><thead><tr><th>Dòng</th><th>Nội dung</th><th>Lý do</th></tr></thead><tbody>
+      <tr><td>4</td><td>NS-2026-0999 · Toán</td><td><b>Mã nhân sự không tồn tại</b></td></tr>
+      <tr><td>7</td><td>NS-2018-0064 · Sinh học</td><td><b>Môn ngoài danh mục áp dụng</b> năm 2026-2027</td></tr>
+     </tbody></table></div>
+    <div class="warn"><b>Cảnh báo mềm — 1 dòng</b><br>
+     Dòng 11: NS-2017-0052 · Tin học — người này <b>đã có môn này</b>, import sẽ ghi đè mức độ</div>`,
+   `<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="ok-import">Ghi 9 dòng hợp lệ</button>`);return}
+ if(x==='ok-import'){closeModal();
+  modal('Kết quả import',
+   `<div class="okbox">✓ Đã ghi <b>9 dòng</b>.</div>
+    <div class="warn"><b>Bỏ qua 2 dòng:</b><br>Dòng 4 — mã nhân sự không tồn tại<br>Dòng 7 — môn ngoài danh mục áp dụng</div>
+    <div class="ro">Bảng kết quả tách rõ dòng thành công và dòng bị bỏ, kèm lý do — không phải một câu thông báo.</div>`,
+   `<button class="btn p" data-x="close">Đóng</button>`);return}
+
+ if(x==='ky-bh'){
+  const cm=chuaGanMon();
+  if(cm.length){
+   modal('⛔ Không ký ban hành được',
+    `<div class="danger"><b>Còn ${cm.length} giáo viên chưa gán môn được phép dạy:</b><br>
+      ${cm.map(p=>`· <b>${p.n}</b> (${p.ma})`).join('<br>')}</div>
+     <div class="ro">Ban hành một bảng định mức trong đó có người <b>chưa dạy được môn nào</b> nghĩa là
+      bảng đó chưa phản ánh thực tế — và những người này cũng chưa xuất hiện ở M4.5.</div>`,
+    `<button class="btn" data-x="close">Đóng — gán môn trước</button>`);return}
+  BANHANH=d2s(HOMNAY);closeModal();render();
+  toast('✍ Đã ký ban hành bảng định mức · Ký số Nhóm A · ghi audit và đồng bộ M4.11');return}
+ if(x==='luu-cfg'){
+  const ks=Object.keys(SUA);
+  if(!ks.length){toast('Chưa ô nào đổi giá trị — sửa một ô rồi mới lưu được');return}
+  modal('Xác nhận lưu template',
+   ks.map(k=>{const o=ocfg(k),ng=anhHuong(k),cap=o.cap?[].concat(o.cap):null,
+     an=cap&&!cap.some(c=>capTruong().includes(c));
+    return `<div class="${ng.length?'warn':'info'}"><b>${o.nhan}</b>: ${o.v} → <b>${SUA[k]}</b><br>
+     ${ng.length?`Tính lại định mức cho <b>${ng.length} giáo viên</b> — ${ng.map(p=>p.n).join(', ')}.`
+      :`<b>0 người bị ảnh hưởng.</b>${an?` Năm ${namHoc} trường <b>không có cấp ${cap.join(' · ')}</b> nên chưa ai tính định mức theo dòng này —
+        <b>đây không phải lỗi</b>. Con số vẫn được lưu; mở thêm cấp đó ở M10.1 ② thì nó có hiệu lực ngay.`:''}`}</div>`}).join('')
+   +`${coNgoaiLe().length?`<div class="info"><b>${coNgoaiLe().length} người có ngoại lệ KHÔNG bị ghi đè</b> —
+      ${coNgoaiLe().map(p=>p.n).join(', ')}. Ngoại lệ đã qua Hiệu trưởng duyệt, một lần sửa template không được xoá nó.</div>`:''}`,
+   `<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="ok-cfg">Lưu và tính lại</button>`);return}
+ if(x==='ok-cfg'){const ks=Object.keys(SUA);ks.forEach(k=>setcfg(k,SUA[k]));SUA={};
+  closeModal();render();
+  toast(`✓ Đã lưu ${ks.length} ô template · đã tính lại định mức · người có ngoại lệ giữ nguyên`);return}
+
+ if(x==='xuat'){
+  modal('Xuất dữ liệu',
+   `<label class="lbl">Bản xuất</label><select class="fldi">
+     <option>Danh sách năng lực giảng dạy</option><option>Bảng định mức đầu năm</option>
+     <option>Danh sách định mức ngoại lệ</option></select>
+    <label class="lbl">Mục đích sử dụng <span style="color:var(--red)">*</span></label>
+    <select class="fldi" id="mdx"><option value="">— Chọn mục đích —</option>
+     <option>Phát cho tổ chuyên môn</option><option>Báo cáo Phòng · Sở Giáo dục</option>
+     <option>Lập kế hoạch tuyển dụng</option><option>Căn cứ tính thù lao vượt giờ</option></select>
+    <div class="ro" style="margin-top:11px">Mọi lượt xuất <b>ghi audit</b> kèm mục đích, người xuất và thời điểm.</div>`,
+   `<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="ok-xuat">⬇ Xuất</button>`);return}
+ if(x==='ok-xuat'){if(!$('#mdx').value){toast('⛔ Bắt buộc chọn mục đích sử dụng trước khi xuất');return}
+  closeModal();toast('⬇ Đã xuất · ghi audit kèm mục đích, người xuất và thời điểm');return}
+
+ if(t.dataset.gv&&!x){cur=+t.dataset.gv;tab='mon';mtx=0;render();return}
+});
+document.addEventListener('change',e=>{
+ const el=e.target;
+ /* chốt chặn: giá trị rỗng không tới được qua màn hình, nhưng trình duyệt KHÔI PHỤC giá trị form
+    khi tải lại trang có sẵn modal ⇒ change bắn với value='' ⇒ ptCua('')[0] ném TypeError. Rẻ hơn là chặn. */
+ if(el.id==='uvM'){const z=ptCua(el.value)[0];if(!z)return;UV.m=el.value;UV.pt=z.ma;UV.ph=z.phan[0].ma;$('#mb').innerHTML=veUV();return}
+ if(el.id==='uvPt'){const z=ptM(UV.m,el.value);if(!z)return;UV.pt=el.value;UV.ph=z.phan[0].ma;$('#mb').innerHTML=veUV();return}
+ if(el.id==='uvPh'){UV.ph=el.value;$('#mb').innerHTML=veUV();return}
+ if(el.id==='fto'){fTo=el.value;render();return}
+ if(el.id==='fmon'){fMon=el.value;render();return}
+ if(el.id==='ftt'){fTT=el.value;render();return}
+ if(el.id==='togcap'){hienMoiCap=el.checked;render();
+  toast(hienMoiCap?'Đang hiện <b>tất cả các cấp</b> — kể cả cấp trường không có'
+   :`Trở lại <b>chỉ cấp trường có</b> — ẩn ${capAn().join(' · ')||'không cấp nào'}`);return}
+ if(el.id==='hnam'){namHoc=el.value.replace('Năm học ','');cur=null;render();
+  toast(`Năm học <b>${namHoc}</b> — ⚙ lọc lại theo cấp trường có: <b>${capTruong().join(' · ')||'—'}</b>`);return}
+ if(el.dataset.cfg){const k=el.dataset.cfg,v=+el.value;
+  if(v===ocfg(k).v) delete SUA[k]; else SUA[k]=v;
+  render();return}
+});
+document.addEventListener('input',e=>{if(e.target.id==='q'){q=e.target.value;render();
+ const el=$('#q');if(el){el.value=q;el.focus();el.setSelectionRange(q.length,q.length)}}});
+
+function render(){
+ sidebar();tabs();
+ $('#topact').innerHTML=(co('xuat')?'<button class="btn" data-x="xuat">⬇ Xuất</button>':'');
+ const n=chuaGanMon().length+monKhongAiDay().length+choDuyetNgoaiLe().length;
+ $('#ndot').textContent=n||'';$('#ndot').style.display=n?'grid':'none';
+ $('#content').innerHTML=scopeBar()+(tab==='mon'?monTab():tab==='dm'?dmTab():cfTab());
+}
+render();
+</script>
+</body>
+</html>

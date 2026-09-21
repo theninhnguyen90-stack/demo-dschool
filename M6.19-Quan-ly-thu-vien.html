@@ -1,0 +1,2173 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M6.19 Quản lý thư viện — Dschool</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f1f5f9;--surface:#fff;--line:#e2e8f0;--line2:#cbd5e1;
+ --ink:#0f172a;--ink2:#475569;--ink3:#94a3b8;--brand:#1d4ed8;--brand-soft:#eff6ff;
+ --red:#dc2626;--red-soft:#fef2f2;--amber:#d97706;--amber-soft:#fffbeb;
+ --green:#059669;--green-soft:#ecfdf5;--violet:#7c3aed}
+body{font:14px/1.5 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font:inherit}
+
+.hdr{height:56px;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:13px;padding:0 15px;position:sticky;top:0;z-index:40}
+.logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px}
+.logo .mark{width:28px;height:28px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px}
+.school{color:var(--ink2);font-size:12.5px;border-left:1px solid var(--line);padding-left:13px;max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sel{border:1px solid var(--line2);border-radius:7px;padding:5px 9px;font-size:12.5px;background:#fff}
+.sel:disabled{background:#f1f5f9;color:var(--ink2);cursor:not-allowed}
+.spacer{flex:1}
+.icobtn{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;position:relative;font-size:15px}
+.icobtn:hover{background:var(--bg)}
+.dot{position:absolute;top:3px;right:3px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--violet);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700}
+.lockico{font-size:11px;color:var(--ink3)}
+
+.wrap{display:flex;min-height:calc(100vh - 56px)}
+.side{width:216px;flex:0 0 216px;background:var(--surface);border-right:1px solid var(--line);padding:10px 8px;position:sticky;top:56px;max-height:calc(100vh - 56px);overflow-y:auto}
+.sgrp{font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;padding:12px 10px 5px}
+.snav{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:var(--ink2);font-size:12.5px;margin-bottom:1px}
+.snav:hover{background:var(--bg)}
+.snav.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
+.snav .nb{margin-left:auto;flex:0 0 auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;min-width:18px;text-align:center;line-height:15px}
+.snav.off{opacity:.34;pointer-events:none}
+.main{flex:1;padding:14px 18px 44px;min-width:0}
+
+.tophd{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+h1{font-size:19px;font-weight:700}
+.btn{border:1px solid var(--line2);background:#fff;border-radius:8px;padding:7px 12px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--bg)}
+.btn.p{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn.p:hover{background:#1e40af}
+.btn.d{background:var(--red);color:#fff;border-color:var(--red)}
+.btn.g{background:var(--green);color:#fff;border-color:var(--green)}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn.xs{padding:3px 8px;font-size:11.5px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.act{background:var(--brand-soft);border-color:var(--brand);color:var(--brand);font-weight:600}
+
+.tabs{display:flex;gap:3px;border-bottom:2px solid var(--line);margin:12px 0 0;flex-wrap:wrap}
+.tab1{padding:9px 14px;font-size:13.5px;font-weight:600;color:var(--ink2);border-bottom:2px solid transparent;margin-bottom:-2px;display:flex;align-items:center;gap:7px}
+.tab1.on{color:var(--brand);border-bottom-color:var(--brand)}
+.tab1 .b{background:var(--bg);color:var(--ink2);font-size:11px;font-weight:700;padding:1px 7px;border-radius:9px}
+.tab1.on .b{background:var(--brand);color:#fff}
+.tab1 .b.r{background:var(--red);color:#fff}
+
+.scope{display:flex;align-items:center;gap:9px;background:#f8fafc;border:1px solid var(--line);border-left:3px solid var(--brand);
+ border-radius:9px;padding:8px 12px;font-size:12px;color:var(--ink2);margin:12px 0 0;flex-wrap:wrap}
+.scope b{color:var(--ink)}
+.scope .sp{flex:1}
+
+.bar{display:flex;gap:7px;align-items:center;flex-wrap:wrap;padding:11px 0}
+.inp{border:1px solid var(--line2);border-radius:8px;padding:7px 11px;font-size:13px;background:#fff;min-width:220px}
+.fs{border:1px solid var(--line2);border-radius:8px;padding:6px 9px;font-size:12.5px;background:#fff}
+.sum{display:flex;gap:13px;font-size:12px;color:var(--ink2);margin-left:auto;flex-wrap:wrap}
+.sum b{color:var(--ink)}
+
+.alert{display:flex;align-items:flex-start;gap:10px;padding:9px 13px;border-radius:10px;font-size:12.5px;font-weight:600;margin-bottom:10px;line-height:1.6}
+.alert .sp{flex:1;font-weight:400}
+.alert .sp b{font-weight:700}
+.alert.w{background:var(--amber-soft);border:1px solid #fde68a;color:#92400e}
+.alert.r{background:var(--red-soft);border:1px solid #fecaca;color:#991b1b}
+.alert.g{background:var(--green-soft);border:1px solid #a7f3d0;color:#065f46}
+.alert.b{background:var(--brand-soft);border:1px solid #bfdbfe;color:#1e40af}
+.info{background:var(--brand-soft);border:1px solid #bfdbfe;color:#1e40af;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.65;margin-bottom:11px}
+.warn{background:var(--amber-soft);border:1px solid #fde68a;color:#92400e;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.65;margin-bottom:11px}
+.danger{background:var(--red-soft);border:1px solid #fecaca;color:#991b1b;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.65;margin-bottom:11px}
+.okbox{background:var(--green-soft);border:1px solid #a7f3d0;color:#065f46;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.65;margin-bottom:11px}
+.ro{background:#f8fafc;border:1px solid var(--line);color:var(--ink2);padding:8px 11px;border-radius:9px;font-size:12px;margin-bottom:11px;line-height:1.6}
+
+.stage{display:flex;gap:13px;align-items:flex-start}
+.listw{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.panel{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:none}
+.stage.open .panel{display:block}
+@media(max-width:1320px){.stage.open .listw{display:none}}
+
+.grph{display:flex;align-items:center;gap:9px;padding:8px 13px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:11.5px;font-weight:700;color:var(--ink2);cursor:pointer}
+.grph .cnt{margin-left:auto;font-weight:600;color:var(--ink3);font-size:11px}
+.grph .arw{font-size:10px;color:var(--ink3)}
+
+.hdrow,.hrow{display:grid;gap:9px;padding:9px 13px;align-items:center;font-size:13px;grid-template-columns:1.25fr 1.5fr 1.75fr .8fr .75fr}
+.hdrow{background:#fbfdff;border-bottom:1px solid var(--line);font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em}
+.hrow{border-bottom:1px solid var(--line);cursor:pointer;border-left:3px solid transparent}
+.hrow:hover{background:var(--brand-soft)}
+.hrow.on{background:#eff6ff;border-left-color:var(--brand)}
+.hrow.bad{border-left-color:var(--red);background:#fffafa}
+.hrow.warnl{border-left-color:var(--amber)}
+.stage.open .hdrow,.stage.open .hrow{grid-template-columns:1.25fr 1.7fr}
+.stage.open .hcol{display:none}
+
+.st2{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;white-space:nowrap;display:inline-block}
+.st2.o{background:var(--green-soft);color:var(--green)}
+.st2.w{background:var(--amber-soft);color:var(--amber)}
+.st2.r{background:var(--red-soft);color:var(--red)}
+.st2.n{background:var(--bg);color:var(--ink2)}
+.st2.b{background:#e0e7ff;color:#3730a3}
+.tg{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;white-space:nowrap;display:inline-block}
+.tg.a{background:#e0e7ff;color:#3730a3}
+.tg.b{background:#fef3c7;color:#92400e}
+.tg.c{background:var(--bg);color:var(--ink2)}
+.tg.g{background:var(--green-soft);color:var(--green)}
+.tg.r{background:var(--red-soft);color:var(--red)}
+
+.ph{padding:12px 15px;border-bottom:1px solid var(--line);display:flex;gap:13px;align-items:center;flex-wrap:wrap}
+.ph .n h2{font-size:16px;font-weight:700}
+.ph .n .m{font-size:12px;color:var(--ink2);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pill{font-size:10.5px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--ink2)}
+/* ★ KHÔNG neo chiều cao vào 100vh: trong khung nhúng hoặc màn hình thấp,
+   calc(100vh - 215px) ra 0 và THÂN PANEL BỊ NÉN SẠCH — nội dung vẫn nằm
+   trong DOM nhưng không ai nhìn thấy. Mốc cố định thì luôn đúng, và panel
+   vẫn tự cuộn bên trong thay vì kéo dài trang ra vài nghìn pixel. */
+.pbody{padding:13px 15px;max-height:760px;overflow-y:auto}
+.card{border:1px solid var(--line);border-radius:11px;margin-bottom:12px;overflow:hidden}
+.card.bad{border-color:#fecaca}
+.ch{display:flex;align-items:center;gap:9px;padding:10px 12px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:13px;font-weight:700;flex-wrap:wrap}
+.ch .sp{flex:1}
+.cb{padding:4px 0}
+.f{display:grid;grid-template-columns:180px 1fr;gap:11px;align-items:start;padding:7px 12px;font-size:13px}
+.f+.f{border-top:1px solid #f1f5f9}
+.f .k{color:var(--ink2);font-size:12.5px}
+.f .v{font-weight:600;min-width:0;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.cact{display:flex;gap:6px;padding:9px 12px;border-top:1px solid var(--line);background:#fcfdfe;flex-wrap:wrap;align-items:center}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:7px 9px;border-bottom:1px solid var(--line);background:#f8fafc;white-space:nowrap}
+td{padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr.warnrow{background:var(--amber-soft)}
+tr.badrow{background:var(--red-soft)}
+tr.totrow td{background:#f8fafc;font-weight:700}
+.tbw{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.tbx{overflow-x:auto}
+
+.mask{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:60;display:none;place-items:center}
+.mask.on{display:grid}
+.modal{background:#fff;border-radius:13px;width:820px;max-width:94vw;max-height:88vh;display:flex;flex-direction:column}
+.mh{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700}
+.mb{padding:15px 18px;overflow-y:auto;font-size:13px;line-height:1.65}
+.mf{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;align-items:center}
+.fldi{width:100%;border:1px solid var(--line2);border-radius:8px;padding:8px 10px;margin-top:4px}
+.lbl{display:block;font-size:12px;color:var(--ink2);font-weight:600;margin-top:11px}
+
+.rolebar{background:#0f172a;color:#cbd5e1;padding:8px 15px;display:flex;align-items:center;gap:7px;font-size:12.5px;flex-wrap:wrap}
+.rolebar b{color:#fff}
+.rb{border:1px solid #334155;border-radius:999px;padding:3px 10px;font-size:12px;color:#cbd5e1}
+.rb:hover{background:#1e293b;color:#fff}
+.rb.on{background:#fff;color:#0f172a;border-color:#fff;font-weight:700}
+.ntg{border:1px solid #334155;border-radius:999px;padding:3px 10px;font-size:12px;color:#cbd5e1}
+.ntg:hover{background:#1e293b;color:#fff}
+.ntg.on{background:#fbbf24;color:#3b2a05;border-color:#fbbf24;font-weight:700}
+.simw{font-size:11.5px;color:#94a3b8;display:flex;align-items:center;gap:6px;margin-left:auto}
+.simw select{background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:6px;padding:2px 6px;font-size:11.5px}
+/* Ghi chu thiet ke: giai thich VI SAO, khong phai mot phan man hinh that. Mac dinh TAT. */
+body.nn .dnote{display:none!important}
+.dnote{background:#fffbeb;border:1px dashed #fbbf24;color:#78350f;padding:8px 11px;border-radius:9px;font-size:12px;line-height:1.6;margin-bottom:11px}
+.dnote b{color:#78350f}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(110px);background:#0f172a;color:#fff;padding:11px 17px;border-radius:9px;font-size:13px;z-index:80;transition:transform .22s;max-width:92vw}
+.toast.on{transform:translateX(-50%)}
+.empty{padding:38px;text-align:center;color:var(--ink3)}
+.lgd{display:flex;gap:14px;font-size:11.5px;color:var(--ink3);padding:9px 13px;border-top:1px solid var(--line);flex-wrap:wrap;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px 9px;color:var(--ink2)}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+.rolnk{font-size:10px;font-weight:700;color:var(--brand);background:#eef2ff;border:1px solid #c7d2fe;border-radius:999px;padding:1px 7px;white-space:nowrap}
+.rolnk:hover{background:#e0e7ff}
+.crumb{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink2);margin-bottom:9px;flex-wrap:wrap}
+.crumb a{color:var(--brand);cursor:pointer;font-weight:600}
+
+/* --- rieng M6.1 --- */
+.daybar{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:9px 13px;flex-wrap:wrap;margin-bottom:10px}
+.daybar .dt{font-weight:700;font-size:14px;min-width:190px}
+.pbar{display:flex;height:9px;border-radius:5px;overflow:hidden;background:var(--line);flex:1;min-width:180px}
+.pbar i{display:block}
+.pbar i.a{background:var(--green)}
+.pbar i.b{background:var(--amber)}
+.pbar i.c{background:var(--line2)}
+.pbar i.d{background:var(--red)}
+.pleg{display:flex;gap:12px;font-size:11px;color:var(--ink2);flex-wrap:wrap;align-items:center}
+.pleg s{width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:4px}
+.hsrow{display:flex;align-items:center;gap:10px;padding:7px 11px;border-bottom:1px solid #f1f5f9;font-size:13px}
+.hsrow:last-child{border-bottom:none}
+.hsrow .av{width:30px;height:30px;border-radius:50%;background:#e0e7ff;color:#3730a3;display:grid;place-items:center;font-size:11px;font-weight:700;flex:0 0 30px}
+.hsrow .nm{min-width:0;flex:1}
+.hsrow .nm b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hsrow .nm span{font-size:10.5px;color:var(--ink3)}
+.hsrow.lk{background:#fafbfc}
+.tgl{display:flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden;flex:0 0 auto}
+.tgl button{padding:4px 11px;font-size:11.5px;font-weight:600;color:var(--ink2);background:#fff}
+.tgl button.on{background:var(--green);color:#fff}
+.tgl button.on.v{background:var(--red)}
+.tgl button:disabled{opacity:.45;cursor:not-allowed}
+.src{font-size:10.5px;color:var(--ink3);flex:0 0 auto;max-width:250px}
+.aller{color:var(--red);font-size:12px;cursor:help}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.stp{border:1px solid var(--line2);background:#fff;border-radius:9px;padding:7px 13px;font-size:12.5px;font-weight:600;color:var(--ink2);display:flex;align-items:center;gap:7px}
+.stp.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.stp.done{border-color:#a7f3d0;background:var(--green-soft);color:#065f46}
+.stp:disabled{opacity:.45;cursor:not-allowed}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:7px 12px;font-size:13px;border-bottom:1px solid #f1f5f9}
+.kv:last-child{border-bottom:none}
+.kv b{font-variant-numeric:tabular-nums}
+.kv.tot{background:#f8fafc;font-weight:700}
+.mini{width:74px;text-align:right;border:1px solid var(--line2);border-radius:7px;padding:4px 7px;font-variant-numeric:tabular-nums;font-size:12px}
+.qgrp{padding:9px 13px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:11.5px;font-weight:700;color:var(--ink2)}
+
+
+/* ═════════ M6.19 QUẢN LÝ THƯ VIỆN ═════════ */
+.quay{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin:12px 0 10px;overflow:hidden}
+.quay .qh{display:flex;align-items:center;gap:9px;padding:10px 13px;background:#f8fafc;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.quay .qh b{font-size:13.5px}
+.quay .qb{padding:11px 13px;display:grid;grid-template-columns:minmax(260px,1fr) minmax(300px,1.4fr);gap:14px}
+@media(max-width:1000px){.quay .qb{grid-template-columns:1fr}}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:9px;overflow:hidden}
+.seg button{padding:5px 13px;font-size:12.5px;font-weight:600;color:var(--ink2);background:#fff}
+.seg button.on{background:var(--brand);color:#fff}
+.seg button:disabled{opacity:.45;cursor:not-allowed}
+.stt{font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.sugg{border:1px solid var(--line);border-radius:9px;margin-top:6px;max-height:230px;overflow-y:auto;background:#fff}
+.sugg .si{display:flex;gap:9px;align-items:center;padding:6px 10px;border-bottom:1px solid #f1f5f9;cursor:pointer;font-size:12.5px}
+.sugg .si:hover{background:var(--brand-soft)}
+.sugg .si:last-child{border-bottom:none}
+.bdcard{border:1px solid #bfdbfe;background:var(--brand-soft);border-radius:10px;padding:9px 11px;font-size:12.5px;margin-top:6px}
+.bdcard .nm{font-weight:700;font-size:14px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.bdcard .mm{color:var(--ink2);margin-top:2px}
+.codes{width:100%;min-height:74px;border:1px solid var(--line2);border-radius:8px;padding:8px 10px;font:13px/1.5 Consolas,"Cascadia Mono",monospace;resize:vertical}
+.mono{font-family:Consolas,"Cascadia Mono",monospace;font-size:12px}
+.kq{font-size:11px;font-weight:700;padding:2px 7px;border-radius:5px;white-space:nowrap;display:inline-block}
+.kq.ok{background:var(--green-soft);color:var(--green)}
+.kq.w{background:var(--amber-soft);color:var(--amber)}
+.kq.x{background:var(--red-soft);color:var(--red)}
+.kq.n{background:var(--bg);color:var(--ink2)}
+tr.xrow td{background:#fff7f7}
+tr.wrow td{background:#fffcf2}
+tr.dim td{color:var(--ink3)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px;margin:12px 0 4px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:9px 12px}
+.kpi .k{font-size:11px;color:var(--ink2);font-weight:600}
+.kpi .v{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
+.kpi .s{font-size:11px;color:var(--ink3)}
+.kpi.r .v{color:var(--red)} .kpi.a .v{color:var(--amber)} .kpi.g .v{color:var(--green)}
+.hbar{display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 0}
+.hbar .l{width:150px;flex:0 0 150px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbar .t{flex:1;height:10px;background:var(--bg);border-radius:5px;overflow:hidden}
+.hbar .t i{display:block;height:100%;background:var(--brand)}
+.hbar .n{width:48px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.cfgtb td,.cfgtb th{padding:6px 9px}
+.cfgtb input.mini{width:64px}
+.deny{background:var(--surface);border:1px dashed var(--line2);border-radius:12px;padding:26px 22px;margin-top:12px;color:var(--ink2);font-size:13px;line-height:1.7}
+.deny h3{font-size:15px;color:var(--ink);margin-bottom:6px}
+.lsu{font-size:12px;border-left:2px solid var(--line);margin-left:6px;padding-left:10px}
+.lsu div{padding:3px 0;border-bottom:1px dotted var(--line)}
+.lsu div:last-child{border-bottom:none}
+.scanbox{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.ratio{display:inline-flex;align-items:center;gap:6px;font-size:12px}
+.ratio .t{width:120px;height:8px;border-radius:4px;background:var(--bg);overflow:hidden;display:inline-block}
+.ratio .t i{display:block;height:100%;background:var(--green)}
+.ratio.w .t i{background:var(--amber)}
+td.gtd{background:#f8fafc;font-size:11.5px;font-weight:700;color:var(--ink2);padding:7px 11px}
+td.gtd .cnt{float:right;font-weight:600;color:var(--ink3);font-size:11px}
+tr.on td{background:#eff6ff}
+tbody tr[data-bd]:hover td,tbody tr[data-dau]:hover td,tbody tr[data-dot]:hover td{background:var(--brand-soft)}
+</style>
+</head>
+<body class="nn">
+<script>/* sidebar da chuyen ve index.html — node an giu cho JS cu khong vo */
+(function(){var n=document.createElement("nav");n.id="side";n.style.display="none";document.documentElement.appendChild(n)})();</script>
+
+
+<div class="rolebar" id="rolebar"></div>
+
+<header class="hdr">
+  <div class="logo"><span class="mark">DS</span> Dschool</div>
+  <div class="school">THCS &amp; THPT Nguyễn Tất Thành</div>
+  <select class="sel" id="hnam"><option value="2026-2027">Năm học 2026-2027</option><option value="2025-2026">Năm học 2025-2026</option></select>
+  <select class="sel" id="hdt"></select>
+  <span class="lockico" id="dtlock"></span>
+  <div class="spacer"></div>
+  <button class="icobtn">🔔<span class="dot" id="ndot">2</span></button>
+  <button class="icobtn">💬<span class="dot">1</span></button>
+  <div class="avatar" id="ava">TĐ</div>
+</header>
+
+<div class="wrap">
+  <main class="main">
+    <div id="crumb"></div>
+    <div class="tophd"><h1 id="h1">Quản lý thư viện</h1><div class="spacer"></div><span id="topact"></span></div>
+    <div class="tabs" id="tabs"></div>
+    <div id="content"></div>
+  </main>
+</div>
+
+<div class="mask" id="mask"><div class="modal">
+  <div class="mh" id="mh"></div><div class="mb" id="mb"></div><div class="mf" id="mf"></div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>/* ═══════════ M6.19 QUẢN LÝ THƯ VIỆN — nền: tiện ích · cấu hình · vai ═══════════ */
+
+/* ---------- tiện ích ---------- */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const p2=n=>String(n).padStart(2,'0');
+const pn=(n,w)=>String(n).padStart(w,'0');
+const vn=n=>Number(n).toLocaleString('vi-VN');
+const kd=s=>(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d');
+function toast(m){const t=$('#toast');t.innerHTML=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),5200)}
+function closeM(){$('#mask').classList.remove('on')}
+const mfns={};
+function modal(t,b,f){$('#mh').innerHTML=t;$('#mb').innerHTML=b;$('#mf').innerHTML=f;$('#mask').classList.add('on')}
+function rng(seed){let s=seed;return()=>{s=(s*1103515245+12345)&0x7fffffff;return s/0x7fffffff}}
+
+/* ---------- ngày ---------- */
+const THU=['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
+const d2k=d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
+const k2d=k=>{const[a,b,c]=k.split('-').map(Number);return new Date(a,b-1,c)};
+const k2s=k=>k?p2(k2d(k).getDate())+'/'+p2(k2d(k).getMonth()+1)+'/'+k2d(k).getFullYear():'—';
+const k2ss=k=>k?p2(k2d(k).getDate())+'/'+p2(k2d(k).getMonth()+1):'—';
+const cong=(k,n)=>{const d=k2d(k);d.setDate(d.getDate()+n);return d2k(d)};
+const soNgay=(a,b)=>Math.round((k2d(b)-k2d(a))/864e5);           /* b − a */
+
+const HOMNAY='2026-11-18';                                         /* Thứ Tư */
+const GIO='14:20';
+/* Năm học đọc 🔗 từ M10.1 — ngày kết thúc HK2 đồng thời là ngày kết thúc năm học */
+const NAMHOC={'2026-2027':{bd:'2026-09-07',kt:'2027-05-22'},'2025-2026':{bd:'2025-09-08',kt:'2026-05-23'}};
+const namHocCua=k=>Object.keys(NAMHOC).find(n=>k>=cong(NAMHOC[n].bd,-20)&&k<=cong(NAMHOC[n].kt,100))||'2025-2026';
+
+/* ---------- điểm trường ---------- */
+const DT={A:'Điểm trường A — cơ sở chính (THPT)',B:'Điểm trường B (THCS — trước sáp nhập là THCS Lê Lợi)'};
+const DTN={A:'Điểm trường A',B:'Điểm trường B'};
+
+/* ---------- cấu hình (tab ⚙) ---------- */
+const KHO={
+ SGK:{ten:'Sách giáo khoa',tien:'SGK'},
+ SGV:{ten:'Sách giáo viên · nghiệp vụ',tien:'SNV'},
+ STK:{ten:'Sách tham khảo',tien:'STK'},
+ STN:{ten:'Sách thiếu nhi',tien:'STN'}
+};
+const CFG={
+ mauMa:'{DT}-{KHO}-{SO5}',
+ /* hạn mượn: số ngày · 'nam' = theo năm học (hạn = ngày kết thúc năm học ở M10.1) · null = không áp dụng (cảnh báo) */
+ han:{SGK:{hs:'nam',ns:'nam'},SGV:{hs:null,ns:'nam'},STK:{hs:14,ns:30},STN:{hs:14,ns:30}},
+ toiDa:{hs:3,ns:10},
+ giaHan:{hs:7,ns:14,lan:2},
+ nguongThanhLoc:10,         /* % — TT 02/2020/TT-BVHTTDL Đ.16 */
+ giuLichSu:2,               /* năm học — ⏳ TV-8 */
+ mauNhac:'Thư viện nhà trường nhắc em {TEN} (lớp {LOP}) trả sách đã quá hạn. Em mang sách đến thư viện {DT} trong giờ mở cửa. Nếu sách bị mất hoặc hỏng, em báo lại với thư viện để ghi nhận.'
+};
+const NGUON={mua:'Mua',tang:'Biếu tặng',cap:'Cấp phát (Sở / Phòng / chương trình)',chuyen:'Chuyển sổ khi đưa hệ thống vào dùng'};
+
+/* tiêu chí thanh lọc — danh sách ĐÓNG theo TT 02/2020/TT-BVHTTDL (Đ.19–22), không phải danh mục trường tự đặt */
+const LYDO={
+ noiDung:{n:'Nội dung lỗi thời / hết giá trị sử dụng',s:'nội dung lỗi thời',cc:'Đ.19'},
+ hong:{n:'Hư hỏng, rách nát — không phục hồi được',s:'hỏng',cc:'Đ.20'},
+ mat:{n:'Mất trong quá trình phục vụ',s:'mất',cc:'Đ.20 k.3'},
+ khongThay:{n:'Kiểm kê không tìm thấy',s:'kiểm kê không thấy',cc:'Đ.20 k.3'},
+ thuaBan:{n:'Trùng bản, thừa bản ít sử dụng',s:'thừa bản',cc:'Đ.21'}
+};
+const HINHTHUC={thanhLy:'Thanh lý',chuyenDoi:'Chuyển đổi mục đích sử dụng'};
+const KQTRA={bt:{n:'Bình thường',c:'ok'},hongNhe:{n:'Hỏng nhẹ — vẫn cho mượn',c:'w'},hong:{n:'Hỏng — không cho mượn',c:'x'},mat:{n:'Mất (khi đang mượn)',c:'x'}};
+
+/* ---------- vai (mảng năng lực — kiểm bằng .includes()) ----------
+   mt_* = tab Mượn – trả · kho_* = Kho sách · kk_* = Kiểm kê & thanh lọc · tk_* = Thống kê · ch_* = ⚙ Cấu hình */
+const Q_TV=['mt_x','mt_t','mt_s','mt_xo','mt_xd','kho_x','kho_t','kho_s','kho_id','kho_xd',
+ 'kk_x','kk_t','kk_s','kk_xd','tk_x','tk_xd','ch_x','ch_s'];
+const QALL=Q_TV.concat(['kk_d']);
+const ROLES={
+ FULL :{n:'Trần Minh Đức',cd:'🔓 Đủ quyền (demo)',sc:'School',dt:null,q:QALL},
+ TVA  :{n:'Nguyễn Thị Thu Hà',cd:'TV — Thư viện điểm trường A',sc:'Branch',dt:'A',q:Q_TV,ns:'N09'},
+ TVB  :{n:'Lê Văn Phúc',cd:'TV — Thư viện điểm trường B',sc:'Branch',dt:'B',q:Q_TV,ns:'N10'},
+ HT   :{n:'Nguyễn Quang Huy',cd:'Hiệu trưởng',sc:'School',dt:null,q:['kho_x','kho_xd','kk_x','kk_d','kk_xd','tk_x','tk_xd']},
+ PHTDT:{n:'Lý Thanh Bình',cd:'PHT phụ trách điểm trường B',sc:'Branch',dt:'B',q:['kho_x','kho_xd','kk_x','kk_xd','tk_x','tk_xd']},
+ PHTCM:{n:'Đào Thị Minh',cd:'PHT Chuyên môn',sc:'School',dt:null,q:['tk_x','tk_xd']},
+ GVCN :{n:'Phạm Thị Lan',cd:'GVCN 10A2',sc:'Class',dt:'A',lop:['10A2'],q:['mt_x']}
+};
+let role='FULL';
+const R=()=>ROLES[role];
+const can=q=>R().q.includes(q);
+
+/* ═══════════ M6.19 — dữ liệu mẫu ═══════════
+   Bạn đọc KHÔNG có danh bạ riêng (chốt 1 — D1): học sinh đọc 🔗 từ M1.1, nhân sự đọc 🔗 từ M4.1.
+   Hai mảng HS · NS dưới đây là BẢN CHIẾU chỉ đọc của hai menu đó. */
+
+/* ---------- lớp (🔗 M1.7 / M4.5) ---------- */
+const LOP=[
+ ['10A1','A',10,'Trần Văn Khải'],['10A2','A',10,'Phạm Thị Lan'],['10A3','A',10,'Ngô Thanh Tùng'],
+ ['11A1','A',11,'Lê Thị Hồng'],['11A2','A',11,'Trịnh Văn Hải'],['11A3','A',11,'Hà Minh Quân'],
+ ['12A1','A',12,'Đinh Thị Thảo'],['12A2','A',12,'Lương Văn Sơn'],['12A3','A',12,'Kiều Thị Nga'],
+ ['6A1','B',6,'Bùi Thị Mai'],['6A2','B',6,'Đặng Văn Toàn'],['7A1','B',7,'Hồ Thị Thanh'],['7A2','B',7,'Mai Thị Hạnh'],
+ ['8A1','B',8,'Tạ Văn Bình'],['8A2','B',8,'Châu Thị Diễm'],['9A1','B',9,'Quách Văn Lực'],['9A2','B',9,'Phí Thị Loan']
+].map(([id,dt,khoi,gv])=>({id,dt,khoi,gv}));
+const lopById=id=>LOP.find(l=>l.id===id);
+
+/* ---------- học sinh — bản chiếu 🔗 M1.1 (một bộ sinh tuần tự, KHÔNG hạt giống theo tên lớp) ---------- */
+const HO=['Nguyễn','Trần','Lê','Phạm','Hoàng','Đỗ','Vũ','Bùi','Đặng','Ngô','Dương','Lý','Phan','Trịnh','Cao','Hà','Đinh','Tô'];
+const DEM_N=['Văn','Minh','Quốc','Hải','Đức','Gia','Khánh','Nhật','Thanh','Hoàng','Tuấn','Bảo'];
+const DEM_U=['Thị','Thu','Ngọc','Minh','Khánh','Phương','Thanh','Gia','Hà','Bảo','Diệu','Mai'];
+const TEN_N=['An','Bảo','Dũng','Hùng','Khang','Nam','Phúc','Quân','Sơn','Tú','Long','Thắng','Kiên','Đạt','Duy','Tuấn','Việt','Khôi','Minh','Huy'];
+const TEN_U=['Chi','Giang','Hà','Lan','Mai','Oanh','Trang','Vy','Yến','Linh','Nhung','Hạnh','Thảo','Ngân','Phượng','Quyên','Diệp','Uyên','My','Anh'];
+const HS_DAC={
+ '10A1#5':{ten:'Hà Văn Long',dcs:1},'10A1#9':{ten:'Lò Thị Mỷ',dcs:1},
+ '10A2#0':{ten:'Nguyễn Minh Anh'},'10A2#1':{ten:'Trần Đức Huy'},'10A2#2':{ten:'Lê Khánh Linh'},
+ '10A3#1':{ten:'Dương Hoàng Phúc'},
+ '11A1#3':{ten:'Phan Thảo Vy'},'11A2#6':{ten:'Vũ Tuấn Kiệt'},
+ '11A3#4':{ten:'Hoàng Gia Bảo',tt:'chuyen',ttNgay:'2026-11-04',ttGhi:'Đã chuyển đến THPT Trần Phú (TP. Hồ Chí Minh) — hồ sơ ở M1.5'},
+ '12A1#0':{ten:'Đỗ Quang Minh'},'12A2#5':{ten:'Ngô Hải Đăng'},'12A3#2':{ten:'Lý Thu Trang'},
+ '6A1#2':{dcs:1},'6A1#6':{dcs:1},'6A1#11':{dcs:1},'6A1#15':{dcs:1},'6A1#20':{dcs:1},
+ '6A2#3':{ten:'Phạm Nhật Nam'},'7A2#4':{ten:'Đinh Ngọc Hân'},'8A1#1':{ten:'Vũ Thị Ngọc Ánh'},
+ '9A1#2':{ten:'Cao Minh Khang'},'9A2#7':{ten:'Tô Gia Huy'},
+ '9A2#12':{tt:'thoi',ttNgay:'2026-10-20',ttGhi:'Thôi học — hồ sơ ở M1.6'}
+};
+const HS=[];
+(function(){
+ const r=rng(20261118); let seq=0;
+ LOP.forEach(l=>{for(let i=0;i<30;i++){
+  const nu=r()<0.5, dac=HS_DAC[l.id+'#'+i]||{};
+  const ten=dac.ten||(HO[Math.floor(r()*HO.length)]+' '+(nu?DEM_U:DEM_N)[Math.floor(r()*12)]+' '+(nu?TEN_U:TEN_N)[Math.floor(r()*20)]);
+  HS.push({id:'HS-2026-'+pn(1000+seq++,4),ten,lop:l.id,dt:l.dt,khoi:l.khoi,tt:dac.tt||'hoc',ttNgay:dac.ttNgay,ttGhi:dac.ttGhi,dcs:!!dac.dcs});
+ }});
+})();
+const hsCua=(lop,i)=>HS.filter(h=>h.lop===lop)[i];
+
+/* ---------- nhân sự — bản chiếu 🔗 M4.1 ---------- */
+const NS=[
+ ['N01','Phạm Thị Lan','GVBM Ngữ văn · GVCN 10A2','Tổ Ngữ văn','A'],
+ ['N02','Trần Văn Khải','GVBM Toán · GVCN 10A1','Tổ Toán – Tin','A'],
+ ['N03','Lê Thị Hồng','GVBM Vật lí · GVCN 11A1','Tổ KHTN','A'],
+ ['N04','Ngô Thanh Tùng','GVBM Tiếng Anh · GVCN 10A3','Tổ Ngoại ngữ','A'],
+ ['N05','Bùi Thị Mai','GVBM KHTN · GVCN 6A1','Tổ KHTN','B'],
+ ['N06','Đặng Văn Toàn','GVBM Toán · GVCN 6A2','Tổ Toán – Tin','B'],
+ ['N07','Hồ Thị Thanh','GVBM Ngữ văn · GVCN 7A1','Tổ Ngữ văn','B'],
+ ['N08','Vương Minh Châu','GVBM Lịch sử','Tổ KHXH','A','nghi','2026-10-31','Nghỉ việc từ 31/10/2026 — biến động ở M4.2'],
+ ['N09','Nguyễn Thị Thu Hà','Thư viện (TV) — điểm trường A','Tổ văn phòng','A'],
+ ['N10','Lê Văn Phúc','Thư viện (TV) — điểm trường B','Tổ văn phòng','B'],
+ ['N11','Nguyễn Quang Huy','Hiệu trưởng','Ban giám hiệu','A'],
+ ['N12','Lý Thanh Bình','PHT phụ trách điểm trường B','Ban giám hiệu','B'],
+ ['N13','Đào Thị Minh','PHT Chuyên môn','Ban giám hiệu','A'],
+ ['N14','Cao Thị Yến','Văn thư','Tổ văn phòng','A'],
+ ['N15','Trịnh Văn Hải','GVBM Hóa học · GVCN 11A2','Tổ KHTN','A'],
+ ['N16','Mai Thị Hạnh','GVBM Tiếng Anh · GVCN 7A2','Tổ Ngoại ngữ','B']
+].map(([id,ten,cd,to,dt,tt,ttNgay,ttGhi])=>({id,ma:'NS-'+id.slice(1).padStart(4,'0'),ten,cd,to,dt,tt:tt||'dang',ttNgay,ttGhi}));
+
+/* bạn đọc = tham chiếu {k:'hs'|'ns', id} — không có bảng riêng */
+const bdGet=b=>b.k==='hs'?HS.find(h=>h.id===b.id):NS.find(n=>n.id===b.id);
+const bdKey=b=>b.k+':'+b.id;
+const bdTen=b=>bdGet(b).ten;
+const bdNhom=b=>b.k==='hs'?bdGet(b).lop:bdGet(b).to;     /* lớp hoặc tổ — đơn vị gom danh sách quá hạn */
+const bdLoai=b=>b.k==='hs'?'Học sinh':'Nhân sự';
+
+/* ---------- đầu sách — danh mục DÙNG CHUNG toàn trường ----------
+   [kho, nhan đề, tác giả, NXB, năm, DDC, môn, khối, giá bìa, số bản A, số bản B, lô thêm] */
+const GD='NXB Giáo dục Việt Nam', KNTT='Nhiều tác giả — bộ Kết nối tri thức';
+const DAU_RAW=[
+ ['SGK','Toán 6 — tập một',KNTT,GD,2021,'510','Toán',6,21000,0,7],
+ ['SGK','Toán 6 — tập hai',KNTT,GD,2021,'510','Toán',6,18000,0,6],
+ ['SGK','Ngữ văn 6 — tập một',KNTT,GD,2021,'807','Ngữ văn',6,22000,0,7],
+ ['SGK','Ngữ văn 6 — tập hai',KNTT,GD,2021,'807','Ngữ văn',6,19000,0,5],
+ ['SGK','Khoa học tự nhiên 6',KNTT,GD,2021,'500','KHTN',6,30000,0,7],
+ ['SGK','Tiếng Anh 6 — Global Success',KNTT,GD,2021,'428','Tiếng Anh',6,36000,0,4],
+ ['SGK','Lịch sử và Địa lí 6',KNTT,GD,2021,'900','LS & ĐL',6,26000,0,4],
+ ['SGK','Toán 7 — tập một',KNTT,GD,2022,'510','Toán',7,21000,0,5],
+ ['SGK','Ngữ văn 7 — tập một',KNTT,GD,2022,'807','Ngữ văn',7,22000,0,5],
+ ['SGK','Khoa học tự nhiên 7',KNTT,GD,2022,'500','KHTN',7,30000,0,4],
+ ['SGK','Toán 8 — tập một',KNTT,GD,2023,'510','Toán',8,21000,0,5],
+ ['SGK','Ngữ văn 8 — tập một',KNTT,GD,2023,'807','Ngữ văn',8,22000,0,4],
+ ['SGK','Khoa học tự nhiên 8',KNTT,GD,2023,'500','KHTN',8,31000,0,4],
+ ['SGK','Toán 9 — tập một',KNTT,GD,2024,'510','Toán',9,22000,0,5],
+ ['SGK','Ngữ văn 9 — tập một',KNTT,GD,2024,'807','Ngữ văn',9,23000,0,4],
+ ['SGK','Khoa học tự nhiên 9',KNTT,GD,2024,'500','KHTN',9,32000,0,4],
+ ['SGK','Toán 10 — tập một',KNTT,GD,2022,'510','Toán',10,24000,6,0,[['A',2,'PN-A-01']]],
+ ['SGK','Ngữ văn 10 — tập một',KNTT,GD,2022,'807','Ngữ văn',10,24000,6,0,[['A',2,'PN-A-01']]],
+ ['SGK','Vật lí 10',KNTT,GD,2022,'530','Vật lí',10,22000,4,0],
+ ['SGK','Hóa học 10',KNTT,GD,2022,'540','Hóa học',10,22000,4,0],
+ ['SGK','Tiếng Anh 10 — Global Success',KNTT,GD,2022,'428','Tiếng Anh',10,38000,4,0],
+ ['SGK','Toán 11 — tập một',KNTT,GD,2023,'510','Toán',11,24000,5,0],
+ ['SGK','Ngữ văn 11 — tập một',KNTT,GD,2023,'807','Ngữ văn',11,24000,4,0],
+ ['SGK','Vật lí 11',KNTT,GD,2023,'530','Vật lí',11,22000,4,0],
+ ['SGK','Toán 12 — tập một',KNTT,GD,2024,'510','Toán',12,25000,5,0,[['A',2,'PN-A-01']]],
+ ['SGK','Ngữ văn 12 — tập một',KNTT,GD,2024,'807','Ngữ văn',12,25000,4,0],
+ ['SGK','Lịch sử 12',KNTT,GD,2024,'959.7','Lịch sử',12,21000,4,0],
+ ['SGK','Đại số 10 (chương trình 2006)','Trần Văn Hạo (Tổng CB)',GD,2006,'512','Toán',10,9800,5,0],
+ ['SGK','Ngữ văn 11 — tập một (chương trình 2006)','Phan Trọng Luận (Tổng CB)',GD,2007,'807','Ngữ văn',11,9500,5,0],
+ ['SGV','Toán 6 — sách giáo viên',KNTT,GD,2021,'510.71','Toán',6,42000,0,2],
+ ['SGV','Khoa học tự nhiên 8 — sách giáo viên',KNTT,GD,2023,'500.71','KHTN',8,48000,0,2],
+ ['SGV','Ngữ văn 10 — sách giáo viên',KNTT,GD,2022,'807.1','Ngữ văn',10,46000,0,0,[['A',2,'PN-A-02']]],
+ ['SGV','Vật lí 10 — sách giáo viên',KNTT,GD,2022,'530.71','Vật lí',10,44000,0,0,[['A',2,'PN-A-02']]],
+ ['SGV','Tiếng Anh 10 — sách giáo viên',KNTT,GD,2022,'428.071','Tiếng Anh',10,52000,0,0,[['A',2,'PN-A-02']]],
+ ['SGV','Toán 12 — sách giáo viên',KNTT,GD,2024,'510.71','Toán',12,48000,0,0,[['A',2,'PN-A-02']]],
+ ['SGV','Hướng dẫn dạy học môn Toán theo CT GDPT 2018','Bộ Giáo dục và Đào tạo',GD,2020,'510.71','Toán',null,55000,1,1],
+ ['STK','Từ điển tiếng Việt','Hoàng Phê (chủ biên)','NXB Đà Nẵng',2021,'495.9223','',null,380000,3,1],
+ ['STK','Từ điển Anh – Việt','Viện Ngôn ngữ học','NXB Hồng Đức',2020,'423.95922','',null,250000,3,1],
+ ['STK','Tuyển tập đề thi Olympic 30 tháng 4 — Toán 10','Ban tổ chức kỳ thi','NXB ĐHQG TP.HCM',2023,'510.76','Toán',10,125000,4,0],
+ ['STK','Sổ tay Vật lí THPT','Nhiều tác giả',GD,2022,'530','Vật lí',null,68000,3,0],
+ ['STK','Sổ tay Hóa học THPT','Nhiều tác giả',GD,2022,'540','Hóa học',null,68000,2,0],
+ ['STK','Atlat Địa lí Việt Nam','Nhiều tác giả',GD,2023,'912.597','Địa lí',null,45000,4,2],
+ ['STK','Đại Việt sử ký toàn thư (bản tóm lược)','Ngô Sĩ Liên và các sử thần','NXB Văn học',2019,'959.7','Lịch sử',null,220000,2,0],
+ ['STK','Lược sử loài người','Yuval Noah Harari','NXB Tri thức',2018,'909','',null,209000,2,0],
+ ['STK','Tuổi trẻ đáng giá bao nhiêu','Rosie Nguyễn','NXB Hội Nhà văn',2018,'158.1','',null,90000,3,1],
+ ['STK','Vũ trụ trong vỏ hạt dẻ','Stephen Hawking','NXB Trẻ',2019,'530.1','Vật lí',null,150000,2,0],
+ ['STK','10 vạn câu hỏi vì sao — Khoa học tự nhiên','Nhiều tác giả','NXB Kim Đồng',2020,'500','KHTN',null,75000,1,3],
+ ['STK','Kỹ năng sống cho học sinh THCS','Nhiều tác giả',GD,2021,'646.7','',null,42000,0,3],
+ ['STK','Đắc nhân tâm','Dale Carnegie','NXB Tổng hợp TP.HCM',2020,'158.2','',null,86000,3,1],
+ ['STK','Hỏi đáp lịch sử Việt Nam','Nhiều tác giả','NXB Trẻ',2021,'959.7','Lịch sử',null,96000,1,2],
+ ['STN','Dế Mèn phiêu lưu ký','Tô Hoài','NXB Kim Đồng',2021,'895.9223','',null,45000,3,3],
+ ['STN','Kính vạn hoa — tập 1','Nguyễn Nhật Ánh','NXB Trẻ',2020,'895.9223','',null,88000,2,3],
+ ['STN','Cho tôi xin một vé đi tuổi thơ','Nguyễn Nhật Ánh','NXB Trẻ',2018,'895.9223','',null,80000,2,2],
+ ['STN','Tôi thấy hoa vàng trên cỏ xanh','Nguyễn Nhật Ánh','NXB Trẻ',2019,'895.9223','',null,110000,2,2],
+ ['STN','Hoàng tử bé','Antoine de Saint-Exupéry','NXB Kim Đồng',2019,'843','',null,60000,2,1],
+ ['STN','Không gia đình','Hector Malot','NXB Văn học',2018,'843','',null,145000,1,2],
+ ['STN','Totto-chan bên cửa sổ','Kuroyanagi Tetsuko','NXB Hội Nhà văn',2019,'895.63','',null,98000,1,2,[['B',2,'PN-B-01']]],
+ ['STN','Đất rừng phương Nam','Đoàn Giỏi','NXB Kim Đồng',2021,'895.9223','',null,95000,1,2,[['B',1,'PN-B-01']]],
+ ['STN','Harry Potter và Hòn đá Phù thủy','J. K. Rowling','NXB Trẻ',2017,'823','',null,135000,1,2],
+ ['STN','Doraemon — tập 1','Fujiko F. Fujio','NXB Kim Đồng',2020,'895.63','',null,25000,0,3,[['B',2,'PN-B-01']]]
+];
+const DAU=DAU_RAW.map((x,i)=>({id:'D'+p2(i+1),kho:x[0],ten:x[1],tg:x[2],nxb:x[3],nam:x[4],ddc:x[5],mon:x[6],khoi:x[7],gia:x[8],
+ isbn:'978-604-'+(x[3]===GD?'0':'1')+'-'+pn((i*7919)%90000+10000,5)+'-'+((i*7)%10),
+ lots:[['A',x[9],'PN-A-00'],['B',x[10],'PN-B-00']].concat(x[11]||[]).filter(l=>l[1]>0)}));
+const dauById=id=>DAU.find(d=>d.id===id);
+
+/* ---------- phiếu nhập kho — mỗi phiếu là MỘT dòng phần I của sổ đăng ký tổng quát ---------- */
+const PN=[
+ {id:'PN-A-00',dt:'A',ngay:'2025-08-01',nguon:'chuyen',ct:'Biên bản chuyển sổ 01/BB-TV',ghi:'Tồn kho sổ đăng ký cá biệt cũ của THPT Nguyễn Tất Thành — giữ nguyên số cũ',boi:'Nguyễn Thị Thu Hà'},
+ {id:'PN-B-00',dt:'B',ngay:'2025-08-01',nguon:'chuyen',ct:'Biên bản bàn giao 02/BB-TV',ghi:'Tồn kho THCS Lê Lợi trước sáp nhập — giữ nguyên số cũ',boi:'Lê Văn Phúc'},
+ {id:'PN-A-01',dt:'A',ngay:'2026-08-20',nguon:'mua',ct:'Hóa đơn 0001234 — Công ty Sách và Thiết bị giáo dục',ghi:'Bổ sung SGK lớp 10, 12',boi:'Nguyễn Thị Thu Hà'},
+ {id:'PN-A-02',dt:'A',ngay:'2026-09-15',nguon:'cap',ct:'QĐ cấp phát 512/QĐ-SGDĐT',ghi:'SGV lớp 10, 12 do Sở cấp',boi:'Nguyễn Thị Thu Hà'},
+ {id:'PN-B-01',dt:'B',ngay:'2026-10-05',nguon:'tang',ct:'Biên bản nhận tặng — Ban đại diện CMHS',ghi:'Tủ sách thiếu nhi',boi:'Lê Văn Phúc'}
+];
+const pnById=id=>PN.find(p=>p.id===id);
+
+/* ---------- bản sách — mã cá biệt theo quy tắc 4A: {DT}-{KHO}-{SO5}, số chạy theo điểm trường × kho ---------- */
+const SO_TIEP={A:{SGK:1201,SGV:301,STK:2101,STN:801},B:{SGK:1,SGV:1,STK:1,STN:1}};
+const maCB=(dt,kho,so)=>CFG.mauMa.replace('{DT}',dt).replace('{KHO}',KHO[kho].tien).replace('{SO5}',pn(so,5));
+const BAN=[];
+DAU.forEach(d=>d.lots.forEach(([dt,n,pnId])=>{for(let i=0;i<n;i++){
+ const so=SO_TIEP[dt][d.kho]++;
+ BAN.push({ma:maCB(dt,d.kho,so),dau:d.id,dt,pn:pnId,ngay:pnById(pnId).ngay,gia:d.gia,hn:null,tt:'kho',ly:null,tl:null,ev:[]});
+}}));
+/* thêm 4 bản ở A đã loại năm trước (TL-01) — sổ vẫn giữ dòng */
+[['D51',45000],['D53',80000],['D37',380000],['D49',86000]].forEach(([id,g])=>{
+ const d=dauById(id), so=SO_TIEP.A[d.kho]++;
+ BAN.push({ma:maCB('A',d.kho,so),dau:id,dt:'A',pn:'PN-A-00',ngay:'2025-08-01',gia:g,hn:null,tt:'kho',ly:null,tl:null,ev:[]});
+});
+const banByMa=m=>BAN.find(b=>b.ma===m);
+const banCua=(dauId,dt,i)=>BAN.filter(b=>b.dau===dauId&&b.dt===dt)[i];
+
+/* ---------- lượt mượn ---------- */
+const LUOT=[]; let _lm=0;
+function mkLuot(bd,ban,ngay,han,o){
+ const b=typeof ban==='string'?banByMa(ban):ban;
+ const x=Object.assign({id:'LM-'+pn(++_lm,4),bd,ban:b.ma,dt:b.dt,loai:'thuong',ngay,han,gh:[],tra:null,kq:null,ghi:'',
+  boiM:b.dt==='A'?'Nguyễn Thị Thu Hà':'Lê Văn Phúc',boiT:null,huy:null},o||{});
+ LUOT.push(x); return x;
+}
+const H=(lop,i)=>({k:'hs',id:hsCua(lop,i).id}), N=id=>({k:'ns',id});
+const HANNAM=NAMHOC['2026-2027'].kt;
+
+(function seedLuot(){
+ /* ---- lịch sử năm học trước (2025-2026) ---- */
+ const r0=rng(4242), pool0=BAN.filter(b=>['STK','STN'].includes(dauById(b.dau).kho)&&b.pn.endsWith('-00'));
+ for(let i=0;i<12;i++){
+  const b=pool0.splice(Math.floor(r0()*pool0.length),1)[0], lops=LOP.filter(l=>l.dt===b.dt), l=lops[Math.floor(r0()*lops.length)];
+  const ng=cong('2026-03-02',Math.floor(r0()*50)), tre=r0()<0.2?Math.floor(r0()*6)+2:-Math.floor(r0()*6);
+  mkLuot(H(l.id,Math.floor(r0()*30)),b,ng,cong(ng,14),{tra:cong(ng,14+tre),kq:'bt',boiT:b.dt==='A'?'Nguyễn Thị Thu Hà':'Lê Văn Phúc'});
+ }
+
+ /* ---- lượt ĐANG MỞ — điểm trường A ---- */
+ mkLuot(H('10A2',0),banCua('D54','A',0),'2026-10-20','2026-11-03');
+ mkLuot(H('10A2',1),banCua('D39','A',0),'2026-11-10','2026-11-24');
+ mkLuot(H('10A2',2),banCua('D46','A',0),'2026-11-12','2026-11-26');
+ mkLuot(H('11A3',4),banCua('D40','A',0),'2026-10-08','2026-10-22');
+ mkLuot(H('12A1',0),banCua('D38','A',0),'2026-11-09','2026-11-23');
+ mkLuot(H('12A1',0),banCua('D41','A',0),'2026-11-09','2026-11-23');
+ mkLuot(H('12A1',0),banCua('D55','A',0),'2026-11-16','2026-11-30');
+ mkLuot(H('11A1',3),banCua('D44','A',0),'2026-10-26','2026-11-16',
+  {gh:[{luc:'2026-11-09',cu:'2026-11-09',moi:'2026-11-16',boi:'Nguyễn Thị Thu Hà',ly:'Em đọc chưa xong, xin thêm một tuần'}]});
+ mkLuot(H('12A2',5),banCua('D45','A',0),'2026-11-05','2026-11-19');
+ [5,9].forEach((i,j)=>{
+  mkLuot(H('10A1',i),banCua('D17','A',j),'2026-09-08',HANNAM,{loai:'nam'});
+  mkLuot(H('10A1',i),banCua('D18','A',j),'2026-09-08',HANNAM,{loai:'nam'});
+ });
+ mkLuot(N('N02'),banCua('D35','A',0),'2026-09-15',HANNAM,{loai:'nam'});
+ mkLuot(N('N02'),banCua('D39','A',1),'2026-10-12','2026-11-11');
+ mkLuot(N('N03'),banCua('D33','A',0),'2026-09-15',HANNAM,{loai:'nam'});
+ mkLuot(N('N08'),banCua('D43','A',0),'2026-10-01','2026-10-31');
+ mkLuot(N('N01'),banCua('D32','A',0),'2026-09-15',HANNAM,{loai:'nam'});
+ mkLuot(N('N01'),banCua('D37','A',0),'2026-11-02','2026-12-02');
+
+ /* ---- lượt ĐANG MỞ — điểm trường B ---- */
+ mkLuot(H('8A1',1),banCua('D52','B',0),'2026-10-15','2026-10-29');
+ mkLuot(H('6A2',3),banCua('D60','B',0),'2026-11-02','2026-11-16');
+ mkLuot(H('9A1',2),banCua('D47','B',0),'2026-11-11','2026-11-25');
+ mkLuot(H('7A2',4),banCua('D51','B',0),'2026-11-13','2026-11-27');
+ mkLuot(H('9A2',7),banCua('D48','B',0),'2026-10-28','2026-11-11');
+ [2,6,11,15,20].forEach((i,j)=>['D01','D03','D05'].forEach(d=>
+  mkLuot(H('6A1',i),banCua(d,'B',j),'2026-09-07',HANNAM,{loai:'nam'})));
+ mkLuot(N('N05'),banCua('D31','B',0),'2026-09-10',HANNAM,{loai:'nam'});
+ mkLuot(N('N05'),banCua('D42','B',0),'2026-11-03','2026-12-03');
+ mkLuot(N('N06'),banCua('D30','B',0),'2026-09-10',HANNAM,{loai:'nam'});
+
+ /* ---- lượt ĐÃ ĐÓNG có sự việc ---- */
+ const kv=banCua('D52','A',0);
+ mkLuot(H('11A2',6),kv,'2026-10-19','2026-11-02',{tra:'2026-11-02',kq:'hong',boiT:'Nguyễn Thị Thu Hà',
+  ghi:'Rách bìa, bung gáy, ướt nước nhiều trang — không cho mượn tiếp'});
+ kv.tt='choLoai'; kv.ly='hong'; kv.ev.push({luc:'2026-11-02',n:'Chờ loại — trả về hỏng (LM ghi trả)',boi:'Nguyễn Thị Thu Hà'});
+ const at=banCua('D42','A',3);
+ mkLuot(H('12A3',2),at,'2026-10-05','2026-10-19',{tra:'2026-11-06',kq:'mat',boiT:'Nguyễn Thị Thu Hà',
+  ghi:'Em báo làm rơi trên xe buýt tuyến 08 — đã tìm không thấy. Không phát sinh đền bù (chốt 2).'});
+ at.tt='choLoai'; at.ly='mat'; at.ev.push({luc:'2026-11-06',n:'Chờ loại — báo mất khi đang mượn',boi:'Nguyễn Thị Thu Hà'});
+ const dr=banCua('D60','B',1);
+ mkLuot(H('6A2',8),dr,'2026-10-12','2026-10-26',{tra:'2026-10-24',kq:'hongNhe',boiT:'Lê Văn Phúc',ghi:'Mép sách ẩm, vẫn đọc được'});
+ dr.hn='Mép sách ẩm, vẫn đọc được';
+ mkLuot(H('10A3',1),banCua('D46','A',1),'2026-11-17','2026-12-01',
+  {huy:{luc:'2026-11-17 09:12',ly:'Quét nhầm mã của cuốn bên cạnh — em mượn cuốn khác',boi:'Nguyễn Thị Thu Hà'}});
+ mkLuot(H('11A1',8),banCua('D49','A',0),'2026-09-21','2026-10-05',
+  {tra:'2026-10-12',kq:'bt',boiT:'Nguyễn Thị Thu Hà',gh:[{luc:'2026-10-05',cu:'2026-10-05',moi:'2026-10-12',boi:'Nguyễn Thị Thu Hà',ly:'Ôn thi giữa kỳ'}]});
+
+ /* ---- lịch sử năm nay (đã trả) — sinh tất định, không chồng thời gian trên cùng một bản ---- */
+ const dangDung=new Set(LUOT.map(x=>x.ban));
+ const r=rng(918273);
+ const loaiTru=BAN.slice(-4).concat([banCua('D59','B',1),banCua('D40','A',2)]);
+ const pool=BAN.filter(b=>['STK','STN'].includes(dauById(b.dau).kho)&&!dangDung.has(b.ma)&&b.tt==='kho'&&!loaiTru.includes(b));
+ ['2026-09-10','2026-10-01'].forEach((w,wi)=>{
+  pool.forEach((b,bi)=>{
+   if(r()>0.58) return;
+   const lops=LOP.filter(l=>l.dt===b.dt), l=lops[Math.floor(r()*lops.length)];
+   const ng=cong(w,Math.floor(r()*9)), tre=r()<0.18?Math.floor(r()*5)+1:-Math.floor(r()*7);
+   const bd=r()<0.12?N(NS.filter(n=>n.dt===b.dt&&n.tt==='dang'&&n.cd.startsWith('GV'))[bi%3].id):H(l.id,Math.floor(r()*30));
+   const hanN=bd.k==='ns'?30:14;
+   const hsX=bd.k==='hs'?bdGet(bd):null; if(hsX&&hsX.tt!=='hoc') return;
+   const tran=soNgay(ng,wi===0?'2026-09-30':'2026-11-16');     /* đợt 1 trả trước khi đợt 2 bắt đầu — không chồng lượt trên một bản */
+   mkLuot(bd,b,ng,cong(ng,hanN),{tra:cong(ng,Math.max(3,Math.min(hanN+tre,tran))),kq:'bt',boiT:b.dt==='A'?'Nguyễn Thị Thu Hà':'Lê Văn Phúc'});
+  });
+ });
+})();
+
+/* ---------- trạng thái bản sách đặt sẵn ---------- */
+(function seedBan(){
+ const hn=(b,t)=>{b.hn=t};
+ hn(banCua('D17','A',3),'Bong bìa, đã dán lại');
+ hn(banCua('D47','B',2),'Quăn góc, vẫn đọc tốt');
+ const hp=banCua('D59','B',1);
+ hp.tt='choLoai'; hp.ly='hong'; hp.tl='TL-03';
+ hp.ev.push({luc:'2026-11-12',n:'Báo hỏng tại kho — bong gáy, mất khoảng 20 trang cuối',boi:'Lê Văn Phúc'});
+ /* TL-02: SGK chương trình 2006 + một bản rách */
+ BAN.filter(b=>['D28','D29'].includes(b.dau)).forEach(b=>{b.tt='choLoai';b.ly='noiDung';b.tl='TL-02'});
+ const vl=banCua('D40','A',2); vl.tt='choLoai'; vl.ly='hong'; vl.tl='TL-02';
+ vl.ev.push({luc:'2026-10-30',n:'Báo hỏng tại kho — rách mất 14 trang phần Điện học',boi:'Nguyễn Thị Thu Hà'});
+ /* TL-01 (đã duyệt 10/6/2026): 4 bản thêm ở cuối */
+ BAN.slice(-4).forEach(b=>{b.tt='daLoai';b.ly='hong';b.tl='TL-01'});
+})();
+
+/* ---------- đợt kiểm kê ---------- */
+const CANCU_KK={
+ keHoach:'Kế hoạch năm của thư viện — TT 16/2022/TT-BGDĐT Đ.9',
+ cuoiNam:'Cuối kỳ kế toán năm — Luật Kế toán 2015 Đ.40 k.2 điểm a',
+ sapNhap:'Chia, tách, sáp nhập — Luật Kế toán 2015 Đ.40 k.2 điểm b',
+ dotXuat:'Đột xuất (thiên tai, mất mát bất thường, đổi người phụ trách)'
+};
+const KK=[
+ {id:'KK-01',dt:'A',moc:'2026-05-25',cc:'keHoach',tt:'daChot',chot:'2026-05-29',boi:'Nguyễn Thị Thu Hà',
+  ghi:'Kiểm kê cuối năm học 2025-2026',kq:{},thua:[]},
+ {id:'KK-02',dt:'B',moc:'2026-11-10',cc:'sapNhap',tt:'dangKiem',chot:null,boi:'Lê Văn Phúc',
+  ghi:'Đối chiếu kho THCS Lê Lợi sau sáp nhập — lần đầu kiểm theo mã cá biệt',kq:{},
+  thua:[{ma:'A-STK-02117',ghi:'Tìm thấy trên kệ STK của B — mã thuộc kho điểm trường A'},
+        {ma:'',ghi:'Truyện tranh không có nhãn, không có mã cá biệt — nghi sách học sinh để quên'}]}
+];
+
+/* ---------- đợt thanh lọc — TT 02/2020/TT-BVHTTDL Chương III ---------- */
+const TL=[
+ {id:'TL-01',dt:'A',buoc:4,tao:'2026-05-26',ghi:'Thanh lọc định kỳ năm học 2025-2026',
+  deAn:{so:'45/QĐ-NTT',ngay:'2026-05-26',loai:'Định kỳ'},
+  hd:{so:'46/QĐ-NTT',ngay:'2026-05-27',tv:'Nguyễn Quang Huy (Chủ tịch) · Đào Thị Minh · Nguyễn Thị Thu Hà (thư ký) · Cao Thị Yến'},
+  bb:{so:'01/BB-HĐTĐ',ngay:'2026-06-03'},trinh:'2026-06-04',duyet:{so:'52/QĐ-NTT',ngay:'2026-06-10',boi:'Nguyễn Quang Huy'},
+  congBo:'2026-06-12',traLai:[],ds:[]},
+ {id:'TL-02',dt:'A',buoc:3,tao:'2026-11-02',ghi:'SGK chương trình 2006 không còn dùng + bản hỏng',
+  deAn:{so:'118/QĐ-NTT',ngay:'2026-11-02',loai:'Đột xuất — SGK chương trình 2006 hết giá trị sử dụng'},
+  hd:{so:'119/QĐ-NTT',ngay:'2026-11-03',tv:'Nguyễn Quang Huy (Chủ tịch) · Đào Thị Minh · Nguyễn Thị Thu Hà (thư ký) · Trần Văn Khải · Phạm Thị Lan'},
+  bb:{so:'03/BB-HĐTĐ',ngay:'2026-11-14'},trinh:'2026-11-15',duyet:null,congBo:null,traLai:[],ds:[]},
+ {id:'TL-03',dt:'B',buoc:1,tao:'2026-11-12',ghi:'Bản hỏng phát hiện tại kho',deAn:null,hd:null,bb:null,trinh:null,duyet:null,congBo:null,traLai:[],ds:[]}
+];
+BAN.filter(b=>b.tl).forEach(b=>TL.find(t=>t.id===b.tl).ds.push({ma:b.ma,ly:b.ly,ht:'thanhLy',kl:b.tl==='TL-03'?null:'du'}));
+
+/* ngày bản sách thành «Đã loại» = ngày Hiệu trưởng duyệt danh mục của đợt thanh lọc */
+function ngayLoai(b){if(b.tt!=='daLoai')return null;const t=TL.find(x=>x.id===b.tl);return t&&t.duyet?t.duyet.ngay:null}
+/* lượt đang mở TẠI một ngày (dùng cho bản chụp kiểm kê) */
+const moTai=(ma,k)=>LUOT.find(x=>x.ban===ma&&!x.huy&&x.ngay<=k&&(!x.tra||x.tra>k));
+/* bản chụp sổ tại mốc: bản của điểm trường, nhập trước mốc, chưa bị loại trước mốc */
+const snapKK=k=>BAN.filter(b=>b.dt===k.dt&&b.ngay<=k.moc&&!(ngayLoai(b)&&ngayLoai(b)<=k.moc));
+(function seedKK(){
+ const k1=KK[0];
+ snapKK(k1).forEach(b=>{k1.kq[b.ma]=b.tl==='TL-01'&&['D51','D53'].includes(b.dau)?{v:'hong',ghi:'Rách, bung gáy'}:{v:'coMat'}});
+ const k2=KK[1], r=rng(777);
+ const khongThay=[banCua('D48','B',2).ma,banCua('D50','B',1).ma], hongMa=banCua('D56','B',1).ma;
+ snapKK(k2).forEach(b=>{
+  if(moTai(b.ma,k2.moc)) return;                    /* đang ở bạn đọc tại mốc — máy tự điền, người không đếm */
+  if(khongThay.includes(b.ma)) k2.kq[b.ma]={v:'khongThay',ghi:''};
+  else if(b.ma===hongMa) k2.kq[b.ma]={v:'hong',ghi:'Mốc, dính trang'};
+  else if(r()<0.66) k2.kq[b.ma]={v:'coMat'};
+ });
+})();
+
+/* ═══════════ M6.19 — logic dẫn xuất · phạm vi · kiểm tra ═══════════ */
+
+const ST={tab:'muontra',dt:'A',nam:'2026-2027',
+ mode:'muon',bdSel:null,bdQ:'',codes:'',chk:null,lyDo:'',
+ chipMT:'dangMuon',q:'',curBd:null,
+ loaiKho:'all',chipKho:'all',qKho:'',curDau:null,
+ chipKK:'all',curDot:null,subKK:'dem',qKK:'',chipDem:'all'};
+
+/* ---------- phạm vi — ràng buộc DỮ LIỆU, không phải ẩn nút ---------- */
+const dtHieuLuc=()=>R().sc==='School'?ST.dt:R().dt;          /* 'A' | 'B' | 'ALL' */
+const trongDT=dt=>{const d=dtHieuLuc();return d==='ALL'||d===dt};
+const quayDT=()=>{const d=dtHieuLuc();return d==='ALL'?null:d};
+function luotTrongPV(){
+ const r=R();
+ let ds=LUOT.filter(x=>trongDT(x.dt));
+ if(r.sc==='Class') ds=ds.filter(x=>x.bd.k==='hs'&&r.lop.includes(bdGet(x.bd).lop));
+ return ds;
+}
+const banTrongPV=()=>BAN.filter(b=>trongDT(b.dt));
+
+/* ---------- lượt mượn — dẫn xuất ---------- */
+const moLuot=x=>!x.tra&&!x.huy;
+const quaHan=x=>moLuot(x)&&x.han<HOMNAY;
+const soNgayTre=x=>moLuot(x)?soNgay(x.han,HOMNAY):soNgay(x.han,x.tra);
+const luotMoCuaBan=ma=>LUOT.find(x=>x.ban===ma&&moLuot(x));
+const luotMoCuaBd=bd=>LUOT.filter(x=>bdKey(x.bd)===bdKey(bd)&&moLuot(x));
+const luotCuaBan=ma=>LUOT.filter(x=>x.ban===ma);
+
+/* ---------- trạng thái bản sách ----------
+   Sẵn sàng · Đang mượn · Quá hạn  → DẪN XUẤT từ lượt mượn (không ai bấm)
+   Chờ loại                        → bấm tay (báo hỏng / mất) hoặc hệ quả của trả hỏng · báo mất · chốt kiểm kê
+   Đã loại                         → CHỈ khi Hiệu trưởng duyệt danh mục thanh lọc */
+function ttBan(b){
+ if(b.tt==='daLoai') return {k:'daLoai',n:'Đã loại',c:'n'};
+ const l=luotMoCuaBan(b.ma);
+ if(l) return quaHan(l)?{k:'quaHan',n:'Quá hạn '+soNgayTre(l)+' ngày',c:'r',l}:{k:'dangMuon',n:'Đang mượn',c:'b',l};
+ if(b.tt==='choLoai') return {k:'choLoai',n:'Chờ loại — '+(LYDO[b.ly]?LYDO[b.ly].s:'khác'),c:'w'};
+ return {k:'sanSang',n:'Sẵn sàng',c:'o'};
+}
+const stBan=b=>{const t=ttBan(b);return '<span class="st2 '+t.c+'">'+esc(t.n)+'</span>'+(b.hn&&t.k!=='daLoai'?' <span class="tg b" title="'+esc(b.hn)+'">hỏng nhẹ</span>':'')};
+
+/* ---------- hạn trả mặc định — cấu hình loại sách × loại bạn đọc ---------- */
+function hanMacDinh(kho,bdK,ngay){
+ const v=CFG.han[kho][bdK];
+ if(v==='nam') return {loai:'nam',han:NAMHOC[namHocCua(ngay)].kt,ghi:'theo năm học'};
+ if(v==null) return {loai:'thuong',han:cong(ngay,14),ghi:'không áp dụng — tạm 14 ngày',canh:1};
+ return {loai:'thuong',han:cong(ngay,v),ghi:v+' ngày'};
+}
+
+/* ---------- tách chuỗi quét / gõ nhiều mã ---------- */
+const tachMa=s=>(s||'').toUpperCase().split(/[\s,;]+/).map(x=>x.trim()).filter(Boolean);
+
+/* ---------- kiểm tra MƯỢN — chặn: toàn vẹn dữ liệu · cảnh báo: thẩm quyền của quản thư (khung §15) ---------- */
+function kiemMuon(bd,codes,dtQ){
+ const ng=bdGet(bd), rows=[], seen=new Set(), canhBd=[];
+ const mo=luotMoCuaBd(bd), qh=mo.filter(quaHan);
+ if(qh.length) canhBd.push('Đang có <b>'+qh.length+' cuốn quá hạn</b>: '+qh.map(x=>esc(dauById(banByMa(x.ban).dau).ten)+' (quá '+soNgayTre(x)+' ngày)').join('; ')+'.');
+ if(ng.tt==='chuyen') canhBd.push('Học sinh <b>đã chuyển trường</b> '+k2s(ng.ttNgay)+' — chỉ nên nhận trả, không nên cho mượn mới.');
+ if(ng.tt==='thoi') canhBd.push('Học sinh <b>đã thôi học</b> '+k2s(ng.ttNgay)+'.');
+ if(ng.tt==='nghi') canhBd.push('Nhân sự <b>đã nghỉ việc</b> '+k2s(ng.ttNgay)+'.');
+ if(bd.k==='hs'&&ng.dt!==dtQ) canhBd.push('Học sinh học ở <b>'+DTN[ng.dt]+'</b>, đang mượn ở quầy '+DTN[dtQ]+' — chỉ để biết, không chặn.');
+ let thuong=mo.filter(x=>x.loai==='thuong').length;
+ tachMa(codes).forEach(ma=>{
+  const row={ma,ok:'ok',ly:[],info:[]};
+  if(seen.has(ma)){row.ok='x';row.ly.push('Mã quét trùng trong lượt này — bỏ qua dòng lặp.');rows.push(row);return}
+  seen.add(ma);
+  const b=banByMa(ma); row.b=b;
+  if(!b){row.ok='x';row.ly.push('Không có mã cá biệt <b>'+esc(ma)+'</b> trong sổ đăng ký cá biệt.');rows.push(row);return}
+  const d=dauById(b.dau), t=ttBan(b); row.d=d;
+  if(b.dt!==dtQ){row.ok='x';row.ly.push('Bản thuộc kho <b>'+DTN[b.dt]+'</b> — quầy đang ở '+DTN[dtQ]+'. Mỗi điểm trường một kho (chốt 4): bản của kho nào cho mượn ở quầy kho đó.');}
+  else if(t.k==='daLoai'){const tl=TL.find(x=>x.id===b.tl);row.ok='x';row.ly.push('Bản <b>đã loại khỏi kho</b> — đợt '+b.tl+(tl&&tl.duyet?', QĐ '+tl.duyet.so+' ngày '+k2s(tl.duyet.ngay):'')+'.');}
+  else if(t.k==='dangMuon'||t.k==='quaHan'){row.ok='x';row.ly.push('Bản <b>đang cho mượn</b> — lượt '+t.l.id+', '+esc(bdTen(t.l.bd))+' ('+esc(bdNhom(t.l.bd))+'), hạn '+k2s(t.l.han)+'. Ghi trả lượt đó trước.');}
+  else if(t.k==='choLoai'&&(b.ly==='mat'||b.ly==='khongThay')){row.ok='x';row.ly.push('Bản đang ghi <b>'+LYDO[b.ly].n.toLowerCase()+'</b>. Cuốn đang trong tay nghĩa là đã tìm thấy: <b>↺ Hoàn về kho</b> ở tab 2 trước (có lý do), rồi mới cho mượn.');}
+  else if(t.k==='choLoai'&&b.tl&&(TL.find(x=>x.id===b.tl)||{}).buoc>=2){row.ok='x';row.ly.push('Bản nằm trong danh mục thanh lọc <b>'+b.tl+'</b> đã gửi hội đồng — rút khỏi danh mục trước.');}
+  else {
+   if(t.k==='choLoai'){row.ok='w';row.ly.push('Bản đang <b>Chờ loại — hỏng</b>'+(b.ev.length?': '+esc(b.ev[b.ev.length-1].n):'')+'. Vẫn cho mượn được nếu anh/chị thấy còn dùng được — ghi lý do.');}
+   const h=hanMacDinh(d.kho,bd.k,HOMNAY); row.han=h.han; row.loai=h.loai; row.hanGhi=h.ghi;
+   if(h.canh){row.ok='w';row.ly.push('Cấu hình hạn mượn: <b>'+KHO[d.kho].ten+'</b> không áp dụng cho '+bdLoai(bd).toLowerCase()+' — tạm tính 14 ngày.');}
+   if(b.hn) row.info.push('Hỏng nhẹ: '+esc(b.hn));
+   if(h.loai==='thuong'){thuong++; if(thuong>CFG.toiDa[bd.k]){row.ok='w';row.ly.push('Vượt số cuốn tối đa: đây là cuốn thứ <b>'+thuong+'</b>, cấu hình cho '+bdLoai(bd).toLowerCase()+' là '+CFG.toiDa[bd.k]+' cuốn (không tính SGK/SGV theo năm học).');}}
+  }
+  rows.push(row);
+ });
+ return {rows,canhBd};
+}
+
+/* ---------- kiểm tra TRẢ ---------- */
+function kiemTra(codes,dtQ){
+ const rows=[], seen=new Set();
+ tachMa(codes).forEach(ma=>{
+  const row={ma,ok:'ok',ly:[],kq:'bt',ghi:''};
+  if(seen.has(ma)){row.ok='x';row.ly.push('Mã quét trùng trong lượt này.');rows.push(row);return}
+  seen.add(ma);
+  const b=banByMa(ma); row.b=b;
+  if(!b){row.ok='x';row.ly.push('Không có mã cá biệt này trong sổ.');rows.push(row);return}
+  row.d=dauById(b.dau);
+  if(b.dt!==dtQ){row.ok='x';row.ly.push('Bản thuộc kho <b>'+DTN[b.dt]+'</b> — ghi trả ở quầy '+DTN[b.dt]+'.');rows.push(row);return}
+  const l=luotMoCuaBan(ma);
+  if(!l){row.ok='x';row.ly.push('Bản <b>không có lượt đang mở</b> — sổ ghi đang ở kho ('+esc(ttBan(b).n)+').');rows.push(row);return}
+  row.l=l; rows.push(row);
+ });
+ return rows;
+}
+
+/* ---------- ghi — một chỗ duy nhất đổi dữ liệu, mọi đường vào đi qua đây ---------- */
+function ghiMuonMot(bd,row,lyDo){
+ const x=mkLuot(bd,row.b,HOMNAY,row.han,{loai:row.loai,boiM:R().n,ghi:lyDo?'Mượn vượt cảnh báo — lý do: '+lyDo:''});
+ return x;
+}
+function ghiTraMot(l,kq,ghi){
+ l.tra=HOMNAY; l.kq=kq; l.ghi=ghi||l.ghi; l.boiT=R().n;
+ const b=banByMa(l.ban);
+ if(kq==='hongNhe') b.hn=ghi||'Hỏng nhẹ khi trả '+k2s(HOMNAY);
+ if(kq==='hong'||kq==='mat'){b.tt='choLoai';b.ly=kq;b.ev.push({luc:HOMNAY,n:'Chờ loại — '+(kq==='mat'?'báo mất khi đang mượn':'trả về hỏng')+' ('+l.id+')',boi:R().n});}
+}
+
+/* ---------- mã cá biệt tiếp theo ---------- */
+function soTiep(dt,kho){return SO_TIEP[dt][kho]}
+function sinhMa(dt,kho){let m;do{m=maCB(dt,kho,SO_TIEP[dt][kho]++)}while(banByMa(m));return m}
+/* nhận một mã cũ (giữ số khi nhập Excel) → số tiếp theo luôn lớn hơn số lớn nhất đã có, không bao giờ sinh trùng */
+function nhanMaCu(dt,kho,ma){const so=+(ma.match(/(\d+)$/)||[0,0])[1]; if(ma.startsWith(dt+'-'+KHO[kho].tien+'-')&&so>=SO_TIEP[dt][kho]) SO_TIEP[dt][kho]=so+1}
+
+/* ---------- đếm việc ---------- */
+const tlChoDuyet=()=>TL.filter(t=>t.buoc===3&&trongDT(t.dt));
+const dotDangMo=()=>KK.filter(k=>k.tt==='dangKiem'&&trongDT(k.dt)).length+TL.filter(t=>t.buoc<3&&trongDT(t.dt)).length;
+function badgeKK(){
+ if(can('kk_d')&&!can('kk_t')) return tlChoDuyet().length;         /* Hiệu trưởng: chờ duyệt */
+ if(can('kk_t')) return dotDangMo()+(can('kk_d')?tlChoDuyet().length:0);
+ return 0;
+}
+const quaHanPV=()=>luotTrongPV().filter(quaHan);
+
+/* ═══════════ KHUNG — thanh vai · header · tab · dải phạm vi ═══════════ */
+function rolebar(){
+ $('#rolebar').innerHTML='<b>Chức danh:</b>'+Object.keys(ROLES).map(k=>
+  '<button class="rb'+(k===role?' on':'')+'" data-r="'+k+'">'+esc(ROLES[k].cd)+'</button>').join('')
+  +'<span class="simw">📅 Hôm nay (demo): Thứ Tư '+k2s(HOMNAY)+' · '+GIO+'</span>'
+  +'<button class="ntg" id="btnNote">💡 Ghi chú thiết kế: TẮT</button>';
+}
+function header(){
+ const r=R();
+ $('#ava').textContent=r.n.split(' ').slice(-2).map(x=>x[0]).join('');
+ const khoa=r.sc!=='School';
+ $('#hdt').innerHTML=(r.sc==='School'?'<option value="ALL">Tất cả điểm trường</option>':'')
+  +Object.keys(DT).map(d=>'<option value="'+d+'">'+DTN[d]+'</option>').join('');
+ $('#hdt').value=khoa?r.dt:ST.dt; $('#hdt').disabled=khoa;
+ $('#dtlock').textContent=khoa?'🔒 khóa theo phạm vi '+r.sc:'';
+ $('#hnam').value=ST.nam;
+ const n=badgeKK()+(can('mt_t')?quaHanPV().length:0);
+ $('#ndot').textContent=n||''; $('#ndot').style.display=n?'grid':'none';
+}
+const TABS=[['muontra','1 · Mượn – trả','mt_x'],['kho','2 · Kho sách','kho_x'],['kiemke','3 · Kiểm kê & thanh lọc','kk_x'],
+ ['thongke','4 · Thống kê','tk_x'],['cauhinh','5 · ⚙ Cấu hình','ch_x']];
+function tabs(){
+ /* mọi tab hiện với mọi vai (quy ước demo) — tab vai không có quyền X mở ra MÀN HÌNH TỪ CHỐI kèm lý do */
+ $('#tabs').innerHTML=TABS.map(([k,n,q])=>{
+  let b='';
+  if(k==='muontra'&&can('mt_x')){const x=quaHanPV().length;if(x)b='<span class="b r" title="quá hạn trong phạm vi">'+x+'</span>'}
+  if(k==='kiemke'){const x=badgeKK();if(x)b='<span class="b r">'+x+'</span>'}
+  return '<button class="tab1'+(k===ST.tab?' on':'')+'" data-t="'+k+'">'+n+(can(q)?'':' 🔒')+b+'</button>';
+ }).join('');
+}
+function scopeBar(extra){
+ const r=R(), d=dtHieuLuc();
+ let pv;
+ if(r.sc==='School') pv=d==='ALL'?'School — toàn trường':'School (đang xem '+DTN[d]+')';
+ else if(r.sc==='Class') pv='Class — học sinh lớp '+r.lop.join(', ')+' · chỉ đọc';
+ else pv='Branch — kho '+DTN[d];
+ return '<div class="scope"><b>👁 Phạm vi:</b> '+esc(pv)+'<span class="sp"></span>'+(extra||'')+'</div>';
+}
+function tuChoi(tab,lydo){
+ return scopeBar()+'<div class="deny"><h3>🔒 Chức danh <b>'+esc(R().cd)+'</b> không có quyền Xem tab «'+esc(tab)+'»</h3>'
+  +lydo+'<div style="margin-top:9px;font-size:12px;color:var(--ink3)">Theo <b>Ma trận quyền §12</b> của M6.19. Tab vẫn hiện trên thanh tab để người rà demo thấy đủ menu; '
+  +'dữ liệu của tab <b>không có trong dữ liệu trả về</b> cho vai này — không phải chỉ ẩn nút. Chuyển sang <b>🔓 Đủ quyền (demo)</b> để rà trọn luồng.</div></div>';
+}
+function crumb(txt){$('#crumb').innerHTML=txt?'<div class="crumb">'+txt+'</div>':''}
+const dn=h=>'<div class="dnote">💡 '+h+'</div>';
+const lnk=(menu,txt)=>'<button class="rolnk" data-lnk="'+esc(menu)+'">↗ '+txt+'</button>';
+const r19=(menu,txt)=>'<span class="rolnk" data-lnk="'+esc(menu)+'" style="cursor:pointer">🔗 '+txt+'</span>';
+
+/* ═══════════ TAB 1 · MƯỢN – TRẢ ═══════════ */
+
+function veMuonTra(){
+ if(!can('mt_x')) return tuChoi('Mượn – trả',R().cd==='PHT Chuyên môn'
+  ?'PHT Chuyên môn theo dõi <b>phong trào đọc</b> bằng số liệu tổng hợp ở <b>tab 4 · Thống kê</b> (lượt mượn theo khối, theo loại sách) — không cần đọc từng lượt mượn của từng em.'
+  :'Lịch sử mượn của từng học sinh là <b>dữ liệu cá nhân trẻ em</b> (Luật BVDLCN 91/2025). Hiệu trưởng và PHT quản lý thư viện bằng <b>số tổng hợp ở tab 4</b> và <b>duyệt thanh lọc ở tab 3</b> — '
+   +'quyền quản lý và quyền đọc dữ liệu cá nhân là <b>hai trục khác nhau</b> (cùng lập luận M6.6 · Y tế học đường).');
+ const d=quayDT();
+ let h=scopeBar('<span>Bộ chọn năm học chỉ lọc <b>lượt đã trả</b> — lượt đang mở <b>luôn hiện</b> dù mượn từ năm trước.</span>');
+ h+=dn('<b>Mượn – trả làm trên BẢN sách</b>, không trên đầu sách: mỗi lượt gắn đúng một mã cá biệt. <b>Đọc tại chỗ không ghi lượt</b> — không có hệ quả nghiệp vụ, chỉ tốn công ở quầy. '
+  +'Chặn chỉ dùng cho <b>toàn vẹn dữ liệu</b> (bản đang mượn · đã loại · khác kho); mọi thứ thuộc <b>thẩm quyền quản thư</b> là cảnh báo + lý do + audit (khung §15).');
+ if(can('mt_t')){
+  if(!d) h+='<div class="alert w">🧾 <span class="sp">Quầy đang tắt — bộ chọn điểm trường ở header đang là <b>Tất cả điểm trường</b>. Quầy ghi vào kho của <b>đúng một điểm trường</b> (chốt 4): chọn Điểm trường A hoặc B để mở quầy.</span></div>';
+  else h+=veQuay(d);
+ } else h+='<div class="ro" style="margin-top:12px">👁 <b>'+esc(R().cd)+'</b> xem <b>chỉ đọc</b> các lượt mượn của học sinh lớp mình — không có quầy, không gia hạn, không ghi trả. Nhắc em trả sách là việc trực tiếp của thư viện và GVCN, <b>không lên App</b> (chốt 3).</div>';
+ return h+veDsLuot();
+}
+
+/* ---------- quầy ---------- */
+function veQuay(d){
+ const muon=ST.mode==='muon';
+ let h='<div class="quay"><div class="qh"><b>🧾 Quầy thư viện — '+DTN[d]+'</b>'
+  +'<span class="seg"><button data-a="mode" data-v="muon" class="'+(muon?'on':'')+'">📤 Mượn</button><button data-a="mode" data-v="tra" class="'+(!muon?'on':'')+'">📥 Trả</button></span>'
+  +'<span class="spacer"></span>'
+  +'<button class="btn sm" data-a="capSGK">📚 Cấp SGK theo năm học</button><button class="btn sm" data-a="thuSGK">📥 Thu SGK theo lớp</button></div>'
+  +'<div class="qb">';
+ if(muon){
+  h+='<div><div class="stt">① Bạn đọc — học sinh 🔗 M1.1 hoặc nhân sự 🔗 M4.1</div>';
+  if(ST.bdSel){
+   const b=ST.bdSel, g=bdGet(b), mo=luotMoCuaBd(b), qh=mo.filter(quaHan), th=mo.filter(x=>x.loai==='thuong').length;
+   h+='<div class="bdcard"><div class="nm">'+(b.k==='hs'?'🎒':'👩‍🏫')+' '+esc(g.ten)+' '+ttBdTag(b)
+    +'<span class="spacer"></span><button class="btn xs" data-a="boBd">✕ Đổi bạn đọc</button></div>'
+    +'<div class="mm">'+bdLoai(b)+' · '+esc(b.k==='hs'?'lớp '+g.lop:g.cd)+' · <span class="mono">'+esc(b.k==='hs'?g.id:g.ma)+'</span> · '+DTN[g.dt]+'</div>'
+    +'<div class="mm">Đang mượn <b>'+mo.length+'</b> cuốn (tính vào tối đa: <b>'+th+'/'+CFG.toiDa[b.k]+'</b>)'
+    +(qh.length?' · <b style="color:var(--red)">'+qh.length+' quá hạn</b>':'')
+    +' · <a style="color:var(--brand);cursor:pointer;font-weight:600" data-bd="'+bdKey(b)+'">Mở hồ sơ bạn đọc →</a></div></div>';
+  } else {
+   h+='<input class="inp" id="bdq" style="width:100%" placeholder="Gõ mã, tên, lớp hoặc chức danh…" value="'+esc(ST.bdQ)+'">';
+   if(ST.bdQ.trim().length>=2) h+=veGoiY(ST.bdQ);
+   else h+='<div class="srcline" style="margin-top:6px">Học sinh <b>đã chuyển trường / thôi học</b> và nhân sự <b>đã nghỉ việc</b> vẫn tìm được — để nhận sách trả muộn.</div>'
+    +'<div class="bar" style="padding:6px 0 0"><span class="srcline">Thử nhanh:</span>'
+    +['Đỗ Quang Minh','Hoàng Gia Bảo','Vương Minh Châu','Phạm Nhật Nam'].map(t=>'<button class="chip" data-a="goBd" data-v="'+t+'">'+t+'</button>').join('')+'</div>';
+  }
+  h+='</div><div><div class="stt">② Quét hoặc gõ nhiều mã cá biệt — cách nhau bằng dấu phẩy, khoảng trắng hoặc xuống dòng</div>'
+   +'<textarea class="codes" id="codes" placeholder="A-STK-02101, A-STN-00801 …">'+esc(ST.codes)+'</textarea>'
+   +'<div class="bar" style="padding:6px 0 0"><button class="btn p sm" data-a="kiemMuon"'+(ST.bdSel?'':' disabled title="Chọn bạn đọc trước"')+'>🔎 Kiểm tra</button>'
+   +'<span class="srcline">Điền thử:</span>'+demoMa(d).map(([n,v])=>'<button class="chip" data-a="dien" data-v="'+esc(v)+'">'+n+'</button>').join('')+'</div></div>';
+ } else {
+  h+='<div><div class="stt">Quét hoặc gõ các mã cá biệt đang được trả</div>'
+   +'<textarea class="codes" id="codes" placeholder="Mỗi cuốn một mã…">'+esc(ST.codes)+'</textarea>'
+   +'<div class="bar" style="padding:6px 0 0"><button class="btn p sm" data-a="kiemTra">🔎 Tìm lượt đang mở</button>'
+   +'<span class="srcline">Điền thử:</span>'+demoMaTra(d).map(([n,v])=>'<button class="chip" data-a="dien" data-v="'+esc(v)+'">'+n+'</button>').join('')+'</div></div>'
+   +'<div class="ro" style="margin:0">Máy <b>tự tìm lượt đang mở</b> của từng mã — không phải chọn bạn đọc trước. Trả nhiều cuốn của nhiều người trong một lần quét vẫn đúng, vì mỗi mã cá biệt chỉ có tối đa một lượt mở.'
+   +'<br><b>Tình trạng khi trả</b>: <span class="kq ok">Bình thường</span> · <span class="kq w">Hỏng nhẹ — vẫn cho mượn</span> (ghi chú) · <span class="kq x">Hỏng — không cho mượn</span> → bản chuyển <b>Chờ loại</b>.</div>';
+ }
+ h+='</div>';
+ if(ST.chk&&ST.chk.mode===ST.mode) h+=ST.mode==='muon'?veChkMuon():veChkTra();
+ return h+'</div>';
+}
+function ttBdTag(b){
+ const g=bdGet(b);
+ if(g.tt==='chuyen') return '<span class="tg r">Đã chuyển trường '+k2ss(g.ttNgay)+'</span>';
+ if(g.tt==='thoi') return '<span class="tg r">Đã thôi học '+k2ss(g.ttNgay)+'</span>';
+ if(g.tt==='nghi') return '<span class="tg r">Đã nghỉ việc '+k2ss(g.ttNgay)+'</span>';
+ if(g.dcs) return '<span class="tg a">diện chính sách</span>';
+ return '';
+}
+function veGoiY(q){
+ const s=kd(q.trim());
+ const hs=HS.filter(h=>kd(h.ten+' '+h.id+' '+h.lop).includes(s)).slice(0,6).map(h=>({k:'hs',id:h.id}));
+ const ns=NS.filter(n=>kd(n.ten+' '+n.ma+' '+n.cd+' '+n.to).includes(s)).slice(0,4).map(n=>({k:'ns',id:n.id}));
+ const all=hs.concat(ns);
+ if(!all.length) return '<div class="sugg"><div class="si" style="cursor:default;color:var(--ink3)">Không có bạn đọc khớp «'+esc(q)+'» trong M1.1 · M4.1.</div></div>';
+ return '<div class="sugg">'+all.map(b=>{const g=bdGet(b);return '<div class="si" data-a="chonBd" data-v="'+bdKey(b)+'">'
+  +(b.k==='hs'?'🎒':'👩‍🏫')+' <b>'+esc(g.ten)+'</b><span class="srcline">'+esc(b.k==='hs'?g.lop+' · '+g.id:g.cd)+' · '+DTN[g.dt]+'</span>'+ttBdTag(b)+'</div>'}).join('')+'</div>';
+}
+function demoMa(d){
+ const ss=BAN.filter(b=>b.dt===d&&ttBan(b).k==='sanSang'&&['STK','STN'].includes(dauById(b.dau).kho));
+ const dm=LUOT.find(x=>x.dt===d&&moLuot(x)&&x.loai==='thuong');
+ const kh=BAN.find(b=>b.dt!==d&&ttBan(b).k==='sanSang');
+ const dl=BAN.find(b=>b.dt===d&&b.tt==='daLoai');
+ const cl=BAN.find(b=>b.dt===d&&b.tt==='choLoai'&&b.ly==='hong'&&!b.tl);
+ const out=[];
+ if(ss.length>1) out.push(['2 mã sẵn sàng',ss[3].ma+', '+ss[7%ss.length].ma]);
+ if(dm) out.push(['⛔ bản đang mượn',dm.ban]);
+ if(kh) out.push(['⛔ bản kho khác',kh.ma]);
+ if(dl) out.push(['⛔ bản đã loại',dl.ma]);
+ if(cl) out.push(['⚠ bản chờ loại — hỏng',cl.ma]);
+ return out;
+}
+function demoMaTra(d){
+ const mo=LUOT.filter(x=>x.dt===d&&moLuot(x)&&x.loai==='thuong');
+ const ss=BAN.find(b=>b.dt===d&&ttBan(b).k==='sanSang');
+ const out=[];
+ if(mo.length>=3) out.push(['3 cuốn đang mượn',mo.slice(0,3).map(x=>x.ban).join(', ')]);
+ if(ss) out.push(['⛔ mã không có lượt mở',ss.ma]);
+ return out;
+}
+const kqTag=r=>r.ok==='x'?'<span class="kq x">⛔ Chặn</span>':r.ok==='w'?'<span class="kq w">⚠ Cảnh báo</span>':'<span class="kq ok">✔ Được</span>';
+function veChkMuon(){
+ const c=ST.chk, di=c.rows.filter(r=>r.ok!=='x'), canh=c.rows.some(r=>r.ok==='w')||c.canhBd.length;
+ let h='<div style="padding:0 13px 12px">';
+ c.canhBd.forEach(x=>h+='<div class="warn" style="margin:0 0 7px">⚠ '+x+'</div>');
+ h+='<div class="tbw"><div class="tbx"><table><thead><tr><th>Mã cá biệt</th><th>Sách</th><th>Hạn trả</th><th>Kiểm tra</th><th>Lý do</th></tr></thead><tbody>'
+  +c.rows.map(r=>'<tr class="'+(r.ok==='x'?'xrow':r.ok==='w'?'wrow':'')+'"><td class="mono">'+esc(r.ma)+'</td><td>'+(r.d?esc(r.d.ten)+' <span class="tg c">'+KHO[r.d.kho].tien+'</span>':'—')+'</td>'
+   +'<td>'+(r.han?k2s(r.han)+'<div class="srcline">'+esc(r.hanGhi)+'</div>':'—')+'</td><td>'+kqTag(r)+'</td>'
+   +'<td style="font-size:12px">'+r.ly.join('<br>')+(r.info.length?'<div class="srcline">'+r.info.join(' · ')+'</div>':'')+'</td></tr>').join('')
+  +'</tbody></table></div></div>';
+ if(canh&&di.length) h+='<label class="lbl">Lý do vẫn cho mượn (bắt buộc khi có cảnh báo — ghi vào audit)</label><input class="fldi" id="lyDo" value="'+esc(ST.lyDo)+'" placeholder="Ví dụ: GVCN bảo lãnh, em cần sách ôn thi học sinh giỏi">';
+ h+='<div class="bar"><button class="btn g" data-a="ghiMuon"'+(di.length?'':' disabled')+'>✔ Ghi mượn '+di.length+' cuốn</button>'
+  +(di.length?'':'<span class="srcline">Không còn mã nào mượn được — xem cột Lý do.</span>')
+  +(c.rows.length-di.length?'<span class="srcline">'+(c.rows.length-di.length)+' mã bị chặn sẽ <b>bỏ qua</b> và nằm trong bảng kết quả.</span>':'')+'</div></div>';
+ return h;
+}
+function veChkTra(){
+ const c=ST.chk, di=c.rows.filter(r=>r.ok!=='x');
+ let h='<div style="padding:0 13px 12px"><div class="tbw"><div class="tbx"><table><thead><tr><th>Mã cá biệt</th><th>Sách</th><th>Bạn đọc</th><th>Mượn · hạn</th><th>Tình trạng khi trả</th><th>Ghi chú</th></tr></thead><tbody>'
+  +c.rows.map((r,i)=>{
+   if(r.ok==='x') return '<tr class="xrow"><td class="mono">'+esc(r.ma)+'</td><td>'+(r.d?esc(r.d.ten):'—')+'</td><td colspan="4">⛔ '+r.ly.join(' ')+'</td></tr>';
+   const l=r.l, tre=soNgayTre(l);
+   return '<tr><td class="mono">'+esc(r.ma)+'</td><td>'+esc(r.d.ten)+'</td><td>'+esc(bdTen(l.bd))+'<div class="srcline">'+esc(bdNhom(l.bd))+' · '+l.id+'</div></td>'
+    +'<td>'+k2ss(l.ngay)+' → '+k2ss(l.han)+(tre>0?' <span class="st2 r">trễ '+tre+' ngày</span>':'')+'</td>'
+    +'<td><select class="fs" data-kq="'+i+'">'+Object.keys(KQTRA).filter(k=>k!=='mat').map(k=>'<option value="'+k+'"'+(r.kq===k?' selected':'')+'>'+KQTRA[k].n+'</option>').join('')+'</select></td>'
+    +'<td><input class="fs" data-ghi="'+i+'" value="'+esc(r.ghi)+'" placeholder="'+(r.kq==='bt'?'(tùy chọn)':'Mô tả hư hỏng')+'"></td></tr>';
+  }).join('')+'</tbody></table></div></div>'
+  +'<div class="bar"><button class="btn g" data-a="ghiTra"'+(di.length?'':' disabled')+'>✔ Ghi trả '+di.length+' cuốn</button>'
+  +'<span class="srcline">Trả muộn chỉ được <b>ghi nhận số ngày</b> — không phát sinh tiền, không sinh khoản thu (chốt 2).</span></div></div>';
+ return h;
+}
+
+/* ---------- danh sách lượt ---------- */
+function locLuot(){
+ const ds=luotTrongPV(), c=ST.chipMT;
+ let x=ds.filter(l=>c==='dangMuon'?moLuot(l):c==='quaHan'?quaHan(l):c==='nam'?moLuot(l)&&l.loai==='nam'
+  :c==='daTra'?!!l.tra&&namHocCua(l.ngay)===ST.nam:c==='huy'?!!l.huy:(moLuot(l)||namHocCua(l.ngay)===ST.nam));
+ if(ST.q.trim()){const s=kd(ST.q.trim());
+  x=x.filter(l=>{const g=bdGet(l.bd),b=banByMa(l.ban);return kd(g.ten+' '+(g.lop||g.to)+' '+(g.id)+' '+l.ban+' '+dauById(b.dau).ten+' '+l.id).includes(s)})}
+ return x;
+}
+function veDsLuot(){
+ const ds=luotTrongPV(), cnt=f=>ds.filter(f).length;
+ const chips=[['dangMuon','Đang mượn',cnt(moLuot)],['quaHan','⏰ Quá hạn',cnt(quaHan)],['nam','Theo năm học',cnt(l=>moLuot(l)&&l.loai==='nam')],
+  ['daTra','Đã trả',cnt(l=>!!l.tra&&namHocCua(l.ngay)===ST.nam)],['huy','Đã hủy — ghi nhầm',cnt(l=>!!l.huy)],['all','Tất cả',null]];
+ const x=locLuot();
+ let h='<div class="bar">'+chips.map(([k,n,v])=>'<button class="chip'+(ST.chipMT===k?' on':'')+'" data-a="chipMT" data-v="'+k+'">'+n+(v!=null?' ('+v+')':'')+'</button>').join('')
+  +'<input class="inp" id="qmt" placeholder="Tìm bạn đọc, lớp, sách, mã cá biệt…" value="'+esc(ST.q)+'" style="min-width:250px">'
+  +(ST.chipMT==='quaHan'&&x.length?'<button class="btn sm" data-a="nhac">🖨 In phiếu nhắc ('+x.length+')</button>'
+   +'<button class="btn sm" disabled title="Đề xuất — phiếu mục E, chưa dựng">📣 Báo GVCN qua M0.3</button>':'')
+  +(can('mt_xd')?'<button class="btn sm" data-a="xuat" data-v="Danh sách lượt mượn đang lọc">⬇ Xuất</button>':'')+'</div>';
+ if(ST.chipMT==='daTra') h+='<div class="ro">Đang xem lượt đã trả của <b>năm học '+ST.nam+'</b> (theo ngày mượn). Đổi năm học ở header để xem năm khác — lịch sử giữ chi tiết '+CFG.giuLichSu+' năm học rồi ẩn tên bạn đọc (⏳ TV-8).</div>';
+ const open=!!ST.curBd;
+ h+='<div class="stage'+(open?' open':'')+'"><div class="listw">';
+ if(!x.length) h+='<div class="empty">'+(ST.q?'Không có lượt khớp «'+esc(ST.q)+'».':ST.chipMT==='quaHan'?'Không có lượt quá hạn trong phạm vi — tốt.':'Không có lượt nào ở bộ lọc này.')+'</div>';
+ else h+=veBangLuot(x);
+ h+='<div class="lgd"><span><span class="st2 r">Quá hạn</span> dẫn xuất từ hạn trả — không ai bấm</span><span><span class="tg a">năm học</span> hạn = ngày kết thúc năm học ở 🔗 M10.1 ('+k2s(HANNAM)+')</span></div></div>'
+  +'<div class="panel">'+(open?vePanelBd(ST.curBd):'')+'</div></div>';
+ return h;
+}
+function veBangLuot(x){
+ const phang=!!ST.q.trim(), tatCa=dtHieuLuc()==='ALL';
+ const thuTu=l=>{const g=bdGet(l.bd);return l.bd.k==='hs'?'0'+pn(LOP.findIndex(z=>z.id===g.lop),2):'1'+g.to};
+ x=x.slice().sort((a,b)=>(a.dt+thuTu(a)).localeCompare(b.dt+thuTu(b))||(a.han<b.han?-1:1));
+ const hang=l=>{const b=banByMa(l.ban),d=dauById(b.dau),on=ST.curBd&&bdKey(ST.curBd)===bdKey(l.bd);
+  let tt;
+  if(l.huy) tt='<span class="st2 n">Đã hủy — ghi nhầm</span>';
+  else if(l.tra) tt='<span class="kq '+KQTRA[l.kq].c+'">'+KQTRA[l.kq].n+'</span>'+(soNgayTre(l)>0?' <span class="srcline">trễ '+soNgayTre(l)+' ngày</span>':'');
+  else if(quaHan(l)) tt='<span class="st2 r">Quá hạn '+soNgayTre(l)+' ngày</span>';
+  else tt='<span class="st2 b">Đang mượn</span>';
+  return '<tr class="'+(on?'on':'')+'" style="cursor:pointer" data-bd="'+bdKey(l.bd)+'"><td><b>'+esc(bdTen(l.bd))+'</b>'+ttBdTag(l.bd)
+   +'<div class="srcline">'+(phang?esc(bdNhom(l.bd))+' · ':'')+bdLoai(l.bd)+'</div></td>'
+   +'<td>'+esc(d.ten)+'<div class="srcline mono">'+l.ban+(l.loai==='nam'?' · <span class="tg a">năm học</span>':'')+'</div></td>'
+   +'<td class="hcol">'+k2ss(l.ngay)+'</td><td class="hcol">'+(l.tra?'trả '+k2ss(l.tra):'hạn '+k2s(l.han))+(l.gh.length?'<div class="srcline">gia hạn '+l.gh.length+' lần</div>':'')+'</td><td>'+tt+'</td></tr>'};
+ let h='<div class="tbx"><table><thead><tr><th>Bạn đọc</th><th>Sách</th><th class="hcol">Mượn</th><th class="hcol">Hạn / trả</th><th>Trạng thái</th></tr></thead><tbody>';
+ if(phang) return h+x.map(hang).join('')+'</tbody></table></div>';
+ let dt0=null,g0=null;
+ x.forEach(l=>{
+  if(tatCa&&l.dt!==dt0){dt0=l.dt;g0=null;const n=x.filter(z=>z.dt===l.dt);
+   h+='<tr><td colspan="5" class="gtd" style="background:#eef2f7">🏫 '+DTN[l.dt]+'<span class="cnt">'+n.length+' lượt · '+n.filter(quaHan).length+' quá hạn</span></td></tr>'}
+  const g=bdNhom(l.bd);
+  if(g!==g0){g0=g;const n=x.filter(z=>z.dt===l.dt&&bdNhom(z.bd)===g);
+   const gv=l.bd.k==='hs'?' · GVCN '+esc(lopById(g).gv):'';
+   h+='<tr><td colspan="5" class="gtd">'+(l.bd.k==='hs'?'🎒 Lớp ':'👩‍🏫 ')+esc(g)+gv+'<span class="cnt">'+n.length+' lượt'+(n.filter(quaHan).length?' · <b style="color:var(--red)">'+n.filter(quaHan).length+' quá hạn</b>':'')+'</span></td></tr>'}
+  h+=hang(l);
+ });
+ return h+'</tbody></table></div>';
+}
+
+/* ---------- panel 1:1 — MỘT bạn đọc ---------- */
+function vePanelBd(key){
+ const [k,id]=key.split(':'), b={k,id}, g=bdGet(b);
+ const mo=luotMoCuaBd(b).filter(l=>trongDT(l.dt)), ls=LUOT.filter(l=>bdKey(l.bd)===key&&!moLuot(l)&&trongDT(l.dt)&&namHocCua(l.ngay)===ST.nam);
+ const s=can('mt_s'), xo=can('mt_xo');
+ let h='<div class="ph"><div class="n"><h2>'+(k==='hs'?'🎒':'👩‍🏫')+' '+esc(g.ten)+'</h2><div class="m">'+bdLoai(b)+' · '
+  +esc(k==='hs'?'lớp '+g.lop:g.cd+' · '+g.to)+' · <span class="mono">'+esc(k==='hs'?g.id:g.ma)+'</span> · '+DTN[g.dt]+' '+ttBdTag(b)+'</div></div>'
+  +'<div class="spacer"></div>'+(can('mt_t')&&quayDT()?'<button class="btn sm p" data-a="muonCho" data-v="'+key+'">📤 Mượn cho bạn đọc này</button>':'')
+  +'<button class="btn sm" data-close>✕</button></div><div class="pbody">';
+ if(g.tt==='chuyen') h+='<div class="warn">⚠ <b>Đã chuyển trường</b> '+k2s(g.ttNgay)+' — '+esc(g.ttGhi)+'. Còn <b>'+mo.length+' cuốn</b> chưa trả. '
+  +'Mục <i>«sách thư viện đang mượn»</i> ở khối bàn giao lớp của M1.5 đọc 🔗 đúng số này — <b>cảnh báo, không chặn</b> hồ sơ chuyển trường. '+r19('M1.5','Hồ sơ chuyển trường')+'</div>';
+ if(g.tt==='thoi') h+='<div class="warn">⚠ <b>Đã thôi học</b> '+k2s(g.ttNgay)+'. '+r19('M1.6','Hồ sơ thôi học')+'</div>';
+ if(g.tt==='nghi') h+='<div class="warn">⚠ <b>Đã nghỉ việc</b> '+k2s(g.ttNgay)+' — '+esc(g.ttGhi)+'. Còn <b>'+mo.length+' cuốn</b> chưa trả — M4.2 hiện cảnh báo này ở hồ sơ biến động (phiếu E). '+r19('M4.2','Biến động nhân sự')+'</div>';
+ h+='<div class="card"><div class="ch">📖 Đang mượn ('+mo.length+')<span class="sp"></span>'+(k==='hs'?'<span class="srcline">tối đa '+CFG.toiDa.hs+' cuốn thường</span>':'')+'</div>';
+ if(!mo.length) h+='<div class="empty" style="padding:16px">Không có cuốn nào đang mượn.</div>';
+ else h+='<div class="tbx"><table><thead><tr><th>Sách</th><th>Mượn · hạn</th><th>Trạng thái</th>'+(s||xo?'<th></th>':'')+'</tr></thead><tbody>'
+  +mo.map(l=>{const d=dauById(banByMa(l.ban).dau);
+   const act=[];
+   if(s&&l.loai==='thuong') act.push('<button class="btn xs" data-a="giaHan" data-v="'+l.id+'">⏩ Gia hạn</button>');
+   if(s) act.push('<button class="btn xs" data-a="traMot" data-v="'+l.id+'">📥 Trả</button>','<button class="btn xs" data-a="baoMat" data-v="'+l.id+'">❓ Báo mất</button>');
+   if(xo&&l.ngay===HOMNAY) act.push('<button class="btn xs" data-a="huy" data-v="'+l.id+'">✕ Hủy — ghi nhầm</button>');
+   return '<tr class="'+(quaHan(l)?'badrow':'')+'"><td>'+esc(d.ten)+'<div class="srcline mono">'+l.ban+' · '+l.id+(l.loai==='nam'?' · năm học':'')+'</div></td>'
+    +'<td>'+k2ss(l.ngay)+' → '+k2s(l.han)+(l.gh.length?'<div class="srcline">đã gia hạn '+l.gh.length+' lần</div>':'')+'</td>'
+    +'<td>'+(quaHan(l)?'<span class="st2 r">Quá hạn '+soNgayTre(l)+' ngày</span>':'<span class="st2 b">Còn '+soNgay(HOMNAY,l.han)+' ngày</span>')+'</td>'
+    +(s||xo?'<td style="white-space:nowrap">'+act.join(' ')+'</td>':'')+'</tr>'}).join('')+'</tbody></table></div>';
+ h+='</div><div class="card"><div class="ch">🕘 Đã trả — năm học '+ST.nam+' ('+ls.length+')<span class="sp"></span>'
+  +(can('mt_xd')?'<button class="btn xs" data-a="xuat" data-v="Lịch sử mượn của '+esc(g.ten)+'">⬇ Xuất lịch sử</button>':'')+'</div>';
+ if(!ls.length) h+='<div class="empty" style="padding:16px">Không có lượt đã đóng trong năm học này.</div>';
+ else h+='<div class="tbx"><table><thead><tr><th>Sách</th><th>Mượn → trả</th><th>Kết quả</th></tr></thead><tbody>'
+  +ls.map(l=>'<tr><td>'+esc(dauById(banByMa(l.ban).dau).ten)+'<div class="srcline mono">'+l.ban+'</div></td><td>'+k2ss(l.ngay)+' → '+(l.tra?k2ss(l.tra):'—')
+   +(l.tra&&soNgayTre(l)>0?' <span class="srcline">trễ '+soNgayTre(l)+' ngày</span>':'')+'</td>'
+   +'<td>'+(l.huy?'<span class="st2 n">Hủy — ghi nhầm</span><div class="srcline">'+esc(l.huy.ly)+'</div>':'<span class="kq '+KQTRA[l.kq].c+'">'+KQTRA[l.kq].n+'</span>'+(l.ghi?'<div class="srcline">'+esc(l.ghi)+'</div>':''))+'</td></tr>').join('')
+  +'</tbody></table></div>';
+ h+='</div>'+(k==='hs'?'<div class="ro">🔐 Lịch sử mượn của học sinh là <b>dữ liệu cá nhân trẻ em</b> — xuất bắt buộc chọn mục đích, mọi lượt xem hồ sơ bạn đọc ghi audit (Luật BVDLCN 91/2025).</div>':'');
+ return h+'</div>';
+}
+
+/* ═══════════ HỘP THOẠI ═══════════ */
+function hopKetQua(tieuDe,ok,bo,cot){
+ modal('📋 Bảng kết quả — '+tieuDe,
+  '<div class="okbox">✔ <b>'+ok.length+'</b> dòng thành công · <b>'+bo.length+'</b> dòng bỏ qua.</div>'
+  +(ok.length?'<div class="tbw" style="margin-bottom:10px"><div class="tbx"><table><thead><tr>'+cot.map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>'
+   +ok.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</tbody></table></div></div>':'')
+  +(bo.length?'<div class="stt">Bỏ qua — kèm lý do</div><div class="tbw"><div class="tbx"><table><thead><tr><th>Dòng</th><th>Lý do</th></tr></thead><tbody>'
+   +bo.map(r=>'<tr class="xrow"><td class="mono">'+r[0]+'</td><td style="font-size:12px">'+r[1]+'</td></tr>').join('')+'</tbody></table></div></div>':''),
+  '<button class="btn p" data-mb="close">Đóng</button>');
+}
+function hopXuat(what){
+ modal('⬇ Xuất — '+esc(what),
+  '<div class="ro">Dữ liệu có tên học sinh là <b>dữ liệu cá nhân trẻ em</b>. Xuất <b>bắt buộc chọn mục đích</b>; lượt xuất ghi audit kèm mục đích (Luật BVDLCN 91/2025).</div>'
+  +'<label class="lbl">Mục đích <span style="color:var(--red)">*</span></label><select class="fldi" id="mdx"><option value="">— chọn —</option>'
+  +['Báo cáo định kỳ của thư viện (TT 16/2022 Đ.9)','Gửi GVCN nhắc học sinh trả sách','Bàn giao khi đổi người phụ trách thư viện','Hồ sơ thanh lọc / kiểm kê'].map(x=>'<option>'+x+'</option>').join('')+'</select>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="xuatOk">⬇ Xuất Excel</button>');
+ mfns.bxuatOk=()=>{if(!$('#mdx').value){toast('⛔ Chưa chọn <b>mục đích</b> — không xuất được.');return}closeM();toast('⬇ Đã xuất — audit ghi mục đích «'+esc($('#mdx').value)+'».')};
+}
+function hopGiaHan(id){
+ const l=LUOT.find(x=>x.id===id), d=dauById(banByMa(l.ban).dau), n=CFG.giaHan[l.bd.k];
+ const moi=cong(l.han>HOMNAY?l.han:HOMNAY,n), vuot=l.gh.length>=CFG.giaHan.lan;
+ modal('⏩ Gia hạn — '+esc(d.ten),
+  '<div class="f"><span class="k">Bạn đọc</span><span class="v">'+esc(bdTen(l.bd))+' · '+esc(bdNhom(l.bd))+'</span></div>'
+  +'<div class="f"><span class="k">Hạn hiện tại</span><span class="v">'+k2s(l.han)+(quaHan(l)?' <span class="st2 r">quá hạn '+soNgayTre(l)+' ngày</span>':'')+'</span></div>'
+  +'<div class="f"><span class="k">Đã gia hạn</span><span class="v">'+l.gh.length+' lần'+(l.gh.length?' — '+l.gh.map(g=>k2ss(g.cu)+'→'+k2ss(g.moi)).join(', '):'')+'</span></div>'
+  +(vuot?'<div class="warn" style="margin-top:8px">⚠ Đã gia hạn <b>'+l.gh.length+' lần</b> — cấu hình tối đa <b>'+CFG.giaHan.lan+'</b>. Vẫn gia hạn được; lượt vượt ghi audit kèm lý do.</div>':'')
+  +'<label class="lbl">Hạn mới (mặc định +'+n+' ngày theo cấu hình)</label><input class="fldi" id="ghMoi" value="'+k2s(moi)+'">'
+  +'<label class="lbl">Lý do <span style="color:var(--red)">*</span></label><input class="fldi" id="ghLy" placeholder="Ví dụ: em đọc chưa xong">',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="ghOk">⏩ Gia hạn</button>');
+ mfns.bghOk=()=>{
+  const ly=$('#ghLy').value.trim(), v=$('#ghMoi').value.trim().split('/');
+  if(!ly){toast('⛔ Thiếu <b>lý do gia hạn</b>.');return}
+  const k=v.length===3?v[2]+'-'+v[1]+'-'+v[0]:null;
+  if(!k||!/^\d{4}-\d{2}-\d{2}$/.test(k)||k<=HOMNAY){toast('⛔ Hạn mới phải là ngày <b>sau hôm nay</b>, dạng dd/mm/yyyy.');return}
+  l.gh.push({luc:HOMNAY,cu:l.han,moi:k,boi:R().n,ly}); l.han=k; closeM();
+  toast('⏩ Đã gia hạn <b>'+l.id+'</b> đến '+k2s(k)+'. Vết gia hạn lưu trên lượt (người · lý do · hạn cũ → mới).'); render();
+ };
+}
+function hopTraMot(id){
+ const l=LUOT.find(x=>x.id===id), d=dauById(banByMa(l.ban).dau);
+ modal('📥 Ghi trả — '+esc(d.ten),
+  '<div class="f"><span class="k">Mã cá biệt</span><span class="v mono">'+l.ban+'</span></div>'
+  +'<div class="f"><span class="k">Bạn đọc</span><span class="v">'+esc(bdTen(l.bd))+'</span></div>'
+  +'<label class="lbl">Tình trạng khi trả</label><select class="fldi" id="trKq">'+Object.keys(KQTRA).filter(k=>k!=='mat').map(k=>'<option value="'+k+'">'+KQTRA[k].n+'</option>').join('')+'</select>'
+  +'<label class="lbl">Ghi chú</label><input class="fldi" id="trGhi" placeholder="Bắt buộc khi hỏng — mô tả hư hỏng">'
+  +'<div class="ro" style="margin-top:9px"><b>Hỏng — không cho mượn</b> đưa bản sang <b>Chờ loại</b>; bản chỉ thành <b>Đã loại</b> khi Hiệu trưởng duyệt danh mục thanh lọc (tab 3).</div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn g" data-mb="trOk">✔ Ghi trả</button>');
+ mfns.btrOk=()=>{const kq=$('#trKq').value, g=$('#trGhi').value.trim();
+  if(kq!=='bt'&&!g){toast('⛔ Tình trạng <b>'+KQTRA[kq].n+'</b> cần ghi chú mô tả hư hỏng.');return}
+  ghiTraMot(l,kq,g); closeM(); toast('📥 Đã ghi trả <b>'+l.ban+'</b> — '+KQTRA[kq].n+(kq==='hong'?'. Bản chuyển <b>Chờ loại — hỏng</b>.':'.')); render()};
+}
+function hopBaoMat(id){
+ const l=LUOT.find(x=>x.id===id), d=dauById(banByMa(l.ban).dau);
+ modal('❓ Báo mất khi đang mượn — '+esc(d.ten),
+  '<div class="warn">Lượt <b>'+l.id+'</b> đóng với kết quả <b>Mất</b>; bản <span class="mono">'+l.ban+'</span> chuyển <b>Chờ loại — mất</b> (tiêu chí TT 02/2020 Đ.20 k.3).<br>'
+  +'<b>Không phát sinh đền bù</b> — không có ô tiền, không sinh khoản thu, không có trạng thái «chờ đền» (chốt 2).</div>'
+  +'<label class="lbl">Ghi chú <span style="color:var(--red)">*</span></label><input class="fldi" id="mtGhi" placeholder="Bạn đọc báo mất ở đâu, khi nào">',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn d" data-mb="mtOk">❓ Ghi mất</button>');
+ mfns.bmtOk=()=>{const g=$('#mtGhi').value.trim(); if(!g){toast('⛔ Thiếu ghi chú.');return}
+  ghiTraMot(l,'mat',g); closeM(); toast('❓ Đã đóng <b>'+l.id+'</b> với kết quả Mất — bản chờ loại, đưa vào đợt thanh lọc ở tab 3.'); render()};
+}
+function hopHuy(id){
+ const l=LUOT.find(x=>x.id===id);
+ modal('✕ Hủy lượt ghi nhầm — '+l.id,
+  '<div class="ro">Hủy là <b>chuyển trạng thái</b>, không xóa: lượt còn trong danh sách ở chip <b>Đã hủy — ghi nhầm</b>, kèm người hủy và lý do. Chỉ hủy được lượt ghi <b>trong ngày</b>; sau đó là lượt thật — ghi trả.</div>'
+  +'<label class="lbl">Lý do <span style="color:var(--red)">*</span></label><input class="fldi" id="hyLy" placeholder="Ví dụ: quét nhầm mã">',
+  '<button class="btn" data-mb="close">Không</button><button class="btn d" data-mb="hyOk">✕ Hủy lượt</button>');
+ mfns.bhyOk=()=>{const g=$('#hyLy').value.trim(); if(g.length<5){toast('⛔ Lý do quá ngắn.');return}
+  l.huy={luc:HOMNAY+' '+GIO,ly:g,boi:R().n}; closeM(); toast('✕ Đã hủy <b>'+l.id+'</b> — bản trở về <b>Sẵn sàng</b>.'); render()};
+}
+function hopNhac(){
+ const x=locLuot().filter(quaHan), nhom={};
+ x.forEach(l=>{const g=bdNhom(l.bd);(nhom[l.dt+'|'+g]=nhom[l.dt+'|'+g]||[]).push(l)});
+ modal('🖨 Phiếu nhắc trả sách — '+x.length+' lượt quá hạn',
+  '<div class="ro">In theo <b>lớp / tổ</b> để chuyển GVCN hoặc tổ trưởng phát tay — thư viện nhắc <b>trực tiếp</b>, <b>không lên App PH-HS</b> (chốt 3). Mẫu lời nhắc sửa ở tab 5.</div>'
+  +Object.keys(nhom).map(k=>{const [dt,g]=k.split('|'), ls=nhom[k], hs=ls[0].bd.k==='hs';
+   return '<div class="card"><div class="ch">'+(hs?'🎒 Lớp '+esc(g)+' · GVCN '+esc(lopById(g).gv):'👩‍🏫 '+esc(g))+'<span class="sp"></span><span class="srcline">'+DTN[dt]+'</span></div>'
+    +ls.map(l=>'<div class="kv"><span>'+esc(CFG.mauNhac.replace('{TEN}',bdTen(l.bd)).replace('{LOP}',bdNhom(l.bd)).replace('{DT}',DTN[l.dt]))
+     +'<br><b>«'+esc(dauById(banByMa(l.ban).dau).ten)+'»</b> <span class="mono">'+l.ban+'</span> — hạn '+k2s(l.han)+'</span><b style="color:var(--red)">'+soNgayTre(l)+' ngày</b></div>').join('')+'</div>'}).join(''),
+  '<button class="btn" data-mb="close">Đóng</button><button class="btn p" data-mb="inOk">🖨 In</button>');
+ mfns.binOk=()=>{closeM();toast('🖨 Đã gửi lệnh in '+Object.keys(nhom).length+' tờ (mỗi lớp / tổ một tờ). Lượt in ghi audit.')};
+}
+function hopCapSGK(){
+ const d=quayDT(), lops=LOP.filter(l=>l.dt===d);
+ const st={lop:lops[0].id,hs:new Set(),dau:null};
+ const ve=()=>{
+  const l=lopById(st.lop), hs=HS.filter(h=>h.lop===st.lop&&h.tt==='hoc'), sgk=DAU.filter(x=>x.kho==='SGK'&&x.khoi===l.khoi&&!/2006/.test(x.ten));
+  if(!st.dau) st.dau=new Set(sgk.map(x=>x.id));
+  const ss=id=>BAN.filter(b=>b.dau===id&&b.dt===d&&ttBan(b).k==='sanSang').length;
+  $('#mb').innerHTML='<div class="ro">Loại mượn <b>theo năm học</b>: hạn = ngày kết thúc năm học ở 🔗 M10.1 (<b>'+k2s(HANNAM)+'</b>), <b>không tính</b> vào số cuốn tối đa, <b>không</b> vào danh sách quá hạn trước ngày đó. '
+   +'Mặc định <b>không chọn ai</b> — nút dưới chỉ gợi ý nhóm diện chính sách, người quyết là quản thư.</div>'
+   +'<label class="lbl">Lớp</label><select class="fldi" id="cgLop">'+lops.map(z=>'<option'+(z.id===st.lop?' selected':'')+'>'+z.id+'</option>').join('')+'</select>'
+   +'<div class="bar"><b style="font-size:12.5px">Học sinh ('+st.hs.size+'/'+hs.length+')</b><button class="btn xs" data-cg="dcs">Chọn học sinh diện chính sách</button><button class="btn xs" data-cg="bo">Bỏ chọn</button></div>'
+   +'<div style="max-height:160px;overflow-y:auto;border:1px solid var(--line);border-radius:9px;padding:4px 8px;columns:2;font-size:12.5px">'
+   +hs.map(h=>'<label style="display:block"><input type="checkbox" data-cgh="'+h.id+'"'+(st.hs.has(h.id)?' checked':'')+'> '+esc(h.ten)+(h.dcs?' <span class="tg a">diện CS</span>':'')+'</label>').join('')+'</div>'
+   +'<div class="stt" style="margin-top:10px">Bộ SGK khối '+l.khoi+' — số bản sẵn sàng ở kho '+DTN[d]+'</div>'
+   +(sgk.length?sgk.map(x=>'<label style="display:block;font-size:12.5px"><input type="checkbox" data-cgd="'+x.id+'"'+(st.dau.has(x.id)?' checked':'')+'> '+esc(x.ten)+' — <b>'+ss(x.id)+'</b> bản sẵn sàng'+(ss(x.id)<st.hs.size?' <span class="kq w">thiếu '+(st.hs.size-ss(x.id))+'</span>':'')+'</label>').join('')
+    :'<div class="empty" style="padding:10px">Kho này không có SGK khối '+l.khoi+'.</div>');
+  $('#cgLop').onchange=e=>{st.lop=e.target.value;st.hs=new Set();st.dau=null;ve()};
+  $$('[data-cgh]').forEach(c=>c.onchange=()=>{c.checked?st.hs.add(c.dataset.cgh):st.hs.delete(c.dataset.cgh);ve()});
+  $$('[data-cgd]').forEach(c=>c.onchange=()=>{c.checked?st.dau.add(c.dataset.cgd):st.dau.delete(c.dataset.cgd);ve()});
+  $$('[data-cg]').forEach(c=>c.onclick=()=>{if(c.dataset.cg==='dcs')hs.filter(h=>h.dcs).forEach(h=>st.hs.add(h.id));else st.hs=new Set();ve()});
+ };
+ modal('📚 Cấp SGK theo năm học — quầy '+DTN[d],'','<button class="btn" data-mb="close">Hủy</button><button class="btn g" data-mb="cgOk">✔ Ghi cấp</button>');
+ ve();
+ mfns.bcgOk=()=>{
+  if(!st.hs.size||!st.dau.size){toast('⛔ Chọn ít nhất một học sinh và một đầu sách.');return}
+  const ok=[],bo=[];
+  [...st.hs].forEach(hid=>{const bd={k:'hs',id:hid},g=bdGet(bd);
+   [...st.dau].forEach(did=>{const dd=dauById(did);
+    if(luotMoCuaBd(bd).some(x=>x.loai==='nam'&&banByMa(x.ban).dau===did)){bo.push([esc(g.ten)+' · '+esc(dd.ten),'Em đang mượn đầu sách này theo năm học — không cấp lần hai.']);return}
+    const b=BAN.find(z=>z.dau===did&&z.dt===d&&ttBan(z).k==='sanSang');
+    if(!b){bo.push([esc(g.ten)+' · '+esc(dd.ten),'Hết bản <b>Sẵn sàng</b> ở kho '+DTN[d]+' — nhập thêm ở tab 2 hoặc để em dùng tủ sách lớp.']);return}
+    const x=mkLuot(bd,b,HOMNAY,HANNAM,{loai:'nam',boiM:R().n}); ok.push([esc(g.ten),esc(dd.ten),'<span class="mono">'+b.ma+'</span>',x.id]);
+   })});
+  closeM(); render(); hopKetQua('Cấp SGK theo năm học',ok,bo,['Học sinh','Sách','Mã cá biệt','Lượt']);
+ };
+}
+function hopThuSGK(){
+ const d=quayDT(), lops=LOP.filter(l=>l.dt===d&&LUOT.some(x=>moLuot(x)&&x.loai==='nam'&&x.bd.k==='hs'&&bdGet(x.bd).lop===l.id));
+ if(!lops.length){toast('Không có lớp nào đang mượn SGK theo năm học ở '+DTN[d]+'.');return}
+ const st={lop:lops[0].id};
+ const ve=()=>{
+  const ls=LUOT.filter(x=>moLuot(x)&&x.loai==='nam'&&x.bd.k==='hs'&&bdGet(x.bd).lop===st.lop);
+  $('#mb').innerHTML='<div class="ro">Thu cuối năm (hoặc khi học sinh chuyển đi) — mặc định <b>Bình thường</b>, đổi từng dòng nếu cuốn hỏng. Cuốn học sinh không mang đến thì <b>bỏ tick</b> — lượt vẫn mở.</div>'
+   +'<label class="lbl">Lớp</label><select class="fldi" id="tsLop">'+lops.map(z=>'<option'+(z.id===st.lop?' selected':'')+'>'+z.id+'</option>').join('')+'</select>'
+   +'<div class="tbw" style="margin-top:9px"><div class="tbx"><table><thead><tr><th></th><th>Học sinh</th><th>Sách</th><th>Tình trạng</th></tr></thead><tbody>'
+   +ls.map(l=>'<tr><td><input type="checkbox" data-tsc="'+l.id+'" checked></td><td>'+esc(bdTen(l.bd))+'</td><td>'+esc(dauById(banByMa(l.ban).dau).ten)+'<div class="srcline mono">'+l.ban+'</div></td>'
+    +'<td><select class="fs" data-tsk="'+l.id+'">'+Object.keys(KQTRA).filter(k=>k!=='mat').map(k=>'<option value="'+k+'">'+KQTRA[k].n+'</option>').join('')+'</select></td></tr>').join('')
+   +'</tbody></table></div></div>';
+  $('#tsLop').onchange=e=>{st.lop=e.target.value;ve()};
+ };
+ modal('📥 Thu SGK theo lớp — quầy '+DTN[d],'','<button class="btn" data-mb="close">Hủy</button><button class="btn g" data-mb="tsOk">✔ Ghi trả các dòng đã tick</button>');
+ ve();
+ mfns.btsOk=()=>{
+  const ok=[],bo=[];
+  $$('[data-tsc]').forEach(c=>{const l=LUOT.find(x=>x.id===c.dataset.tsc);
+   if(!c.checked){bo.push([l.ban,'Không tick — em chưa mang sách đến; lượt <b>vẫn mở</b>.']);return}
+   const kq=$('[data-tsk="'+l.id+'"]').value;
+   ghiTraMot(l,kq,kq==='bt'?'':'Thu cuối năm — '+KQTRA[kq].n); ok.push([esc(bdTen(l.bd)),'<span class="mono">'+l.ban+'</span>','<span class="kq '+KQTRA[kq].c+'">'+KQTRA[kq].n+'</span>'])});
+  closeM(); render(); hopKetQua('Thu SGK lớp '+st.lop,ok,bo,['Học sinh','Mã cá biệt','Tình trạng']);
+ };
+}
+
+/* ---------- ghi mượn / ghi trả từ quầy ---------- */
+function thucHienMuon(){
+ const c=ST.chk, di=c.rows.filter(r=>r.ok!=='x'), canh=c.rows.some(r=>r.ok==='w')||c.canhBd.length;
+ const ly=($('#lyDo')&&$('#lyDo').value.trim())||'';
+ if(canh&&!ly){toast('⛔ Có cảnh báo — cần <b>lý do vẫn cho mượn</b> (ghi vào audit).');const e=$('#lyDo');if(e)e.focus();return}
+ const ok=[],bo=[];
+ c.rows.forEach(r=>{
+  if(r.ok==='x'){bo.push([esc(r.ma),r.ly.join(' ')]);return}
+  const x=ghiMuonMot(ST.bdSel,r,r.ok==='w'||c.canhBd.length?ly:'');
+  ok.push(['<span class="mono">'+r.ma+'</span>',esc(r.d.ten),k2s(r.han)+(r.loai==='nam'?' <span class="tg a">năm học</span>':''),x.id]);
+ });
+ const bd=ST.bdSel; ST.chk=null; ST.codes=''; ST.lyDo='';
+ render(); hopKetQua('Ghi mượn cho '+esc(bdTen(bd)),ok,bo,['Mã cá biệt','Sách','Hạn trả','Lượt']);
+}
+function thucHienTra(){
+ const c=ST.chk, ok=[], bo=[];
+ for(const r of c.rows) if(r.ok!=='x'&&r.kq!=='bt'&&!r.ghi.trim()){toast('⛔ Mã <b>'+esc(r.ma)+'</b>: tình trạng <b>'+KQTRA[r.kq].n+'</b> cần ghi chú mô tả hư hỏng.');return}
+ c.rows.forEach(r=>{
+  if(r.ok==='x'){bo.push([esc(r.ma),r.ly.join(' ')]);return}
+  const tre=soNgayTre(r.l);
+  ghiTraMot(r.l,r.kq,r.ghi.trim());
+  ok.push(['<span class="mono">'+r.ma+'</span>',esc(bdTen(r.l.bd)),'<span class="kq '+KQTRA[r.kq].c+'">'+KQTRA[r.kq].n+'</span>'+(r.kq==='hong'?' → Chờ loại':''),tre>0?'trễ '+tre+' ngày':'đúng hạn']);
+ });
+ ST.chk=null; ST.codes='';
+ render(); hopKetQua('Ghi trả',ok,bo,['Mã cá biệt','Bạn đọc','Tình trạng','Hạn']);
+}
+
+/* ═══════════ TAB 2 · KHO SÁCH ═══════════ */
+
+const giaTri=bs=>bs.reduce((s,b)=>s+(b.tt==='daLoai'?0:b.gia||0),0);
+function veKho(){
+ if(!can('kho_x')) return tuChoi('Kho sách',R().sc==='Class'
+  ?'GVCN có <b>bản chiếu học sinh lớp mình đang mượn</b> ở tab 1 (chốt 3A). Danh mục kho là việc của thư viện — tách theo <b>bản chất người dùng</b> (khung R4).'
+  :'PHT Chuyên môn đọc <b>số liệu tổng hợp</b> ở tab 4 · Thống kê — không cần danh mục từng bản.');
+ const bs=banTrongPV(), dem=k=>bs.filter(b=>ttBan(b).k===k).length;
+ let h=scopeBar('<span>Đầu sách là danh mục <b>dùng chung toàn trường</b> — số bản đếm theo phạm vi. Bộ chọn năm học <b>không</b> áp cho tab này.</span>');
+ h+=dn('<b>Đầu sách ↔ Bản sách</b>: đầu sách là thông tin thư mục (nhan đề, tác giả, ISBN, phân loại DDC) — một dòng cho cả trường để hai kho không khai trùng. '
+  +'<b>Bản sách</b> là cuốn vật lý, có <b>mã cá biệt</b>, thuộc <b>một điểm trường</b>. Mọi thao tác nghiệp vụ (mượn, báo hỏng, kiểm kê, loại) làm trên <b>bản</b>.');
+ h+='<div class="kpis">'
+  +kpi('Đầu sách có bản',new Set(bs.filter(b=>b.tt!=='daLoai').map(b=>b.dau)).size,'trên '+DAU.length+' đầu sách của trường')
+  +kpi('Bản trong kho',bs.filter(b=>b.tt!=='daLoai').length,'không tính bản đã loại')
+  +kpi('Sẵn sàng',dem('sanSang'),'','g')+kpi('Đang ở bạn đọc',dem('dangMuon')+dem('quaHan'),dem('quaHan')+' quá hạn',dem('quaHan')?'r':'')
+  +kpi('Chờ loại',dem('choLoai'),'không cho mượn · chờ thanh lọc','a')+kpi('Đã loại',dem('daLoai'),'tìm lại bằng chip «Có bản đã loại»')
+  +kpi('Giá trị kho',vn(giaTri(bs))+'đ','theo giá từng bản — chỉ để thống kê')+'</div>';
+ h+='<div class="bar">'
+  +(can('kho_t')?'<button class="btn p sm" data-a="phieuNhap">➕ Phiếu nhập kho</button>':'')
+  +(can('kho_id')?'<button class="btn sm" data-a="importX">📥 Nhập từ Excel</button>':'')
+  +'<button class="btn sm" data-a="soTQ">📒 Sổ đăng ký tổng quát</button><button class="btn sm" data-a="soCB">📗 Sổ đăng ký cá biệt</button>'
+  +(can('kho_xd')?'<button class="btn sm" data-a="xuat" data-v="Danh mục kho sách">⬇ Xuất</button>':'')+'</div>';
+ const cnt=f=>DAU.filter(d=>bs.some(b=>b.dau===d.id&&f(b))).length;
+ h+='<div class="bar" style="padding-top:0">'+[['all','Tất cả loại']].concat(Object.keys(KHO).map(k=>[k,KHO[k].ten])).map(([k,n])=>
+   '<button class="chip'+(ST.loaiKho===k?' on':'')+'" data-a="loaiKho" data-v="'+k+'">'+n+'</button>').join('')
+  +'<span style="width:10px"></span>'
+  +[['all','Mọi tình trạng',null],['choLoai','Có bản chờ loại',cnt(b=>b.tt==='choLoai')],['hn','Có bản hỏng nhẹ',cnt(b=>b.hn&&b.tt!=='daLoai')],
+    ['daLoai','Có bản đã loại',cnt(b=>b.tt==='daLoai')],['khong','Chưa có bản ở kho này',null]].map(([k,n,v])=>
+   '<button class="chip'+(ST.chipKho===k?' on':'')+'" data-a="chipKho" data-v="'+k+'">'+n+(v!=null?' ('+v+')':'')+'</button>').join('')
+  +'<input class="inp" id="qkho" placeholder="Nhan đề, tác giả, ISBN, mã cá biệt…" value="'+esc(ST.qKho)+'"></div>';
+ const x=locDau(bs), open=!!ST.curDau;
+ h+='<div class="stage'+(open?' open':'')+'"><div class="listw">'+(x.length?veBangDau(x,bs):'<div class="empty">Không có đầu sách khớp bộ lọc.</div>')+'</div>'
+  +'<div class="panel">'+(open?vePanelDau(ST.curDau):'')+'</div></div>';
+ return h;
+}
+const kpi=(k,v,s,c)=>'<div class="kpi '+(c||'')+'"><div class="k">'+k+'</div><div class="v">'+v+'</div><div class="s">'+(s||'')+'</div></div>';
+function locDau(bs){
+ let x=DAU.filter(d=>ST.loaiKho==='all'||d.kho===ST.loaiKho);
+ const c=ST.chipKho;
+ if(c==='choLoai') x=x.filter(d=>bs.some(b=>b.dau===d.id&&b.tt==='choLoai'));
+ if(c==='hn') x=x.filter(d=>bs.some(b=>b.dau===d.id&&b.hn&&b.tt!=='daLoai'));
+ if(c==='daLoai') x=x.filter(d=>bs.some(b=>b.dau===d.id&&b.tt==='daLoai'));
+ if(c==='khong') x=x.filter(d=>!bs.some(b=>b.dau===d.id&&b.tt!=='daLoai'));
+ if(ST.qKho.trim()){const s=kd(ST.qKho.trim());
+  x=x.filter(d=>kd(d.ten+' '+d.tg+' '+d.isbn+' '+d.nxb).includes(s)||BAN.some(b=>b.dau===d.id&&kd(b.ma).includes(s)))}
+ return x;
+}
+function veBangDau(x,bs){
+ const phang=!!ST.qKho.trim();
+ let h='<div class="tbx"><table><thead><tr><th>Nhan đề</th><th class="hcol">Môn · khối</th><th class="hcol">DDC</th><th>Bản trong phạm vi</th></tr></thead><tbody>';
+ let k0=null;
+ x.forEach(d=>{
+  if(!phang&&d.kho!==k0){k0=d.kho;const n=x.filter(z=>z.kho===d.kho);
+   h+='<tr><td colspan="4" class="gtd">'+KHO[d.kho].ten+' <span class="mono">('+KHO[d.kho].tien+')</span><span class="cnt">'+n.length+' đầu sách</span></td></tr>'}
+  const my=bs.filter(b=>b.dau===d.id), con=my.filter(b=>b.tt!=='daLoai'), t=k=>my.filter(b=>ttBan(b).k===k).length;
+  const on=ST.curDau===d.id;
+  h+='<tr class="'+(on?'on':'')+(con.length?'':' dim')+'" style="cursor:pointer" data-dau="'+d.id+'"><td><b>'+esc(d.ten)+'</b>'+(phang?' <span class="tg c">'+KHO[d.kho].tien+'</span>':'')
+   +'<div class="srcline">'+esc(d.tg)+' · '+esc(d.nxb)+' · '+d.nam+'</div></td>'
+   +'<td class="hcol">'+esc(d.mon||'—')+(d.khoi?' · '+d.khoi:'')+'</td><td class="hcol mono">'+esc(d.ddc)+'</td>'
+   +'<td>'+(con.length?'<b>'+con.length+'</b> bản · <span style="color:var(--green)">'+t('sanSang')+' sẵn</span>'
+     +(t('dangMuon')+t('quaHan')?' · '+(t('dangMuon')+t('quaHan'))+' mượn':'')+(t('choLoai')?' · <span style="color:var(--amber)">'+t('choLoai')+' chờ loại</span>':''):'<span class="srcline">chưa có bản ở kho này</span>')
+   +(t('daLoai')?' <span class="srcline">· '+t('daLoai')+' đã loại</span>':'')+'</td></tr>';
+ });
+ return h+'</tbody></table></div>';
+}
+
+/* ---------- panel 1:1 — MỘT đầu sách ---------- */
+function vePanelDau(id){
+ const d=dauById(id), bs=BAN.filter(b=>b.dau===id&&trongDT(b.dt)), khac=BAN.filter(b=>b.dau===id&&!trongDT(b.dt)&&b.tt!=='daLoai').length;
+ const nLuot=LUOT.filter(l=>banByMa(l.ban).dau===id&&!l.huy&&namHocCua(l.ngay)===ST.nam&&trongDT(l.dt)).length;
+ const s=can('kho_s');
+ let h='<div class="ph"><div class="n"><h2>'+esc(d.ten)+'</h2><div class="m"><span class="tg c">'+KHO[d.kho].ten+'</span> '+esc(d.tg)+' · '+esc(d.nxb)+' · '+d.nam+'</div></div>'
+  +'<div class="spacer"></div>'+(can('kho_t')?'<button class="btn sm p" data-a="phieuNhap" data-v="'+id+'">➕ Thêm bản</button>':'')
+  +(s?'<button class="btn sm" data-a="suaDau" data-v="'+id+'">✎ Sửa</button>':'')+'<button class="btn sm" data-close>✕</button></div><div class="pbody">';
+ h+='<div class="card"><div class="cb">'
+  +'<div class="f"><span class="k">ISBN</span><span class="v mono">'+d.isbn+'</span></div>'
+  +'<div class="f"><span class="k">Ký hiệu phân loại</span><span class="v"><span class="mono">'+esc(d.ddc)+'</span><span class="srcline">DDC 23 — mặc định của hệ thống, văn bản không bắt buộc khung nào</span></span></div>'
+  +'<div class="f"><span class="k">Môn · khối</span><span class="v">'+(d.mon?esc(d.mon)+' '+r19('M10.2','danh mục môn'):'—')+(d.khoi?' · khối '+d.khoi:'')+'</span></div>'
+  +'<div class="f"><span class="k">Giá bìa</span><span class="v">'+vn(d.gia)+'đ <span class="srcline">chỉ để thống kê giá trị kho — không có khoản thu nào gắn vào (chốt 2)</span></span></div>'
+  +'<div class="f"><span class="k">Lượt mượn năm học '+ST.nam+'</span><span class="v">'+nLuot+'</span></div>'
+  +(khac?'<div class="f"><span class="k">Ngoài phạm vi</span><span class="v srcline">'+khac+' bản ở kho khác — không hiện trong dữ liệu trả về cho vai này</span></div>':'')+'</div></div>';
+ const dts=[...new Set(bs.map(b=>b.dt))];
+ if(!bs.length) h+='<div class="empty">Chưa có bản nào ở kho trong phạm vi.'+(can('kho_t')?' Bấm <b>➕ Thêm bản</b> — phiếu nhập điền sẵn đầu sách này.':'')+'</div>';
+ dts.forEach(dt=>{
+  const ds=bs.filter(b=>b.dt===dt);
+  h+='<div class="card"><div class="ch">🏫 '+DTN[dt]+' · '+ds.length+' bản</div><div class="tbx"><table><thead><tr><th>Mã cá biệt</th><th>Nhập</th><th>Tình trạng</th><th></th></tr></thead><tbody>'
+   +ds.map(b=>{const t=ttBan(b), a=[];
+    if(s&&t.k==='sanSang') a.push('<button class="btn xs" data-a="baoHong" data-v="'+b.ma+'">⚠ Báo hỏng</button>','<button class="btn xs" data-a="baoMatKho" data-v="'+b.ma+'">❓ Báo mất</button>');
+    if(s&&t.k==='choLoai'&&!(b.tl&&(TL.find(z=>z.id===b.tl)||{}).buoc>=2)) a.push('<button class="btn xs" data-a="hoanVe" data-v="'+b.ma+'">↺ Hoàn về kho</button>');
+    if(s&&b.hn&&t.k==='sanSang') a.push('<button class="btn xs" data-a="goHn" data-v="'+b.ma+'">🔧 Gỡ hỏng nhẹ</button>');
+    if(t.k==='dangMuon'||t.k==='quaHan') a.push('<span class="srcline">ở bạn đọc — '+t.l.id+'</span>');
+    if(t.k==='choLoai'&&b.tl) a.push('<span class="srcline">trong đợt '+b.tl+'</span>');
+    if(t.k==='daLoai'){const tl=TL.find(z=>z.id===b.tl);a.push('<span class="srcline">'+b.tl+(tl&&tl.duyet?' · QĐ '+tl.duyet.so:'')+'</span>')}
+    a.push('<button class="btn xs" data-a="lsBan" data-v="'+b.ma+'" title="Lịch sử bản sách">🕘</button>');
+    return '<tr class="'+(t.k==='daLoai'?'dim':'')+'"><td class="mono">'+b.ma+'</td><td>'+k2s(b.ngay)+'<div class="srcline">'+b.pn+' · '+NGUON[pnById(b.pn)?pnById(b.pn).nguon:'mua']+'</div></td>'
+     +'<td>'+stBan(b)+'</td><td style="white-space:nowrap">'+a.join(' ')+'</td></tr>'}).join('')+'</tbody></table></div></div>';
+ });
+ return h+'<div class="ro">Nút trên từng bản <b>đổi theo trạng thái</b>: bản đang ở bạn đọc không có «Báo mất» ở đây — báo mất khi đang mượn phải <b>đóng lượt</b> ở tab 1, nếu không lượt mở mãi.</div></div>';
+}
+
+/* ---------- lịch sử một bản — gộp từ phiếu nhập · lượt mượn · kiểm kê · sự việc · thanh lọc (chỉ thêm, không sửa) ---------- */
+function hopLsBan(ma){
+ const b=banByMa(ma), d=dauById(b.dau), p=pnById(b.pn), ev=[];
+ ev.push([b.ngay,'📥 Nhập kho — '+b.pn+' · '+(p?NGUON[p.nguon]+' · '+esc(p.ct):''),p?p.boi:'']);
+ luotCuaBan(ma).forEach(l=>{
+  ev.push([l.ngay,'📤 Mượn — '+l.id+' · '+esc(bdTen(l.bd))+' ('+esc(bdNhom(l.bd))+'), hạn '+k2s(l.gh.length?l.gh[0].cu:l.han),l.boiM]);
+  l.gh.forEach(g=>ev.push([g.luc,'⏩ Gia hạn '+l.id+' → '+k2s(g.moi)+' · '+esc(g.ly),g.boi]));
+  if(l.huy) ev.push([l.huy.luc.slice(0,10),'✕ Hủy lượt '+l.id+' — ghi nhầm: '+esc(l.huy.ly),l.huy.boi]);
+  if(l.tra) ev.push([l.tra,'📥 Trả — '+l.id+' · '+KQTRA[l.kq].n+(l.ghi?' · '+esc(l.ghi):''),l.boiT]);
+ });
+ KK.forEach(k=>{const r=k.kq[ma]; if(r) ev.push([k.chot||k.moc,'🔍 Kiểm kê '+k.id+' — '+({coMat:'Có mặt',khongThay:'Không thấy',hong:'Hỏng'}[r.v]||r.v)+(r.ghi?' · '+esc(r.ghi):''),k.boi])});
+ b.ev.forEach(e=>ev.push([e.luc,'📝 '+esc(e.n),e.boi]));
+ if(b.tl){const t=TL.find(z=>z.id===b.tl); ev.push([t.tao,'🗂 Đưa vào danh mục thanh lọc '+t.id,'']);
+  if(t.duyet&&b.tt==='daLoai') ev.push([t.duyet.ngay,'🗑 Đã loại — QĐ '+t.duyet.so+' · '+HINHTHUC.thanhLy+' · chỉnh lý sổ đăng ký cá biệt',t.duyet.boi])}
+ ev.sort((a,c)=>a[0]<c[0]?-1:1);
+ modal('🕘 Lịch sử bản '+ma+' — '+esc(d.ten),
+  '<div class="ro">Lịch sử <b>chỉ thêm, không sửa, không xóa</b> — trả lời câu hỏi «cuốn này đã qua tay ai, vì sao đang ở trạng thái này» cả khi người ghi đã nghỉ việc.</div>'
+  +'<div class="lsu">'+ev.map(e=>'<div><b>'+k2s(e[0])+'</b> · '+e[1]+(e[2]?' <span class="srcline">— '+esc(e[2])+'</span>':'')+'</div>').join('')+'</div>',
+  '<button class="btn p" data-mb="close">Đóng</button>');
+}
+
+/* ---------- báo hỏng · báo mất · hoàn về · gỡ hỏng nhẹ ---------- */
+function hopBaoHong(ma){
+ const b=banByMa(ma);
+ modal('⚠ Báo hỏng tại kho — '+ma,
+  '<label class="lbl">Mức hỏng</label><select class="fldi" id="bhM"><option value="nhe">Hỏng nhẹ — vẫn cho mượn (chỉ ghi chú)</option><option value="nang">Hỏng — không cho mượn → Chờ loại</option></select>'
+  +'<label class="lbl">Mô tả <span style="color:var(--red)">*</span></label><input class="fldi" id="bhG" placeholder="Rách, bung gáy, ẩm mốc…">'
+  +'<div class="ro" style="margin-top:9px">Không có ô tiền, không gắn người làm hỏng (chốt 2). «Chờ loại» chưa phải «Đã loại» — bản chỉ ra khỏi sổ khi Hiệu trưởng duyệt danh mục thanh lọc (TT 02/2020).</div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="bhOk">Ghi nhận</button>');
+ mfns.bbhOk=()=>{const g=$('#bhG').value.trim(); if(!g){toast('⛔ Thiếu mô tả hư hỏng.');return}
+  if($('#bhM').value==='nhe'){b.hn=g;b.ev.push({luc:HOMNAY,n:'Ghi hỏng nhẹ tại kho — '+g,boi:R().n})}
+  else {b.tt='choLoai';b.ly='hong';b.ev.push({luc:HOMNAY,n:'Báo hỏng tại kho — '+g,boi:R().n})}
+  closeM(); toast('⚠ Đã ghi nhận <b>'+ma+'</b>.'); render()};
+}
+function hopBaoMatKho(ma){
+ const b=banByMa(ma);
+ modal('❓ Báo mất tại kho — '+ma,
+  '<div class="ro">Dùng khi cuốn <b>không có lượt mở</b> mà tìm không thấy trên kệ. Bản chuyển <b>Chờ loại — mất</b>; tìm thấy lại thì <b>↺ Hoàn về kho</b>.</div>'
+  +'<label class="lbl">Ghi chú <span style="color:var(--red)">*</span></label><input class="fldi" id="bmG" placeholder="Phát hiện khi nào, ở đâu">',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn d" data-mb="bmOk">Ghi mất</button>');
+ mfns.bbmOk=()=>{const g=$('#bmG').value.trim(); if(!g){toast('⛔ Thiếu ghi chú.');return}
+  b.tt='choLoai';b.ly='mat';b.ev.push({luc:HOMNAY,n:'Báo mất tại kho — '+g,boi:R().n}); closeM(); toast('❓ Đã ghi <b>'+ma+'</b> Chờ loại — mất.'); render()};
+}
+function hopHoanVe(ma){
+ const b=banByMa(ma);
+ modal('↺ Hoàn về kho — '+ma,
+  '<div class="ro">Đưa bản từ <b>Chờ loại — '+LYDO[b.ly].s+'</b> về <b>Sẵn sàng</b> (tìm thấy lại · sửa được). '+(b.tl?'Bản sẽ <b>rút khỏi danh mục '+b.tl+'</b> (đợt còn ở bước lập danh mục). ':'')+'Lượt hoàn về ghi vào lịch sử bản.</div>'
+  +'<label class="lbl">Lý do <span style="color:var(--red)">*</span></label><input class="fldi" id="hvG" placeholder="Ví dụ: tìm thấy ở tủ sách lớp 7A2">',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="hvOk">↺ Hoàn về</button>');
+ mfns.bhvOk=()=>{const g=$('#hvG').value.trim(); if(!g){toast('⛔ Thiếu lý do.');return}
+  if(b.tl){const t=TL.find(z=>z.id===b.tl); t.ds=t.ds.filter(r=>r.ma!==ma)}
+  b.ev.push({luc:HOMNAY,n:'Hoàn về kho từ Chờ loại — '+LYDO[b.ly].s+': '+g,boi:R().n}); b.tt='kho';b.ly=null;b.tl=null;
+  closeM(); toast('↺ <b>'+ma+'</b> đã về <b>Sẵn sàng</b>.'); render()};
+}
+function goHn(ma){const b=banByMa(ma); b.ev.push({luc:HOMNAY,n:'Gỡ cờ hỏng nhẹ («'+b.hn+'») — đã sửa',boi:R().n}); b.hn=null; toast('🔧 Đã gỡ cờ hỏng nhẹ của <b>'+ma+'</b>.'); render()}
+
+function hopSuaDau(id){
+ const d=dauById(id), khac=BAN.filter(b=>b.dau===id&&b.tt!=='daLoai').map(b=>b.dt), dtK=[...new Set(khac)].filter(x=>R().sc!=='School'&&x!==R().dt);
+ modal('✎ Sửa đầu sách — '+esc(d.ten),
+  (dtK.length?'<div class="warn">⚠ Đầu sách này có bản ở <b>'+dtK.map(x=>DTN[x]).join(', ')+'</b>. Danh mục đầu sách dùng chung — sửa ở đây đổi cho <b>cả kho kia</b>. Vẫn sửa được; audit ghi tên người sửa (⏳ TV-9).</div>':'')
+  +'<label class="lbl">Nhan đề</label><input class="fldi" id="sdTen" value="'+esc(d.ten)+'">'
+  +'<label class="lbl">Tác giả</label><input class="fldi" id="sdTg" value="'+esc(d.tg)+'">'
+  +'<label class="lbl">Ký hiệu phân loại (DDC)</label><input class="fldi" id="sdDdc" value="'+esc(d.ddc)+'">'
+  +'<label class="lbl">Giá bìa</label><input class="fldi" id="sdGia" value="'+d.gia+'">'
+  +'<div class="ro" style="margin-top:9px">Giá bìa đổi <b>không</b> đổi giá của các bản đã nhập — mỗi bản giữ giá lúc nhập (sổ đăng ký cá biệt là sổ gốc).</div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="sdOk">Lưu</button>');
+ mfns.bsdOk=()=>{const t=$('#sdTen').value.trim(); if(!t){toast('⛔ Nhan đề không được trống.');return}
+  d.ten=t;d.tg=$('#sdTg').value.trim();d.ddc=$('#sdDdc').value.trim();d.gia=+$('#sdGia').value||d.gia; closeM(); toast('✎ Đã lưu đầu sách — audit ghi giá trị cũ.'); render()};
+}
+
+/* ---------- phiếu nhập kho — nhập theo lô ---------- */
+function hopPhieuNhap(preDau){
+ const dt0=quayDT()||'A';
+ const st={dt:dt0,nguon:'mua',ct:'',rows:preDau?[{dau:preDau,n:1,gia:dauById(preDau).gia}]:[{dau:'D45',n:2,gia:90000},{moi:{ten:'',tg:'',nxb:'',nam:2026,isbn:'',kho:'STK'},n:1,gia:''}]};
+ const ve=()=>{
+  const tam=JSON.parse(JSON.stringify(SO_TIEP));
+  $('#mb').innerHTML='<div class="ro">Một phiếu = <b>một dòng phần nhập của sổ đăng ký tổng quát</b>; mỗi bản sinh một <b>mã cá biệt</b> theo mẫu <span class="mono">'+CFG.mauMa+'</span>, số chạy theo điểm trường × kho.</div>'
+   +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">'
+   +'<div><label class="lbl">Kho</label><select class="fldi" id="pnDt"'+(R().sc==='School'?'':' disabled')+'>'+Object.keys(DT).map(k=>'<option value="'+k+'"'+(k===st.dt?' selected':'')+'>'+DTN[k]+'</option>').join('')+'</select></div>'
+   +'<div><label class="lbl">Nguồn</label><select class="fldi" id="pnNg">'+['mua','tang','cap'].map(k=>'<option value="'+k+'"'+(k===st.nguon?' selected':'')+'>'+NGUON[k]+'</option>').join('')+'</select></div>'
+   +'<div><label class="lbl">Chứng từ</label><input class="fldi" id="pnCt" value="'+esc(st.ct)+'" placeholder="Số hóa đơn / biên bản"></div></div>'
+   +'<div class="tbw" style="margin-top:10px"><div class="tbx"><table><thead><tr><th>Đầu sách</th><th>Số bản</th><th>Giá / bản</th><th>Mã sẽ sinh · kiểm tra</th><th></th></tr></thead><tbody>'
+   +st.rows.map((r,i)=>{
+    let o='', chk='';
+    if(r.moi){
+     o='<input class="fs" data-pm="ten|'+i+'" value="'+esc(r.moi.ten)+'" placeholder="Nhan đề mới *" style="width:100%"><div style="display:flex;gap:4px;margin-top:3px">'
+      +'<input class="fs" data-pm="tg|'+i+'" value="'+esc(r.moi.tg)+'" placeholder="Tác giả" style="flex:1"><input class="fs" data-pm="isbn|'+i+'" value="'+esc(r.moi.isbn)+'" placeholder="ISBN" style="width:120px">'
+      +'<select class="fs" data-pm="kho|'+i+'">'+Object.keys(KHO).map(k=>'<option value="'+k+'"'+(k===r.moi.kho?' selected':'')+'>'+KHO[k].tien+'</option>').join('')+'</select></div>';
+     const ng=nghiTrung(r.moi);
+     if(!r.moi.ten.trim()) chk='<span class="kq x">⛔ thiếu nhan đề</span>';
+     else if(ng) chk='<span class="kq w">⚠ nghi trùng '+ng.id+'</span><div class="srcline">«'+esc(ng.ten)+'» — '+(r.moi.isbn&&r.moi.isbn===ng.isbn?'cùng ISBN':'cùng tên + tác giả')+' <button class="btn xs" data-pg="'+i+'|'+ng.id+'">Dùng đầu sách có sẵn</button></div>';
+    } else o='<select class="fs" data-pd="'+i+'" style="max-width:260px">'+DAU.map(d=>'<option value="'+d.id+'"'+(d.id===r.dau?' selected':'')+'>'+esc(d.ten)+'</option>').join('')+'</select>';
+    const kho=r.moi?r.moi.kho:dauById(r.dau).kho, n=+r.n||0;
+    if(n<=0) chk='<span class="kq x">⛔ số bản phải ≥ 1</span>';
+    let dai='';
+    if(n>0){const a=tam[st.dt][kho]; tam[st.dt][kho]+=n; dai='<span class="mono">'+maCB(st.dt,kho,a)+(n>1?' → '+maCB(st.dt,kho,a+n-1):'')+'</span>'}
+    if(r.gia===''||r.gia==null) chk+=(chk?'<br>':'')+'<span class="kq w">⚠ thiếu giá — giá trị kho tính 0đ</span>';
+    return '<tr><td>'+o+'</td><td><input class="fs" data-pn="n|'+i+'" value="'+esc(r.n)+'" style="width:54px"></td><td><input class="fs" data-pn="gia|'+i+'" value="'+esc(r.gia)+'" style="width:84px"></td>'
+     +'<td>'+dai+'<div>'+(chk||'<span class="kq ok">✔</span>')+'</div></td><td><button class="btn xs" data-px="'+i+'">✕</button></td></tr>'}).join('')
+   +'</tbody></table></div></div><div class="bar"><button class="btn xs" data-pa="co">➕ Dòng đầu sách có sẵn</button><button class="btn xs" data-pa="moi">➕ Dòng đầu sách mới</button></div>';
+  const bind=(sel,fn)=>$$(sel).forEach(e=>e.onchange=()=>{fn(e);ve()});
+  bind('#pnDt',e=>st.dt=e.value); bind('#pnNg',e=>st.nguon=e.value); $('#pnCt').oninput=e=>st.ct=e.target.value;
+  bind('[data-pd]',e=>{const r=st.rows[+e.dataset.pd];r.dau=e.value;r.gia=dauById(e.value).gia});
+  bind('[data-pn]',e=>{const[f,i]=e.dataset.pn.split('|');st.rows[+i][f]=e.value});
+  bind('[data-pm]',e=>{const[f,i]=e.dataset.pm.split('|');st.rows[+i].moi[f]=e.value});
+  $$('[data-px]').forEach(e=>e.onclick=()=>{st.rows.splice(+e.dataset.px,1);ve()});
+  $$('[data-pa]').forEach(e=>e.onclick=()=>{st.rows.push(e.dataset.pa==='co'?{dau:'D01',n:1,gia:dauById('D01').gia}:{moi:{ten:'',tg:'',nxb:'',nam:2026,isbn:'',kho:'STK'},n:1,gia:''});ve()});
+  $$('[data-pg]').forEach(e=>e.onclick=()=>{const[i,id]=e.dataset.pg.split('|');st.rows[+i]={dau:id,n:st.rows[+i].n,gia:dauById(id).gia};ve()});
+ };
+ modal('➕ Phiếu nhập kho','','<button class="btn" data-mb="close">Hủy</button><button class="btn g" data-mb="pnOk">✔ Lưu phiếu</button>');
+ ve();
+ mfns.bpnOk=()=>{
+  if(!st.rows.length){toast('⛔ Phiếu chưa có dòng nào.');return}
+  const soPN='PN-'+st.dt+'-'+p2(PN.filter(p=>p.dt===st.dt).length);
+  const ok=[],bo=[];
+  st.rows.forEach((r,i)=>{
+   const n=+r.n||0;
+   if(n<=0){bo.push(['Dòng '+(i+1),'Số bản phải ≥ 1.']);return}
+   let d;
+   if(r.moi){
+    if(!r.moi.ten.trim()){bo.push(['Dòng '+(i+1),'Thiếu nhan đề — trường bắt buộc.']);return}
+    d={id:'D'+p2(DAU.length+1),kho:r.moi.kho,ten:r.moi.ten.trim(),tg:r.moi.tg||'—',nxb:r.moi.nxb||'—',nam:r.moi.nam,ddc:'—',mon:'',khoi:null,gia:+r.gia||0,isbn:r.moi.isbn||'—',lots:[]};
+    DAU.push(d);
+   } else d=dauById(r.dau);
+   const mas=[]; for(let k=0;k<n;k++){const ma=sinhMa(st.dt,d.kho);mas.push(ma);BAN.push({ma,dau:d.id,dt:st.dt,pn:soPN,ngay:HOMNAY,gia:+r.gia||0,hn:null,tt:'kho',ly:null,tl:null,ev:[]})}
+   ok.push([esc(d.ten)+(r.moi?' <span class="tg g">đầu sách mới '+d.id+'</span>':''),n,'<span class="mono">'+mas[0]+(n>1?' → '+mas[n-1]:'')+'</span>']);
+  });
+  if(ok.length) PN.push({id:soPN,dt:st.dt,ngay:HOMNAY,nguon:st.nguon,ct:st.ct||'(chưa ghi chứng từ)',ghi:'',boi:R().n});
+  closeM(); render(); hopKetQua('Phiếu '+soPN+' · '+DTN[st.dt],ok,bo,['Đầu sách','Số bản','Mã cá biệt đã sinh']);
+ };
+}
+function nghiTrung(m){
+ const t=kd(m.ten.trim()), g=kd((m.tg||'').trim());
+ if(!t) return null;
+ return DAU.find(d=>(m.isbn&&d.isbn===m.isbn)||(kd(d.ten)===t&&(!g||kd(d.tg)===g)))||null;
+}
+
+/* ---------- nhập Excel — bắt buộc qua BƯỚC ĐỐI CHIẾU ---------- */
+function hopImport(){
+ const dt=quayDT()||'A', stnDau=BAN.find(b=>b.dt===dt&&dauById(b.dau).kho==='STN').ma;
+ const so=SO_TIEP[dt].STK, khac=dt==='A'?'B':'A';
+ const rows=[
+  [maCB(dt,'STK',so+20),'Nhật ký trong tù','Hồ Chí Minh','NXB Văn học',2020,'978-604-9-11111-1','STK',65000],
+  ['','Dế Mèn phiêu lưu ký','Tô Hoài','NXB Kim Đồng',2021,dauById('D51').isbn,'STN',45000],
+  [stnDau,'Cho tôi xin một vé đi tuổi thơ','Nguyễn Nhật Ánh','NXB Trẻ',2018,dauById('D53').isbn,'STN',80000],
+  [maCB(dt,'STK',so+20),'Tiếng Việt thực hành','Bùi Minh Toán','NXB Giáo dục Việt Nam',2019,'978-604-0-22222-2','STK',58000],
+  ['','','Nguyễn Nhật Ánh','NXB Trẻ',2022,'','STN',92000],
+  ['','Bài tập Hóa học 10','Nhiều tác giả','NXB Giáo dục Việt Nam',2022,'978-604-0-33333-3','STK',32000],
+  ['','Totto chan ben cua so','Kuroyanagi Tetsuko','NXB Văn học',2021,'978-604-9-44444-4','STN',105000],
+  ['','Sổ tay Toán học THCS','Nhiều tác giả','NXB Giáo dục Việt Nam',2021,'978-604-0-55555-5','STK',''],
+  ['','Truyện cổ tích Việt Nam','Nhiều tác giả','NXB Kim Đồng',2020,'978-604-2-66666-6','STX',70000],
+  [maCB(khac,'STK',9000),'Vật lí vui','Yakov Perelman','NXB Trẻ',2018,'978-604-1-77777-7','STK',88000]
+ ];
+ const kq=rows.map((r,i)=>{
+  const [ma,ten,tg,,,isbn,kho,gia]=r, ly=[], w=[];
+  if(!ten) ly.push('Thiếu <b>nhan đề</b> — trường bắt buộc.');
+  if(!KHO[kho]) ly.push('Kho <b>'+esc(kho)+'</b> không có trong cấu hình (SGK · SNV · STK · STN).');
+  if(ma&&!ma.startsWith(dt+'-')) ly.push('Mã <span class="mono">'+ma+'</span> thuộc <b>'+DTN[ma[0]]+'</b> — tệp này nhập vào kho '+DTN[dt]+'.');
+  if(ma&&banByMa(ma)) ly.push('<b>Trùng mã cá biệt</b> với bản đã có trong sổ ('+esc(dauById(banByMa(ma).dau).ten)+').');
+  if(ma&&rows.slice(0,i).some(z=>z[0]===ma)) ly.push('<b>Trùng mã cá biệt</b> với dòng '+(rows.findIndex(z=>z[0]===ma)+1)+' trong tệp.');
+  const ng=ten?nghiTrung({ten,tg,isbn}):null, ngTen=ten&&!ng?DAU.find(d=>kd(d.ten).replace(/[^a-z0-9]/g,'')===kd(ten).replace(/[^a-z0-9]/g,'')&&kd(d.tg)===kd(tg)):null;
+  const gop=ng||ngTen;
+  if(gop&&!ly.length) w.push(ng&&isbn===ng.isbn?'Cùng ISBN với <b>'+gop.id+'</b> «'+esc(gop.ten)+'» → <b>thêm bản</b> cho đầu sách có sẵn.':'<b>Nghi trùng</b> đầu sách '+gop.id+' «'+esc(gop.ten)+'» (cùng tên + tác giả, khác ISBN) — mặc định gộp; bỏ tick để tạo đầu sách mới.');
+  if(!ma&&!ly.length) w.push('Mã cá biệt trống → máy <b>sinh mã mới</b>.');
+  if(ma&&!ly.length) w.push('<b>Giữ số cũ</b> <span class="mono">'+ma+'</span> (quy tắc 4A).');
+  if(gia===''&&!ly.length) w.push('<b>Thiếu giá</b> — nhận được, giá trị kho tính 0đ.');
+  return {r,ly,w,gop,gopOn:!!gop};
+ });
+ const ok=kq.filter(x=>!x.ly.length);
+ modal('📥 Nhập từ Excel — bước đối chiếu · kho '+DTN[dt],
+  '<div class="ro">Tệp <b>nhap-kho-'+dt+'-thang11-2026.xlsx</b> · 10 dòng. <b>Chặn</b>: trùng mã cá biệt (với sổ và trong tệp) · thiếu trường bắt buộc · mã của kho khác · kho không có trong cấu hình. '
+  +'<b>Cảnh báo mềm</b>: nghi trùng đầu sách (cùng ISBN / cùng tên + tác giả) · thiếu giá.</div>'
+  +'<div class="tbw"><div class="tbx"><table><thead><tr><th>#</th><th>Mã cá biệt</th><th>Nhan đề</th><th>Kho</th><th>Đối chiếu</th></tr></thead><tbody>'
+  +kq.map((x,i)=>'<tr class="'+(x.ly.length?'xrow':x.w.some(t=>/Nghi trùng|Thiếu giá/.test(t))?'wrow':'')+'"><td>'+(i+1)+'</td><td class="mono">'+esc(x.r[0]||'—')+'</td><td>'+esc(x.r[1]||'—')+'<div class="srcline">'+esc(x.r[2])+'</div></td><td>'+esc(x.r[6])+'</td>'
+   +'<td style="font-size:12px">'+(x.ly.length?'⛔ '+x.ly.join(' '):'✔ '+x.w.join(' ')
+    +(x.gop&&/Nghi trùng/.test(x.w.join(''))?'<br><label><input type="checkbox" data-gop="'+i+'" checked> gộp vào '+x.gop.id+'</label>':''))+'</td></tr>').join('')
+  +'</tbody></table></div></div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn g" data-mb="ixOk">✔ Nhận '+ok.length+' dòng hợp lệ</button>');
+ mfns.bixOk=()=>{
+  $$('[data-gop]').forEach(c=>kq[+c.dataset.gop].gopOn=c.checked);
+  const soPN='PN-'+dt+'-'+p2(PN.filter(p=>p.dt===dt).length), okR=[], bo=[];
+  kq.forEach((x,i)=>{
+   if(x.ly.length){bo.push(['Dòng '+(i+1),x.ly.join(' ')]);return}
+   const [ma,ten,tg,nxb,nam,isbn,kho,gia]=x.r;
+   let d=x.gopOn?x.gop:null;
+   if(!d){d={id:'D'+p2(DAU.length+1),kho,ten,tg,nxb,nam,ddc:'—',mon:'',khoi:null,gia:+gia||0,isbn,lots:[]};DAU.push(d)}
+   const m=ma||sinhMa(dt,d.kho);
+   if(ma) nhanMaCu(dt,d.kho,ma);
+   BAN.push({ma:m,dau:d.id,dt,pn:soPN,ngay:HOMNAY,gia:+gia||0,hn:null,tt:'kho',ly:null,tl:null,ev:[]});
+   okR.push(['Dòng '+(i+1),'<span class="mono">'+m+'</span>',esc(d.ten)+(x.gopOn?' <span class="tg c">gộp '+d.id+'</span>':' <span class="tg g">'+d.id+'</span>')]);
+  });
+  PN.push({id:soPN,dt,ngay:HOMNAY,nguon:'mua',ct:'Nhập Excel nhap-kho-'+dt+'-thang11-2026.xlsx',ghi:'',boi:R().n});
+  closeM(); render(); hopKetQua('Nhập Excel · '+soPN,okR,bo,['Dòng','Mã cá biệt','Đầu sách']);
+ };
+}
+
+/* ---------- sổ đăng ký tổng quát · cá biệt — DẪN XUẤT từ phiếu nhập và đợt thanh lọc ---------- */
+function hopSoTQ(){
+ const dts=dtHieuLuc()==='ALL'?['A','B']:[dtHieuLuc()], K=Object.keys(KHO);
+ const dem=(bs)=>K.map(k=>bs.filter(b=>dauById(b.dau).kho===k).length);
+ let h='<div class="ro">Sổ tổng quát <b>không ai gõ tay</b>: phần I cộng từ <b>phiếu nhập</b>, phần II từ <b>đợt thanh lọc đã được Hiệu trưởng duyệt</b>, phần III = I − II. Mẫu sổ theo thông lệ nghiệp vụ thư viện trường học — văn bản không quy định mẫu (mặc định hệ thống).</div>';
+ dts.forEach(dt=>{
+  const pns=PN.filter(p=>p.dt===dt), tls=TL.filter(t=>t.dt===dt&&t.duyet);
+  const th=K.map(k=>'<th class="num">'+KHO[k].tien+'</th>').join('');
+  h+='<div class="stt" style="margin-top:10px">🏫 '+DTN[dt]+'</div><div class="tbw"><div class="tbx"><table><thead><tr><th>Phần I — Nhập</th><th>Chứng từ</th>'+th+'<th class="num">Cộng</th><th class="num">Thành tiền</th></tr></thead><tbody>'
+   +pns.map(p=>{const bs=BAN.filter(b=>b.pn===p.id),c=dem(bs);return '<tr><td>'+k2s(p.ngay)+' · <b>'+p.id+'</b><div class="srcline">'+NGUON[p.nguon]+'</div></td><td style="font-size:12px">'+esc(p.ct)+'</td>'
+    +c.map(n=>'<td class="num">'+(n||'')+'</td>').join('')+'<td class="num"><b>'+bs.length+'</b></td><td class="num">'+vn(bs.reduce((s,b)=>s+b.gia,0))+'</td></tr>'}).join('')
+   +'</tbody><thead><tr><th>Phần II — Xuất (loại)</th><th>Quyết định</th>'+th+'<th class="num">Cộng</th><th class="num">Thành tiền</th></tr></thead><tbody>'
+   +(tls.length?tls.map(t=>{const bs=BAN.filter(b=>b.tl===t.id&&b.tt==='daLoai'),c=dem(bs);return '<tr><td>'+k2s(t.duyet.ngay)+' · <b>'+t.id+'</b></td><td>'+t.duyet.so+'</td>'
+    +c.map(n=>'<td class="num">'+(n||'')+'</td>').join('')+'<td class="num"><b>'+bs.length+'</b></td><td class="num">'+vn(bs.reduce((s,b)=>s+b.gia,0))+'</td></tr>'}).join('')
+    :'<tr><td colspan="'+(K.length+4)+'" class="srcline">Chưa có đợt thanh lọc nào được duyệt.</td></tr>')
+   +'</tbody><tbody><tr class="totrow"><td>Phần III — Tồn</td><td></td>'+dem(BAN.filter(b=>b.dt===dt&&b.tt!=='daLoai')).map(n=>'<td class="num">'+n+'</td>').join('')
+   +'<td class="num">'+BAN.filter(b=>b.dt===dt&&b.tt!=='daLoai').length+'</td><td class="num">'+vn(giaTri(BAN.filter(b=>b.dt===dt)))+'</td></tr></tbody></table></div></div>';
+ });
+ modal('📒 Sổ đăng ký tổng quát',h,(can('kho_xd')?'<button class="btn" data-a="xuat" data-v="Sổ đăng ký tổng quát">⬇ Xuất</button>':'')+'<button class="btn p" data-mb="close">Đóng</button>');
+}
+function hopSoCB(){
+ const st={dt:quayDT()||'A',kho:'STK'};
+ const ve=()=>{
+  const bs=BAN.filter(b=>b.dt===st.dt&&dauById(b.dau).kho===st.kho);
+  $('#mb').innerHTML='<div class="bar" style="padding-top:0"><select class="fs" id="cbDt"'+(R().sc==='School'?'':' disabled')+'>'+Object.keys(DT).map(k=>'<option value="'+k+'"'+(k===st.dt?' selected':'')+'>'+DTN[k]+'</option>').join('')+'</select>'
+   +'<select class="fs" id="cbKho">'+Object.keys(KHO).map(k=>'<option value="'+k+'"'+(k===st.kho?' selected':'')+'>'+KHO[k].ten+' ('+KHO[k].tien+')</option>').join('')+'</select>'
+   +'<span class="srcline">'+bs.length+' dòng · sổ riêng từng kho theo thông lệ; bản đã loại <b>giữ dòng</b>, ghi chú xuất ở cột cuối (chỉnh lý sổ — TT 02/2020)</span></div>'
+   +'<div class="tbw"><div class="tbx"><table><thead><tr><th>Ngày nhập</th><th>Mã cá biệt</th><th>Nhan đề — tác giả</th><th>NXB · năm</th><th class="num">Giá</th><th>Chứng từ</th><th>Ghi chú xuất</th></tr></thead><tbody>'
+   +bs.map(b=>{const d=dauById(b.dau),t=b.tl?TL.find(z=>z.id===b.tl):null;
+    return '<tr class="'+(b.tt==='daLoai'?'dim':'')+'"><td>'+k2s(b.ngay)+'</td><td class="mono">'+b.ma+'</td><td>'+esc(d.ten)+'<div class="srcline">'+esc(d.tg)+'</div></td><td>'+esc(d.nxb)+' · '+d.nam+'</td>'
+     +'<td class="num">'+vn(b.gia)+'</td><td>'+b.pn+'</td><td style="font-size:12px">'+(b.tt==='daLoai'?'Đã loại — '+b.tl+' · QĐ '+t.duyet.so+' · '+k2s(t.duyet.ngay):'')+'</td></tr>'}).join('')
+   +'</tbody></table></div></div>';
+  $('#cbDt').onchange=e=>{st.dt=e.target.value;ve()}; $('#cbKho').onchange=e=>{st.kho=e.target.value;ve()};
+ };
+ modal('📗 Sổ đăng ký cá biệt','',(can('kho_xd')?'<button class="btn" data-a="xuat" data-v="Sổ đăng ký cá biệt">⬇ Xuất</button>':'')+'<button class="btn p" data-mb="close">Đóng</button>');
+ ve();
+}
+
+/* ═══════════ TAB 3 · KIỂM KÊ & THANH LỌC ═══════════ */
+
+const BUOC_TL=['','① Lập danh mục','② Hội đồng thẩm định','③ Chờ Hiệu trưởng duyệt','④ Đã duyệt — đã loại'];
+const KQ_KK={coMat:{n:'Có mặt',c:'ok'},khongThay:{n:'Không thấy',c:'x'},hong:{n:'Hỏng',c:'w'}};
+const dotById=id=>KK.find(k=>k.id===id)||TL.find(t=>t.id===id);
+
+function veKiemKe(){
+ if(!can('kk_x')) return tuChoi('Kiểm kê & thanh lọc',R().sc==='Class'
+  ?'Kiểm kê và loại sách là việc của thư viện và Hiệu trưởng — GVCN chỉ có bản chiếu học sinh lớp mình ở tab 1.'
+  :'PHT Chuyên môn không có vai trong chuỗi thanh lọc (TT 02/2020: người đứng đầu thư viện lập — <b>Hiệu trưởng</b> duyệt). Có thể có tên trong <b>hội đồng thẩm định</b> — đó là dữ liệu của đợt, không phải quyền trên menu.');
+ if(ST.curDot) return dotById(ST.curDot).deAn!==undefined?veDotTL(dotById(ST.curDot)):veDotKK(dotById(ST.curDot));
+ let h=scopeBar('<span>Mọi đợt <b>theo điểm trường</b> (chốt 4). Bộ chọn năm học không cắt danh sách — đợt cũ vẫn tra được.</span>');
+ h+=dn('<b>Hai việc, hai vòng đời, một tab</b>: <b>kiểm kê</b> đối chiếu kho thực tế với sổ (chụp sổ tại mốc) và đưa bản thiếu / hỏng sang <b>Chờ loại</b>; '
+  +'<b>thanh lọc</b> là thủ tục pháp lý đưa bản ra khỏi sổ — TT 02/2020/TT-BVHTTDL: đề án → hội đồng thẩm định → <b>người đứng đầu cơ quan trực tiếp quản lý thư viện (Hiệu trưởng) duyệt danh mục</b>. '
+  +'Không có tab «Chờ tôi duyệt» — việc chờ Hiệu trưởng nằm ở badge của tab này (tiền lệ M6.4 §3.3).');
+ const tl=tlChoDuyet();
+ if(can('kk_d')&&tl.length) h+='<div class="alert b">🖊 <span class="sp">Có <b>'+tl.length+' danh mục thanh lọc chờ bạn duyệt</b>: '+tl.map(t=>'<a style="cursor:pointer;text-decoration:underline" data-dot="'+t.id+'">'+t.id+' · '+DTN[t.dt]+' · '+t.ds.length+' bản</a>').join(', ')+'. Bấm để duyệt tại chỗ.</span></div>';
+ h+='<div class="bar">'+(can('kk_t')?'<button class="btn p sm" data-a="moKK">➕ Mở đợt kiểm kê</button><button class="btn sm" data-a="moTL">➕ Lập đợt thanh lọc</button>':'')
+  +[['all','Tất cả'],['kk','Kiểm kê'],['tl','Thanh lọc'],['mo','Đang mở'],['cho','Chờ Hiệu trưởng duyệt']].map(([k,n])=>
+   '<button class="chip'+(ST.chipKK===k?' on':'')+'" data-a="chipKK" data-v="'+k+'">'+n+(k==='cho'?' ('+tl.length+')':'')+'</button>').join('')+'</div>';
+ let ds=KK.map(k=>({t:'kk',o:k})).concat(TL.map(t=>({t:'tl',o:t}))).filter(x=>trongDT(x.o.dt));
+ const c=ST.chipKK;
+ ds=ds.filter(x=>c==='all'||(c==='kk'&&x.t==='kk')||(c==='tl'&&x.t==='tl')||(c==='mo'&&(x.t==='kk'?x.o.tt==='dangKiem':x.o.buoc<3))||(c==='cho'&&x.t==='tl'&&x.o.buoc===3));
+ ds.sort((a,b)=>(a.o.dt+(a.o.moc||a.o.tao)).localeCompare(b.o.dt+(b.o.moc||b.o.tao))*-1);
+ ds.sort((a,b)=>a.o.dt.localeCompare(b.o.dt));
+ if(!ds.length) return h+'<div class="tbw"><div class="empty">Không có đợt nào ở bộ lọc này.</div></div>';
+ h+='<div class="tbw"><div class="tbx"><table><thead><tr><th>Đợt</th><th>Căn cứ</th><th>Mốc / ngày lập</th><th>Tiến độ</th><th>Trạng thái</th></tr></thead><tbody>';
+ let dt0=null;
+ ds.forEach(({t,o})=>{
+  if(dtHieuLuc()==='ALL'&&o.dt!==dt0){dt0=o.dt;h+='<tr><td colspan="5" class="gtd">🏫 '+DTN[o.dt]+'<span class="cnt">'+ds.filter(z=>z.o.dt===o.dt).length+' đợt</span></td></tr>'}
+  if(t==='kk'){const s=snapKK(o), dem=s.filter(b=>o.kq[b.ma]||moTai(b.ma,o.moc)).length;
+   h+='<tr style="cursor:pointer" data-dot="'+o.id+'"><td><b>'+o.id+'</b> <span class="tg a">Kiểm kê</span><div class="srcline">'+esc(o.ghi)+'</div></td><td style="font-size:12px">'+esc(CANCU_KK[o.cc])+'</td>'
+    +'<td>'+k2s(o.moc)+'</td><td>'+dem+'/'+s.length+' bản đã đếm</td><td>'+(o.tt==='daChot'?'<span class="st2 o">Đã chốt '+k2ss(o.chot)+'</span>':'<span class="st2 w">Đang kiểm đếm</span>')+'</td></tr>';
+  } else {
+   h+='<tr style="cursor:pointer" data-dot="'+o.id+'"><td><b>'+o.id+'</b> <span class="tg b">Thanh lọc</span><div class="srcline">'+esc(o.ghi)+'</div></td>'
+    +'<td style="font-size:12px">'+(o.deAn?'Đề án '+o.deAn.so+' · '+esc(o.deAn.loai):'<span style="color:var(--amber)">chưa ghi QĐ phê duyệt đề án</span>')+'</td>'
+    +'<td>'+k2s(o.tao)+'</td><td>'+o.ds.length+' bản · '+vn(o.ds.reduce((s,r)=>s+banByMa(r.ma).gia,0))+'đ</td>'
+    +'<td>'+(o.buoc===4?'<span class="st2 o">'+BUOC_TL[4]+'</span>':o.buoc===3?'<span class="st2 r">'+BUOC_TL[3]+'</span>':'<span class="st2 w">'+BUOC_TL[o.buoc]+'</span>')+'</td></tr>';
+  }
+ });
+ return h+'</tbody></table></div></div>';
+}
+const coTheSua=o=>can('kk_s')&&(R().sc==='School'||R().dt===o.dt);
+
+/* ═════ KIỂM KÊ — màn hình đầy đủ ═════ */
+function veDotKK(k){
+ crumb('<a data-a="veDs">← Kiểm kê &amp; thanh lọc</a> › <b>'+k.id+' · Kiểm kê kho '+DTN[k.dt]+'</b>');
+ const s=snapKK(k), sua=coTheSua(k)&&k.tt==='dangKiem';
+ const kqOf=b=>moTai(b.ma,k.moc)?'dangMuon':(k.kq[b.ma]?k.kq[b.ma].v:null);
+ const n=v=>s.filter(b=>kqOf(b)===v).length;
+ let h='<div class="card" style="margin-top:4px"><div class="ch">🔍 '+k.id+' · '+esc(k.ghi)+'<span class="sp"></span>'+(k.tt==='daChot'?'<span class="st2 o">Đã chốt '+k2s(k.chot)+'</span>':'<span class="st2 w">Đang kiểm đếm</span>')+'</div>'
+  +'<div class="f"><span class="k">Căn cứ</span><span class="v">'+esc(CANCU_KK[k.cc])+'</span></div>'
+  +'<div class="f"><span class="k">Mốc chụp sổ</span><span class="v">'+k2s(k.moc)+' — <span class="srcline">'+s.length+' bản theo sổ tại mốc; thay đổi sau mốc (nhập, mượn, loại) <b>không</b> làm đổi bảng này</span></span></div>'
+  +'<div class="f"><span class="k">Phụ trách</span><span class="v">'+esc(k.boi)+'</span></div></div>';
+ h+='<div class="kpis">'+kpi('Theo sổ tại mốc',s.length)+kpi('Có mặt',n('coMat'),'','g')+kpi('Đang ở bạn đọc',n('dangMuon'),'máy tự điền từ lượt mở tại mốc')
+  +kpi('Không thấy',n('khongThay'),'','r')+kpi('Hỏng',n('hong'),'','a')+kpi('Thừa',k.thua.length,'không có trong bản chụp')+kpi('Chưa đếm',n(null),'',n(null)?'a':'')+'</div>';
+ h+='<div class="bar">'+[['dem','Bảng kiểm đếm'],['lech','Chênh lệch ('+(n('khongThay')+n('hong'))+')'],['thua','Thừa ('+k.thua.length+')'],['chot','Chốt đợt']].map(([x,t])=>
+  '<button class="chip'+(ST.subKK===x?' on':'')+'" data-a="subKK" data-v="'+x+'">'+t+'</button>').join('')+'</div>';
+ if(ST.subKK==='dem'){
+  if(sua) h+='<div class="scanbox"><input class="inp" id="scanKK" placeholder="Quét / gõ mã cá biệt đang cầm trên tay — nhiều mã cách nhau dấu phẩy" style="min-width:420px">'
+   +'<button class="btn p sm" data-a="scanKK">✔ Ghi có mặt</button><span class="srcline">Mã không có trong bản chụp tự vào danh sách <b>Thừa</b>.</span></div>';
+  h+='<div class="bar" style="padding-top:0">'+[['all','Tất cả'],['chua','Chưa đếm'],['coMat','Có mặt'],['dangMuon','Đang ở bạn đọc'],['khongThay','Không thấy'],['hong','Hỏng']].map(([x,t])=>
+   '<button class="chip'+(ST.chipDem===x?' on':'')+'" data-a="chipDem" data-v="'+x+'">'+t+'</button>').join('')
+   +'<input class="inp" id="qkk" placeholder="Tìm mã, nhan đề…" value="'+esc(ST.qKK)+'"></div>';
+  let x=s.filter(b=>{const v=kqOf(b);return ST.chipDem==='all'||(ST.chipDem==='chua'?v===null:v===ST.chipDem)});
+  if(ST.qKK.trim()){const q=kd(ST.qKK);x=x.filter(b=>kd(b.ma+' '+dauById(b.dau).ten).includes(q))}
+  h+='<div class="tbw"><div class="tbx"><table><thead><tr><th>Mã cá biệt</th><th>Nhan đề</th><th>Kết quả</th><th>Ghi chú / giải trình</th></tr></thead><tbody>'
+   +x.map(b=>{const v=kqOf(b), d=dauById(b.dau);
+    let kq;
+    if(v==='dangMuon'){const l=moTai(b.ma,k.moc);kq='<span class="kq n">📖 Đang ở bạn đọc</span><div class="srcline">'+l.id+' · '+esc(bdTen(l.bd))+' — máy điền, không đếm</div>'}
+    else if(sua) kq='<select class="fs" data-kk="'+b.ma+'"><option value="">— chưa đếm —</option>'+Object.keys(KQ_KK).map(z=>'<option value="'+z+'"'+(v===z?' selected':'')+'>'+KQ_KK[z].n+'</option>').join('')+'</select>';
+    else kq=v?'<span class="kq '+KQ_KK[v].c+'">'+KQ_KK[v].n+'</span>':'<span class="kq n">chưa đếm</span>';
+    const g=k.kq[b.ma]&&k.kq[b.ma].ghi||'';
+    return '<tr class="'+(v==='khongThay'?'xrow':v==='hong'?'wrow':'')+'"><td class="mono">'+b.ma+'</td><td>'+esc(d.ten)+'<span class="tg c">'+KHO[d.kho].tien+'</span></td><td>'+kq+'</td>'
+     +'<td>'+(sua&&(v==='khongThay'||v==='hong')?'<input class="fs" data-kkg="'+b.ma+'" value="'+esc(g)+'" placeholder="Bắt buộc trước khi chốt" style="width:100%">':esc(g))+'</td></tr>'}).join('')
+   +'</tbody></table></div></div>';
+ } else if(ST.subKK==='lech'){
+  const ls=s.filter(b=>['khongThay','hong'].includes(kqOf(b)));
+  h+='<div class="ro">Máy <b>giải thích trước khi người kết luận</b>: một cuốn đếm không thấy có thể đang nằm hợp lệ ở bạn đọc (mượn sau mốc) hoặc đã được ghi nhận từ trước. Đọc cột gợi ý <b>trước khi</b> chốt «không thấy».</div>'
+   +(ls.length?'<div class="tbw"><div class="tbx"><table><thead><tr><th>Mã</th><th>Nhan đề</th><th>Kết quả</th><th>💡 Máy gợi ý nguyên nhân</th><th>Giải trình</th></tr></thead><tbody>'
+   +ls.map(b=>{const v=kqOf(b), l=luotMoCuaBan(b.ma);
+    let g='Máy không có dữ liệu giải thích — kiểm lại kệ, tủ sách lớp, phòng đọc trước khi kết luận.';
+    if(v==='khongThay'&&l) g='Đang có <b>lượt mở '+l.id+'</b> ('+esc(bdTen(l.bd))+', mượn '+k2ss(l.ngay)+') — có thể đã cho mượn sau mốc chụp sổ, <b>không phải mất</b>.';
+    else if(b.tt==='choLoai') g='Sổ đã ghi <b>Chờ loại — '+LYDO[b.ly].s+'</b> từ trước — chênh lệch đã được biết.';
+    else if(v==='hong') g='Hỏng khi kiểm — chốt đợt sẽ đưa bản sang <b>Chờ loại — hỏng</b>.';
+    return '<tr><td class="mono">'+b.ma+'</td><td>'+esc(dauById(b.dau).ten)+'</td><td><span class="kq '+KQ_KK[v].c+'">'+KQ_KK[v].n+'</span></td><td style="font-size:12px">'+g+'</td><td>'+esc((k.kq[b.ma]||{}).ghi||'—')+'</td></tr>'}).join('')
+   +'</tbody></table></div></div>':'<div class="tbw"><div class="empty">Chưa có dòng chênh lệch.</div></div>');
+ } else if(ST.subKK==='thua'){
+  h+='<div class="ro">Bản <b>thừa</b> không liệt kê trước được — có thật trên kệ nhưng không có trong bản chụp. Hệ thống <b>không tự nhập kho</b>: bản của kho khác thì trả về kho đó; bản không rõ nguồn gốc thì xác định nguồn rồi nhập bằng <b>phiếu nhập</b> ở tab 2.</div>'
+   +(sua?'<div class="bar"><button class="btn sm" data-a="themThua">➕ Ghi nhận bản thừa</button></div>':'')
+   +'<div class="tbw"><div class="tbx"><table><thead><tr><th>Mã trên nhãn</th><th>Máy nhận ra</th><th>Ghi nhận của người kiểm</th></tr></thead><tbody>'
+   +(k.thua.length?k.thua.map(t=>{const b=t.ma?banByMa(t.ma):null;
+    return '<tr><td class="mono">'+esc(t.ma||'—')+'</td><td style="font-size:12px">'+(b?'Bản của kho <b>'+DTN[b.dt]+'</b> — «'+esc(dauById(b.dau).ten)+'», sổ ghi '+esc(ttBan(b).n)+'. Trả về kho '+b.dt+', <b>không đổi sổ</b>.'
+     :t.ma?'Mã <b>không có</b> trong sổ đăng ký cá biệt của trường.':'Không có mã — không đối chiếu được.')+'</td><td>'+esc(t.ghi)+'</td></tr>'}).join('')
+    :'<tr><td colspan="3" class="srcline">Chưa có bản thừa.</td></tr>')+'</tbody></table></div></div>';
+ } else h+=veChotKK(k,s,kqOf,sua);
+ return h;
+}
+function veChotKK(k,s,kqOf,sua){
+ if(k.tt==='daChot') return '<div class="okbox">🔒 Đợt đã chốt ngày <b>'+k2s(k.chot)+'</b> bởi '+esc(k.boi)+'. Bảng kiểm đếm đóng băng — sửa sai phát hiện sau thì mở đợt mới, không mở lại đợt đã chốt.</div>';
+ const chua=s.filter(b=>kqOf(b)===null), thieuGT=s.filter(b=>['khongThay','hong'].includes(kqOf(b))&&!(k.kq[b.ma].ghi||'').trim());
+ const loai=s.filter(b=>['khongThay','hong'].includes(kqOf(b))&&b.tt!=='choLoai');
+ let h='<div class="card"><div class="ch">🔒 Điều kiện chốt đợt</div><div class="cb">'
+  +'<div class="f"><span class="k">Bản chưa đếm</span><span class="v">'+(chua.length?'<span class="kq x">⛔ '+chua.length+' bản</span> <span class="srcline">'+chua.slice(0,8).map(b=>b.ma).join(', ')+(chua.length>8?'…':'')+'</span>'
+   +(sua?' <button class="btn xs" data-a="chuaThanhKhong">Ghi '+chua.length+' bản còn lại là «Không thấy»</button>':''):'<span class="kq ok">✔ đã đếm đủ</span>')+'</span></div>'
+  +'<div class="f"><span class="k">Chênh lệch chưa giải trình</span><span class="v">'+(thieuGT.length?'<span class="kq x">⛔ '+thieuGT.length+' dòng</span> <span class="srcline">'+thieuGT.map(b=>b.ma).join(', ')+'</span>':'<span class="kq ok">✔</span>')+'</span></div>'
+  +'<div class="f"><span class="k">Hệ quả khi chốt</span><span class="v" style="font-weight:400">'+loai.length+' bản «Không thấy / Hỏng» chuyển <b>Chờ loại</b> (chưa ra khỏi sổ — phải qua thanh lọc) · '+k.thua.length+' bản thừa chỉ ghi nhận</span></div></div>'
+  +'<div class="cact">'+(sua?'<button class="btn g" data-a="chotKK"'+(chua.length||thieuGT.length?' disabled title="Còn điều kiện ⛔"':'')+'>🔒 Chốt đợt</button>':'<span class="srcline">Chỉ quản thư của '+DTN[k.dt]+' chốt được đợt này.</span>')
+  +(chua.length||thieuGT.length?'<span class="srcline">Không chốt được: biên bản thiếu dòng hoặc thiếu giải trình thì <b>không đối chiếu được</b> với kho thực tế.</span>':'')+'</div></div>';
+ return h+'<div class="ro">⏳ TV-10: văn bản không quy định ai ký biên bản kiểm kê kho sách — đang chạy theo: <b>quản thư chốt</b>, biên bản in ra để Hiệu trưởng ký giấy. Kiểm kê cuối năm tài chính theo Luật Kế toán Đ.40 thì Kế toán cần <b>tổng giá trị kho</b> (tab 4), không cần từng cuốn.</div>';
+}
+
+/* ═════ THANH LỌC — màn hình đầy đủ ═════ */
+function veDotTL(t){
+ crumb('<a data-a="veDs">← Kiểm kê &amp; thanh lọc</a> › <b>'+t.id+' · Thanh lọc kho '+DTN[t.dt]+'</b>');
+ const sua=coTheSua(t), tong=BAN.filter(b=>b.dt===t.dt&&b.tt!=='daLoai').length+(t.buoc===4?t.ds.length:0);
+ const tyle=tong?t.ds.length/tong*100:0, vuot=tyle>CFG.nguongThanhLoc;
+ let h='<div class="steps" style="margin-top:6px">'+[1,2,3,4].map(i=>'<span class="stp'+(t.buoc===i?' on':t.buoc>i?' done':'')+'">'+BUOC_TL[i]+'</span>').join('')+'</div>';
+ h+='<div class="kpis">'+kpi('Bản trong danh mục',t.ds.length)+kpi('Giá trị',vn(t.ds.reduce((s,r)=>s+banByMa(r.ma).gia,0))+'đ','theo giá từng bản')
+  +'<div class="kpi '+(vuot?'a':'')+'"><div class="k">Tỷ lệ so với kho '+t.dt+'</div><div class="v">'+tyle.toFixed(1)+'%</div><div class="s"><span class="ratio'+(vuot?' w':'')+'"><span class="t"><i style="width:'+Math.min(100,tyle*10)+'%"></i></span> ngưỡng '+CFG.nguongThanhLoc+'% · TT 02/2020 Đ.16</span></div></div></div>';
+ if(vuot) h+='<div class="warn">⚠ Danh mục chiếm <b>'+tyle.toFixed(1)+'%</b> kho — vượt ngưỡng <b>'+CFG.nguongThanhLoc+'% mỗi lần thanh lọc</b> (TT 02/2020/TT-BVHTTDL Đ.16). Vẫn gửi được; bước gửi bắt ghi lý do và audit giữ lại (khung §15). Cách thường làm: tách thành hai đợt.</div>';
+ if(t.traLai.length) h+='<div class="warn">↩ Hiệu trưởng đã trả lại '+t.traLai.length+' lần — lần gần nhất '+k2s(t.traLai[t.traLai.length-1].luc)+': «'+esc(t.traLai[t.traLai.length-1].ly)+'»</div>';
+ /* hồ sơ đợt */
+ const f=(k,v)=>'<div class="f"><span class="k">'+k+'</span><span class="v">'+v+'</span></div>';
+ h+='<div class="card"><div class="ch">🗂 Hồ sơ đợt '+t.id+' — '+esc(t.ghi)+'<span class="sp"></span><span class="srcline">lưu tối thiểu 5 năm (TT 02/2020)</span></div><div class="cb">'
+  +f('QĐ phê duyệt đề án',t.deAn?t.deAn.so+' · '+k2s(t.deAn.ngay)+' · '+esc(t.deAn.loai)+' <span class="srcline">Hiệu trưởng ký ngoài hệ thống (mẫu 03)</span>':'<span style="color:var(--amber)">chưa ghi</span>'+(sua&&t.buoc===1?' <button class="btn xs" data-a="ghiDeAn">✎ Ghi</button>':''))
+  +f('Hội đồng thẩm định',t.hd?t.hd.so+' · '+k2s(t.hd.ngay)+'<div class="srcline" style="font-weight:400">'+esc(t.hd.tv)+'</div>':'<span class="srcline">ghi ở bước ②</span>')
+  +f('Biên bản thẩm định',t.bb?t.bb.so+' · '+k2s(t.bb.ngay)+' <button class="btn xs" data-a="xemTep">👁 Xem</button>':'<span class="srcline">ghi ở bước ②</span>')
+  +f('QĐ duyệt danh mục',t.duyet?'<b>'+t.duyet.so+'</b> · '+k2s(t.duyet.ngay)+' · '+esc(t.duyet.boi):'<span class="srcline">Hiệu trưởng — bước ③</span>')
+  +f('Công bố danh mục',t.congBo?k2s(t.congBo)+' <span class="srcline">tại trụ sở thư viện</span>':t.buoc===4&&sua?'<button class="btn xs" data-a="congBo">📢 Ghi đã công bố</button>':'<span class="srcline">sau khi duyệt</span>')
+  +'</div></div>';
+ /* thao tác theo bước */
+ let act='';
+ if(t.buoc===1&&sua) act='<button class="btn sm" data-a="themCho">➕ Thêm bản chờ loại ('+choLoaiTuDo(t.dt).length+')</button><button class="btn sm" data-a="themMa">➕ Thêm theo mã</button>'
+  +'<button class="btn sm" data-a="themDau">➕ Thêm theo đầu sách</button><span class="spacer"></span><button class="btn p sm" data-a="guiHD">➡ Gửi hội đồng thẩm định</button>';
+ if(t.buoc===2&&sua) act='<button class="btn sm" data-a="ghiHD">✎ Ghi hội đồng · biên bản</button><span class="spacer"></span><button class="btn p sm" data-a="trinhHT">➡ Trình Hiệu trưởng duyệt</button>';
+ if(t.buoc===3){
+  if(can('kk_d')) act='<span class="srcline">Bạn là người duyệt — người đứng đầu cơ quan trực tiếp quản lý thư viện (TT 02/2020, mẫu 07a).</span><span class="spacer"></span>'
+   +'<button class="btn sm" data-a="traLai">↩ Trả lại</button><button class="btn g sm" data-a="duyetTL">✅ Duyệt danh mục</button>';
+  else act='<span class="srcline">⏳ Chờ <b>Hiệu trưởng</b> duyệt. PHT điểm trường duyệt được khi Hiệu trưởng <b>ủy quyền</b> — '+lnk('M0.5','Ủy quyền')+'</span>';
+ }
+ if(act) h+='<div class="bar">'+act+'</div>';
+ h+='<div class="tbw"><div class="tbx"><table><thead><tr><th>Mã cá biệt</th><th>Nhan đề</th><th class="num">Giá</th><th>Lý do (tiêu chí TT 02/2020)</th><th>Hình thức xử lý</th><th>Kết luận hội đồng</th>'+(t.buoc===1&&sua?'<th></th>':'')+'</tr></thead><tbody>'
+  +(t.ds.length?t.ds.map((r,i)=>{const b=banByMa(r.ma),d=dauById(b.dau);
+   const ly=t.buoc===1&&sua?'<select class="fs" data-tly="'+i+'">'+Object.keys(LYDO).map(z=>'<option value="'+z+'"'+(r.ly===z?' selected':'')+'>'+LYDO[z].n+' ('+LYDO[z].cc+')</option>').join('')+'</select>':esc(LYDO[r.ly].n)+' <span class="srcline">'+LYDO[r.ly].cc+'</span>';
+   const ht=t.buoc<=2&&sua?'<select class="fs" data-tht="'+i+'">'+Object.keys(HINHTHUC).map(z=>'<option value="'+z+'"'+(r.ht===z?' selected':'')+'>'+HINHTHUC[z]+'</option>').join('')+'</select>':HINHTHUC[r.ht];
+   const kl=t.buoc===2&&sua?'<select class="fs" data-tkl="'+i+'"><option value="">— chưa kết luận —</option><option value="du"'+(r.kl==='du'?' selected':'')+'>Đủ điều kiện thanh lọc</option><option value="khong"'+(r.kl==='khong'?' selected':'')+'>Không — trả về kho</option></select>'
+    :r.kl==='du'?'<span class="kq ok">Đủ điều kiện</span>':r.kl==='khong'?'<span class="kq n">Không</span>':'<span class="srcline">—</span>';
+   return '<tr><td class="mono">'+r.ma+'</td><td>'+esc(d.ten)+'<div class="srcline">'+stBan(b)+'</div></td><td class="num">'+vn(b.gia)+'</td><td>'+ly+'</td><td>'+ht+'</td><td>'+kl+'</td>'
+    +(t.buoc===1&&sua?'<td><button class="btn xs" data-a="rutTL" data-v="'+r.ma+'" title="Rút khỏi danh mục — bản giữ Chờ loại">✕</button></td>':'')+'</tr>'}).join('')
+   :'<tr><td colspan="7" class="srcline">Danh mục trống.</td></tr>')+'</tbody></table></div></div>';
+ return h;
+}
+const choLoaiTuDo=dt=>BAN.filter(b=>b.dt===dt&&b.tt==='choLoai'&&!b.tl);
+
+/* ---------- thêm vào danh mục — mọi đường vào đi qua MỘT hàm kiểm ---------- */
+function themVaoTL(t,mas,lyMacDinh){
+ const ok=[],bo=[];
+ mas.forEach(ma=>{
+  const b=banByMa(ma);
+  if(!b){bo.push([esc(ma),'Không có mã này trong sổ đăng ký cá biệt.']);return}
+  if(b.dt!==t.dt){bo.push([ma,'Bản thuộc kho <b>'+DTN[b.dt]+'</b> — đợt '+t.id+' chỉ thanh lọc kho '+DTN[t.dt]+'.']);return}
+  const l=luotMoCuaBan(ma);
+  if(l){bo.push([ma,'⛔ <b>Bản đang cho mượn</b> — lượt '+l.id+', '+esc(bdTen(l.bd))+' ('+esc(bdNhom(l.bd))+'), hạn '+k2s(l.han)+'. Không loại được bản đang nằm ở bạn đọc: nhận trả trước, hoặc ghi <b>Mất khi đang mượn</b> ở tab 1.']);return}
+  if(b.tt==='daLoai'){bo.push([ma,'Bản đã loại ở đợt '+b.tl+'.']);return}
+  if(b.tl){bo.push([ma,'Bản đã nằm trong danh mục đợt <b>'+b.tl+'</b>.']);return}
+  const ly=b.tt==='choLoai'?b.ly:lyMacDinh;
+  if(b.tt!=='choLoai'){b.tt='choLoai';b.ly=ly;b.ev.push({luc:HOMNAY,n:'Chờ loại — đưa vào danh mục thanh lọc '+t.id+' ('+LYDO[ly].s+')',boi:R().n})}
+  b.tl=t.id; t.ds.push({ma,ly,ht:'thanhLy',kl:null});
+  ok.push(['<span class="mono">'+ma+'</span>',esc(dauById(b.dau).ten),esc(LYDO[ly].n)]);
+ });
+ render(); hopKetQua('Thêm vào danh mục '+t.id,ok,bo,['Mã','Nhan đề','Lý do']);
+}
+function hopThemMa(t){
+ modal('➕ Thêm theo mã — '+t.id,
+  '<label class="lbl">Mã cá biệt (nhiều mã)</label><textarea class="codes" id="tlMa"></textarea>'
+  +'<div class="bar" style="padding:5px 0"><span class="srcline">Điền thử:</span>'
+  +(function(){const mo=LUOT.find(x=>moLuot(x)&&x.dt===t.dt&&x.loai==='thuong'),ss=BAN.find(b=>b.dt===t.dt&&ttBan(b).k==='sanSang'&&b.hn);
+    return (mo?'<button class="chip" data-tm="'+mo.ban+'">⛔ bản đang cho mượn</button>':'')+(ss?'<button class="chip" data-tm="'+ss.ma+'">bản hỏng nhẹ còn ở kho</button>':'')})()+'</div>'
+  +'<label class="lbl">Lý do áp cho bản đang Sẵn sàng (bản Chờ loại giữ lý do cũ)</label><select class="fldi" id="tlLy">'+Object.keys(LYDO).map(z=>'<option value="'+z+'">'+LYDO[z].n+' ('+LYDO[z].cc+')</option>').join('')+'</select>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="tmOk">➕ Thêm</button>');
+ $$('[data-tm]').forEach(c=>c.onclick=()=>{$('#tlMa').value=c.dataset.tm});
+ mfns.btmOk=()=>{const m=tachMa($('#tlMa').value); if(!m.length){toast('⛔ Chưa có mã nào.');return} const ly=$('#tlLy').value; closeM(); themVaoTL(t,m,ly)};
+}
+function hopThemDau(t){
+ const ds=DAU.filter(d=>BAN.some(b=>b.dau===d.id&&b.dt===t.dt&&b.tt!=='daLoai'));
+ modal('➕ Thêm theo đầu sách — '+t.id,
+  '<div class="ro">Dùng cho thanh lọc <b>theo nội dung</b> (vd SGK chương trình cũ): mọi bản của đầu sách ở kho '+DTN[t.dt]+' vào danh mục. Bản đang cho mượn <b>bị bỏ qua kèm lý do</b> trong bảng kết quả.</div>'
+  +'<label class="lbl">Đầu sách</label><select class="fldi" id="tdD">'+ds.map(d=>'<option value="'+d.id+'">'+esc(d.ten)+' — '+BAN.filter(b=>b.dau===d.id&&b.dt===t.dt&&b.tt!=='daLoai').length+' bản</option>').join('')+'</select>'
+  +'<label class="lbl">Lý do</label><select class="fldi" id="tdL">'+Object.keys(LYDO).map(z=>'<option value="'+z+'">'+LYDO[z].n+' ('+LYDO[z].cc+')</option>').join('')+'</select>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="tdOk">➕ Thêm</button>');
+ mfns.btdOk=()=>{const id=$('#tdD').value, ly=$('#tdL').value; closeM(); themVaoTL(t,BAN.filter(b=>b.dau===id&&b.dt===t.dt&&b.tt!=='daLoai'&&b.tl!==t.id).map(b=>b.ma),ly)};
+}
+function hopGuiHD(t){
+ if(!t.ds.length){toast('⛔ Danh mục trống — không có gì để gửi hội đồng.');return}
+ const mo=t.ds.filter(r=>luotMoCuaBan(r.ma));
+ if(mo.length){toast('⛔ <b>'+mo.map(r=>r.ma).join(', ')+'</b> đang cho mượn — rút khỏi danh mục trước.');return}
+ const tong=BAN.filter(b=>b.dt===t.dt&&b.tt!=='daLoai').length, vuot=t.ds.length/tong*100>CFG.nguongThanhLoc;
+ const canh=[];
+ if(!t.deAn) canh.push('Chưa ghi <b>QĐ phê duyệt đề án</b> — TT 02/2020 yêu cầu đề án được người đứng đầu phê duyệt trước khi thanh lọc (mẫu 03).');
+ if(vuot) canh.push('Danh mục <b>'+(t.ds.length/tong*100).toFixed(1)+'%</b> kho — vượt '+CFG.nguongThanhLoc+'% mỗi lần (Đ.16).');
+ modal('➡ Gửi hội đồng thẩm định — '+t.id,
+  '<div class="ro">Danh mục <b>'+t.ds.length+' bản</b> khóa lại (không thêm, không rút) — hội đồng kết luận từng dòng ở bước ②.</div>'
+  +canh.map(c=>'<div class="warn">⚠ '+c+'</div>').join('')
+  +(canh.length?'<label class="lbl">Lý do vẫn gửi (bắt buộc — audit)</label><input class="fldi" id="hdLy">':''),
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="hdOk">➡ Gửi</button>');
+ mfns.bhdOk=()=>{if(canh.length&&!$('#hdLy').value.trim()){toast('⛔ Có cảnh báo — cần lý do.');return}
+  t.buoc=2; closeM(); toast('➡ Đã gửi hội đồng. Ghi QĐ thành lập hội đồng và biên bản thẩm định ở bước ②.'); render()};
+}
+function hopGhiHD(t){
+ modal('✎ Hội đồng thẩm định · biên bản — '+t.id,
+  '<label class="lbl">QĐ thành lập hội đồng (Hiệu trưởng ký — mẫu 05)</label><input class="fldi" id="hdSo" value="'+esc(t.hd?t.hd.so:'')+'" placeholder="Số QĐ">'
+  +'<label class="lbl">Thành viên</label><input class="fldi" id="hdTv" value="'+esc(t.hd?t.hd.tv:'')+'" placeholder="Chủ tịch · thư ký · ủy viên">'
+  +'<label class="lbl">Biên bản thẩm định (mẫu 06a)</label><input class="fldi" id="bbSo" value="'+esc(t.bb?t.bb.so:'')+'" placeholder="Số biên bản">'
+  +'<div class="ro" style="margin-top:9px">Thành viên hội đồng là <b>dữ liệu của đợt</b>, không phải chức danh — không sinh quyền trên menu (tiền lệ M4.10 «không tạo vai trò riêng»). Kết luận từng dòng chọn ngay trên bảng.</div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="ghOk2">Lưu</button>');
+ mfns.bghOk2=()=>{const so=$('#hdSo').value.trim(), bb=$('#bbSo').value.trim();
+  if(!so||!bb){toast('⛔ Thiếu số QĐ hội đồng hoặc số biên bản.');return}
+  t.hd={so,ngay:HOMNAY,tv:$('#hdTv').value.trim()||'—'}; t.bb={so:bb,ngay:HOMNAY}; closeM(); toast('✎ Đã lưu hồ sơ hội đồng.'); render()};
+}
+function trinhHT(t){
+ const thieu=[];
+ if(!t.hd||!t.bb) thieu.push('QĐ thành lập hội đồng và biên bản thẩm định');
+ const chua=t.ds.filter(r=>!r.kl); if(chua.length) thieu.push(chua.length+' dòng chưa có kết luận hội đồng ('+chua.slice(0,5).map(r=>r.ma).join(', ')+(chua.length>5?'…':'')+')');
+ if(thieu.length){toast('⛔ Chưa trình được — còn thiếu: <b>'+thieu.join('</b>; <b>')+'</b>.');return}
+ const khong=t.ds.filter(r=>r.kl==='khong');
+ khong.forEach(r=>{const b=banByMa(r.ma);b.tt='kho';b.ly=null;b.tl=null;b.ev.push({luc:HOMNAY,n:'Hội đồng '+t.id+' kết luận không đủ điều kiện thanh lọc — trả về kho',boi:R().n})});
+ t.ds=t.ds.filter(r=>r.kl==='du'); t.buoc=3; t.trinh=HOMNAY; render();
+ toast('➡ Đã trình Hiệu trưởng '+t.ds.length+' bản.'+(khong.length?' '+khong.length+' bản hội đồng kết luận «không» đã trả về kho.':''));
+}
+function hopDuyetTL(t){
+ const mo=t.ds.filter(r=>luotMoCuaBan(r.ma));
+ if(mo.length){modal('⛔ Không duyệt được — '+t.id,'<div class="danger">⛔ <b>'+mo.length+' bản trong danh mục đang cho mượn</b>: '+mo.map(r=>{const l=luotMoCuaBan(r.ma);return '<span class="mono">'+r.ma+'</span> ('+l.id+', '+esc(bdTen(l.bd))+')'}).join('; ')
+  +'. Không loại được bản đang nằm ở bạn đọc — <b>Trả lại</b> để quản thư rút các bản này, hoặc chờ ghi trả.</div>','<button class="btn p" data-mb="close">Đóng</button>');return}
+ modal('✅ Duyệt danh mục thanh lọc — '+t.id,
+  '<div class="info">Duyệt thì hệ thống:<br>• <b>'+t.ds.length+' bản</b> chuyển <b>Đã loại</b> (không xóa — sổ đăng ký cá biệt giữ dòng, ghi chú xuất theo QĐ)<br>• sổ đăng ký tổng quát ghi <b>phần II — xuất</b><br>'
+  +'• lịch sử mượn của các bản <b>giữ nguyên</b><br>• <b>không hoàn tác</b> — bản nào sai thì nhập lại bằng phiếu nhập, có vết.</div>'
+  +'<label class="lbl">Số QĐ duyệt danh mục (mẫu 07a) <span style="color:var(--red)">*</span></label><input class="fldi" id="dtSo" placeholder="Ví dụ 130/QĐ-NTT">',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn g" data-mb="dtOk">✅ Duyệt</button>');
+ mfns.bdtOk=()=>{const so=$('#dtSo').value.trim(); if(!so){toast('⛔ Thiếu số QĐ.');return}
+  t.duyet={so,ngay:HOMNAY,boi:R().n}; t.buoc=4;
+  const ok=t.ds.map(r=>{const b=banByMa(r.ma);b.tt='daLoai';b.ev.push({luc:HOMNAY,n:'Đã loại — QĐ '+so,boi:R().n});return ['<span class="mono">'+r.ma+'</span>',esc(dauById(b.dau).ten),HINHTHUC[r.ht]]});
+  closeM(); render(); hopKetQua('Duyệt '+t.id+' — QĐ '+esc(so),ok,[],['Mã','Nhan đề','Hình thức xử lý']);
+ };
+}
+function hopTraLai(t){
+ modal('↩ Trả lại danh mục — '+t.id,'<label class="lbl">Lý do <span style="color:var(--red)">*</span></label><textarea class="fldi" id="tlrLy" rows="3"></textarea>'
+  +'<div class="ro" style="margin-top:9px">Đợt về bước <b>② Hội đồng thẩm định</b>; quản thư sửa kết luận / hình thức rồi trình lại. Lý do lưu trong hồ sơ đợt.</div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn d" data-mb="tlrOk">↩ Trả lại</button>');
+ mfns.btlrOk=()=>{const ly=$('#tlrLy').value.trim(); if(ly.length<5){toast('⛔ Lý do quá ngắn.');return}
+  t.traLai.push({luc:HOMNAY,ly,boi:R().n}); t.buoc=2; closeM(); toast('↩ Đã trả lại '+t.id+'.'); render()};
+}
+
+/* ---------- mở đợt ---------- */
+function hopMoKK(){
+ const dt=quayDT();
+ if(!dt){toast('⛔ Chọn <b>một điểm trường</b> ở header — mỗi đợt kiểm kê một kho.');return}
+ const dm=KK.find(k=>k.dt===dt&&k.tt==='dangKiem');
+ if(dm){toast('⛔ Kho '+DTN[dt]+' đang có <b>'+dm.id+'</b> mở. Hai đợt cùng mở trên một kho thì không biết biên bản nào là bản đúng — chốt '+dm.id+' trước.');return}
+ modal('➕ Mở đợt kiểm kê — '+DTN[dt],
+  '<label class="lbl">Căn cứ</label><select class="fldi" id="kkCc">'+Object.keys(CANCU_KK).map(k=>'<option value="'+k+'">'+CANCU_KK[k]+'</option>').join('')+'</select>'
+  +'<label class="lbl">Ghi chú</label><input class="fldi" id="kkG" placeholder="Kiểm kê cuối học kỳ I">'
+  +'<div class="ro" style="margin-top:9px">Mở đợt = <b>chụp sổ tại mốc '+k2s(HOMNAY)+'</b>. Bản đang ở bạn đọc máy tự điền — người kiểm không phải đi tìm.</div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="kkOk">Mở đợt</button>');
+ mfns.bkkOk=()=>{const k={id:'KK-'+p2(KK.length+1),dt,moc:HOMNAY,cc:$('#kkCc').value,tt:'dangKiem',chot:null,boi:R().n,ghi:$('#kkG').value.trim()||'Kiểm kê kho '+DTN[dt],kq:{},thua:[]};
+  KK.push(k); closeM(); ST.curDot=k.id; ST.subKK='dem'; render(); toast('📸 Đã chụp sổ tại mốc '+k2s(HOMNAY)+' — <b>'+snapKK(k).length+' bản</b>.')};
+}
+function hopMoTL(){
+ const dt=quayDT();
+ if(!dt){toast('⛔ Chọn <b>một điểm trường</b> ở header — mỗi đợt thanh lọc một kho.');return}
+ modal('➕ Lập đợt thanh lọc — '+DTN[dt],
+  '<label class="lbl">Tên đợt</label><input class="fldi" id="tlG" placeholder="Thanh lọc định kỳ năm học 2026-2027">'
+  +'<div class="ro" style="margin-top:9px">TT 02/2020: thanh lọc <b>định kỳ 3 hoặc 5 năm</b>, hoặc đột xuất có lý do; mỗi lần không quá <b>10%</b> kho. Đề án do Hiệu trưởng phê duyệt (ghi số QĐ ở hồ sơ đợt).</div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="tlOk">Lập đợt</button>');
+ mfns.btlOk=()=>{const t={id:'TL-'+p2(TL.length+1),dt,buoc:1,tao:HOMNAY,ghi:$('#tlG').value.trim()||'Thanh lọc kho '+DTN[dt],deAn:null,hd:null,bb:null,trinh:null,duyet:null,congBo:null,traLai:[],ds:[]};
+  TL.push(t); closeM(); ST.curDot=t.id; render()};
+}
+function hopGhiDeAn(t){
+ modal('✎ QĐ phê duyệt đề án — '+t.id,'<label class="lbl">Số QĐ</label><input class="fldi" id="daSo" placeholder="Số/QĐ-NTT">'
+  +'<label class="lbl">Loại</label><select class="fldi" id="daLoai"><option>Định kỳ</option><option>Đột xuất</option></select>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="daOk">Lưu</button>');
+ mfns.bdaOk=()=>{const so=$('#daSo').value.trim(); if(!so){toast('⛔ Thiếu số QĐ.');return} t.deAn={so,ngay:HOMNAY,loai:$('#daLoai').value}; closeM(); render()};
+}
+
+/* ═══════════ TAB 4 · THỐNG KÊ ═══════════ */
+
+/* chuẩn TT 16/2022/TT-BGDĐT — số bản sách tối thiểu / học sinh */
+const CHUAN={A:{cap:'THPT',m1:5,m2:6},B:{cap:'THCS',m1:4,m2:5}};
+function veThongKe(){
+ if(!can('tk_x')) return tuChoi('Thống kê','GVCN có bản chiếu học sinh lớp mình ở tab 1 (chốt 3A). Số liệu toàn thư viện dành cho quản thư và Ban giám hiệu.');
+ const dts=dtHieuLuc()==='ALL'?['A','B']:[dtHieuLuc()];
+ const bs=BAN.filter(b=>dts.includes(b.dt)), ls=LUOT.filter(l=>dts.includes(l.dt)&&!l.huy&&namHocCua(l.ngay)===ST.nam);
+ const hsDT=HS.filter(h=>dts.includes(h.dt)&&h.tt==='hoc'), hsMuon=new Set(ls.filter(l=>l.bd.k==='hs').map(l=>l.bd.id));
+ const moN=LUOT.filter(l=>dts.includes(l.dt)&&moLuot(l)), qh=moN.filter(quaHan);
+ let h=scopeBar('<span>Chỉ có <b>số tổng hợp</b> — không có tên học sinh. Năm học theo header: <b>'+ST.nam+'</b>.</span>');
+ h+=dn('Tab này tồn tại để <b>Ban giám hiệu không phải vào tab nghiệp vụ</b> (R4): Hiệu trưởng, PHT xem kho và phong trào đọc bằng con số, không đọc lịch sử mượn của từng em. '
+  +'TT 16/2022 Đ.9 giao người làm thư viện <b>lập báo cáo định kỳ</b> — nút xuất ở đây là báo cáo đó.');
+ h+='<div class="kpis">'+kpi('Bản trong kho',bs.filter(b=>b.tt!=='daLoai').length,new Set(bs.filter(b=>b.tt!=='daLoai').map(b=>b.dau)).size+' đầu sách')
+  +kpi('Giá trị kho',vn(giaTri(bs))+'đ','theo giá từng bản')+kpi('Lượt mượn năm học',ls.length,ST.nam)
+  +kpi('Học sinh có mượn',hsDT.length?Math.round(hsMuon.size/hsDT.length*100)+'%':'—',hsMuon.size+' / '+hsDT.length+' em đang học','g')
+  +kpi('Đang ở bạn đọc',moN.length,'')+kpi('Quá hạn',qh.length,moN.length?Math.round(qh.length/moN.length*100)+'% lượt đang mở':'',qh.length?'r':'')+'</div>';
+ /* chuẩn TT 16/2022 */
+ h+='<div class="card"><div class="ch">📏 Bản sách / học sinh so với chuẩn TT 16/2022/TT-BGDĐT</div><div class="tbx"><table><thead><tr><th>Điểm trường</th><th class="num">Bản (chưa loại)</th><th class="num">Học sinh đang học</th><th class="num">Bản / HS</th><th>Mức 1</th><th>Mức 2</th></tr></thead><tbody>'
+  +dts.map(dt=>{const nb=BAN.filter(b=>b.dt===dt&&b.tt!=='daLoai').length, nh=HS.filter(h=>h.dt===dt&&h.tt==='hoc').length, r=nh?nb/nh:0, c=CHUAN[dt];
+   const tag=(m)=>r>=m?'<span class="kq ok">✔ đạt ('+m+')</span>':'<span class="kq x">chưa đạt — cần '+m+' bản/HS, thiếu '+vn(Math.ceil(m*nh-nb))+' bản</span>';
+   return '<tr><td>'+DTN[dt]+' <span class="srcline">'+c.cap+'</span></td><td class="num">'+nb+'</td><td class="num">'+nh+'</td><td class="num"><b>'+r.toFixed(2)+'</b></td><td>'+tag(c.m1)+'</td><td>'+tag(c.m2)+'</td></tr>'}).join('')
+  +'</tbody></table></div><div class="lgd">Demo chỉ nạp khoảng 250 bản mẫu — một trường thật có hàng nghìn bản. Chỉ số minh họa <b>cơ chế</b>: máy tính từ sổ đăng ký cá biệt và sĩ số 🔗 M1.1, không ai nhập tay. '
+  +'Tiêu chí «mỗi giáo viên ít nhất 1 bộ sách theo môn» <b>chưa đo được</b> — cần phân công 🔗 M4.5 (⏳ TV-11).</div></div>';
+ /* theo tháng */
+ const thang={}; ls.forEach(l=>{const k=l.ngay.slice(0,7);thang[k]=(thang[k]||0)+1});
+ const ks=Object.keys(thang).sort(), mx=Math.max(1,...Object.values(thang));
+ h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:12px">';
+ h+='<div class="card"><div class="ch">📅 Lượt mượn theo tháng</div><div style="padding:8px 12px">'+(ks.length?ks.map(k=>'<div class="hbar"><span class="l">Tháng '+k.slice(5)+'/'+k.slice(0,4)+'</span><span class="t"><i style="width:'+(thang[k]/mx*100)+'%"></i></span><span class="n">'+thang[k]+'</span></div>').join(''):'<div class="srcline">Chưa có lượt.</div>')+'</div></div>';
+ /* theo khối — phong trào đọc */
+ const khoi={}; ls.filter(l=>l.bd.k==='hs').forEach(l=>{const g=bdGet(l.bd).khoi;khoi[g]=(khoi[g]||0)+1});
+ const kk=Object.keys(khoi).sort((a,b)=>a-b);
+ h+='<div class="card"><div class="ch">🎒 Phong trào đọc — lượt mượn / học sinh theo khối</div><div style="padding:8px 12px">'
+  +kk.map(g=>{const n=HS.filter(x=>x.khoi==+g&&dts.includes(x.dt)&&x.tt==='hoc').length, r=n?khoi[g]/n:0;
+   return '<div class="hbar"><span class="l">Khối '+g+' · '+khoi[g]+' lượt</span><span class="t"><i style="width:'+Math.min(100,r*100)+'%"></i></span><span class="n">'+r.toFixed(2)+'</span></div>'}).join('')
+  +'<div class="srcline">Không gồm SGK theo năm học — đó là cấp phát, không phải đọc.</div></div></div>';
+ /* theo loại sách */
+ const lk={}; ls.forEach(l=>{const k=dauById(banByMa(l.ban).dau).kho;lk[k]=(lk[k]||0)+1});
+ h+='<div class="card"><div class="ch">📚 Lượt mượn theo loại sách</div><div style="padding:8px 12px">'+Object.keys(KHO).map(k=>'<div class="hbar"><span class="l">'+KHO[k].ten+'</span><span class="t"><i style="width:'+((lk[k]||0)/Math.max(1,ls.length)*100)+'%"></i></span><span class="n">'+(lk[k]||0)+'</span></div>').join('')+'</div></div>';
+ /* đầu sách được mượn nhiều */
+ const top={}; ls.filter(l=>l.loai==='thuong').forEach(l=>{const d=banByMa(l.ban).dau;top[d]=(top[d]||0)+1});
+ const tk=Object.keys(top).sort((a,b)=>top[b]-top[a]).slice(0,8), tmx=Math.max(1,...tk.map(k=>top[k]));
+ h+='<div class="card"><div class="ch">⭐ Đầu sách được mượn nhiều</div><div style="padding:8px 12px">'+tk.map(k=>'<div class="hbar"><span class="l" title="'+esc(dauById(k).ten)+'">'+esc(dauById(k).ten)+'</span><span class="t"><i style="width:'+(top[k]/tmx*100)+'%"></i></span><span class="n">'+top[k]+'</span></div>').join('')+'</div></div>';
+ h+='</div>';
+ /* giá trị kho theo nguồn */
+ h+='<div class="card"><div class="ch">💰 Giá trị kho theo nguồn nhập<span class="sp"></span><span class="srcline">số thống kê — không phải sổ tài sản cố định (TT 23/2023/TT-BTC Đ.3 k.2)</span></div><div class="tbx"><table><thead><tr><th>Nguồn</th>'
+  +dts.map(dt=>'<th class="num">'+DTN[dt]+'</th>').join('')+'</tr></thead><tbody>'
+  +Object.keys(NGUON).map(ng=>'<tr><td>'+NGUON[ng]+'</td>'+dts.map(dt=>'<td class="num">'+vn(giaTri(BAN.filter(b=>b.dt===dt&&(pnById(b.pn)||{}).nguon===ng)))+'</td>').join('')+'</tr>').join('')
+  +'<tr class="totrow"><td>Cộng</td>'+dts.map(dt=>'<td class="num">'+vn(giaTri(BAN.filter(b=>b.dt===dt)))+'</td>').join('')+'</tr></tbody></table></div></div>';
+ if(can('tk_xd')) h+='<div class="bar"><button class="btn sm" data-a="xuatTK">⬇ Xuất báo cáo định kỳ</button><span class="srcline">Không có tên học sinh — không cần chọn mục đích dữ liệu cá nhân.</span></div>';
+ return h;
+}
+
+/* ═══════════ TAB 5 · ⚙ CẤU HÌNH ═══════════ */
+function veCauHinh(){
+ if(!can('ch_x')) return tuChoi('⚙ Cấu hình','Cấu hình hạn mượn, mã cá biệt, mẫu phiếu nhắc thuộc về <b>người phụ trách nghiệp vụ</b> — quản thư (khung §4, phương án B).');
+ const s=can('ch_s'), dis=s?'':' disabled';
+ const hanV=v=>v==='nam'?'năm':v==null?'—':v;
+ let h=scopeBar('<span>Cấu hình áp <b>toàn trường</b>, cho mọi năm học đến khi đổi.</span>');
+ if(R().sc!=='School') h+='<div class="warn">⚠ Bạn là quản thư <b>'+DTN[R().dt]+'</b> (phạm vi Branch) nhưng cấu hình này áp <b>cả hai kho</b> — hai quản thư có thể ghi đè cấu hình của nhau (⏳ TV-9, cùng loại M6.4 điểm U). Mọi lần lưu ghi audit.</div>';
+ h+='<div class="card"><div class="ch">① Kho sách và mã cá biệt</div><div class="tbx"><table class="cfgtb"><thead><tr><th>Kho</th><th>Tiền tố</th><th>Số tiếp theo — A</th><th>Số tiếp theo — B</th></tr></thead><tbody>'
+  +Object.keys(KHO).map(k=>'<tr><td>'+KHO[k].ten+'</td><td class="mono">'+KHO[k].tien+'</td><td class="mono">'+maCB('A',k,SO_TIEP.A[k])+'</td><td class="mono">'+maCB('B',k,SO_TIEP.B[k])+'</td></tr>').join('')
+  +'</tbody></table></div><div class="cb"><div class="f"><span class="k">Mẫu mã</span><span class="v"><input class="fs mono" id="cfMau" value="'+esc(CFG.mauMa)+'"'+dis+' style="width:200px">'
+  +'<span class="srcline">{DT} điểm trường · {KHO} tiền tố kho · {SO5} số 5 chữ số chạy theo điểm trường × kho (chốt 4A)</span></span></div>'
+  +'<div class="f"><span class="k">Số cũ trước sáp nhập</span><span class="v" style="font-weight:400">Nhập Excel <b>giữ nguyên</b> mã cũ nếu cột mã có giá trị, không trùng, đúng tiền tố điểm trường — để không dán nhãn lại hàng nghìn cuốn. Số tiếp theo luôn lớn hơn số lớn nhất đã có.</span></div></div></div>';
+ h+='<div class="card"><div class="ch">② Hạn mượn — loại sách × loại bạn đọc</div><div class="tbx"><table class="cfgtb"><thead><tr><th>Loại sách</th><th>Học sinh</th><th>Nhân sự</th></tr></thead><tbody>'
+  +Object.keys(KHO).map(k=>'<tr><td>'+KHO[k].ten+'</td>'+['hs','ns'].map(b=>'<td><input class="fs mini" data-cfh="'+k+'|'+b+'" value="'+hanV(CFG.han[k][b])+'"'+dis+'></td>').join('')+'</tr>').join('')
+  +'</tbody></table></div><div class="cb">'
+  +'<div class="f"><span class="k">Cách ghi</span><span class="v" style="font-weight:400">số ngày · <b>năm</b> = theo năm học (hạn = ngày kết thúc năm học ở 🔗 M10.1) · <b>—</b> = không áp dụng (vẫn mượn được, có cảnh báo + lý do)</span></div>'
+  +'<div class="f"><span class="k">Số cuốn tối đa</span><span class="v">Học sinh <input class="fs mini" id="cfTdHs" value="'+CFG.toiDa.hs+'"'+dis+'> · Nhân sự <input class="fs mini" id="cfTdNs" value="'+CFG.toiDa.ns+'"'+dis+'><span class="srcline">chỉ đếm lượt thường — vượt thì cảnh báo, không chặn</span></span></div>'
+  +'<div class="f"><span class="k">Gia hạn mỗi lần</span><span class="v">Học sinh <input class="fs mini" id="cfGhHs" value="'+CFG.giaHan.hs+'"'+dis+'> ngày · Nhân sự <input class="fs mini" id="cfGhNs" value="'+CFG.giaHan.ns+'"'+dis+'> ngày · tối đa <input class="fs mini" id="cfGhLan" value="'+CFG.giaHan.lan+'"'+dis+'> lần</span></div>'
+  +'<div class="lgd">Văn bản không quy định hạn mượn, số cuốn, gia hạn — đây là <b>mặc định của hệ thống</b>, trường sửa theo nội quy thư viện (TT 16/2022 Đ.9: Hiệu trưởng ban hành quy định).</div></div></div>';
+ h+='<div class="card"><div class="ch">③ Tiêu chí thanh lọc — danh sách đóng theo TT 02/2020/TT-BVHTTDL</div><div class="cb">'
+  +Object.keys(LYDO).map(k=>'<div class="f"><span class="k mono">'+LYDO[k].cc+'</span><span class="v" style="font-weight:400">'+LYDO[k].n+'</span></div>').join('')
+  +'<div class="f"><span class="k">Ngưỡng mỗi lần</span><span class="v">'+CFG.nguongThanhLoc+'% tổng kho <span class="srcline">Đ.16 — cảnh báo khi vượt, không chặn</span></span></div>'
+  +'<div class="f"><span class="k">Hình thức xử lý</span><span class="v" style="font-weight:400">'+Object.values(HINHTHUC).join(' · ')+'</span></div>'
+  +'<div class="lgd">Không sửa được ở đây — danh sách lấy thẳng từ văn bản, không phải danh mục trường tự đặt (cùng cách M6.4 đặt căn cứ kiểm kê).</div></div></div>';
+ h+='<div class="card"><div class="ch">④ Mẫu phiếu nhắc trả sách</div><div class="cb" style="padding:10px 12px"><textarea class="fldi" id="cfNhac" rows="3"'+dis+'>'+esc(CFG.mauNhac)+'</textarea>'
+  +'<div class="srcline">Trường trộn: {TEN} {LOP} {DT}. In giấy — không gửi App (chốt 3).</div></div></div>';
+ h+='<div class="card"><div class="ch">⑤ Thời hạn giữ chi tiết lịch sử mượn</div><div class="cb"><div class="f"><span class="k">Giữ chi tiết</span><span class="v"><select class="fs" id="cfGiu"'+dis+'>'
+  +[1,2,3].map(n=>'<option'+(n===CFG.giuLichSu?' selected':'')+'>'+n+'</option>').join('')+'</select> năm học, sau đó <b>ẩn tên bạn đọc</b> — giữ bản, ngày, kết quả để thống kê</span></div>'
+  +'<div class="lgd">⏳ TV-8 — Luật BVDLCN 91/2025 đòi tối thiểu hóa thời gian lưu. Lượt dẫn tới việc loại sách giữ theo hồ sơ thanh lọc (tối thiểu 5 năm).</div></div></div>';
+ if(s) h+='<div class="bar"><button class="btn p" data-a="luuCH">💾 Lưu cấu hình</button><button class="btn" data-a="cloneCH">⧉ Lấy cấu hình từ năm học…</button></div>';
+ return h;
+}
+function luuCauHinh(){
+ const loi=[];
+ const mau=$('#cfMau').value.trim();
+ if(!mau.includes('{SO5}')) loi.push('Mẫu mã phải có <b>{SO5}</b> — thiếu thì hai bản cùng kho trùng mã.');
+ if(!mau.includes('{DT}')) loi.push('Mẫu mã phải có <b>{DT}</b> — mỗi điểm trường một kho, bỏ {DT} thì số cũ của hai trường trước sáp nhập trùng nhau.');
+ const han={};
+ $$('[data-cfh]').forEach(e=>{const[k,b]=e.dataset.cfh.split('|'), v=e.value.trim().toLowerCase();
+  han[k]=han[k]||{}; han[k][b]=v==='năm'||v==='nam'?'nam':v==='—'||v==='-'||v===''?null:(+v>0?+v:'ERR');
+  if(han[k][b]==='ERR') loi.push(KHO[k].ten+' × '+(b==='hs'?'học sinh':'nhân sự')+': «'+esc(e.value)+'» không hợp lệ.')});
+ if(loi.length){toast('⛔ Chưa lưu: '+loi.join(' '));return}
+ CFG.mauMa=mau; CFG.han=han; CFG.toiDa={hs:+$('#cfTdHs').value||3,ns:+$('#cfTdNs').value||10};
+ CFG.giaHan={hs:+$('#cfGhHs').value||7,ns:+$('#cfGhNs').value||14,lan:+$('#cfGhLan').value||2};
+ CFG.mauNhac=$('#cfNhac').value; CFG.giuLichSu=+$('#cfGiu').value;
+ toast('💾 Đã lưu cấu hình — áp cho lượt mượn <b>từ bây giờ</b>; lượt đang mở giữ hạn cũ. Audit ghi giá trị cũ → mới.'); render();
+}
+function hopClone(){
+ modal('⧉ Lấy cấu hình từ năm học…',
+  '<label class="lbl">Năm học nguồn</label><select class="fldi"><option>2025-2026</option></select>'
+  +'<div class="stt" style="margin-top:10px">Sẽ lấy</div><div class="ro">② Hạn mượn · số cuốn · gia hạn · ④ Mẫu phiếu nhắc · ⑤ Thời hạn giữ lịch sử</div>'
+  +'<div class="stt">Không lấy — và vì sao</div><div class="ro">① Mẫu mã và số tiếp theo — <b>dữ liệu xuyên năm</b>: đổi số chạy là sinh mã trùng · ③ Tiêu chí thanh lọc — <b>lấy từ văn bản</b>, không phải cấu hình năm (khung §19.2 quy tắc 1).</div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="clOk">⧉ Lấy</button>');
+ mfns.bclOk=()=>{closeM();toast('⧉ Đã lấy 3 khối từ năm học 2025-2026 — giá trị không đổi (hai năm cùng cấu hình). Audit ghi lượt lấy.')};
+}
+
+/* ═══════════ RENDER + SỰ KIỆN ═══════════ */
+
+function render(){
+ rolebar(); header(); tabs();
+ $('#crumb').innerHTML='';
+ const c=$('#content');
+ if(ST.tab==='muontra')     c.innerHTML=veMuonTra();
+ else if(ST.tab==='kho')    c.innerHTML=veKho();
+ else if(ST.tab==='kiemke') c.innerHTML=veKiemKe();
+ else if(ST.tab==='thongke')c.innerHTML=veThongKe();
+ else                       c.innerHTML=veCauHinh();
+ const nn=document.body.classList.contains('nn');
+ $('#btnNote').classList.toggle('on',!nn);
+ $('#btnNote').textContent='💡 Ghi chú thiết kế: '+(nn?'TẮT':'BẬT');
+}
+function doiTab(t){ST.tab=t;ST.curBd=null;ST.curDau=null;ST.curDot=null;ST.chk=null;ST.q='';ST.qKho='';ST.qKK='';ST.subKK='dem';ST.chipDem='all'}
+const parseBd=v=>{const[k,id]=v.split(':');return {k,id}};
+const dotHT=()=>dotById(ST.curDot);
+
+/* ---------- bảng hành động: data-a="tên" data-v="giá trị" ---------- */
+const A={
+ /* tab 1 */
+ mode:v=>{ST.mode=v;ST.chk=null;ST.codes=''},
+ goBd:v=>{ST.bdQ=v},
+ chonBd:v=>{ST.bdSel=parseBd(v);ST.bdQ='';ST.chk=null},
+ boBd:()=>{ST.bdSel=null;ST.chk=null},
+ dien:v=>{ST.codes=v;ST.chk=null},
+ kiemMuon:()=>{ST.codes=$('#codes').value;if(!tachMa(ST.codes).length){toast('⛔ Chưa có mã cá biệt nào.');return 1}
+  ST.chk=Object.assign({mode:'muon'},kiemMuon(ST.bdSel,ST.codes,quayDT()))},
+ kiemTra:()=>{ST.codes=$('#codes').value;if(!tachMa(ST.codes).length){toast('⛔ Chưa có mã cá biệt nào.');return 1}
+  ST.chk={mode:'tra',rows:kiemTra(ST.codes,quayDT())}},
+ ghiMuon:()=>{thucHienMuon();return 1},
+ ghiTra:()=>{thucHienTra();return 1},
+ capSGK:()=>{hopCapSGK();return 1}, thuSGK:()=>{hopThuSGK();return 1},
+ chipMT:v=>{ST.chipMT=v},
+ nhac:()=>{hopNhac();return 1},
+ xuat:v=>{hopXuat(v);return 1},
+ muonCho:v=>{ST.bdSel=parseBd(v);ST.mode='muon';ST.chk=null;ST.curBd=null;ST.codes='';setTimeout(()=>window.scrollTo(0,0),0)},
+ giaHan:v=>{hopGiaHan(v);return 1}, traMot:v=>{hopTraMot(v);return 1}, baoMat:v=>{hopBaoMat(v);return 1}, huy:v=>{hopHuy(v);return 1},
+ /* tab 2 */
+ phieuNhap:v=>{hopPhieuNhap(v||null);return 1}, importX:()=>{hopImport();return 1},
+ soTQ:()=>{hopSoTQ();return 1}, soCB:()=>{hopSoCB();return 1},
+ loaiKho:v=>{ST.loaiKho=v}, chipKho:v=>{ST.chipKho=v},
+ suaDau:v=>{hopSuaDau(v);return 1}, baoHong:v=>{hopBaoHong(v);return 1}, baoMatKho:v=>{hopBaoMatKho(v);return 1},
+ hoanVe:v=>{hopHoanVe(v);return 1}, goHn:v=>{goHn(v);return 1}, lsBan:v=>{hopLsBan(v);return 1},
+ /* tab 3 */
+ moKK:()=>{hopMoKK();return 1}, moTL:()=>{hopMoTL();return 1},
+ chipKK:v=>{ST.chipKK=v}, veDs:()=>{ST.curDot=null}, subKK:v=>{ST.subKK=v}, chipDem:v=>{ST.chipDem=v},
+ scanKK:()=>{scanKK();return 1}, themThua:()=>{hopThemThua();return 1}, chuaThanhKhong:()=>{hopChuaThanhKhong();return 1}, chotKK:()=>{chotKK();return 1},
+ ghiDeAn:()=>{hopGhiDeAn(dotHT());return 1},
+ xemTep:()=>{const t=dotHT();modal('👁 Biên bản thẩm định '+t.bb.so,'<div class="ro"><b>👁 Xem đứng trước ⬇ Tải</b>. Bản quét biên bản (mẫu 06a) kèm danh mục đủ điều kiện (mẫu 06b) — '+t.ds.length+' bản, ký bởi Chủ tịch hội đồng và thư ký.</div>'
+  +'<div class="tbw"><div class="f"><span class="k">Số</span><span class="v">'+t.bb.so+'</span></div><div class="f"><span class="k">Ngày</span><span class="v">'+k2s(t.bb.ngay)+'</span></div><div class="f"><span class="k">Thành phần</span><span class="v" style="font-weight:400">'+esc(t.hd.tv)+'</span></div></div>',
+  '<button class="btn" data-mb="close">Đóng</button><button class="btn p" data-mb="close">⬇ Tải tệp</button>');return 1},
+ congBo:()=>{const t=dotHT();t.congBo=HOMNAY;toast('📢 Đã ghi công bố danh mục '+t.id+' tại trụ sở thư viện ngày '+k2s(HOMNAY)+'.')},
+ themCho:()=>{const t=dotHT(),m=choLoaiTuDo(t.dt).map(b=>b.ma);if(!m.length){toast('Không có bản Chờ loại nào chưa vào đợt ở kho '+DTN[t.dt]+'.');return 1}themVaoTL(t,m,'hong');return 1},
+ themMa:()=>{hopThemMa(dotHT());return 1}, themDau:()=>{hopThemDau(dotHT());return 1},
+ guiHD:()=>{hopGuiHD(dotHT());return 1}, ghiHD:()=>{hopGhiHD(dotHT());return 1}, trinhHT:()=>{trinhHT(dotHT());return 1},
+ traLai:()=>{hopTraLai(dotHT());return 1}, duyetTL:()=>{hopDuyetTL(dotHT());return 1},
+ rutTL:v=>{const t=dotHT(),b=banByMa(v);t.ds=t.ds.filter(r=>r.ma!==v);b.tl=null;b.ev.push({luc:HOMNAY,n:'Rút khỏi danh mục '+t.id,boi:R().n});
+  toast('✕ Đã rút <b>'+v+'</b> khỏi danh mục — bản giữ <b>Chờ loại</b>; muốn cho mượn lại thì <b>↺ Hoàn về kho</b> ở tab 2.')},
+ /* tab 4 · 5 */
+ xuatTK:()=>{toast('⬇ Đã xuất báo cáo định kỳ '+ST.nam+' — chỉ số tổng hợp, không có tên học sinh.');return 1},
+ luuCH:()=>{luuCauHinh();return 1}, cloneCH:()=>{hopClone();return 1}
+};
+
+/* ---------- kiểm kê: quét · thừa · chốt ---------- */
+function scanKK(){
+ const k=dotHT(), m=tachMa($('#scanKK').value), s=snapKK(k), ok=[], bo=[];
+ if(!m.length){toast('⛔ Chưa có mã nào.');return}
+ m.forEach(ma=>{
+  const b=s.find(x=>x.ma===ma);
+  if(b&&moTai(ma,k.moc)){bo.push([ma,'Bản đang ở bạn đọc tại mốc ('+moTai(ma,k.moc).id+') — máy đã điền, không cần đếm.']);return}
+  if(b){k.kq[ma]={v:'coMat'};ok.push(['<span class="mono">'+ma+'</span>',esc(dauById(b.dau).ten),'<span class="kq ok">Có mặt</span>']);return}
+  if(!k.thua.some(t=>t.ma===ma)) k.thua.push({ma,ghi:'Quét được khi kiểm đếm '+k2s(HOMNAY)+' — không có trong bản chụp'});
+  bo.push([ma,'Không có trong bản chụp sổ của đợt → ghi vào danh sách <b>Thừa</b>'+(banByMa(ma)?' (bản của kho '+DTN[banByMa(ma).dt]+')':' (mã không có trong sổ)')+'.']);
+ });
+ render(); hopKetQua('Quét kiểm đếm '+k.id,ok,bo,['Mã','Nhan đề','Kết quả']);
+}
+function hopThemThua(){
+ const k=dotHT();
+ modal('➕ Ghi nhận bản thừa — '+k.id,'<label class="lbl">Mã trên nhãn (để trống nếu không có)</label><input class="fldi" id="thMa">'
+  +'<label class="lbl">Ghi nhận của người kiểm <span style="color:var(--red)">*</span></label><input class="fldi" id="thG" placeholder="Nguồn gốc nghi vấn, vị trí tìm thấy">',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="thOk">Ghi nhận</button>');
+ mfns.bthOk=()=>{const g=$('#thG').value.trim(); if(!g){toast('⛔ Thiếu ghi nhận.');return}
+  k.thua.push({ma:$('#thMa').value.trim().toUpperCase(),ghi:g}); closeM(); render()};
+}
+function hopChuaThanhKhong(){
+ const k=dotHT(), chua=snapKK(k).filter(b=>!moTai(b.ma,k.moc)&&!k.kq[b.ma]);
+ modal('Ghi '+chua.length+' bản chưa đếm là «Không thấy»',
+  '<div class="warn">⚠ Thao tác hàng loạt — dùng khi ban kiểm kê <b>đã rà hết kệ</b>. Các dòng này vào tab Chênh lệch; chốt đợt sẽ đưa chúng sang <b>Chờ loại — kiểm kê không thấy</b>.</div>'
+  +'<label class="lbl">Giải trình chung (áp cho '+chua.length+' dòng) <span style="color:var(--red)">*</span></label><input class="fldi" id="ctG" placeholder="Đã rà kệ, tủ sách lớp, phòng đọc — không tìm thấy">',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn d" data-mb="ctOk">Ghi «Không thấy»</button>');
+ mfns.bctOk=()=>{const g=$('#ctG').value.trim(); if(g.length<8){toast('⛔ Giải trình quá ngắn.');return}
+  chua.forEach(b=>k.kq[b.ma]={v:'khongThay',ghi:g}); closeM(); render(); toast('Đã ghi '+chua.length+' dòng «Không thấy» kèm giải trình chung.')};
+}
+function chotKK(){
+ const k=dotHT(), s=snapKK(k), kqOf=b=>moTai(b.ma,k.moc)?'dangMuon':(k.kq[b.ma]?k.kq[b.ma].v:null);
+ const chua=s.filter(b=>kqOf(b)===null), thieu=s.filter(b=>['khongThay','hong'].includes(kqOf(b))&&!(k.kq[b.ma].ghi||'').trim());
+ if(chua.length||thieu.length){toast('⛔ Còn '+chua.length+' bản chưa đếm và '+thieu.length+' dòng chưa giải trình.');return}
+ const ok=[],bo=[];
+ s.forEach(b=>{const v=kqOf(b); if(!['khongThay','hong'].includes(v)) return;
+  if(b.tt!=='kho'){bo.push([b.ma,'Sổ đã ghi '+esc(ttBan(b).n)+' từ trước — giữ nguyên.']);return}
+  if(luotMoCuaBan(b.ma)){bo.push([b.ma,'Đang có lượt mở '+luotMoCuaBan(b.ma).id+' (mượn sau mốc) — không chuyển Chờ loại.']);return}
+  const ly=v==='hong'?'hong':'khongThay'; b.tt='choLoai'; b.ly=ly; b.ev.push({luc:HOMNAY,n:'Chờ loại — chốt kiểm kê '+k.id+': '+k.kq[b.ma].ghi,boi:R().n});
+  ok.push(['<span class="mono">'+b.ma+'</span>',esc(dauById(b.dau).ten),'Chờ loại — '+LYDO[ly].s]);
+ });
+ k.tt='daChot'; k.chot=HOMNAY; k.boi=R().n; render();
+ hopKetQua('Chốt '+k.id+' — '+k.thua.length+' bản thừa chỉ ghi nhận',ok,bo,['Mã','Nhan đề','Hệ quả']);
+}
+
+/* ---------- click ---------- */
+mfns.bclose=()=>closeM();
+document.addEventListener('click',e=>{
+ const t=e.target;
+ const mb=t.closest('[data-mb]'); if(mb){const f=mfns['b'+mb.dataset.mb]; f?f():closeM(); return}
+ if(t===$('#mask')){closeM();return}
+ const rb=t.closest('.rb'); if(rb){role=rb.dataset.r;doiTab(ST.tab);ST.bdSel=null;if(R().sc!=='School')ST.dt=R().dt;else if(ST.dt==='ALL')ST.dt='A';render();return}
+ if(t.id==='btnNote'){document.body.classList.toggle('nn');render();return}
+ const tb=t.closest('[data-t]'); if(tb){doiTab(tb.dataset.t);render();return}
+ const ac=t.closest('[data-a]'); if(ac){if(ac.disabled)return; const f=A[ac.dataset.a]; if(f&&!f(ac.dataset.v)) render(); return}
+ const lk=t.closest('[data-lnk]'); if(lk){toast('🔗 Deep-link sang <b>'+esc(lk.dataset.lnk)+'</b> — mở sẵn đúng ngữ cảnh, quay lại được M6.19 (D3). M6.19 không dựng lại việc của menu khác.');return}
+ if(t.closest('[data-close]')){ST.curBd=null;ST.curDau=null;render();return}
+ const bd=t.closest('[data-bd]'); if(bd){ST.curBd=ST.curBd===bd.dataset.bd?null:bd.dataset.bd;render();return}
+ const du=t.closest('[data-dau]'); if(du){ST.curDau=ST.curDau===du.dataset.dau?null:du.dataset.dau;render();return}
+ const dt=t.closest('[data-dot]'); if(dt){ST.curDot=dt.dataset.dot;ST.subKK='dem';ST.chipDem='all';ST.qKK='';render();window.scrollTo(0,0);return}
+});
+
+/* ---------- change ---------- */
+document.addEventListener('change',e=>{
+ const t=e.target;
+ if(t.id==='hdt'){ST.dt=t.value;ST.curBd=null;ST.curDau=null;ST.curDot=null;ST.chk=null;render();return}
+ if(t.id==='hnam'){ST.nam=t.value;render();return}
+ if(t.dataset.kq!=null){ST.chk.rows[+t.dataset.kq].kq=t.value;render();return}
+ if(t.dataset.kk!=null){const k=dotHT(),m=t.dataset.kk; if(t.value) k.kq[m]=Object.assign(k.kq[m]||{},{v:t.value}); else delete k.kq[m]; render();return}
+ const tl=['tly','tht','tkl'].find(x=>t.dataset[x]!=null);
+ if(tl){const r=dotHT().ds[+t.dataset[tl]]; r[{tly:'ly',tht:'ht',tkl:'kl'}[tl]]=t.value||null;
+  if(tl==='tly'){const b=banByMa(r.ma);b.ly=t.value} render();return}
+});
+
+/* ---------- input — ô tìm vẽ lại có giữ con trỏ; ô ghi chú không vẽ lại ---------- */
+function giuConTro(id,fn){const p=$('#'+id).selectionStart;fn();render();const n=$('#'+id);if(n){n.focus();n.setSelectionRange(p,p)}}
+document.addEventListener('input',e=>{
+ const t=e.target;
+ if(t.id==='bdq'){giuConTro('bdq',()=>ST.bdQ=t.value);return}
+ if(t.id==='qmt'){giuConTro('qmt',()=>ST.q=t.value);return}
+ if(t.id==='qkho'){giuConTro('qkho',()=>ST.qKho=t.value);return}
+ if(t.id==='qkk'){giuConTro('qkk',()=>ST.qKK=t.value);return}
+ if(t.id==='codes'){ST.codes=t.value;return}
+ if(t.id==='lyDo'){ST.lyDo=t.value;return}
+ if(t.dataset.ghi!=null){ST.chk.rows[+t.dataset.ghi].ghi=t.value;return}
+ if(t.dataset.kkg!=null){const k=dotHT();k.kq[t.dataset.kkg].ghi=t.value;return}
+});
+
+render();
+</script>
+</body>
+</html>

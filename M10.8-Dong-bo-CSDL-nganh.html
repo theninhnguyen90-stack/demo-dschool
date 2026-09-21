@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="vi"><head><meta charset="utf-8">
+<title>M10.8 — Đồng bộ CSDL ngành</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font:13px/1.45 "Segoe UI",Roboto,Arial,sans-serif;color:#1f2933;background:#eef1f5}
+.wrap{width:1360px;margin:0 auto;background:#fff;min-height:900px;position:relative}
+.rolebar{background:#1f2933;color:#cbd5e1;padding:6px 14px;display:flex;align-items:center;gap:10px;font-size:12px}
+.rolebar b{color:#fff}
+.rolebar select{font:12px inherit;padding:2px 6px;border-radius:4px;border:1px solid #475569;background:#111827;color:#e5e7eb}
+.rolebar .sc{margin-left:auto;color:#94a3b8}
+.hd{padding:9px 14px 0}
+.hd h1{font-size:16px;font-weight:600}
+/* thanh trạng thái kết nối */
+.conn{display:flex;align-items:center;gap:9px;margin:7px 0;padding:6px 11px;border-radius:6px;border:1px solid;font-size:12px}
+.conn.ok{background:#f0fdf4;border-color:#bbf7d0;color:#166534}
+.conn.bad{background:#fef2f2;border-color:#fecaca;color:#991b1b}
+.conn.warn{background:#fffbeb;border-color:#fde68a;color:#92400e}
+.conn b{font-weight:600}
+.conn .r{margin-left:auto;display:flex;gap:7px;align-items:center}
+.tabs{display:flex;gap:2px;border-bottom:1px solid #e3e8ef}
+.tabs button{font:13px inherit;border:1px solid #e3e8ef;border-bottom:none;background:#f6f8fa;color:#475569;padding:6px 13px;border-radius:6px 6px 0 0;cursor:pointer}
+.tabs button.on{background:#fff;color:#0f172a;font-weight:600;box-shadow:inset 0 2px 0 #1d4ed8}
+.tabs button:disabled{color:#cbd5e1;cursor:not-allowed;background:#f1f5f9}
+.bar{display:flex;flex-wrap:wrap;gap:7px;align-items:center;padding:7px 14px;background:#f8fafc;border-bottom:1px solid #e3e8ef;font-size:12px}
+.bar .rs{margin-left:auto;color:#64748b}
+.btn{font:12px inherit;padding:4px 10px;border:1px solid #cbd5e1;background:#fff;border-radius:4px;cursor:pointer;color:#334155}
+.btn:hover:not(:disabled){background:#f1f5f9}
+.btn.p{background:#1d4ed8;border-color:#1d4ed8;color:#fff}
+.btn.p:hover:not(:disabled){background:#1e40af}
+.btn.d{background:#b91c1c;border-color:#b91c1c;color:#fff}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.lock{border-style:dashed;color:#92400e;background:#fffbeb;border-color:#fcd34d}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#f1f5f9;color:#475569;font-weight:600;text-align:left;padding:5px 8px;border-bottom:1px solid #e3e8ef}
+td{padding:6px 8px;border-bottom:1px solid #eef1f5;vertical-align:top}
+tbody tr:hover{background:#f8fafc}
+.mono{font-family:Consolas,monospace;font-size:11px;color:#475569}
+.mut{color:#64748b;font-size:11px}
+.tag{display:inline-block;font-size:11px;padding:0 6px;border-radius:9px;border:1px solid;line-height:16px;white-space:nowrap}
+.t-g{color:#166534;border-color:#bbf7d0;background:#f0fdf4}
+.t-y{color:#92400e;border-color:#fde68a;background:#fffbeb}
+.t-r{color:#991b1b;border-color:#fecaca;background:#fef2f2}
+.t-b{color:#1e40af;border-color:#c7d2fe;background:#eef2ff}
+.t-n{color:#475569;border-color:#cbd5e1;background:#f1f5f9}
+.risk3{color:#b91c1c;font-weight:600}.risk2{color:#b45309}.risk1{color:#166534}
+.note{border-left:3px solid;padding:7px 10px;margin:0 14px 9px;font-size:12px;border-radius:0 4px 4px 0}
+.n-w{border-color:#f59e0b;background:#fffbeb;color:#92400e}
+.n-i{border-color:#3b82f6;background:#eff6ff;color:#1e40af}
+.n-d{border-color:#ef4444;background:#fef2f2;color:#991b1b}
+.n-g{border-color:#22c55e;background:#f0fdf4;color:#166534}
+.sec{margin:0 14px 10px;border:1px solid #e3e8ef;border-radius:6px;overflow:hidden}
+.sec>h3{background:#f8fafc;padding:6px 10px;font-size:12px;font-weight:600;border-bottom:1px solid #e3e8ef;display:flex;align-items:center;gap:8px}
+.sec>h3 .r{margin-left:auto;font-weight:400;color:#64748b}
+.kv{display:grid;grid-template-columns:190px 1fr;gap:4px 12px;padding:10px;font-size:12px}
+.kv dt{color:#64748b}
+.ov{position:fixed;inset:0;background:rgba(15,23,42,.4);display:none;z-index:40}
+.ov.on{display:block}
+.mdl{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:660px;max-height:88vh;background:#fff;border-radius:8px;box-shadow:0 12px 40px rgba(0,0,0,.3);display:none;flex-direction:column;z-index:50}
+.mdl.on{display:flex}
+.mdl header{padding:11px 15px;border-bottom:1px solid #e3e8ef;background:#f8fafc;font-size:14px;font-weight:600}
+.mdl .bd{padding:13px 15px;overflow:auto;flex:1}
+.mdl footer{padding:9px 15px;border-top:1px solid #e3e8ef;background:#f8fafc;display:flex;gap:8px;justify-content:flex-end}
+.tt{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1f2933;color:#fff;padding:9px 17px;border-radius:6px;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.3);display:none;z-index:60;max-width:700px}
+.tt.on{display:block}
+.chk{width:14px;height:14px;vertical-align:-2px}
+.empty{padding:30px;text-align:center;color:#94a3b8}
+code{background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:11px}
+</style></head>
+<body><div class="wrap">
+
+<div class="rolebar">
+  <b>DEMO</b> Chức danh:
+  <select id="role" onchange="doiVai()">
+    <option value="FULL">Đủ quyền (demo)</option>
+    <option value="HT">Hiệu trưởng</option>
+    <option value="VT">Văn thư</option>
+    <option value="TCNS">Tổ chức nhân sự</option>
+    <option value="IT">Quản trị hệ thống</option>
+    <option value="GVBM">Giáo viên bộ môn</option>
+  </select>
+  · Trạng thái kết nối:
+  <select id="cst" onchange="doiKN()">
+    <option value="ok">Đang hoạt động</option>
+    <option value="mvp">Chưa có API (MVP)</option>
+    <option value="chua">Chưa khai báo</option>
+    <option value="sai">Sai xác thực</option>
+    <option value="han">Hết hạn</option>
+    <option value="tuchoi">Sở từ chối</option>
+  </select>
+  <span class="sc" id="scinfo"></span>
+</div>
+
+<div class="hd">
+  <h1>🔄 M10.8 — Đồng bộ CSDL ngành</h1>
+  <div id="connbar"></div>
+  <div class="tabs" id="tabs"></div>
+</div>
+<div id="view"></div>
+
+<div class="ov" id="ov" onclick="dong()"></div>
+<div class="mdl" id="mdl"><header id="mh"></header><div class="bd" id="mb"></div><footer id="mf"></footer></div>
+<div class="tt" id="tt"></div>
+</div>
+
+<script>
+/* ═══════════ NHÓM DỮ LIỆU ═══════════ */
+/* thu tu = thu tu phu thuoc bat buoc (§3.1) */
+const NHOM=[
+ {id:'cc', ten:'Cơ cấu tổ chức', mo:'điểm trường · hệ đào tạo · tổ chuyên môn', mn:'M10.1 ② ⑤', keo:1,day:1, n:14,   lan:'12/08/2026 05:12'},
+ {id:'lop',ten:'Danh mục lớp',    mo:'38 lớp · gồm cả lớp không hoạt động',       mn:'M10.1 ③', keo:1,day:1, n:38,   lan:'12/08/2026 05:14'},
+ {id:'ns', ten:'Danh sách nhân sự',mo:'chỉ người có cờ “Thuộc diện khai CSDL ngành”',mn:'M4.1',keo:1,day:1, n:79,  lan:'20/08/2026 09:40'},
+ {id:'hs', ten:'Hồ sơ học sinh',  mo:'toàn trường',                               mn:'M1.1', keo:1,day:1, n:1284, lan:'12/08/2026 05:20'},
+ {id:'kq', ten:'Kết quả học tập', mo:'điểm tổng kết · xếp loại',                   mn:'M1.6 · M2.5', keo:1,day:1, n:1284, lan:'—'},
+ /* 🆕 7/9/2026 — nhóm thứ BẢY. Sáu nhóm cũ KHÔNG CÓ SỨC KHỎE, trong khi
+    CSDL ngành BẮT NHẬP (hướng dẫn BGDĐT 3/2026 · mục 4.5.1 và 4.7).
+    Hệ quả nếu để nguyên: y tế nhập vào M6.6 rồi GÕ LẠI LẦN HAI trên cổng
+    Sở — đúng thứ menu này sinh ra để tránh, và là loại thiếu sót KHÔNG AI
+    BÁO LỖI vì hệ thống vẫn chạy đúng, chỉ có người thì làm việc hai lần. */
+ {id:'skhoe',ten:'Sức khỏe – Thể lực', mo:'chiều cao · cân nặng · BMI · biết bơi · bệnh về mắt · bệnh về cột sống + 6 nội dung thể lực',
+  mn:'M6.6', keo:0,day:1, n:1284, lan:'—', nhaycam:1,
+  lydo:'Trường là nơi NHẬP GỐC — CSDL ngành ở nhóm này chỉ nhận, không tính gì trả lại. '+
+       'Ánh xạ ngược lại CÓ MẤT MÁT: M6.6 giữ kết luận của bác sĩ và mức 🔴/🟡, CSDL ngành chỉ giữ sáu chỉ số. '+
+       'Và kéo hàng loạt dữ liệu sức khỏe trẻ em về là mở một bề mặt rủi ro (Luật BVDLCN 91/2025) mà không đổi lại được gì.'},
+ {id:'vb', ten:'Văn bằng',        mo:'công khai theo TT 10/2026',                  mn:'M3.4', keo:0,day:1, n:216,  lan:'—',
+  lydo:'Trường tự cấp bằng và tự lập số hiệu (TT 10/2026, hiệu lực 15/4/2026). CSDL ngành không cấp mã bằng nữa — kéo về là vô nghĩa.'},
+ /* 🆕 20/9/2026 — CSDL-2A. Hai nhóm mới của HDCS ④, nâng 7 nhóm lên CHÍN.
+    Cả hai CHỈ ĐẨY, theo đúng ba lý do của nhóm Sức khỏe (§3.0b):
+    ① trường là nơi nhập gốc — cổng không tính gì trả lại;
+    ② ánh xạ CÓ MẤT MÁT — cổng giữ bốn cấp công trình trên một dòng đếm,
+       M6.4 giữ từng địa điểm kèm dãy nhà, đơn vị cho mượn VÀ danh mục tài sản trong phòng;
+    ③ kéo về là lấy lại đúng bản mình vừa đẩy.
+    KHÁC nhóm Sức khỏe ở một chỗ: xem trước HIỆN ĐẦY ĐỦ TỪNG DÒNG — số phòng học
+    và tốc độ Internet KHÔNG phải dữ liệu cá nhân (ràng buộc 20). */
+ {id:'dkdb',ten:'Điều kiện đảm bảo & hạ tầng', mo:'15 cờ điều kiện · 9 trường Internet · 14 trường hạ tầng CNTT',
+  mn:'M10.1 ⑦', keo:0,day:1, n:1, lan:'—', donvi:'một trường × một năm học', khoa:'Mã trường CSDL ngành',
+  moi:1, phuthuoc:'Cơ cấu tổ chức',
+  lydo:'Trường là nơi NHẬP GỐC — cổng không tính toán gì trả lại. Ánh xạ ngược CÓ MẤT MÁT. '+
+       'Và kéo về là lấy lại đúng bản mình vừa đẩy lên. Cổng bắt khai LẠI MỖI NĂM, nên đơn vị dòng là một trường × một năm học.'},
+ {id:'csvc',ten:'CSVC công trình', mo:'phòng học · phòng bộ môn · nhà công vụ — ma trận 10 chỉ tiêu × 5 cột',
+  mn:'M6.4', keo:0,day:1, n:3, lan:'—', donvi:'một điểm trường × một năm học', khoa:'Mã trường + mã điểm trường',
+  moi:1, phuthuoc:'Cơ cấu tổ chức + Danh mục lớp',
+  lydo:'Trường là nơi NHẬP GỐC. Ánh xạ CÓ MẤT MÁT: cổng giữ bốn cấp công trình trên một dòng đếm, còn M6.4 giữ TỪNG ĐỊA ĐIỂM '+
+       'kèm dãy nhà, đơn vị cho mượn và cả danh mục tài sản trong phòng. Kéo về theo quy tắc «CSDL ngành thắng» là ghi đè bản đầy đủ bằng bản rút gọn.'}];
+
+/* ket qua doi chieu mo phong khi keo ve */
+const DC={
+ cc:{khop:12,lech:2,chiN:0,chiT:0,maLech:0, ruiro:[['Trường vận hành',3,'Tên tổ chuyên môn · tổ trưởng']]},
+ lop:{khop:31,lech:6,chiN:1,chiT:1,maLech:0, ruiro:[['Trường vận hành',3,'Tên lớp · sĩ số · trạng thái lớp']]},
+ ns:{khop:68,lech:9,chiN:0,chiT:2,maLech:1,  ruiro:[['Văn bằng & chức danh nghề nghiệp',3,'Hạng CDNN · bậc lương — gắn thẳng vào tiền lương'],
+                                                    ['Trường vận hành',3,'Điểm trường công tác · chức danh · tổ CM'],
+                                                    ['Pháp lý',2,'Họ tên · ngày sinh · CCCD'],['Liên hệ',1,'SĐT · email']]},
+ hs:{khop:1206,lech:64,chiN:9,chiT:5,maLech:2,ruiro:[['Trường vận hành',3,'Lớp · điểm trường · trạng thái HS — lớp sai thì hỏng cả điểm danh, sổ đầu bài, bảng điểm'],
+                                                    ['Pháp lý',2,'Họ tên · ngày sinh · dân tộc · số định danh cá nhân'],
+                                                    ['Liên hệ',1,'SĐT phụ huynh — Sở thường trống, kéo về có thể xóa mất số đang dùng']]},
+ kq:{khop:0,lech:0,chiN:1284,chiT:0,maLech:0, ruiro:[['Kết quả học tập',2,'Điểm tổng kết · xếp loại']]},
+ skhoe:{khop:0,lech:0,chiN:0,chiT:1284,maLech:0, ruiro:[]},
+ dkdb:{khop:0,lech:0,chiN:0,chiT:1,maLech:0, ruiro:[]},
+ csvc:{khop:0,lech:0,chiN:0,chiT:3,maLech:0, ruiro:[]}};
+
+/* ═══════════ 🆕 ÁNH XẠ TRƯỜNG ↔ TRƯỜNG CỦA NHÓM SỨC KHỎE ═══════════
+   Tên trường lấy NGUYÊN từ hướng dẫn BGDĐT 3/2026 và QĐ 53/2008/QĐ-BGDĐT
+   — đặt tên tự do thì đến lúc ánh xạ sẽ phải đoán. */
+const ANHXA_SK=[
+ ['Chiều cao','M6.6 tab 3 — đợt khám','Chiều cao','cm',''],
+ ['Cân nặng','M6.6 tab 3 — đợt khám','Cân nặng','kg',''],
+ ['BMI','dẫn xuất','BMI','','đẩy giá trị đã tính, không đẩy công thức'],
+ ['Phân loại thể lực (máy gợi ý)','dẫn xuất','Đánh giá BMI','','tên ngành khác tên nội bộ — ánh xạ tên, không đổi nghĩa'],
+ ['Biết bơi','M6.6 tab 2 — Lớp 1, theo năm học','Biết bơi','','⛔ «Chưa khảo sát» KHÔNG thành «Không»'],
+ ['Bệnh về mắt','M6.6 tab 3 — bác sĩ điền','Bệnh về mắt','','⛔ không suy từ ngưỡng thị lực'],
+ ['Bệnh về cột sống','M6.6 tab 3 — đợt khám','Bệnh về cột sống','','']];
+const ANHXA_TL=[
+ ['Lực bóp tay thuận','kg'],['Nằm ngửa gập bụng','lần/30 giây'],['Bật xa tại chỗ','cm'],
+ ['Chạy 30m XPC','giây'],['Chạy con thoi 4×10m','giây'],['Chạy tùy sức 5 phút','m']];
+
+/* ═══════════ 🆕 20/9/2026 — BỐN BẢNG ÁNH XẠ TRƯỜNG ↔ TRƯỜNG (CSDL-2A) ═══════════
+   Khuôn BA CỘT giống §3.3: trường ở hệ thống · nguồn trong menu chủ · trường CSDL ngành · ghi chú.
+   Tên trường lấy NGUYÊN VĂN từ mục B của bảy phiếu (CSDL-1A…1F + HSVC-1A/1A2),
+   KHÔNG lấy từ bản chốt — các phiên đợt 1 đã đổi nhiều chỗ.
+   Cột 5 = hạng: '' thật | 'dx' dẫn xuất | 'ax' ánh xạ | 'ko' không có ô nhận. */
+const ANHXA_HS=[
+ ['a. Nhận dạng và cư trú (cổng màn 4.1.1)'],
+ ['Họ và tên','M1.1 §6.3.6','Họ và tên','',''],
+ ['Ngày sinh · Giới tính','M1.1 §6.3.6','Ngày sinh · Giới tính','',''],
+ ['Dân tộc','M1.1 §6.3.6','Dân tộc','',''],
+ ['🆕 Dân tộc trên giấy khai sinh','M1.1 §6.3.6','Dân tộc trên giấy khai sinh','HAI trường, không phải một',''],
+ ['Quốc tịch','M1.1 §6.3.6','Quốc tịch','🛑 đẩy Ô THỨ NHẤT (P-1 chốt 19/9 · rb 14e)',''],
+ ['🆕 Quốc tịch thứ hai','M1.1 §6.3.6','⛔ không có ô nhận','Cổng chỉ nhận MỘT giá trị. ⛔ Không ghép hai giá trị vào một ô. Không sinh dòng tab ④ — Dschool giàu hơn, không phải việc chưa xong','ko'],
+ ['Tôn giáo','M1.1 §6.3.6','Tôn giáo','',''],
+ ['Nơi sinh (cụm 6 phần)','M1.1 §6.3.6','Nơi sinh','luật địa chỉ §3.4d',''],
+ ['🆕 Nơi khai sinh (cụm 6 phần)','M1.1 §6.3.6','Nơi khai sinh','≠ Nơi sinh',''],
+ ['🆕 Quê quán (cụm 6 phần)','M1.1 §6.3.6','Quê quán','',''],
+ ['Nơi thường trú (cụm 6 phần)','M1.1 §6.3.6','Tỉnh/Thành phố · Phường/Xã · Thôn/Xóm/Số nhà','🛑 ô Quận/Huyện của cổng ĐỂ TRỐNG kèm ghi chú',''],
+ ['Tạm trú · Chỗ ở hiện tại','M1.1 §6.3.6','Tạm trú · Chỗ ở hiện nay','',''],
+ ['🆕 Thông tin cư trú cũ (bảng)','M1.1 §6.3.6','Thông tin cư trú cũ (tab III)','đẩy cả bảng, mỗi dòng một mốc',''],
+ ['Số CCCD','M1.1 §6.3.6','Số CMND/CCCD','xem trước hiện DẠNG CHE',''],
+ ['🆕 CCCD Ngày cấp · Nơi cấp','M1.1 §6.3.6','Ngày cấp · Nơi cấp','',''],
+ ['🆕 Hộ chiếu Số · Ngày cấp · Nơi cấp','M1.1 §6.3.6','Số hộ chiếu · Ngày cấp · Nơi cấp','',''],
+ ['Số định danh cá nhân','M1.1 §6.3.6','Số định danh cá nhân','',''],
+ ['Mã định danh Bộ GD&ĐT','M1.1 §3.1c','Mã định danh Bộ GD&ĐT','KHÓA ĐỐI KHỚP — ⛔ không tham gia chiều nào (§1.4)',''],
+ ['🆕 Tên gọi khác','M1.1 §6.3.6','Tên gọi khác','',''],
+ ['🆕 Thứ tự trong lớp','M1.1 §6.3.6','Thứ tự (màn 4.1.3)','',''],
+ ['Trạng thái định danh với CSDLQG Dân cư','dẫn xuất 🔗 M10.8','Trạng thái định danh với CSDLQG Dân cư','★ menu nguồn là CHÍNH MENU NÀY — ghi ngược về hồ sơ sau mỗi phiên xác thực (1C E-4)','dx'],
+ ['Điện thoại liên hệ','M1.1 Phần B','Điện thoại liên hệ','',''],
+ /* 🆕 MYC-2C (21/9/2026) — ba dòng CCCD người trưởng thành, nguồn M1.1 §6.3.9. Luật che đi theo: đẩy số ĐẦY ĐỦ, mọi màn hình của M10.8 hiện DẠNG CHE */
+ ['🆕 CCCD của cha','M1.1 §6.3.9 (thật)','CCCD của cha','12 chữ số · CHỈ KHI cha có trong hồ sơ — không có cha ⇒ ⛔ không đòi, ⛔ không sinh dòng tab ④ · 🛑 đẩy số đầy đủ, màn hình hiện dạng che 034•••••821',''],
+ ['🆕 CCCD của mẹ','M1.1 §6.3.9 (thật)','CCCD của mẹ','như trên — CHỈ KHI mẹ có trong hồ sơ',''],
+ ['🆕 CCCD · Năm sinh · Giới tính của người giám hộ','M1.1 §6.3.9 (thật, ba ô)','CCCD · Năm sinh · Giới tính của người giám hộ','CHỈ KHI hồ sơ có người giám hộ · cổng bắt khai cả ba · 🛑 ô CCCD che như trên; năm sinh, giới tính không che',''],
+ ['Ảnh 4×6','M1.1 §6.3.6b (ô ảnh — tệp mục «Ảnh 4×6» ở Kho giấy tờ F6)','Ảnh','🔁 MYC-2C: §6.3.6 không có dòng ảnh — trỏ đúng mục mô tả · một kích thước 4×6 (nh1.1 Phần A); ô của cổng không nêu kích thước',''],
+ ['b. Khối «Khai báo cho CSDL ngành» — 20 mục (M1.1 §6.3.7)'],
+ ['🆕 Khu vực','M1.1 §6.3.7','Khu vực (KV1·KV2·KV2-NT·KV3)','DANH MỤC, không phải cờ — ⛔ không mặc định KV3',''],
+ ['🆕 Học tiếng dân tộc','M1.1 §6.3.7 (cờ 3 giá trị)','Học tiếng dân tộc','⚑ «Chưa khảo sát» ⇒ tab ④',''],
+ ['🆕 Học chương trình giáo dục của Bộ','M1.1 §6.3.7','Học CTGD của Bộ','',''],
+ ['🆕 Có cha là người dân tộc thiểu số','M1.1 §6.3.7','Có cha là người dân tộc','',''],
+ ['🆕 Có mẹ là người dân tộc thiểu số','M1.1 §6.3.7','Có mẹ là người dân tộc','',''],
+ ['🆕 Hướng nghiệp — dạy nghề','M1.1 §6.3.7','Hướng nghiệp - dạy nghề','',''],
+ ['🆕 Tư vấn giáo dục hướng nghiệp','M1.1 §6.3.7','Tư vấn giáo dục hướng nghiệp','',''],
+ ['🆕 Phụ huynh có máy tính và Internet','M1.1 §6.3.7 (cờ 3 giá trị · tầng 1)','Phụ huynh có máy tính + Internet','⚑ «Chưa khảo sát» ⇒ tab ④. ⛔ Không suy từ trạng thái tài khoản App (1C E-7)',''],
+ ['🆕 Phụ huynh có điện thoại thông minh','M1.1 §6.3.7 (cờ 3 giá trị · tầng 1)','Phụ huynh có Smartphone','như trên',''],
+ ['Số buổi học / tuần','dẫn xuất 🔗 M10.1 ③','Số buổi học/tuần','lớp chưa khai ⇒ tab ④','dx'],
+ ['Học song ngữ','dẫn xuất 🔗 M10.1 ③ cờ «Lớp song ngữ»','Học song ngữ','','dx'],
+ ['Lưu ban năm trước','dẫn xuất 🔗 M3.3','Lưu ban năm trước','⏳ M3.3 chưa mở đường đọc (1C E-1) ⇒ tab ④, ⛔ không lấp bằng «Không»','dx'],
+ ['Học sinh bán trú','dẫn xuất 🔗 M6.1','Học sinh bán trú','⏳ chưa mở đường đọc ⇒ tab ④','dx'],
+ ['Bán trú tự nguyện','dẫn xuất 🔗 M6.1','HS bán trú tự nguyện','⛔ không trộn với diện chính sách bán trú (1C E-2)','dx'],
+ ['Đội viên','dẫn xuất 🔗 M6.15','Đội viên','CS-5 — ⛔ không đẻ trường thật','dx'],
+ ['Đoàn viên','dẫn xuất 🔗 M6.15 · M6.3','Đoàn viên','như trên','dx'],
+ ['Đảng viên','dẫn xuất 🔗 M6.3','Đảng viên','như trên','dx'],
+ ['c. Diện chính sách và chế độ hỗ trợ (bảng dịch M1.2 §3.1b)'],
+ ['Diện «Con liệt sĩ» · «Con thương binh, bệnh binh»','M1.2 §3.1','Con liệt sỹ · Con thương binh, bệnh binh','',''],
+ ['Diện «Hộ nghèo» · «Hộ cận nghèo»','M1.2 §3.1','Hộ nghèo · Hộ cận nghèo','',''],
+ ['Diện «Học sinh vùng khó khăn»','M1.2 §3.1b','Vùng đặc biệt khó khăn','đổi TÊN, ⛔ không đổi nghĩa','ax'],
+ ['Diện «Học sinh khuyết tật»','M1.2 §3.1b','Tàn tật, khuyết tật + Loại khuyết tật','một diện điền HAI ô của cổng','ax'],
+ ['Diện «Hoàn cảnh đặc biệt khó khăn khác»','M1.2 §3.1b','Diện chính sách khác','','ax'],
+ ['Diện «Học sinh mồ côi» — thuộc tính «cả hai»','M1.2 §3.1b','Mồ côi cả cha mẹ','✅ CHỈ ánh xạ khi thuộc tính là «cả hai»','ax'],
+ ['Diện «Học sinh mồ côi» — «cha» hoặc «mẹ»','M1.2 §3.1b','⛔ không có ô nhận','🛑 dòng nằm lại tab ④ — ⛔ KHÔNG GỘP. Một em còn mẹ mà khai mồ côi cả cha mẹ là KHAI SAI, và cái sai đó quay lại thành căn cứ chính sách','ko'],
+ ['Diện «Học sinh dân tộc thiểu số»','M1.2 §3.1b','⛔ không ánh xạ','cổng lấy từ trường «Dân tộc» của hồ sơ — 🛑 ⛔ không đẩy hai lần (1D E.3 ③)','ko'],
+ ['🆕 Bảy diện mới của phiên 1D','M1.2 §3.1','Con người có công · Con anh hùng · Bị bỏ rơi mất nguồn nuôi dưỡng · Con hộ nghèo CT 135 · CS HS Dân tộc bán trú (NĐ 66) · CS HS Dân tộc nội trú (NĐ 66) · HS hưởng CS ăn trưa (NĐ 339)','✅ CẢ BẢY ĐỀU CÓ ô nhận — nằm trong danh mục 16 giá trị của cổng. Trước đây bị đánh «thiếu» vì DSCHOOL chưa có, ⛔ không phải vì cổng không có',''],
+ ['🆕 Bốn chế độ của khối «Chế độ đang hưởng»','M1.2 §3.4','Hỗ trợ chi phí học tập · Hỗ trợ nhà ở · Cấp tiền hàng tháng · Cấp gạo (tệp import 4.1.2)','🛑 cổng chỉ có CỜ có/không ⇒ đẩy cờ, ⛔ không đẩy «Mức hưởng» và «Đơn vị»','ax'],
+ ['Miễn học phí · Giảm học phí','🔗 M7.4','Miễn học phí · Giảm học phí','','ax'],
+ ['d. Trạng thái'],
+ ['Trạng thái + Ngày trạng thái','M1.1 · mốc học kỳ 🔗 M10.1 ①','12 giá trị gắn học kỳ của cổng','qua hàm trangThaiNganh() — §3.8','dx']];
+
+const ANHXA_NS=[
+ ['b. Nhân thân (cổng màn 3.1.1)'],
+ ['Họ và tên · Họ tên khai sinh','M4.1 khối A','Họ và tên · Họ tên khai sinh','',''],
+ ['Ngày sinh · Giới tính','M4.1 khối A','Ngày sinh · Giới tính','',''],
+ ['Số CCCD · Ngày cấp · Nơi cấp','M4.1 khối A','Số CCCD · Ngày cấp · Nơi cấp','',''],
+ ['Dân tộc · Tôn giáo · Quốc tịch','M4.1 khối A','Dân tộc · Tôn giáo · Quốc tịch','',''],
+ ['Quê quán · Nơi sinh · Thường trú · Nơi ở hiện tại (cụm 6 phần)','M4.1 khối A (sau 1E)','Quê quán · Nơi sinh · Thường trú · Nơi ở hiện tại','luật địa chỉ §3.4d áp nguyên vẹn',''],
+ ['🆕 Nơi khai sinh (cụm 6 phần)','M4.1 khối A','Nơi khai sinh','',''],
+ ['Email · Điện thoại','M4.1 khối A','Email · Điện thoại','',''],
+ ['Số sổ BHXH','M4.1 khối A','Số sổ BHXH','',''],
+ ['Ngày vào Đảng · Ngày chính thức','M4.1 khối A','Ngày vào Đảng · Ngày chính thức','⚠ ⛔ không nhầm với «Chức vụ Đảng» — chức vụ nguồn BNV, ⛔ không đẩy',''],
+ ['Là Đảng viên','dẫn xuất từ Ngày vào Đảng','Là Đảng viên','⛔ không có ô nhập ở M4.1','dx'],
+ ['🆕 Là Đoàn viên','M4.1 khối A (cờ 3 giá trị)','Là Đoàn viên','⚑ «Chưa khảo sát» ⇒ tab ④',''],
+ ['🆕 Là tuyển mới','M4.1 khối A (có năm áp dụng)','Là tuyển mới','',''],
+ ['Ảnh 4×6','M4.1 khối A','Ảnh','',''],
+ ['Mã định danh CSDL ngành','M4.1 §2','Mã định danh Bộ GD&ĐT','KHÓA ĐỐI KHỚP (§1.4)',''],
+ ['anh_chu_ky (ảnh chữ ký cá nhân)','M4.1 §6.2.1b','⛔ không có ô nhận','của M0.4 và mẫu in nội bộ; ⛔ không sinh dòng tab ④','ko'],
+ ['d. Vị trí việc làm · tổ chức cán bộ (cổng tab I)'],
+ ['Vị trí việc làm','M4.1 nhóm 3','Vị trí việc làm','⚠ M4.1 hẹp hơn mẫu Bộ Nội vụ (HSVC-1A F.2) — nhưng ĐỦ cho ô này',''],
+ ['Cấp học dạy','M4.1 nhóm 2','Biên chế cấp dạy chính','',''],
+ ['Chức danh chính','🔗 M4.3','Nhóm chức vụ','','dx'],
+ ['Loại HĐ × Diện làm việc','M4.1 §6.3.1 × §3b.3 — bảng dịch §6b.2a','Hình thức hợp đồng (10 giá trị)','🛑 HAI trường của Dschool điền MỘT ô của cổng — ⛔ không gộp hai trường lại cho khớp (CS-S4). «Diện làm việc» để trống ⇒ tab ④','ax'],
+ ['🆕 Ngày tuyển dụng · Cơ quan tuyển dụng · Nghề nghiệp khi được tuyển dụng','M4.1 khối Tuyển dụng','Ngày tuyển dụng · Cơ quan tuyển dụng · Nghề nghiệp khi được tuyển dụng','⚠ ⛔ không nhầm với «Ngày vào cơ quan hiện tại» — ô đó nguồn BNV',''],
+ ['Hạng chức danh nghề nghiệp','M4.1 Phần D','Ngạch / Hạng','',''],
+ ['🆕 Mã số ngạch','M4.1 khối Tuyển dụng','Mã số ngạch','⚠ ⛔ không nhầm với «Mã số» của TỪNG MỐC LƯƠNG',''],
+ ['🆕 Số tiết thực dạy / tuần','dẫn xuất 🔗 M4.5 + M4.6 (có ✎ Sửa tay)','Số tiết thực dạy / tuần','chưa có phân công ⇒ tab ④','dx'],
+ ['🆕 Số tiết kiêm nhiệm / tuần','dẫn xuất 🔗 M4.3 × định mức M4.4','Số tiết thực kiêm nhiệm / tuần','như trên','dx'],
+ ['🆕 Dạy học sinh khuyết tật học hòa nhập','M4.1 khối Giảng dạy (cờ)','Dạy HS khuyết tật học hòa nhập','khối Giảng dạy chỉ có ở NHÓM 2 — nhóm khác ⇒ ô để trống, ⛔ không đẩy «Không»',''],
+ ['🆕 Đã tập huấn dạy kỹ năng sống','M4.1 khối Giảng dạy (cờ)','Đã tập huấn dạy kỹ năng sống','như trên',''],
+ ['🆕 Nhiệm vụ kiêm nhiệm (M4.1 §6.2.1q)','thật 🔗 M4.1 khối A — tích chọn 18 mục + Khác','18/37 ô tích của cổng','🆕 W1 20/9: MỘT trường CHỈ LƯU, ⛔ không sinh quyền ⇒ 11 ô «thiếu hẳn» + 7 ô Đảng · Công đoàn nay ĐẨY ĐƯỢC. Ô «Khác» ⛔ không đẩy (cổng chỉ có ô tích cố định).','th'],
+ ['Bản ghi chức danh kiêm nhiệm','ánh xạ 🔗 M4.3 — bảng dịch §6b.2b','19/37 ô tích còn lại','🛑 mô hình Dschool GIÀU HƠN (đơn vị · phạm vi · từ–đến · quyết định căn cứ) — ⛔ không rút gọn thành 37 ô tích. CHÍN mục cổng có mà M4.3 không có ⇒ ô của cổng ĐỂ TRỐNG, ⛔ không tích bừa (1E E.1)','ax'],
+ ['Thuộc diện khai CSDL ngành','M4.1 §3','⛔ không đẩy','BỘ LỌC của phiên, không phải dữ liệu gửi đi (§1.4 · §3.2 · §3.5c)','ko'],
+ ['e. Phụ cấp và lương (cổng tab II)'],
+ ['Phụ cấp thâm niên (%) · ưu đãi nghề (%) · chức vụ lãnh đạo','M4.1 Phần D','Mức phụ cấp thâm niên · ưu đãi nghề · chức vụ lãnh đạo','',''],
+ ['🆕 Mức phụ cấp thu hút nghề (%)','M4.1 tab 2','Mức phụ cấp thu hút nghề (%)','nguồn «cả hai» (mẫu 38 mục 30.1)',''],
+ ['Bảng Diễn biến quá trình lương — Bậc · Hệ số · Ngày hưởng · 🆕 % vượt khung · 🆕 Mã số','M4.1 §6.3.1b (bảng bốn cột)','Diễn biến quá trình lương','🛑 đẩy CẢ BẢNG, mỗi mốc một dòng. «Mã số» THUỘC TỪNG MỐC, ⛔ không phải một ô trên hồ sơ. Nguồn «cả hai» ⇒ đẩy được',''],
+ ['Tháng/năm của mốc lương','dẫn xuất từ Ngày hưởng','⛔ không đẩy','nguồn BNV — chỉ để in mẫu HS02 mục 31','ko'],
+ ['Phụ cấp kiêm nhiệm · Ngày bổ nhiệm ngạch','M4.1 tab 2','⛔ không đẩy','nguồn BNV (mẫu 38 mục 30.1 · 30.2)','ko'],
+ ['f. Đào tạo, bồi dưỡng (cổng tab III)'],
+ ['Chuyên ngành chính · Trình độ chuyên môn · Cơ sở đào tạo','M4.1 nhóm 2','Chuyên ngành chính · Trình độ · Cơ sở đào tạo','',''],
+ ['🆕 Trình độ quản lý giáo dục','M4.1 khối bồi dưỡng','Trình độ quản lý giáo dục','nguồn «cả hai» (mẫu 38 mục 32.3) — ⛔ ai thấy nó «chỉ của riêng cổng ngành» là đọc nhầm một bản tóm tắt',''],
+ ['🆕 Ba cờ bồi dưỡng: nghiệp vụ QLGD · CBQL và GV cốt cán · thay sách','M4.1 khối bồi dưỡng','Tham gia BD nghiệp vụ QLGD · BD CBQL/GV cốt cán · BD thay sách','',''],
+ ['Ngoại ngữ chính · Trình độ ngoại ngữ','M4.1 khối A','Ngoại ngữ chính · Trình độ','',''],
+ ['🆕 Nhóm/Loại chứng chỉ · 🆕 Điểm · 🆕 Khung năng lực ngoại ngữ (bậc 1–6)','M4.1 khối ngoại ngữ','Nhóm / Loại chứng chỉ NN · Điểm NN · Khung NL ngoại ngữ','«Điểm» nguồn «cả hai» — bảng 32.6 của mẫu có hẳn cột «Điểm số»',''],
+ ['🆕 Chứng chỉ dạy tiếng dân tộc thiểu số','M4.1 khối ngoại ngữ','Chứng chỉ dạy tiếng DTTS','nguồn «cả hai»',''],
+ ['Trình độ tin học','M4.1 nhóm 2','Trình độ tin học','',''],
+ ['Bảng Quá trình đào tạo, bồi dưỡng','dẫn xuất 🔗 M5.6','Quá trình ĐT-BD (Mẫu 2c)','nguồn «cả hai». ⚠ M5.6 thiếu HAI cột và có MỘT cột lệch nghĩa (HSVC-1A E.1) ⇒ ô thiếu để trống kèm ghi chú, ⛔ không lấy cột khác điền thay','dx'],
+ ['Kết quả bồi dưỡng thường xuyên','dẫn xuất 🔗 M5.7','KQ Bồi dưỡng thường xuyên','','dx'],
+ ['g. Đánh giá, khen thưởng, gia đình (cổng tab IV)'],
+ ['Kết quả xếp loại chất lượng','dẫn xuất 🔗 M4.12 (NĐ 233/2026)','Đánh giá viên chức / công chức','','dx'],
+ ['Bảng khen thưởng · kỷ luật','ánh xạ 🔗 M4.10','Khen thưởng · Kỷ luật','⛔ không đẩy cột «Cấp quyết định» — nguồn BNV','ax'],
+ ['🆕 Danh hiệu phong tặng','ánh xạ 🔗 M4.10','Danh hiệu phong tặng (NGND · NGƯT)','','ax'],
+ ['🆕 Giáo viên dạy giỏi · 🆕 Giáo viên chủ nhiệm giỏi (cấp + năm)','ánh xạ 🔗 M4.10','Giáo viên dạy giỏi · Giáo viên chủ nhiệm giỏi','⚠ M4.10 thiếu cấu trúc «cấp» + «năm» (1E E.2) ⇒ thiếu thì ĐỂ TRỐNG, ⛔ không đẩy chuỗi tự do','ax'],
+ ['Bảng Quan hệ gia đình','M4.1 Phần B','Quan hệ gia đình','🛑 ⛔ KHÔNG đẩy cột 🔒 «Đặc điểm lịch sử của thành viên» — nhóm nhạy cảm ②',''],
+ ['🆕 Bảng Quan hệ gia đình bên vợ / chồng','M4.1 Phần B','Quan hệ gia đình bên vợ / chồng','cùng luật che như trên',''],
+ ['Bảng Quá trình công tác','M4.1 Phần E','Quá trình công tác','',''],
+ ['Trạng thái công tác','dẫn xuất 🔗 M4.2','Trạng thái cán bộ (8 giá trị)','⚠ «Chờ nghỉ hưu» — M4.2 chưa chắc có; chưa có ⇒ tab ④, ⛔ không đẩy «Đang làm việc» thay','dx'],
+ ['Đánh giá theo chuẩn nghề nghiệp (TC1…TC15 / TC18)','⛔ KHÔNG CÓ NGUỒN','(bốn màn sống của cổng: 3.2.1 · 3.2.2 · 5.3.5 · 5.3.6)','🛑 M4.1 §I.1 đã BỎ khối này theo TT 30/2026 Đ.20 k4. ⛔ Không tự đẻ trường để lấp — CS-1 còn treo, chờ hỏi Sở','ko']];
+
+/* 🔒 Hàng rào của bảng nhân sự — HDVC ④. Đọc TRƯỚC một dòng ánh xạ nào. */
+const RAO_NS={
+ nguon:[['GDĐT',17,1],['cả hai',50,1],['BNV',50,0],['nội bộ',16,0]],
+ nhom:[['①','Đặc điểm lịch sử bản thân','🔒 khối N'],
+       ['②','Bị bắt, bị tù, làm việc trong chế độ cũ','🔒 khối N — của chính chủ VÀ của thành viên gia đình trên hai bảng quan hệ'],
+       ['③','Quan hệ với tổ chức chính trị, kinh tế, xã hội ở nước ngoài · thân nhân ở nước ngoài','🔒 khối N'],
+       ['④','Hoàn cảnh kinh tế, nhà ở đất ở, tài sản có giá trị lớn, bản kê khai tài sản','🔒 khối N — ranh giới là mục 37.3, ⛔ KHÔNG phải cả mục 37'],
+       ['⑤','Thành phần gia đình xuất thân','🔒 khối N']]};
+
+/* 🆕 Quy tắc «thuộc diện khai CSDL ngành» — CHỐT tại phiên 2A (việc E-2 của 2B).
+   Tiêu chí: «trường này có phải nơi QUẢN LÝ HỒ SƠ của người đó không»,
+   KHÔNG phải «người đó có làm việc ở trường không». */
+const DIEN_KHAI=[
+ ['Viên chức',1,'Trường quản lý hồ sơ gốc'],
+ ['Hợp đồng lao động theo NĐ 111/2022',1,'Trường ký hợp đồng và quản lý hồ sơ; cổng có ô đích danh «HĐ theo NĐ 111»'],
+ ['🆕 Hợp đồng theo NĐ 68/2000',1,'Nhân viên làm việc THƯỜNG XUYÊN của trường (bảo vệ, lái xe, phục vụ); cổng có ô đích danh «HĐ theo NĐ 68»'],
+ ['🆕 Hợp đồng theo NĐ 06/2025',1,'như trên; cổng có ô đích danh «HĐ theo NĐ 06»'],
+ ['Biệt phái đi',1,'Vẫn thuộc BIÊN CHẾ của trường này'],
+ ['Biệt phái đến',0,'Biên chế ở ĐƠN VỊ CỬ ĐI — đơn vị đó khai. Khai hai nơi là MỘT NGƯỜI HAI BẢN GHI, trái nguyên tắc mã định danh bất biến dùng liên tục của TT 42/2021'],
+ ['Thỉnh giảng',0,'Quan hệ THEO TIẾT; hồ sơ gốc ở nơi khác (nh3.1.1 §2.2 nêu đích danh)'],
+ ['🆕 Thuê khoán',0,'KHOÁN VIỆC, không phải quan hệ lao động thường xuyên — cũng là giá trị duy nhất ⛔ không xếp loại'],
+ ['Khác (cấu hình thêm)',0,'Chưa biết chế độ pháp lý thì ⛔ KHÔNG ĐOÁN. Người cấu hình giá trị mới tự bật cờ và chịu trách nhiệm']];
+
+const ANHXA_DK=[
+ ['a. Điều kiện đảm bảo — 15 dòng, đều là cờ ba giá trị (cổng tab II)'],
+ ['Có học sinh khuyết tật','dẫn xuất 🔗 M1.2','Có HS khuyết tật','','dx'],
+ ['Có học sinh bán trú','dẫn xuất 🔗 M6.1','Có HS bán trú','','dx'],
+ ['Có học sinh nội trú','dẫn xuất 🔗 M6.10','Có HS nội trú','★ ô này nằm ở TAB I của màn 1.1 — chỗ duy nhất của khối a không ở tab II; ⛔ đừng đi tìm ở tab II rồi kết luận «cổng không có ô»','dx'],
+ ['Có học chương trình song ngữ','dẫn xuất 🔗 M10.1 ③ cờ «Lớp song ngữ»','Có học CT song ngữ','','dx'],
+ ['Đạt mức chất lượng tối thiểu','M10.1 ⑦a','Đạt mức chất lượng tối thiểu','',''],
+ ['Có dạy nghề phổ thông','M10.1 ⑦a','Có dạy nghề phổ thông','',''],
+ ['Có sử dụng máy tính cho dạy học','M10.1 ⑦a','Có sử dụng máy tính cho dạy học','',''],
+ ['Có khai thác Internet cho dạy học','M10.1 ⑦a','Có khai thác Internet cho dạy học','',''],
+ ['Có điện lưới','M10.1 ⑦a','Có điện lưới','',''],
+ ['Có nguồn nước sạch','M10.1 ⑦a','Có nguồn nước sạch','',''],
+ ['Có nước uống','M10.1 ⑦a','Có nước uống','',''],
+ ['Có công trình vệ sinh','M10.1 ⑦a','Có công trình vệ sinh','',''],
+ ['Có chương trình giáo dục vệ sinh đôi tay','M10.1 ⑦a','Có CT giáo dục vệ sinh đôi tay','',''],
+ ['Có tổ chức học trực tuyến','M10.1 ⑦a','Có tổ chức học trực tuyến','',''],
+ ['Có bộ phận tư vấn học đường','M10.1 ⑦a','Có bộ phận tư vấn học đường','',''],
+ ['b. Kết nối Internet — 9 trường, tất cả «thật» (cổng tab III)'],
+ ['Có Internet (cờ 3 giá trị — công tắc của cả khối)','M10.1 ⑦b','Có Internet','= «Không» ⇒ tám ô còn lại ĐỂ TRỐNG, ⛔ không đẩy số 0 — số 0 là «đo được 0 Mbps», không phải «không có đường truyền»',''],
+ ['Loại kết nối','M10.1 ⑦b','Loại kết nối','',''],
+ ['Tốc độ (Mbps)','M10.1 ⑦b','Tốc độ (Mbps)','',''],
+ ['Tải lên (Mbps) · Tải xuống (Mbps)','M10.1 ⑦b','Tải lên (Mbps) · Tải xuống (Mbps)','',''],
+ ['Ping (ms)','M10.1 ⑦b','Ping (ms)','',''],
+ ['Số modem · Số router','M10.1 ⑦b','SL Modem · SL Router','',''],
+ ['Nhà cung cấp (+ ô phụ «Tên nhà cung cấp» khi chọn Khác)','M10.1 ⑦b','Nhà cung cấp','cổng chỉ nhận danh mục SÁU giá trị ⇒ đẩy «Khác» + ghi chú tên; ⛔ không ép về VNPT hay Viettel cho có giá trị',''],
+ ['c. Hạ tầng CNTT — 14 trường (cổng tab IV)'],
+ ['Số phòng máy tính','M10.1 ⑦c (thật — chốt F-1)','SL phòng máy tính','',''],
+ ['Số máy tính quản lý · giảng dạy · học tập','M10.1 ⑦c (thật — chốt F-2)','SL máy tính quản lý / giảng dạy / học tập','📌 từng là «dẫn xuất từ M6.4» và ĐÃ BỎ — M6.4 không có loại địa điểm «Phòng máy», sổ tài sản không chia nhóm mục đích ⇒ mọi phép suy là ước lượng đội lốt phép đếm. ⛔ Đừng khôi phục ở lớp đẩy',''],
+ ['Số giáo viên tin học','dẫn xuất 🔗 M4.5','SL GV IT','★ ô dẫn xuất DUY NHẤT của khối c','dx'],
+ ['Số nhân viên IT chuyên biệt','M10.1 ⑦c','SL nhân viên IT chuyên biệt','',''],
+ ['Số thiết bị hỗ trợ HSKT · Tên thiết bị hỗ trợ HSKT','M10.1 ⑦c','SL thiết bị hỗ trợ HS khuyết tật · Tên thiết bị','',''],
+ ['Tên phần mềm hỗ trợ HSKT','M10.1 ⑦c','Tên phần mềm hỗ trợ HSKT','',''],
+ ['Số giáo viên khuyết tật','M10.1 ⑦c (⚠ nhạy cảm R69 — chỉ HT và IT_Admin thấy ở menu chủ)','SL giáo viên khuyết tật','🛑 ở đây là MỘT CON SỐ TỔNG, ⛔ không kèm tên ai ⇒ ⛔ không áp luật «xem trước dừng ở mức đếm». Nhưng vai chạy phiên KHÔNG vì thế mà mở được ô ấy ở M10.1',''],
+ ['Tên nền tảng LMS','M10.1 ⑦c','Tên nền tảng LMS','',''],
+ ['Nền tảng dạy học trực tuyến','M10.1 ⑦c','Nền tảng dạy học online','',''],
+ ['Tên nền tảng quản lý thiết bị','M10.1 ⑦c','Tên nền tảng quản lý thiết bị','',''],
+ ['Tên phần mềm an ninh mạng','M10.1 ⑦c','Tên phần mềm an ninh mạng','','']];
+
+const ANHXA_CT=[
+ ['a. Dòng chỉ tiêu — ma trận 7 dòng × 5 cột của cổng (màn 6.1)'],
+ ['1 · Số lớp','dẫn xuất 🔗 M10.1 ③','1. Số lớp','chỉ có cột «Tổng số»; bốn cột cấp hiện «—» (một lớp không phải một công trình)','dx'],
+ ['2 · Số phòng học (thường) + 🆕 2b · Số phòng học bộ môn','dẫn xuất — đếm địa điểm loại «Phòng học thường» và «Phòng bộ môn»','2. Số phòng học','🛑 CỘNG HAI DÒNG ở LỚP ĐẨY — ⛔ không gộp ở M6.4 (tách ra thì cộng lại được, gộp rồi thì không tách ra được)','dx'],
+ ['2.1 + 2b.1 · có nhu cầu đầu tư','M6.4 (thật — người nhập)','2.1 Số phòng học có nhu cầu đầu tư','cộng như trên',''],
+ ['2.2 + 2b.2 · Dự kiến kinh phí','M6.4 (thật)','2.2 Dự kiến kinh phí (triệu đồng)','cộng như trên; ĐƠN VỊ TRIỆU ĐỒNG, ⛔ không đổi sang đồng',''],
+ ['3 · Số phòng công vụ cho giáo viên','dẫn xuất — đếm địa điểm loai = congvu','3. Số phòng công vụ cho GV','','dx'],
+ ['3.1 · có nhu cầu đầu tư','M6.4 (thật)','3.1 Số phòng công vụ có nhu cầu đầu tư','',''],
+ ['3.2 · Dự kiến kinh phí','M6.4 (thật)','3.2 Dự kiến kinh phí','',''],
+ ['b. Cột phân loại — trường capCT trên TỪNG ĐỊA ĐIỂM'],
+ ['capCT = kiencuo','M6.4 tab 1 (thật)','cột Kiên cố','',''],
+ ['capCT = bankc','M6.4 tab 1 (thật)','cột Bán kiên cố','',''],
+ ['capCT = cap4','M6.4 tab 1 (thật)','cột Cấp 4 xuống cấp / tạm','',''],
+ ['capCT = nhomuon','M6.4 tab 1 (thật)','cột Nhờ mượn','🛑 phải có donViChoMuon; thiếu ⇒ dòng nằm lại tab ④, ⛔ không đẩy chuỗi rỗng',''],
+ ['capCT = null (⚠ Chưa khai)','M6.4 tab 1','⛔ KHÔNG CÓ CỘT','🛑 ⛔ KHÔNG dồn vào «Kiên cố». «Chưa ai đi xem dãy nhà đó xây kiểu gì» thành «dãy nhà đó kiên cố» thì trường TỰ BÁO CÁO MÌNH KHÔNG CẦN ĐẦU TƯ — và đó là con số Sở dùng để phân bổ vốn. Sai có lợi cho ngân sách và hại cho trường ⇒ ⛔ không ai đi kiểm lại','ko'],
+ ['donViChoMuon (Đơn vị cho mượn)','M6.4 tab 1 (thật)','⛔ không có ô nhận','là ĐIỀU KIỆN để con số được xếp vào cột «Nhờ mượn», ⛔ không phải một giá trị gửi đi','ko']];
+
+/* ═══════════ 🆕 §3.8 — HÀM TRẠNG THÁI HỌC SINH ═══════════
+   Mốc học kỳ đọc từ M10.1 mục ① — BỐN mốc bắt buộc của bước ①.
+   ⛔ KHÔNG suy học kỳ từ tháng cố định: mỗi trường một mốc, và khung thời gian
+   năm học do UBND tỉnh quyết định (M10.1 §15). */
+const MOC_HK={nam:'2026-2027', bd1:'2026-09-05', kt1:'2027-01-15', bd2:'2027-01-25', kt2:'2027-05-28'};
+const TEN_KY={k1:'kỳ 1', k2:'kỳ 2', he:'trong hè'};
+function kyCua(ngay){
+  if(!ngay) return null;
+  if(ngay < MOC_HK.bd1) return 'he';
+  if(ngay <= MOC_HK.kt1) return 'k1';
+  if(ngay < MOC_HK.bd2) return 'k1';   /* nghỉ giữa hai kỳ — em CHƯA HỌC NGÀY NÀO của kỳ 2 */
+  if(ngay <= MOC_HK.kt2) return 'k2';
+  return 'he';
+}
+function trangThaiNganh(tt, ngay){
+  if(tt==='Đang học'||tt==='Chờ đồng bộ CSDL ngành'||tt==='Chờ chuyển đi') return {ok:1, gt:'Đang học'};
+  if(tt==='Đã tốt nghiệp') return {ok:0, loai:'tnghiep',
+    ly:'Cổng KHÔNG CÓ giá trị «Đã tốt nghiệp» — quá trình học kết thúc bằng xét tốt nghiệp ở M3.4. ⛔ Không im lặng bỏ qua: dòng này ở đây để giải thích chênh lệch sĩ số.'};
+  if(tt==='Chờ xếp lớp') return {ok:0, loai:'chualop',
+    ly:'Chưa có lớp thì không gắn được vào đâu — lớp là KHÓA NEO khi đẩy (§3.1). Xếp lớp ở M1.9 rồi đẩy lại là hết.'};
+  const k=kyCua(ngay);
+  if(!k) return {ok:0, loai:'sk',
+    ly:'Thiếu «Ngày trạng thái» — không suy được học kỳ. ⛔ Không lấy ngày chạy phiên thay, ⛔ không mặc định «Đang học».'};
+  if(tt==='Đã chuyển đến') return {ok:1, gt:'Chuyển đến '+TEN_KY[k]};
+  if(tt==='Đã chuyển đi')  return {ok:1, gt:'Chuyển đi '+TEN_KY[k]};
+  if(tt==='Đã thôi học'||tt==='Đóng hồ sơ tạm') return {ok:1, gt:'Thôi học '+TEN_KY[k]};
+  if(tt==='Đang bảo lưu'){
+    if(k==='he') return {ok:0, loai:'onhan',
+      ly:'Cổng chỉ có «Nghỉ học xin học lại kỳ 1» và «kỳ 2» — KHÔNG có giá trị cho thời điểm trong hè. ⛔ Không ép về kỳ 1 cho có.'};
+    return {ok:1, gt:'Nghỉ học xin học lại '+TEN_KY[k]};
+  }
+  return {ok:0, loai:'onhan', ly:'Trạng thái «'+tt+'» chưa có ô nhận nào ở cổng — ⛔ không đoán.'};
+}
+
+/* ═══════════ 🆕 BA CA MẪU C1 · C2 · C3 (sổ điều phối §9) ═══════════ */
+const CA_HS=[
+ {ca:'C1', ten:'Nguyễn Minh Anh', lop:'9A2', md:'79012345678901234501',
+  tt:'Đang học', ngay:'2026-09-05',
+  qt:'Việt Nam', qt2:'Australia',
+  dc:{che:'danh_muc', tinh:'Tỉnh Phú Thọ', xa:'Phường Vân Phú', chi:'Tổ 5, khu 3'},
+  co:{'Biết bơi':'Có','Học tiếng dân tộc':'Không','PH có máy tính và Internet':'Có','PH có điện thoại thông minh':'Có'},
+  mo:'đủ trường — đi TRỌN'},
+ {ca:'C2', ten:'Trần Thị Thu Hà', lop:'8A1', md:'79012345678901234502',
+  tt:'Đang học', ngay:'2026-09-05',
+  qt:'Việt Nam', qt2:null,
+  dc:{che:'danh_muc', tinh:'Tỉnh Phú Thọ', xa:'Xã Hùng Lô', chi:'Khu 4'},
+  co:{'Biết bơi':'Chưa khảo sát','Học tiếng dân tộc':'Chưa khảo sát','PH có máy tính và Internet':'Có','PH có điện thoại thông minh':'Chưa khảo sát'},
+  mo:'BA cờ «Chưa khảo sát»'},
+ {ca:'C3', ten:'Lê Văn Tú', lop:'7A1', md:'79012345678901234503',
+  tt:'Đang học', ngay:'2026-09-05',
+  qt:'Việt Nam', qt2:null,
+  dc:{che:'tu_do', chuoi:'Khu 4, xã Hùng Lô, thành phố Việt Trì, tỉnh Phú Thọ'},
+  co:{'Biết bơi':'Có','Học tiếng dân tộc':'Không','PH có máy tính và Internet':'Có','PH có điện thoại thông minh':'Có'},
+  mo:'địa chỉ ở CHẾ ĐỘ NHẬP TỰ DO'}];
+
+/* chan(ca) — dựng danh sách lý do dòng nằm lại tab ④, theo đúng ba luật của §3.4 */
+function chanCa(c){
+  const r=[];
+  Object.keys(c.co).forEach(function(k){
+    /* ⚠ so theo GIÁ TRỊ, không theo nhãn: App PH-HS hiện «Chưa trả lời» cho CÙNG một giá trị (2D E-1) */
+    if(c.co[k]==='Chưa khảo sát') r.push(['sk','Cờ «'+k+'» = «Chưa khảo sát» — ⛔ KHÔNG thành «Không». «Trường chưa hỏi em này» và «em này không …» là hai câu khác nhau']);
+  });
+  if(c.dc.che==='tu_do') r.push(['diachi','Địa chỉ chưa chuẩn hóa — chưa chọn tỉnh và xã (che_do = tu_do). ⛔ Máy KHÔNG tự dò mã: dò sai thì hồ sơ lên Sở mang địa bàn của một xã khác, và cái sai đó im lặng']);
+  const t=trangThaiNganh(c.tt,c.ngay);
+  if(!t.ok) r.push([t.loai,t.ly]);
+  return r;
+}
+
+/* ═══════════ 🆕 §6.5 — DANH MỤC HÀNH CHÍNH HAI CẤP ═══════════
+   Danh mục DÙNG CHUNG, ⛔ không phải dữ liệu của trường ⇒ kéo về GHI ĐÈ HOÀN TOÀN.
+   Hình dạng {tinh, xa} — ⛔ KHÔNG THÊM CẤP HUYỆN (2D E-2, mô hình chính quyền hai cấp). */
+let DMHC={trangThai:'bản nạp sẵn — chưa đồng bộ', capNhat:'—',
+  tinh:[{id:'25',ten:'Tỉnh Phú Thọ'},{id:'01',ten:'Thành phố Hà Nội'},{id:'19',ten:'Tỉnh Thái Nguyên'},
+        {id:'08',ten:'Tỉnh Tuyên Quang'},{id:'10',ten:'Tỉnh Lào Cai'}],
+  xa:[{id:'08965',ten:'Phường Vân Phú',idTinh:'25'},{id:'08971',ten:'Xã Hùng Lô',idTinh:'25'},
+      {id:'08974',ten:'Phường Nông Trang',idTinh:'25'},{id:'00001',ten:'Phường Ba Đình',idTinh:'01'},
+      {id:'05632',ten:'Phường Phan Đình Phùng',idTinh:'19'}]};
+
+/* sua tay gan day se bi mat neu keo ve */
+const SUATAY={hs:[['27/08 Đỗ Thị Lan','SĐT mẹ · địa chỉ — Nguyễn Minh Anh (9A2)'],
+                  ['26/08 Đỗ Thị Lan','Đính chính họ tên cha theo giấy khai sinh — Lê Văn Tú (7A1)']],
+              ns:[['23/08 Phạm Minh Đức','Trình độ đào tạo Đại học → Thạc sĩ — Trần Văn Hùng (có tệp minh chứng)']],
+              lop:[['25/08 Lê Quốc Bình','Đổi tên lớp 9A4 → 9A4 (Nam Hòa)']]};
+
+/* ═══════════ DỊCH VỤ TÍNH TOÁN ═══════════ */
+let DV=[
+ {id:'d1',ten:'Tính điểm tổng kết học kỳ', inp:'Điểm thành phần các môn · số tiết nghỉ', out:'Điểm TB môn · điểm TB các môn',
+  che:'tk', lan:'—', ghi:'M1.6 tính nội bộ theo TT 22/2021 — dịch vụ này để đối chiếu'},
+ {id:'d2',ten:'Tính điểm tổng kết năm học', inp:'Điểm TB hai học kỳ', out:'Điểm TB cả năm',
+  che:'tk', lan:'—', ghi:''},
+ {id:'d3',ten:'Xếp loại học lực và hạnh kiểm', inp:'Điểm TB các môn · đánh giá rèn luyện', out:'Mức xếp loại',
+  che:'tk', lan:'—', ghi:''},
+ {id:'d4',ten:'Kiểm tra điều kiện dự thi TN THPT', inp:'Kết quả học tập lớp 12 · số buổi nghỉ', out:'Đủ / không đủ điều kiện + lý do',
+  che:'ct', lan:'18/08/2026 14:20 · 216 HS', ghi:'HT đã duyệt bật chế độ Chính thức ngày 15/08/2026 — Bộ là bên nắm quy chế thi'}];
+
+/* ═══════════ VIỆC CHƯA XONG ═══════════ */
+const VIEC=[
+ {loai:'khop', t:'⛔ Không đối khớp được', ob:'Nguyễn Minh Anh (9A2)', ct:'Hệ thống: 79012345678901234567 · CSDL ngành: 79012345678901239999',
+  ly:'Mã định danh LỆCH — theo TT 42/2021 mã là bất biến, nên đây không phải dữ liệu sai mà là ghép nhầm bản ghi hoặc một người bị cấp hai mã', ai:'VT'},
+ {loai:'khop', t:'⛔ Không đối khớp được', ob:'Trần Văn Nam · 12/03/2014 · Nam', ct:'Hai hồ sơ trùng họ tên + ngày sinh + giới tính',
+  ly:'Đối khớp gần đúng KHÔNG BAO GIỜ tự áp dụng — ghép nhầm là lỗi không phát hiện được bằng mắt về sau', ai:'VT'},
+ {loai:'khop', t:'⛔ Không đối khớp được', ob:'Hoàng Thị Mai (nhân sự)', ct:'Có mã ở CSDL ngành, hồ sơ trường trống mã nhưng CCCD khác',
+  ly:'Không đủ căn cứ ghép — cần đối chiếu giấy tờ', ai:'TCNS'},
+ {loai:'sk', t:'🩺 Trường sức khỏe chưa khảo sát', ob:'118 học sinh · trường «Biết bơi»', ct:'Giá trị hiện tại: «Chưa khảo sát» — chưa ai hỏi',
+  ly:'⛔ KHÔNG ánh xạ «Chưa khảo sát» thành «Không». «Trường chưa hỏi em này» và «em này không biết bơi» là hai câu khác nhau — biến cái đầu thành cái sau là bịa một số liệu rồi gửi lên Sở. Cách xử lý: khảo sát ở M6.6 tab 2 rồi đẩy lại.', ai:'VT'},
+ {loai:'sk', t:'🩺 Học sinh được miễn đo thể lực', ob:'9 học sinh · sáu nội dung thể lực', ct:'Ghi «Miễn» kèm lý do theo QĐ 53/2008',
+  ly:'⛔ KHÔNG ánh xạ «Miễn» thành «0» — số 0 là «đo được 0», không phải «không đo». Chờ chốt cổng Sở có ô nhận cờ Miễn không (điểm cần xác nhận 9); cổng không có ô đó thì nhóm này nằm lại đây mỗi năm.', ai:'VT'},
+ {loai:'tuchoi', t:'↩ Lượt đẩy bị Sở từ chối', ob:'Phiên P-0824 · Hồ sơ học sinh · 12 bản ghi', ct:'Sở trả về: “Mã lớp 9A4 không tồn tại trên hệ thống. Vui lòng đăng ký lớp trước khi đẩy học sinh.”',
+  ly:'Lớp mới tách chưa đăng ký với Sở — phải đẩy nhóm Danh mục lớp trước', ai:'VT'},
+ {loai:'tuchoi', t:'↩ Lượt đẩy bị Sở từ chối', ob:'Phiên P-0819 · Danh sách nhân sự · 3 bản ghi', ct:'Sở trả về: “Hạng chức danh nghề nghiệp không hợp lệ với trình độ đào tạo đã khai.”',
+  ly:'Dữ liệu trường mâu thuẫn nội tại — sửa ở M4.1 rồi đẩy lại', ai:'TCNS'},
+ {loai:'pending', t:'⏳ Hồ sơ mang mã tạm PENDING-', ob:'4 học sinh chuyển đến từ 01/08', ct:'PENDING-2608-01 … PENDING-2608-04',
+  ly:'Chờ Sở cấp mã định danh — đã chờ 21 ngày', ai:'VT'},
+ {loai:'vb', t:'📜 Văn bằng chờ công khai', ob:'216 bằng tốt nghiệp THPT khóa 2025–2026', ct:'Đã cấp 20/06/2026 · chưa công khai',
+  ly:'TT 10/2026 bắt buộc công khai thông tin văn bằng lên cổng thông tin và cơ sở dữ liệu', ai:'VT'},
+ {loai:'vb', t:'📜 Văn bằng chờ công khai — TỒN ĐỌNG HỒI TỐ', ob:'1.842 bằng đã cấp trước 15/04/2026', ct:'Khóa 2019–2020 … 2024–2025',
+  ly:'Nghĩa vụ công khai của TT 10/2026 áp dụng HỒI TỐ cho cả văn bằng đã cấp trước đây — không có hàng đợi này thì trường vi phạm mà không biết', ai:'VT'},
+
+ /* ══ 🆕 20/9/2026 — CSDL-2A: dòng của bốn loại việc mới và của loại `sk` mở rộng ══ */
+ {loai:'sk', t:'⚑ Cờ ba giá trị còn «Chưa khảo sát»', ob:'47 học sinh · cờ «Học tiếng dân tộc» (M1.1 §6.3.7)',
+  ct:'Giá trị hiện tại: «Chưa khảo sát» — chưa ai hỏi',
+  ly:'⛔ KHÔNG ánh xạ «Chưa khảo sát» thành «Không» (HDCS ③). ⚠ So theo GIÁ TRỊ, ⛔ không theo nhãn: App PH-HS hiện CÙNG giá trị này dưới nhãn «Chưa trả lời» — ai lọc theo chuỗi nhãn thì phụ huynh khai trên App sẽ lọt qua bộ lọc.', ai:'VT'},
+ {loai:'sk', t:'⚑ Cờ ba giá trị còn «Chưa khảo sát»', ob:'92 học sinh · cờ «PH có điện thoại thông minh»',
+  ct:'Hai cờ thiết bị của phụ huynh là tầng 1 — gia đình tự khai trên App',
+  ly:'⛔ KHÔNG suy từ trạng thái tài khoản App (1C E-7): nhiều gia đình dùng máy người khác. Suy sai thì con số gửi Sở sai mà không ai biết.', ai:'VT'},
+ {loai:'sk', t:'⚑ Trường dẫn xuất — menu nguồn chưa trả lời được', ob:'1.284 học sinh · bốn cờ Đội viên · Đoàn viên · Đảng viên · Lưu ban năm trước',
+  ct:'M6.15 · M6.3 · M3.3 chưa mở lát cắt đọc «Có/Không cho một em trong một năm học»',
+  ly:'Luật ② của §3.4: trường dẫn xuất mà nguồn trống thì dòng vào đây, ⛔ KHÔNG đẩy giá trị mặc định. Việc E-1 của phiên 1C giao 2C. ⛔ Không được lấp bằng «Không».', ai:'VT'},
+ {loai:'sk', t:'⚑ Công trình chưa khai «Cấp công trình»', ob:'2 địa điểm · B-201 · B-202 (điểm trường B)',
+  ct:'capCT = null — chưa ai đi xem dãy nhà đó xây kiểu gì',
+  ly:'⛔ KHÔNG dồn vào «Kiên cố». Làm thế là trường TỰ BÁO CÁO MÌNH KHÔNG CẦN ĐẦU TƯ — và đó là con số Sở dùng để phân bổ vốn. Cái sai này có lợi cho ngân sách và hại cho trường, nên ⛔ sẽ không ai đi kiểm lại.', ai:'VT'},
+ {loai:'sk', t:'⚑ «Nhờ mượn» thiếu đơn vị cho mượn', ob:'1 địa điểm · B-NCV3 (nhà công vụ, điểm trường B)',
+  ct:'capCT = nhomuon nhưng donViChoMuon để trống',
+  ly:'⛔ Không đẩy chuỗi rỗng (1F E.2 ②). Đơn vị cho mượn là ĐIỀU KIỆN để con số được xếp vào cột «Nhờ mượn».', ai:'VT'},
+ {loai:'sk', t:'🩺 Học sinh được miễn đo thể lực', ob:'9 học sinh · sáu nội dung thể lực', ct:'Ghi «Miễn» kèm lý do theo QĐ 53/2008',
+  ly:'⛔ KHÔNG ánh xạ «Miễn» thành «0» — số 0 là «đo được 0», không phải «không đo». Chờ chốt cổng Sở có ô nhận cờ Miễn không (điểm cần xác nhận 9).', ai:'VT'},
+
+ {loai:'diachi', t:'🏠 Địa chỉ ở chế độ nhập tự do', ob:'312 học sinh · cụm «Nơi thường trú»',
+  ct:'che_do = tu_do ⇒ bản ghi KHÔNG có tinh_id và xa_id',
+  ly:'🛑 ⛔ Máy KHÔNG TỰ DÒ MÃ lúc đẩy. Dò tên rồi tự gán mã là ĐOÁN, và đoán sai thì hồ sơ lên Sở mang địa bàn của một xã khác — sai im lặng, cổng vẫn nhận, không ai phát hiện. Việc dò là của nút ⇄ Chuẩn hóa ở M1.1, nơi NGƯỜI xác nhận. ⚠ Đây sẽ là lý do PHỔ BIẾN NHẤT ở lượt đẩy đầu tiên: dữ liệu cũ đều mang che_do = tu_do.', ai:'VT'},
+ {loai:'diachi', t:'🏠 Địa chỉ ở chế độ nhập tự do', ob:'21 nhân sự · cụm «Quê quán»',
+  ct:'che_do = tu_do — phần lớn là quê quán theo đơn vị hành chính ĐÃ GIẢI THỂ',
+  ly:'Đây là CHẾ ĐỘ HỢP LỆ, ⛔ không phải lỗi (HDCS ① quy tắc a): ép về mã hiện hành là GHI SAI LỊCH SỬ. Nhưng lên cổng thì dòng nằm lại đây — cổng đòi mã tỉnh và mã xã.', ai:'TCNS'},
+
+ {loai:'onhan', t:'🚫 Cổng không có ô nhận — mồ côi MỘT BÊN', ob:'6 học sinh · diện «Học sinh mồ côi» thuộc tính «cha» hoặc «mẹ»',
+  ct:'Cổng chỉ có MỘT ô: «Mồ côi cả cha mẹ». M1.2 mịn hơn: cha · mẹ · cả hai',
+  ly:'🛑 ⛔ KHÔNG GỘP về «Mồ côi cả cha mẹ» cho tiện. Một em CÒN MẸ mà khai là mồ côi cả cha mẹ thì đó là KHAI SAI — và cái sai này đi thẳng vào dữ liệu ngành rồi quay lại thành căn cứ chính sách: trợ cấp, học bổng, diện ưu tiên xét tuyển đều đọc ô đó.', ai:'VT'},
+ /* W1b (20/9/2026) — TAM O DA CO CHO KHAI: M4.1 §6.2.1q `Nhiem vu kiem nhiem`.
+    Con lai DUNG MOT o: Pho Bi thu Doan TN — no KHONG vao danh muc §6.2.1q vi da co
+    nguon that o M6.15 (ket qua dai hoi); khai them mot o tich la de nguon thu hai. */
+ {loai:'onhan', t:'🚫 Cổng không có ô nhận — Phó Bí thư Đoàn Thanh niên', ob:'1 ô tích của cổng · ô số 9 trong 37',
+  ct:'Phó Bí thư Đoàn TN — đã có nguồn thật ở M6.15 (kết quả đại hội), nhưng M10.8 chưa mở đường đọc sang đó',
+  ly:'⛔ KHÔNG đưa ô này vào danh mục Nhiệm vụ kiêm nhiệm của M4.1 §6.2.1q — khai hai nơi là ĐẺ CÂU TRẢ LỜI THỨ HAI cho cùng một sự thật, đúng thứ quy ước ba hạng trường cấm. Đường đúng là ĐỌC 🔗 M6.15, và đó là việc chưa làm. 🆕 Tám ô kia ĐÃ RỜI dòng này ngày 20/9 — chúng nay đọc từ M4.1 §6.2.1q.', ai:'TCNS'},
+
+ {loai:'chualop', t:'📋 Chưa xếp lớp — chưa gắn được vào phiên đẩy', ob:'5 học sinh · đã nhập học, chưa có lớp',
+  ct:'Trần Gia Bảo · Nguyễn Thảo My · Đỗ Quang Huy · Vũ Hà Chi · Lý Minh Khôi',
+  ly:'Lớp là KHÓA NEO khi đẩy (§3.1): chưa có lớp thì dòng không gắn được vào đâu. Xếp lớp ở M1.9 rồi đẩy lại là hết. 🆕 Đây là loại việc mà M9.1 đang chờ tên (việc E-1 của phiên 2B).', ai:'VT'},
+
+ {loai:'tnghiep', t:'🎓 Ngoài tập đẩy theo trạng thái', ob:'216 học sinh · trạng thái «Đã tốt nghiệp» · khóa 2025–2026',
+  ct:'Hàm trangThaiNganh() trả «không đẩy dòng» — cổng không có giá trị này',
+  ly:'⛔ KHÔNG im lặng bỏ qua. Trường có 1.284 hồ sơ mà phiên chỉ gửi 1.068 dòng; nếu 216 dòng kia biến mất không dấu vết thì con số của Sở lệch con số của trường và KHÔNG AI GIẢI THÍCH ĐƯỢC VÌ SAO. Dòng này biến một bí ẩn thành một câu trả lời. ⚠ Không ai xử lý được — và đó là chủ ý.', ai:'—'}];
+
+/* ═══════════ LỊCH SỬ ═══════════ */
+let LS=[
+ {id:'P-0824',t:'24/08/2026 10:12',u:'Đỗ Thị Lan · Văn thư',ch:'day',nh:'Hồ sơ học sinh',ng:'API',n:12,kq:'Sở từ chối',ok:0,ht:0},
+ {id:'P-0820',t:'20/08/2026 09:40',u:'Phạm Minh Đức · Tổ chức nhân sự',ch:'keo',nh:'Danh sách nhân sự',ng:'API',n:9,kq:'Áp dụng — ghi đè 9 bản ghi',ok:1,ht:0},
+ {id:'P-0819',t:'19/08/2026 15:02',u:'Phạm Minh Đức · Tổ chức nhân sự',ch:'day',nh:'Danh sách nhân sự',ng:'API',n:3,kq:'Sở từ chối',ok:0,ht:0},
+ {id:'P-0818',t:'18/08/2026 14:20',u:'Trịnh Thị Vân · Hiệu trưởng',ch:'dv',nh:'Kiểm tra điều kiện dự thi TN THPT',ng:'Dịch vụ',n:216,kq:'Nhận kết quả — 214 đủ, 2 không đủ',ok:1,ht:0},
+ {id:'P-0812',t:'12/08/2026 05:20',u:'Đỗ Thị Lan · Văn thư',ch:'keo',nh:'Cơ cấu tổ chức · Danh mục lớp · Hồ sơ học sinh',ng:'API',n:1336,kq:'Áp dụng — ghi đè 1.336 bản ghi',ok:1,ht:0},
+ {id:'P-0805',t:'05/08/2026 08:30',u:'Đỗ Thị Lan · Văn thư',ch:'keo',nh:'Hồ sơ học sinh',ng:'Excel (danh sách Cổng tuyển sinh Sở)',n:284,kq:'Áp dụng — tạo mới 284 hồ sơ',ok:1,ht:0}];
+
+/* ═══════════ VAI TRÒ ═══════════ */
+const VAI={
+ FULL:{ten:'Đủ quyền (demo)', tabs:'1,2,3,4,5,6', keo:1,day:1,duyet:1,kn:1,dv:1,sua:1,xuat:1, sc:'School'},
+ HT  :{ten:'Hiệu trưởng',      tabs:'1,2,3,4,5,6', keo:0,day:0,duyet:1,kn:0,dv:0,sua:0,xuat:1, sc:'School'},
+ VT  :{ten:'Văn thư',          tabs:'1,2,3,4,6',   keo:1,day:1,duyet:0,kn:0,dv:0,sua:1,xuat:1, sc:'School (chế độ 1 trường ↔ 1 mã)'},
+ TCNS:{ten:'Tổ chức nhân sự',  tabs:'1,2,3,4,6',   keo:1,day:1,duyet:0,kn:0,dv:0,sua:1,xuat:1, sc:'School — chỉ nhóm Danh sách nhân sự'},
+ IT  :{ten:'Quản trị hệ thống',tabs:'1,2,3,5',     keo:1,day:0,duyet:0,kn:1,dv:1,sua:0,xuat:0, sc:'School (kỹ thuật)'},
+ GVBM:{ten:'Giáo viên bộ môn', tabs:'',            keo:0,day:0,duyet:0,kn:0,dv:0,sua:0,xuat:0, sc:'—'}};
+const R=()=>VAI[vai];
+const coTab=t=>R().tabs.split(',').indexOf(String(t))>=0;
+/* TCNS chi thao tac duoc nhom nhan su */
+const duocNhom=id=>vai!=='TCNS'||id==='ns';
+
+/* ═══════════ TRẠNG THÁI KẾT NỐI ═══════════ */
+const KN={
+ ok    :{ten:'Đang hoạt động', cls:'ok',  chay:1, mo:'Xác thực thành công · phiên gần nhất 24/08/2026'},
+ mvp   :{ten:'Chưa có API (MVP)', cls:'warn', chay:2, mo:'Cơ chế MVP — thao tác được tới bước xác nhận, bước cuối hiện thông báo',
+         thieu:'API CSDL ngành chưa mở. Mọi luồng vẫn dựng đủ để chạy thử; bước gửi thật sẽ hoàn thiện ở giai đoạn 2.'},
+ chua  :{ten:'Chưa khai báo', cls:'bad', chay:0, mo:'Chưa có tài khoản kết nối',
+         thieu:'Thiếu: mã trường CSDL ngành · tài khoản kết nối · mật khẩu.'},
+ sai   :{ten:'Sai xác thực', cls:'bad', chay:0, mo:'Tài khoản hoặc mật khẩu không đúng',
+         thieu:'CSDL ngành trả về: “Thông tin đăng nhập không hợp lệ”. Nhập lại mật khẩu ở tab Kết nối.'},
+ han   :{ten:'Hết hạn', cls:'bad', chay:0, mo:'Tài khoản kết nối hết hiệu lực từ 01/08/2026',
+         thieu:'Tài khoản kết nối đã hết hiệu lực. Liên hệ Sở GDĐT gia hạn, rồi cập nhật lại ở tab Kết nối.'},
+ tuchoi:{ten:'Sở từ chối', cls:'bad', chay:0, mo:'Xác thực được nhưng bị từ chối quyền ghi',
+         thieu:'CSDL ngành trả về: “Tài khoản không có quyền ghi cho mã trường 79012345”. Cần Sở cấp lại quyền.'}};
+
+let vai='FULL', kn='ok', tab=1, tick={}, xem=null, htDuyet=false;
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const so=n=>n.toLocaleString('vi-VN');
+function toast(h){const e=document.getElementById('tt');e.innerHTML=h;e.classList.add('on');
+  clearTimeout(e._h);e._h=setTimeout(()=>e.classList.remove('on'),5600)}
+function modal(t,b,f){document.getElementById('mh').innerHTML=t;document.getElementById('mb').innerHTML=b;
+  document.getElementById('mf').innerHTML=f;document.getElementById('mdl').classList.add('on');
+  document.getElementById('ov').classList.add('on')}
+function dong(){document.getElementById('mdl').classList.remove('on');document.getElementById('ov').classList.remove('on')}
+
+/* ═══════════ THANH KẾT NỐI ═══════════ */
+function veConn(){
+  const k=KN[kn];
+  let h='<div class="conn '+k.cls+'">'+(k.chay===1?'🟢':k.chay===2?'🟡':'🔴')+
+    ' <b>Kết nối CSDL ngành: '+k.ten+'</b> <span style="opacity:.85">· '+esc(k.mo)+'</span>'+
+    '<span style="opacity:.7">· mã trường <span class="mono">79012345</span> · chế độ <b>1 Trường ↔ 1 mã</b></span>'+
+    '<span class="r">';
+  if(k.chay!==1) h+='<button class="btn" onclick="doiTab(1)">→ Tab Kết nối</button>';
+  h+='</span></div>';
+  document.getElementById('connbar').innerHTML=h;
+}
+/* nut van HIEN khi ⛔, va neu chinh xac thieu gi (§4) */
+function chanKN(){
+  const k=KN[kn];
+  if(k.chay===1) return null;
+  if(k.chay===2) return {mvp:1,msg:k.thieu};
+  return {msg:k.thieu};
+}
+
+/* ═══════════ TABS ═══════════ */
+const TENTAB={1:'🔌 Kết nối',2:'📥 Kéo về',3:'📤 Đẩy lên',4:'Việc chưa xong',5:'Lịch sử',6:'Xuất dữ liệu'};
+function veTabs(){
+  let h='';
+  for(let i=1;i<=6;i++){
+    const on=coTab(i);
+    let nhan=TENTAB[i];
+    if(i===4) nhan+=' <span class="tag t-r">'+VIEC.length+'</span>';
+    h+='<button id="tb'+i+'" '+(tab===i?'class="on"':'')+(on?'':' disabled')+' onclick="doiTab('+i+')">'+nhan+'</button>';
+  }
+  document.getElementById('tabs').innerHTML=h;
+}
+function doiTab(t){ if(!coTab(t))return; tab=t; xem=null; htDuyet=false; ve() }
+
+/* ═══════════ TAB 1 — KẾT NỐI ═══════════ */
+function tab1(){
+  const q=R().kn;
+  let h='<div class="note n-i">Mọi thao tác kéo · đẩy · gọi dịch vụ đều <b>treo vào trạng thái kết nối</b>. Vì thế thanh trạng thái nằm ở <b>mọi tab</b>, không giấu trong tab cấu hình.</div>';
+  h+='<div class="sec"><h3>Khai báo kết nối<span class="r">'+(q?'':'🔒 chỉ Quản trị hệ thống sửa được')+'</span></h3><dl class="kv">'+
+   '<dt>Mã trường CSDL ngành</dt><dd class="mono">79012345 <span class="mut">(TT 42/2021)</span></dd>'+
+   '<dt>Chế độ mapping</dt><dd><b>1 Trường ↔ 1 mã</b> <span class="mut">· Legacy (1 điểm trường ↔ 1 mã) dùng khi Sở chưa xử lý sáp nhập</span><br>'+
+     '<span class="mut">→ quyết định <b>phạm vi phiên = School</b>; xử lý Việc chưa xong = Branch</span></dd>'+
+   '<dt>Cơ quan quản lý</dt><dd>Sở GDĐT tỉnh · cấp xã <span class="mut">⚠ cấu hình được, không hard-code — TT 13/2025 + TT 26/2025 đang chuyển tiếp tới 28/02/2027, Phòng GDĐT cấp huyện không còn</span></dd>'+
+   '<dt>Tài khoản kết nối</dt><dd class="mono">thcs.79012345</dd>'+
+   '<dt>Mật khẩu / khóa bí mật</dt><dd class="mono">•••••••••••• <span class="mut">· cập nhật 02/08/2026</span><br>'+
+     '<b style="color:#b91c1c">🔒 Ghi được, KHÔNG đọc lại được — kể cả Quản trị hệ thống.</b> <span class="mut">Đổi thì nhập lại toàn bộ.</span></dd>'+
+   '</dl><div style="padding:0 10px 10px">'+
+   '<button class="btn'+(q?'':' lock')+'" onclick="'+(q?'suaKN()':'khoaKN()')+'">'+(q?'✎ Cập nhật kết nối':'🔒 Vì sao không sửa được')+'</button> '+
+   '<button class="btn" onclick="thuKN()">⇄ Thử kết nối</button></div></div>';
+
+  h+='<div class="sec"><h3>Danh mục dịch vụ tính toán<span class="r">hệ thống gửi input → CSDL ngành trả kết quả</span></h3>'+
+   '<table><thead><tr><th style="width:230px">Dịch vụ</th><th style="width:210px">Input gửi lên</th><th style="width:190px">Kết quả trả về</th>'+
+   '<th style="width:150px">Chế độ</th><th>Lần gọi gần nhất</th></tr></thead><tbody>';
+  DV.forEach(function(d){
+    h+='<tr><td><b>'+esc(d.ten)+'</b>'+(d.ghi?'<br><span class="mut">'+esc(d.ghi)+'</span>':'')+'</td>'+
+       '<td class="mut">'+esc(d.inp)+'</td><td class="mut">'+esc(d.out)+'</td>'+
+       '<td><span class="tag '+(d.che==='ct'?'t-r':'t-n')+'">'+(d.che==='ct'?'Chính thức':'Tham khảo')+'</span>'+
+       '<br><button class="btn" style="margin-top:4px;padding:2px 7px" onclick="doiChe(\''+d.id+'\')">đổi chế độ</button></td>'+
+       '<td class="mut">'+esc(d.lan)+' '+(KN[kn].chay?'<br><button class="btn" style="margin-top:4px;padding:2px 7px" onclick="goiDV(\''+d.id+'\')">▶ Gọi thử</button>':'')+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  h+='<div class="note n-w"><b>Rủi ro hai nguồn sự thật.</b> Nếu CSDL ngành tính điểm tổng kết thì <b>M1.6 tính để làm gì</b> — hai nơi cùng tính một con số là hai nguồn sự thật, đúng thứ D1 cấm. Nên chế độ là <b>cấu hình theo từng dịch vụ</b>, và <b>mặc định là <code>Tham khảo</code></b>: để <code>Chính thức</code> làm mặc định thì một dịch vụ khai báo cẩu thả có thể <b>ghi đè điểm tổng kết cả trường</b> mà không ai kịp nhận ra.</div>';
+  return h;
+}
+function khoaKN(){modal('🔒 Vì sao chức danh này không sửa được kết nối',
+ '<div class="note n-i" style="margin:0 0 10px">Đây là <b>tài khoản của TRƯỜNG trên hệ thống của Bộ</b>, không phải một tài khoản nội bộ.</div>'+
+ '<p>Người cầm được nó có thể <b>ghi vào dữ liệu ngành dưới danh nghĩa trường</b> — và audit của Bộ sẽ chỉ về trường, không chỉ về cá nhân.</p>'+
+ '<p style="margin-top:9px">Chức danh sửa được: <b>Quản trị hệ thống</b>. Hiệu trưởng <b>xem được</b> để biết trạng thái, nhưng không sửa.</p>',
+ '<button class="btn" onclick="dong()">Đóng</button>')}
+function suaKN(){modal('✎ Cập nhật kết nối',
+ '<div class="note n-d" style="margin:0 0 10px"><b>Bản demo không chứa thông tin xác thực thật.</b> Màn hình thật sẽ có ô nhập mật khẩu; giá trị đã lưu <b>không bao giờ hiện lại</b>, kể cả cho người đang nhập.</div>'+
+ '<dl class="kv" style="padding:0"><dt>Mã trường CSDL ngành</dt><dd class="mono">79012345</dd>'+
+ '<dt>Tài khoản kết nối</dt><dd class="mono">thcs.79012345</dd>'+
+ '<dt>Mật khẩu mới</dt><dd class="mono">(ô nhập — để trống thì giữ nguyên)</dd></dl>'+
+ '<p class="mut" style="margin-top:10px">Thay đổi ghi audit <b>mức ② Quan trọng</b> ở M10.7.</p>',
+ '<button class="btn" onclick="dong()">Hủy</button><button class="btn p" onclick="dong();toast(\'Đã ghi audit mức ② — đổi khai báo kết nối. Mật khẩu không hiện lại ở bất kỳ đâu.\')">Lưu</button>')}
+function thuKN(){const k=KN[kn];
+ if(k.chay===1) toast('✅ Kết nối tới CSDL ngành thành công · mã trường 79012345 · quyền đọc và ghi.');
+ else toast('🔴 <b>Không kết nối được.</b> '+esc(k.thieu||k.mo));}
+function doiChe(id){
+  const d=DV.filter(x=>x.id===id)[0];
+  if(d.che==='ct'){ d.che='tk'; ve(); toast('Đã chuyển «'+esc(d.ten)+'» về chế độ <b>Tham khảo</b>. Kết quả trả về chỉ hiện để đối chiếu, không ghi vào dữ liệu nghiệp vụ.'); return }
+  if(!R().duyet){ modal('⛔ Bật chế độ Chính thức cần Hiệu trưởng duyệt',
+    '<div class="note n-w" style="margin:0 0 10px">Chức danh <b>'+esc(R().ten)+'</b> không có quyền <code>D</code> ở Feature này.</div>'+
+    '<p>Chế độ <b>Chính thức</b> nghĩa là kết quả CSDL ngành trả về sẽ <b>ghi đè kết quả nội bộ</b> của menu chủ. Với «'+esc(d.ten)+'» thì đó là dữ liệu đi vào <b>học bạ</b>, vào <b>xét lên lớp</b>, vào <b>xét tốt nghiệp</b>.</p>'+
+    '<p style="margin-top:9px">Vì thế nó cần <b>Hiệu trưởng duyệt</b>, và mỗi lần bật đều ghi audit mức ②.</p>',
+    '<button class="btn" onclick="dong()">Đóng</button>'); return }
+  modal('⚠ Bật chế độ CHÍNH THỨC cho «'+esc(d.ten)+'»',
+   '<div class="note n-d" style="margin:0 0 10px"><b>Kết quả CSDL ngành trả về sẽ GHI ĐÈ kết quả nội bộ.</b> Menu chủ <b>'+esc(d.out)+'</b> sẽ không còn là nguồn sự thật cho phép tính này.</div>'+
+   '<dl class="kv" style="padding:0"><dt>Input gửi lên</dt><dd>'+esc(d.inp)+'</dd><dt>Kết quả trả về</dt><dd>'+esc(d.out)+'</dd>'+
+   '<dt>Menu chủ bị ghi đè</dt><dd>M1.6 Tổng kết và xếp loại</dd></dl>'+
+   '<p class="mut" style="margin-top:10px">Ghi audit <b>mức ②</b> ở M10.7, kèm tên người duyệt.</p>',
+   '<button class="btn" onclick="dong()">Hủy</button><button class="btn d" onclick="batCT(\''+id+'\')">Duyệt bật Chính thức</button>')}
+function batCT(id){const d=DV.filter(x=>x.id===id)[0];d.che='ct';dong();ve();
+  toast('Đã bật <b>Chính thức</b> cho «'+esc(d.ten)+'» · người duyệt: '+esc(R().ten)+' · đã ghi audit mức ②.')}
+function goiDV(id){const d=DV.filter(x=>x.id===id)[0];
+  const k=chanKN();
+  if(k&&!k.mvp){ toast('🔴 <b>Chưa gọi được dịch vụ.</b> '+esc(k.msg)); return }
+  if(k&&k.mvp){ toast('🟡 <b>MVP:</b> '+esc(k.msg)); return }
+  if(d.che==='tk') toast('▶ Đã gọi «'+esc(d.ten)+'» · nhận kết quả cho 1.284 bản ghi. Chế độ <b>Tham khảo</b> — kết quả hiện cạnh số nội bộ, <b>báo lệch 7 bản ghi</b>, không ghi vào dữ liệu nghiệp vụ.');
+  else toast('▶ Đã gọi «'+esc(d.ten)+'» · chế độ <b>Chính thức</b> — đã ghi đè kết quả nội bộ 1.284 bản ghi. Đã ghi audit mức ②.');}
+
+/* ═══════════ TAB 2 & 3 — KÉO VỀ / ĐẨY LÊN ═══════════ */
+function tabChieu(ch){
+  const keo=ch==='keo';
+  const co=keo?R().keo:R().day;
+  let h='<div class="note '+(keo?'n-w':'n-i')+'">'+
+    (keo?'<b>📥 Kéo về — CSDL ngành được ưu tiên tin tưởng.</b> Dữ liệu Sở sẽ <b>ghi đè</b> dữ liệu hệ thống ở những nhóm được chọn.'
+        :'<b>📤 Đẩy lên — Hệ thống được ưu tiên tin tưởng.</b> Dữ liệu mới nhất trên hệ thống sẽ được gửi lên CSDL ngành.')+
+    ' Độ mịn kiểm soát là <b>NHÓM DỮ LIỆU</b>: không muốn động vào cái gì thì <b>không tick nhóm đó</b>.</div>';
+
+  /* ── BCM9-2C: một dòng DẪN sang báo cáo đối chiếu ──────────────────────
+     Báo cáo «trường ↔ Sở lệch ở đâu» (BC-QT-02) ở lại `M9.1` tab 🧾 —
+     nó đọc SÁU menu nên là cross-nhóm (N3), và đặt một bản sao trong M10.8
+     để đối chiếu chính M10.8 là một vòng. Ở đây chỉ dẫn đường, ⛔ không
+     nhân bản bảng, ⛔ không thêm Feature.                                 */
+  if(!keo) h+='<div class="note n-i">🧾 <b>Trước khi bấm Đẩy lên:</b> chạy '+
+    '<b>Đối chiếu trước khi gửi Sở</b> để xem trường nào còn lệch, hồ sơ nào bị chặn. '+
+    'Báo cáo đó ở <a href="#" onclick="toast(\'↗ Deep-link: /M9.1?tab=doi_chieu&amp;return=M10.8 — demo một tệp không mở được menu khác, nhưng đường dẫn là đường dẫn thật.\');return false"><b>↗ M9.1 › tab 🧾 Đối chiếu trước khi gửi Sở</b></a>. '+
+    '<span class="mut">Còn lệch thì đây là <b>cảnh báo, không chặn</b> — xem M10.8 §15.</span></div>';
+
+  h+='<div class="bar"><b>Chọn nhóm dữ liệu</b> <span class="mut">(chọn nhiều được — hệ thống tự sắp theo thứ tự phụ thuộc)</span>'+
+     '<span class="rs" id="rs"></span></div>';
+  h+='<table><thead><tr><th style="width:34px"></th><th style="width:250px">Nhóm dữ liệu</th><th style="width:120px">Menu chủ</th>'+
+     '<th style="width:110px">Số bản ghi</th><th style="width:160px">'+(keo?'Kéo về':'Đẩy lên')+' gần nhất</th><th>'+(keo?'Kéo về thì chuyện gì xảy ra':'Ghi chú')+'</th></tr></thead><tbody>';
+  NHOM.forEach(function(g){
+    const dung = keo?g.keo:g.day;
+    const quyen = duocNhom(g.id);
+    const bat = dung && quyen && co;
+    h+='<tr>'+
+     '<td>'+(bat?'<input type="checkbox" class="chk" '+(tick[g.id]?'checked':'')+' onchange="tickNhom(\''+g.id+'\',this.checked)">'
+                :'<span title="không chọn được">—</span>')+'</td>'+
+     '<td><b>'+esc(g.ten)+'</b><br><span class="mut">'+esc(g.mo)+'</span></td>'+
+     '<td class="mut">'+esc(g.mn)+'</td>'+
+     '<td>'+so(g.n)+'</td><td class="mono">'+esc(g.lan)+'</td><td>';
+    if(!dung) h+='<span class="tag t-r">⛔ chỉ đẩy, không kéo</span>'+
+      (g.nhaycam?' <span class="tag t-y">🔒 dữ liệu nhạy cảm của trẻ em</span>':'')+
+      '<br><span class="mut">'+esc(g.lydo)+'</span>';
+    else if(!quyen) h+='<span class="tag t-n">ngoài phạm vi chức danh</span><br><span class="mut">Tổ chức nhân sự chỉ thao tác nhóm <b>Danh sách nhân sự</b>.</span>';
+    else if(!co) h+='<span class="tag t-n">chức danh không có quyền '+(keo?'kéo về':'đẩy lên')+'</span>';
+    else if(keo){
+      const d=DC[g.id]; if(d&&d.ruiro.length){
+        h+=d.ruiro.map(r=>'<span class="risk'+r[1]+'">'+(r[1]===3?'🔴':r[1]===2?'🟡':'🟢')+' '+esc(r[0])+'</span> <span class="mut">'+esc(r[2])+'</span>').join('<br>');
+      } else h+='<span class="mut">—</span>';
+    } else if(g.nhaycam) h+='<span class="tag t-y">🔒 Luật BVDLCN 91/2025</span> '+
+      '<span class="mut">Đẩy nhóm này là một <b>lượt XUẤT dữ liệu cá nhân nhạy cảm của trẻ em</b> — '+
+      'ghi audit ở <b>cả hai nơi</b>: lịch sử phiên ở đây và <b>nhật ký truy cập M6.6 tab 7</b>. '+
+      '⛔ Nhóm máu · dị ứng · bệnh nền · liên hệ khẩn cấp <b>KHÔNG nằm trong tải trọng</b>.</span>';
+    else if(g.moi) h+='<span class="tag t-g">🆕 nhóm mới — HDCS ④</span><br>'+
+      '<span class="mut">Đơn vị dòng: <b>'+esc(g.donvi)+'</b> · khóa đối khớp: <b>'+esc(g.khoa)+'</b> · phụ thuộc: <b>'+esc(g.phuthuoc)+'</b><br>'+
+      '★ Xem trước <b>hiện ĐẦY ĐỦ TỪNG DÒNG</b> — ⛔ không áp luật «dừng ở mức đếm» của nhóm Sức khỏe.</span>';
+    else h+='<span class="mut">Dữ liệu hệ thống là bản được gửi lên.</span>';
+    h+='</td></tr>';
+  });
+  h+='</tbody></table>';
+  h+='<div class="bar" style="border-top:1px solid #e3e8ef;border-bottom:none">'+
+     '<button class="btn" id="bXem" onclick="xemTruoc(\''+ch+'\')">👁 Xem trước</button>'+
+     '<button class="btn p" id="bChay" onclick="xacNhan(\''+ch+'\')">'+(keo?'📥 Kéo về':'📤 Đẩy lên')+'</button>'+
+     '<span class="mut">Không bước nào bỏ được: chọn nhóm → xem trước → xác nhận → áp dụng'+(keo?' → hoàn tác 7 ngày':'')+'</span></div>';
+
+  /* 🆕 20/9/2026 — §6.5: đường kéo THỨ HAI, ⛔ KHÔNG phải nhóm dữ liệu thứ mười.
+     Không có đơn vị dòng là bản ghi của trường, không xem trước đối chiếu, không hoàn tác. */
+  if(keo) h+='<div class="sec"><h3>🆕 Danh mục hành chính hai cấp<span class="r">danh mục DÙNG CHUNG — ⛔ không phải dữ liệu của trường</span></h3>'+
+   '<dl class="kv"><dt>Trạng thái</dt><dd><span class="tag t-y">'+esc(DMHC.trangThai)+'</span> <span class="mut">· cùng khuôn danh mục môn chuẩn của M10.2</span></dd>'+
+   '<dt>Hình dạng</dt><dd class="mono">{ tinh: [{id, ten}], xa: [{id, ten, idTinh}] }</dd>'+
+   '<dt>Đang có</dt><dd><b>'+DMHC.tinh.length+'</b> tỉnh · <b>'+DMHC.xa.length+'</b> phường/xã <span class="mut">— bản rút gọn đủ để chạy ca, ⛔ KHÔNG phải danh mục thật</span></dd>'+
+   '<dt>Cập nhật gần nhất</dt><dd class="mono">'+esc(DMHC.capNhat)+'</dd></dl>'+
+   '<div style="padding:0 10px 10px"><button class="btn'+(R().keo?'':' lock')+'" onclick="'+(R().keo?'keoDanhMuc()':'toast(\'Chức danh này không có quyền kéo về.\')')+'">⬇ Kéo danh mục hành chính về</button></div>'+
+   '<div class="note n-w" style="margin:0 10px 10px">🛑 ⛔ <b>KHÔNG THÊM CẤP HUYỆN.</b> Mô hình <b>chính quyền hai cấp</b> (TT 13/2025 · TT 26/2025) là mô hình đang chạy; App PH-HS đã dựng đúng cấu trúc này. '+
+   'Cổng <b>vẫn còn ô <code>Quận/Huyện</code></b> — ô ấy xử lý ở <b>lớp đẩy</b> (để trống kèm ghi chú), ⛔ <b>không xử lý bằng cách đẻ thêm một cấp trong danh mục</b>.</div>'+
+   '<div class="note n-d" style="margin:0 10px 10px">✅ <b>CHỐT 20/9/2026 — nguồn của danh mục</b> (§6.5b). Đi hỏi <b>nguồn chính thức</b>; chưa có thì <b>giữ bản rút gọn này</b>, và 🛑 ⛔ <b>KHÔNG nạp một danh sách sưu tầm</b>.<br>'+
+   '<b>Vì sao «thà thiếu còn hơn sai» ở đúng chỗ này.</b> Một danh mục hành chính sai <b>không sai ở một hồ sơ</b> — nó sai ở <b>mọi hồ sơ trỏ vào mã đó</b>, và sai <b>cùng một kiểu</b>, nên <b>không dòng nào trông lạ</b> để ai đó để ý. '+
+   'Nó cũng <b>không tự lộ ra</b>: ô địa chỉ vẫn hiện tên xã, cổng vẫn nhận, báo cáo vẫn chạy.<br>'+
+   '⚠ Trong lúc chờ: danh mục rút gọn không phủ hết ⇒ nhiều địa chỉ ở chế độ <code>tu_do</code> ⇒ các dòng ấy <b>nằm lại tab ④</b>. Đây là <b>hệ quả đã biết và chấp nhận</b>, ⛔ không phải lỗi để ai đó đi «sửa» bằng cách nạp bừa một danh mục.</div></div>';
+
+  h+='<div id="pv"></div>';
+  return h;
+}
+
+/* §6.5 — kéo về GHI ĐÈ HOÀN TOÀN, ⛔ không có hàng đợi xung đột. */
+function keoDanhMuc(){
+  modal('⬇ Kéo danh mục hành chính hai cấp về',
+   '<div class="note n-i" style="margin:0 0 10px"><b>Đây KHÔNG phải một nhóm dữ liệu thứ mười.</b> Nó không có đơn vị dòng là bản ghi của trường, '+
+   'không có bước xem trước đối chiếu, và <b>không có hoàn tác</b>.</div>'+
+   '<table style="margin-bottom:11px"><tr><th></th><th>Kéo <b>dữ liệu của trường</b></th><th>Kéo <b>danh mục hành chính</b></th></tr>'+
+   '<tr><td class="mut">Đối tượng</td><td>Hồ sơ, lớp, nhân sự <b>của trường này</b></td><td><b>Danh mục dùng chung toàn quốc</b></td></tr>'+
+   '<tr><td class="mut">Cách ghi</td><td>Đối chiếu → xem trước → xác nhận ghi đè → hoàn tác 7 ngày</td><td><b>Ghi đè hoàn toàn</b> — ⛔ không có hàng đợi xung đột</td></tr>'+
+   '<tr><td class="mut">Vì sao khác</td><td>Ghi đè sai một trường là mất việc của người khác</td><td><b>Không ai ở trường sở hữu danh mục này</b> — giữ một bản «của trường» để phân xử với bản của Bộ là dựng <b>hai nguồn sự thật</b> cho thứ mà trường không có thẩm quyền gì</td></tr></table>'+
+   '<div class="note n-g" style="margin:0 0 11px"><b>Ba luật:</b><br>'+
+   '① MVP chưa có kết nối ⇒ danh mục ở trạng thái <b>«bản nạp sẵn — chưa đồng bộ»</b>, nhãn ấy hiện ở mọi chỗ dùng danh mục.<br>'+
+   '② Kéo về ⛔ <b>KHÔNG đụng dữ liệu địa chỉ đã nhập</b> — danh mục là <b>bảng tra</b>, hồ sơ giữ <b>mã</b>.<br>'+
+   '③ Bản ghi trỏ vào <b>mã đã bị xóa khỏi danh mục</b> ⇒ nhãn ⚠ <code>mã hành chính không còn</code>, ⛔ <b>không tự đổi sang mã khác</b>.</div>'+
+   '<div class="note n-d" style="margin:0"><b>Luật ③ là chỗ dễ làm sai nhất, và lý do giống hệt lý do ⛔ không tự dò mã lúc đẩy.</b> '+
+   'Sau một đợt sáp nhập, máy «biết» xã A nay thuộc xã B và sẽ rất muốn tự cập nhật hàng loạt. Nhưng <code>HDCS</code> ① đã nêu đích danh ca <b>quê quán theo đơn vị hành chính đã giải thể</b>: '+
+   'ép về mã hiện hành là <b>GHI SAI LỊCH SỬ</b> — quê quán của một người là nơi sinh ra theo đơn vị hành chính <b>lúc đó</b>, ⛔ không phải nơi mảnh đất ấy hiện thuộc về.<br>'+
+   '⇒ Nhãn ⚠ là <b>một câu hỏi để người trả lời</b>, ⛔ không phải một lỗi để máy sửa.</div>',
+   '<button class="btn" onclick="dong()">Hủy</button><button class="btn p" onclick="apDungDM()">Kéo về và ghi đè danh mục</button>');
+}
+function apDungDM(){
+  const k=chanKN(); dong();
+  if(k&&!k.mvp){ toast('🔴 <b>Chưa kéo được.</b> '+esc(k.msg)); return }
+  if(k&&k.mvp){ toast('🟡 <b>MVP — chưa có kết nối.</b> Danh mục giữ trạng thái <b>«bản nạp sẵn — chưa đồng bộ»</b>. '+
+    '✅ Chốt 20/9: đi hỏi <b>nguồn chính thức</b>; chưa có thì <b>giữ bản rút gọn</b>, ⛔ <b>không nạp danh sách sưu tầm</b> (§6.5b).'); return }
+  DMHC.trangThai='đã đồng bộ'; DMHC.capNhat='20/09/2026 09:30';
+  LS.unshift({id:'P-DM01',t:'20/09/2026 09:30',u:R().ten,ch:'keo',nh:'Danh mục hành chính hai cấp',ng:'API',n:DMHC.tinh.length+DMHC.xa.length,
+    kq:'Ghi đè hoàn toàn — '+DMHC.tinh.length+' tỉnh · '+DMHC.xa.length+' phường/xã',ok:1,ht:0});
+  ve();
+  toast('✅ Đã ghi đè danh mục hành chính · <b>'+DMHC.tinh.length+'</b> tỉnh · <b>'+DMHC.xa.length+'</b> phường/xã. '+
+    '⛔ <b>Không đụng một dòng địa chỉ đã nhập nào.</b> Bản ghi trỏ vào mã không còn ⇒ nhãn ⚠ <code>mã hành chính không còn</code>, ⛔ máy không tự đổi.');
+}
+function tickNhom(id,v){ tick[id]=v; capNhatNut() }
+function nhomDaChon(ch){
+  return NHOM.filter(g=>tick[g.id] && (ch==='keo'?g.keo:g.day) && duocNhom(g.id));
+}
+function capNhatNut(){
+  const ch=tab===2?'keo':'day', ds=nhomDaChon(ch);
+  const rs=document.getElementById('rs');
+  if(rs) rs.innerHTML = ds.length? '<b>'+ds.length+'</b> nhóm · thứ tự chạy: '+ds.map(g=>esc(g.ten)).join(' → ')
+                                 : 'chưa chọn nhóm nào';
+  const b1=document.getElementById('bXem'), b2=document.getElementById('bChay');
+  if(b1) b1.disabled=!ds.length;
+  if(b2) b2.disabled=!ds.length;
+}
+function xemTruoc(ch){
+  const ds=nhomDaChon(ch); if(!ds.length) return;
+  let h='<div class="sec"><h3>👁 Xem trước — '+(ch==='keo'?'kéo về':'đẩy lên')+'<span class="r">chưa ghi gì cả</span></h3>'+
+   '<table><thead><tr><th style="width:250px">Nhóm</th><th>✓ Khớp</th><th>✎ Lệch trường</th>'+
+   '<th>➕ Chỉ có ở CSDL ngành</th><th>➖ Chỉ có ở trường</th><th>⛔ Lệch mã định danh</th></tr></thead><tbody>';
+  let tong=0;
+  ds.forEach(function(g){
+    const d=DC[g.id]||{khop:g.n,lech:0,chiN:0,chiT:0,maLech:0};
+    tong+=d.lech+(ch==='keo'?0:d.chiT);
+    h+='<tr><td><b>'+esc(g.ten)+'</b></td><td>'+so(d.khop)+'</td>'+
+       '<td'+(d.lech?' class="risk2"':'')+'><b>'+so(d.lech)+'</b></td>'+
+       '<td>'+so(d.chiN)+(d.chiN&&ch==='keo'?' <span class="mut">(tick từng em)</span>':'')+'</td>'+
+       '<td>'+so(d.chiT)+(d.chiT?' <span class="mut">(không xóa)</span>':'')+'</td>'+
+       '<td'+(d.maLech?' class="risk3"':'')+'>'+so(d.maLech)+(d.maLech?' <span class="mut">→ Việc chưa xong</span>':'')+'</td></tr>';
+  });
+  h+='</tbody></table>';
+  /* ★ NGOẠI LỆ CÓ CHỦ Ý của quy tắc «không bao giờ ghi mù»: xem trước của
+     nhóm Sức khỏe DỪNG Ở MỨC ĐẾM — số bản ghi và tên trường, không hiện
+     giá trị từng em. M6.6 §2.2 đã chốt phạm vi lọc cả CỘT; một màn hình
+     xem trước hiển thị BMI của 1284 em sẽ vô hiệu hóa nguyên tắc đó bằng
+     một tab khác. Văn thư chạy phiên KHÔNG có quyền đọc Lớp 2 của M6.6. */
+  if(ds.some(g=>g.nhaycam)){
+   h+='<div class="note n-w" style="margin:10px"><b>🔒 Nhóm Sức khỏe – Thể lực: xem trước dừng ở mức ĐẾM.</b> '+
+      'Bảng dưới nêu <b>số bản ghi và tên trường</b>, <b>không hiện giá trị của từng em</b>. '+
+      'Vai chạy phiên đồng bộ (văn thư) <b>không có quyền đọc Lớp 2 của M6.6</b> — '+
+      'một phiên đồng bộ <b>không được là cửa sau để đọc dữ liệu y tế</b>.</div>';
+   h+='<div class="sec" style="margin:0 10px 10px"><h3>Trường sẽ đẩy — ánh xạ trường ↔ trường</h3>'+
+      '<table><thead><tr><th style="width:210px">Trường ở hệ thống</th><th style="width:220px">Nguồn trong M6.6</th>'+
+      '<th style="width:190px">Trường CSDL ngành</th><th>Ghi chú</th></tr></thead><tbody>'+
+      ANHXA_SK.map(r=>'<tr><td><b>'+esc(r[0])+'</b>'+(r[3]?' <span class="mut">'+esc(r[3])+'</span>':'')+'</td>'+
+        '<td class="mut">'+esc(r[1])+'</td><td><b>'+esc(r[2])+'</b></td>'+
+        '<td class="mut">'+esc(r[4])+'</td></tr>').join('')+
+      ANHXA_TL.map((r,i)=>'<tr><td><b>'+['①','②','③','④','⑤','⑥'][i]+' '+esc(r[0])+'</b> <span class="mut">'+esc(r[1])+'</span></td>'+
+        '<td class="mut">M6.6 tab 3 — đợt đo thể lực</td><td><b>'+esc(r[0])+'</b></td>'+
+        '<td class="mut">QĐ 53/2008/QĐ-BGDĐT — tên và đơn vị nguyên văn</td></tr>').join('')+
+      '</tbody></table>'+
+      '<div class="note n-d" style="margin:10px"><b>⛔ Bốn trường KHÔNG nằm trong tải trọng:</b> '+
+      'nhóm máu · dị ứng · bệnh nền · liên hệ khẩn cấp. <b>CSDL ngành không có chỗ nhận chúng</b> — '+
+      'và đó chính là căn cứ chốt <b>M6.6 sở hữu</b> bốn trường ấy. Ghi rõ ở đây để không ai tưởng hệ thống quên.</div>'+
+      '<div class="note n-w" style="margin:0 10px 10px"><b>Hai ánh xạ bị chặn cứng:</b><br>'+
+      '· <b>«Chưa khảo sát» KHÔNG thành «Không»</b> — «trường chưa hỏi» và «em không biết bơi» là hai câu khác nhau; '+
+      'biến cái đầu thành cái sau là <b>bịa một số liệu rồi gửi lên Sở</b>. Dòng đó nằm lại ở <b>Việc chưa xong</b>.<br>'+
+      '· <b>«Miễn» KHÔNG thành «0»</b> — số 0 là «đo được 0», không phải «không đo».</div></div>';
+  }
+  h+=khoiCanhBao(ds,ch);
+
+  /* ══ 🆕 20/9/2026 — BỐN BẢNG ÁNH XẠ, chỉ hiện ở chiều ĐẨY ══
+     Chúng trả lời «trường nào của hệ thống điền vào ô nào của cổng» — câu hỏi
+     chỉ có nghĩa khi đang gửi đi. */
+  if(ch==='day'){
+    if(ds.some(g=>g.id==='hs'))   h+=bangAnhXa('Hồ sơ học sinh','một học sinh','Mã định danh Bộ GD&amp;ĐT',ANHXA_HS)+CHE_CCCD+khoiCa();
+    if(ds.some(g=>g.id==='ns'))   h+=raoNhanSu()+bangAnhXa('Danh sách nhân sự','một nhân sự THUỘC DIỆN KHAI','Mã định danh Bộ GD&amp;ĐT',ANHXA_NS)+bangDienKhai()+ranhGioiBNV();
+    if(ds.some(g=>g.id==='dkdb')) h+=bangAnhXa('Điều kiện đảm bảo &amp; hạ tầng','một TRƯỜNG × một NĂM HỌC','Mã trường CSDL ngành',ANHXA_DK)+dongDayDu('dkdb');
+    if(ds.some(g=>g.id==='csvc')) h+=bangAnhXa('CSVC công trình','một ĐIỂM TRƯỜNG × một NĂM HỌC','Mã trường + mã điểm trường',ANHXA_CT)+dongDayDu('csvc');
+  }
+
+  h+='<div class="note '+(ch==='keo'?'n-w':'n-i')+'" style="margin:10px">'+
+   (ch==='keo'
+    ? '<b>Bất đối xứng có chủ ý:</b> «chỉ có ở CSDL ngành» thì <b>không tự tạo hồ sơ</b>, «chỉ có ở trường» thì <b>KHÔNG BAO GIỜ xóa</b> — dù kéo về là chiều CSDL ngành thắng. Lý do: <b>ghi đè sai một trường thì hoàn tác được, xóa nhầm một học sinh thì không.</b>'
+    : '«Chỉ có ở trường» chính là thứ cần đẩy lên. «Chỉ có ở CSDL ngành» không đụng tới — đẩy lên không xóa dữ liệu của Sở.')+
+   '</div></div>';
+  document.getElementById('pv').innerHTML=h;
+  toast('Đã dựng bản xem trước — <b>chưa ghi gì cả</b>. Bấm «'+(ch==='keo'?'Kéo về':'Đẩy lên')+'» để tới hộp xác nhận.');
+}
+
+/* ═══════════ 🆕 20/9/2026 — DỰNG BỐN BẢNG ÁNH XẠ (CSDL-2A) ═══════════ */
+const HANG={dx:['dẫn xuất','t-b'], ax:['ánh xạ','t-n'], ko:['⛔ không có ô nhận','t-r']};
+
+/* ══ §3.1 — thứ tự phụ thuộc. Hai nhóm mới treo vào «Cơ cấu tổ chức»,
+   ⛔ KHÔNG treo vào «Hồ sơ học sinh»: đơn vị dòng của chúng là ĐƠN VỊ, không phải người.
+   «CSVC công trình» treo thêm vào «Danh mục lớp» vì dòng 1 của ma trận đọc số lớp. ══ */
+const PHU_THUOC={lop:['cc'], ns:['cc'], hs:['cc','lop','ns'], kq:['hs'], skhoe:['hs'], vb:['hs'],
+                 dkdb:['cc'], csvc:['cc','lop']};
+const nhomTen=id=>{const g=NHOM.filter(x=>x.id===id)[0]; return g?g.ten:id};
+/* đã đồng bộ THÀNH CÔNG theo ĐÚNG CHIỀU đang chạy — kéo về xong không thay cho đẩy lên */
+const daDongBo=(id,ch)=>LS.some(p=>p.ch===ch && p.ok===1 && String(p.nh).indexOf(nhomTen(id))>=0);
+function canhBaoPhuThuoc(ds,ch){
+  const chon={}; ds.forEach(g=>chon[g.id]=1);
+  const r=[];
+  ds.forEach(function(g){
+    (PHU_THUOC[g.id]||[]).forEach(function(d){
+      if(chon[d] || daDongBo(d,ch)) return;
+      r.push([g.ten, nhomTen(d)]);
+    });
+  });
+  return r;
+}
+function khoiCanhBao(ds,ch){
+  const cb=canhBaoPhuThuoc(ds,ch); if(!cb.length) return '';
+  return '<div class="note n-w" style="margin:10px">⚠ <b>Cảnh báo thứ tự phụ thuộc — ⛔ KHÔNG CHẶN.</b><br>'+
+   cb.map(x=>'· Nhóm <b>'+esc(x[0])+'</b> phụ thuộc <b>'+esc(x[1])+'</b>, mà nhóm ấy <b>chưa từng '+(ch==='keo'?'kéo về':'đẩy lên')+' thành công</b>.').join('<br>')+
+   '<br><span class="mut">Vẫn chạy được: có trường đã nhập tay đủ cơ cấu trên cổng rồi (§3.1). Nhưng đây đúng là nguyên nhân của lượt đẩy bị Sở từ chối '+
+   'với lý do «mã lớp không tồn tại» — xem tab <b>Việc chưa xong</b>.</span></div>';
+}
+function bangAnhXa(ten, donvi, khoa, rows){
+  let n=0; rows.forEach(r=>{ if(r.length>1) n++ });
+  let h='<div class="sec" style="margin:0 10px 10px"><h3>Ánh xạ trường ↔ trường — '+ten+
+    '<span class="r">'+n+' dòng · đơn vị dòng: <b>'+donvi+'</b> · khóa đối khớp: <b>'+khoa+'</b></span></h3>'+
+    '<div class="note n-w" style="margin:10px"><b>Ba luật áp cho MỌI dòng:</b> '+
+    '① trường hạng <code>ánh xạ</code> ⇒ <b>đổi tên, ⛔ không đổi nghĩa</b> · '+
+    '② trường hạng <code>dẫn xuất</code> ⇒ ghi rõ <b>menu nguồn</b>; nguồn trống ⇒ dòng vào tab ④, ⛔ <b>không đẩy giá trị mặc định</b> · '+
+    '③ cờ <code>Chưa khảo sát</code> ⇒ <b>dòng nằm lại tab ④ với lý do nêu đích danh</b>, ⛔ không thành «Không».</div>'+
+    '<table><thead><tr><th style="width:230px">Trường ở hệ thống</th><th style="width:210px">Nguồn trong menu chủ</th>'+
+    '<th style="width:200px">Trường CSDL ngành</th><th>Ghi chú</th></tr></thead><tbody>';
+  rows.forEach(function(r){
+    if(r.length===1){ h+='<tr><td colspan="4" style="background:#f1f5f9;font-weight:600">'+esc(r[0])+'</td></tr>'; return }
+    const hg=HANG[r[4]];
+    h+='<tr><td><b>'+esc(r[0])+'</b>'+(hg?' <span class="tag '+hg[1]+'">'+esc(hg[0])+'</span>':'')+'</td>'+
+       '<td class="mut">'+esc(r[1])+'</td>'+
+       '<td'+(r[4]==='ko'?' class="risk3"':'')+'><b>'+esc(r[2])+'</b></td>'+
+       '<td class="mut">'+esc(r[3])+'</td></tr>';
+  });
+  return h+'</tbody></table></div>';
+}
+
+/* 🔒 Hàng rào của bảng nhân sự — đứng TRƯỚC bảng, ⛔ không phải sau. */
+function raoNhanSu(){
+  let h='<div class="sec" style="margin:0 10px 10px"><h3>🔒 Hàng rào — trường nào KHÔNG được đẩy<span class="r">đọc trước một dòng ánh xạ nào</span></h3>'+
+   '<div class="note n-d" style="margin:10px"><b>Từ 19/9/2026 hồ sơ nhân sự phục vụ HAI cơ quan khác nhau</b> — Bộ Giáo dục và Đào tạo (menu này) và '+
+   '<b>Bộ Nội vụ</b> (cụm HSVC). <code>M4.1</code> §6b.3 có <b>bảng ánh xạ trường ↔ mục của mẫu — 133 dòng</b> với cột <code>Nguồn yêu cầu</code>.</div>'+
+   '<table style="margin:0 10px 10px;width:calc(100% - 20px)"><thead><tr><th style="width:140px">Nguồn yêu cầu</th><th style="width:90px">Số dòng</th><th>Menu này đẩy?</th></tr></thead><tbody>';
+  RAO_NS.nguon.forEach(function(r){
+    h+='<tr><td><code>'+esc(r[0])+'</code></td><td><b>'+r[1]+'</b></td>'+
+       '<td'+(r[2]?'':' class="risk3"')+'>'+(r[2]?'✅ có':'⛔ <b>KHÔNG</b>')+'</td></tr>';
+  });
+  h+='</tbody></table>'+
+   '<div class="note n-d" style="margin:0 10px 10px">🛑 <b>Năm nhóm nhạy cảm mức cao của <code>HDVC</code> ④ — ⛔ TUYỆT ĐỐI KHÔNG ĐẨY, không có ngoại lệ:</b></div>'+
+   '<table style="margin:0 10px 10px;width:calc(100% - 20px)"><tbody>';
+  RAO_NS.nhom.forEach(function(r){
+    h+='<tr><td style="width:34px">'+esc(r[0])+'</td><td><b>'+esc(r[1])+'</b></td><td class="mut" style="width:280px">'+esc(r[2])+'</td></tr>';
+  });
+  h+='</tbody></table>'+
+   '<div class="note n-w" style="margin:0 10px 10px">⚠ <b>Ranh giới của nhóm ④ là mục <code>37.3</code>, ⛔ KHÔNG phải cả mục 37.</b> '+
+   '<code>37.1</code> (quá trình lương của bản thân) và <code>37.2</code> (các loại phụ cấp khác) là <b>dữ liệu lương ở tab 2</b> — Kế toán vẫn xem được, và chúng <b>CÓ đi lên cổng ngành</b>. '+
+   'Đọc «mục 37 nhạy cảm» theo nghĩa đen thì hoặc <b>khóa mất bảng lương khỏi Kế toán</b>, hoặc — nguy hơn nhiều — <b>nới cả nhóm nhạy cảm cho Kế toán</b> với lý do «lương cũng thuộc mục 37».</div>'+
+   '<div class="note n-d" style="margin:0 10px 10px"><b>Vì sao hàng rào này đứng trước bảng.</b> Chín ô của khối N <b>nằm cùng một tab, cùng một hồ sơ</b> với những ô hoàn toàn bình thường. '+
+   'Ai dựng lượt đẩy bằng cách <i>«lấy cả hồ sơ rồi bỏ bớt»</i> sẽ gửi chúng đi <b>mà không nhận ra</b> — không có gì trong cấu trúc dữ liệu báo cho biết đây là lý lịch chính trị. '+
+   'Bảng ánh xạ vì thế phải là <b>DANH SÁCH CHO PHÉP</b>, ⛔ không phải danh sách loại trừ.<br>'+
+   '⚠ Và ⛔ <b>không dựa vào «đẩy hết trừ khối N»</b>: <code>Số hiệu viên chức</code> · <code>Chức vụ Đảng</code> · <code>Quy hoạch chức danh</code> · <code>Ngày nhập ngũ</code> · '+
+   '<code>Thành phần gia đình</code> … <b>không nằm trong khối N</b> nhưng mang nguồn <code>BNV</code> — cổng ngành <b>không có ô nhận</b> cho chúng.</div></div>';
+  return h;
+}
+
+function bangDienKhai(){
+  let h='<div class="sec" style="margin:0 10px 10px"><h3>✅ Ai thuộc diện khai CSDL ngành — CHỐT 20/9/2026'+
+   '<span class="r">anh Ninh duyệt · việc <code>E-2</code> của phiên 2B khép lại</span></h3>'+
+   '<div class="note n-i" style="margin:10px"><b>Tiêu chí:</b> <i>«trường này có phải là nơi QUẢN LÝ HỒ SƠ của người đó trên CSDL ngành không»</i> — '+
+   '⛔ không phải <i>«người đó có làm việc ở trường không»</i>.</div>'+
+   '<table><thead><tr><th style="width:280px">Diện làm việc (9 giá trị sau 1E)</th><th style="width:130px">Cờ mặc định</th><th>Vì sao</th></tr></thead><tbody>';
+  DIEN_KHAI.forEach(function(r){
+    h+='<tr><td><b>'+esc(r[0])+'</b></td>'+
+       '<td'+(r[1]?'':' class="risk3"')+'>'+(r[1]?'✅ <b>Bật</b>':'⛔ <b>Tắt</b>')+'</td>'+
+       '<td class="mut">'+esc(r[2])+'</td></tr>';
+  });
+  return h+'</tbody></table>'+
+   '<div class="note n-w" style="margin:10px">🛑 <b>Đây là MẶC ĐỊNH, ⛔ không phải khóa cứng.</b> Cờ vẫn là một trường của <code>M4.1</code>, TCNS sửa được; mỗi lượt đổi <b>ghi audit mức ②</b>. '+
+   'Trường hợp thật rất đa dạng — một người <i>thỉnh giảng</i> mà <b>không có nơi công tác nào khác</b> thì <b>không ai khai cho họ cả</b>, và lúc đó trường phải bật được cờ.</div>'+
+   '<div class="note n-d" style="margin:0 10px 10px">⚠ <b>Hai ô khác với bản tạm áp mà M9.1 đang chạy — nói thẳng.</b> M9.1 đang để <code>HĐ NĐ 68/2000</code> và <code>HĐ NĐ 06/2025</code> ⇒ <i>không khai</i>; bảng trên để <b>khai</b>. Căn cứ đổi:<br>'+
+   '· Bản quét cổng 10/9 cho thấy trường <code>Hình thức hợp đồng</code> <b>có ô đích danh cho cả hai</b> (giá trị 7 và 8). Để tắt thì hai ô ấy của cổng <b>vĩnh viễn rỗng</b>, và số đội ngũ của trường ở Sở <b>hụt đúng nhóm nhân viên phục vụ</b>.<br>'+
+   '· Câu gốc ở <code>nh3.1.1</code> §2.2 loại trừ <i>«hợp đồng <b>NGẮN HẠN</b>»</i> — ⛔ không loại trừ mọi hợp đồng. NĐ 68/2000 và NĐ 06/2025 là hợp đồng <b>dài hạn</b> của nhân viên trong trường.</div>'+
+   '<div class="note n-g" style="margin:0 10px 10px">✅ <b>Anh Ninh chốt 20/9/2026 — đồng ý phương án này.</b> Bảng trên là <b>quyết định đã chốt</b>, ⛔ không bàn lại. '+
+   '⚠ Điều kiện đi kèm giữ nguyên: cờ vẫn là <b>mặc định sửa được từng người</b>, ⛔ không phải khóa cứng — chốt này nói <i>«mặc định nào đúng cho phần lớn trường hợp»</i>, ⛔ không nói <i>«không ai được đổi»</i>.</div></div>';
+}
+
+function ranhGioiBNV(){
+  return '<div class="sec" style="margin:0 10px 10px"><h3>🆕 Ranh giới — menu này CHỈ phục vụ Bộ Giáo dục và Đào tạo<span class="r">HDVC ⑤ · chốt BNV-6 ngày 19/9/2026</span></h3>'+
+   '<table><thead><tr><th style="width:150px"></th><th>CSDL ngành GD&amp;ĐT <i>(menu này)</i></th><th>CSDL quốc gia về cán bộ, công chức, viên chức</th></tr></thead><tbody>'+
+   '<tr><td class="mut">Cơ quan</td><td><b>Bộ Giáo dục và Đào tạo</b></td><td><b>Bộ Nội vụ</b></td></tr>'+
+   '<tr><td class="mut">Khóa đối khớp</td><td>Mã định danh Bộ GD&amp;ĐT</td><td><b>khác</b> — chưa xác định ở giai đoạn này</td></tr>'+
+   '<tr><td class="mut">Chu kỳ</td><td>Chạy tay, theo nhu cầu</td><td><b>Ký số phê duyệt trong NĂM NGÀY CUỐI mỗi tháng</b></td></tr>'+
+   '<tr><td class="mut">Thẩm quyền lúc gửi</td><td>Hiệu trưởng <b>DUYỆT</b>, ⛔ không ký số</td><td><b>Ký số</b></td></tr>'+
+   '<tr><td class="mut">Trạng thái</td><td>✅ Đã dựng</td><td class="risk3">⛔ <b>CHƯA NỐI Ở GIAI ĐOẠN NÀY</b></td></tr>'+
+   '</tbody></table>'+
+   '<div class="note n-d" style="margin:10px">🛑 ⛔ <b>Không thêm nhóm dữ liệu nào của Bộ Nội vụ vào menu này.</b> M10.8 giữ <b>chín</b> nhóm, cả chín đi về <b>một</b> đối tác. '+
+   'Ghép đối tác thứ hai vào cùng đường ống là hỏng ở ba chỗ cùng lúc: <b>khóa đối khớp khác nhau</b> (một lượt đẩy không biết mình đang đối khớp theo mã nào), '+
+   '<b>chu kỳ khác nhau</b> (một bên chạy tay, một bên có hạn chót cứng mỗi tháng), và <b>thẩm quyền khác nhau</b>.<br>'+
+   '⚠ Chỗ nguy nhất: <b>tải trọng khác nhau</b>. Năm nhóm nhạy cảm mức cao là dữ liệu mà <b>Bộ Nội vụ yêu cầu</b> và <b>Bộ GD&amp;ĐT không yêu cầu</b>. '+
+   'Một đường ống chung sẽ có ngày gửi chúng sang cổng ngành chỉ vì <i>«tải trọng đã có sẵn ở đó»</i>.</div></div>';
+}
+
+/* ══ Dữ liệu thật của hai nhóm mới — xem trước HIỆN ĐẦY ĐỦ TỪNG DÒNG ══
+   ⛔ KHÔNG áp luật «xem trước dừng ở mức đếm» của nhóm Sức khỏe (ràng buộc 20):
+   số phòng học và tốc độ Internet KHÔNG phải dữ liệu cá nhân. */
+const SO_DKDB={
+ nam:'2026-2027', maTruong:'79012345',
+ a:[['Có học sinh khuyết tật','Có','dx'],['Có học sinh bán trú','Có','dx'],['Có học sinh nội trú','Có','dx'],
+    ['Có học chương trình song ngữ','Không','dx'],['Đạt mức chất lượng tối thiểu','Có',''],['Có dạy nghề phổ thông','Có',''],
+    ['Có sử dụng máy tính cho dạy học','Có',''],['Có khai thác Internet cho dạy học','Có',''],['Có điện lưới','Có',''],
+    ['Có nguồn nước sạch','Có',''],['Có nước uống','Có',''],['Có công trình vệ sinh','Có',''],
+    ['Có chương trình giáo dục vệ sinh đôi tay','Chưa khảo sát',''],['Có tổ chức học trực tuyến','Có',''],
+    ['Có bộ phận tư vấn học đường','Chưa khảo sát','']],
+ b:[['Có Internet','Có'],['Loại kết nối','Cáp quang'],['Tốc độ (Mbps)','300'],['Tải lên (Mbps)','280'],
+    ['Tải xuống (Mbps)','295'],['Ping (ms)','12'],['Số modem','4'],['Số router','9'],['Nhà cung cấp','Viettel']],
+ c:[['Số phòng máy tính','2',''],['Số máy tính quản lý','18',''],['Số máy tính giảng dạy','24',''],
+    ['Số máy tính học tập','62',''],['Số giáo viên tin học','3','dx'],['Số nhân viên IT chuyên biệt','1',''],
+    ['Số thiết bị hỗ trợ HSKT','5',''],['Tên thiết bị hỗ trợ HSKT','Máy trợ thính · bàn nâng',''],
+    ['Tên phần mềm hỗ trợ HSKT','NVDA',''],['Số giáo viên khuyết tật','1',''],['Tên nền tảng LMS','Dschool LMS',''],
+    ['Nền tảng dạy học trực tuyến','Google Meet',''],['Tên nền tảng quản lý thiết bị','(chưa khai)',''],
+    ['Tên phần mềm an ninh mạng','Kaspersky Endpoint','']]};
+
+/* CSVC: ba điểm trường × ma trận. Cột: tong · kiencuo · bankc · cap4 · nhomuon · chuakhai */
+const SO_CSVC=[
+ {dt:'Cơ sở chính (A)', ma:'DT-A',
+  r:{lop:[22,null,null,null,null,null], ph:[18,12,4,2,0,0], pbm:[6,4,2,0,0,0], cv:[0,0,0,0,0,0]},
+  nc:{ph:[2,900], pbm:[1,600], cv:[0,0]}},
+ {dt:'Điểm trường B', ma:'DT-B',
+  r:{lop:[9,null,null,null,null,null], ph:[8,2,2,1,1,2], pbm:[2,1,1,0,0,0], cv:[3,0,1,1,1,0]},
+  nc:{ph:[3,1400], pbm:[0,0], cv:[2,800]}},
+ {dt:'Điểm trường C', ma:'DT-C',
+  r:{lop:[7,null,null,null,null,null], ph:[6,5,1,0,0,0], pbm:[1,1,0,0,0,0], cv:[0,0,0,0,0,0]},
+  nc:{ph:[0,0], pbm:[0,0], cv:[0,0]}}];
+
+const COT_CT=['Tổng số','Kiên cố','Bán kiên cố','Cấp 4 xuống cấp / tạm','Nhờ mượn','⚠ Chưa khai'];
+
+function dongDayDu(id){
+  if(id==='dkdb'){
+    const chuaKS=SO_DKDB.a.filter(r=>r[1]==='Chưa khảo sát').length;
+    let h='<div class="sec" style="margin:0 10px 10px"><h3>Xem trước ĐẦY ĐỦ TỪNG DÒNG — Điều kiện đảm bảo &amp; hạ tầng'+
+     '<span class="r">năm học <b>'+SO_DKDB.nam+'</b> · mã trường <b>'+SO_DKDB.maTruong+'</b></span></h3>'+
+     '<div class="note n-g" style="margin:10px">⛔ <b>Không áp luật «xem trước dừng ở mức ĐẾM»</b> của nhóm Sức khỏe. '+
+     'Số phòng học và tốc độ Internet <b>không phải dữ liệu cá nhân</b> — giấu chúng đi chỉ làm người chạy phiên không nhìn thấy mình sắp gửi con số nào lên Sở, mà chẳng bảo vệ ai cả.</div>'+
+     '<table><thead><tr><th style="width:320px">Trường</th><th style="width:220px">Giá trị sẽ đẩy</th><th>Ghi chú</th></tr></thead><tbody>'+
+     '<tr><td colspan="3" style="background:#f1f5f9;font-weight:600">a. Điều kiện đảm bảo — 15 cờ ba giá trị</td></tr>';
+    SO_DKDB.a.forEach(function(r){
+      const ks=r[1]==='Chưa khảo sát';
+      h+='<tr><td><b>'+esc(r[0])+'</b>'+(r[2]==='dx'?' <span class="tag t-b">dẫn xuất</span>':'')+'</td>'+
+         '<td'+(ks?' class="risk3"':'')+'>'+esc(r[1])+'</td>'+
+         '<td class="mut">'+(ks?'⛔ <b>KHÔNG thành «Không»</b> — dòng nằm lại tab ④':'')+'</td></tr>';
+    });
+    h+='<tr><td colspan="3" style="background:#f1f5f9;font-weight:600">b. Kết nối Internet — 9 trường</td></tr>';
+    SO_DKDB.b.forEach(r=>{h+='<tr><td><b>'+esc(r[0])+'</b></td><td>'+esc(r[1])+'</td><td class="mut"></td></tr>'});
+    h+='<tr><td colspan="3" style="background:#f1f5f9;font-weight:600">c. Hạ tầng CNTT — 14 trường</td></tr>';
+    SO_DKDB.c.forEach(function(r){
+      const trong=r[1]==='(chưa khai)';
+      h+='<tr><td><b>'+esc(r[0])+'</b>'+(r[2]==='dx'?' <span class="tag t-b">dẫn xuất 🔗 M4.5</span>':'')+'</td>'+
+         '<td'+(trong?' class="risk2"':'')+'>'+esc(r[1])+'</td>'+
+         '<td class="mut">'+(trong?'ô để trống — ⛔ không đẩy chuỗi rỗng giả làm giá trị':'')+'</td></tr>';
+    });
+    return h+'</tbody></table>'+
+     '<div class="note n-w" style="margin:10px">⚑ <b>'+chuaKS+' cờ còn «Chưa khảo sát»</b> ⇒ dòng nằm lại <b>tab ④</b> với lý do nêu đích danh từng cờ. '+
+     '⚠ <b>Đơn vị dòng có chữ «× một năm học»</b>: cổng bắt khai <b>lại mỗi năm</b>, nên ⛔ <b>không được đẩy số của năm đang chạy vào ô của năm khác</b>.</div></div>';
+  }
+  /* ── CSVC công trình ── */
+  let tong=[0,0,0,0,0,0], nc={ph:[0,0],cv:[0,0]}, chuaKhai=0;
+  let h='<div class="sec" style="margin:0 10px 10px"><h3>Xem trước ĐẦY ĐỦ TỪNG DÒNG — CSVC công trình'+
+   '<span class="r">năm học <b>2026-2027</b> · <b>'+SO_CSVC.length+'</b> điểm trường × 1 năm học</span></h3>'+
+   '<div class="note n-i" style="margin:10px">🛑 <b>Cổng chỉ có MỘT ô <code>2. Số phòng học</code></b>, còn M6.4 giữ <b>hai dòng riêng</b> — phòng học thường và phòng bộ môn. '+
+   'Phép cộng <code>2 + 2b</code> làm <b>ở LỚP ĐẨY</b>, ⛔ không gộp ở M6.4: <i>tách ra thì cộng lại được, gộp rồi thì không tách ra được</i>. '+
+   'Bảng dưới <b>hiện cả hai dòng nguồn VÀ dòng tổng</b> — giấu phép cộng đi thì đến lúc Sở hỏi <i>«sao trường báo 30 phòng học»</i> sẽ không ai giải thích được.</div>';
+  SO_CSVC.forEach(function(d){
+    const cong=[0,1,2,3,4,5].map(i=>(d.r.ph[i]||0)+(d.r.pbm[i]||0));
+    for(let i=0;i<6;i++) tong[i]+=cong[i];
+    chuaKhai+=cong[5]+d.r.cv[5];
+    nc.ph[0]+=d.nc.ph[0]+d.nc.pbm[0]; nc.ph[1]+=d.nc.ph[1]+d.nc.pbm[1];
+    nc.cv[0]+=d.nc.cv[0]; nc.cv[1]+=d.nc.cv[1];
+    h+='<table style="margin:0 10px 10px;width:calc(100% - 20px)"><thead><tr>'+
+       '<th style="width:290px">'+esc(d.dt)+' <span class="mut mono">'+esc(d.ma)+'</span></th>'+
+       COT_CT.map((c,i)=>'<th'+(i===5?' class="risk3"':'')+'>'+esc(c)+'</th>').join('')+'</tr></thead><tbody>';
+    h+='<tr><td><b>1. Số lớp</b> <span class="tag t-b">dẫn xuất 🔗 M10.1 ③</span></td>'+
+       d.r.lop.map(v=>'<td>'+(v===null?'<span class="mut">—</span>':so(v))+'</td>').join('')+'</tr>';
+    h+='<tr><td class="mut">2 · Số phòng học (thường)</td>'+d.r.ph.map((v,i)=>'<td'+(i===5&&v?' class="risk3"':'')+'>'+so(v)+'</td>').join('')+'</tr>';
+    h+='<tr><td class="mut">2b · Số phòng học bộ môn 🆕</td>'+d.r.pbm.map((v,i)=>'<td'+(i===5&&v?' class="risk3"':'')+'>'+so(v)+'</td>').join('')+'</tr>';
+    h+='<tr style="background:#eff6ff"><td><b>⇒ 2. Số phòng học</b> <span class="mut">(2 + 2b — ô của cổng)</span></td>'+
+       cong.map((v,i)=>'<td'+(i===5&&v?' class="risk3"':'')+'><b>'+so(v)+'</b></td>').join('')+'</tr>';
+    h+='<tr><td><b>3. Số phòng công vụ cho GV</b></td>'+d.r.cv.map((v,i)=>'<td'+(i===5&&v?' class="risk3"':'')+'>'+so(v)+'</td>').join('')+'</tr>';
+    h+='<tr><td><b>2.1 + 2b.1</b> có nhu cầu đầu tư</td><td><b>'+(d.nc.ph[0]+d.nc.pbm[0])+'</b></td><td colspan="5" class="mut">người nhập — ⛔ không chia theo cấp công trình (phòng xin đầu tư có thể là phòng CHƯA XÂY)</td></tr>';
+    h+='<tr><td><b>2.2 + 2b.2</b> dự kiến kinh phí</td><td><b>'+so(d.nc.ph[1]+d.nc.pbm[1])+'</b> <span class="mut">triệu đồng</span></td><td colspan="5" class="mut">⛔ không đổi sang đồng</td></tr>';
+    h+='<tr><td><b>3.1 · 3.2</b> công vụ</td><td><b>'+d.nc.cv[0]+'</b> phòng · <b>'+so(d.nc.cv[1])+'</b> tr.đ</td><td colspan="5" class="mut"></td></tr>';
+    h+='</tbody></table>';
+  });
+  return h+'<div class="note n-d" style="margin:10px">🛑 <b>'+chuaKhai+' phòng ở cột ⚠ «Chưa khai» ⇒ nằm lại tab ④</b>, nêu đích danh từng địa điểm. '+
+   '⛔ <b>KHÔNG dồn vào «Kiên cố».</b> «Chưa ai đi xem dãy nhà đó xây kiểu gì» biến thành «dãy nhà đó kiên cố» thì trường <b>tự báo cáo mình không cần đầu tư</b> — '+
+   'và đó là con số Sở dùng để <b>phân bổ vốn</b>. Cái sai này <b>có lợi cho ngân sách và hại cho trường</b>, nên ⛔ sẽ không ai đi kiểm lại.</div>'+
+   '<div class="note n-w" style="margin:0 10px 10px">🛑 <b>Đối khớp theo MÃ, ⛔ không theo TÊN.</b> Tên điểm trường là thứ đổi thường xuyên nhất — sáp nhập, đổi tên xã, thêm chữ «cơ sở». '+
+   'Đối khớp theo tên thì một lần đổi tên sẽ <b>đẻ ra một điểm trường thứ hai trên cổng</b>, và từ đó số phòng học của trường <b>tự nhân đôi</b> qua vài lượt đẩy.<br>'+
+   '⚠ Điểm trường chưa có mã trên cổng ⇒ <b>dòng của điểm trường đó vào tab ④</b>, ⛔ <b>không dồn số của nó vào cơ sở chính</b> cho đủ tổng — '+
+   'ma trận 6.1 là căn cứ <b>phân bổ vốn theo địa điểm</b>.</div></div>';
+}
+
+/* ══ Ba ca mẫu C1 · C2 · C3 — chứng minh ba luật chạy thật trên từng dòng ══ */
+function khoiCa(){
+  let h='<div class="sec" style="margin:0 10px 10px"><h3>Ba ca mẫu — C1 · C2 · C3<span class="r">sổ điều phối §9</span></h3>'+
+   '<table><thead><tr><th style="width:36px">Ca</th><th style="width:190px">Học sinh</th><th style="width:230px">Địa chỉ thường trú</th>'+
+   '<th style="width:150px">Trạng thái đẩy</th><th>Kết quả</th></tr></thead><tbody>';
+  CA_HS.forEach(function(c){
+    const ly=chanCa(c), di=ly.length===0;
+    const t=trangThaiNganh(c.tt,c.ngay);
+    h+='<tr><td><b>'+esc(c.ca)+'</b></td>'+
+       '<td><b>'+esc(c.ten)+'</b> <span class="mut">'+esc(c.lop)+'</span><br><span class="mut mono">'+esc(c.md)+'</span><br><span class="mut">'+esc(c.mo)+'</span></td>'+
+       '<td>'+(c.dc.che==='danh_muc'
+          ? '<span class="tag t-g">danh_muc</span><br><span class="mut">'+esc(c.dc.chi)+' · '+esc(c.dc.xa)+' · '+esc(c.dc.tinh)+'</span><br>'+
+            '<span class="mut">ô <b>Quận/Huyện</b> của cổng: <b>để trống kèm ghi chú</b></span>'
+          : '<span class="tag t-r">tu_do</span><br><span class="mut">'+esc(c.dc.chuoi)+'</span><br><span class="risk3">⛔ không có <code>tinh_id</code> · <code>xa_id</code></span>')+'</td>'+
+       '<td>'+(t.ok?'<b>'+esc(t.gt)+'</b>':'<span class="risk3">không đẩy dòng</span>')+'</td>'+
+       '<td>'+(di?'<span class="tag t-g">✅ ĐI TRỌN</span>'
+                 :'<span class="tag t-r">tab ④ · '+ly.length+' lý do</span><br>'+
+                   ly.map(x=>'<span class="mut">· '+esc(x[1])+'</span>').join('<br>'))+'</td></tr>';
+    if(c.qt2) h+='<tr><td></td><td colspan="4" class="mut">🛑 Em có <b>quốc tịch thứ hai</b> «'+esc(c.qt2)+'» — đẩy <b>ô thứ nhất</b> «'+esc(c.qt)+'». '+
+       'Cổng chỉ nhận MỘT giá trị ⇒ ô thứ hai <b>không có ô nhận</b>, ⛔ không ghép hai giá trị vào một ô. '+
+       '<b>Không sinh dòng tab ④</b> — đây là chỗ Dschool giàu hơn, không phải việc chưa xong.</td></tr>';
+  });
+  return h+'</tbody></table>'+
+   '<div class="note n-d" style="margin:10px">🛑 <b>Ca C3 — ⛔ MÁY KHÔNG TỰ DÒ MÃ.</b> Chuỗi tự do có đủ chữ «xã Hùng Lô» và «tỉnh Phú Thọ»; dò ra mã là việc dễ. '+
+   '⛔ <b>Vẫn không làm.</b> Dò sai thì hồ sơ lên Sở mang <b>địa bàn của một xã khác</b> — dữ liệu vẫn đầy đủ, vẫn hợp lệ, cổng vẫn nhận, <b>không ai phát hiện ra</b>. '+
+   'Việc dò là của nút <code>⇄ Chuẩn hóa</code> ở <b>M1.1</b>, nơi <b>người xác nhận</b>.</div></div>';
+}
+
+/* ── HỘP XÁC NHẬN — thứ quan trọng nhất của menu ── */
+function xacNhan(ch){
+  const ds=nhomDaChon(ch); if(!ds.length) return;
+  const k=chanKN();
+  if(k&&!k.mvp){ modal('🔴 Chưa '+(ch==='keo'?'kéo về':'đẩy lên')+' được — kết nối '+KN[kn].ten,
+    '<div class="note n-d" style="margin:0 0 10px">'+esc(k.msg)+'</div>'+
+    '<p class="mut">Nút không bị ẩn đi — ẩn nút thì người dùng chỉ biết «không bấm được» mà không biết <b>thiếu cái gì</b> và <b>phải nhờ ai</b>.</p>',
+    '<button class="btn" onclick="dong()">Đóng</button><button class="btn p" onclick="dong();doiTab(1)">→ Tab Kết nối</button>'); return }
+
+  let ghide=0, mal=0, rui=[];
+  ds.forEach(function(g){const d=DC[g.id]; if(d){ghide+=d.lech; mal+=d.maLech; (d.ruiro||[]).forEach(r=>{if(r[1]>=2)rui.push([g.ten,r])})}});
+
+  if(ch==='keo'){
+    let b='<div class="note n-d" style="margin:0 0 11px;font-size:13px"><b>Xác nhận tải dữ liệu từ CSDL ngành và GHI ĐÈ lên dữ liệu trên hệ thống?</b></div>';
+    b+='<dl class="kv" style="padding:0 0 10px"><dt>Nhóm dữ liệu</dt><dd>'+ds.map(g=>'<b>'+esc(g.ten)+'</b>').join(' → ')+
+       ' <span class="mut">(đã sắp theo thứ tự phụ thuộc)</span></dd>'+
+       '<dt>Số bản ghi sẽ bị <b>ghi đè</b></dt><dd class="risk3"><b>'+so(ghide)+' bản ghi</b></dd>'+
+       '<dt>Lệch mã định danh</dt><dd>'+(mal?'<b class="risk3">'+mal+'</b> — <b>không ghi đè</b>, chuyển sang Việc chưa xong':'0')+'</dd></dl>';
+    if(rui.length){
+      b+='<div style="font-weight:600;margin-bottom:5px">Nhóm trường rủi ro cao — đây là thứ bạn sắp mất:</div><table style="margin-bottom:11px">';
+      rui.forEach(r=>{b+='<tr><td style="width:150px" class="mut">'+esc(r[0])+'</td><td class="risk'+r[1][1]+'">'+(r[1][1]===3?'🔴':'🟡')+' <b>'+esc(r[1][0])+'</b></td><td class="mut">'+esc(r[1][2])+'</td></tr>'});
+      b+='</table>';
+    }
+    let st=[]; ds.forEach(g=>{(SUATAY[g.id]||[]).forEach(x=>st.push(x))});
+    if(st.length){
+      b+='<div class="note n-w" style="margin:0 0 11px"><b>'+st.length+' thao tác sửa tay gần đây sẽ bị ghi đè:</b><br>'+
+         st.map(x=>'· <span class="mono">'+esc(x[0])+'</span> — '+esc(x[1])).join('<br>')+'</div>';
+    }
+    b+='<div class="note n-g" style="margin:0"><b>Hoàn tác được trong 7 ngày.</b> Điểm hoàn tác sẽ <b>bỏ qua bản ghi bị sửa tay sau phiên</b> và nêu đích danh — người ta sửa có chủ đích, ghi đè lên là xóa việc của họ.</div>';
+    if(k&&k.mvp) b+='<div class="note n-w" style="margin:10px 0 0">🟡 <b>MVP:</b> '+esc(k.msg)+'</div>';
+    modal('📥 Kéo dữ liệu về từ CSDL ngành', b,
+      '<button class="btn" onclick="dong()">Hủy</button><button class="btn d" onclick="chay(\'keo\')">Xác nhận ghi đè '+so(ghide)+' bản ghi</button>');
+  } else {
+    let b='<div class="note n-i" style="margin:0 0 11px;font-size:13px"><b>Xác nhận đẩy dữ liệu mới nhất từ Hệ thống lên CSDL ngành?</b></div>';
+    b+='<dl class="kv" style="padding:0 0 10px"><dt>Nhóm dữ liệu</dt><dd>'+ds.map(g=>'<b>'+esc(g.ten)+'</b>').join(' → ')+'</dd>'+
+       '<dt>Số bản ghi gửi lên</dt><dd><b>'+so(ds.reduce((a,g)=>a+g.n,0))+'</b></dd></dl>';
+    if(ds.some(g=>g.nhaycam)){
+      b+='<div class="note n-d" style="margin:0 0 11px"><b>🔒 Phiên này có dữ liệu SỨC KHỎE của trẻ em.</b><br>'+
+         '<b>Luật BVDLCN 91/2025/QH15</b> — dữ liệu về tình trạng sức khỏe là <b>dữ liệu cá nhân nhạy cảm</b>, '+
+         'và dữ liệu cá nhân của <b>trẻ em</b> được bảo vệ riêng. Lượt đẩy này <b>ghi audit ở cả hai nơi</b>: '+
+         'lịch sử phiên ở đây <b>và nhật ký truy cập của M6.6 tab 7</b> — đẩy dữ liệu ra khỏi hệ thống là '+
+         '<b>một lượt xuất</b>, dù nó chạy ở menu khác.</div>';
+      b+='<table style="margin-bottom:11px"><tr><td style="width:120px" class="mut"><b>Cái gì ĐI</b></td>'+
+         '<td>Chiều cao · cân nặng · BMI · đánh giá BMI · biết bơi · bệnh về mắt · bệnh về cột sống '+
+         '<b>+ sáu nội dung thể lực</b></td></tr>'+
+         '<tr><td class="mut"><b>Cái gì Ở LẠI</b></td><td class="risk3">⛔ <b>Nhóm máu · dị ứng · bệnh nền · liên hệ khẩn cấp</b> '+
+         '— CSDL ngành không có chỗ nhận</td></tr></table>';
+    }
+    b+=khoiCanhBao(ds,'day').replace('style="margin:10px"','style="margin:0 0 11px"');
+    if(ds.some(g=>g.moi)){
+      b+='<div class="note n-i" style="margin:0 0 11px"><b>🆕 Phiên này có nhóm dữ liệu mới (HDCS ④).</b><br>'+
+         ds.filter(g=>g.moi).map(g=>'· <b>'+esc(g.ten)+'</b> — đơn vị dòng <b>'+esc(g.donvi)+'</b>, khóa <b>'+esc(g.khoa)+'</b>').join('<br>')+
+         '<br>⚠ Cổng bắt khai <b>lại mỗi năm</b> ⇒ phiên gắn <b>một năm học cụ thể</b>; ⛔ không đẩy số của năm đang chạy vào ô của năm khác.</div>';
+    }
+    if(ds.some(g=>g.id==='ns')){
+      b+='<div class="note n-d" style="margin:0 0 11px">🔒 <b>Phiên này có hồ sơ NHÂN SỰ.</b> Tải trọng là <b>danh sách CHO PHÉP</b> ở §3.5 — chỉ trường mang '+
+         '<code>Nguồn yêu cầu</code> = <code>GDĐT</code> hoặc <code>cả hai</code>.<br>'+
+         '⛔ <b>KHÔNG đẩy năm nhóm nhạy cảm mức cao của HDVC ④</b>: đặc điểm lịch sử bản thân · bị bắt bị tù · quan hệ và thân nhân ở nước ngoài · '+
+         'hoàn cảnh kinh tế nhà đất tài sản (mục 37.3) · thành phần gia đình xuất thân. <b>Không có ngoại lệ, không vai nào bật được.</b><br>'+
+         '⛔ Và không đẩy 50 dòng mang nguồn <code>BNV</code> — <b>Bộ Nội vụ là đối tác KHÁC, chưa nối ở giai đoạn này.</b></div>';
+    }
+    b+='<div class="note n-w" style="margin:0 0 11px"><b>Hiệu trưởng phải DUYỆT trước khi đẩy — không phải ký số.</b><br>'+
+       'Đẩy lô là thao tác kỹ thuật với hệ thống Bộ, không phải văn bản hành chính phát hành ra ngoài. '+
+       'Ký số Nhóm B của <b>chuyển trường</b> ký tại M1.5, của <b>văn bằng</b> ký tại M3.4 — nơi có văn bản thật.</div>';
+    if(!R().duyet)
+      b+='<div class="note n-d" style="margin:0">⛔ Chức danh <b>'+esc(R().ten)+'</b> không có quyền <code>D</code>. Phiên sẽ <b>chờ Hiệu trưởng duyệt</b>, không đẩy ngay.</div>';
+    else
+      b+='<div class="note n-g" style="margin:0">✅ Bạn có quyền <code>D</code> — duyệt và đẩy luôn trong một bước.</div>';
+    if(k&&k.mvp) b+='<div class="note n-w" style="margin:10px 0 0">🟡 <b>MVP:</b> '+esc(k.msg)+'</div>';
+    modal('📤 Đẩy dữ liệu lên CSDL ngành', b,
+      '<button class="btn" onclick="dong()">Hủy</button>'+
+      '<button class="btn p" onclick="chay(\'day\')">'+(R().duyet?'Duyệt và đẩy':'Gửi Hiệu trưởng duyệt')+'</button>');
+  }
+}
+function chay(ch){
+  const ds=nhomDaChon(ch), k=chanKN();
+  dong();
+  if(k&&k.mvp){ toast('🟡 <b>MVP — dừng ở đây.</b> '+esc(k.msg)); return }
+  const id='P-'+(900+LS.length);
+  if(ch==='keo'){
+    let ghide=0,mal=0; ds.forEach(g=>{const d=DC[g.id]; if(d){ghide+=d.lech;mal+=d.maLech}});
+    LS.unshift({id:id,t:'29/08/2026 09:30',u:R().ten,ch:'keo',nh:ds.map(g=>g.ten).join(' · '),ng:'API',n:ghide,
+      kq:'Áp dụng — ghi đè '+so(ghide)+' bản ghi'+(mal?', '+mal+' lệch mã → Việc chưa xong':''),ok:1,ht:1});
+    toast('✅ Đã kéo về · ghi đè <b>'+so(ghide)+'</b> bản ghi'+(mal?' · <b>'+mal+'</b> lệch mã định danh <b>không ghi đè</b>, đã chuyển sang Việc chưa xong':'')+
+          ' · <b>hoàn tác được 7 ngày</b> ở tab Lịch sử.');
+  } else {
+    const n=ds.reduce((a,g)=>a+g.n,0);
+    LS.unshift({id:id,t:'29/08/2026 09:30',u:R().ten,ch:'day',nh:ds.map(g=>g.ten).join(' · '),ng:'API',n:n,
+      kq:R().duyet?'Đã đẩy — Sở nhận '+so(n)+' bản ghi':'Chờ Hiệu trưởng duyệt',ok:R().duyet?1:2,ht:0});
+    if(!R().duyet)
+      VIEC.unshift({loai:'duyet',ob:'Phiên '+id+' · '+ds.map(g=>g.ten).join(' · '),
+        ct:so(n)+' bản ghi · người gửi: '+R().ten+' · 29/08/2026 09:30',
+        ly:'Đẩy lên CSDL ngành cần Hiệu trưởng DUYỆT trước — không phải ký số. Phiên đang treo, chưa gửi gì lên Sở.',
+        ai:'HT', pid:id});
+    toast(R().duyet?'✅ Đã đẩy <b>'+so(n)+'</b> bản ghi lên CSDL ngành.'
+                   :'📨 Đã gửi Hiệu trưởng duyệt — <b>chưa đẩy gì cả</b>. Việc đang chờ ở tab <b>Việc chưa xong</b>.');
+  }
+  tick={}; ve();
+}
+
+/* ═══════════ TAB 4 — VIỆC CHƯA XONG ═══════════ */
+/* 🆕 20/9/2026 — CSDL-2A: thêm BỐN loại việc và MỞ RỘNG loại `sk`.
+   Khóa `sk` GIỮ NGUYÊN TÊN dù nhãn đã rộng ra, vì M9.1 §6.5.3 và nh9 đang trỏ vào
+   khóa đó (CS-S8 — ⛔ không đánh số lại). Nhãn cũ «Trường sức khỏe chưa khảo sát»
+   nay là MỘT DÒNG trong loại ấy, không phải cả loại.
+   Bốn loại cuối tách ra vì chúng đòi BỐN HÀNH ĐỘNG KHÁC NHAU CỦA BỐN NGƯỜI KHÁC NHAU,
+   và hai trong số đó không có hành động nào cả. Gộp lại thì con số ở tab ④ thành một
+   chỉ báo đỏ không bao giờ về 0 — đúng thất bại mà §1.1 đã bỏ bảng nguồn sự thật vì nó. */
+const LOAI={duyet:['⏸','Phiên đẩy chờ Hiệu trưởng duyệt','t-y'],
+            khop:['⛔','Không đối khớp được','t-r'],tuchoi:['↩','Lượt đẩy bị Sở từ chối','t-y'],
+            pending:['⏳','Hồ sơ mang mã tạm PENDING-','t-b'],vb:['📜','Văn bằng chờ công khai','t-n'],
+            sk:['⚑','Ô chưa có giá trị để đẩy — ⛔ không bịa giá trị','t-y'],
+            diachi:['🏠','Địa chỉ ở chế độ nhập tự do — chưa chuẩn hóa','t-y'],
+            onhan:['🚫','Cổng không có ô nhận — Dschool mịn hơn cổng','t-n'],
+            chualop:['📋','Chưa xếp lớp — chưa gắn được vào phiên đẩy','t-b'],
+            tnghiep:['🎓','Ngoài tập đẩy theo trạng thái','t-n']};
+/* 🆕 MYC-2C (21/9/2026) — luật che M1.1 §6.3.9 đi theo khi đẩy */
+const CHE_CCCD='<div class="note n-d" style="margin:0 10px 10px">🛑 <b>Luật che của M1.1 §6.3.9 đi theo ba dòng CCCD của người trưởng thành.</b> '+
+ '<b>Phiên đồng bộ gửi số ĐẦY ĐỦ lên cổng</b> — đó là mục đích khai. Nhưng <b>mọi màn hình của M10.8</b> — bảng đối chiếu · tab ④ Việc chưa xong · tệp xuất — hiện <b>dạng che <span class="mono">034•••••821</span></b>. '+
+ 'M10.8 ⛔ <b>không có nút 👁 Hiện</b>: cần số đầy đủ thì mở hồ sơ ở <b>M1.1</b>, nơi lượt hiện chỉ Văn thư · Hiệu trưởng và <b>ghi audit riêng từng lượt</b>. <i>(Luật BVDLCN 91/2025)</i></div>';
+function tab4(){
+  let h='<div class="note n-i">Chiều thao tác đã quyết thẩm quyền, nên <b>không còn tình huống “hai bên bất đồng”</b>. Tab <code>Xung đột chờ xử lý</code> đã bị bỏ. Còn lại ở đây là <b>sự cố và việc chưa xong</b> — mỗi loại <b>một nguyên nhân khác nhau</b>, ⛔ không gộp thành một danh sách phẳng.</div>'+
+   '<div class="note n-w">🆕 <b>20/9/2026 — bốn loại việc mới và một loại mở rộng.</b> Bốn nguyên nhân mới đòi <b>bốn hành động khác nhau của bốn người khác nhau</b>, và <b>hai trong số đó không có hành động nào cả</b> '+
+   '(<code>🚫 Cổng không có ô nhận</code> · <code>🎓 Ngoài tập đẩy</code>). Gộp chúng vào một con số <i>“còn N việc chưa xong”</i> thì tab này thành một <b>chỉ báo đỏ không bao giờ về 0</b> — '+
+   'đúng loại thất bại mà §1.1 đã bỏ bảng nguồn sự thật vì nó.</div>'+
+   '<div class="note n-i">🔗 <b>Mức ② là cảnh báo SỚM trong trường; cửa chặn ở tab này giữ nguyên.</b> '+
+   'Hồ sơ học sinh đếm trường CSDL ngành còn thiếu <b>từ trước</b>, ở dòng <i>«📋 Khai báo CSDL ngành: thiếu N mục»</i> có hạn — xem <b>M1.1 §3.0</b>. '+
+   'Dòng nào lúc đẩy vẫn thiếu thì <b>vẫn nằm lại đây như cũ</b>, ⛔ không luật chặn nào đổi.</div>';
+  Object.keys(LOAI).forEach(function(L){
+    const ds=VIEC.filter(v=>v.loai===L); if(!ds.length) return;
+    h+='<div class="sec"><h3>'+LOAI[L][0]+' '+LOAI[L][1]+' <span class="tag '+LOAI[L][2]+'">'+ds.length+'</span></h3><table><tbody>';
+    ds.forEach(function(v,ix){
+      /* ⚠ Hai loại KHÔNG AI xử lý được — và đó là chủ ý (§8, §3.8b).
+         Cho chúng một nút «Xử lý» là mời người đi làm một việc không tồn tại. */
+      const khongAi = (v.ai==='—');
+      const xl = khongAi ? 0
+               : v.ai==='HT'   ? R().duyet
+               : v.ai==='VT'   ? (R().sua&&(vai==='VT'||vai==='FULL'))
+               : v.ai==='TCNS' ? (R().sua&&(vai==='TCNS'||vai==='FULL')) : R().sua;
+      h+='<tr><td style="width:270px"><b>'+esc(v.ob)+'</b><br><span class="mut mono">'+esc(v.ct)+'</span></td>'+
+         '<td>'+esc(v.ly)+'</td>'+
+         '<td style="width:135px"><span class="mut">xử lý: '+esc(v.ai)+'</span><br>'+
+         (khongAi
+            ?'<span class="tag t-n" style="margin-top:4px;display:inline-block">không ai — dòng để BIẾT</span><br>'+
+             '<button class="btn" style="margin-top:4px;padding:2px 7px;font-size:11px" onclick="xuLy(\''+v.loai+'\')">Vì sao?</button>'
+            :xl?(v.loai==='duyet'
+              ?'<button class="btn p" style="margin-top:4px" onclick="duyetPhien(\''+v.pid+'\')">✔ Duyệt và đẩy</button>'
+              :'<button class="btn" style="margin-top:4px" onclick="xuLy(\''+v.loai+'\')">Xử lý</button>')
+            :'<button class="btn lock" style="margin-top:4px" onclick="toast(\'Chức danh '+esc(R().ten)+' không xử lý được loại việc này — thuộc '+esc(v.ai)+'.\')">🔒 không phải việc của bạn</button>')+
+         '</td></tr>';
+    });
+    h+='</tbody></table></div>';
+  });
+  return h;
+}
+function duyetPhien(pid){
+  const p=LS.filter(x=>x.id===pid)[0];
+  modal('✔ Duyệt phiên đẩy '+esc(pid),
+   '<div class="note n-i" style="margin:0 0 10px"><b>Duyệt — KHÔNG phải ký số.</b> Đẩy lô là thao tác kỹ thuật với hệ thống Bộ, không phải văn bản hành chính phát hành ra ngoài.</div>'+
+   '<dl class="kv" style="padding:0 0 10px"><dt>Nhóm dữ liệu</dt><dd><b>'+esc(p?p.nh:'')+'</b></dd>'+
+   '<dt>Số bản ghi</dt><dd>'+so(p?p.n:0)+'</dd><dt>Người gửi</dt><dd>'+esc(p?p.u:'')+'</dd></dl>'+
+   '<div class="note n-w" style="margin:0"><b>Vì sao không bắt ký số ở đây.</b> Bắt Hiệu trưởng ký số <b>mỗi lần đẩy</b> nghĩa là phải cắm USB token cho từng phiên. Kết cục thật sẽ là <b>đưa token cho văn thư</b> — và từ đó mọi chữ ký số của trường mang tên Hiệu trưởng, kể cả những cái Hiệu trưởng không biết. Ký số Nhóm B của chuyển trường ký tại <b>M1.5</b>, của văn bằng ký tại <b>M3.4</b> — nơi có văn bản thật.</div>',
+   '<button class="btn" onclick="dong()">Hủy</button>'+
+   '<button class="btn" onclick="tuChoiPhien(\''+pid+'\')">Từ chối</button>'+
+   '<button class="btn p" onclick="xongPhien(\''+pid+'\',1)">Duyệt và đẩy</button>')}
+function xongPhien(pid,ok){
+  const p=LS.filter(x=>x.id===pid)[0];
+  if(p){p.kq = ok?('Đã đẩy — Sở nhận '+so(p.n)+' bản ghi · duyệt bởi '+R().ten):('Hiệu trưởng từ chối — không đẩy');p.ok=ok?1:0}
+  for(let i=VIEC.length-1;i>=0;i--) if(VIEC[i].pid===pid) VIEC.splice(i,1);
+  dong(); ve();
+  toast(ok?'✅ Đã duyệt và đẩy phiên <b>'+esc(pid)+'</b> lên CSDL ngành · ghi audit mức ② ở M10.7.'
+          :'⛔ Đã từ chối phiên <b>'+esc(pid)+'</b> — không có gì được gửi lên Sở.');
+}
+function tuChoiPhien(pid){xongPhien(pid,0)}
+function xuLy(L){
+  if(L==='khop') modal('⛔ Không đối khớp được — phải quyết bằng tay',
+   '<div class="note n-d" style="margin:0 0 10px"><b>Không có mặc định, và đó là chủ ý.</b></div>'+
+   '<p><b>Lệch mã định danh</b> không phải dữ liệu sai. <code>TT 42/2021</code>: mã <b>bất biến</b> — hình thành từ lần nhập đầu tiên, không thay đổi hoặc xóa, dùng liên tục ở mọi cấp học. Nên hai mã khác nhau cho một người nghĩa là <b>ghép nhầm bản ghi</b> hoặc <b>một người bị cấp hai mã trái quy định</b>.</p>'+
+   '<p style="margin-top:9px">Đây là <b>ngoại lệ duy nhất</b> của quy tắc «chiều quyết định thẩm quyền» — nếu để mã chảy theo «kéo về thì Sở thắng» thì một lượt kéo có thể <b>ghi đè mất mã gốc</b>, thứ luật cấm thay đổi.</p>'+
+   '<p style="margin-top:9px"><b>Đối khớp gần đúng</b> (họ tên + ngày sinh + giới tính) <b>không bao giờ tự áp dụng</b>: trường sau sáp nhập rất dễ có hai em trùng, và <b>ghép nhầm là lỗi không phát hiện được bằng mắt về sau</b> — hai hồ sơ đã trộn thì không tách lại được.</p>',
+   '<button class="btn" onclick="dong()">Đóng</button>');
+  else if(L==='vb') modal('📜 Văn bằng chờ công khai — nghĩa vụ mới của TT 10/2026',
+   '<div class="note n-w" style="margin:0 0 10px"><b>TT 10/2026</b> (hiệu lực 15/4/2026) bắt buộc <b>công khai thông tin văn bằng</b> — cấp · chỉnh sửa · thu hồi · hủy bỏ — lên cổng thông tin và cơ sở dữ liệu, và <b>ÁP DỤNG HỒI TỐ</b> cho cả văn bằng đã cấp trước đây.</div>'+
+   '<table><tr><th></th><th>Luồng cũ (nh1.9 §4.3)</th><th>TT 10/2026</th></tr>'+
+   '<tr><td>Ai cấp bằng THPT</td><td>Sở GDĐT</td><td><b>Hiệu trưởng</b></td></tr>'+
+   '<tr><td>Số hiệu văn bằng</td><td>CSDL ngành cấp</td><td><b>Trường tự lập</b></td></tr>'+
+   '<tr><td>Đồng bộ CSDL ngành</td><td>Chặn <b>trước</b> khi cấp bằng</td><td>Nghĩa vụ công khai <b>sau</b> khi cấp</td></tr>'+
+   '<tr><td>THCS</td><td>Cấp bằng THCS</td><td><b>Không còn cấp bằng</b> — xác nhận trong học bạ</td></tr></table>'+
+   '<div class="note n-d" style="margin:11px 0 0"><b>Vì sao phải có hàng đợi tồn đọng.</b> Nghĩa vụ hồi tố nghĩa là mọi bằng cấp trước 15/4/2026 cũng phải công khai. Không có hàng đợi này thì <b>trường vi phạm mà không biết mình vi phạm</b> — kiểu vi phạm tệ nhất, vì không ai đi tìm thứ mình không biết là mình thiếu.</div>',
+   '<button class="btn" onclick="dong()">Đóng</button>');
+  /* ══ 🆕 20/9/2026 — bốn loại việc mới và loại `sk` mở rộng ══ */
+  else if(L==='sk') modal('⚑ Ô chưa có giá trị để đẩy — ⛔ không bịa giá trị',
+   '<div class="note n-d" style="margin:0 0 10px"><b>Ba nguồn khác nhau, cùng MỘT luật: chưa có giá trị thật thì ⛔ không đẩy một giá trị nào cả.</b></div>'+
+   '<table><tr><th style="width:190px">Nguồn</th><th>Luật</th></tr>'+
+   '<tr><td><b>Cờ ba giá trị = «Chưa khảo sát»</b><br><span class="mut">mọi menu, không chỉ M6.6</span></td>'+
+   '<td>⛔ <b>KHÔNG thành «Không»</b> <span class="mut">(HDCS ③)</span>. «Trường chưa hỏi em này có biết bơi không» và «em này không biết bơi» là <b>hai câu khác nhau</b> — biến cái đầu thành cái sau là <b>bịa một số liệu rồi gửi lên Sở</b>.</td></tr>'+
+   '<tr><td><b>«Miễn» của thể lực</b></td><td>⛔ <b>KHÔNG thành «0»</b> — số 0 là «đo được 0», không phải «không đo».</td></tr>'+
+   '<tr><td><b>«Cấp công trình» chưa khai</b><br><span class="mut">capCT = null</span></td>'+
+   '<td>⛔ <b>KHÔNG dồn vào «Kiên cố»</b>. Làm thế là trường <b>tự báo cáo mình không cần đầu tư</b> — và đó là con số Sở dùng để <b>phân bổ vốn</b>.</td></tr>'+
+   '<tr><td><b>Trường dẫn xuất, nguồn trống</b></td><td>Luật ② của §3.4 — ⛔ <b>không đẩy giá trị mặc định</b>, dòng vào đây kèm tên menu nguồn.</td></tr></table>'+
+   '<div class="note n-w" style="margin:11px 0 0">⚠ <b>So theo GIÁ TRỊ, ⛔ không theo nhãn.</b> Giá trị thứ ba của mọi cờ ba giá trị mang <b>hai nhãn</b>: Web hiện <code>Chưa khảo sát</code>, App PH-HS hiện <code>Chưa trả lời</code>. '+
+   'Ai viết luật đẩy theo <b>chuỗi nhãn</b> thì những em do phụ huynh khai trên App sẽ <b>lọt qua bộ lọc</b>, và dòng ấy lên Sở mang một giá trị chưa ai trả lời.</div>',
+   '<button class="btn" onclick="dong()">Đóng</button>');
+  else if(L==='diachi') modal('🏠 Địa chỉ ở chế độ nhập tự do — ⛔ MÁY KHÔNG TỰ DÒ MÃ',
+   '<div class="note n-d" style="margin:0 0 10px"><b>Bản ghi có <code>che_do = tu_do</code> thì KHÔNG CÓ <code>tinh_id</code> và <code>xa_id</code></b> — mà cổng đòi đúng hai mã đó.</div>'+
+   '<p>🛑 <b>Dò tên trong <code>chuoi_tu_do</code> rồi tự gán mã là ĐOÁN.</b> Đoán sai thì <b>hồ sơ lên Sở mang địa bàn của một xã khác</b> — và cái sai đó <b>im lặng</b>: dữ liệu vẫn đầy đủ, vẫn hợp lệ, cổng vẫn nhận, <b>không ai phát hiện ra</b>; rồi nó quay lại thành <b>căn cứ xét diện chính sách theo vùng</b> và thành con số thống kê của Sở.</p>'+
+   '<p style="margin-top:9px">Việc dò là của nút <code>⇄ Chuẩn hóa</code> ở <b>menu chủ</b>, nơi <b>máy gợi ý và NGƯỜI xác nhận</b>. Chỗ khác nhau không nằm ở thuật toán — cùng một phép dò — mà nằm ở chỗ <b>có người chịu trách nhiệm cho kết quả hay không</b>.</p>'+
+   '<div class="note n-w" style="margin:11px 0 0"><b>Chế độ tự do KHÔNG phải lỗi.</b> HDCS ① giữ nó cho bốn ca mà danh mục không phục vụ được: ngoài tỉnh hoặc ngoài nước · danh mục chưa cập nhật sau sáp nhập · '+
+   '<b>quê quán theo đơn vị hành chính đã giải thể</b> · nhập nhanh lúc tiếp nhận hồ sơ. Trong trường nó <b>⛔ không chặn gì cả</b>; chỉ khi lên cổng thì dòng mới nằm lại đây.</div>'+
+   '<div class="note n-i" style="margin:10px 0 0">⚠ <b>Đây sẽ là lý do phổ biến nhất ở lượt đẩy đầu tiên</b> — dữ liệu cũ đều mang <code>che_do = tu_do</code> (HDCS ① quy tắc d). Vì thế màn xem trước <b>đếm riêng</b> con số này, '+
+   'để văn thư biết mình đang đối mặt với <b>một việc làm dần hàng tháng</b>, chứ không phải vài dòng lỗi.</div>'+
+   '<div class="note n-d" style="margin:10px 0 0">🛑 Và ô <code>Quận/Huyện</code> của cổng <b>để TRỐNG kèm ghi chú</b> — ⛔ không bịa, ⛔ <b>không nhét tên xã vào</b>. '+
+   'Nhét tên xã vào ô huyện thì bản ghi trông như đã đủ, và <b>mọi báo cáo của Sở cắt theo huyện sẽ gom em này vào một huyện không tồn tại</b>.</div>',
+   '<button class="btn" onclick="dong()">Đóng</button>');
+  else if(L==='onhan') modal('🚫 Cổng không có ô nhận — Dschool mịn hơn cổng',
+   '<div class="note n-i" style="margin:0 0 10px">Loại việc này <b>không có ai xử lý ở trường</b>. Nó ở đây để <b>biết</b>, và để báo Sở nếu cần.</div>'+
+   '<p><b>Mồ côi cha HOẶC mẹ.</b> Cổng chỉ có một ô <code>Mồ côi cả cha mẹ</code>; M1.2 mịn hơn: <i>cha · mẹ · cả hai</i>. 🛑 ⛔ <b>Không gộp cho tiện</b> — một em <b>còn mẹ</b> mà khai là mồ côi cả cha mẹ thì <b>đó là khai sai</b>, và cái sai này đi thẳng vào dữ liệu ngành rồi <b>quay lại thành căn cứ chính sách</b>: trợ cấp, học bổng, diện ưu tiên xét tuyển đều đọc ô đó.</p>'+
+   '<p style="margin-top:9px"><b>Chín ô tích kiêm nhiệm — nay còn MỘT.</b> Cổng dùng 37 checkbox; M4.3 dùng <b>bản ghi chức danh</b> có đơn vị, phạm vi, từ–đến, quyết định căn cứ. Mô hình của Dschool <b>giàu hơn</b> ⇒ ⛔ <b>không rút gọn cho khớp</b> (CS-S4).</p>'+
+   '<div class="note n-o" style="margin:9px 0 0">🆕 <b>20/9/2026 — W1: tám trong chín ô đã có chỗ khai.</b> M4.1 §6.2.1q dựng <b>một trường «Nhiệm vụ kiêm nhiệm»</b> — tích chọn nhiều mục, <b>CHỈ LƯU</b>, ⛔ không sinh quyền. Phản đối cũ (<i>«ghi vào M4.3 là cấp quyền theo một tư cách nhà trường không có thẩm quyền trao»</i>) ⛔ <b>không còn áp dụng</b> khi trường ấy không cấp quyền gì.<br>⛔ <b>Còn đúng MỘT ô để trống:</b> <b>Phó Bí thư Đoàn TN</b> — ⛔ không đưa vào danh mục vì đã có nguồn thật ở <b>M6.15</b>; đường đúng là <b>đọc 🔗 M6.15</b>, và đó là việc chưa làm.</div>'+
+   '<div class="note n-g" style="margin:11px 0 0"><b>Một dòng nằm lại ở đây là MỘT VIỆC NHÌN THẤY ĐƯỢC; một dòng gộp sai là MỘT SỐ LIỆU SAI MÀ KHÔNG AI ĐI TÌM.</b></div>',
+   '<button class="btn" onclick="dong()">Đóng</button>');
+  else if(L==='chualop') modal('📋 Chưa xếp lớp — chưa gắn được vào phiên đẩy',
+   '<div class="note n-w" style="margin:0 0 10px">🆕 <b>Loại việc mới, đặt tên tại phiên CSDL-2A</b> — việc <code>E-1</code> mà phiên <code>2B</code> giao. M9.1 đang ghi thẳng trên màn hình <i>«2A chưa có loại việc cho ca này»</i>.</div>'+
+   '<p>Học sinh <b>đã nhập học và đang học bình thường</b>, nhưng <b>chưa được xếp vào lớp nào</b>. Lớp là <b>khóa neo</b> khi đẩy (§3.1): hàng `Hồ sơ học sinh` treo vào `Danh mục lớp`, nên em chưa có lớp thì <b>dòng không gắn được vào đâu</b> trên cổng.</p>'+
+   '<p style="margin-top:9px">Hàm <code>trangThaiNganh()</code> trả <b>«không đẩy dòng»</b> cho trạng thái này (HDCS ⑤).</p>'+
+   '<div class="note n-g" style="margin:11px 0 0"><b>Loại việc này SẼ HẾT.</b> Văn thư xếp lớp ở <b>M1.9</b> rồi đẩy lại — khác hẳn nhóm <code>🎓 Ngoài tập đẩy</code>, nơi không ai làm gì được. '+
+   'Đó chính là lý do <b>hai ca không đẩy dòng ⛔ không gộp làm một loại</b>: chúng khác nhau ở <b>ai xử lý</b>.</div>',
+   '<button class="btn" onclick="dong()">Đóng</button><button class="btn p" onclick="dong();toast(\'Deep-link: /M1.9?action=xep_lop&amp;return=M10.8 — mở màn xếp lớp hàng loạt\')">🔗 Xếp lớp ↗ M1.9</button>');
+  else if(L==='tnghiep') modal('🎓 Ngoài tập đẩy theo trạng thái — vì sao dòng này vẫn hiện ra',
+   '<div class="note n-i" style="margin:0 0 10px"><b>Không ai xử lý được loại việc này, và đó là CHỦ Ý.</b></div>'+
+   '<p>Cổng có <b>12 giá trị trạng thái gắn học kỳ</b> và <b>không có giá trị «Đã tốt nghiệp»</b> — quá trình học của em kết thúc bằng <b>xét tốt nghiệp</b> ở M3.4, không phải bằng một trạng thái trên hồ sơ. Nên hàm <code>trangThaiNganh()</code> trả <b>«không đẩy dòng»</b>.</p>'+
+   '<p style="margin-top:9px">🛑 <b>Vì sao không lặng lẽ bỏ qua.</b> Trường có <b>1.284</b> hồ sơ mà phiên đẩy chỉ gửi <b>1.068</b> dòng. Nếu 216 dòng kia <b>biến mất không dấu vết</b> thì con số của Sở lệch con số của trường, và <b>không ai giải thích được vì sao</b> — người đi tìm sẽ dò lại từng em, hoặc tệ hơn, kết luận là <i>“phần mềm mất dữ liệu”</i>.</p>'+
+   '<p style="margin-top:9px">Một dòng ở đây ghi <i>“216 em đã tốt nghiệp — ngoài tập đẩy”</i> biến một <b>bí ẩn</b> thành một <b>câu trả lời</b>.</p>'+
+   '<div class="note n-w" style="margin:11px 0 0">⚠ Loại này <b>không bao giờ rỗng và không cần rỗng</b>. Vì thế nó <b>đứng riêng</b>, ⛔ không trộn vào con số «còn N việc chưa xong» — trộn vào thì cả tab thành một chỉ báo đỏ mà mọi người học cách bỏ qua.</div>',
+   '<button class="btn" onclick="dong()">Đóng</button>');
+  else if(L==='tuchoi') modal('↩ Lượt đẩy bị Sở từ chối',
+   '<div class="note n-i" style="margin:0 0 10px">Lý do <b>hiện nguyên văn Sở trả về</b>, không diễn giải lại.</div>'+
+   '<p>Diễn giải lại thì mất thông tin, và khi gọi lên Sở hỏi thì hai bên nói hai ngôn ngữ khác nhau.</p>'+
+   '<p style="margin-top:9px">Ca «mã lớp không tồn tại» là hệ quả của <b>thứ tự phụ thuộc</b>: phải đẩy <b>Danh mục lớp</b> trước rồi mới đẩy <b>Hồ sơ học sinh</b>.</p>',
+   '<button class="btn" onclick="dong()">Đóng</button>');
+  else modal('⏳ Hồ sơ mang mã tạm PENDING-',
+   '<p>Học sinh chuyển đến đã nhập học và <b>đang học bình thường</b>, nhưng chưa có mã định danh do Sở cấp.</p>'+
+   '<p style="margin-top:9px">Mã tạm <code>PENDING-</code> cho phép nghiệp vụ nội bộ chạy tiếp mà <b>không giả vờ là đã có mã thật</b>. Có <b>đồng hồ đếm</b> để không ai quên — hồ sơ này đã chờ <b>21 ngày</b>.</p>'+
+   '<p class="mut" style="margin-top:9px">Tự hết khi Sở cấp mã. M1.5 có chip lọc riêng cho nhóm này.</p>',
+   '<button class="btn" onclick="dong()">Đóng</button>');
+}
+
+/* ═══════════ TAB 5 — LỊCH SỬ ═══════════ */
+function tab5(){
+  let h='<div class="note n-i">M10.8 giữ lịch sử <b>PHIÊN</b>; M10.7 giữ <b>từng bản ghi bị thay đổi</b>. Hai đơn vị dòng khác nhau — ở đây là <i>“phiên kéo về ngày 12/8 ghi đè 1.336 hồ sơ”</i>, ở M10.7 là <i>“hồ sơ Nguyễn Minh Anh, SĐT mẹ: 091… → 091…, do phiên P-0812”</i>.</div>';
+  h+='<table><thead><tr><th style="width:78px">Phiên</th><th style="width:125px">Thời điểm</th><th style="width:190px">Người chạy</th>'+
+     '<th style="width:76px">Chiều</th><th style="width:240px">Nhóm dữ liệu</th><th style="width:150px">Nguồn</th><th>Kết quả</th></tr></thead><tbody>';
+  LS.forEach(function(p){
+    h+='<tr><td class="mono">'+esc(p.id)+'</td><td class="mono">'+esc(p.t)+'</td><td>'+esc(p.u)+'</td>'+
+       '<td><span class="tag '+(p.ch==='keo'?'t-y':p.ch==='day'?'t-b':'t-n')+'">'+(p.ch==='keo'?'📥 kéo':p.ch==='day'?'📤 đẩy':'⚙ dịch vụ')+'</span></td>'+
+       '<td>'+esc(p.nh)+'</td><td class="mut">'+esc(p.ng)+'</td>'+
+       '<td><span class="'+(p.ok===1?'risk1':p.ok===2?'risk2':'risk3')+'">'+esc(p.kq)+'</span><br>'+
+       '<a href="#" style="color:#1d4ed8;font-size:11px;text-decoration:none" onclick="toast(\'Deep-link: /M10.7?ctx='+p.id+'&amp;return=M10.8 — xem từng bản ghi bị thay đổi trong phiên này\');return false">🔗 Xem chi tiết từng bản ghi ↗ M10.7</a>'+
+       (p.ht?' · <button class="btn" style="padding:1px 7px;font-size:11px" onclick="hoanTac(\''+p.id+'\')">↶ Hoàn tác</button>':'')+
+       '</td></tr>';
+  });
+  return h+'</tbody></table>';
+}
+function hoanTac(id){
+  modal('↶ Hoàn tác phiên '+esc(id),
+   '<div class="note n-g" style="margin:0 0 10px">Điểm hoàn tác <b>sống 7 ngày</b> kể từ lúc áp dụng.</div>'+
+   '<div class="note n-w" style="margin:0 0 10px"><b>2 bản ghi sẽ KHÔNG được hoàn tác</b>, vì đã bị sửa tay sau phiên:<br>'+
+   '· <span class="mono">28/08 Đỗ Thị Lan</span> — Nguyễn Minh Anh (9A2)<br>'+
+   '· <span class="mono">28/08 Trần Văn Hùng</span> — Lê Thị Hoa (9A2)<br>'+
+   '<span class="mut">Người ta sửa có chủ đích — ghi đè lên là xóa việc của họ. Nên hoàn tác <b>bỏ qua và nêu đích danh</b>.</span></div>'+
+   '<div class="note n-d" style="margin:0"><b>Không xóa hồ sơ đã phát sinh dữ liệu</b>, kể cả khi chính phiên này tạo ra nó — em đó đã có điểm, có điểm danh.</div>',
+   '<button class="btn" onclick="dong()">Hủy</button><button class="btn d" onclick="dong();toast(\'Đã hoàn tác phiên '+esc(id)+' · bỏ qua 2 bản ghi đã sửa tay · ghi audit mức ② ở M10.7.\')">Hoàn tác</button>')}
+
+/* ═══════════ TAB 6 — XUẤT ═══════════ */
+function tab6(){
+  let h='<div class="note n-w">⏸ <b>Tab này tạm giữ từ M1.8 — tôi không chắc nó thuộc M10.8.</b> Xuất tệp cho người dùng trường <b>không liên quan gì tới kết nối CSDL ngành</b>; giữ ở đây thì M10.8 thành ngăn kéo đựng đồ thừa. Nhưng chuyển về M1.1/M4.1 là đổi phạm vi hai menu đã chốt. Ghi ở §15 điểm 4.</div>';
+  h+='<div class="sec"><h3>Xuất dữ liệu — chịu Luật BVDLCN 91/2025<span class="r">mỗi lượt xuất ghi audit mức ② ở M10.7</span></h3><dl class="kv">'+
+   '<dt>Mục đích xuất <b style="color:#b91c1c">*</b></dt><dd>(bắt buộc chọn — không có mặc định)</dd>'+
+   '<dt>Nhóm dữ liệu</dt><dd>Hồ sơ học sinh · Danh sách nhân sự · Kết quả học tập</dd>'+
+   '<dt>Nhóm trường</dt><dd>Chọn từng nhóm — <b>không xuất mặc định toàn bộ</b></dd>'+
+   '<dt>Trường nhạy cảm</dt><dd><b style="color:#b91c1c">Mặc định TẮT</b> — bật cần Hiệu trưởng duyệt kèm lý do riêng</dd>'+
+   '<dt>Tệp xuất ra</dt><dd>Được <b>đóng dấu</b>: trường · người xuất · thời điểm · mục đích</dd></dl>'+
+   '<div style="padding:0 10px 10px"><button class="btn'+(R().xuat?' p':' lock')+'" onclick="'+(R().xuat?'toast(\'Bắt buộc chọn mục đích trước khi tải. Lượt xuất này ghi audit mức ② ở M10.7.\')':'toast(\'Chức danh này không có quyền XD ở M10.8.\')')+'">⬇ Xuất</button></div></div>';
+  h+='<div class="note n-i">Tải PDF hồ sơ <b>một</b> người thuộc menu chủ (M1.1 · M4.1); từ <b>hai</b> trở lên mới thuộc đây.</div>';
+  return h;
+}
+
+/* ═══════════ VẼ ═══════════ */
+function ve(){
+  veConn(); veTabs();
+  const v=document.getElementById('view');
+  if(!coTab(tab)){ v.innerHTML='<div class="empty">Chức danh <b>'+esc(R().ten)+'</b> không có quyền truy cập Menu này.<br>'+
+    '<span style="font-size:12px">Đây là <b>phạm vi dữ liệu trả về rỗng</b>, không phải màn hình bị ẩn bớt nút.</span></div>'; return }
+  v.innerHTML = tab===1?tab1() : tab===2?tabChieu('keo') : tab===3?tabChieu('day')
+              : tab===4?tab4() : tab===5?tab5() : tab6();
+  if(tab===2||tab===3) capNhatNut();
+}
+function doiKN(){ kn=document.getElementById('cst').value; ve() }
+function doiVai(){
+  vai=document.getElementById('role').value; tick={};
+  document.getElementById('scinfo').innerHTML='Phạm vi: <b style="color:#fff">'+esc(R().sc)+'</b>';
+  const t=R().tabs.split(',').filter(x=>x);
+  tab = t.length? (t.indexOf(String(tab))>=0?tab:+t[0]) : 1;
+  ve();
+}
+document.getElementById('role').value='FULL';
+document.getElementById('cst').value='ok';
+doiVai();
+</script>
+</body></html>

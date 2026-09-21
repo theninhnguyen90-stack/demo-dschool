@@ -1,0 +1,1690 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M6.13 Theo dõi thi đua — Dschool</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f1f5f9;--surface:#fff;--line:#e2e8f0;--line2:#cbd5e1;
+ --ink:#0f172a;--ink2:#475569;--ink3:#94a3b8;--brand:#1d4ed8;--brand-soft:#eff6ff;
+ --red:#dc2626;--red-soft:#fef2f2;--amber:#d97706;--amber-soft:#fffbeb;
+ --green:#059669;--green-soft:#ecfdf5;--violet:#7c3aed}
+body{font:14px/1.5 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font:inherit}
+
+.hdr{height:56px;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:13px;padding:0 15px;position:sticky;top:0;z-index:40}
+.logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px}
+.logo .mark{width:28px;height:28px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px}
+.school{color:var(--ink2);font-size:12.5px;border-left:1px solid var(--line);padding-left:13px;max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sel{border:1px solid var(--line2);border-radius:7px;padding:5px 9px;font-size:12.5px;background:#fff}
+.sel:disabled{background:#f1f5f9;color:var(--ink2);cursor:not-allowed}
+.spacer{flex:1}
+.icobtn{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;position:relative;font-size:15px}
+.icobtn:hover{background:var(--bg)}
+.dot{position:absolute;top:3px;right:3px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--violet);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700}
+.lockico{font-size:11px;color:var(--ink3)}
+
+.wrap{display:flex;min-height:calc(100vh - 56px)}
+.side{width:216px;flex:0 0 216px;background:var(--surface);border-right:1px solid var(--line);padding:10px 8px;position:sticky;top:56px;max-height:calc(100vh - 56px);overflow-y:auto}
+.sgrp{font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;padding:12px 10px 5px}
+.snav{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:var(--ink2);font-size:12.5px;margin-bottom:1px}
+.snav:hover{background:var(--bg)}
+.snav.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
+.snav .nb{margin-left:auto;flex:0 0 auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;min-width:18px;text-align:center;line-height:15px}
+.snav.off{opacity:.34;pointer-events:none}
+.main{flex:1;padding:14px 18px 44px;min-width:0}
+
+.tophd{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+h1{font-size:19px;font-weight:700}
+.btn{border:1px solid var(--line2);background:#fff;border-radius:8px;padding:7px 12px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--bg)}
+.btn.p{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn.p:hover{background:#1e40af}
+.btn.d{background:var(--red);color:#fff;border-color:var(--red)}
+.btn.g{background:var(--green);color:#fff;border-color:var(--green)}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn.xs{padding:3px 8px;font-size:11.5px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.act{background:var(--brand-soft);border-color:var(--brand);color:var(--brand);font-weight:600}
+
+.tabs{display:flex;gap:3px;border-bottom:2px solid var(--line);margin:12px 0 0;flex-wrap:wrap}
+.tab1{padding:9px 14px;font-size:13.5px;font-weight:600;color:var(--ink2);border-bottom:2px solid transparent;margin-bottom:-2px;display:flex;align-items:center;gap:7px}
+.tab1.on{color:var(--brand);border-bottom-color:var(--brand)}
+.tab1 .b{background:var(--bg);color:var(--ink2);font-size:11px;font-weight:700;padding:1px 7px;border-radius:9px}
+.tab1.on .b{background:var(--brand);color:#fff}
+.tab1 .b.r{background:var(--red);color:#fff}
+
+.scope{display:flex;align-items:center;gap:9px;background:#f8fafc;border:1px solid var(--line);border-left:3px solid var(--brand);
+ border-radius:9px;padding:8px 12px;font-size:12px;color:var(--ink2);margin:12px 0 0;flex-wrap:wrap}
+.scope b{color:var(--ink)}
+.scope .sp{flex:1}
+
+.bar{display:flex;gap:7px;align-items:center;flex-wrap:wrap;padding:11px 0}
+.inp{border:1px solid var(--line2);border-radius:8px;padding:7px 11px;font-size:13px;background:#fff;min-width:220px}
+.fs{border:1px solid var(--line2);border-radius:8px;padding:6px 9px;font-size:12.5px;background:#fff}
+.sum{display:flex;gap:13px;font-size:12px;color:var(--ink2);margin-left:auto;flex-wrap:wrap}
+.sum b{color:var(--ink)}
+
+.alert{display:flex;align-items:flex-start;gap:10px;padding:9px 13px;border-radius:10px;font-size:12.5px;font-weight:600;margin-bottom:10px;line-height:1.6}
+.alert .sp{flex:1;font-weight:400}
+.alert .sp b{font-weight:700}
+.alert.w{background:var(--amber-soft);border:1px solid #fde68a;color:#92400e}
+.alert.r{background:var(--red-soft);border:1px solid #fecaca;color:#991b1b}
+.alert.g{background:var(--green-soft);border:1px solid #a7f3d0;color:#065f46}
+.alert.b{background:var(--brand-soft);border:1px solid #bfdbfe;color:#1e40af}
+.info{background:var(--brand-soft);border:1px solid #bfdbfe;color:#1e40af;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.65;margin-bottom:11px}
+.warn{background:var(--amber-soft);border:1px solid #fde68a;color:#92400e;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.65;margin-bottom:11px}
+.danger{background:var(--red-soft);border:1px solid #fecaca;color:#991b1b;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.65;margin-bottom:11px}
+.okbox{background:var(--green-soft);border:1px solid #a7f3d0;color:#065f46;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.65;margin-bottom:11px}
+.ro{background:#f8fafc;border:1px solid var(--line);color:var(--ink2);padding:8px 11px;border-radius:9px;font-size:12px;margin-bottom:11px;line-height:1.6}
+
+.stage{display:flex;gap:13px;align-items:flex-start}
+.listw{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.panel{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:none}
+.stage.open .panel{display:block}
+@media(max-width:1320px){.stage.open .listw{display:none}}
+
+.grph{display:flex;align-items:center;gap:9px;padding:8px 13px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:11.5px;font-weight:700;color:var(--ink2);cursor:pointer}
+.grph .cnt{margin-left:auto;font-weight:600;color:var(--ink3);font-size:11px}
+.grph .arw{font-size:10px;color:var(--ink3)}
+
+.hdrow,.hrow{display:grid;gap:9px;padding:9px 13px;align-items:center;font-size:13px;grid-template-columns:1.25fr 1.5fr 1.75fr .8fr .75fr}
+.hdrow{background:#fbfdff;border-bottom:1px solid var(--line);font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em}
+.hrow{border-bottom:1px solid var(--line);cursor:pointer;border-left:3px solid transparent}
+.hrow:hover{background:var(--brand-soft)}
+.hrow.on{background:#eff6ff;border-left-color:var(--brand)}
+.hrow.bad{border-left-color:var(--red);background:#fffafa}
+.hrow.warnl{border-left-color:var(--amber)}
+.stage.open .hdrow,.stage.open .hrow{grid-template-columns:1.25fr 1.7fr}
+.stage.open .hcol{display:none}
+
+.st2{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;white-space:nowrap;display:inline-block}
+.st2.o{background:var(--green-soft);color:var(--green)}
+.st2.w{background:var(--amber-soft);color:var(--amber)}
+.st2.r{background:var(--red-soft);color:var(--red)}
+.st2.n{background:var(--bg);color:var(--ink2)}
+.st2.b{background:#e0e7ff;color:#3730a3}
+.tg{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;white-space:nowrap;display:inline-block}
+.tg.a{background:#e0e7ff;color:#3730a3}
+.tg.b{background:#fef3c7;color:#92400e}
+.tg.c{background:var(--bg);color:var(--ink2)}
+.tg.g{background:var(--green-soft);color:var(--green)}
+.tg.r{background:var(--red-soft);color:var(--red)}
+
+.ph{padding:12px 15px;border-bottom:1px solid var(--line);display:flex;gap:13px;align-items:center;flex-wrap:wrap}
+.ph .n h2{font-size:16px;font-weight:700}
+.ph .n .m{font-size:12px;color:var(--ink2);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pill{font-size:10.5px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--ink2)}
+/* ★ KHÔNG neo chiều cao vào 100vh: trong khung nhúng hoặc màn hình thấp,
+   calc(100vh - 215px) ra 0 và THÂN PANEL BỊ NÉN SẠCH — nội dung vẫn nằm
+   trong DOM nhưng không ai nhìn thấy. Mốc cố định thì luôn đúng, và panel
+   vẫn tự cuộn bên trong thay vì kéo dài trang ra vài nghìn pixel. */
+.pbody{padding:13px 15px;max-height:760px;overflow-y:auto}
+.card{border:1px solid var(--line);border-radius:11px;margin-bottom:12px;overflow:hidden}
+.card.bad{border-color:#fecaca}
+.ch{display:flex;align-items:center;gap:9px;padding:10px 12px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:13px;font-weight:700;flex-wrap:wrap}
+.ch .sp{flex:1}
+.cb{padding:4px 0}
+.f{display:grid;grid-template-columns:180px 1fr;gap:11px;align-items:start;padding:7px 12px;font-size:13px}
+.f+.f{border-top:1px solid #f1f5f9}
+.f .k{color:var(--ink2);font-size:12.5px}
+.f .v{font-weight:600;min-width:0;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.cact{display:flex;gap:6px;padding:9px 12px;border-top:1px solid var(--line);background:#fcfdfe;flex-wrap:wrap;align-items:center}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:7px 9px;border-bottom:1px solid var(--line);background:#f8fafc;white-space:nowrap}
+td{padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr.warnrow{background:var(--amber-soft)}
+.ro2{background:#f8fafc}
+tr.rorow{background:#f8fafc}
+tr.okrow{background:var(--green-soft)}
+tr.totrow{background:#f1f5f9;font-weight:600}
+.cell{width:64px;border:1px solid var(--line2);border-radius:6px;padding:4px 6px;text-align:right;font:inherit;font-size:12.5px}
+.cell:focus{outline:2px solid var(--brand);border-color:var(--brand)}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.stp{flex:1;min-width:150px;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);font-size:12px;color:var(--ink3)}
+.stp.done{background:var(--green-soft);border-color:var(--green);color:var(--green);font-weight:600}
+.stp.now{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:700}
+.stp.off{opacity:.45}
+.spark{display:flex;gap:2px;align-items:flex-end;height:24px}
+.spark i{width:6px;border-radius:1px;display:block}
+.frow{display:flex;gap:9px;flex-wrap:wrap}
+.frow>div{flex:1;min-width:130px}
+.kchk{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;cursor:pointer}
+
+.lt{width:100%;border-collapse:collapse;font-size:11.5px}
+.lt th{background:var(--bg);text-align:left;padding:5px 8px;font-size:10.5px;color:var(--ink3);border:1px solid var(--line)}
+.lt td{padding:5px 8px;border:1px solid var(--line);vertical-align:top}
+.lt td.d{width:46px;font-weight:700;background:#fafbfc;text-align:center}
+.blk{display:inline-block;padding:2px 7px;border-radius:5px;margin:2px 3px 2px 0;font-weight:600;white-space:nowrap}
+.blk.ck{background:#e0e7ff;color:#3730a3}
+.blk.nk{background:var(--green-soft);color:var(--green)}
+.blk.moi{background:#f1f5f9;color:var(--ink2);border:1px dashed var(--ink3)}
+.blk.x{background:var(--red-soft);color:var(--red);box-shadow:0 0 0 1.5px var(--red) inset}
+.blk.s{background:var(--amber-soft);color:var(--amber);box-shadow:0 0 0 1.5px var(--amber) inset}
+.lichpick{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:5px}
+.lprow{display:flex;align-items:center;gap:8px;padding:7px 11px;border-bottom:1px solid #f1f5f9;font-size:12.5px}
+.lprow:last-child{border-bottom:none}
+.lprow.on{background:#f8fafc}
+.lpd{display:flex;align-items:center;gap:6px;width:96px;font-weight:600;cursor:pointer;flex:none}
+.lprow:not(.on) .lpd{color:var(--ink3);font-weight:400}
+.lpsep{color:var(--ink3)}
+.lpt:disabled{background:#f8fafc;color:#cbd5e1}
+.lpinfo{font-size:11px;margin-left:auto;text-align:right;line-height:1.4}
+.lpinfo.x{color:var(--red);font-weight:700}
+.lpinfo.s{color:var(--amber);font-weight:700}
+.lpinfo.o{color:var(--green)}
+.frow{display:flex;gap:9px;flex-wrap:wrap}
+.frow>div{flex:1;min-width:130px}
+.kchk{display:inline-flex;align-items:center;gap:5px;margin-right:12px;font-size:12.5px}
+tr.badrow{background:var(--red-soft)}
+tr.totrow td{background:#f8fafc;font-weight:700}
+.tbw{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.tbx{overflow-x:auto}
+
+.mask{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:60;display:none;place-items:center}
+.mask.on{display:grid}
+.modal{background:#fff;border-radius:13px;width:820px;max-width:94vw;max-height:88vh;display:flex;flex-direction:column}
+.mh{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700}
+.mb{padding:15px 18px;overflow-y:auto;font-size:13px;line-height:1.65}
+.mf{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;align-items:center}
+.fldi{width:100%;border:1px solid var(--line2);border-radius:8px;padding:8px 10px;margin-top:4px}
+.lbl{display:block;font-size:12px;color:var(--ink2);font-weight:600;margin-top:11px}
+
+.rolebar{background:#0f172a;color:#cbd5e1;padding:8px 15px;display:flex;align-items:center;gap:7px;font-size:12.5px;flex-wrap:wrap}
+.rolebar b{color:#fff}
+.rb{border:1px solid #334155;border-radius:999px;padding:3px 10px;font-size:12px;color:#cbd5e1}
+.rb:hover{background:#1e293b;color:#fff}
+.rb.on{background:#fff;color:#0f172a;border-color:#fff;font-weight:700}
+.ntg{border:1px solid #334155;border-radius:999px;padding:3px 10px;font-size:12px;color:#cbd5e1}
+.ntg:hover{background:#1e293b;color:#fff}
+.ntg.on{background:#fbbf24;color:#3b2a05;border-color:#fbbf24;font-weight:700}
+.simw{font-size:11.5px;color:#94a3b8;display:flex;align-items:center;gap:6px;margin-left:auto}
+.simw select{background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:6px;padding:2px 6px;font-size:11.5px}
+/* Ghi chu thiet ke: giai thich VI SAO, khong phai mot phan man hinh that. Mac dinh TAT. */
+body.nn .dnote{display:none!important}
+.dnote{background:#fffbeb;border:1px dashed #fbbf24;color:#78350f;padding:8px 11px;border-radius:9px;font-size:12px;line-height:1.6;margin-bottom:11px}
+.dnote b{color:#78350f}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(110px);background:#0f172a;color:#fff;padding:11px 17px;border-radius:9px;font-size:13px;z-index:80;transition:transform .22s;max-width:92vw}
+.toast.on{transform:translateX(-50%)}
+.empty{padding:38px;text-align:center;color:var(--ink3)}
+.lgd{display:flex;gap:14px;font-size:11.5px;color:var(--ink3);padding:9px 13px;border-top:1px solid var(--line);flex-wrap:wrap;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px 9px;color:var(--ink2)}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+.rolnk{font-size:10px;font-weight:700;color:var(--brand);background:#eef2ff;border:1px solid #c7d2fe;border-radius:999px;padding:1px 7px;white-space:nowrap}
+.rolnk:hover{background:#e0e7ff}
+.crumb{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink2);margin-bottom:9px;flex-wrap:wrap}
+.crumb a{color:var(--brand);cursor:pointer;font-weight:600}
+
+/* --- rieng M6.1 --- */
+.daybar{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:9px 13px;flex-wrap:wrap;margin-bottom:10px}
+.daybar .dt{font-weight:700;font-size:14px;min-width:190px}
+.pbar{display:flex;height:9px;border-radius:5px;overflow:hidden;background:var(--line);flex:1;min-width:180px}
+.pbar i{display:block}
+.pbar i.a{background:var(--green)}
+.pbar i.b{background:var(--amber)}
+.pbar i.c{background:var(--line2)}
+.pbar i.d{background:var(--red)}
+.pleg{display:flex;gap:12px;font-size:11px;color:var(--ink2);flex-wrap:wrap;align-items:center}
+.pleg s{width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:4px}
+.hsrow{display:flex;align-items:center;gap:10px;padding:7px 11px;border-bottom:1px solid #f1f5f9;font-size:13px}
+.hsrow:last-child{border-bottom:none}
+.hsrow .av{width:30px;height:30px;border-radius:50%;background:#e0e7ff;color:#3730a3;display:grid;place-items:center;font-size:11px;font-weight:700;flex:0 0 30px}
+.hsrow .nm{min-width:0;flex:1}
+.hsrow .nm b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hsrow .nm span{font-size:10.5px;color:var(--ink3)}
+.hsrow.lk{background:#fafbfc}
+.tgl{display:flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden;flex:0 0 auto}
+.tgl button{padding:4px 11px;font-size:11.5px;font-weight:600;color:var(--ink2);background:#fff}
+.tgl button.on{background:var(--green);color:#fff}
+.tgl button.on.v{background:var(--red)}
+.tgl button:disabled{opacity:.45;cursor:not-allowed}
+.src{font-size:10.5px;color:var(--ink3);flex:0 0 auto;max-width:250px}
+.aller{color:var(--red);font-size:12px;cursor:help}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.stp{border:1px solid var(--line2);background:#fff;border-radius:9px;padding:7px 13px;font-size:12.5px;font-weight:600;color:var(--ink2);display:flex;align-items:center;gap:7px}
+.stp.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.stp.done{border-color:#a7f3d0;background:var(--green-soft);color:#065f46}
+.stp:disabled{opacity:.45;cursor:not-allowed}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:7px 12px;font-size:13px;border-bottom:1px solid #f1f5f9}
+.kv:last-child{border-bottom:none}
+.kv b{font-variant-numeric:tabular-nums}
+.kv.tot{background:#f8fafc;font-weight:700}
+.mini{width:74px;text-align:right;border:1px solid var(--line2);border-radius:7px;padding:4px 7px;font-variant-numeric:tabular-nums;font-size:12px}
+.qgrp{padding:9px 13px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:11.5px;font-weight:700;color:var(--ink2)}
+</style>
+</head>
+<body class="nn">
+<script>/* sidebar da chuyen ve index.html — node an giu cho JS cu khong vo */
+(function(){var n=document.createElement("nav");n.id="side";n.style.display="none";document.documentElement.appendChild(n)})();</script>
+
+
+<div class="rolebar" id="rolebar"></div>
+
+<header class="hdr">
+  <div class="logo"><span class="mark">DS</span> Dschool</div>
+  <div class="school">THCS &amp; THPT Nguyễn Tất Thành</div>
+  <select class="sel" id="hnam"><option>Năm học 2026-2027</option><option>Năm học 2025-2026</option></select>
+  <select class="sel" id="hdt"></select>
+  <span class="lockico" id="dtlock"></span>
+  <div class="spacer"></div>
+  <button class="icobtn">🔔<span class="dot" id="ndot">3</span></button>
+  <button class="icobtn">💬<span class="dot">2</span></button>
+  <div class="avatar" id="ava">TĐ</div>
+</header>
+
+<div class="wrap">
+  <main class="main">
+    <div id="crumb"></div>
+    <div class="tophd"><h1 id="h1">Theo dõi thi đua</h1><div class="spacer"></div><span id="topact"></span></div>
+    <div class="tabs" id="tabs"></div>
+    <div id="content"></div>
+  </main>
+</div>
+
+<div class="mask" id="mask"><div class="modal">
+  <div class="mh" id="mh"></div><div class="mb" id="mb"></div><div class="mf" id="mf"></div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════ NỀN CHUNG — NHÓM 🎖 HOẠT ĐỘNG ĐOÀN - ĐỘI ══════════════
+   ★ Tệp này CHÉP GIỐNG HỆT ở SÁU thư mục demo-src:
+       M6.3-Hoat-dong-Doan-Doi · M6.13-Theo-doi-thi-dua · M6.14-Hoat-dong-va-Su-kien ·
+       M6.15-To-chuc-va-Ban-chap-hanh · M6.16-Quan-ly-CLB · M6.17-Quy-hoat-dong
+     (tách M6.3 thành ba menu ngày 14/9/2026 — phiên DOT1-P4A; P4B · P4C · P4E chép thêm; PZ sửa chú thích 14/9).
+   Sáu demo phải CÙNG lớp, CÙNG học sinh, CÙNG người đăng nhập. Sửa một chỗ thì chép sang năm chỗ kia
+   và so mã băm — sáu tệp phải trùng nhau từng byte. Phần riêng của từng menu nằm ở app.20-* trở đi. */
+
+/* ========== TIỆN ÍCH ========== */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const p2=n=>String(n).padStart(2,'0');
+const vn=n=>Number(n).toLocaleString('vi-VN');
+const kd=s=>(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d');
+function toast(m){const t=$('#toast');t.innerHTML=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),4200)}
+function closeM(){$('#mask').classList.remove('on')}
+const mfns={};
+function modal(t,b,f){$('#mh').innerHTML=t;$('#mb').innerHTML=b;$('#mf').innerHTML=f;$('#mask').classList.add('on')}
+const THU=['CN','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
+const d2k=d=>d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
+const k2d=k=>{const[a,b,c]=k.split('-').map(Number);return new Date(a,b-1,c)};
+const d2s=d=>p2(d.getDate())+'/'+p2(d.getMonth()+1)+'/'+d.getFullYear();
+const k2s=k=>d2s(k2d(k));
+const kThu=k=>THU[k2d(k).getDay()];
+const HOMNAY='2026-10-23';                 /* Thứ Sáu */
+/* deep-link D3 giữa ba menu: ?tab=…&ctx=…&return=…&vai=… — vai đi theo để người rà không phải chọn lại */
+const QS=new URLSearchParams(location.search);
+
+/* ========== LỚP ========== */
+const DT={A:'Điểm trường A',B:'Điểm trường B',C:'Điểm trường C'};
+const LOP=[
+ {id:'6A1',dt:'A',khoi:6,gvcn:'Nguyễn Thị Hoa',n:38},{id:'6A2',dt:'A',khoi:6,gvcn:'Lê Văn Minh',n:35},
+ {id:'6A3',dt:'A',khoi:6,gvcn:'Vũ Thị Mai',n:31},{id:'7A1',dt:'A',khoi:7,gvcn:'Đặng Thị Hồng',n:33},
+ {id:'7A2',dt:'A',khoi:7,gvcn:'Phạm Văn Đức',n:26},{id:'8A1',dt:'A',khoi:8,gvcn:'Ngô Thanh Tùng',n:18},
+ {id:'6B1',dt:'B',khoi:6,gvcn:'Hoàng Thị Nhung',n:30},{id:'7B1',dt:'B',khoi:7,gvcn:'Lý Thị Phượng',n:21},
+ {id:'9A1',dt:'A',khoi:9,gvcn:'Trần Thị Vân',n:34},{id:'9A2',dt:'A',khoi:9,gvcn:'Bùi Quốc Hải',n:30},
+ {id:'9B1',dt:'B',khoi:9,gvcn:'Ngô Thị Lan',n:25}
+];
+const lopById=id=>LOP.find(l=>l.id===id);
+
+/* ── học sinh (sinh tất định, dùng chung mã với M1.1) ── */
+const HO=['Nguyễn','Trần','Lê','Phạm','Hoàng','Đỗ','Vũ','Bùi','Đặng','Ngô','Dương','Lý','Phan','Trịnh'];
+const DEM=['Văn','Thị','Minh','Thu','Quốc','Hải','Ngọc','Anh','Đức','Gia','Khánh','Phương','Thanh'];
+const TEN=['An','Bình','Chi','Dũng','Giang','Hà','Hùng','Khang','Lan','Mai','Nam','Oanh','Phúc','Quân',
+ 'Sơn','Trang','Tú','Vy','Yến','Long','Linh','Nhung','Thắng','Kiên','Hạnh','Đạt','Thảo','Duy','Ngân'];
+function rng(seed){let s=seed;return()=>{s=(s*1103515245+12345)&0x7fffffff;return s/0x7fffffff}}
+/* ★ hạt giống theo lớp — BĂM có thứ tự ký tự. Bản trước lấy TỔNG mã ký tự nên 6A3 · 7A2 · 8A1 (cùng tổng 170)
+   ra cùng danh sách tên, cùng ngày sinh, cùng số chuyên cần — ba lớp giống hệt nhau. */
+const hat=(s,k)=>s.split('').reduce((a,c)=>(a*31+c.charCodeAt(0))%99991,k)+1;
+const HSC={};
+function hsCuaLop(lopId){
+ if(HSC[lopId]) return HSC[lopId];
+ const l=lopById(lopId), r=rng(hat(lopId,7)*97), ds=[];
+ for(let i=0;i<l.n;i++) ds.push({id:lopId+'-'+i,lop:lopId,dt:l.dt,khoi:l.khoi,
+  ten:HO[Math.floor(r()*HO.length)]+' '+DEM[Math.floor(r()*DEM.length)]+' '+TEN[Math.floor(r()*TEN.length)],
+  ma:'HS-2026-'+p2(Math.floor(r()*900)+100)+i});
+ HSC[lopId]=ds; return ds;
+}
+const hsById=id=>hsCuaLop(id.split('-')[0]).find(x=>x.id===id);
+
+/* ========== NĂM HỌC & TUẦN ==========
+   Sao đỏ chấm theo TUẦN, nên tuần là một thực thể có thật (số hiệu, ngày đầu, ngày cuối).
+   Mốc năm học do UBND tỉnh quyết định — tham số, không hard-code. */
+const NAMHOC={ten:'2026–2027',khaiGiang:'2026-09-05',tuan1:'2026-09-07',
+ hk1:['2026-09-05','2027-01-16'],hk2:['2027-01-17','2027-05-31'],soTuan:35};
+function tuanCua(k){const a=k2d(NAMHOC.tuan1), d=k2d(k); return Math.floor((d-a)/(7*864e5))+1}
+function ngayDauTuan(n){const d=k2d(NAMHOC.tuan1); d.setDate(d.getDate()+(n-1)*7); return d2k(d)}
+function ngayCuoiTuan(n){const d=k2d(ngayDauTuan(n)); d.setDate(d.getDate()+5); return d2k(d)}  /* T2 → T7 */
+function ngayTrongTuan(n,thu){const d=k2d(ngayDauTuan(n)); d.setDate(d.getDate()+thu); return d2k(d)} /* thu: 0 = Thứ Hai */
+const TUAN_NAY=tuanCua(HOMNAY);
+const kyCuaTuan=n=>ngayDauTuan(n)<=NAMHOC.hk1[1]?'hk1':'hk2';
+const thangCuaTuan=n=>ngayDauTuan(n).slice(0,7);
+
+/* ========== NGÀY SINH — ĐIỀU KIỆN TUỔI QUYẾT ĐỊNH AI ĐƯỢC KẾT NẠP ==========
+   ★ Không suy tuổi từ khối lớp: một lớp 9 có em sinh tháng 1 và em sinh tháng 12. */
+const NAMSINH={6:2015,7:2014,8:2013,9:2012};
+(function ganNgaySinh(){
+ LOP.forEach(l=>{
+  const r=rng(hat(l.id,11)*53);
+  hsCuaLop(l.id).forEach(h=>{
+   const nam=NAMSINH[l.khoi]-(r()<0.06?1:0);          /* vài em học muộn một năm */
+   const th=Math.floor(r()*12)+1, ng=Math.floor(r()*27)+1;
+   h.ns=nam+'-'+p2(th)+'-'+p2(ng);
+  });
+ });
+})();
+function tuoiTai(ns,moc){
+ const a=k2d(ns), b=k2d(moc);
+ let t=b.getFullYear()-a.getFullYear();
+ const m=b.getMonth()-a.getMonth();
+ if(m<0||(m===0&&b.getDate()<a.getDate())) t--;
+ return t;
+}
+/* ★ ĐIỀU LỆ, không phải quy ước nội bộ: Đội 9 → hết 15 tuổi · Đoàn từ đủ 15 tuổi + 1 ngày → 30 tuổi */
+const duTuoiDoi=(hs,moc)=>{const t=tuoiTai(hs.ns,moc); return t>=9&&t<=15};
+function duTuoiDoan(hs,moc){
+ const d=k2d(hs.ns); d.setFullYear(d.getFullYear()+15); d.setDate(d.getDate()+1);
+ return d2k(d)<=moc && tuoiTai(hs.ns,moc)<=30;
+}
+function ngayDuTuoiDoan(hs){const d=k2d(hs.ns); d.setFullYear(d.getFullYear()+15); d.setDate(d.getDate()+1); return d2k(d)}
+
+/* ========== TỔ CHỨC: ĐỘI và ĐOÀN — MỘT TRỤC PHẠM VI, không phải bộ lọc ========== */
+const TOCHUC={doi:{ten:'Đội TNTP Hồ Chí Minh',ngan:'Đội',icon:'🔴',phutrach:'Tổng phụ trách Đội',
+  khoi:[6,7,8],dieule:'Đội viên: thiếu niên từ 9 đến hết 15 tuổi'},
+ doan:{ten:'Đoàn TNCS Hồ Chí Minh',ngan:'Đoàn',icon:'🔵',phutrach:'Bí thư Đoàn trường',
+  khoi:[9],dieule:'Đoàn viên: từ đủ 15 tuổi + 1 ngày đến 30 tuổi'}};
+
+/* ========== NGƯỜI ĐĂNG NHẬP — cùng người ở cả ba menu ==========
+   Năng lực (mảng q) do từng menu gán ở app.20 — cùng một người, mỗi menu một bộ quyền. */
+const ROLES={
+ FULL:{n:'Trần Minh Đức',cd:'🔓 Đủ quyền (demo)',sc:'School',dt:null,tc:['doi','doan']},
+ TPT :{n:'Đỗ Thị Bích Ngọc',cd:'Tổng phụ trách Đội',sc:'School',dt:null,tc:['doi']},
+ BTD :{n:'Vũ Đình Trung',cd:'Bí thư Đoàn trường',sc:'School',dt:null,tc:['doan']},
+ HT  :{n:'Nguyễn Quang Huy',cd:'Hiệu trưởng',sc:'School',dt:null,tc:['doi','doan']},
+ PHT :{n:'Lý Thanh Bình',cd:'PHT Điểm trường A',sc:'Branch',dt:'A',tc:['doi','doan']},
+ GVCN:{n:'Nguyễn Thị Hoa',cd:'GVCN 6A1',sc:'Class',dt:'A',lop:['6A1'],tc:['doi','doan']},
+ VT  :{n:'Phan Thị Thảo',cd:'Văn thư',sc:'Branch',dt:'A',tc:['doi','doan']}
+};
+let role='FULL';
+if(QS.get('vai')&&ROLES[QS.get('vai')]) role=QS.get('vai');
+const R=()=>ROLES[role];
+const can=q=>(R().q||[]).includes(q);
+const tcCua=()=>R().tc;
+const coTC=tc=>tcCua().includes(tc);
+const motTC=()=>tcCua().length===1?tcCua()[0]:null;
+const dtHieuLuc=()=>R().sc==='School'?ST.dt:R().dt;
+const dtThuc=()=>{const d=dtHieuLuc();return d==='ALL'?'A':d};
+function lopTrongPhamVi(){
+ const r=R();
+ if(r.sc==='Class') return LOP.filter(l=>r.lop.includes(l.id));
+ const d=dtHieuLuc();
+ return LOP.filter(l=>d==='ALL'||l.dt===d);
+}
+/* sáu menu cùng nhóm + hai menu ngoài nhóm được nhóm deep-link tới — dùng cho D3 (PZ 14/9: gom các dòng các demo tự thêm ở app.20/app.30;
+   các dòng tự thêm đó còn để nguyên — gán lại cùng giá trị, vô hại) */
+const FILE_MENU={'M6.3':'M6.3-Hoat-dong-Doan-Doi.html','M6.13':'M6.13-Theo-doi-thi-dua.html',
+ 'M6.14':'M6.14-Hoat-dong-va-Su-kien.html','M6.15':'M6.15-To-chuc-va-Ban-chap-hanh.html','M6.16':'M6.16-Quan-ly-CLB.html',
+ 'M6.17':'M6.17-Quy-hoat-dong.html','M4.3':'M4.3-Chuc-danh-va-Diem-cong-tac.html','M7.5':'M7.5-Thu-chi-va-Bao-cao-tai-chinh.html',
+ /* 🆕 BTDS-3Z 20/9/2026 — M8.6 Bảng tin Đời sống trường (cụm BTDS, YK-07): nay là menu chủ DUY NHẤT của khối 📸 trên App.
+    Có dòng này thì linkM86() của app.20 đổi sang linkMenu('M8.6',…) và hai nút mô phỏng thành <a href> thật.
+    ⛔ KHÔNG đổi hình dạng URL của HDBT §3.7. */
+ 'M8.6':'M8.6-Bang-tin-Doi-song-truong.html'};
+function linkMenu(ma,q){return FILE_MENU[ma]+'?'+q+'&vai='+role}
+
+/* ========== KHUNG MÀN HÌNH ========== */
+function rolebar(){
+ $('#rolebar').innerHTML='<b>Vai trò:</b>'+Object.keys(ROLES).map(k=>
+  '<button class="rb'+(k===role?' on':'')+'" data-r="'+k+'">'+esc(ROLES[k].cd)+'</button>').join('')
+ +'<span class="simw">Hôm nay (mô phỏng): <b style="color:#e2e8f0">'+kThu(HOMNAY)+' '+k2s(HOMNAY)
+ +' — tuần '+TUAN_NAY+'</b></span>'
+ +'<button class="ntg" id="btnNote">💡 Ghi chú thiết kế: TẮT</button>';
+}
+function header(){
+ const r=R();
+ $('#ava').textContent=r.n.split(' ').slice(-2).map(x=>x[0]).join('');
+ const khoa=r.sc!=='School';
+ $('#hdt').innerHTML=(r.sc==='School'?'<option value="ALL">Tất cả điểm trường</option>':'')
+  +Object.keys(DT).map(d=>'<option value="'+d+'">'+DT[d]+'</option>').join('');
+ $('#hdt').value=khoa?(r.dt||'A'):ST.dt; $('#hdt').disabled=khoa;
+ $('#dtlock').textContent=khoa?'🔒 khóa theo phạm vi '+r.sc:'';
+ const n=viecCanLam();
+ $('#ndot').textContent=n||''; $('#ndot').style.display=n?'grid':'none';
+}
+function tabs(){
+ const t=tabsOK();
+ if(!t.length){$('#tabs').innerHTML='';ST.tab=null;return}
+ if(!t.find(x=>x[0]===ST.tab)) ST.tab=t[0][0];
+ $('#tabs').innerHTML=t.map(([k,n,b])=>'<button class="tab1'+(k===ST.tab?' on':'')+'" data-t="'+k+'">'+n
+  +(b?'<span class="b r">'+b+'</span>':'')+'</button>').join('');
+}
+function scopeBar(extra){
+ const r=R(), tcs=tcCua().map(t=>TOCHUC[t].icon+' '+TOCHUC[t].ngan).join(' + ');
+ if(r.sc==='Class'){
+  const l=lopById(r.lop[0]);
+  return '<div class="scope"><span>🎨</span><span class="sp">Vai <b>'+esc(r.cd)+'</b> — '+esc(r.n)
+   +'. Phạm vi: <b>Class — '+l.id+'</b> ('+hsCuaLop(l.id).length+' học sinh, '+DT[l.dt]+'). '
+   +'Dữ liệu lớp khác <b>không có trong kết quả trả về</b>.'+(extra?' '+extra:'')+'</span></div>';
+ }
+ const pv = r.sc==='School' ? (ST.dt==='ALL'?'School — toàn trường':'School (đang lọc '+DT[ST.dt]+')')
+   : 'Branch — '+DT[r.dt];
+ return '<div class="scope"><span>🎨</span><span class="sp">Vai <b>'+esc(r.cd)+'</b> — '+esc(r.n)
+  +'. Phạm vi: <b>'+pv+'</b> · Tổ chức: <b>'+tcs+'</b>. Thấy <b>'+lopTrongPhamVi().length+' lớp</b>'
+  +(motTC()?', và <b>chỉ dữ liệu của '+TOCHUC[motTC()].ngan+'</b> — phần '
+    +(motTC()==='doi'?'Đoàn':'Đội')+' <b>không có trong kết quả trả về</b>':'')+'.'
+  +(extra?' '+extra:'')+'</span></div>';
+}
+function dnote(html){return '<div class="dnote">💡 <b>Ghi chú thiết kế.</b> '+html+'</div>'}
+function subtabs(list,cur){
+ return '<div class="bar" style="padding-bottom:4px">'+list.map(([k,n])=>
+  '<button class="chip'+(cur===k?' on':'')+'" data-sub="'+k+'">'+n+'</button>').join('')+'</div>';
+}
+/* vai không có tab nào ở menu này — nói rõ, không để màn hình trắng */
+function khongCoQuyen(tenMenu,lyDo){
+ return scopeBar()+'<div class="empty">Vai <b>'+esc(R().cd)+'</b> không có quyền ở menu <b>'+tenMenu+'</b> — '
+  +'trên hệ thống thật, menu này <b>không hiện</b> ở sidebar của vai này.'
+  +(lyDo?'<div style="font-size:12px;margin-top:6px">'+lyDo+'</div>':'')+'</div>';
+}
+
+/* ========== SỰ KIỆN CHUNG — phần riêng của menu nằm trong suKien(t) ========== */
+mfns.bclose=()=>closeM();
+document.addEventListener('click',e=>{
+ const t=e.target;
+ const mb=t.closest('[data-mb]'); if(mb){const f=mfns['b'+mb.dataset.mb]; f?f():closeM(); return}
+ if(t===$('#mask')){closeM();return}
+ const rb=t.closest('.rb'); if(rb){role=rb.dataset.r;doiTab(ST.tab);if(R().sc!=='School'&&R().dt)ST.dt=R().dt;render();return}
+ if(t.id==='btnNote'){document.body.classList.toggle('nn');render();return}
+ const tb=t.closest('#tabs [data-t]'); if(tb){doiTab(tb.dataset.t);render();return}
+ const sb=t.closest('[data-sub]'); if(sb){ST.sub=sb.dataset.sub;render();return}
+ suKien(t,e);
+});
+$('#hdt').onchange=e=>{ST.dt=e.target.value;render()};
+
+
+/* ══════════════ M6.13 THEO DÕI THI ĐUA — DỮ LIỆU RIÊNG ══════════════
+   Tách từ M6.3 ngày 14/9/2026 (DOT1-P4A): tab Chấm sao đỏ · Xếp hạng thi đua · ⚙ Cấu hình — giữ mã Feature cũ.
+   Thay đổi thật sự khi tách: SAO ĐỎ ĐỌC VI PHẠM TỪ SỔ ĐẦU BÀI (M2.2 F4) — góp ý Đợt 1 mục 10.
+   ★ YKDD-1A (17/9/2026): tab đổi nhãn «Chấm nền nếp» (mã m6.3.cham_sao_do giữ) · tab mới «Lịch trực & lực lượng nền nếp»
+     (m6.13.lich_truc_luc_luong) · cột lực lượng chấm · tiêu chí tùy chọn «Hoàn thành nhiệm vụ trực tuần» — hợp đồng HDDD ④.
+     QUYỀN NHẬP ĐIỂM KHÔNG ĐỔI: GVCN lớp trực KHÔNG có chamSD. Tên biến nội bộ chamSD/chotSD giữ — chỉ đổi chữ hiển thị. */
+
+/* vai thêm ở đây, KHÔNG sửa nền chung (đóng băng — DD-S3): GVCN lớp trực tuần 7 của ca DD1 */
+ROLES.GVCN92={n:'Bùi Quốc Hải',cd:'GVCN 9A2 (lớp trực tuần 7)',sc:'Class',dt:'A',lop:['9A2'],tc:['doi','doan']};
+/* lichTruc = T·S tab Lịch trực & lực lượng (sinh lịch · đổi lịch · cấu hình vòng · chọn lực lượng) · xuatLich = XD tab đó */
+const QALL=['xem','chamSD','chotSD','congboSD','cauhinh','xuat','lichTruc','xuatLich'];
+const QUYEN={
+ FULL:QALL,
+ TPT :['xem','chamSD','chotSD','congboSD','cauhinh','xuat','lichTruc','xuatLich'],
+ BTD :['xem','chamSD','chotSD','congboSD','cauhinh','xuat','lichTruc','xuatLich'],
+ HT  :['xem','congboSD','xuat'],
+ PHT :['xem','congboSD','xuat'],
+ GVCN:['xem'],
+ GVCN92:['xem'],
+ VT  :['xem','chamSD','xuat']
+};
+Object.keys(ROLES).forEach(k=>ROLES[k].q=QUYEN[k]||[]);
+
+/* ══════════════ TIÊU CHÍ ══════════════
+   ★ YKDD-1A: mỗi tiêu chí NHẬP TAY mang «luc» = lực lượng chấm (lop_truc · ban_nen_nep · nguoi_phu_trach — C2-4);
+     tiêu chí tự động luc=null (máy đọc số từ menu chủ). Tiêu chí TÙY CHỌN «tr» chỉ áp lớp đang trực, NẰM NGOÀI tổng 100%.
+   ★ Tám tiêu chí, KHÔNG cùng loại: năm do người chấm nhập, BA là số máy đã có ở menu khác (nền xám 🔗).
+   ★ 14/9/2026: thêm «Vi phạm trong giờ học» (🔗 M2.2 F4). Tiêu chí trừ 10% cũ CHIA ĐÔI thành
+     trong giờ 5% (tự động) + ngoài giờ 5% (nhập tay) — điểm tối đa của lớp giữ nguyên, bảng cũ còn so được. */
+const TIEUCHI=[
+ {id:'vs',ten:'Vệ sinh lớp',ngan:'Vệ sinh',ts:20,nguon:null,luc:'ban_nen_nep',mota:'Lực lượng nền nếp kiểm tra thực tế đầu và cuối buổi'},
+ {id:'dp',ten:'Đồng phục',ngan:'Đồng phục',ts:15,nguon:null,luc:'ban_nen_nep',mota:'Số lượt vi phạm đồng phục trong tuần'},
+ {id:'gg',ten:'Giờ giấc',ngan:'Giờ giấc',ts:15,nguon:null,luc:'lop_truc',mota:'Xếp hàng, ra vào lớp, thể dục giữa giờ'},
+ {id:'cc',ten:'Chuyên cần',ngan:'Chuyên cần',ts:15,nguon:'M2.9/T2',mota:'Tỉ lệ có mặt của lớp trong tuần'},
+ {id:'yt',ten:'Ý thức trong tiết',ngan:'Ý thức tiết',ts:15,nguon:'M2.2',mota:'Xếp loại ý thức tiết học ở sổ đầu bài — Tốt 10 · Khá 8 · TB 6 · Yếu 4'},
+ {id:'pt',ten:'Tham gia phong trào',ngan:'Phong trào',ts:10,nguon:null,luc:'nguoi_phu_trach',mota:'Mức tham gia hoạt động Đội — Đoàn trong tuần'},
+ {id:'vt',ten:'Vi phạm trong giờ học',ngan:'VP trong giờ',ts:5,nguon:'M2.2',tru:true,
+  mota:'Điểm TRỪ — tổng điểm quy đổi các vi phạm GV ghi ở sổ đầu bài trong tuần (tối đa 10)'},
+ {id:'vp',ten:'Vi phạm ngoài giờ học',ngan:'VP ngoài giờ',ts:5,nguon:null,tru:true,luc:'lop_truc',
+  mota:'Điểm TRỪ — cổng trường, giờ ra chơi, xếp hàng. KHÔNG ghi lại vi phạm đã có trong sổ đầu bài'},
+ /* ★ TÙY CHỌN (C2-3): chỉ áp LỚP ĐANG TRỰC. Chấm thang 10 (10 = hoàn thành đủ), trừ PHẦN CHƯA HOÀN THÀNH × trọng số.
+   Nằm ngoài tổng 100% — nên lớp trực làm đủ việc thì không mất gì, điểm tối đa của mọi lớp vẫn bằng nhau (chốt U — 17/9). */
+ {id:'tr',ten:'Hoàn thành nhiệm vụ trực tuần',ngan:'Trực tuần',ts:5,nguon:null,tuyChon:true,bat:true,luc:'nguoi_phu_trach',
+  mota:'Chỉ áp lớp đang trực tuần — 10 = hoàn thành đủ (chuẩn bị chào cờ, cử người phối hợp, nộp phiếu tổng hợp); trừ phần chưa hoàn thành × trọng số'}
+];
+const LUC_CHAM={lop_truc:'Lớp trực tuần',ban_nen_nep:'Lực lượng nền nếp',nguoi_phu_trach:'Người phụ trách'};
+const tcById=id=>TIEUCHI.find(t=>t.id===id);
+const laAuto=id=>{const t=tcById(id);return !!(t&&t.nguon)};
+/* trọng số chụp khi chốt — tiêu chí tùy chọn đang TẮT thì không có mặt (tuần đó không áp) */
+const trongSo=()=>Object.fromEntries(TIEUCHI.filter(t=>!t.tuyChon||t.bat).map(t=>[t.id,t.ts]));
+const tc100=()=>TIEUCHI.filter(t=>!t.tuyChon);        /* các tiêu chí phải cộng đủ 100% */
+
+/* ══════════════ DANH MỤC HÀNH VI — MASTER CỦA M2.7 ══════════════
+   ★ Đây là BẢN CHIẾU chỉ đọc 🔗 của ⚙ Danh mục ở M2.7 (khớp từng mã HV1…HV10 của demo M2.7).
+     M6.13 KHÔNG tạo, không sửa, không xóa hành vi — nó chỉ GẮN ĐIỂM TRỪ vào mã hành vi. */
+const HANHVI=[
+ {id:'HV1',t:'Không thuộc bài, không làm bài tập về nhà',m:1},
+ {id:'HV2',t:'Nghỉ học không phép',m:1},
+ {id:'HV3',t:'Đi học muộn nhiều lần',m:1},
+ {id:'HV4',t:'Ngủ trong giờ học',m:1},
+ {id:'HV5',t:'Gây mất trật tự trong lớp',m:2},
+ {id:'HV6',t:'Tranh cãi với bạn',m:2},
+ {id:'HV7',t:'Không hợp tác khi làm việc nhóm',m:2},
+ {id:'HV8',t:'Đánh bạn gây thương tích',m:3},
+ {id:'HV9',t:'Xúc phạm giáo viên',m:3},
+ {id:'HV10',t:'Phá hoại tài sản nhà trường',m:3}
+];
+/* ── «Vi phạm chung của lớp» — bốn loại cố định của M2.2 F4 (không có danh mục Master nào giữ bốn loại này) ── */
+const VPCHUNG=[{id:'C1',t:'Đi muộn'},{id:'C2',t:'Mất trật tự'},{id:'C3',t:'Không thuộc bài'},{id:'C4',t:'Khác'}];
+const tenVP=ma=>{const h=HANHVI.find(x=>x.id===ma)||VPCHUNG.find(x=>x.id===ma);return h?h.t:ma};
+/* ── bảng quy đổi hành vi → điểm trừ (thang 10 của tiêu chí). Mã chưa gắn thì tính MẶC ĐỊNH THEO MỨC của M2.7 ── */
+const MAC_DINH_MUC={1:0.5,2:1,3:2};
+const QUYDOI={HV1:0.5,HV2:0,HV3:0.5,HV4:0.5,HV5:1,HV6:1,HV7:0.5,C1:0.5,C2:1,C3:0.5,C4:0.5};
+const GHICHU_QD={HV2:'Để 0 — nghỉ không phép ĐÃ bị trừ ở tiêu chí Chuyên cần; trừ ở đây là trừ hai lần',
+ HV7:'Trường hạ xuống 0.5 — không hợp tác nhóm là việc giáo viên xử lý trong tiết'};
+function diemTruCua(ma){
+ if(QUYDOI[ma]!=null) return QUYDOI[ma];
+ const h=HANHVI.find(x=>x.id===ma); return h?MAC_DINH_MUC[h.m]:0;
+}
+
+/* ══════════════ VI PHẠM GHI TRONG SỔ ĐẦU BÀI (bản chiếu 🔗 M2.2 F4) ══════════════
+   Mỗi dòng đúng như M2.2 F4 ghi: học sinh (hoặc cả lớp) · hành vi · tiết · giáo viên ghi.
+   Giáo viên lấy đúng tên và môn của demo M2.2. */
+const GV={hung:['Nguyễn Văn Hùng','Vật lí'],lan:['Trần Thị Lan','Ngữ văn'],chi:['Bùi Linh Chi','Toán'],
+ ngan:['Lý Thu Ngân','Tiếng Anh'],hanh:['Phạm Thị Hạnh','Hóa học'],tuan:['Vũ Anh Tuấn','Sinh học']};
+const VPSDB=[]; let SEQ_VP=0;
+function ghiVP(lop,w,thu,tiet,gv,ma,hsi,gc){
+ const o={id:'VP'+(++SEQ_VP),lop,w,thu,tiet,gv,ma,hs:hsi==null?null:lop+'-'+hsi,gc:gc||''};VPSDB.push(o);return o}
+/* tuần mẫu (tuần 7, 19/10 → 24/10) — ghi tay để rà: đủ hai loại (cá nhân · chung của lớp) */
+ghiVP('6A1',7,0,2,'chi','HV1',4,'Không làm bài tập phần phân số');
+ghiVP('6A1',7,2,1,'lan','C1',null,'5 em vào lớp sau trống');
+ghiVP('7A1',7,1,4,'ngan','HV5',9,'Nói chuyện riêng, đã nhắc hai lần');
+ghiVP('8A1',7,0,3,'hanh','HV4',7,'');
+ghiVP('8A1',7,3,5,'hung','HV5',2,'Đùa nghịch trong lúc làm thí nghiệm');
+ghiVP('8A1',7,4,2,'chi','C2',null,'Cả lớp ồn khi giáo viên chữa bài');
+ghiVP('9A1',7,1,1,'hung','HV1',3,'Không học công thức công cơ học');
+ghiVP('9A1',7,2,4,'lan','HV6',11,'Tranh cãi với bạn cùng bàn');
+/* các tuần trước — sinh tất định */
+(function seedVP(){
+ const POOL=['HV1','HV1','HV3','HV4','HV5','HV5','HV6','HV7','C1','C2','C3'];
+ LOP.forEach(l=>{
+  const gvs=l.khoi<=7?['lan','chi','ngan']:['hung','lan','chi','ngan','hanh','tuan'];
+  for(let w=1;w<TUAN_NAY;w++){
+   const r=rng((hat(l.id,0)*13+w*71)*173);
+   const n=Math.floor(r()*4);
+   for(let i=0;i<n;i++){
+    const ma=POOL[Math.floor(r()*POOL.length)];
+    ghiVP(l.id,w,Math.floor(r()*6),Math.floor(r()*5)+1,gvs[Math.floor(r()*gvs.length)],ma,
+     ma[0]==='C'?null:Math.floor(r()*l.n));
+   }
+  }
+ });
+})();
+/* ★ ca ĐÍNH CHÍNH SAU CHỐT: tuần 6 đã chốt, sau đó sổ đầu bài được đề nghị sửa (M2.2 F6) và PHT_CM duyệt */
+const VP_DINHCHINH=ghiVP('8A1',6,1,3,'ngan','HV5',5,'Gây ồn trong giờ kiểm tra miệng');
+const vpCua=(lop,w)=>VPSDB.filter(v=>v.lop===lop&&v.w===w&&!v.dinhChinh);
+function vtCua(lop,w){
+ const ds=vpCua(lop,w);
+ return {ds,diem:Math.min(10,Math.round(ds.reduce((a,v)=>a+diemTruCua(v.ma),0)*10)/10)};
+}
+const ngayVP=v=>ngayTrongTuan(v.w,v.thu);
+
+/* ══════════════ NGUỒN TỰ ĐỘNG (mô phỏng số M2.9/T2 và M2.2 trả về) ══════════════ */
+const NGUON={};
+(function seedNguon(){
+ LOP.forEach(l=>{
+  for(let w=1;w<=TUAN_NAY;w++){
+   const r=rng((hat(l.id,0)*31+w*97)*137);
+   const vang=Math.floor(r()*9), tongLuot=l.n*5;
+   const pctCC=Math.round((1-vang/tongLuot)*1000)/10;
+   /* xếp loại tiết theo BỐN MỨC của M2.2 §8.2.3 (Tốt · Khá · Trung bình · Yếu) — bản trước dùng A/B/C */
+   const tiet={T:0,K:0,TB:0,Y:0}, n=25;
+   for(let i=0;i<n;i++){const x=r(); if(x<0.66)tiet.T++; else if(x<0.9)tiet.K++; else if(x<0.98)tiet.TB++; else tiet.Y++}
+   const dYT=Math.round(((tiet.T*10+tiet.K*8+tiet.TB*6+tiet.Y*4)/n)*10)/10;
+   NGUON[l.id+'|'+w]={vang,tongLuot,pctCC,cc:Math.round(pctCC/10*10)/10,tiet,yt:dYT};
+  }
+ });
+})();
+const nguonCua=(lop,w)=>NGUON[lop+'|'+w];
+const moTaTiet=g=>'Tốt '+g.tiet.T+' · Khá '+g.tiet.K+' · TB '+g.tiet.TB+' · Yếu '+g.tiet.Y;
+function nguonNay(lop,w,tc){
+ if(tc==='vt') return vtCua(lop,w).diem;
+ const g=nguonCua(lop,w); return g?g[tc]:null;
+}
+
+/* ══════════════ PHIẾU CHẤM & CHỐT TUẦN ══════════════ */
+const CHAM={};        /* lop|tuan → {vs,dp,gg,pt,vp, boi, luc} — chỉ ô NHẬP TAY */
+const CHOT={};        /* tuan|dt  → {luc, boi, ts:{trọng số lúc chốt}, snap:{lop:{cc,yt,vt,vtDs}}, congbo} */
+(function seedCham(){
+ LOP.forEach(l=>{
+  for(let w=1;w<=TUAN_NAY;w++){
+   if(w===TUAN_NAY&&['6A3','7A2','9A2','7B1'].includes(l.id)) continue;   /* tuần này chưa chấm hết */
+   const r=rng((hat(l.id,0)*17+w*59)*211);
+   CHAM[l.id+'|'+w]={vs:6+Math.round(r()*4*10)/10,dp:6+Math.round(r()*4*10)/10,
+    gg:6+Math.round(r()*4*10)/10,pt:5+Math.round(r()*5*10)/10,vp:Math.round(r()*3*10)/10,
+    boi:l.khoi===9?'Vũ Đình Trung':'Đỗ Thị Bích Ngọc',luc:k2s(w===TUAN_NAY?HOMNAY:ngayCuoiTuan(w))+' 16:30'};   /* tuần này: chấm tới hôm nay, không ghi ngày tương lai */
+  }
+ });
+})();
+function chupSnap(lop,w){
+ const g=nguonCua(lop,w), v=vtCua(lop,w);
+ return {cc:g?g.cc:null,yt:g?g.yt:null,vt:v.diem,vtDs:v.ds.map(x=>x.id)};
+}
+/* ★ Chốt tuần = CHỤP LẠI BA số nguồn + TRỌNG SỐ tại thời điểm chốt (đổi trọng số không tính lại tuần đã chốt). */
+(function seedChot(){
+ for(let w=1;w<TUAN_NAY;w++) Object.keys(DT).forEach(dt=>{
+  const snap={};
+  LOP.filter(l=>l.dt===dt).forEach(l=>{snap[l.id]=chupSnap(l.id,w)});
+  if(!Object.keys(snap).length) return;
+  CHOT[w+'|'+dt]={luc:k2s(ngayCuoiTuan(w))+' 17:00',boi:dt==='A'?'Đỗ Thị Bích Ngọc':'Vũ Đình Trung',ts:trongSo(),
+   snap,congbo:w<=TUAN_NAY-2?{ngay:ngayCuoiTuan(w),boi:'Lý Thanh Bình'}:null};
+ });
+})();
+const chotCua=(w,dt)=>CHOT[w+'|'+dt];
+/* ★ Hai ca nguồn đổi SAU khi chốt tuần 6:
+   ① đơn xin nghỉ nộp muộn — M2.4 ghi đè điểm danh cũ → chuyên cần đổi (ca của bản trước tách);
+   ② sổ đầu bài được đính chính — M2.2 F6: PHT_CM duyệt bỏ một ghi nhận vi phạm → dòng Vi phạm trong giờ học đổi. */
+(function nguonDoiSauChot(){
+ [['7A1',6,2],['8A1',6,1],['6A2',5,3]].forEach(([lop,w,bot])=>{
+  const g=NGUON[lop+'|'+w]; if(!g) return;
+  g.vang=Math.max(0,g.vang-bot);
+  g.pctCC=Math.round((1-g.vang/g.tongLuot)*1000)/10;
+  g.cc=Math.round(g.pctCC/10*10)/10;
+  g.doiVi='Đơn xin nghỉ có phép nộp ngày '+k2s(HOMNAY)+' — M2.4 ghi đè '+bot+' lượt vắng thành có phép';
+ });
+ VP_DINHCHINH.dinhChinh={ngay:'2026-10-22',boi:'Hoàng Văn Khoa (PHT_CM)',
+  ly:'Ghi nhầm học sinh — em này vắng có phép tiết đó; giáo viên đề nghị sửa, PHT_CM duyệt (M2.2 F6)'};
+})();
+
+/* ── tính điểm ── */
+function diemTC(lop,w,tc){
+ if(laAuto(tc)){
+  const c=chotCua(w,lopById(lop).dt);
+  if(c&&c.snap[lop]&&c.snap[lop][tc]!=null) return c.snap[lop][tc];
+  return nguonNay(lop,w,tc);
+ }
+ const b=CHAM[lop+'|'+w]; return b&&b[tc]!=null?b[tc]:null;
+}
+/* tổng — DẪN XUẤT theo trọng số; tuần đã chốt dùng TRỌNG SỐ LÚC CHỐT */
+function tongDiem(lop,w){
+ const b=CHAM[lop+'|'+w]; if(!b) return null;
+ const c=chotCua(w,lopById(lop).dt), ts=c?c.ts:null;
+ let s=0;
+ TIEUCHI.forEach(t=>{const tr=ts?ts[t.id]:(t.tuyChon&&!t.bat?null:t.ts); if(tr==null) return;
+  if(t.tuyChon&&!laLopTruc(lop,w)) return;            /* «Hoàn thành nhiệm vụ trực» chỉ áp lớp đang trực */
+  const d=diemTC(lop,w,t.id); if(d==null) return;
+  s+= t.tuyChon? -((10-d)*tr/100) : t.tru? -(d*tr/100) : d*tr/100});
+ return Math.round(s*100)/100;
+}
+/* cột hiện trên bảng của một tuần — tuần đã chốt theo trọng số ĐÃ CHỤP (tiêu chí tùy chọn tắt lúc chốt thì không hiện) */
+function tcHien(w,dt){const c=chotCua(w,dt); return TIEUCHI.filter(t=>!t.tuyChon||(c?c.ts[t.id]!=null:t.bat))}
+const daCham=(lop,w)=>!!CHAM[lop+'|'+w];
+/* nguồn đổi sau khi chốt — phải nói ra ĐÍCH DANH, không tự sửa bảng đã chốt */
+function nguonLech(lop,w){
+ const c=chotCua(w,lopById(lop).dt); if(!c||!c.snap[lop]) return null;
+ const sn=c.snap[lop], d=[];
+ ['cc','yt','vt'].forEach(tc=>{const nay=nguonNay(lop,w,tc);
+  if(sn[tc]!=null&&nay!=null&&Math.abs(sn[tc]-nay)>0.05) d.push({tc,chot:sn[tc],nay})});
+ const nayIds=vpCua(lop,w).map(v=>v.id);
+ const bo=sn.vtDs.filter(id=>!nayIds.includes(id)).map(id=>VPSDB.find(v=>v.id===id));
+ const them=nayIds.filter(id=>!sn.vtDs.includes(id)).map(id=>VPSDB.find(v=>v.id===id));
+ return d.length||bo.length||them.length?{d,bo,them}:null;
+}
+/* danh sách vi phạm hiển thị cho một lớp-tuần: tuần đã chốt thì theo BẢN CHỤP, kèm dấu dòng đã đính chính / ghi thêm */
+function vpHienThi(lop,w){
+ const c=chotCua(w,lopById(lop).dt);
+ if(!c||!c.snap[lop]) return vpCua(lop,w).map(v=>({v,trangThai:''}));
+ const ids=c.snap[lop].vtDs, out=ids.map(id=>{const v=VPSDB.find(x=>x.id===id);return {v,trangThai:v.dinhChinh?'dinhchinh':''}});
+ vpCua(lop,w).filter(v=>!ids.includes(v.id)).forEach(v=>out.push({v,trangThai:'themsau'}));
+ return out;
+}
+
+/* ── xếp hạng: TRONG TỪNG ĐIỂM TRƯỜNG ── */
+function bangTuan(w,dt){
+ const ds=LOP.filter(l=>l.dt===dt).map(l=>({lop:l,diem:tongDiem(l.id,w)}));
+ const co=ds.filter(x=>x.diem!=null).sort((a,b)=>b.diem-a.diem);
+ co.forEach((x,i)=>x.hang=i+1);
+ return {co,thieu:ds.filter(x=>x.diem==null).map(x=>x.lop)};
+}
+function bangKy(tu,den,dt){
+ const ds=LOP.filter(l=>l.dt===dt).map(l=>{
+  let s=0,n=0,ct=[];
+  for(let w=tu;w<=den;w++){const d=tongDiem(l.id,w); ct.push(d); if(d!=null){s+=d;n++}}
+  return {lop:l,tb:n?Math.round(s/n*100)/100:null,n,ct};
+ });
+ const co=ds.filter(x=>x.tb!=null).sort((a,b)=>b.tb-a.tb);
+ co.forEach((x,i)=>x.hang=i+1);
+ return {co,thieu:ds.filter(x=>x.tb==null).map(x=>x.lop)};
+}
+
+const ST={tab:'saodo',dt:'A',tuan:TUAN_NAY,ky:'tuan'};
+
+/* ══════════════ M6.13 — LỊCH TRỰC & LỰC LƯỢNG NỀN NẾP · DỮ LIỆU ══════════════
+   YKDD-1A · 17/9/2026 · hợp đồng HDDD ④ (sổ điều phối YKDD §3) · chốt C2-1…C2-7 · N1.
+   ★ Lịch chỉ là KHAI BÁO. Nó KHÔNG cấp quyền nhập điểm cho GVCN lớp trực — người nhập vẫn BTĐ · TPT · VT nhập hộ.
+   ★ MỘT lịch cho mỗi điểm trường (N1). Tổ chức của lớp trực DẪN XUẤT từ khối (TOCHUC.khoi của nền chung),
+     GVCN dẫn xuất từ lớp — không lưu hai lần. Bật / tắt theo tổ chức = khối của tổ chức đó có vào vòng luân phiên không.
+   ★ Nền chung Đoàn - Đội ĐÓNG BĂNG (DD-S3) — mọi thứ mới nằm ở tệp này. */
+
+const tcCuaLop=l=>Object.keys(TOCHUC).find(k=>TOCHUC[k].khoi.includes(l.khoi));
+
+/* ══ cau_hinh_lich_truc — mỗi điểm trường một bản ══
+   khoiMien: [{khoi, hk: 'hk1'|'hk2'|'nam'}] — HDDD ghi khoi_mien[]; phần tử mang học kỳ vì ca DD2 miễn khối 6 CHỈ HK1.
+   Mặc định không miễn (C2-5). thuTu: thứ tự luân phiên — người phụ trách sắp, máy chỉ đi vòng. */
+const CFG_LICH={
+ A:{tcBat:['doi','doan'],khoiMien:[{khoi:6,hk:'hk1'}],thuTu:['9A1','9A2','7A1','8A1','7A2','6A1','6A2','6A3'],
+    boi:'Đỗ Thị Bích Ngọc',luc:'05/09/2026 09:00',lyMien:{6:'Khối 6 mới vào trường — học nội quy, làm quen nền nếp trong HK1'}},
+ B:{tcBat:['doi','doan'],khoiMien:[],thuTu:['9B1','7B1','6B1'],boi:'Vũ Đình Trung',luc:'05/09/2026 09:30',lyMien:{}}
+};
+const HK_TEN={hk1:'HK1',hk2:'HK2',nam:'cả năm'};
+function lopVaoVong(dt,w,lopId){
+ const l=lopById(lopId), cf=CFG_LICH[dt];
+ if(!cf.tcBat.includes(tcCuaLop(l))) return false;
+ return !cf.khoiMien.some(m=>m.khoi===l.khoi&&(m.hk==='nam'||m.hk===kyCuaTuan(w)));
+}
+
+/* ══ lich_truc — dt|tuần → {dt, w, lop, doi} · to_chuc & gvcn dẫn xuất ══ */
+const LICH={};
+const LS_LICH=[];      /* lịch sử thao tác — sinh lịch · đổi lịch · đổi cấu hình; không xóa */
+/* ★ Sinh luân phiên TỪ tuTuan trở đi; tuần trước đó GIỮ NGUYÊN (tuần đã qua là sự thật đã xảy ra).
+   Con trỏ nối tiếp từ lớp GỐC của tuần liền trước — một lần đổi lịch không làm xô cả vòng. */
+function sinhLich(dt,tuTuan){
+ const cf=CFG_LICH[dt]; if(!cf) return;
+ let p=0;
+ if(tuTuan>1){const tr=LICH[dt+'|'+(tuTuan-1)];
+  if(tr){const goc=tr.doi?tr.doi.lopGoc:tr.lop, i=cf.thuTu.indexOf(goc); if(i>=0)p=(i+1)%cf.thuTu.length}}
+ for(let w=tuTuan;w<=NAMHOC.soTuan;w++){
+  let lop=null;
+  for(let k=0;k<cf.thuTu.length;k++){const c=cf.thuTu[(p+k)%cf.thuTu.length];
+   if(lopVaoVong(dt,w,c)){lop=c;p=(p+k+1)%cf.thuTu.length;break}}
+  if(lop) LICH[dt+'|'+w]={dt,w,lop,doi:null}; else delete LICH[dt+'|'+w];
+ }
+}
+Object.keys(CFG_LICH).forEach(dt=>sinhLich(dt,1));
+const lichCua=(dt,w)=>LICH[dt+'|'+w]||null;
+/* ★ Đổi lịch = HOÁN ĐỔI hai tuần, bắt buộc lý do (C2-5). Không có «thay bằng lớp khác»: thay thì một lớp trực hai lần,
+   một lớp mất lượt — vòng luân phiên hết công bằng mà không ai nhìn ra. */
+function doiLich(dt,w1,w2,ly,boi,luc){
+ const a=LICH[dt+'|'+w1], b=LICH[dt+'|'+w2], la=a.lop, lb=b.lop;
+ a.doi={ly,boi,luc,lopCu:la,lopGoc:a.doi?a.doi.lopGoc:la,voiTuan:w2}; a.lop=lb;
+ b.doi={ly,boi,luc,lopCu:lb,lopGoc:b.doi?b.doi.lopGoc:lb,voiTuan:w1}; b.lop=la;
+ LS_LICH.push({dt,luc,boi,su:'Đổi lịch tuần '+w1+' ('+la+' → '+lb+') ↔ tuần '+w2+' ('+lb+' → '+la+')',ly});
+}
+LS_LICH.push({dt:'A',luc:'05/09/2026 09:00',boi:'Đỗ Thị Bích Ngọc',su:'Sinh lịch cả năm — miễn khối 6 HK1',ly:null});
+LS_LICH.push({dt:'B',luc:'05/09/2026 09:30',boi:'Vũ Đình Trung',su:'Sinh lịch cả năm — không miễn khối nào',ly:null});
+/* ca DD2: tuần 9 đổi 8A1 ↔ 7A2 */
+doiLich('A',9,10,'8A1 đi trải nghiệm thực tế','Đỗ Thị Bích Ngọc','20/10/2026 10:15');
+
+/* ══ nhãn «lớp trực tuần» trên bảng tuần — máy gắn từ lịch, CHỤP khi chốt tuần (HDDD ④) ══ */
+function nhanLopTruc(w,dt){
+ const c=chotCua(w,dt);
+ if(c&&c.nhanLopTruc!==undefined) return {lop:c.nhanLopTruc,chup:true,nay:(lichCua(dt,w)||{}).lop||null};
+ const l=lichCua(dt,w); return {lop:l?l.lop:null,chup:false,nay:l?l.lop:null};
+}
+const laLopTruc=(lop,w)=>nhanLopTruc(w,lopById(lop).dt).lop===lop;
+/* bảng tuần đã chốt trước khi có tính năng này — gắn nhãn theo lịch lúc đó (lịch tuần đã qua không bị sinh lại) */
+Object.keys(CHOT).forEach(k=>{const [w,dt]=k.split('|'); const l=lichCua(dt,+w); CHOT[k].nhanLopTruc=l?l.lop:null});
+/* tiêu chí «Hoàn thành nhiệm vụ trực» của các tuần đã qua — người phụ trách đã chấm */
+(function seedTruc(){
+ Object.keys(CFG_LICH).forEach(dt=>{for(let w=1;w<TUAN_NAY;w++){const l=lichCua(dt,w), b=l&&CHAM[l.lop+'|'+w];
+  if(b) b.tr=[10,10,8,10,9,10][w%6]}});
+})();
+
+/* ══ luc_luong_nen_nep — một bản cho mỗi tổ chức, theo năm học ══
+   Thành viên CHỌN TỪ sổ đội viên / đoàn viên 🔗 M6.3 (C2-7) — không gõ tên tay.
+   HV_M63 tái lập ĐÚNG bộ sinh gốc của sổ M6.3 (app.20 seedHoiVien) — cùng tiền lệ M6.17 đếm đoàn viên (P4E).
+   Không gồm các đợt kết nạp trong năm; em nào có tên ở đây thì chắc chắn có tên ở sổ M6.3. */
+const HV_M63={};
+(function(){
+ LOP.filter(l=>[6,7,8].includes(l.khoi)).forEach(l=>{const r=rng(hat(l.id,3)*29);
+  hsCuaLop(l.id).forEach(h=>{if(r()<(l.khoi===6?0.45:0.82)) HV_M63[h.id]='doi'})});
+ LOP.filter(l=>l.khoi===9).forEach(l=>{const r=rng(hat(l.id,5)*31);
+  hsCuaLop(l.id).forEach(h=>{HV_M63[h.id]=r()<0.12?'doan':'doi'})});
+})();
+const hoiVienCua=(tc,lopId)=>hsCuaLop(lopId).filter(h=>HV_M63[h.id]===tc);
+const VAI_LL=['Trưởng ban','Phó ban','Thành viên'];
+const LUCLUONG={
+ doi:{ten:'Đội Sao đỏ',nam:NAMHOC.ten,suaTen:null,tv:[]},
+ doan:{ten:'Ban nền nếp',nam:NAMHOC.ten,suaTen:null,tv:[]}
+};
+(function seedLucLuong(){
+ const them=(tc,h,vai,kv,boi,rut)=>LUCLUONG[tc].tv.push({hs:h.id,vai,kv,tu:'2026-09-07',boi,rut:rut||null});
+ /* Ban nền nếp — đoàn viên 9A1 · 9A2 (ca DD1) + 9B1 cho Điểm trường B */
+ const d1=hoiVienCua('doan','9A1'), d2=hoiVienCua('doan','9A2'), d3=hoiVienCua('doan','9B1');
+ if(d1[0]) them('doan',d1[0],'Trưởng ban','Điểm trường A — cổng chính','Vũ Đình Trung');
+ if(d2[0]) them('doan',d2[0],'Phó ban','Điểm trường A — sân trường, xếp hàng','Vũ Đình Trung');
+ d1.slice(1,3).forEach(h=>them('doan',h,'Thành viên','Điểm trường A — dãy phòng khối 8, 9','Vũ Đình Trung'));
+ d2.slice(1,3).forEach(h=>them('doan',h,'Thành viên','Điểm trường A — dãy phòng khối 6, 7','Vũ Đình Trung'));
+ if(d3[0]) them('doan',d3[0],'Thành viên','Điểm trường B — toàn điểm','Vũ Đình Trung');
+ /* Đội Sao đỏ — đội viên 7A1 · 8A1 · 7B1; một em đã rút (bản ghi không xóa — chip «Đã rút») */
+ const o1=hoiVienCua('doi','7A1'), o2=hoiVienCua('doi','8A1'), o3=hoiVienCua('doi','7B1');
+ if(o2[0]) them('doi',o2[0],'Trưởng ban','Điểm trường A — cổng chính','Đỗ Thị Bích Ngọc');
+ o1.slice(0,2).forEach(h=>them('doi',h,'Thành viên','Điểm trường A — dãy phòng khối 6, 7','Đỗ Thị Bích Ngọc'));
+ o2.slice(1,2).forEach(h=>them('doi',h,'Thành viên','Điểm trường A — sân trường, xếp hàng','Đỗ Thị Bích Ngọc'));
+ o2.slice(2,3).forEach(h=>them('doi',h,'Thành viên','Điểm trường A — dãy phòng khối 8, 9','Đỗ Thị Bích Ngọc',
+  {ngay:'2026-10-05',ly:'Vào đội tuyển học sinh giỏi, xin thôi tham gia',boi:'Đỗ Thị Bích Ngọc'}));
+ o3.slice(0,2).forEach(h=>them('doi',h,'Thành viên','Điểm trường B — toàn điểm','Đỗ Thị Bích Ngọc'));
+})();
+const tvDangCo=tc=>LUCLUONG[tc].tv.filter(x=>!x.rut);
+/* tên hiển thị của «lực lượng nền nếp» ở một điểm trường — theo tổ chức đang bật (C2-1: tên cấu hình theo tổ chức) */
+function tenLucLuong(dt){
+ const cf=CFG_LICH[dt]; const ds=(cf?cf.tcBat:['doi','doan']).map(tc=>LUCLUONG[tc].ten);
+ return ds.length?ds.join(' · '):'lực lượng nền nếp';
+}
+const tenLucCham=(luc,dt)=>luc==='ban_nen_nep'?tenLucLuong(dt):luc==='lop_truc'?'Lớp trực tuần':luc?LUC_CHAM[luc]:'máy';
+
+/* ══ việc sinh sang M0.2 — M6.13 chỉ KHAI BÁO điều kiện sinh · hạn · deep-link (phiên 2A dựng ở M0.2) ══ */
+function viecM02(dt,w){
+ const out=[], l=lichCua(dt,w), c=chotCua(w,dt), cf=CFG_LICH[dt];
+ if(l){const lop=lopById(l.lop), tc=tcCuaLop(lop);
+  out.push({bang:'Việc của tôi',nguoi:lop.gvcn+' (GVCN '+lop.id+')',
+   ten:'Tuần này lớp bạn trực — nộp phiếu tổng hợp cho '+TOCHUC[tc].phutrach+' trước chiều thứ Sáu',
+   han:'Thứ Sáu '+k2s(ngayTrongTuan(w,4))+' 17:00',
+   link:'/M6.13?tab=lich_truc&ctx='+w+'|'+lop.id+'&return=M0.2',
+   dk:'lịch tuần '+w+' có lớp '+lop.id+' — sinh 00:00 Thứ Hai, rời khi tuần được chốt hoặc hết Chủ nhật'});
+ }
+ const thieu=LOP.filter(x=>x.dt===dt&&!daCham(x.id,w));
+ if(!c) out.push({bang:'Việc của tôi',nguoi:cf?cf.tcBat.map(t=>TOCHUC[t].phutrach).join(' · '):'TPT · BTĐ',
+  ten:'Tuần nền nếp '+w+' — '+DT[dt]+': '+(thieu.length?'chưa chấm đủ lớp (còn '+thieu.length+')':'chưa chốt'),
+  han:'Thứ Bảy '+k2s(ngayCuoiTuan(w))+' (mốc chốt tuần)',
+  link:'/M6.13?tab=cham_nen_nep&ctx='+w+'|'+dt+'&return=M0.2',
+  dk:'từ Thứ Sáu tuần '+w+' khi tuần chưa chốt; quá hạn sau mốc chốt; rời khi chốt'});
+ if(c&&!c.congbo) out.push({bang:'Chờ tôi duyệt',nguoi:'Hiệu trưởng · PHT '+DT[dt],
+  ten:'Tuần nền nếp '+w+' — '+DT[dt]+' đã chốt — chờ công bố',
+  han:'trước giờ chào cờ Thứ Hai tuần '+(w+1),
+  link:'/M6.13?tab=cham_nen_nep&ctx='+w+'|'+dt+'&action=duyet&return=M0.2',
+  dk:'tuần đã chốt, chưa công bố; rời khi công bố'});
+ return out;
+}
+
+
+/* ══════════════ TAB 1 · CHẤM NỀN NẾP (mã m6.3.cham_sao_do — tên tệp giữ) ══════════════
+   YKDD-1A 17/9/2026: nhãn «Chấm sao đỏ» → «Chấm nền nếp» (C2-1) · nhãn «lớp trực tuần» máy gắn từ lịch, CHỤP khi chốt ·
+   tiêu chí tùy chọn «Hoàn thành nhiệm vụ trực tuần» chỉ ở dòng lớp trực · mỗi ô nhập tay ghi lực lượng chấm (C2-4).
+   Người nhập KHÔNG đổi: BTĐ · TPT · VT nhập hộ; GVCN (kể cả GVCN lớp trực) chỉ xem.
+   Đơn vị dòng: một lớp trong MỘT TUẦN. 5 ô nhập tay · 3 ô nền xám 🔗 (M2.9/T2 · M2.2 xếp loại tiết · M2.2 F4 vi phạm).
+   ★ GVCN mở tab này ở PHẠM VI Class — thấy đúng dòng lớp mình + bảng căn cứ; thay phần «thi đua» của màn hình
+     gộp «Lớp tôi chủ nhiệm» cũ ở M6.3 §4.1. */
+function tuanBar(){
+ return '<div class="daybar"><div class="dt">📅 Tuần '+ST.tuan+' — '+k2s(ngayDauTuan(ST.tuan))
+  +' → '+k2s(ngayCuoiTuan(ST.tuan))+'</div>'
+  +'<button class="btn sm" data-tw="-1">◀</button>'
+  +'<button class="btn sm'+(ST.tuan===TUAN_NAY?' act':'')+'" data-tw="0">Tuần này</button>'
+  +'<button class="btn sm" data-tw="1">▶</button>'
+  +'<span class="chip">'+(kyCuaTuan(ST.tuan)==='hk1'?'Học kỳ 1':'Học kỳ 2')+'</span>'
+  +'<div class="spacer"></div>'+chotChip()+'</div>';
+}
+/* nhãn «lớp trực tuần» — máy gắn từ lịch (tab 3), CHỤP khi chốt; đổi lịch sau chốt không đổi nhãn */
+function chipLopTruc(w,dt){
+ const n=nhanLopTruc(w,dt);
+ if(!n.lop) return '<div class="ro" style="margin-bottom:9px">🛡 Tuần '+w+' — '+DT[dt]+' <b>không có lớp trực</b> '
+  +'(lịch trực tắt cho mọi tổ chức, hoặc mọi khối đang miễn). Tiêu chí «Hoàn thành nhiệm vụ trực tuần» không áp.</div>';
+ const l=lopById(n.lop);
+ return '<div class="info" style="margin-bottom:9px">🛡 <b>Lớp trực tuần '+w+': '+l.id+'</b> — GVCN '+esc(l.gvcn)+' · '
+  +TOCHUC[tcCuaLop(l)].icon+' '+TOCHUC[tcCuaLop(l)].ngan+'. Nhãn <b>máy tự gắn từ lịch</b> '
+  +(n.chup?'và <b>đã chụp khi chốt tuần</b>':'— sẽ <b>chụp khi chốt tuần</b>')
+  +' · <a data-golich="'+w+'|'+l.id+'" style="color:var(--brand);font-weight:600;cursor:pointer">xem lịch ↗</a>.'
+  +(n.chup&&n.nay&&n.nay!==n.lop?'<div style="margin-top:4px"><span class="tg b">lịch hiện ghi '+n.nay+' — đổi sau khi chốt; nhãn trên bảng giữ '+n.lop+'</span></div>':'')
+  +'<div style="font-size:11.5px;color:var(--ink2);margin-top:3px">Lớp trực <b>vẫn bị chấm</b> như mọi lớp. Lịch chỉ là <b>khai báo</b> — '
+  +'GVCN lớp trực <b>không nhập điểm</b>; phiếu tổng hợp nộp về người phụ trách để nhập.</div></div>';
+}
+function chotChip(){
+ const c=chotCua(ST.tuan,dtThuc());
+ if(!c) return '<span class="chip" style="background:var(--amber);border-color:var(--amber);color:#fff;font-weight:700">Chưa chốt tuần</span>';
+ return '<span class="chip on">Đã chốt '+c.luc+'</span>'
+  +(c.congbo?'<span class="chip on">Đã công bố '+k2s(c.congbo.ngay)+'</span>'
+    :'<span class="chip" style="border-color:var(--amber);color:var(--amber)">Chưa công bố</span>');
+}
+function canCuTC(lop,w,t){
+ const g=nguonCua(lop,w);
+ if(t.id==='cc') return g?g.pctCC+'% có mặt':'';
+ if(t.id==='yt') return g?moTaTiet(g):'';
+ if(t.id==='vt'){const n=vpHienThi(lop,w).filter(x=>x.trangThai!=='themsau').length;
+  return '<a data-vpds="'+lop+'" style="color:var(--brand);cursor:pointer">'+n+' lượt ▸</a>'}
+ return '';
+}
+function veSaoDo(){
+ const lopCN=R().sc==='Class', dt=lopCN?lopById(R().lop[0]).dt:dtThuc();
+ const ls=lopTrongPhamVi().filter(l=>l.dt===dt), w=ST.tuan;
+ const c=chotCua(w,dt), chuaCham=ls.filter(l=>!daCham(l.id,w));
+ let h=tuanBar()+scopeBar(lopCN?'Tình trạng kết nạp của lớp xem ở <a href="'+linkMenu('M6.3','tab=hoivien')
+   +'" style="color:var(--brand);font-weight:600">↗ M6.3 · Đoàn viên - Đội viên</a>.':'');
+ h+=dnote('Tám tiêu chí nhưng <b>không cùng loại</b>: năm do người chấm nhập, <b>ba là số máy đã có ở menu khác</b> — '
+  +'Chuyên cần từ <b>M2.9/T2</b>, Ý thức trong tiết và <b>Vi phạm trong giờ học</b> từ <b>M2.2</b>. Ba ô đó <b>chỉ đọc</b>.<br>'
+  +'<b>Vi phạm trong giờ học</b> (thêm 14/9/2026) đọc thẳng các ghi nhận ở sổ đầu bài (M2.2 F4), quy đổi điểm trừ '
+  +'theo bảng ở ⚙ Cấu hình. Cột nhập tay cũ đổi nghĩa thành <b>Vi phạm ngoài giờ học</b> — để một vi phạm không bị trừ hai lần.<br>'
+  +'<b>Học sinh trong lực lượng nền nếp không có tài khoản</b> ('+esc(tenLucLuong(dt))+' — tên theo tổ chức, sửa ở tab 3): '
+  +'các em ghi phiếu giấy, người phụ trách nhập vào đây, bản ghi mang tên người nhập. Mỗi cột nhập tay ghi <b>lực lượng chấm</b>.<br>'
+  +'<b>Vì sao GVCN lớp trực không nhập:</b> mỗi GVCN chỉ trực khoảng một tuần mỗi năm, và lớp mình cũng đang bị chấm — xem M6.13 §2.6.');
+ h+=chipLopTruc(w,dt);
+ if(c&&!c.congbo) h+='<div class="info">Tuần này <b>đã chốt</b> lúc '+c.luc+' bởi <b>'+esc(c.boi)
+  +'</b> nhưng <b>chưa công bố</b>. Chốt xong vẫn sửa được điểm nhập tay; công bố rồi thì không.</div>';
+ if(c&&c.congbo) h+='<div class="okbox">Tuần này <b>đã công bố</b> ngày '+k2s(c.congbo.ngay)+' bởi <b>'
+  +esc(c.congbo.boi)+'</b>. Bảng <b>khóa lại</b>.</div>';
+ const lech=ls.map(l=>({l,d:nguonLech(l.id,w)})).filter(x=>x.d);
+ if(lech.length) h+='<div class="warn">⚠️ <b>Số nguồn đã đổi sau khi chốt tuần</b> ở '+lech.length+' lớp — '
+  +'do <b>đơn xin nghỉ nộp muộn ghi đè điểm danh cũ</b> (M2.4) hoặc <b>sổ đầu bài được đính chính</b> (M2.2 F6). '
+  +'Hệ thống <b>giữ nguyên số đã chốt</b> và <b>không tự sửa bảng</b>.'
+  +'<div style="margin-top:6px">'+lech.map(x=>'<div style="font-size:12px">• <b>'+x.l.id+'</b>: '
+    +x.d.d.map(y=>tcById(y.tc).ten+' chốt <b>'+y.chot+'</b> → nay <b>'+y.nay+'</b>').join(' · ')
+    +x.d.bo.map(v=>'<div style="margin-left:14px">— sổ đầu bài <b>bỏ</b> ghi nhận «'+esc(tenVP(v.ma))+'» của <b>'
+      +(v.hs?esc(hsById(v.hs).ten):'cả lớp')+'</b> (tiết '+v.tiet+' '+kThu(ngayVP(v))+' '+k2s(ngayVP(v)).slice(0,5)+', '
+      +esc(GV[v.gv][0])+')'+(v.dinhChinh?' — '+esc(v.dinhChinh.ly)+', duyệt '+k2s(v.dinhChinh.ngay):'')+'</div>').join('')
+    +x.d.them.map(v=>'<div style="margin-left:14px">— sổ đầu bài <b>ghi thêm</b> «'+esc(tenVP(v.ma))+'» sau khi chốt</div>').join('')
+    +'</div>').join('')
+  +'</div></div>';
+ if(!lopCN) h+='<div class="bar">'
+  +'<span class="chip">Đã chấm <b>'+(ls.length-chuaCham.length)+'/'+ls.length+'</b> lớp</span>'
+  +(chuaCham.length?'<span class="chip" style="border-color:var(--red);color:var(--red)">Còn thiếu: '
+    +chuaCham.map(l=>l.id).join(', ')+'</span>':'')
+  +'<div class="spacer"></div>'
+  +(can('chotSD')&&!c?'<button class="btn'+(chuaCham.length?'':' p')+'" id="chotTuan">🔒 Chốt tuần '+w+'</button>':'')
+  +(can('congboSD')&&c&&!c.congbo?'<button class="btn p" id="congboTuan">📣 Công bố xếp hạng tuần</button>':'')
+  +(can('xuat')?'<button class="btn" id="xuatSD">📤 Xuất</button>':'')+'</div>';
+ else h+='<div style="height:10px"></div>';
+ h+='<div class="tbw"><div class="tbx"><table style="min-width:1180px"><tr><th>Lớp</th>'
+  +tcHien(w,dt).map(t=>'<th class="num" style="min-width:74px">'+t.ngan+'<div style="font-weight:400;font-size:10px;color:var(--ink3);text-transform:none">'
+    +(t.tru||t.tuyChon?'trừ ':'')+((c&&c.ts[t.id]!=null)?c.ts[t.id]:t.ts)+'%'+(t.tuyChon?' · chỉ lớp trực':'')
+    +(t.nguon?'<br>🔗'+t.nguon:'<br>👥 '+esc(tenLucCham(t.luc,dt)))+'</div></th>').join('')
+  +'<th class="num">Tổng</th><th class="num">Hạng</th><th>Người chấm</th><th></th></tr>';
+ const bang=bangTuan(w,dt);
+ const hangCua={}; bang.co.forEach(x=>hangCua[x.lop.id]=x.hang);
+ ls.forEach(l=>{
+  const b=CHAM[l.id+'|'+w], tong=tongDiem(l.id,w), khoa=!!(c&&c.congbo);
+  const truc=laLopTruc(l.id,w);
+  h+='<tr'+(!b?' class="badrow"':'')+(ST.ctxLop===l.id?' style="outline:2px solid var(--brand)"':'')+'><td><b>'+l.id+'</b>'
+   +(truc?' <span class="tg a" title="máy gắn từ lịch trực">🛡 lớp trực tuần</span>':'')+'<div style="font-size:10.5px;color:var(--ink3)">'
+   +esc(l.gvcn)+'</div></td>';
+  tcHien(w,dt).forEach(t=>{
+   const d=diemTC(l.id,w,t.id);
+   if(t.tuyChon&&!truc){h+='<td class="num" style="font-size:10.5px;color:var(--ink3)">không áp</td>';return}
+   if(t.nguon) h+='<td class="num ro2"><b>'+(d==null?'—':d)+'</b>'
+     +'<div style="font-size:10px;color:var(--ink3)">'+canCuTC(l.id,w,t)+'</div></td>';
+   else h+='<td class="num">'+(b?(can('chamSD')&&!khoa
+      ?'<input class="cell" data-cell="'+l.id+'|'+t.id+'" value="'+(d==null?'':d)+'" type="number" step="0.5" min="0" max="10"'
+       +(t.tuyChon&&d==null?' style="border-color:var(--red)" title="lớp trực chưa được chấm tiêu chí trực"':'')+'>'
+      :'<b>'+(d==null?'—':d)+'</b>'):'—')+'</td>';
+  });
+  h+='<td class="num"><b style="font-size:15px">'+(tong==null?'—':tong)+'</b></td>'
+   +'<td class="num">'+(hangCua[l.id]?'<span class="st2 '+(hangCua[l.id]===1?'o':hangCua[l.id]<=3?'b':'n')+'">'
+     +hangCua[l.id]+(lopCN?'/'+bang.co.length:'')+'</span>':'—')+'</td>'
+   +'<td style="font-size:11.5px;color:var(--ink2)">'+(b?esc(b.boi)+'<div style="font-size:10.5px;color:var(--ink3)">'+b.luc+'</div>':'<span style="color:var(--red)">chưa chấm</span>')+'</td>'
+   +'<td>'+(can('chamSD')&&!khoa?'<button class="btn xs'+(b?'':' p')+'" data-cham="'+l.id+'">'
+     +(b?'Sửa':'Chấm')+'</button>':'<button class="btn xs" data-cham="'+l.id+'">Xem căn cứ</button>')+'</td></tr>';
+ });
+ h+='</table></div><div class="lgd">'
+  +'<span class="chip">Ô nền xám là <b>số chiếu từ menu khác</b> — sửa ở menu chủ, không sửa ở đây</span>'
+  +'<span class="chip" style="border-color:var(--amber);color:#92400e">⚠ Vi phạm <b>đã ghi trong sổ đầu bài</b> không nhập lại ở cột '
+  +'<b>VP ngoài giờ</b> — máy không phân biệt được, nhập lại là trừ hai lần</span>'
+  +'<span class="chip">🛡 <b>Lớp trực</b> vẫn bị chấm như mọi lớp; «Trực tuần» chỉ áp lớp đó — <b>trừ phần chưa hoàn thành</b>, nằm ngoài tổng 100%</span>'
+  +'<span class="chip">Xếp hạng tính <b>trong từng điểm trường</b>'+(lopCN?' — trên cả điểm trường, nhưng điểm của lớp khác không có trong kết quả trả về':'')+'</span>'
+  +'</div></div>';
+ if(lopCN) h+='<div style="margin-top:12px">'+bangCanCu(R().lop[0],w,true)+'</div>';
+ return h;
+}
+/* bảng căn cứ của MỘT lớp — dùng ở phiếu chấm và ở màn hình GVCN (phạm vi Class) */
+function bangCanCu(lop,w,daydu){
+ const g=nguonCua(lop,w), vs=vpHienThi(lop,w);
+ let h='<div class="tbw" style="margin-bottom:11px"><div class="ch">'+(daydu?'Điểm và căn cứ — lớp '+lop+' · tuần '+w
+   :'Ba ô lấy từ menu khác — chỉ đọc')+'<span class="sp"></span><span class="tg c">chỉ đọc</span></div><table>'
+  +'<tr><th>Tiêu chí</th><th class="num">Điểm</th><th>Căn cứ</th></tr>';
+ const dtl=lopById(lop).dt;
+ tcHien(w,dtl).filter(t=>(daydu||t.nguon)&&(!t.tuyChon||laLopTruc(lop,w))).forEach(t=>{
+  const d=diemTC(lop,w,t.id);
+  h+='<tr'+(t.nguon?' class="rorow"':'')+'><td>'+t.ten+(t.tru||t.tuyChon?' <span class="tg r">trừ '+t.ts+'%</span>':'')
+   +(t.nguon?' <span class="tg c">🔗 '+t.nguon+(t.id==='vt'?' F4':'')+'</span>':'')+'</td>'
+   +'<td class="num"><b>'+(d==null?'—':d)+'</b></td><td style="font-size:11.5px">';
+  /* tuần đã chốt: điểm là SỐ CHỤP, căn cứ là nguồn HIỆN TẠI — lệch thì nói ra ngay tại dòng */
+  const doiSauChot=t.nguon&&t.id!=='vt'&&d!=null&&nguonNay(lop,w,t.id)!=null&&Math.abs(d-nguonNay(lop,w,t.id))>0.05
+   ?' <span class="tg b">nguồn nay '+nguonNay(lop,w,t.id)+' — điểm giữ số chốt</span>':'';
+  if(t.id==='cc') h+=(g?g.pctCC+'% có mặt — vắng '+g.vang+'/'+g.tongLuot+' lượt trong tuần':'—')+doiSauChot;
+  else if(t.id==='yt') h+=(g?'Xếp loại tiết: '+moTaTiet(g):'—')+doiSauChot;
+  else if(t.id==='vt') h+=vs.length?bangVP(vs):'<span style="color:var(--ink3)">Sổ đầu bài không ghi vi phạm nào trong tuần</span>';
+  else h+='<span style="color:var(--ink2)">'+esc(t.mota)+'</span> <span class="tg c">👥 '+esc(tenLucCham(t.luc,dtl))+'</span>';
+  h+='</td></tr>';
+ });
+ if(daydu) h+='<tr class="totrow"><td><b>Tổng</b></td><td class="num"><b style="font-size:15px">'
+  +(tongDiem(lop,w)==null?'—':tongDiem(lop,w))+'</b></td><td></td></tr>';
+ return h+'</table><div class="lgd"><span class="chip">Sai số ở ô xám thì sửa tại <b>menu chủ</b> — sổ đầu bài sửa sau chốt '
+  +'qua <b>đề nghị sửa (M2.2 F6)</b></span></div></div>';
+}
+function bangVP(vs){
+ return '<table class="lt" style="margin-top:2px"><tr><th>Học sinh</th><th>Hành vi</th><th>Tiết</th><th>GV ghi</th><th>Trừ</th></tr>'
+  +vs.map(({v,trangThai})=>'<tr'+(trangThai?' style="opacity:.6"':'')+'><td>'+(v.hs?'<b>'+esc(hsById(v.hs).ten)+'</b>':'<span class="tg b">cả lớp</span>')+'</td>'
+   +'<td>'+esc(tenVP(v.ma))+' <span style="color:var(--ink3)">'+v.ma+'</span>'
+   +(v.gc?'<div style="color:var(--ink3)">'+esc(v.gc)+'</div>':'')
+   +(trangThai==='dinhchinh'?'<div><span class="tg r">đã đính chính sau chốt — số chốt vẫn giữ</span></div>':'')
+   +(trangThai==='themsau'?'<div><span class="tg b">ghi thêm sau chốt — chưa tính</span></div>':'')+'</td>'
+   +'<td>Tiết '+v.tiet+' · '+kThu(ngayVP(v))+' '+k2s(ngayVP(v)).slice(0,5)+'<div style="color:var(--ink3)">'+GV[v.gv][1]+'</div></td>'
+   +'<td>'+esc(GV[v.gv][0])+'</td><td class="num"><b>−'+diemTruCua(v.ma)+'</b></td></tr>').join('')
+  +'</table>';
+}
+function moVP(lop){
+ const w=ST.tuan, vs=vpHienThi(lop,w);
+ modal('🔗 Vi phạm ghi trong sổ đầu bài — '+lop+' · tuần '+w,
+  '<div class="ro">Bản chiếu <b>chỉ đọc</b> của M2.2 F4 — mỗi dòng đúng như giáo viên bộ môn đã ghi trong tiết. '
+  +'Điểm trừ quy đổi theo bảng <b>hành vi → điểm trừ</b> ở ⚙ Cấu hình; tên hành vi là <b>danh mục của M2.7</b>.</div>'
+  +(vs.length?bangVP(vs):'<div class="empty">Sổ đầu bài không ghi vi phạm nào của lớp trong tuần này.</div>')
+  +'<div class="lgd" style="padding-left:0"><span class="chip">Tổng quy đổi <b>'+diemTC(lop,w,'vt')+'</b> điểm (tối đa 10) × trọng số trừ '
+  +tcById('vt').ts+'%</span></div>',
+  '<button class="btn p" data-mb="close">Đóng</button>');
+}
+function moCham(lopId){
+ const w=ST.tuan, b=CHAM[lopId+'|'+w]||{}, c=chotCua(w,lopById(lopId).dt);
+ const sua=can('chamSD')&&!(c&&c.congbo), dtl=lopById(lopId).dt, truc=laLopTruc(lopId,w);
+ if(!sua){modal('Căn cứ điểm nền nếp — '+lopId+' · tuần '+w,bangCanCu(lopId,w,true),'<button class="btn p" data-mb="close">Đóng</button>');return}
+ mfns.bCham=()=>{
+  const v={};
+  $$('#mb .fldi[id^="c_"]').forEach(el=>{const id=el.id.slice(2), t=tcById(id);
+   v[id]=t.tuyChon?(el.value===''?null:Math.max(0,Math.min(10,parseFloat(el.value)||0))):(parseFloat(el.value)||0)});
+  CHAM[lopId+'|'+w]={...(CHAM[lopId+'|'+w]||{}),...v,boi:R().n,luc:k2s(HOMNAY)+' 16:30'};
+  closeM(); toast('💾 Đã lưu phiếu nền nếp <b>'+lopId+'</b> tuần '+w+' — tổng <b>'+tongDiem(lopId,w)+'</b>. '
+   +'Bản ghi mang tên <b>'+esc(R().n)+'</b> (nhập từ phiếu giấy).'
+   +(truc?' Lớp đang trực tuần này — vẫn bị chấm như mọi lớp.':'')); render();
+ };
+ modal('Chấm nền nếp — '+lopId+' · tuần '+w+(truc?' <span class="tg a">🛡 lớp trực tuần</span>':''),
+  '<div class="info">Lực lượng chấm (<b>'+esc(tenLucLuong(dtl))+'</b>, lớp trực tuần, người phụ trách) ghi <b>phiếu giấy</b>; bạn nhập lại vào đây. '
+  +'Bản ghi mang tên bạn — <b>học sinh không có tài khoản</b>. GVCN lớp trực <b>không nhập</b>, chỉ nộp phiếu tổng hợp.</div>'
+  +bangCanCu(lopId,w,false)
+  +tcHien(w,dtl).filter(t=>!t.nguon&&(!t.tuyChon||truc)).map(t=>'<label class="lbl">'+t.ten+' <span style="font-weight:400;color:var(--ink3)">— '
+    +(t.tru?'điểm TRỪ, ':'')+(t.tuyChon?'TÙY CHỌN, chỉ lớp trực — 10 = hoàn thành đủ, trừ phần thiếu × ':'trọng số ')+t.ts+'% · '
+    +'<b>lực lượng chấm: '+esc(tenLucCham(t.luc,dtl))+'</b> · '+esc(t.mota)+'</span></label>'
+   +(t.id==='vp'?'<div class="warn" style="margin:4px 0 0;font-size:12px">⚠ Chỉ ghi vi phạm <b>ngoài giờ học</b> (cổng trường, giờ ra chơi, xếp hàng). '
+     +'Vi phạm <b>đã có trong sổ đầu bài</b> nằm ở dòng 🔗 M2.2 phía trên — nhập lại ở đây là <b>trừ hai lần</b>, '
+     +'và máy <b>không có cách nhận ra</b>.</div>':'')
+   +'<input class="fldi" id="c_'+t.id+'" type="number" step="0.5" min="0" max="10" value="'+(b[t.id]!=null?b[t.id]:'')+'">').join(''),
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="Cham">Lưu phiếu</button>');
+}
+function chotTuan(){
+ const dt=dtThuc(), w=ST.tuan, ls=lopTrongPhamVi().filter(l=>l.dt===dt);
+ const thieu=ls.filter(l=>!daCham(l.id,w));
+ mfns.bChot=()=>{
+  const snap={}; LOP.filter(l=>l.dt===dt).forEach(l=>{snap[l.id]=chupSnap(l.id,w)});
+  const lt=lichCua(dt,w);
+  CHOT[w+'|'+dt]={luc:k2s(HOMNAY)+' 17:00',boi:R().n,ts:trongSo(),snap,congbo:null,nhanLopTruc:lt?lt.lop:null};
+  closeM(); toast('🔒 Đã chốt tuần '+w+' — <b>'+DT[dt]+'</b>. Ba số nguồn, danh sách vi phạm sổ đầu bài, trọng số và nhãn <b>lớp trực tuần'
+   +(lt?' '+lt.lop:'')+'</b> đã được <b>chụp lại</b>.'); render();
+ };
+ modal('🔒 Chốt tuần '+w+' — '+DT[dt],
+  (thieu.length?'<div class="danger">⛔ Còn <b>'+thieu.length+' lớp chưa chấm</b>: '+thieu.map(l=>l.id).join(', ')
+   +'. Chốt bây giờ thì các lớp này <b>không có điểm và không có hạng</b>. Nên chấm nốt trước.</div>'
+   :'<div class="okbox">✅ Đã chấm đủ <b>'+ls.length+'/'+ls.length+'</b> lớp.</div>')
+  +'<div class="info">Chốt tuần sẽ <b>chụp lại</b> tại thời điểm này: <b>chuyên cần</b> (M2.9/T2), <b>ý thức trong tiết</b> (M2.2), '
+  +'<b>danh sách vi phạm ghi trong sổ đầu bài</b> (M2.2 F4), <b>trọng số</b> và nhãn <b>lớp trực tuần'
+  +(lichCua(dt,w)?' '+lichCua(dt,w).lop:' (không có)')+'</b> — đổi lịch sau khi chốt không đổi nhãn đã chụp.<br>'
+  +'<b>Vì sao phải chụp:</b> đơn xin nghỉ nộp muộn <b>ghi đè điểm danh cũ</b> (M2.4), sổ đầu bài được <b>đính chính</b> sau khi duyệt '
+  +'đề nghị sửa (M2.2 F6) — số của tuần đã qua <b>vẫn còn đổi được</b>. Không chụp thì bảng xếp hạng tự đổi sau lưng mọi người.</div>'
+  +'<div class="ro">Chốt rồi <b>vẫn sửa được năm ô nhập tay</b>. Chỉ khi <b>công bố</b> thì bảng mới khóa hẳn.</div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn '+(thieu.length?'d':'p')+'" data-mb="Chot">'
+  +(thieu.length?'Vẫn chốt (thiếu '+thieu.length+' lớp)':'Chốt tuần')+'</button>');
+}
+/* ★ G28 (App PH-HS, 5/9/2026): App KHÔNG hiển thị sao đỏ — «công bố» nay là mở bảng tuần cho toàn trường
+   (GVCN đọc ở M2.9/T6, đọc dưới cờ) và KHÓA bảng; không còn đi tới phụ huynh. Xem M6.13 §F điểm P4A-3. */
+function congboTuan(){
+ const dt=dtThuc(), w=ST.tuan, c=chotCua(w,dt), b=bangTuan(w,dt);
+ mfns.bCB=()=>{c.congbo={ngay:HOMNAY,boi:R().n};closeM();
+  toast('📣 Đã công bố xếp hạng tuần '+w+' — <b>'+DT[dt]+'</b>. Bảng đã khóa; GVCN thấy thứ hạng lớp mình ở báo cáo tuần (M2.9/T6).');render()};
+ modal('📣 Công bố xếp hạng tuần '+w+' — '+DT[dt],
+  '<div class="warn">Công bố là <b>chốt thứ hạng chính thức của tuần</b> cho toàn trường — đọc dưới cờ, GVCN thấy ở báo cáo tuần '
+  +'(<b>M2.9/T6</b>). Sau khi công bố, bảng <b>khóa lại</b> — không sửa điểm được nữa, kể cả ô nhập tay.</div>'
+  +'<div class="info">Xếp hạng là <b>của LỚP, không phải của từng học sinh</b>. <b>App phụ huynh không hiển thị sao đỏ</b> '
+  +'(chốt G28 của App PH-HS, 5/9/2026).</div>'
+  +'<div class="tbw"><table><tr><th class="num">Hạng</th><th>Lớp</th><th class="num">Điểm tuần</th></tr>'
+  +b.co.map(x=>'<tr'+(x.hang===1?' class="okrow"':'')+'><td class="num"><b>'+x.hang+'</b></td>'
+    +'<td>'+x.lop.id+'</td><td class="num"><b>'+x.diem+'</b></td></tr>').join('')
+  +(b.thieu.length?'<tr class="warnrow"><td>—</td><td colspan="2">Không có điểm: '
+    +b.thieu.map(l=>l.id).join(', ')+'</td></tr>':'')
+  +'</table></div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="CB">Công bố</button>');
+}
+
+
+/* ══════════════ TAB 2 · XẾP HẠNG THI ĐUA ══════════════
+   ★ Khác tab 1 ở ĐƠN VỊ DÒNG: một lớp trong CẢ KỲ, chuỗi tuần + thứ hạng — không có ô nhập nào. */
+const KYXH={tuan:'Tuần',thang:'Tháng',hk:'Học kỳ',nam:'Cả năm'};
+function pham(){
+ const w=ST.tuan;
+ if(ST.ky==='tuan') return [w,w,'Tuần '+w];
+ if(ST.ky==='thang'){const th=thangCuaTuan(w); let a=w,b=w;
+  while(a>1&&thangCuaTuan(a-1)===th)a--; while(b<TUAN_NAY&&thangCuaTuan(b+1)===th)b++;
+  return [a,b,'Tháng '+th.slice(5)+'/'+th.slice(0,4)]}
+ if(ST.ky==='hk'){const k=kyCuaTuan(w); let a=1,b=TUAN_NAY;
+  while(a<TUAN_NAY&&kyCuaTuan(a)!==k)a++; while(b>1&&kyCuaTuan(b)!==k)b--;
+  return [a,b,k==='hk1'?'Học kỳ 1':'Học kỳ 2']}
+ return [1,TUAN_NAY,'Cả năm học '+NAMHOC.ten];
+}
+function veXepHang(){
+ const lopCN=R().sc==='Class', dt=lopCN?lopById(R().lop[0]).dt:dtThuc(), [a,b,nhan]=pham();
+ const hien=lopTrongPhamVi().map(l=>l.id);
+ const bang=ST.ky==='tuan'?bangTuan(a,dt):bangKy(a,b,dt);
+ let h=tuanBar()+scopeBar();
+ h+='<div class="bar">'+Object.keys(KYXH).map(k=>'<button class="chip'+(ST.ky===k?' on':'')+'" data-kyxh="'+k+'">'
+   +KYXH[k]+'</button>').join('')
+  +'<span style="font-size:11.5px;color:var(--ink3)">'+nhan+' — tuần '+a+(a!==b?' → '+b:'')+'</span>'
+  +'<div class="spacer"></div>'+(can('xuat')?'<button class="btn" id="xuatXH">📤 Xuất</button>':'')+'</div>';
+ h+=dnote('Tab này <b>không có ô nhập nào</b> — đơn vị dòng là <b>một lớp trong cả kỳ</b>, khác tab 1 '
+  +'(một lớp trong <b>một tuần</b>). Cùng thực thể, khác câu hỏi.<br>'
+  +'Xếp hạng tính <b>trong từng điểm trường</b>. Tuần <b>chưa chốt</b> vẫn vào bảng nhưng có nhãn riêng — số của nó còn đổi được.'
+  +(lopCN?'<br>GVCN (phạm vi Class) thấy <b>đúng dòng lớp mình</b> kèm thứ hạng — hạng tính trên cả điểm trường.':''));
+ if(ST.ky==='tuan'){
+  h+='<div class="tbw"><div class="tbx"><table style="min-width:980px"><tr><th class="num">Hạng</th><th>Lớp</th>'
+   +tcHien(a,dt).map(t=>'<th class="num">'+t.ngan+'</th>').join('')+'<th class="num">Tổng</th></tr>';
+  bang.co.filter(x=>hien.includes(x.lop.id)).forEach(x=>{
+   h+='<tr'+(x.hang===1?' class="okrow"':'')+'><td class="num"><b style="font-size:15px">'+x.hang+'</b>'
+    +(lopCN?'<span style="color:var(--ink3)">/'+bang.co.length+'</span>':'')+(x.hang===1?' 🏆':'')+'</td><td><b>'+x.lop.id+'</b></td>'
+    +tcHien(a,dt).map(t=>{const d=diemTC(x.lop.id,a,t.id);
+     if(t.tuyChon&&!laLopTruc(x.lop.id,a)) return '<td class="num" style="color:var(--ink3);font-size:10.5px">không áp</td>';
+     return '<td class="num'+(t.nguon?' ro2':'')+'">'+(d==null?'—':d)+(t.tuyChon?' 🛡':'')+'</td>'}).join('')
+    +'<td class="num"><b style="font-size:15px">'+x.diem+'</b></td></tr>';
+  });
+  bang.thieu.filter(l=>hien.includes(l.id)).forEach(l=>h+='<tr class="badrow"><td class="num">—</td><td><b>'+l.id+'</b></td>'
+   +'<td colspan="'+(tcHien(a,dt).length+1)+'" style="font-size:12px">Chưa chấm — <b>không có hạng</b>, và hệ thống '
+   +'không tự cho 0 điểm: không chấm khác với chấm 0</td></tr>');
+  h+='</table></div></div>';
+ } else {
+  const cols=[]; for(let w=a;w<=b;w++) cols.push(w);
+  h+='<div class="tbw"><div class="tbx"><table style="min-width:'+(360+cols.length*62)+'px">'
+   +'<tr><th class="num">Hạng</th><th>Lớp</th>'
+   +cols.map(w=>'<th class="num">T'+w+(chotCua(w,dt)?'':' <span class="tg b">chưa chốt</span>')+'</th>').join('')
+   +'<th class="num">TB</th><th>Diễn biến</th></tr>';
+  bang.co.filter(x=>hien.includes(x.lop.id)).forEach(x=>{
+   const mx=Math.max(...x.ct.filter(v=>v!=null),1);
+   h+='<tr'+(x.hang===1?' class="okrow"':'')+'><td class="num"><b style="font-size:15px">'+x.hang+'</b>'
+    +(lopCN?'<span style="color:var(--ink3)">/'+bang.co.length+'</span>':'')+(x.hang===1?' 🏆':'')+'</td><td><b>'+x.lop.id+'</b></td>'
+    +x.ct.map(v=>'<td class="num">'+(v==null?'<span style="color:var(--ink3)">—</span>':v)+'</td>').join('')
+    +'<td class="num"><b style="font-size:15px">'+x.tb+'</b><div style="font-size:10px;color:var(--ink3)">'
+    +x.n+'/'+cols.length+' tuần</div></td>'
+    +'<td><div class="spark">'+x.ct.map(v=>'<i style="height:'+(v==null?2:Math.round(v/mx*22))+'px;'
+      +'background:'+(v==null?'var(--line2)':'var(--brand)')+'"></i>').join('')+'</div></td></tr>';
+  });
+  bang.thieu.filter(l=>hien.includes(l.id)).forEach(l=>h+='<tr class="badrow"><td class="num">—</td><td><b>'+l.id+'</b></td>'
+   +'<td colspan="'+(cols.length+2)+'" style="font-size:12px">Không có tuần nào được chấm</td></tr>');
+  h+='</table></div><div class="lgd">'
+   +'<span class="chip">Trung bình tính trên <b>số tuần thực có điểm</b>, không coi tuần thiếu là 0</span>'
+   +'<span class="chip">Cột <b>Diễn biến</b> cho thấy lớp đang lên hay đang xuống — một con số trung bình che mất điều đó</span>'
+   +'</div></div>';
+ }
+ if(ST.ky!=='tuan') h+='<div class="ro" style="margin-top:11px">Công bố làm <b>theo tuần</b> ở tab 1. '
+  +'Bảng kỳ này để nhà trường theo dõi và tổng kết thi đua — <b>không công bố riêng</b>, tránh việc một lớp bị '
+  +'nhắc đi nhắc lại là "đứng cuối" ở nhiều mốc khác nhau.</div>';
+ return h;
+}
+
+
+/* ══════════════ TAB 3 · ⚙ CẤU HÌNH ══════════════
+   Nhận từ tab ⚙ Cấu hình cũ của M6.3: khối 1 (tiêu chí & trọng số) + phần «Tham số chung» về xếp hạng / chốt tuần.
+   Thêm 14/9/2026: bảng QUY ĐỔI HÀNH VI → ĐIỂM TRỪ cho tiêu chí Vi phạm trong giờ học.
+   YKDD-1A 17/9/2026: cột «Lực lượng chấm» cho tiêu chí NHẬP TAY (C2-4) · tiêu chí TÙY CHỌN «Hoàn thành nhiệm vụ trực tuần» (C2-3)
+   nằm ngoài tổng 100%. Tab đổi số hiệu 3 → 4 (⚙ đứng cuối); lịch trực & lực lượng ở tab 3, KHÔNG ở đây.
+   Khối «Tổ chức Đội và Đoàn» tạm ở M6.3 (P4B chuyển sang M6.15) · «Công bố ảnh» → M6.14 · «Ngưỡng tỉ lệ kết nạp» → M6.3. */
+const CFG={chotLuc:'Cuối Thứ Bảy'};
+function veCauHinh(){
+ const tong=tc100().reduce((a,t)=>a+t.ts,0), sua=can('cauhinh'), tcl=TIEUCHI.find(t=>t.tuyChon);
+ let h=scopeBar();
+ /* 1 · tiêu chí */
+ h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">1 · Tiêu chí chấm nền nếp &amp; trọng số '
+  +'<span class="tg c">Master — dùng chung toàn trường</span><span class="sp"></span>'
+  +(sua?'<button class="btn xs" id="themTC">➕ Thêm tiêu chí</button><button class="btn xs" id="chiaLai">⚖ Chia lại trọng số</button>':'')+'</div>'
+  +'<table><tr><th>Tiêu chí</th><th class="num">Trọng số</th><th>Nguồn dữ liệu</th><th>Lực lượng chấm <span class="tg a">mới 17/9</span></th><th>Ghi chú</th></tr>'
+  +tc100().map(t=>'<tr'+(t.nguon?' class="rorow"':'')+'><td><b>'+t.ten+'</b>'
+    +(t.tru?' <span class="tg r">điểm trừ</span>':'')+(t.id==='vt'?' <span class="tg a">mới 14/9</span>':'')
+    +(t.id==='vp'?' <span class="tg b">đổi nghĩa 14/9</span>':'')+'</td>'
+   +'<td class="num"><b>'+t.ts+'%</b></td>'
+   +'<td>'+(t.nguon?'<span class="tg c">🔗 '+t.nguon+(t.id==='vt'?' F4':'')+'</span> <b>tự động</b>':'<span class="tg b">người chấm nhập</span>')+'</td>'
+   +'<td>'+oLuc(t)+'</td>'
+   +'<td style="font-size:11.5px;color:var(--ink2)">'+esc(t.mota)+'</td></tr>').join('')
+  +'<tr class="totrow"><td><b>Tổng trọng số</b></td><td class="num"><b>'+tong+'%</b></td>'
+  +'<td colspan="3">'+(tong===100?'<span class="st2 o">Đủ 100%</span>'
+    :'<span class="st2 r">Phải bằng 100% — hiện '+tong+'%</span>')+'</td></tr>'
+  +'</table><div class="lgd">'
+  +'<span class="chip">Tiêu chí <b>có nguồn tự động</b> thì không nhập tay ở phiếu chấm — sửa số phải sửa ở menu chủ</span>'
+  +'<span class="chip">Đổi trọng số <b>không tính lại tuần đã chốt</b> — chốt tuần chụp luôn trọng số lúc chốt</span>'
+  +'<span class="chip">Thêm tiêu chí thì <b>bắt buộc chia lại</b> cho đủ 100% mới lưu được</span>'
+  +'<span class="chip">👥 <b>Lực lượng chấm</b> chỉ khai cho tiêu chí nhập tay — ghi nguồn phiếu giấy, <b>không</b> cấp quyền nhập cho ai</span></div>'
+  /* 1b · tiêu chí tùy chọn */
+  +(tcl?'<div class="ch" style="border-top:1px solid var(--line)">1b · Tiêu chí tùy chọn — chỉ áp lớp đang trực <span class="tg a">mới 17/9</span><span class="sp"></span>'
+   +(sua?'<button class="btn xs'+(tcl.bat?'':' p')+'" id="batTruc">'+(tcl.bat?'Tắt tiêu chí':'Bật tiêu chí')+'</button>':'')+'</div>'
+   +'<table><tr><th>Tiêu chí</th><th class="num">Trọng số trừ</th><th>Trạng thái</th><th>Lực lượng chấm</th><th>Cách tính</th></tr>'
+   +'<tr><td><b>'+tcl.ten+'</b> <span class="tg b">tùy chọn</span></td>'
+   +'<td class="num">'+(sua?'<input class="mini" id="tsTruc" type="number" min="0" max="20" step="1" value="'+tcl.ts+'"> %':'<b>'+tcl.ts+'%</b>')+'</td>'
+   +'<td>'+(tcl.bat?'<span class="st2 o">Đang bật</span>':'<span class="st2 n">Đang tắt</span>')+'</td>'
+   +'<td>'+oLuc(tcl)+'</td>'
+   +'<td style="font-size:11.5px;color:var(--ink2)">Chấm thang 10 (10 = hoàn thành đủ) <b>chỉ cho lớp đang trực</b>; tổng bị <b>trừ (10 − điểm) × trọng số</b>. '
+   +'<b>Không</b> cộng vào tổng 100% — lớp trực làm đủ việc không mất điểm, điểm tối đa của mọi lớp vẫn bằng nhau (chốt U — 17/9)</td></tr></table>':'')
+  +'</div>';
+ /* 2 · quy đổi hành vi → điểm trừ */
+ const oQD=ma=>{
+  const macDinh=QUYDOI[ma]==null;
+  return sua?'<input class="mini qdin" data-qd="'+ma+'" type="number" step="0.5" min="0" max="10" value="'+diemTruCua(ma)+'">'
+   +(macDinh?' <span class="tg b">mặc định theo mức</span>':'')
+   :'<b>'+diemTruCua(ma)+'</b>'+(macDinh?' <span class="tg b">mặc định theo mức</span>':'');
+ };
+ h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">2 · Quy đổi hành vi → điểm trừ '
+  +'<span class="tg a">mới 14/9/2026</span><span class="sp"></span>'
+  +'<span style="font-weight:400;font-size:12px;color:var(--ink2)">cho tiêu chí <b>Vi phạm trong giờ học</b> · thang 10, cộng dồn trong tuần, tối đa 10</span></div>'
+  +'<div class="ro" style="margin:10px 12px">Tên hành vi và mức độ là <b>danh mục Master của M2.7</b> (⚙ Danh mục) — ở đây <b>chỉ đọc</b>, '
+  +'không có nút thêm hay xóa hành vi. Menu này chỉ <b>gắn điểm trừ vào mã hành vi</b>. Hành vi mới thêm ở M2.7 mà chưa gắn '
+  +'thì tính <b>mặc định theo mức</b>: mức 1 → '+MAC_DINH_MUC[1]+' · mức 2 → '+MAC_DINH_MUC[2]+' · mức 3 → '+MAC_DINH_MUC[3]+'.</div>'
+  +'<div class="tbx"><table><tr><th>Mã</th><th>Hành vi cá nhân <span class="tg c">🔗 M2.7</span></th><th class="num">Mức</th><th>Điểm trừ / lượt</th><th>Ghi chú</th></tr>'
+  +HANHVI.map(x=>'<tr><td style="color:var(--ink3)">'+x.id+'</td><td>'+esc(x.t)+'</td><td class="num">'+x.m+'</td>'
+   +'<td>'+oQD(x.id)+'</td><td style="font-size:11.5px;color:var(--ink2)">'+esc(GHICHU_QD[x.id]||'')+'</td></tr>').join('')
+  +'<tr class="totrow"><td colspan="5">Vi phạm chung của lớp <span class="tg c">🔗 bốn loại cố định của M2.2 F4</span></td></tr>'
+  +VPCHUNG.map(x=>'<tr><td style="color:var(--ink3)">'+x.id+'</td><td>'+esc(x.t)+' <span style="color:var(--ink3);font-size:11px">— cả lớp</span></td>'
+   +'<td class="num">—</td><td>'+oQD(x.id)+'</td><td></td></tr>').join('')
+  +'</table></div><div class="lgd">'
+  +'<span class="chip">Đổi điểm trừ <b>không tính lại tuần đã chốt</b> — tuần đã chốt giữ số đã chụp</span>'
+  +'<span class="chip">Nghỉ học không phép <b>để 0</b> vì đã trừ ở Chuyên cần — cùng một sự việc không trừ hai tiêu chí</span></div></div>';
+ /* 3 · tham số xếp hạng & chốt tuần */
+ h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">3 · Xếp hạng &amp; chốt tuần <span class="tg b">⚠ áp cho TOÀN TRƯỜNG</span></div>'
+  +'<table><tr><th>Tham số</th><th>Giá trị</th><th>Ảnh hưởng</th></tr>'
+  +'<tr><td>Phạm vi xếp hạng thi đua</td><td><b>Trong từng điểm trường</b></td>'
+  +'<td>Hai điểm trường khác sĩ số, cơ sở vật chất và ca học — xếp chung là so hai thứ không so được</td></tr>'
+  +'<tr><td>Mốc chốt tuần</td><td><b>'+CFG.chotLuc+'</b></td><td>Chốt sẽ <b>chụp lại</b> ba số nguồn tự động, danh sách vi phạm sổ đầu bài và trọng số</td></tr>'
+  +'<tr class="warnrow"><td>Công bố xếp hạng</td><td><b>Theo tuần, do người bấm</b></td>'
+  +'<td><b>Không tự động công bố</b> — thứ hạng là thứ cả trường sẽ đọc và so sánh, phải có người chịu trách nhiệm. '
+  +'App PH-HS <b>không hiển thị</b> sao đỏ (G28)</td></tr>'
+  +'</table></div>';
+ /* 4 · đã chuyển đi */
+ h+='<div class="ro"><b>Ba phần của tab Cấu hình cũ (M6.3) không ở đây nữa</b> — tách ngày 14/9/2026:<br>'
+  +'• <b>Tổ chức Đội và Đoàn</b> (ai phụ trách · khối áp dụng · điều kiện Điều lệ) → <a href="'+linkMenu('M6.3','tab=ketnap')
+  +'" style="color:var(--brand);font-weight:600">M6.3 · Xét duyệt &amp; Kết nạp</a> — khối tạm, phiên P4B chuyển sang <b>M6.15 Tổ chức &amp; Ban chấp hành</b><br>'
+  +'• <b>Công bố ảnh có nhận diện học sinh</b> → <a href="'+linkMenu('M6.14','tab=phongtrao')+'" style="color:var(--brand);font-weight:600">M6.14 · Sự kiện phong trào</a><br>'
+  +'• <b>Ngưỡng cảnh báo tỉ lệ kết nạp</b> → <a href="'+linkMenu('M6.3','tab=hoivien')+'" style="color:var(--brand);font-weight:600">M6.3 · Đoàn viên - Đội viên</a></div>';
+ return h;
+}
+/* ô lực lượng chấm — chỉ tiêu chí nhập tay; tiêu chí tự động là «máy» (đọc số từ menu chủ) */
+function oLuc(t){
+ if(t.nguon) return '<span style="color:var(--ink3);font-size:11.5px">— máy đọc 🔗 '+t.nguon+'</span>';
+ const dt=dtThuc();
+ if(!can('cauhinh')) return '<span class="tg c">👥 '+esc(tenLucCham(t.luc,dt))+'</span>';
+ return '<select class="sel" data-luc="'+t.id+'" style="font-size:11.5px;padding:3px 6px">'
+  +Object.keys(LUC_CHAM).map(k=>'<option value="'+k+'"'+(t.luc===k?' selected':'')+'>'+LUC_CHAM[k]
+   +(k==='ban_nen_nep'?' ('+esc(tenLucLuong(dt))+')':'')+'</option>').join('')+'</select>';
+}
+/* ★ Thêm tiêu chí / đổi trọng số dùng CHUNG một hộp: tổng phải đúng 100% mới lưu được — thêm tiêu chí là buộc chia lại. */
+function moChiaLai(themMoi){
+ const dong=(id,ten,ts,tag)=>'<tr><td>'+ten+(tag||'')+'</td><td class="num"><input class="mini tsin" data-ts="'+id+'" type="number" min="0" max="100" step="5" value="'+ts+'"> %</td></tr>';
+ mfns.bCL=()=>{
+  const v={}; let s=0;
+  $$('.tsin').forEach(x=>{v[x.dataset.ts]=parseFloat(x.value)||0; s+=v[x.dataset.ts]});
+  if(themMoi&&!$('#tcTen').value.trim()){toast('⚠️ Chưa có tên tiêu chí.');return}
+  if(Math.abs(s-100)>0.01){toast('⛔ Tổng trọng số đang <b>'+s+'%</b> — phải đúng <b>100%</b> mới lưu được. Chia lại cho các tiêu chí khác.');return}
+  tc100().forEach(t=>{t.ts=v[t.id]});
+  if(themMoi){const id='tc'+(TIEUCHI.length+1), ten=$('#tcTen').value.trim();
+   /* chèn TRƯỚC tiêu chí tùy chọn — tiêu chí tùy chọn luôn đứng cuối bảng */
+   TIEUCHI.splice(TIEUCHI.findIndex(t=>t.tuyChon),0,{id,ten,ngan:ten,ts:v.moi,nguon:null,tru:$('#tcTru').value==='tru',luc:$('#tcLuc').value,mota:'Tiêu chí trường thêm — người chấm nhập'})}
+  closeM(); toast('⚖ Đã lưu trọng số. Áp dụng từ <b>tuần chưa chốt</b>; tuần đã chốt giữ trọng số lúc chốt.'); render();
+ };
+ modal(themMoi?'➕ Thêm tiêu chí — bắt buộc chia lại trọng số':'⚖ Chia lại trọng số',
+  (themMoi?'<div class="warn">Tổng trọng số hiện đã đủ <b>100%</b>. Thêm tiêu chí thì <b>phải bớt ở tiêu chí khác</b> — '
+   +'hộp này không lưu khi tổng lệch 100%.</div>'
+   +'<label class="lbl">Tên tiêu chí <span style="color:var(--red)">*</span></label><input class="fldi" id="tcTen" placeholder="VD: Bảo vệ của công">'
+   +'<label class="lbl">Loại</label><select class="fldi" id="tcTru"><option value="cong">Điểm cộng — người chấm nhập</option>'
+   +'<option value="tru">Điểm trừ — người chấm nhập</option></select>'
+   +'<label class="lbl">Lực lượng chấm</label><select class="fldi" id="tcLuc">'
+   +Object.keys(LUC_CHAM).map(k=>'<option value="'+k+'">'+LUC_CHAM[k]+'</option>').join('')+'</select>'
+   +'<div class="ro" style="margin-top:9px">Tiêu chí thêm ở đây luôn là <b>người chấm nhập</b>. Muốn một tiêu chí <b>đọc số từ menu khác</b> '
+   +'thì đó là việc phát triển (phải có hợp đồng dữ liệu với menu chủ), không phải cấu hình.</div>':'')
+  +'<div class="tbw" style="margin-top:11px"><table><tr><th>Tiêu chí</th><th class="num">Trọng số</th></tr>'
+  +tc100().map(t=>dong(t.id,t.ten,t.ts,t.tru?' <span class="tg r">trừ</span>':'')).join('')
+  +(themMoi?dong('moi','<i>Tiêu chí mới</i>',0,' <span class="tg a">mới</span>'):'')
+  +'<tr class="totrow"><td><b>Tổng</b></td><td class="num"><b id="tsTong">100%</b></td></tr></table></div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="CL">Lưu trọng số</button>');
+ tinhTong();
+}
+function tinhTong(){
+ let s=0; $$('.tsin').forEach(x=>s+=parseFloat(x.value)||0);
+ const el=$('#tsTong'); if(!el) return;
+ el.textContent=s+'%'; el.style.color=Math.abs(s-100)>0.01?'var(--red)':'var(--green)';
+}
+
+/* ══════════════ TAB 3 · LỊCH TRỰC & LỰC LƯỢNG NỀN NẾP — m6.13.lich_truc_luc_luong ══════════════
+   YKDD-1A · 17/9/2026 · HDDD ④ · C2-5 C2-6 C2-7 · N1.
+   Đơn vị dòng: MỘT TUẦN của một điểm trường (lịch) · MỘT HỌC SINH trong lực lượng (danh sách).
+   ★ Lịch chỉ là KHAI BÁO — không mở quyền nhập điểm cho ai. GVCN mở tab này ở phạm vi Class, chỉ đọc.
+   ★ Tổ chức là trục phạm vi: TPT sửa phần Đội, BTĐ sửa phần Đoàn. Lịch là của ĐIỂM TRƯỜNG nên cả hai cùng thấy cả lịch. */
+const dtLich=()=>R().sc==='Class'?lopById(R().lop[0]).dt:dtThuc();
+function tinhTrangTuan(w){
+ if(w<TUAN_NAY) return '<span class="st2 n">đã qua</span>';
+ if(w===TUAN_NAY) return '<span class="st2 o">tuần này</span>';
+ return '<span class="st2 b">sắp tới</span>';
+}
+function veLichTruc(){
+ const dt=dtLich(), cf=CFG_LICH[dt], lopCN=R().sc==='Class', sua=can('lichTruc');
+ let h=scopeBar(lopCN?'Tab này <b>chỉ đọc</b> — lịch là khai báo, không mở quyền nhập điểm.':'');
+ h+=dnote('<b>Lịch chỉ là KHAI BÁO.</b> Nó cho biết tuần nào lớp nào trực, để máy <b>gắn nhãn «lớp trực tuần»</b> lên bảng chấm và nhắc GVCN lớp đó. '
+  +'Nó <b>không cấp quyền nhập điểm</b> cho GVCN lớp trực — người nhập vẫn là Bí thư Đoàn · Tổng phụ trách · Văn thư nhập hộ (§2.6).<br>'
+  +'<b>Một lịch cho mỗi điểm trường</b>: tổ chức của lớp trực suy ra từ khối (Đội khối 6–8 · Đoàn khối 9). '
+  +'Tắt một tổ chức = các khối của tổ chức đó <b>ra khỏi vòng luân phiên</b>, không phải hai lịch riêng.<br>'
+  +'Lực lượng nền nếp <b>chọn từ sổ đội viên / đoàn viên 🔗 M6.3</b> — không gõ tên tay; tên lực lượng theo tổ chức và sửa được.');
+ if(ST.dt==='ALL'&&R().sc==='School') h+='<div class="warn">Header đang chọn <b>Tất cả điểm trường</b> — lịch là <b>một cho mỗi điểm trường</b>, '
+  +'nên tab này đang hiện <b>'+DT[dt]+'</b>. Chọn điểm trường khác ở header để xem lịch của điểm đó.</div>';
+ if(!cf) return h+'<div class="empty">'+DT[dt]+' chưa có lớp nào — không có lịch trực.</div>';
+ if(lopCN){
+  const my=R().lop[0], ds=Object.values(LICH).filter(x=>x.dt===dt&&x.lop===my).map(x=>x.w);
+  const nay=ds.includes(TUAN_NAY), sau=ds.filter(w=>w>TUAN_NAY)[0];
+  h+=nay?'<div class="okbox">🛡 <b>Tuần này (tuần '+TUAN_NAY+') lớp '+my+' trực.</b> Việc ở M0.2: <i>«Tuần này lớp bạn trực — nộp phiếu tổng hợp cho '
+     +TOCHUC[tcCuaLop(lopById(my))].phutrach+' trước chiều thứ Sáu»</i>. Bạn <b>không nhập điểm</b> — phiếu nộp về người phụ trách.</div>'
+   :'<div class="info">Lớp <b>'+my+'</b> '+(sau?'trực tuần <b>'+sau+'</b> ('+k2s(ngayDauTuan(sau))+' → '+k2s(ngayCuoiTuan(sau))+')':'không có tuần trực nào còn lại trong năm học')
+     +(cf.khoiMien.some(m=>m.khoi===lopById(my).khoi)?' — khối '+lopById(my).khoi+' đang <b>miễn trực '+cf.khoiMien.filter(m=>m.khoi===lopById(my).khoi).map(m=>HK_TEN[m.hk]).join(', ')+'</b>':'')+'.</div>';
+ }
+ /* ── khối 1 · cấu hình vòng luân phiên ── */
+ h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">1 · Vòng luân phiên — '+DT[dt]
+  +' <span class="tg c">cau_hinh_lich_truc</span><span class="sp"></span><span style="font-weight:400;font-size:11.5px;color:var(--ink3)">sửa lần cuối '
+  +esc(cf.boi)+' · '+cf.luc+'</span></div><table>'
+  +'<tr><th style="width:190px">Tổ chức vào vòng</th><td>'+Object.keys(TOCHUC).map(tc=>{
+    const bat=cf.tcBat.includes(tc), duoc=sua&&coTC(tc);
+    return '<span class="chip'+(bat?' on':'')+'" style="margin-right:6px">'+TOCHUC[tc].icon+' '+TOCHUC[tc].ngan+' (khối '+TOCHUC[tc].khoi.join(', ')+') — '+(bat?'bật':'tắt')+'</span>'
+     +(duoc?'<button class="btn xs" data-battc="'+tc+'">'+(bat?'Tắt':'Bật')+'</button> ':'');
+   }).join('')+'<div style="font-size:11.5px;color:var(--ink3);margin-top:4px">Bật / tắt theo tổ chức (C2-6) — mỗi người phụ trách chỉ bật / tắt được tổ chức của mình.</div></td></tr>'
+  +'<tr><th>Khối miễn trực</th><td>'+(cf.khoiMien.length?cf.khoiMien.map((m,i)=>'<span class="chip" style="margin-right:6px">Khối '+m.khoi+' — '+HK_TEN[m.hk]
+    +(cf.lyMien[m.khoi]?' · '+esc(cf.lyMien[m.khoi]):'')+'</span>'
+    +(sua&&coTC(tcCuaLop({khoi:m.khoi}))?'<button class="btn xs" data-bomien="'+i+'">Bỏ miễn</button> ':'')).join('')
+    :'<span style="color:var(--ink3)">Không miễn khối nào <i>(mặc định)</i></span>')
+  +(sua?' <button class="btn xs" id="themMien">➕ Miễn một khối</button>':'')+'</td></tr>'
+  +'<tr><th>Thứ tự luân phiên</th><td>'+cf.thuTu.map((id,i)=>{const l=lopById(id), vao=cf.tcBat.includes(tcCuaLop(l));
+    return '<span class="chip" style="margin:2px 4px 2px 0;'+(vao?'':'opacity:.5')+'">'+(i+1)+'. '+id
+     +(sua?' <a data-tt="'+i+'|-1" style="cursor:pointer">◀</a> <a data-tt="'+i+'|1" style="cursor:pointer">▶</a>':'')+'</span>'}).join('')
+  +'<div style="font-size:11.5px;color:var(--ink3);margin-top:4px">Máy đi vòng theo thứ tự này, <b>bỏ qua</b> lớp của tổ chức đang tắt và khối đang miễn trong học kỳ đó. '
+  +'Đổi cấu hình thì lịch <b>sinh lại từ tuần '+(TUAN_NAY+1)+'</b> — tuần đã qua và tuần này giữ nguyên.</div></td></tr></table></div>';
+ /* ── khối 2 · lịch lớp trực ── */
+ const hk=ST.hkLich||kyCuaTuan(TUAN_NAY);
+ let tuan=Object.values(LICH).filter(x=>x.dt===dt&&kyCuaTuan(x.w)===hk).sort((a,b)=>a.w-b.w);
+ if(lopCN) tuan=tuan.filter(x=>x.lop===R().lop[0]);
+ const soDoi=Object.values(LICH).filter(x=>x.dt===dt&&x.doi).length;
+ h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">2 · Lịch lớp trực tuần — '+DT[dt]+' <span class="tg c">lich_truc</span><span class="sp"></span>'
+  +['hk1','hk2'].map(k=>'<button class="chip'+(hk===k?' on':'')+'" data-hklich="'+k+'">Học kỳ '+k.slice(2)+'</button>').join(' ')
+  +(soDoi?' <span class="chip">⇄ '+soDoi+' tuần đã đổi</span>':'')
+  +(can('xuatLich')?' <button class="btn xs" id="xuatLich">📤 Xuất</button>':'')+'</div>'
+  +'<div class="tbx"><table style="min-width:980px"><tr><th class="num">Tuần</th><th>Ngày</th><th>Lớp trực</th><th>Tổ chức</th><th>GVCN</th>'
+  +'<th>Tình trạng</th><th>Nhãn trên bảng tuần</th><th>Đổi lịch</th><th></th></tr>';
+ if(!tuan.length) h+='<tr><td colspan="9" class="empty">'+(lopCN?'Lớp '+R().lop[0]+' không có tuần trực nào trong học kỳ này.':'Không có tuần nào trong vòng — mọi tổ chức đang tắt hoặc mọi khối đang miễn.')+'</td></tr>';
+ tuan.forEach(x=>{
+  const l=lopById(x.lop), tc=tcCuaLop(l), c=chotCua(x.w,dt), nh=nhanLopTruc(x.w,dt);
+  h+='<tr'+(x.w===TUAN_NAY?' class="okrow"':'')+(ST.ctxTuan===x.w?' style="outline:2px solid var(--brand)"':'')+'>'
+   +'<td class="num"><b>'+x.w+'</b></td><td style="font-size:11.5px">'+k2s(ngayDauTuan(x.w)).slice(0,5)+' → '+k2s(ngayCuoiTuan(x.w)).slice(0,5)+'</td>'
+   +'<td><b>'+x.lop+'</b></td><td>'+TOCHUC[tc].icon+' '+TOCHUC[tc].ngan+' <span style="color:var(--ink3);font-size:10.5px">dẫn xuất từ khối</span></td>'
+   +'<td>'+esc(l.gvcn)+'</td><td>'+tinhTrangTuan(x.w)+'</td>'
+   +'<td style="font-size:11.5px">'+(c?'📸 <b>'+(nh.lop||'—')+'</b> — đã chụp khi chốt'+(nh.lop!==x.lop?' <span class="tg b">khác lịch hiện tại</span>':'')
+     :'<span style="color:var(--ink3)">chưa chốt — nhãn theo lịch</span>')+'</td>'
+   +'<td style="font-size:11.5px">'+(x.doi?'⇄ từ <b>'+x.doi.lopCu+'</b> (đổi với tuần '+x.doi.voiTuan+')<div style="color:var(--ink2)">«'+esc(x.doi.ly)+'»</div>'
+     +'<div style="color:var(--ink3)">'+esc(x.doi.boi)+' · '+x.doi.luc+'</div>':'<span style="color:var(--ink3)">—</span>')+'</td>'
+   +'<td>'+(sua&&(coTC(tc))&&!lopCN?'<button class="btn xs" data-doilich="'+x.w+'">⇄ Đổi</button>':'')+'</td></tr>';
+ });
+ h+='</table></div><div class="lgd"><span class="chip">Đổi lịch = <b>hoán đổi hai tuần</b>, <b>bắt buộc lý do</b> — không có «thay bằng lớp khác» để không lớp nào trực hai lần, mất lượt</span>'
+  +'<span class="chip">📸 Nhãn trên bảng tuần <b>chụp khi chốt</b> — đổi lịch sau đó không đổi nhãn</span></div></div>';
+ /* ── khối 3 · lực lượng nền nếp ── */
+ h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">3 · Lực lượng nền nếp — năm học '+NAMHOC.ten+' <span class="tg c">luc_luong_nen_nep</span><span class="sp"></span>'
+  +['dang','rut'].map(k=>'<button class="chip'+((ST.llLoc||'dang')===k?' on':'')+'" data-llloc="'+k+'">'+(k==='dang'?'Đang tham gia':'Đã rút')+'</button>').join(' ')+'</div>';
+ tcCua().forEach(tc=>{
+  const L=LUCLUONG[tc], duoc=sua&&coTC(tc);
+  let ds=L.tv.filter(x=>(ST.llLoc||'dang')==='dang'?!x.rut:!!x.rut);
+  if(lopCN) ds=ds.filter(x=>hsById(x.hs).lop===R().lop[0]);
+  else if(R().sc==='Branch') ds=ds.filter(x=>hsById(x.hs).dt===R().dt);
+  h+='<div style="padding:10px 12px;border-top:1px solid var(--line)"><div class="bar" style="padding:0 0 6px">'
+   +'<b>'+TOCHUC[tc].icon+' '+esc(L.ten)+'</b> <span style="font-size:11.5px;color:var(--ink3)">— lực lượng của '+TOCHUC[tc].ten
+   +' · tên mặc định «'+(tc==='doi'?'Đội Sao đỏ':'Ban nền nếp')+'»'+(L.suaTen?' · đổi tên bởi '+esc(L.suaTen):'')+'</span><div class="spacer"></div>'
+   +(duoc?'<button class="btn xs" data-suaten="'+tc+'">✎ Đổi tên</button> <button class="btn xs p" data-chonll="'+tc+'">➕ Chọn từ sổ '+(tc==='doi'?'đội viên':'đoàn viên')+' 🔗 M6.3</button>':'')+'</div>'
+   +'<table class="lt"><tr><th>Học sinh</th><th>Lớp</th><th>Vai</th><th>Khu vực phụ trách</th><th>Từ ngày</th><th>Người ghi</th><th></th></tr>'
+   +(ds.length?ds.map(x=>{const hs=hsById(x.hs);
+     return '<tr><td><b>'+esc(hs.ten)+'</b> <span class="tg c">'+(tc==='doi'?'đội viên':'đoàn viên')+' 🔗 M6.3</span></td><td>'+hs.lop+'</td><td>'+x.vai+'</td>'
+      +'<td style="font-size:11.5px">'+esc(x.kv)+'</td><td>'+k2s(x.tu)+'</td><td style="font-size:11.5px">'+esc(x.boi)+'</td>'
+      +'<td style="font-size:11.5px">'+(x.rut?'<span class="tg r">rút '+k2s(x.rut.ngay)+'</span><div style="color:var(--ink2)">«'+esc(x.rut.ly)+'»</div>'
+        :(duoc?'<button class="btn xs" data-rutll="'+tc+'|'+x.hs+'">Rút tên</button>':''))+'</td></tr>'}).join('')
+    :'<tr><td colspan="7" style="color:var(--ink3);font-size:12px">'+((ST.llLoc||'dang')==='dang'?'Chưa có thành viên'+(lopCN?' từ lớp '+R().lop[0]:'')+'.':'Không có ai đã rút.')+'</td></tr>')
+   +'</table></div>';
+ });
+ if(tcCua().length===1) h+='<div class="ro" style="margin:0 12px 10px">Lực lượng của '+(motTC()==='doi'?'Đoàn':'Đội')+' <b>không có trong kết quả trả về</b> — tổ chức là trục phạm vi.</div>';
+ h+='<div class="lgd"><span class="chip">Rút tên là <b>chuyển trạng thái, không xóa</b> — chip «Đã rút» tìm lại được</span>'
+  +'<span class="chip">Học sinh <b>không có tài khoản</b> — danh sách này là nguồn ghi trên phiếu, không mở quyền nào</span></div></div>';
+ /* ── khối 4 · việc sinh sang M0.2 ── */
+ let vs=viecM02(dt,TUAN_NAY);
+ if(lopCN) vs=vs.filter(v=>v.nguoi.includes('GVCN '+R().lop[0]));
+ h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">4 · Việc M6.13 khai báo cho M0.2 — tuần '+TUAN_NAY+' <span class="tg b">mô phỏng — M0.2 dựng ở phiên 2A</span></div>'
+  +'<table><tr><th>Bảng M0.2</th><th>Người nhận</th><th>Việc</th><th>Hạn</th><th>Deep-link · điều kiện sinh</th></tr>'
+  +(vs.length?vs.map(v=>'<tr><td>'+v.bang+'</td><td style="font-size:11.5px">'+esc(v.nguoi)+'</td><td><b>'+esc(v.ten)+'</b></td>'
+    +'<td style="font-size:11.5px">'+v.han+'</td><td style="font-size:11px"><code>'+esc(v.link)+'</code><div style="color:var(--ink3)">'+esc(v.dk)+'</div></td></tr>').join('')
+   :'<tr><td colspan="5" style="color:var(--ink3)">Không có việc nào cho vai này tuần này.</td></tr>')
+  +'</table></div>';
+ /* ── lịch sử thao tác ── */
+ const ls=LS_LICH.filter(x=>x.dt===dt).slice().reverse();
+ h+='<details class="tbw"><summary class="ch" style="cursor:pointer">🕘 Lịch sử thao tác lịch — '+DT[dt]+' ('+ls.length+')</summary><table>'
+  +'<tr><th>Lúc</th><th>Người</th><th>Thao tác</th><th>Lý do</th></tr>'
+  +ls.map(x=>'<tr><td style="font-size:11.5px">'+x.luc+'</td><td>'+esc(x.boi)+'</td><td>'+esc(x.su)+'</td><td style="font-size:11.5px">'+esc(x.ly||'—')+'</td></tr>').join('')
+  +'</table></details>';
+ return h;
+}
+
+/* ══ thao tác ══ */
+const lucNay=()=>k2s(HOMNAY)+' '+p2(10+LS_LICH.length%8)+':'+p2((LS_LICH.length*7)%60);
+function moDoiLich(w){
+ const dt=dtLich(), x=lichCua(dt,w);
+ const opts=Object.values(LICH).filter(y=>y.dt===dt&&y.w!==w).sort((a,b)=>a.w-b.w);
+ const macDinh=opts.find(y=>y.w>w)||opts[0];
+ mfns.bDoiLich=()=>{
+  const w2=+$('#dlTuan').value, ly=$('#dlLy').value.trim();
+  if(!ly){$('#dlLoi').innerHTML='<div class="danger">⛔ <b>Chưa có lý do.</b> Đổi lịch trực <b>bắt buộc ghi lý do</b> (C2-5) — '
+   +'GVCN hai lớp và người đọc lịch sử cần biết vì sao lượt trực bị dời.</div>';$('#dlLy').focus();return}
+  const y=lichCua(dt,w2), la=x.lop, lb=y.lop;
+  doiLich(dt,w,w2,ly,R().n,lucNay());
+  closeM();
+  const khac=[tcCuaLop(lopById(la)),tcCuaLop(lopById(lb))].filter(t=>!coTC(t));
+  toast('⇄ Đã đổi lịch: tuần '+w+' → <b>'+lb+'</b> · tuần '+w2+' → <b>'+la+'</b>. Đã báo GVCN '+esc(lopById(la).gvcn)+' và '+esc(lopById(lb).gvcn)
+   +(khac.length?'; báo thêm <b>'+TOCHUC[khac[0]].phutrach+'</b> (lớp của tổ chức kia)':'')
+   +([w,w2].some(k=>chotCua(k,dt))?'. Tuần đã chốt <b>giữ nhãn đã chụp</b>.':'.'));
+  ST.ctxTuan=w; render();
+ };
+ const canhBao=w2=>{
+  const y=lichCua(dt,w2), out=[];
+  [w,w2].forEach(k=>{const c=chotCua(k,dt); if(c) out.push('Tuần '+k+' <b>đã chốt</b> — nhãn «lớp trực tuần '+c.nhanLopTruc+'» trên bảng tuần <b>giữ nguyên</b>; đổi ở đây chỉ sửa ghi chép lịch.')});
+  if(w<TUAN_NAY||w2<TUAN_NAY) out.push('Có tuần <b>đã qua</b> — chỉ nên đổi để <b>đính chính</b> lớp đã thực trực.');
+  const tcs=[tcCuaLop(lopById(x.lop)),tcCuaLop(lopById(y.lop))];
+  if(tcs[0]!==tcs[1]) out.push('Hai lớp thuộc <b>hai tổ chức</b> ('+TOCHUC[tcs[0]].ngan+' · '+TOCHUC[tcs[1]].ngan+') — hệ thống báo cả hai người phụ trách (chốt V — 17/9).');
+  return out.length?'<div class="warn" style="font-size:12px">'+out.join('<br>')+'</div>':'';
+ };
+ mfns.dlDoi=()=>{$('#dlCB').innerHTML=canhBao(+$('#dlTuan').value)};
+ modal('⇄ Đổi lịch trực — tuần '+w+' · '+DT[dt],
+  '<div class="info">Tuần <b>'+w+'</b> ('+k2s(ngayDauTuan(w))+' → '+k2s(ngayCuoiTuan(w))+') đang là lớp <b>'+x.lop+'</b> — GVCN '+esc(lopById(x.lop).gvcn)+'. '
+  +'Đổi lịch là <b>hoán đổi</b> với một tuần khác: hai lớp đổi lượt cho nhau, vòng luân phiên giữ nguyên.</div>'
+  +'<label class="lbl">Hoán đổi với</label><select class="fldi" id="dlTuan" onchange="mfns.dlDoi()">'
+  +opts.map(y=>'<option value="'+y.w+'"'+(y===macDinh?' selected':'')+'>Tuần '+y.w+' ('+k2s(ngayDauTuan(y.w)).slice(0,5)+') — lớp '+y.lop+'</option>').join('')+'</select>'
+  +'<div id="dlCB">'+canhBao(macDinh.w)+'</div>'
+  +'<label class="lbl">Lý do <span style="color:var(--red)">*</span></label><textarea class="fldi" id="dlLy" rows="2" placeholder="VD: 8A1 đi trải nghiệm thực tế"></textarea>'
+  +'<div id="dlLoi"></div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="DoiLich">Đổi lịch</button>');
+}
+/* đổi cấu hình → xác nhận, sinh lại từ tuần sau; đổi lịch đã ghi ở tuần sắp tới sẽ mất — nói ra đích danh */
+function apCauHinh(dt,moTa,lamDoi){
+ const mat=Object.values(LICH).filter(x=>x.dt===dt&&x.w>TUAN_NAY&&x.doi);
+ mfns.bApCH=()=>{
+  lamDoi(); sinhLich(dt,TUAN_NAY+1);
+  CFG_LICH[dt].boi=R().n; CFG_LICH[dt].luc=lucNay();
+  LS_LICH.push({dt,luc:lucNay(),boi:R().n,su:moTa+' — sinh lại lịch từ tuần '+(TUAN_NAY+1),ly:null});
+  closeM(); toast('🔁 '+moTa+'. Lịch <b>'+DT[dt]+'</b> sinh lại từ tuần '+(TUAN_NAY+1)+'; tuần đã qua và tuần này giữ nguyên.'); render();
+ };
+ modal('🔁 '+moTa+' — '+DT[dt],
+  '<div class="info">Lịch sẽ <b>sinh lại từ tuần '+(TUAN_NAY+1)+'</b>. Tuần đã qua và tuần này <b>giữ nguyên</b> — đó là việc đã xảy ra; '
+  +'bảng tuần đã chốt giữ nhãn lớp trực đã chụp.</div>'
+  +(mat.length?'<div class="warn">⚠ Có <b>'+mat.length+' tuần sắp tới đã đổi lịch</b> — sinh lại sẽ <b>bỏ</b> các lần đổi này (lịch sử thao tác vẫn giữ): '
+    +mat.map(x=>'tuần '+x.w+' ('+x.doi.lopCu+' → '+x.lop+', «'+esc(x.doi.ly)+'»)').join(' · ')+'. Cần thì đổi lại sau khi sinh (chốt X — 17/9).</div>':''),
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="ApCH">Áp dụng</button>');
+}
+function moThemMien(){
+ const dt=dtLich(), cf=CFG_LICH[dt];
+ const khoi=[...new Set(LOP.filter(l=>l.dt===dt).map(l=>l.khoi))].filter(k=>coTC(tcCuaLop({khoi:k})));
+ mfns.bMien=()=>{const k=+$('#mnKhoi').value, hk=$('#mnHk').value, ly=$('#mnLy').value.trim();
+  if(cf.khoiMien.some(m=>m.khoi===k&&m.hk===hk)){toast('⛔ Khối '+k+' đã miễn '+HK_TEN[hk]+'.');return}
+  closeM(); apCauHinh(dt,'Miễn trực khối '+k+' '+HK_TEN[hk],()=>{cf.khoiMien.push({khoi:k,hk}); if(ly) cf.lyMien[k]=ly});
+ };
+ modal('➕ Miễn trực một khối — '+DT[dt],
+  '<div class="ro">Mặc định <b>không miễn khối nào</b>. Chỉ chọn được khối thuộc tổ chức bạn phụ trách.</div>'
+  +'<label class="lbl">Khối</label><select class="fldi" id="mnKhoi">'+khoi.map(k=>'<option>'+k+'</option>').join('')+'</select>'
+  +'<label class="lbl">Áp dụng</label><select class="fldi" id="mnHk"><option value="hk1">Học kỳ 1</option><option value="hk2">Học kỳ 2</option><option value="nam">Cả năm học</option></select>'
+  +'<label class="lbl">Lý do</label><input class="fldi" id="mnLy" placeholder="VD: khối mới vào trường">',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="Mien">Tiếp tục</button>');
+}
+function moChonLL(tc){
+ const L=LUCLUONG[tc], dang=L.tv.filter(x=>!x.rut).map(x=>x.hs);
+ const lops=LOP.filter(l=>hoiVienCua(tc,l.id).length&&(R().sc!=='Branch'||l.dt===R().dt));
+ ST.llLop=ST.llLop&&lops.find(l=>l.id===ST.llLop)?ST.llLop:(lops[0]||{}).id;
+ const veDs=()=>hoiVienCua(tc,ST.llLop).map(h=>'<tr><td>'+(dang.includes(h.id)?'<span class="tg g">đã trong lực lượng</span>'
+   :'<input type="checkbox" class="llchk" value="'+h.id+'">')+'</td><td><b>'+esc(h.ten)+'</b></td><td>'+h.lop+'</td><td>'+h.ma+'</td></tr>').join('');
+ mfns.llLop=()=>{ST.llLop=$('#llLop').value; $('#llDs').innerHTML=veDs()};
+ mfns.bChonLL=()=>{
+  const chon=$$('.llchk').filter(x=>x.checked).map(x=>x.value);
+  if(!chon.length){toast('⛔ Chưa chọn học sinh nào.');return}
+  const kv=$('#llKv').value.trim()||DT[lopById(ST.llLop).dt]+' — chưa phân khu vực';
+  chon.forEach(id=>L.tv.push({hs:id,vai:$('#llVai').value,kv,tu:HOMNAY,boi:R().n,rut:null}));
+  closeM(); toast('➕ Đã thêm <b>'+chon.length+'</b> em vào <b>'+esc(L.ten)+'</b> — chọn từ sổ '+(tc==='doi'?'đội viên':'đoàn viên')+' M6.3.'); render();
+ };
+ modal('➕ Chọn thành viên '+esc(L.ten)+' — từ sổ '+(tc==='doi'?'đội viên':'đoàn viên')+' 🔗 M6.3',
+  '<div class="ro">Danh sách là <b>bản chiếu chỉ đọc</b> của sổ M6.3 — chỉ '+(tc==='doi'?'đội viên':'đoàn viên')+' có tên. '
+  +'<b>Không có ô gõ tên</b>: em chưa '+(tc==='doi'?'vào Đội':'vào Đoàn')+' thì phải qua đợt kết nạp ở M6.3 trước.</div>'
+  +'<label class="lbl">Lớp</label><select class="fldi" id="llLop" onchange="mfns.llLop()">'+lops.map(l=>'<option'+(l.id===ST.llLop?' selected':'')+'>'+l.id+'</option>').join('')+'</select>'
+  +'<div class="tbw" style="margin-top:8px;max-height:220px;overflow:auto"><table class="lt"><tr><th></th><th>Học sinh</th><th>Lớp</th><th>Mã</th></tr><tbody id="llDs">'+veDs()+'</tbody></table></div>'
+  +'<label class="lbl">Vai</label><select class="fldi" id="llVai">'+VAI_LL.map(v=>'<option'+(v==='Thành viên'?' selected':'')+'>'+v+'</option>').join('')+'</select>'
+  +'<label class="lbl">Khu vực phụ trách</label><input class="fldi" id="llKv" placeholder="VD: Điểm trường A — cổng chính">',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="ChonLL">Thêm vào lực lượng</button>');
+}
+function moRutLL(tc,hs){
+ const x=LUCLUONG[tc].tv.find(y=>y.hs===hs&&!y.rut);
+ mfns.bRutLL=()=>{const ly=$('#rlLy').value.trim();
+  if(!ly){$('#rlLoi').innerHTML='<div class="danger">⛔ Rút tên <b>bắt buộc lý do</b>.</div>';return}
+  x.rut={ngay:HOMNAY,ly,boi:R().n}; closeM(); toast('Đã rút tên <b>'+esc(hsById(hs).ten)+'</b> — bản ghi giữ lại, xem ở chip «Đã rút».'); render()};
+ modal('Rút tên khỏi '+esc(LUCLUONG[tc].ten),
+  '<div class="info"><b>'+esc(hsById(hs).ten)+'</b> — '+hsById(hs).lop+' · '+x.vai+'. Rút tên là <b>chuyển trạng thái</b>, không xóa bản ghi.</div>'
+  +'<label class="lbl">Lý do <span style="color:var(--red)">*</span></label><input class="fldi" id="rlLy"><div id="rlLoi"></div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn d" data-mb="RutLL">Rút tên</button>');
+}
+function moSuaTen(tc){
+ const L=LUCLUONG[tc];
+ mfns.bSuaTen=()=>{const t=$('#stTen').value.trim(); if(!t){toast('⛔ Tên không được để trống.');return}
+  L.ten=t; L.suaTen=R().n+' · '+k2s(HOMNAY); closeM(); toast('✎ Tên lực lượng '+TOCHUC[tc].ngan+' nay là <b>'+esc(t)+'</b> — hiện ở tab 1 và phiếu chấm.'); render()};
+ modal('✎ Đổi tên lực lượng nền nếp — '+TOCHUC[tc].ten,
+  '<div class="ro">Tên mặc định theo tổ chức: Đội → <b>Đội Sao đỏ</b> · Đoàn → <b>Ban nền nếp</b> (C2-1). Trường gọi khác (vd «Đội cờ đỏ») thì sửa ở đây.</div>'
+  +'<label class="lbl">Tên hiển thị</label><input class="fldi" id="stTen" value="'+esc(L.ten)+'">',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="SuaTen">Lưu</button>');
+}
+function suKienLich(t){
+ const hk=t.closest('[data-hklich]'); if(hk){ST.hkLich=hk.dataset.hklich;render();return true}
+ const ll=t.closest('[data-llloc]'); if(ll){ST.llLoc=ll.dataset.llloc;render();return true}
+ const dl=t.closest('[data-doilich]'); if(dl){moDoiLich(+dl.dataset.doilich);return true}
+ const bt=t.closest('[data-battc]'); if(bt){const dt=dtLich(), tc=bt.dataset.battc, cf=CFG_LICH[dt], bat=cf.tcBat.includes(tc);
+  apCauHinh(dt,(bat?'Tắt':'Bật')+' lịch trực cho '+TOCHUC[tc].ngan,()=>{cf.tcBat=bat?cf.tcBat.filter(x=>x!==tc):cf.tcBat.concat(tc)});return true}
+ const bm=t.closest('[data-bomien]'); if(bm){const dt=dtLich(), cf=CFG_LICH[dt], m=cf.khoiMien[+bm.dataset.bomien];
+  apCauHinh(dt,'Bỏ miễn trực khối '+m.khoi+' '+HK_TEN[m.hk],()=>{cf.khoiMien.splice(+bm.dataset.bomien,1)});return true}
+ const tt=t.closest('[data-tt]'); if(tt){const dt=dtLich(), cf=CFG_LICH[dt], [i,d]=tt.dataset.tt.split('|').map(Number), j=i+d;
+  if(j<0||j>=cf.thuTu.length) return true;
+  apCauHinh(dt,'Đổi thứ tự luân phiên '+cf.thuTu[i]+' ↔ '+cf.thuTu[j],()=>{const a=cf.thuTu[i];cf.thuTu[i]=cf.thuTu[j];cf.thuTu[j]=a});return true}
+ if(t.id==='themMien'){moThemMien();return true}
+ if(t.id==='xuatLich'){xuat();return true}
+ const cl=t.closest('[data-chonll]'); if(cl){moChonLL(cl.dataset.chonll);return true}
+ const rl=t.closest('[data-rutll]'); if(rl){const [tc,hs]=rl.dataset.rutll.split('|');moRutLL(tc,hs);return true}
+ const st=t.closest('[data-suaten]'); if(st){moSuaTen(st.dataset.suaten);return true}
+ const gl=t.closest('[data-golich]'); if(gl){const [w,lop]=gl.dataset.golich.split('|');
+  ST.tab='lichtruc'; ST.ctxTuan=+w; ST.hkLich=kyCuaTuan(+w); render(); return true}
+ return false;
+}
+
+
+/* ══════════════ M6.13 — TAB · RENDER · SỰ KIỆN ══════════════ */
+/* YKDD-3B — breadcrumb ← M0.2 khi mở từ «Việc cần làm» (?…&return=M0.2). FILE_MENU của nền không có M0.2;
+   thêm ở đây, không sửa nền đóng băng (DD-S3 — tiền lệ M6.17 app.20). */
+FILE_MENU['M0.2']='M0.2-Viec-can-lam.html';
+function viecCanLam(){
+ let n=0;
+ if(can('chamSD')) n+=lopTrongPhamVi().filter(l=>!daCham(l.id,TUAN_NAY)).length;
+ return n;
+}
+/* ★ GVCN (Class) có tab 1 · 2 · 3 — chỉ đọc, đúng lớp mình. Không có tab ⚙.
+   ★ YKDD-1A 17/9/2026: tab 1 đổi nhãn «Chấm nền nếp» (mã m6.3.cham_sao_do giữ) · thêm tab 3 «Lịch trực & lực lượng nền nếp»
+     (m6.13.lich_truc_luc_luong) · ⚙ đổi số hiệu 3 → 4 để đứng cuối. Vai Đủ quyền thấy cả bốn tab. */
+function tabsOK(){
+ const out=[];
+ if(can('xem')) out.push(['saodo','1 · Chấm nền nếp',can('chamSD')?viecCanLam()||null:null]);
+ if(can('xem')) out.push(['xephang','2 · Xếp hạng thi đua']);
+ if(can('xem')||can('lichTruc')) out.push(['lichtruc','3 · Lịch trực & lực lượng nền nếp']);
+ if(can('cauhinh')) out.push(['cauhinh','4 · ⚙ Cấu hình']);
+ return out;
+}
+function render(){
+ rolebar(); header(); tabs();
+ const c=$('#content');
+ $('#crumb').innerHTML=ST.ret&&FILE_MENU[ST.ret]?'<div class="crumb"><a href="'+linkMenu(ST.ret,'x=1')+'">← '+ST.ret+'</a> <span>mở từ '+ST.ret+'</span></div>':'';
+ if(!ST.tab) c.innerHTML=khongCoQuyen('Theo dõi thi đua');
+ else if(ST.tab==='saodo') c.innerHTML=veSaoDo();
+ else if(ST.tab==='xephang') c.innerHTML=veXepHang();
+ else if(ST.tab==='lichtruc') c.innerHTML=veLichTruc();
+ else c.innerHTML=veCauHinh();
+ ganCell();
+ $('#btnNote').classList.toggle('on',!document.body.classList.contains('nn'));
+ $('#btnNote').textContent='💡 Ghi chú thiết kế: '+(document.body.classList.contains('nn')?'TẮT':'BẬT');
+}
+function doiTab(t){ST.tab=t; ST.ctxLop=null; ST.ctxTuan=null}
+/* sửa nhanh ngay trên bảng — chấm nền nếp lặp lại 9 lần mỗi tuần, mở hộp thoại 9 lần là quá chậm */
+function ganCell(){
+ $$('.cell').forEach(el=>{
+  el.onchange=()=>{
+   const [lop,tc]=el.dataset.cell.split('|'), b=CHAM[lop+'|'+ST.tuan];
+   b[tc]=Math.max(0,Math.min(10,parseFloat(el.value)||0)); b.boi=R().n; b.luc=k2s(HOMNAY)+' 16:30';
+   render();
+  };
+ });
+ $$('[data-luc]').forEach(el=>{
+  el.onchange=()=>{const t=tcById(el.dataset.luc); t.luc=el.value;
+   toast('👥 Lực lượng chấm «'+esc(t.ten)+'» → <b>'+LUC_CHAM[el.value]+'</b>. Chỉ ghi nguồn phiếu — không đổi ai được nhập điểm.'); render()};
+ });
+ const tsT=$('#tsTruc'); if(tsT) tsT.onchange=()=>{const t=TIEUCHI.find(x=>x.tuyChon); t.ts=Math.max(0,Math.min(20,parseFloat(tsT.value)||0));
+  toast('Trọng số trừ «'+esc(t.ten)+'» = <b>'+t.ts+'%</b> — ngoài tổng 100%; tuần đã chốt giữ trọng số đã chụp.'); render()};
+ $$('.qdin').forEach(el=>{
+  el.onchange=()=>{const v=Math.max(0,Math.min(10,parseFloat(el.value)||0));
+   QUYDOI[el.dataset.qd]=v; toast('Đã gắn <b>'+v+'</b> điểm trừ cho «'+esc(tenVP(el.dataset.qd))+'». Tuần đã chốt giữ số đã chụp.'); render()};
+ });
+}
+function xuat(){
+ modal('📤 Xuất dữ liệu — bắt buộc chọn mục đích',
+  '<div class="warn">Bảng chấm có kèm <b>tên học sinh trong danh sách vi phạm</b> — Luật BVDLCN 91/2025. '
+  +'Mọi lượt xuất <b>ghi audit</b> và <b>bắt buộc chọn mục đích</b>.</div>'
+  +'<label class="lbl">Nội dung xuất</label><select class="fldi">'
+  +'<option>Bảng chấm nền nếp theo tuần (không kèm tên học sinh)</option><option>Lịch lớp trực tuần theo điểm trường</option><option>Bảng chấm kèm danh sách vi phạm sổ đầu bài</option>'
+  +'<option>Xếp hạng thi đua theo kỳ</option></select>'
+  +'<label class="lbl">Mục đích sử dụng <span style="color:var(--red)">*</span></label>'
+  +'<select class="fldi"><option>Báo cáo Hội đồng Đội / Đoàn cấp trên</option><option>Báo cáo nội bộ nhà trường</option>'
+  +'<option>Lưu trữ hồ sơ năm học</option></select>'
+  +'<label class="lbl">Định dạng</label><select class="fldi"><option>Excel (.xlsx)</option><option>PDF</option></select>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="close">Xuất và ghi audit</button>');
+}
+function suKien(t){
+ if(suKienLich(t)) return;
+ if(t.id==='batTruc'){const x=TIEUCHI.find(y=>y.tuyChon); x.bat=!x.bat;
+  toast('Tiêu chí «'+esc(x.ten)+'» <b>'+(x.bat?'đã bật':'đã tắt')+'</b> — áp từ tuần chưa chốt; tuần đã chốt giữ như lúc chốt.'); render(); return}
+ const tw=t.closest('[data-tw]'); if(tw){const v=+tw.dataset.tw;
+  ST.tuan=v===0?TUAN_NAY:Math.max(1,Math.min(TUAN_NAY,ST.tuan+v));render();return}
+ const ky=t.closest('[data-kyxh]'); if(ky){ST.ky=ky.dataset.kyxh;render();return}
+ const cm=t.closest('[data-cham]'); if(cm){moCham(cm.dataset.cham);return}
+ const vd=t.closest('[data-vpds]'); if(vd){moVP(vd.dataset.vpds);return}
+ const id=t.id;
+ if(id==='chotTuan'){chotTuan();return}
+ if(id==='congboTuan'){congboTuan();return}
+ if(id==='themTC'){moChiaLai(true);return}
+ if(id==='chiaLai'){moChiaLai(false);return}
+ if(['xuatSD','xuatXH'].includes(id)){xuat();return}
+}
+document.addEventListener('input',e=>{if(e.target.classList.contains('tsin')) tinhTong()});
+/* deep-link D3 — M0.2 mở thẳng: ?tab=lich_truc&ctx=<tuần>|<lớp> · ?tab=cham_nen_nep&ctx=<tuần>|<điểm trường>[&action=duyet] */
+(function moTuLienKet(){
+ /* nền chung đọc ?vai= TRƯỚC khi app.20 thêm ROLES.GVCN92 — đọc lại ở đây (không sửa nền đóng băng) */
+ if(QS.get('vai')&&ROLES[QS.get('vai')]) role=QS.get('vai');
+ const tb=QS.get('tab'), ctx=(QS.get('ctx')||'').split('|'), w=+ctx[0];
+ if(QS.get('return')) ST.ret=QS.get('return');
+ const MAP={saodo:'saodo',cham_nen_nep:'saodo',xephang:'xephang',cauhinh:'cauhinh',lich_truc:'lichtruc',lichtruc:'lichtruc'};
+ if(MAP[tb]) ST.tab=MAP[tb];
+ if(R().sc!=='School'&&R().dt) ST.dt=R().dt;
+ if(ST.tab==='lichtruc'&&w){ST.ctxTuan=w; ST.hkLich=kyCuaTuan(w)}
+ if(ST.tab==='saodo'&&w&&w<=TUAN_NAY){ST.tuan=w; if(ctx[1]&&DT[ctx[1]]&&R().sc==='School') ST.dt=ctx[1]; else if(ctx[1]&&lopById(ctx[1])) ST.ctxLop=ctx[1]}
+})();
+render();
+if(QS.get('action')==='duyet'&&ST.tab==='saodo'&&can('congboSD')){const c=chotCua(ST.tuan,dtThuc()); if(c&&!c.congbo) congboTuan()}
+</script>
+</body>
+</html>

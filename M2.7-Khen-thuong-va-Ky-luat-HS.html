@@ -1,0 +1,1268 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M2.7 Kỷ luật học sinh — Dschool</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f1f5f9;--surface:#fff;--line:#e2e8f0;--line2:#cbd5e1;
+ --ink:#0f172a;--ink2:#475569;--ink3:#94a3b8;--brand:#1d4ed8;--brand-soft:#eff6ff;
+ --red:#dc2626;--red-soft:#fef2f2;--amber:#d97706;--amber-soft:#fffbeb;
+ --green:#059669;--green-soft:#ecfdf5;--violet:#7c3aed}
+body{font:14px/1.5 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font:inherit}
+
+.hdr{height:56px;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:13px;padding:0 15px;position:sticky;top:0;z-index:40}
+.logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px}
+.logo .mark{width:28px;height:28px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px}
+.school{color:var(--ink2);font-size:12.5px;border-left:1px solid var(--line);padding-left:13px;max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sel{border:1px solid var(--line2);border-radius:7px;padding:5px 9px;font-size:12.5px;background:#fff}
+.sel:disabled{background:var(--bg);color:var(--ink3);cursor:not-allowed}
+.lockwrap{position:relative;display:inline-flex;align-items:center;gap:5px}
+.lockwrap .lk{font-size:11px;color:var(--ink3)}
+.spacer{flex:1}
+.icobtn{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;position:relative;font-size:15px}
+.icobtn:hover{background:var(--bg)}
+.dot{position:absolute;top:3px;right:3px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--violet);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700}
+
+.wrap{display:flex;min-height:calc(100vh - 56px)}
+.side{width:206px;flex:0 0 206px;background:var(--surface);border-right:1px solid var(--line);padding:10px 8px;position:sticky;top:56px;max-height:calc(100vh - 56px);overflow-y:auto}
+.sgrp{font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;padding:12px 10px 5px}
+.snav{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:var(--ink2);font-size:12.5px;margin-bottom:1px}
+.snav:hover{background:var(--bg)}
+.snav.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
+.snav .nb{margin-left:auto;flex:0 0 auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;min-width:18px;text-align:center;line-height:15px}
+.snav.off{opacity:.34;pointer-events:none}
+.main{flex:1;padding:15px 18px 40px;min-width:0}
+
+.tophd{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+h1{font-size:19px;font-weight:700}
+.btn{border:1px solid var(--line2);background:#fff;border-radius:8px;padding:7px 12px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.btn:hover:not(:disabled){background:var(--bg)}
+.btn.p{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn.p:hover:not(:disabled){background:#1e40af}
+.btn.d{background:var(--red);color:#fff;border-color:var(--red)}
+.btn.g{background:var(--green);color:#fff;border-color:var(--green)}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn.xs{padding:3px 8px;font-size:11.5px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.tabs{display:flex;gap:3px;border-bottom:2px solid var(--line);margin:12px 0 0;flex-wrap:wrap}
+.tab1{padding:9px 15px;font-size:13.5px;font-weight:600;color:var(--ink2);border-bottom:2px solid transparent;margin-bottom:-2px;display:flex;align-items:center;gap:7px}
+.tab1.on{color:var(--brand);border-bottom-color:var(--brand)}
+.tab1 .b{background:var(--bg);color:var(--ink2);font-size:11px;font-weight:700;padding:1px 7px;border-radius:9px}
+.tab1.on .b{background:var(--brand);color:#fff}
+.tab1 .b.r{background:var(--red);color:#fff}
+
+.scopebar{background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;padding:7px 11px;border-radius:9px;font-size:12px;margin:0 0 10px;display:flex;gap:8px;align-items:flex-start}
+.scopebar code{background:#e0e7ff;padding:0 4px;border-radius:3px;font-size:11.5px}
+.info{background:var(--brand-soft);border:1px solid #bfdbfe;color:#1e40af;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:12px}
+.warn{background:var(--amber-soft);border:1px solid #fde68a;color:#92400e;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:12px}
+.danger{background:var(--red-soft);border:1px solid #fecaca;color:#991b1b;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:12px}
+.ro{background:#f8fafc;border:1px solid var(--line);color:var(--ink2);padding:8px 11px;border-radius:9px;font-size:12px;margin-bottom:12px}
+.roblk{background:#f8fafc;border:1px dashed var(--line2);border-radius:9px;padding:9px 11px;font-size:12px;color:var(--ink2)}
+/* huong dan dung: mot dong, LUON hien. Khac voi .dnote la ly do thiet ke, an duoc. */
+.hint{font-size:11.5px;color:var(--ink3);margin-top:5px;line-height:1.55}
+.hint b{color:var(--ink2)}
+.legend{display:flex;gap:14px;align-items:center;font-size:11px;color:var(--ink3);padding:8px 13px;border-top:1px solid var(--line)}
+.legend i{display:inline-block;width:10px;height:8px;border-radius:2px;margin-right:4px;vertical-align:middle}
+.rolnk{font-size:10px;font-weight:700;color:var(--brand);background:#eef2ff;border:1px solid #c7d2fe;border-radius:999px;padding:1px 7px;cursor:pointer;white-space:nowrap;margin-left:6px}
+.rolnk:hover{background:#e0e7ff}
+.oldwk{background:#fef3c7;border:1px solid var(--amber);color:#92400e;border-radius:9px;padding:9px 13px;font-size:12.5px;margin-bottom:11px;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.oldwk .sp{flex:1}
+
+.navbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:0 0 10px}
+.gsep{flex:1}
+.tab1 .tsub{font-weight:400;color:var(--ink3);font-size:11px;margin-left:4px}
+.tab1.on .tsub{color:var(--brand)}
+.navbar .num{font-size:11.5px;color:var(--ink3)}
+.navbar .num b{color:var(--ink2)}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden;background:#fff}
+.seg button{padding:6px 13px;font-size:12.5px;color:var(--ink2);border-right:1px solid var(--line)}
+.seg button:last-child{border-right:none}
+.seg button.on{background:var(--brand);color:#fff;font-weight:600}
+.sumbar{display:flex;gap:0;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:12px}
+.sumbar .it{padding:7px 15px;border-right:1px solid var(--line);font-size:12px;color:var(--ink2)}
+.sumbar .it b{display:block;font-size:17px;color:var(--ink);font-weight:700;line-height:1.25}
+.sumbar .it.w b{color:var(--amber)}.sumbar .it.r b{color:var(--red)}.sumbar .it.g b{color:var(--green)}
+
+.stage{display:flex;gap:13px;align-items:flex-start}
+.listw{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.stage.open .listw{flex:1 1 0}
+.panel{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:none}
+.stage.open .panel{display:block}
+@media(max-width:1180px){.stage.open .listw{display:none}.stage.open .panel{flex:1}}
+
+.grow{display:flex;align-items:center;gap:9px;padding:9px 13px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:12.5px;font-weight:700}
+.grow .ct{margin-left:auto;font-weight:400;color:var(--ink3);font-size:11.5px}
+
+/* Header nhom Lop x Mon — bam de mo/thu. Khi THU van phai doc duoc con so,
+   neu khong thi thu nhom = giau viec. */
+.gh{display:flex;align-items:center;gap:9px;padding:9px 13px 9px 10px;background:#eef2f7;
+    border-bottom:1px solid var(--line2);border-left:3px solid var(--brand);cursor:pointer;user-select:none}
+.gh:hover{background:#e4ebf3}
+.gh .gbtn{border:1px solid var(--brand);color:var(--brand);background:#fff;border-radius:7px;
+    padding:2px 9px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.gh .gbtn:hover{background:var(--brand);color:#fff}
+.gh .num{font-size:11.5px;color:var(--ink3);white-space:nowrap}
+/* Nhom rong: van co mat, nhung nhat di de khong tranh cho voi nhom co viec */
+.gh.rong{background:#fbfcfe;border-left-color:var(--line2)}
+.gh.rong .gt{color:var(--ink2);font-weight:700}
+.gh.rong:hover{background:#f4f7fb}
+.erow{padding:11px 13px;border-bottom:1px solid var(--line);font-size:12px;color:var(--ink3);background:#fcfdff}
+.gh .num b{color:var(--ink2)}
+.gh .cv{flex:0 0 15px;font-size:10px;color:var(--ink3);transition:transform .12s}
+.gh.on .cv{transform:rotate(90deg)}
+.gh .gt{font-size:13px;font-weight:800;color:var(--ink)}
+.gh .gt i{font-style:normal;font-weight:600;color:var(--ink2)}
+.gh .gs{font-size:11.5px;color:var(--ink3)}
+.gh .gb{margin-left:auto;display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.gbar{display:flex;align-items:center;gap:8px;padding:7px 13px;background:#fff;
+      border-bottom:1px solid var(--line);font-size:11.5px;color:var(--ink3)}
+.gbar b{color:var(--ink2)}
+.brow{display:flex;gap:11px;padding:9px 13px;border-bottom:1px solid var(--line);align-items:center;cursor:pointer}
+.gh + .brow, .gh + .srow{background:#fcfdff}
+.brow:hover{background:var(--brand-soft)}
+.brow.on{background:#eff6ff;box-shadow:inset 3px 0 0 var(--brand)}
+.brow.huy{background:#fafafa;opacity:.72}
+.brow.huy .bd b{text-decoration:line-through}
+.brow .bd{flex:1;min-width:0}
+.brow .bd b{font-size:13.5px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brow .bd .sub{font-size:11.5px;color:var(--ink3)}
+/* <b> trong dong phu phai la inline: quy tac .brow .bd b{display:block} o tren
+   danh cho TEN o dong tren, an nham xuong day thi dong phu bi vo lam nhieu dong */
+.brow .bd .sub b{display:inline;font-size:11.5px}
+.brow .pg{flex:0 0 138px}
+.brow .pg .lb{font-size:11px;color:var(--ink3);display:flex;justify-content:space-between;gap:9px}
+.brow .pg .lb b{color:var(--ink);font-size:12.5px}
+.brow .pg .bar{height:8px}
+.bar{height:7px;border-radius:4px;background:var(--bg);overflow:hidden;margin-top:3px;display:flex}
+.bar i{display:block;height:100%}
+.brow .rt{flex:0 0 auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;max-width:230px}
+
+.srow{display:flex;gap:10px;padding:9px 13px;border-bottom:1px solid var(--line);align-items:center;cursor:pointer}
+.srow:hover{background:var(--brand-soft)}
+.srow.on{background:#eff6ff;box-shadow:inset 3px 0 0 var(--brand)}
+.srow .ava{width:30px;height:30px;border-radius:50%;background:#e0e7ff;color:#3730a3;display:grid;place-items:center;font-size:11px;font-weight:700;flex:0 0 30px}
+.srow .bd{flex:1;min-width:0}
+.srow .bd b{font-size:13px;display:block}
+.srow .bd .sub{font-size:11.5px;color:var(--ink3)}
+.srow .rt{flex:0 0 auto;display:flex;gap:5px;align-items:center}
+
+.lrow{display:flex;gap:11px;padding:10px 13px;border-bottom:1px solid var(--line);align-items:center;cursor:pointer}
+.lrow:hover{background:var(--brand-soft)}
+.lrow .lp{flex:0 0 160px}
+.lrow .lp b{font-size:13.5px;display:block}
+.lrow .lp span{font-size:11.5px;color:var(--ink3)}
+.lrow .num{flex:0 0 80px;text-align:center;font-size:11px;color:var(--ink3)}
+.lrow .num b{display:block;font-size:15px;color:var(--ink)}
+.lrow .num.r b{color:var(--red)}.lrow .num.w b{color:var(--amber)}.lrow .num.g b{color:var(--green)}
+
+.st2{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;white-space:nowrap;display:inline-block}
+.st2.o{background:var(--green-soft);color:var(--green)}
+.st2.w{background:var(--amber-soft);color:var(--amber)}
+.st2.r{background:var(--red-soft);color:var(--red)}
+.st2.n{background:var(--bg);color:var(--ink2)}
+.st2.b{background:#e0e7ff;color:#3730a3}
+.st2.v{background:#ede9fe;color:#5b21b6}
+
+.ph{padding:12px 15px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.ph .n{flex:1;min-width:0}
+.ph .n h2{font-size:16px;font-weight:700}
+.ph .n .m{font-size:12px;color:var(--ink2);margin-top:3px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pill{font-size:10.5px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--ink2)}
+.pnav{display:flex;gap:6px;align-items:center;padding:8px 15px;border-bottom:1px solid var(--line);background:#fafbfc;font-size:12px;color:var(--ink2)}
+.pnav .sp{flex:1;text-align:center}
+.pbody{padding:14px 15px;max-height:calc(100vh - 260px);overflow-y:auto}
+.f{display:grid;grid-template-columns:130px 1fr;gap:11px;align-items:start;padding:7px 0;font-size:13px}
+.f+.f{border-top:1px solid #f1f5f9}
+.f .k{color:var(--ink2);font-size:12.5px}
+.f .v{font-weight:600;min-width:0}
+.card{border:1px solid var(--line);border-radius:11px;margin-bottom:12px;overflow:hidden}
+.card.hl{border-color:#fde68a}
+.ch{display:flex;align-items:center;gap:9px;padding:9px 12px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:12.5px;font-weight:700;flex-wrap:wrap}
+.card.hl .ch{background:var(--amber-soft);border-bottom-color:#fde68a;color:#92400e}
+.ch .sp{flex:1}
+.cb{padding:4px 12px}
+.cb.p{padding:11px 12px}
+.cact{display:flex;gap:6px;padding:9px 12px;border-top:1px solid var(--line);background:#fcfdfe;flex-wrap:wrap;align-items:center}
+
+/* xem bai nop */
+.viewer{display:grid;grid-template-columns:1fr 176px;gap:12px}
+@media(max-width:760px){.viewer{grid-template-columns:1fr}}
+.vpage{background:#334155;border-radius:10px;min-height:230px;display:grid;place-items:center;color:#94a3b8;position:relative;overflow:hidden}
+.vsheet{background:#fff;width:76%;height:86%;border-radius:3px;box-shadow:0 4px 18px rgba(0,0,0,.3);padding:12px 14px;font-size:9px;color:#334155;line-height:1.7;overflow:hidden}
+.vsheet h4{font-size:10px;font-weight:800;margin-bottom:6px}
+.vsheet .ln{height:5px;background:#e2e8f0;border-radius:3px;margin:5px 0}
+.vsheet .ln.s{width:60%}
+.vtool{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(15,23,42,.86);border-radius:999px;padding:4px 6px;display:flex;gap:3px}
+.vtool button{color:#e2e8f0;font-size:11.5px;padding:3px 9px;border-radius:999px}
+.vtool button:hover{background:#334155;color:#fff}
+.vmeta{font-size:11.5px}
+.vmeta .r{padding:6px 0;border-bottom:1px solid var(--line)}
+.vmeta .r b{display:block;color:var(--ink3);font-size:10px;text-transform:uppercase;letter-spacing:.04em;font-weight:700}
+
+.fld{margin-bottom:11px}
+.fld label{display:block;font-size:12.5px;font-weight:600;margin-bottom:4px}
+.fld label .req{color:var(--red)}
+.fldi{width:100%;border:1px solid var(--line2);border-radius:8px;padding:8px 10px;background:#fff}
+.fldi:disabled{background:var(--bg);color:var(--ink3);cursor:not-allowed}
+.fldi.err{border-color:var(--red);background:var(--red-soft)}
+.mucs{display:flex;gap:6px;flex-wrap:wrap}
+.muc{border:1.5px solid var(--line2);background:#fff;border-radius:8px;padding:6px 16px;font-size:12.5px;font-weight:600;color:var(--ink2)}
+.muc:hover:not(:disabled){background:var(--bg)}
+.muc.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.muc.on.no{background:var(--red);border-color:var(--red)}
+.muc.on.ok{background:var(--green);border-color:var(--green)}
+.drop{border:1.5px dashed var(--line2);border-radius:9px;padding:14px;text-align:center;color:var(--ink3);font-size:12.5px}
+
+table.tb{width:100%;border-collapse:collapse;font-size:12.5px}
+table.tb th{text-align:left;font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:7px 9px;border-bottom:1px solid var(--line);background:#f8fafc}
+table.tb td{padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+table.tb tr:last-child td{border-bottom:none}
+
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:11px}
+.chip{border:1px solid var(--line2);background:#fff;border-radius:999px;padding:4px 12px;font-size:12px;color:var(--ink2)}
+.chip.on{background:var(--brand);color:#fff;border-color:var(--brand);font-weight:600}
+.ms{position:relative}
+.msb{border:1px solid var(--line2);border-radius:8px;padding:6px 10px;font-size:12.5px;background:#fff;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.msb.act{border-color:var(--brand);background:var(--brand-soft);color:var(--brand);font-weight:600}
+.msb .cnt{background:var(--brand);color:#fff;font-size:10px;font-weight:700;padding:0 5px;border-radius:8px}
+.msp{position:absolute;top:calc(100% + 4px);left:0;background:#fff;border:1px solid var(--line2);border-radius:9px;box-shadow:0 8px 22px rgba(15,23,42,.14);min-width:200px;max-height:250px;overflow-y:auto;z-index:20;display:none;padding:5px}
+.msp.on{display:block}
+.mso{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:7px;font-size:12.5px;cursor:pointer}
+.mso:hover{background:var(--bg)}
+.mso input{width:15px;height:15px;flex:0 0 15px}
+
+.mask{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:60;display:none;place-items:center}
+.mask.on{display:grid}
+.modal{background:#fff;border-radius:13px;width:720px;max-width:94vw;max-height:88vh;display:flex;flex-direction:column}
+.mh{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700}
+.mb{padding:15px 18px;overflow-y:auto;font-size:13px}
+.mf{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;align-items:center}
+
+.rolebar{background:#0f172a;color:#cbd5e1;padding:8px 15px;display:flex;align-items:center;gap:7px;font-size:12.5px;flex-wrap:wrap}
+.rolebar b{color:#fff}
+.rb{border:1px solid #334155;border-radius:999px;padding:3px 10px;font-size:12px;color:#cbd5e1}
+.rb:hover{background:#1e293b;color:#fff}
+.rb.on{background:#fff;color:#0f172a;border-color:#fff;font-weight:700}
+.note{margin-left:auto;color:#64748b;font-size:11.5px}
+/* Ghi chu thiet ke: chung giai thich VI SAO, khong phai mot phan man hinh that.
+   Mac dinh TAT de nhin dung giao dien nguoi dung se thay. */
+body.nn .dnote{display:none!important}
+.simw{font-size:11.5px;color:#94a3b8;display:flex;align-items:center;gap:6px;margin-left:14px}
+.simw select{background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:6px;padding:2px 6px;font-size:11.5px}
+.ntg{border:1px solid #334155;border-radius:999px;padding:3px 10px;font-size:12px;color:#cbd5e1;margin-left:auto}
+.ntg:hover{background:#1e293b;color:#fff}
+.ntg.on{background:#fbbf24;color:#3b2a05;border-color:#fbbf24;font-weight:700}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(90px);background:#0f172a;color:#fff;padding:11px 17px;border-radius:9px;font-size:13px;z-index:80;transition:transform .22s;max-width:92vw}
+.toast.on{transform:translateX(-50%)}
+.empty{padding:38px;text-align:center;color:var(--ink3)}
+.lgd{display:flex;gap:13px;font-size:11px;color:var(--ink3);padding:9px 13px;border-top:1px solid var(--line);flex-wrap:wrap;align-items:center}
+
+/* ===== BANG DIEM ===== */
+.bd{width:100%;border-collapse:collapse;font-size:13px}
+.bd th,.bd td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:center}
+.bd th{background:#f8fafc;font-size:11.5px;color:var(--ink2);font-weight:700;position:sticky;top:0;
+       border-bottom:1px solid var(--line2);white-space:nowrap;cursor:pointer}
+.bd th span{display:block;font-weight:400;color:var(--ink3);font-size:10.5px;margin-top:2px}
+.bd th.chua{color:var(--amber)}
+.bd th.chua span{color:var(--amber)}
+.bd th.stt,.bd td.stt{width:36px;color:var(--ink3);font-size:11.5px}
+.bd th.tenhs,.bd td.tenhs{text-align:left;min-width:170px;font-weight:600}
+.bd td.oc{width:76px;cursor:pointer;font-variant-numeric:tabular-nums}
+.bd td.oc:hover{background:var(--brand-soft);box-shadow:inset 0 0 0 2px var(--brand)}
+.bd td.oc.trong{color:var(--ink3)}
+.bd td.oc.vang{color:var(--violet);font-weight:700;background:#f5f3ff}
+.dtbar{display:flex;align-items:center;gap:9px;padding:8px 4px 6px;font-size:12.5px;color:var(--ink2)}
+.dtbar span{color:var(--ink3);font-size:11.5px}
+.wbody{background:var(--surface);border:1px solid var(--line);border-top:none;border-radius:0 0 12px 12px;margin-bottom:11px;overflow:hidden}
+.wnote{display:flex;gap:16px;flex-wrap:wrap;padding:9px 13px;background:#f8fafc;border-bottom:1px solid var(--line);
+       font-size:11.5px;color:var(--ink3)}
+.wnote b{color:var(--ink2)}
+.gh{border-radius:12px 12px 0 0;margin-top:2px}
+.gh:not(.on){border-radius:12px;margin-bottom:8px}
+.bd th.dk,.bd td.dk{width:70px;background:#fbfcfe;color:var(--ink2);cursor:pointer}
+.bd th.dk{color:var(--brand)}
+.bd td.dk:hover{background:var(--brand-soft)}
+.bd th.tb,.bd td.tb{width:84px;background:#f8fafc;font-weight:700}
+.bd th.gc,.bd td.gc{text-align:left;min-width:130px}
+.bd tr.thieu td.tenhs{color:var(--amber)}
+.bd tr:hover td{background:#fafbfd}
+.bd tr:hover td.oc:hover{background:var(--brand-soft)}
+</style>
+</head>
+<body class="nn">
+<script>/* sidebar da chuyen ve index.html — node an giu cho JS cu khong vo */
+(function(){var n=document.createElement("nav");n.id="side";n.style.display="none";document.documentElement.appendChild(n)})();</script>
+
+
+<div class="rolebar">
+  <b>Chức danh:</b>
+  <button class="rb on" data-r="FULL">🔓 Đủ quyền (demo)</button>
+  <button class="rb" data-r="GVCN">GVCN 9A1</button>
+  <button class="rb" data-r="GVTH">GVCN Tiểu học 3A1</button>
+  <button class="rb" data-r="HT">HT</button>
+  <button class="rb" data-r="PHT">PHT điểm trường A</button>
+  <button class="rb" data-r="VT">Văn thư</button>
+  <button class="rb" data-r="GVBM">GVBM</button>
+  <span class="note">TT 19/2025 · <b>GVCN lập → Hiệu trưởng duyệt</b> · nhắc nhở ghi ở Sổ đầu bài</span>
+  <button class="ntg" id="btnNote">💡 Ghi chú thiết kế: TẮT</button>
+</div>
+
+<header class="hdr">
+  <div class="logo"><span class="mark">DS</span> Dschool</div>
+  <div class="school">Trường TH, THCS &amp; THPT Nguyễn Tất Thành</div>
+  <select class="sel"><option>Năm học 2026-2027</option></select>
+  <span class="lockwrap"><select class="sel" id="hdt"></select><span class="lk" id="lk"></span></span>
+  <div class="spacer"></div>
+  <button class="icobtn">🔔<span class="dot" id="bell">2</span></button>
+  <button class="icobtn">💬<span class="dot">2</span></button>
+  <div class="avatar" id="ava">QM</div>
+</header>
+
+<div class="wrap">
+  <main class="main">
+    <div id="crumb"></div>
+    <div class="tophd"><h1>Kỷ luật học sinh</h1><div class="spacer"></div><span id="topbtn"></span></div>
+    <div class="tabs" id="tabs"></div>
+    <div id="content"></div>
+  </main>
+</div>
+
+<div class="mask" id="mask"><div class="modal"><div class="mh" id="mh"></div>
+  <div class="mb" id="mb"></div><div class="mf" id="mf"></div></div></div>
+<div class="toast" id="toast"></div>
+<script>"use strict";
+/* ═══════ TỆP NỀN CHUNG · M2.7 Kỷ luật học sinh ⇄ M2.10 Khen thưởng học sinh ═══════
+   Chép GIỐNG HỆT ở hai thư mục:
+     demo-src/M2.7-Khen-thuong-va-Ky-luat-HS/app.10-nen-chung.js
+     demo-src/M2.10-Khen-thuong-hoc-sinh/app.10-nen-chung.js
+   Sửa một bên thì chép sang bên kia — dữ liệu mẫu hai demo phải KHỚP (cùng học sinh, cùng lớp,
+   cùng ghi nhận Sổ đầu bài). Tách từ M2.7 v1.1 ngày 14/9/2026 (DOT1-P14). */
+
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const bo=t=>String(t).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase();
+
+/* ===== THỜI GIAN — năm học 2026-2027 khai giảng 5/9/2026 · hôm nay 14/10/2026 (tuần 6) ===== */
+const D0=new Date(2026,8,5), HOMNAY=39;
+const dstr=d=>{const x=new Date(D0);x.setDate(x.getDate()+d);return x.getDate()+'/'+(x.getMonth()+1)};
+const DOWN=['CN','T2','T3','T4','T5','T6','T7'];
+const dow=d=>{const x=new Date(D0);x.setDate(x.getDate()+d);return DOWN[x.getDay()]};
+const NAMHOC='2026-2027';
+
+/* ===== TRƯỜNG · LỚP · GIÁO VIÊN ===== */
+const TRUONG='Trường TH, THCS & THPT Nguyễn Tất Thành';
+const DT={A:'Điểm trường A — Nguyễn Tất Thành',B:'Điểm trường B — Lê Quý Đôn'};
+const LOP={
+ '8A1':{ss:41,dt:'A',cn:'hung'}, '9A1':{ss:40,dt:'A',cn:'chi'}, '9A2':{ss:38,dt:'A',cn:'lan'},
+ '10A1':{ss:42,dt:'A',cn:'khoa'},
+ '3A1':{ss:35,dt:'B',cn:'hoa'},  '4A1':{ss:33,dt:'B',cn:'thu'},  '8B1':{ss:37,dt:'B',cn:'tuan'}};
+const capHoc=l=>{const k=+l.match(/^\d+/)[0]; return k<=5?'TH':k<=9?'THCS':'THPT'};
+const capTen=c=>c==='TH'?'Tiểu học':c;
+const lopSort=(a,b)=>(+a.match(/^\d+/)[0])-(+b.match(/^\d+/)[0])||a.localeCompare(b);
+const GV={chi:'Bùi Linh Chi',lan:'Trần Thị Lan',hung:'Nguyễn Văn Hùng',khoa:'Đinh Văn Khoa',tuan:'Vũ Anh Tuấn',
+ hoa:'Nguyễn Thị Hoa',thu:'Lê Minh Thu',huong:'Phạm Thu Hương',son:'Nguyễn Văn Sơn',minh:'Đỗ Quang Minh',hanh:'Lê Thị Hạnh'};
+const gvcnCua=l=>GV[LOP[l].cn];
+
+/* ===== HỌC SINH — mã cố định để hai demo trỏ cùng một em ===== */
+const HS={};
+[['8A1',['Trịnh Gia Hân','Phan Tuấn Kiệt','Võ Ngọc Mai','Dương Bá Phúc']],
+ ['9A1',['Bùi Thanh Hà','Đặng Quốc Huy','Ngô Khánh Linh','Lý Minh Quân','Trịnh Thu Trang']],
+ ['9A2',['Nguyễn Minh An','Trần Gia Bảo','Lê Thu Cúc','Phạm Đức Duy']],
+ ['10A1',['Hoàng Nhật Nam','Vương Thảo Vy']],
+ ['3A1',['Tạ Bảo Ngọc','Hồ Gia Bách']],
+ ['4A1',['Chu Minh Thư','Bùi An Nhiên']],
+ ['8B1',['Mai Xuân Trường','Hồ Thị Lệ']],
+].forEach(([lop,ns])=>ns.forEach(n=>{const id='HS'+String(Object.keys(HS).length+1).padStart(2,'0');HS[id]={n,lop}}));
+const hsLop=l=>Object.keys(HS).filter(h=>HS[h].lop===l);
+const hsTen=t=>Object.keys(HS).find(h=>HS[h].n===t);
+const tat=n=>n.split(' ').slice(-2).map(c=>c[0]).join('');
+const tenGoi=n=>n.split(' ').slice(-1)[0];
+
+/* ===== GHI NHẬN TRONG SỔ ĐẦU BÀI — bản chiếu CHỈ ĐỌC từ M2.2 F4 =====
+   loai 'nhac' = "Học sinh bị nhắc nhở" (kèm mã hành vi của M2.7) · 'khen' = "Học sinh được khen".
+   Theo K2-A (14/9/2026) NHẮC NHỞ KHÔNG LẬP Ở M2.7 — dòng 'nhac' ở đây CHÍNH LÀ biện pháp nhắc nhở,
+   và là căn cứ "đã nhắc nhở mà tiếp tục vi phạm mức 1" của TT 19/2025 Đ.14 k.2 · Đ.15 k.2. */
+const SDB=[
+ {id:'SD01',hs:hsTen('Phan Tuấn Kiệt'),lop:'8A1',ngay:19,tiet:3,mon:'Vật lí',gv:'huong',loai:'nhac',hv:'HV5',nd:'Nói chuyện riêng, đã nhắc 2 lần trong tiết'},
+ {id:'SD02',hs:hsTen('Đặng Quốc Huy'),lop:'9A1',ngay:27,tiet:2,mon:'Toán',gv:'chi',loai:'nhac',hv:'HV1',nd:'Không làm bài tập về nhà'},
+ {id:'SD03',hs:hsTen('Dương Bá Phúc'),lop:'8A1',ngay:30,tiet:1,mon:'Vật lí',gv:'huong',loai:'nhac',hv:'HV3',nd:'Đi học muộn 15 phút'},
+ {id:'SD04',hs:hsTen('Trần Gia Bảo'),lop:'9A2',ngay:27,tiet:4,mon:'Ngữ văn',gv:'lan',loai:'khen',nd:'Giúp bạn trực nhật, nhắc bạn giữ trật tự'},
+ {id:'SD05',hs:hsTen('Đặng Quốc Huy'),lop:'9A1',ngay:33,tiet:3,mon:'Ngữ văn',gv:'lan',loai:'nhac',hv:'HV1',nd:'Không làm bài tập về nhà — lần 2 trong tuần'},
+ {id:'SD06',hs:hsTen('Hồ Gia Bách'),lop:'3A1',ngay:33,tiet:2,mon:'Tiếng Việt',gv:'hoa',loai:'nhac',hv:'HV6',nd:'Tranh giành đồ dùng học tập với bạn'},
+ {id:'SD07',hs:hsTen('Chu Minh Thư'),lop:'4A1',ngay:37,tiet:1,mon:'Toán',gv:'thu',loai:'khen',nd:'Giải bài nhanh, chủ động giảng lại cho bạn cùng bàn'},
+ {id:'SD08',hs:hsTen('Trịnh Thu Trang'),lop:'9A1',ngay:31,tiet:4,mon:'Ngữ văn',gv:'lan',loai:'nhac',hv:'HV11',nd:'Dùng điện thoại nhắn tin trong giờ'},
+ {id:'SD09',hs:hsTen('Trịnh Thu Trang'),lop:'9A1',ngay:38,tiet:2,mon:'Vật lí',gv:'huong',loai:'nhac',hv:'HV11',nd:'Dùng điện thoại chơi trò chơi trong giờ, đã nhắc'},
+ {id:'SD10',hs:hsTen('Phan Tuấn Kiệt'),lop:'8A1',ngay:37,tiet:5,mon:'Vật lí',gv:'huong',loai:'khen',nd:'Chủ động xin làm thí nghiệm biểu diễn, hướng dẫn nhóm cẩn thận'},
+];
+const sdbCua=(h,loai)=>SDB.filter(x=>x.hs===h&&(!loai||x.loai===loai));
+const sdbById=id=>SDB.find(x=>x.id===id);
+
+/* ===== MODAL · TOAST · XEM TỆP ===== */
+let mfns={};
+function modal(title,body,btns,rong){
+ $('#mh').innerHTML=esc(title); $('#mb').innerHTML=body;
+ $('#mask .modal').style.width=rong?'760px':'';
+ mfns={};
+ $('#mf').innerHTML=btns.map(([t,fn,cls],i)=>{if(fn)mfns['k'+i]=fn;
+   return `<button class="btn ${cls!=null?cls:(i===btns.length-1?'p':'')}" data-mb="${fn?'k'+i:''}">${t}</button>`}).join('');
+ $('#mask').classList.add('on');
+}
+function closeM(){$('#mask').classList.remove('on')}
+let tmr;
+function toast(h){const t=$('#toast');t.innerHTML=h;t.classList.add('on');
+ clearTimeout(tmr);tmr=setTimeout(()=>t.classList.remove('on'),4600)}
+document.addEventListener('click',e=>{
+ const mb=e.target.closest('[data-mb]');
+ if(mb){const k=mb.dataset.mb; if(k&&mfns[k])mfns[k](); else closeM(); return}
+ if(e.target.id==='mask') closeM();
+});
+/* Xem tệp ngay trong màn hình — 👁 Xem đứng trước ⬇ Tải; mọi lượt xem đều ghi audit (Luật BVDLCN 91/2025) */
+function xemTep(ten,ghiChu){
+ modal('👁 '+ten,
+  `<div class="info" style="margin:0 0 10px">Tệp mở <b>ngay trong màn hình</b> — lượt xem này <b>đã ghi nhật ký</b>
+    (dữ liệu cá nhân trẻ em, Luật BVDLCN 91/2025).</div>
+   <div style="border:1px solid var(--line);border-radius:9px;background:#fff;padding:26px 30px;min-height:190px;font-size:12.5px;line-height:1.7">
+    <div style="text-align:center;font-weight:700;margin-bottom:10px">${esc(ten)}</div>
+    <div style="color:var(--ink3)">${esc(ghiChu||'Bản xem trước của tệp đính kèm (demo).')}</div>
+    <div style="margin-top:18px;height:9px;background:#eef2f7;border-radius:4px;width:92%"></div>
+    <div style="margin-top:8px;height:9px;background:#eef2f7;border-radius:4px;width:78%"></div>
+    <div style="margin-top:8px;height:9px;background:#eef2f7;border-radius:4px;width:85%"></div></div>`,
+  [['Đóng',0,''],['⬇ Tải',()=>{closeM();toast('⬇ Đã tải <b>'+esc(ten)+'</b> · <b>đã ghi audit</b>')},'']]);
+}
+
+/* ═══════ M2.7 KỶ LUẬT HỌC SINH — dữ liệu (v2.0 · DOT1-P14 · 14/9/2026) ═══════
+   K2-A: menu THU GỌN — chỉ nhận biện pháp có hồ sơ. Nhắc nhở ở ngoài (Sổ đầu bài M2.2 · Báo cáo tuần M2.9/T6).
+   Khen thưởng đã sang M2.10. */
+
+/* --- Loại vi phạm — MASTER của menu này. M2.2 (sổ đầu bài) và M6.13 (chấm nền nếp) đọc bằng MÃ — KHÔNG đổi mã.
+   m = mức MẶC ĐỊNH; người lập xác định lại theo phạm vi ảnh hưởng thực tế (TT 19/2025 Đ.12 k.2).
+   cc: nhóm căn cứ theo Đ.12 k.1 — 'LGD' hành vi bị nghiêm cấm (Luật Giáo dục) · 'NQ' vi phạm quy định nhà trường. */
+let HANHVI=[
+ {id:'HV1',t:'Không thuộc bài, không làm bài tập về nhà',m:1,cc:'NQ',dung:1},
+ {id:'HV2',t:'Nghỉ học không phép',m:1,cc:'NQ',dung:1},
+ {id:'HV3',t:'Đi học muộn nhiều lần',m:1,cc:'NQ',dung:1},
+ {id:'HV4',t:'Ngủ trong giờ học',m:1,cc:'NQ',dung:1},
+ {id:'HV5',t:'Gây mất trật tự trong lớp',m:2,cc:'NQ',dung:1},
+ {id:'HV6',t:'Tranh cãi với bạn',m:2,cc:'NQ',dung:1},
+ {id:'HV7',t:'Không hợp tác khi làm việc nhóm',m:2,cc:'NQ',dung:1},
+ {id:'HV8',t:'Đánh bạn gây thương tích',m:3,cc:'LGD',dung:1},
+ {id:'HV9',t:'Xúc phạm giáo viên',m:3,cc:'LGD',dung:1},
+ {id:'HV10',t:'Phá hoại tài sản nhà trường',m:3,cc:'NQ',dung:1},
+ {id:'HV11',t:'Sử dụng điện thoại sai mục đích trong giờ học',m:1,cc:'NQ',dung:1,moi:12},
+];
+let HVSEQ=12;
+const hvById=id=>HANHVI.find(x=>x.id===id);
+const CCTEN={LGD:'Hành vi bị nghiêm cấm (Luật Giáo dục)',NQ:'Vi phạm quy định của nhà trường'};
+const MUCTEN={1:'ảnh hưởng tới bản thân học sinh',2:'ảnh hưởng tiêu cực trong nhóm, lớp',3:'ảnh hưởng tiêu cực trong nhà trường'};
+
+/* --- Hình thức xử lý — DÒNG HỆ THỐNG theo TT 19/2025 Đ.13. Không xóa, không đổi tên, không thêm. --- */
+const BP={
+ nhac:    {t:'Nhắc nhở',cap:['TH','THCS','THPT'],hang:1,menu:0,dieu:'Đ.14 k.1 · Đ.15 k.1'},
+ xinloi:  {t:'Yêu cầu xin lỗi',cap:['TH'],hang:2,menu:1,dieu:'Đ.14 k.2'},
+ phebinh: {t:'Phê bình',cap:['THCS','THPT'],hang:2,menu:1,dieu:'Đ.15 k.2'},
+ kiemdiem:{t:'Yêu cầu viết bản tự kiểm điểm',cap:['THCS','THPT'],hang:3,menu:1,dieu:'Đ.15 k.3'},
+};
+const bpTen=k=>BP[k]?BP[k].t:k;
+const bpMenu=lop=>Object.keys(BP).filter(k=>BP[k].menu&&BP[k].cap.includes(capHoc(lop)));
+/* HT duyệt — trường SIẾT CHẶT HƠN LUẬT (Đ.17 k.1 cho GVCN thực hiện mọi biện pháp).
+   Bật/tắt theo từng biện pháp, MẶC ĐỊNH BẬT cả ba (anh Ninh chốt 14/9/2026). */
+let DUYET={xinloi:1,phebinh:1,kiemdiem:1};
+
+/* Biện pháp mà Đ.14 / Đ.15 chỉ định, từ MỨC + CĂN CỨ LẦN TRƯỚC trong năm học.
+   Luật có MỘT bậc theo lần tái phạm (đã nhắc nhở mà tiếp tục mức 1 → phê bình / xin lỗi;
+   đã phê bình mà tiếp tục mức 2 → tự kiểm điểm) — không có bậc thứ hai, không đếm "lần thứ 3". */
+function bpLuat(lop,muc,nhacTruoc,pbTruoc){
+ if(capHoc(lop)==='TH') return muc===1&&!nhacTruoc?'nhac':'xinloi';
+ if(muc===1) return nhacTruoc?'phebinh':'nhac';
+ if(muc===2) return pbTruoc?'kiemdiem':'phebinh';
+ return 'kiemdiem';
+}
+
+/* --- Hoạt động hỗ trợ khắc phục hành vi vi phạm — TT 19/2025 Đ.16. KHÔNG phải hình thức kỷ luật.
+   a–d là dòng hệ thống (chép từ khoản 1); trường thêm được theo điểm e. --- */
+let HOTRO=[
+ {id:'KP-a',t:'Khuyên bảo, động viên để em tự nhận thức hành vi và hướng khắc phục',he:1,dieu:'Đ.16 k.1 a',dung:1},
+ {id:'KP-b',t:'Theo dõi, tư vấn, hỗ trợ em trong quá trình khắc phục',he:1,dieu:'Đ.16 k.1 b',dung:1},
+ {id:'KP-c',t:'Tham gia hoạt động tư vấn học đường, công tác xã hội, giáo dục kỹ năng trong trường',he:1,dieu:'Đ.16 k.1 c',dung:1},
+ {id:'KP-d',t:'Phối hợp với gia đình và các lực lượng khác để tư vấn, quản lý, hỗ trợ em',he:1,dieu:'Đ.16 k.1 d',dung:1},
+ {id:'KP-e1',t:'Buổi trò chuyện riêng với cán bộ tư vấn tâm lý học đường',he:0,dieu:'Đ.16 k.1 e',dung:1,nguoi:'Đỗ Quang Minh — Hiệu trưởng',ngay:6},
+];
+let KPSEQ=2;
+const kpById=id=>HOTRO.find(x=>x.id===id);
+/* Từ gợi ý "nghe như hình phạt" — CẢNH BÁO MỀM, không chặn: máy không phán được bản chất một hoạt động. */
+const TU_HINH_PHAT=['phạt','lao động','trực nhật','quét','dọn','nhặt rác','chép','đứng','quỳ','nhịn','bêu','đọc tên','trước toàn trường','cấm ra chơi','hình phạt','roi'];
+
+/* ===== QUYẾT ĐỊNH ===== */
+let QSEQ=41;
+let QD=[];
+function Q(o){o.id='KL-'+(QSEQ++); o.log=o.log||[]; o.hotro=o.hotro||[]; o.cancu=o.cancu||[]; o.tep=o.tep||[]; return o}
+const ai=(g,cd)=>GV[g]+' — '+cd;
+const HTN=ai('minh','Hiệu trưởng');
+
+QD.push(
+ Q({hs:hsTen('Tạ Bảo Ngọc'),lop:'3A1',hv:'HV6',muc:2,bp:'xinloi',ngay:20,hl:21,th:21,tt:'xong',
+    mota:'Tranh cãi với bạn trong giờ ra chơi, lời lẽ làm bạn buồn.',nguoi:ai('hoa','GVCN 3A1'),hotro:['KP-a'],
+    log:[['25/9 10:15',ai('hoa','GVCN 3A1'),'Lập — Yêu cầu xin lỗi','Chờ Hiệu trưởng duyệt'],
+         ['26/9 08:00',HTN,'✓ Duyệt — quyết định có hiệu lực','Ghi mốc Kỷ luật lên M1.1 · thông báo phụ huynh'],
+         ['26/9 10:30',ai('hoa','GVCN 3A1'),'✓ Ghi nhận đã thực hiện','Em đã xin lỗi bạn, hai em làm hòa']]}),
+ Q({hs:hsTen('Phan Tuấn Kiệt'),lop:'8A1',hv:'HV5',muc:2,bp:'phebinh',ngay:23,hl:24,th:25,tt:'xong',
+    mota:'Gây mất trật tự kéo dài trong tiết Vật lí, cả nhóm không làm được thí nghiệm.',nguoi:ai('hung','GVCN 8A1'),
+    cancu:['SD01'],hotro:['KP-b'],
+    log:[['28/9 16:40',ai('hung','GVCN 8A1'),'Lập — Phê bình','Căn cứ SD01 trong Sổ đầu bài'],
+         ['29/9 07:30',HTN,'✓ Duyệt — quyết định có hiệu lực',''],
+         ['30/9 09:40',ai('hung','GVCN 8A1'),'✓ Ghi nhận đã thực hiện','Phê bình trực tiếp trong giờ sinh hoạt lớp']]}),
+ Q({hs:hsTen('Võ Ngọc Mai'),lop:'8A1',hv:'HV8',muc:3,bp:'kiemdiem',ngay:30,hl:31,tt:'chonop',han:{nop:38,xn:null},
+    mota:'Xô xát với bạn trong giờ ra chơi, bạn bị trầy xước tay; đã sơ cứu ở phòng y tế.',nguoi:ai('hung','GVCN 8A1'),
+    hotro:['KP-d','KP-e1'],tep:['bien-ban-su-viec-5-10.pdf'],boKy:1,
+    log:[['5/10 10:00',ai('hung','GVCN 8A1'),'Lập — Yêu cầu viết bản tự kiểm điểm','Vi phạm mức 3'],
+         ['6/10 14:30',HTN,'✓ Duyệt — quyết định có hiệu lực','Bỏ qua ký số — nhóm A · đã ghi audit']]}),
+ Q({hs:hsTen('Mai Xuân Trường'),lop:'8B1',hv:'HV9',muc:3,bp:'kiemdiem',ngay:26,hl:27,tt:'choxacnhan',han:{nop:34,xn:41},
+    mota:'Có lời lẽ không đúng mực với giáo viên bộ môn khi bị nhắc nhở.',nguoi:ai('tuan','GVCN 8B1'),
+    hotro:['KP-a','KP-d'],tep:['ban-tu-kiem-diem-M-X-Truong.jpg'],daKy:1,
+    log:[['1/10 09:00',ai('tuan','GVCN 8B1'),'Lập — Yêu cầu viết bản tự kiểm điểm','Vi phạm mức 3'],
+         ['2/10 15:00',HTN,'✓ Duyệt · 🔏 ký số','Quyết định có hiệu lực'],
+         ['13/10 08:20',ai('tuan','GVCN 8B1'),'📎 Ghi nhận đã nộp bản tự kiểm điểm','Gia đình xác nhận trước 16/10']]}),
+ Q({hs:hsTen('Đặng Quốc Huy'),lop:'9A1',hv:'HV1',muc:1,bp:'phebinh',ngay:34,tt:'choduyet',
+    mota:'Không làm bài tập về nhà nhiều lần sau khi đã được nhắc nhở ở hai môn.',nguoi:ai('chi','GVCN 9A1'),
+    cancu:['SD02','SD05'],hotro:['KP-d'],
+    log:[['9/10 16:10',ai('chi','GVCN 9A1'),'Lập — Phê bình','Căn cứ nhắc nhở SD02 · SD05 — chờ Hiệu trưởng duyệt']]}),
+ Q({hs:hsTen('Hồ Gia Bách'),lop:'3A1',hv:'HV6',muc:2,bp:'xinloi',ngay:37,tt:'choduyet',
+    mota:'Giành đồ dùng học tập rồi đẩy bạn ngã khi xếp hàng ra về.',nguoi:ai('hoa','GVCN 3A1'),cancu:['SD06'],hotro:['KP-a','KP-d'],
+    log:[['12/10 11:00',ai('hoa','GVCN 3A1'),'Lập — Yêu cầu xin lỗi','Chờ Hiệu trưởng duyệt']]}),
+ Q({hs:hsTen('Lý Minh Quân'),lop:'9A1',hv:'HV7',muc:2,bp:'phebinh',ngay:32,tt:'tralai',
+    mota:'Không tham gia làm dự án nhóm môn Lịch sử.',nguoi:ai('chi','GVCN 9A1'),
+    traLai:'Mô tả chưa nêu ảnh hưởng tới nhóm. Đề nghị cô trao đổi với em và nhóm trước — có thể chỉ cần khuyên bảo.',
+    log:[['7/10 15:20',ai('chi','GVCN 9A1'),'Lập — Phê bình','Chờ Hiệu trưởng duyệt'],
+         ['9/10 08:10',HTN,'↩ Trả lại','Mô tả chưa nêu ảnh hưởng tới nhóm']]}),
+ Q({hs:hsTen('Dương Bá Phúc'),lop:'8A1',hv:'HV3',muc:1,bp:'phebinh',ngay:31,tt:'rut',cancu:['SD03'],
+    mota:'Đi học muộn nhiều buổi sau khi đã được nhắc nhở.',nguoi:ai('hung','GVCN 8A1'),
+    rut:'Gia đình báo mẹ em đang nằm viện, em phải đưa em gái đi học trước. Chuyển sang hỗ trợ, không kỷ luật.',
+    log:[['6/10 07:50',ai('hung','GVCN 8A1'),'Lập — Phê bình','Căn cứ SD03'],
+         ['6/10 16:30',ai('hung','GVCN 8A1'),'✕ Rút đề nghị','Hoàn cảnh gia đình — chuyển sang hỗ trợ']]}),
+ Q({hs:hsTen('Hoàng Nhật Nam'),lop:'10A1',hv:'HV10',muc:3,bp:'kiemdiem',ngay:12,hl:13,tt:'xong',han:{nop:20,xn:23},
+    mota:'Làm vỡ máy chiếu phòng học khi đùa nghịch trong giờ ra chơi.',nguoi:ai('khoa','GVCN 10A1'),
+    hotro:['KP-c'],tep:['ban-tu-kiem-diem-H-N-Nam.pdf'],daKy:1,dc:'KL-50',
+    log:[['17/9 09:00',ai('khoa','GVCN 10A1'),'Lập — Yêu cầu viết bản tự kiểm điểm','Vi phạm mức 3'],
+         ['18/9 10:00',HTN,'✓ Duyệt · 🔏 ký số','Quyết định có hiệu lực'],
+         ['21/9 16:00',ai('khoa','GVCN 10A1'),'📎 Ghi nhận đã nộp bản tự kiểm điểm',''],
+         ['23/9 17:10',ai('khoa','GVCN 10A1'),'👪 Ghi nhận gia đình đã xác nhận','Hoàn tất thủ tục'],
+         ['24/9 08:30',ai('khoa','GVCN 10A1'),'✎ Đã có bản đính chính','KL-50']]}),
+ Q({hs:hsTen('Hoàng Nhật Nam'),lop:'10A1',hv:'HV10',muc:3,bp:'kiemdiem',ngay:19,hl:19,tt:'dinhchinh',goc:'KL-49',loaiDC:'sua',
+    mota:'ĐÍNH CHÍNH cho KL-49: tài sản bị hư hỏng là cửa kính phòng thí nghiệm, không phải máy chiếu. Các nội dung khác giữ nguyên.',
+    nguoi:ai('khoa','GVCN 10A1'),
+    log:[['24/9 08:30',ai('khoa','GVCN 10A1'),'✎ Lập bản đính chính — sửa nội dung','Chờ Hiệu trưởng duyệt'],
+         ['24/9 10:05',HTN,'✓ Duyệt bản đính chính','Mốc M1.1 cập nhật · thông báo phụ huynh']]}),
+);
+const byId=id=>QD.find(x=>x.id===id);
+const TT={
+ choduyet:{t:'⚖ Chờ Hiệu trưởng duyệt',c:'w'},
+ tralai:{t:'↩ Trả lại — chờ sửa',c:'r'},
+ rut:{t:'✕ Đã rút đề nghị',c:'n'},
+ chothuchien:{t:'▶ Có hiệu lực — chờ thực hiện',c:'v'},
+ chonop:{t:'📎 Chờ nộp bản tự kiểm điểm',c:'w'},
+ choxacnhan:{t:'👪 Chờ gia đình xác nhận',c:'v'},
+ xong:{t:'✓ Hoàn tất',c:'o'},
+ huybo:{t:'⊘ Đã hủy bỏ bằng đính chính',c:'n'},
+ dinhchinh:{t:'✎ Bản đính chính',c:'b'},
+};
+const HIEULUC=['chothuchien','chonop','choxacnhan','xong'];
+const coHieuLuc=x=>HIEULUC.includes(x.tt)||(x.tt==='dinhchinh');
+
+/* ===== VAI — năng lực là MẢNG, kiểm bằng .includes() ===== */
+const ROLE={
+ FULL:{n:'Đỗ Quang Minh',cd:'Vai Đủ quyền (demo) — thao tác được mọi chức năng',sc:'school',
+       q:['xem','lap','duyet','thutuc','dinhchinh','danhmuc','cauhinh','xuat']},
+ GVCN:{n:'Bùi Linh Chi',cd:'GVCN lớp 9A1',sc:'class',lopCN:'9A1',dt:'A',dtLock:1,q:['xem','lap','thutuc','dinhchinh']},
+ GVTH:{n:'Nguyễn Thị Hoa',cd:'GVCN lớp 3A1 — Tiểu học',sc:'class',lopCN:'3A1',dt:'B',dtLock:1,q:['xem','lap','thutuc','dinhchinh']},
+ HT:  {n:'Đỗ Quang Minh',cd:'Hiệu trưởng',sc:'school',q:['xem','lap','duyet','thutuc','dinhchinh','danhmuc','cauhinh','xuat']},
+ PHT: {n:'Nguyễn Văn Sơn',cd:'Phó HT phụ trách điểm trường A',sc:'branch',dt:'A',dtLock:1,q:['xem','xuat']},
+ VT:  {n:'Lê Thị Hạnh',cd:'Văn thư',sc:'branch',dt:'A',dtLock:1,q:['danhmuc']},
+ GVBM:{n:'Phạm Thu Hương',cd:'GVBM Vật lí (8A1 · 9A1 · 10A1)',sc:'none',dt:'A',dtLock:1,q:[]},
+};
+
+/* ═══════ M2.7 — khung: vai · header · tab · dải phạm vi · deep-link ═══════ */
+const R=()=>ROLE[role];
+const co=k=>R().q.includes(k);
+let role='FULL', tab='kl', gocNhin='qd', cur=null, tim='', loc='tat', locBP='', traVe=null;
+let gMo=new Set(), gCham=new Set();
+
+/* Phạm vi là RÀNG BUỘC DỮ LIỆU — bản ghi ngoài phạm vi không có trong dữ liệu trả về */
+function trongPhamVi(x){
+ const r=R();
+ if(!co('xem')) return false;
+ if(r.lopCN) return x.lop===r.lopCN;
+ if(r.sc==='branch') return LOP[x.lop].dt===r.dt;
+ return true;
+}
+const lopCuaToi=()=>{const r=R();
+ if(r.lopCN) return [r.lopCN];
+ if(r.sc==='branch') return Object.keys(LOP).filter(l=>LOP[l].dt===r.dt).sort(lopSort);
+ if(r.sc==='none') return [];
+ return Object.keys(LOP).sort(lopSort);
+};
+const QDpv=()=>QD.filter(trongPhamVi);
+const choToiDuyet=()=>co('duyet')?QDpv().filter(x=>x.tt==='choduyet'):[];
+const conDo=()=>(co('thutuc')||co('duyet'))?QDpv().filter(x=>['chothuchien','chonop','choxacnhan'].includes(x.tt)):[];
+const quaHan=x=>{if(!x.han)return 0;
+ if(x.tt==='chonop'&&HOMNAY>x.han.nop)return HOMNAY-x.han.nop;
+ if(x.tt==='choxacnhan'&&x.han.xn&&HOMNAY>x.han.xn)return HOMNAY-x.han.xn;
+ return 0};
+const canDuyet=bp=>!!DUYET[bp];
+
+function header(){
+ const r=R();
+ const opts=Object.keys(DT).map(k=>`<option value="${k}" ${r.dt===k?'selected':''}>${DT[k]}</option>`).join('');
+ $('#hdt').innerHTML=r.dtLock?opts:`<option value="">Mọi điểm trường</option>`+opts;
+ $('#hdt').disabled=!!r.dtLock;
+ $('#lk').innerHTML=r.dtLock?'🔒':'';
+ $('#ava').textContent=tat(r.n);
+ $('#bell').textContent=String(choToiDuyet().length+conDo().length||1);
+ const b=[];
+ if(co('lap')){b.push('<button class="btn p" data-x="taokl">⚠ Lập quyết định kỷ luật</button>');
+  b.push('<button class="btn" data-x="demolink" title="Mô phỏng nút ↗ Lập quyết định kỷ luật ở M2.2 — chỉ hiện với vai lập được (D3)">↘ Mở từ Sổ đầu bài (thử deep-link)</button>');}
+ if(co('xuat')) b.push('<button class="btn" data-x="xuat">⬇ Xuất báo cáo</button>');
+ $('#topbtn').innerHTML=b.join(' ');
+ $('#crumb').innerHTML=traVe?`<div class="ro" style="margin-bottom:8px">🔗 Mở từ <b>${esc(traVe.tu)}</b> —
+   <button class="rolnk" data-x="quaylai">← Quay lại ${esc(traVe.tu.split(' ')[0])}</button></div>`:'';
+}
+
+function tabs(){
+ const nd=choToiDuyet().length, nc=conDo().length;
+ const T=[['kl',`Kỷ luật${nd+nc?` <span class="tb">${nd+nc}</span>`:''}`],['dm','⚙ Danh mục']];
+ $('#tabs').innerHTML=T.map(([k,t])=>`<button class="tab1 ${tab===k?'on':''}" data-tab="${k}">${t}</button>`).join('');
+}
+
+function scopeNote(){
+ const r=R();
+ if(!co('xem')) return '';
+ const pv=r.lopCN?('Lớp chủ nhiệm '+r.lopCN):r.sc==='branch'?DT[r.dt]:'Toàn trường';
+ return `<div class="scopebar">⚖<div><b>Phạm vi: ${esc(pv)}.</b>
+   ${r.lopCN?'GVCN <b>lập</b> quyết định cho lớp mình — thẩm quyền theo TT 19/2025 Đ.17 k.1. ':''}
+   ${co('duyet')?'Bạn <b>duyệt</b> quyết định do GVCN lập. ':''}
+   ${!co('lap')&&!co('duyet')?'Bạn <b>chỉ xem</b> — lập và duyệt là việc của GVCN và Hiệu trưởng. ':''}
+   Căn cứ <i>"đã nhắc nhở / đã phê bình trước đó"</i> tính trong năm học ${NAMHOC}.</div></div>`;
+}
+
+function render(){
+ header(); tabs();
+ $('#content').innerHTML = tab==='kl'?viewKL():viewDM();
+ wire();
+}
+
+function wire(){
+ $$('[data-tab]').forEach(el=>el.onclick=()=>{tab=el.dataset.tab;cur=null;loc='tat';render()});
+ $$('[data-qd]').forEach(el=>el.onclick=()=>{cur=(cur===el.dataset.qd)?null:el.dataset.qd;render()});
+ $$('[data-loc]').forEach(el=>el.onclick=()=>{loc=el.dataset.loc;cur=null;render()});
+ $$('[data-gn]').forEach(el=>el.onclick=()=>{gocNhin=el.dataset.gn;cur=null;render()});
+ $$('[data-g]').forEach(el=>el.onclick=()=>{const k=el.dataset.g;
+   const mo=el.classList.contains('on'); gCham.add(k); if(mo)gMo.delete(k); else gMo.add(k); render()});
+ $$('[data-gall]').forEach(el=>el.onclick=()=>{const mo=el.dataset.gall==='mo';
+   $$('[data-g]').forEach(z=>{gCham.add(z.dataset.g); mo?gMo.add(z.dataset.g):gMo.delete(z.dataset.g)}); render()});
+ const ti=$('#tim'); if(ti)ti.oninput=()=>{tim=ti.value;cur=null;render();
+   const t2=$('#tim'); if(t2){t2.focus();t2.setSelectionRange(t2.value.length,t2.value.length)}};
+ const lb=$('#locbp'); if(lb)lb.onchange=()=>{locBP=lb.value;cur=null;render()};
+ $$('[data-act]').forEach(el=>el.onclick=()=>act(el.dataset.act,el.dataset.v));
+ $$('[data-x]').forEach(el=>el.onclick=e=>{e.stopPropagation();act(el.dataset.x,el.dataset.v)});
+}
+
+document.addEventListener('click',e=>{
+ const rb=e.target.closest('.rb');
+ if(rb){role=rb.dataset.r;$$('.rb').forEach(z=>z.classList.toggle('on',z===rb));
+   tab='kl';cur=null;tim='';loc='tat';locBP='';gMo.clear();gCham.clear();render()}
+});
+$('#btnNote').onclick=()=>{const on=document.body.classList.toggle('nn');
+ $('#btnNote').classList.toggle('on',!on);
+ $('#btnNote').textContent='💡 Ghi chú thiết kế: '+(on?'TẮT':'BẬT')};
+
+/* D3 — deep-link vào menu này: /M2.7?action=tao&ctx={dòng sổ đầu bài}&return=M2.2
+   (preview tĩnh có thể mất query string — nút "Mở từ Sổ đầu bài" chạy cùng đường này) */
+function nhanDeepLink(q){
+ const p=new URLSearchParams(q);
+ if(p.get('vai')&&ROLE[p.get('vai')]){role=p.get('vai');$$('.rb').forEach(z=>z.classList.toggle('on',z.dataset.r===role))}
+ if(p.get('action')==='tao'){
+  const sd=sdbById(p.get('ctx'));
+  traVe={tu:(p.get('return')||'M2.2')+' Sổ đầu bài'};
+  render();
+  if(!co('lap')){toast('⛔ Vai của bạn không lập được quyết định ở M2.7 — deep-link lẽ ra không hiện (D3)');return}
+  taoKL(sd?{hs:sd.hs,lop:sd.lop,hv:sd.hv,sd:sd.id}:null);
+  return true;
+ }
+ if(p.get('ctx')&&byId(p.get('ctx'))){cur=p.get('ctx');traVe={tu:p.get('return')||'M1.1'};}
+}
+
+/* ═══════ M2.7 — tab Kỷ luật (m2.7.ky_luat): danh sách · tổng hợp theo lớp · panel ═══════ */
+
+/* Vai không có X ở menu: màn hình nói vì sao, và chỉ đường tới nơi đúng */
+function khongQuyen(){
+ const r=R();
+ const laGV=role==='GVBM';
+ return `<div class="listw" style="padding:22px 24px">
+  <div style="font-size:15px;font-weight:700;margin-bottom:8px">${laGV?'Giáo viên bộ môn không có quyền ở menu Kỷ luật học sinh':'Vai của bạn không xem quyết định kỷ luật'}</div>
+  ${laGV?`<div class="info" style="margin:0 0 10px">TT 19/2025 <b>Điều 17 khoản 2</b>: cán bộ quản lý, giáo viên, nhân viên thực hiện
+    <b>nhắc nhở</b> và <b>phối hợp với GVCN</b> ở phê bình, yêu cầu viết bản tự kiểm điểm. Nhắc nhở là <b>ghi nhận</b>, không phải quyết định —
+    nó nằm ở <b>Sổ đầu bài</b>, ngay tiết xảy ra.</div>
+   <div class="r" style="border:1px solid var(--line);border-radius:9px;margin-bottom:8px"><b>📓 Ghi nhắc nhở cho học sinh trong tiết</b>
+    <button class="btn xs" data-x="m22">↗ M2.2 Sổ đầu bài</button></div>
+   <div class="r" style="border:1px solid var(--line);border-radius:9px"><b>🧑‍🏫 Việc cần biện pháp nặng hơn</b>
+    <span style="color:var(--ink2);font-size:12px">báo GVCN lớp đó — ghi nhận của bạn trong sổ là căn cứ GVCN dùng khi lập</span></div>
+   <div class="info" style="margin-top:12px">✅ <b>Tiểu học:</b> Điều 17 khoản 2 dẫn cả <b>khoản 1 Điều 13</b> — tức giáo viên, nhân viên cũng được
+    <b>yêu cầu xin lỗi</b>. Yêu cầu xin lỗi của GVBM ghi như nhắc nhở ở Sổ đầu bài;
+    muốn thành quyết định có hồ sơ thì GVCN lập (điểm P14-2 — chốt 14/9/2026).</div>`
+   :`<div class="info" style="margin:0">Quyết định kỷ luật là thông tin <b>nhạy cảm về danh dự của trẻ em</b> — chỉ GVCN (lớp mình),
+    Hiệu trưởng và Phó HT (điểm trường mình) xem được. Bạn vẫn vào được tab <b>⚙ Danh mục</b> để soạn loại vi phạm.</div>`}
+ </div>`;
+}
+
+function viewKL(){
+ if(!co('xem')) return scopeNote()+khongQuyen();
+ const all=QDpv();
+ const nd=choToiDuyet().length, nc=conDo().length, qh=conDo().filter(quaHan).length;
+ const nTL=all.filter(x=>['tralai','rut'].includes(x.tt)).length;
+ const nDC=all.filter(x=>['huybo','dinhchinh'].includes(x.tt)||x.dc).length;
+ if(loc==='duyet'&&!nd) loc='tat';
+ let L=all;
+ if(loc==='duyet') L=choToiDuyet();
+ if(loc==='cdo') L=conDo();
+ if(loc==='tl') L=L.filter(x=>['tralai','rut'].includes(x.tt));
+ if(loc==='dc') L=L.filter(x=>['huybo','dinhchinh'].includes(x.tt)||x.dc);
+ if(locBP) L=L.filter(x=>x.bp===locBP);
+ if(tim) L=L.filter(x=>bo(HS[x.hs].n+' '+x.lop+' '+x.id).indexOf(bo(tim))>=0);
+ return scopeNote()+
+  `<div class="sumbar">
+    <div class="it"><b>${all.filter(coHieuLuc).length}</b>quyết định có hiệu lực</div>
+    ${co('duyet')?`<div class="it ${nd?'w':''}"><b>${nd}</b>chờ tôi duyệt</div>`:`<div class="it ${all.filter(x=>x.tt==='choduyet').length?'w':''}"><b>${all.filter(x=>x.tt==='choduyet').length}</b>đang chờ HT duyệt</div>`}
+    <div class="it ${nc?'w':''}"><b>${nc}</b>còn dở thủ tục</div>
+    <div class="it ${qh?'r':''}"><b>${qh}</b>quá hạn</div>
+   </div>
+   <div class="ro">Menu này chỉ nhận <b>biện pháp có hồ sơ</b>: <b>Phê bình</b> · <b>Yêu cầu viết bản tự kiểm điểm</b> <i>(THCS · THPT)</i> ·
+    <b>Yêu cầu xin lỗi</b> <i>(Tiểu học)</i>. <b>Nhắc nhở không lập ở đây</b> — là ghi nhận ở <button class="rolnk" data-x="m22">↗ Sổ đầu bài</button>
+    và nhận xét báo cáo tuần M2.9/T6; mọi giáo viên, nhân viên đều nhắc nhở được <i>(Đ.17 k.2)</i>.</div>
+   <div class="danger">⛔ <b>Không ghi vào học bạ</b> — lưu ở kho quyết định riêng của học sinh (M1.1 Phần F) và <b>chỉ phụ huynh của chính em đó</b> được thông báo.
+    <span class="dnote" style="display:block;margin-top:3px;font-size:11.5px">Suốt mấy chục năm kỷ luật vẫn vào học bạ — thay đổi dễ làm sai nhất, nên nói thẳng trên màn hình.</span></div>
+   <div class="navbar">
+    <div class="seg"><button class="${gocNhin==='qd'?'on':''}" data-gn="qd">📄 Quyết định</button>
+     <button class="${gocNhin==='lop'?'on':''}" data-gn="lop">🏫 Tổng hợp theo lớp</button></div>
+    ${gocNhin==='qd'?`<div class="seg">
+     <button class="${loc==='tat'?'on':''}" data-loc="tat">Tất cả</button>
+     ${nd?`<button class="${loc==='duyet'?'on':''}" data-loc="duyet">⚖ Chờ tôi duyệt (${nd})</button>`:''}
+     ${nc?`<button class="${loc==='cdo'?'on':''}" data-loc="cdo">Còn dở (${nc})</button>`:''}
+     <button class="${loc==='tl'?'on':''}" data-loc="tl">Trả lại · đã rút (${nTL})</button>
+     <button class="${loc==='dc'?'on':''}" data-loc="dc">Đính chính · hủy bỏ (${nDC})</button></div>
+    <select class="sel" id="locbp"><option value="">Mọi biện pháp</option>${['phebinh','kiemdiem','xinloi'].map(k=>`<option value="${k}" ${locBP===k?'selected':''}>${BP[k].t}</option>`).join('')}</select>
+    <input class="sel" id="tim" placeholder="🔍 Tìm học sinh, lớp, mã" value="${esc(tim)}" style="width:190px">`:''}
+   </div>`+
+  (gocNhin==='lop'?viewTongHop():
+  `<div class="stage ${cur?'open':''}"><div class="listw">${nhomTheoLop(L)||'<div class="empty">Không có quyết định nào khớp bộ lọc.</div>'}
+   </div>${cur?panelKL():''}</div>`);
+}
+
+function klRow(x){
+ const t=TT[x.tt], qh=quaHan(x);
+ return `<div class="brow ${cur===x.id?'on':''}" data-qd="${x.id}">
+   <div class="ava">${esc(tat(HS[x.hs].n))}</div>
+   <div class="bd"><b>${esc(HS[x.hs].n)}</b> <span style="color:var(--ink3);font-size:11.5px">${x.id}</span>
+    <div class="sub"><span class="st2 ${x.muc===3?'r':x.muc===2?'w':'n'}">Mức ${x.muc}</span>
+     <span class="st2 b">${esc(bpTen(x.bp))}</span> ${esc(x.lop)} · ${dow(x.ngay)} ${dstr(x.ngay)}
+     · ${esc(hvById(x.hv)?hvById(x.hv).t:'')}</div></div>
+   <div class="rt">${qh?`<span class="st2 r">Quá hạn ${qh} ngày</span>`:''}
+    ${x.dc?'<span class="st2 b">có đính chính</span>':''}${x.canhBao?'<span class="st2 r">⚠ nặng hơn Đ.14/15</span>':''}
+    <span class="st2 ${t.c}">${t.t}</span></div></div>`;
+}
+
+function nhomTheoLop(L){
+ const lops=[...new Set(L.map(x=>x.lop))].sort(lopSort);
+ const sx=a=>a.slice().sort((p,q)=>q.ngay-p.ngay||q.id.localeCompare(p.id));
+ if(lops.length<=1||tim) return sx(L).map(klRow).join('');
+ let moHet=true;
+ const body=lops.map(l=>{
+  const it=sx(L.filter(x=>x.lop===l));
+  const viec=it.filter(x=>['choduyet','tralai','chothuchien','chonop','choxacnhan'].includes(x.tt)).length;
+  const open=gCham.has(l)?gMo.has(l):(viec>0||lops.indexOf(l)===0);
+  if(!open)moHet=false;
+  return `<div class="gh ${open?'on':''}" data-g="${l}"><span class="cv">▶</span>
+    <span class="gt">Lớp ${esc(l)}</span><span class="gs">${capTen(capHoc(l))} · GVCN ${esc(gvcnCua(l))} · ${it.length} bản ghi</span>
+    <span class="gb">${viec?`<span class="st2 w">${viec} còn việc</span>`:''}
+     <span class="num">${bpMenu(l).map(bpTen).join(' · ')}</span></span></div>`+(open?it.map(klRow).join(''):'');
+ }).join('');
+ return `<div class="gbar"><b>${lops.length} lớp</b>
+   <button class="btn xs" data-gall="${moHet?'thu':'mo'}">${moHet?'⌃ Thu tất cả':'⌄ Mở tất cả'}</button>
+   <span class="dnote">Nhóm còn việc được mở sẵn · tìm kiếm thì danh sách tự phẳng</span></div>`+body;
+}
+
+/* Tổng hợp theo lớp — góc nhìn của cùng tab, KHÔNG xếp hạng cá nhân (§3) */
+function viewTongHop(){
+ const lops=lopCuaToi();
+ const rows=lops.map(l=>{
+  const q=QD.filter(x=>x.lop===l&&coHieuLuc(x)&&x.tt!=='dinhchinh');
+  const dem=k=>q.filter(x=>x.bp===k).length;
+  const nhac=SDB.filter(x=>x.lop===l&&x.loai==='nhac').length;
+  const cho=QD.filter(x=>x.lop===l&&x.tt==='choduyet').length;
+  const th=capHoc(l)==='TH';
+  return `<tr><td><b>Lớp ${esc(l)}</b><div style="color:var(--ink3);font-size:11.5px">${capTen(capHoc(l))} · sĩ số ${LOP[l].ss}</div></td>
+   <td class="num">${nhac} <span style="color:var(--ink3)">🔗</span></td>
+   <td class="num">${th?'<span style="color:var(--ink3)">—</span>':dem('phebinh')}</td>
+   <td class="num">${th?'<span style="color:var(--ink3)">—</span>':dem('kiemdiem')}</td>
+   <td class="num">${th?dem('xinloi'):'<span style="color:var(--ink3)">—</span>'}</td>
+   <td class="num">${cho?`<span class="st2 w">${cho}</span>`:'0'}</td></tr>`}).join('');
+ return `<div class="listw" style="padding:14px 16px">
+   <table class="tb"><tr><th>Lớp</th><th>Nhắc nhở<br><span style="font-weight:400;color:var(--ink3)">ghi ở Sổ đầu bài</span></th>
+    <th>Phê bình</th><th>Tự kiểm điểm</th><th>Yêu cầu xin lỗi</th><th>Chờ HT duyệt</th></tr>${rows}</table>
+   <div class="roblk" style="margin-top:11px">⚖ <b>Không có bảng xếp hạng học sinh</b> — thống kê dừng ở mức <b>lớp</b>. Danh sách xếp theo số lần
+    vi phạm là công cụ gắn nhãn, đi ngược nguyên tắc <i>"bảo đảm tính giáo dục, nhân văn, vì sự tiến bộ của học sinh"</i> (Đ.3 k.1).
+    Cột nhắc nhở là <b>bản chiếu 🔗 M2.2</b> — nhắc nhở là biện pháp theo Đ.13 nhưng nơi ghi của nó là sổ đầu bài.</div></div>`;
+}
+
+/* ---------- PANEL — chi tiết một quyết định ---------- */
+function buocLuong(x){
+ const htLap=/Hiệu trưởng/.test(x.nguoi);
+ const b=[];
+ b.push(['1. Lập',`${esc(x.nguoi.split(' — ')[0])} · ${dstr(x.ngay)}`,'o']);
+ if(['tralai','rut'].includes(x.tt)) b.push(['2. Hiệu trưởng duyệt',x.tt==='rut'?'Đã rút trước khi duyệt':'Trả lại — chờ GVCN sửa',x.tt==='rut'?'n':'r']);
+ else if(x.tt==='choduyet') b.push(['2. Hiệu trưởng duyệt','Đang chờ','w']);
+ else b.push(['2. Hiệu trưởng duyệt',x.khongDuyet?(htLap?'Không cần — Hiệu trưởng lập':'Không cần — cấu hình đang tắt duyệt'):'✓ '+dstr(x.hl||x.ngay),x.khongDuyet?'n':'o']);
+ if(x.bp==='kiemdiem'){
+  b.push(['3. Học sinh nộp bản tự kiểm điểm',x.tep.some(t=>/tu-kiem-diem/.test(t))?'✓ Đã nộp':x.han?`Hạn ${dstr(x.han.nop)}${quaHan(x)&&x.tt==='chonop'?' · quá '+quaHan(x)+' ngày':''}`:'Sau khi có hiệu lực',
+   x.tep.some(t=>/tu-kiem-diem/.test(t))?'o':quaHan(x)&&x.tt==='chonop'?'r':'n']);
+  b.push(['4. Gia đình xác nhận & cam kết',x.tt==='xong'?'✓ Đã xác nhận':x.han&&x.han.xn?`Hạn ${dstr(x.han.xn)} · ký giấy tại trường`:'Chưa tới',x.tt==='xong'?'o':x.tt==='choxacnhan'?(quaHan(x)?'r':'v'):'n']);
+ }else if(x.tt!=='dinhchinh'){
+  b.push(['3. Thực hiện',x.th?'✓ '+dstr(x.th):x.tt==='chothuchien'?'Chờ GVCN ghi nhận':'Sau khi có hiệu lực',x.th?'o':x.tt==='chothuchien'?'v':'n']);
+ }
+ return b.map(([t,s,c])=>`<div class="r"><b>${t}</b><span class="st2 ${c}">${s}</span></div>`).join('');
+}
+
+function panelKL(){
+ const x=byId(cur); if(!x) return '';
+ const hs=HS[x.hs], t=TT[x.tt], qh=quaHan(x), hv=hvById(x.hv);
+ const goc=x.goc?byId(x.goc):null, dc=x.dc?byId(x.dc):null;
+ const acts=[];
+ if(x.tt==='choduyet'&&co('duyet')){acts.push(['duyet','✓ Duyệt','p']);acts.push(['tralai','↩ Trả lại','']);}
+ if(x.tt==='choduyet'&&co('lap')&&!co('duyet')) acts.push(['rut','✕ Rút đề nghị','']);
+ if(x.tt==='tralai'&&co('lap')){acts.push(['guilai','✎ Sửa và gửi lại','p']);acts.push(['rut','✕ Rút đề nghị','']);}
+ if(x.tt==='chothuchien'&&co('thutuc')) acts.push(['thuchien','✓ Ghi nhận đã thực hiện','p']);
+ if(x.tt==='chonop'&&co('thutuc')) acts.push(['nop','📎 Ghi nhận đã nộp bản tự kiểm điểm','p']);
+ if(x.tt==='choxacnhan'&&co('thutuc')) acts.push(['xacnhan','👪 Ghi nhận gia đình đã xác nhận','p']);
+ if(HIEULUC.includes(x.tt)&&co('dinhchinh')&&!(dc&&dc.tt==='choduyet')) acts.push(['dinhchinh','✎ Lập bản đính chính','']);
+ const nhacTr=sdbCua(x.hs,'nhac').filter(z=>z.ngay<=x.ngay);
+ return `<div class="panel"><div class="ph"><div class="n"><h2>${esc(hs.n)}</h2>
+   <div class="m"><span class="pill">${esc(x.lop)} · ${capTen(capHoc(x.lop))}</span><span class="pill">${x.id}</span>
+    <span class="st2 ${t.c}">${t.t}</span>${qh?`<span class="st2 r">Quá hạn ${qh} ngày</span>`:''}</div></div>
+   <button class="btn sm" data-x="close">✕</button></div>
+  <div class="pbody">
+   ${goc?`<div class="info" style="margin:0 0 10px">✎ Đây là <b>bản đính chính</b> cho <button class="rolnk" data-act="mo" data-v="${goc.id}">${goc.id}</button> —
+     ${x.loaiDC==='huy'?'<b>hủy bỏ</b> quyết định gốc':'<b>sửa nội dung</b>'}; bản gốc giữ nguyên.</div>`:''}
+   ${dc?`<div class="info" style="margin:0 0 10px">Quyết định này <b>có bản đính chính</b> <button class="rolnk" data-act="mo" data-v="${dc.id}">${dc.id}</button>
+     ${dc.tt==='choduyet'?'<span class="st2 w">chờ HT duyệt</span>':''} — bản gốc giữ nguyên, không xóa.</div>`:''}
+   ${x.tt==='tralai'?`<div class="warn" style="margin:0 0 10px">↩ <b>Hiệu trưởng trả lại:</b> ${esc(x.traLai)}</div>`:''}
+   ${x.tt==='rut'?`<div class="roblk" style="margin:0 0 10px">✕ <b>Đã rút đề nghị:</b> ${esc(x.rut)}</div>`:''}
+   ${x.canhBao?`<div class="warn" style="margin:0 0 10px">⚠ <b>Biện pháp nặng hơn mức Điều 14/15 chỉ định</b> (${esc(bpTen(x.canhBao.luat))}).
+     Lý do của người lập: <i>${esc(x.canhBao.ly)}</i></div>`:''}
+   <div class="card hl"><div class="ch">Quyết định</div><div class="cb p">
+     <table class="tb">
+      <tr><td style="width:130px">Loại vi phạm</td><td><b>${esc(hv?hv.t:'')}</b> <span style="color:var(--ink3)">${x.hv}</span></td></tr>
+      <tr><td>Mức độ</td><td><span class="st2 ${x.muc===3?'r':x.muc===2?'w':'n'}">Mức ${x.muc}</span> ${MUCTEN[x.muc]}
+        ${hv&&hv.m!==x.muc?`<div class="hint">Mặc định của loại này là mức ${hv.m} — người lập xác định lại theo phạm vi ảnh hưởng (Đ.12 k.2)</div>`:''}</td></tr>
+      <tr><td>Mô tả vi phạm</td><td>${esc(x.mota)}</td></tr>
+      <tr><td>Kết quả xử lý</td><td><b>${esc(bpTen(x.bp))}</b> <span style="color:var(--ink3)">— TT 19/2025 ${BP[x.bp].dieu}</span></td></tr>
+      <tr><td>Người lập</td><td>${esc(x.nguoi)}</td></tr>
+      ${x.hl?`<tr><td>Có hiệu lực</td><td>${dow(x.hl)} ${dstr(x.hl)}</td></tr>`:''}
+     </table>
+     <div class="roblk" style="margin-top:9px">⛔ <b>Không ghi vào học bạ.</b> Lưu ở kho quyết định riêng của học sinh — <b>M1.1 Phần F</b>.
+      <button class="rolnk" data-x="m11">↗ Mở kho quyết định</button></div>
+   </div></div>
+
+   <div class="card"><div class="ch">Luồng xử lý</div><div class="cb" style="padding:0">${buocLuong(x)}
+    ${x.bp==='kiemdiem'&&HIEULUC.includes(x.tt)?`<div class="roblk dnote" style="margin:0;border:none;border-top:1px solid var(--line);border-radius:0">
+      Quá hạn thì <b>cảnh báo, không tự hủy quyết định</b> — hủy vì học sinh chậm nộp giấy là để thủ tục quyết định thay thẩm quyền.
+      Gia đình <b>ký giấy tại trường</b>; App PH-HS chỉ gửi lời mời, không có nút xác nhận.</div>`:''}</div></div>
+
+   ${x.cancu.length||nhacTr.length?`<div class="card"><div class="ch">Căn cứ — Sổ đầu bài 🔗 M2.2</div><div class="cb p">
+     <table class="tb">${(x.cancu.length?x.cancu.map(sdbById):nhacTr).filter(Boolean).map(sd=>`<tr><td style="width:90px">${dow(sd.ngay)} ${dstr(sd.ngay)}</td>
+      <td>${sd.loai==='nhac'?'<span class="st2 n">Nhắc nhở</span> ':''}${esc(sd.nd)}<div class="hint">Tiết ${sd.tiet} · ${esc(sd.mon)} · ${esc(GV[sd.gv])}</div></td></tr>`).join('')}</table>
+     <div class="roblk dnote" style="margin-top:9px">Dòng <b>nhắc nhở</b> trong sổ <b>chính là</b> biện pháp nhắc nhở (K2-A) — và là căn cứ
+      <i>"đã nhắc nhở mà tiếp tục vi phạm mức 1"</i> của Đ.15 k.2. Bản chiếu chỉ đọc. <button class="rolnk" data-x="m22">↗ Mở đúng tiết ở M2.2</button></div>
+   </div></div>`:''}
+
+   ${x.hotro.length?`<div class="card"><div class="ch">Hoạt động hỗ trợ khắc phục — Đ.16 <span style="font-weight:400;color:var(--ink3)">(không phải hình thức kỷ luật)</span></div><div class="cb p">
+     ${x.hotro.map(k=>kpById(k)).filter(Boolean).map(k=>`<div style="margin-bottom:4px">• ${esc(k.t)} <span style="color:var(--ink3);font-size:11.5px">${k.he?k.dieu:'Của trường'}</span></div>`).join('')}
+   </div></div>`:''}
+
+   ${x.tep.length?`<div class="card"><div class="ch">Tệp văn bản xử lý</div><div class="cb" style="padding:0">
+     ${x.tep.map(f=>`<div class="r"><b>📎 ${esc(f)}</b><span><button class="btn xs" data-act="xemtep" data-v="${esc(f)}">👁 Xem</button>
+       <button class="btn xs" data-act="taitep" data-v="${esc(f)}">⬇ Tải</button></span></div>`).join('')}</div></div>`:''}
+
+   <div class="card"><div class="ch">Quá trình học tập của em — M1.1 🔗</div><div class="cb p">
+    ${coHieuLuc(x)||x.tt==='huybo'?(x.tt==='huybo'?`<span class="st2 n">Mốc Kỷ luật đã rời dòng thời gian</span>
+       <div class="hint">Quyết định bị hủy bỏ bằng đính chính ${esc(x.dc||'')} — mốc không còn hiện với ai; bản gốc và bản đính chính vẫn ở kho quyết định.</div>`
+     :x.tt==='dinhchinh'?`<span class="st2 b">Mốc của ${esc(x.goc)} đã cập nhật</span><div class="hint">Mốc giữ ngày gốc, nội dung theo bản đính chính, nhãn <b>Đã đính chính</b>.</div>`
+     :`<span class="st2 o">✓ Mốc Kỷ luật ghi ngày ${dstr(x.hl||x.ngay)}</span>
+       <div class="hint">Sinh khi quyết định <b>có hiệu lực</b> (HT duyệt, hoặc lúc lập nếu không cần duyệt). Chỉ hiện <b>trong năm học ${NAMHOC}</b>,
+        với vai có quyền xem ở M2.7 và phụ huynh của chính em (K3). Sang năm sau tự rời dòng thời gian.</div>`)
+     :`<span class="st2 n">Chưa ghi</span><div class="hint">Quyết định chưa có hiệu lực — không có mốc, không có thông báo phụ huynh.</div>`}
+   </div></div>
+
+   <div class="card"><div class="ch">Lịch sử thao tác</div><div class="cb p">
+    <table class="tb">${x.log.map(([tm,w,a,n])=>`<tr><td style="white-space:nowrap;width:92px">${esc(tm)}</td><td><b>${esc(a)}</b><br>
+       <span style="color:var(--ink3);font-size:11.5px">${esc(w)}${n?' · '+esc(n):''}</span></td></tr>`).join('')}</table>
+    <div class="roblk dnote" style="margin-top:9px">Ghi <b>tên và chức danh tại thời điểm thao tác</b> — hồ sơ gia đình có quyền tra cứu nhiều năm sau.</div>
+   </div></div>
+  </div>
+  ${acts.length?`<div class="cact">${acts.map(([a,t2,c])=>`<button class="btn ${c}" data-act="${a}">${t2}</button>`).join('')}</div>`:''}
+ </div>`;
+}
+
+/* ═══════ M2.7 — thao tác: lập · duyệt · trả lại · rút · thủ tục · đính chính ═══════ */
+function ghiLog(x,a,n){x.log.push([dstr(HOMNAY)+' '+String(8+x.log.length%9).padStart(2,'0')+':'+(10+x.log.length*7%50),R().n+' — '+R().cd.split(' — ')[0],a,n||''])}
+
+/* Căn cứ lần trước trong năm học — để tính biện pháp Đ.14/15 chỉ định */
+function canCuTruoc(h,boQua){
+ const nhac=sdbCua(h,'nhac').filter(z=>z.id!==boQua);
+ const pb=QD.filter(z=>z.hs===h&&z.bp==='phebinh'&&coHieuLuc(z)&&z.tt!=='dinhchinh');
+ return {nhac,pb};
+}
+
+/* ===== LẬP QUYẾT ĐỊNH ===== */
+function taoKL(pre){
+ const lops=lopCuaToi();
+ if(!co('lap')||!lops.length){toast('⛔ Vai của bạn không lập được quyết định kỷ luật');return}
+ const hvDung=HANHVI.filter(h=>h.dung);
+ modal('⚠ Lập quyết định kỷ luật',
+  `${pre&&pre.sd?`<div class="info" style="margin:0 0 10px">🔗 Mở từ <b>Sổ đầu bài</b> — ngữ cảnh điền sẵn từ dòng ghi nhận <b>${pre.sd}</b>.</div>`:''}
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+    <div class="fld"><label>Lớp <span class="req">*</span></label>
+     <select class="fldi" id="kllop">${lops.map(l=>`<option ${pre&&pre.lop===l?'selected':''}>${l}</option>`).join('')}</select></div>
+    <div class="fld"><label>Học sinh <span class="req">*</span></label><select class="fldi" id="klhs"></select></div>
+   </div>
+   <div style="display:grid;grid-template-columns:2fr 1fr;gap:11px">
+    <div class="fld"><label>Loại vi phạm <span class="req">*</span></label>
+     <select class="fldi" id="klhv">${[1,2,3].map(m=>`<optgroup label="Mặc định mức ${m}">${hvDung.filter(h=>h.m===m).map(h=>
+       `<option value="${h.id}" ${pre&&pre.hv===h.id?'selected':''}>${esc(h.t)}</option>`).join('')}</optgroup>`).join('')}</select></div>
+    <div class="fld"><label>Mức độ <span class="req">*</span></label>
+     <select class="fldi" id="klmuc">${[1,2,3].map(m=>`<option value="${m}">Mức ${m}</option>`).join('')}</select></div>
+   </div>
+   <div class="hint" id="klmh" style="margin:-4px 0 10px"></div>
+   <div id="klcc"></div>
+   <div class="fld"><label>Kết quả xử lý — biện pháp <span class="req">*</span></label>
+    <select class="fldi" id="klbp"></select><div class="hint" id="klbph"></div></div>
+   <div id="klnang"></div>
+   <div class="fld"><label>Mô tả vi phạm <span class="req">*</span></label>
+    <textarea class="fldi" id="klmt" rows="2" placeholder="Nêu cụ thể sự việc, ảnh hưởng tới ai"></textarea></div>
+   <div class="fld"><label>Hoạt động hỗ trợ khắc phục <span style="font-weight:400;color:var(--ink3)">— Đ.16, không phải hình thức kỷ luật, tùy chọn</span></label>
+    <div id="klkp" style="display:grid;gap:3px">${HOTRO.filter(k=>k.dung).map(k=>`<label style="font-weight:400;display:flex;gap:6px;align-items:flex-start">
+      <input type="checkbox" value="${k.id}"> <span>${esc(k.t)} <span style="color:var(--ink3);font-size:11px">${k.he?k.dieu:'Của trường'}</span></span></label>`).join('')}</div></div>
+   <div class="fld"><label>Tệp văn bản xử lý <span style="font-weight:400;color:var(--ink3)">— biên bản sự việc, tường trình… nếu có</span></label>
+    <label style="font-weight:400"><input type="checkbox" id="kltep"> Đính kèm <i>bien-ban-su-viec.pdf</i> (tệp mẫu của demo)</label></div>
+   <div id="klduyet"></div>`,
+  [['Hủy',0,''],['⚠ Lập quyết định',()=>luuKL(pre)]],1);
+ const veHS=()=>{const l=$('#kllop').value;
+   $('#klhs').innerHTML=hsLop(l).map(h=>`<option value="${h}" ${pre&&pre.hs===h?'selected':''}>${esc(HS[h].n)}</option>`).join('');
+   const hv=hvById($('#klhv').value); $('#klmuc').value=String(hv.m); veBP()};
+ const veBP=()=>{
+   const l=$('#kllop').value, h=$('#klhs').value, muc=+$('#klmuc').value, hv=hvById($('#klhv').value), c=capHoc(l);
+   const cc=canCuTruoc(h,pre&&pre.sd), luat=bpLuat(l,muc,cc.nhac.length>0,cc.pb.length>0);
+   $('#klmh').innerHTML=`Mức ${muc}: ${MUCTEN[muc]}. ${hv.m!==muc?'<b>Khác mức mặc định '+hv.m+'</b> của loại này — ':''}người lập xác định theo tính chất, hậu quả thực tế (Đ.12 k.2).`;
+   $('#klcc').innerHTML=`<div class="info" style="margin:0 0 10px"><b>Căn cứ lần trước trong năm học</b> của em ${esc(HS[h].n)}:
+     <div style="margin-top:4px">• Nhắc nhở ghi ở Sổ đầu bài 🔗: ${cc.nhac.length?cc.nhac.map(z=>`<b>${z.id}</b> ${dstr(z.ngay)} — ${esc(z.nd)}`).join('; '):'<i>chưa có</i>'}</div>
+     ${c!=='TH'?`<div>• Phê bình đã có hiệu lực ở M2.7: ${cc.pb.length?cc.pb.map(z=>`<b>${z.id}</b> ${dstr(z.hl||z.ngay)}`).join('; '):'<i>chưa có</i>'}</div>`:''}
+     <div style="margin-top:5px">⇒ Điều ${c==='TH'?'14':'15'} chỉ định: <b>${bpTen(luat)}</b></div></div>`;
+   const ds=bpMenu(l);
+   const chon=ds.includes(luat)?luat:ds[0];
+   $('#klbp').innerHTML=ds.map(k=>`<option value="${k}" ${k===chon?'selected':''}>${BP[k].t}${k===luat?' — đúng Điều '+(c==='TH'?'14':'15'):''}</option>`).join('');
+   $('#klbph').innerHTML=luat==='nhac'
+     ?`<span style="color:var(--amber)">Theo luật, trường hợp này là <b>Nhắc nhở</b> — <b>không lập ở menu này</b>, ghi ở Sổ đầu bài.
+        Chỉ lập tiếp nếu em đã được nhắc mà chưa ghi sổ, và nêu lý do bên dưới.</span>`
+     :`Lớp ${l} thuộc <b>${capTen(c)}</b> — menu nhận: ${ds.map(bpTen).join(' · ')}. ${c==='TH'?'Tiểu học <b>không có</b> phê bình và bản tự kiểm điểm.':''}`;
+   veNang();
+ };
+ const veNang=()=>{
+   const l=$('#kllop').value, h=$('#klhs').value, muc=+$('#klmuc').value, bp=$('#klbp').value;
+   const cc=canCuTruoc(h,pre&&pre.sd), luat=bpLuat(l,muc,cc.nhac.length>0,cc.pb.length>0);
+   const nang=BP[bp].hang>BP[luat].hang, nhe=BP[bp].hang<BP[luat].hang;
+   $('#klnang').innerHTML=nang?`<div class="warn" style="margin:0 0 10px">⚠ <b>${bpTen(bp)} nặng hơn biện pháp Điều ${capHoc(l)==='TH'?'14':'15'} chỉ định</b>
+      (<b>${bpTen(luat)}</b>). Luật có một bậc theo lần tái phạm, không cho vượt bậc. <b>Bắt buộc nêu lý do</b> — Hiệu trưởng thấy cảnh báo này khi duyệt.
+      <textarea class="fldi" id="klly" rows="2" style="margin-top:6px" placeholder="Vì sao cần biện pháp nặng hơn"></textarea></div>`
+     :nhe?`<div class="info" style="margin:0 0 10px">Biện pháp nhẹ hơn mức Điều 14/15 chỉ định — thuộc thẩm quyền của GVCN và Hiệu trưởng, không cần lý do.</div>`:'';
+   const d=canDuyet(bp)&&!co('duyet');
+   $('#klduyet').innerHTML=`<div class="roblk">${d?`Sau khi lập: <b>chờ Hiệu trưởng duyệt</b> — trường đang bật duyệt cho <b>${bpTen(bp)}</b>.
+      Quyết định chỉ có hiệu lực, chỉ báo phụ huynh và chỉ lên Quá trình học tập <b>sau khi duyệt</b>.`
+     :`Quyết định <b>có hiệu lực ngay</b> — ${co('duyet')?'bạn là người duyệt':'trường đang tắt duyệt cho biện pháp này'}.
+      Phụ huynh em đó nhận thông báo; mốc Kỷ luật lên Quá trình học tập M1.1.`}</div>`;
+ };
+ $('#kllop').onchange=veHS; $('#klhs').onchange=veBP;
+ $('#klhv').onchange=()=>{$('#klmuc').value=String(hvById($('#klhv').value).m);veBP()};
+ $('#klmuc').onchange=veBP; $('#klbp').onchange=veNang;
+ veHS();
+}
+
+function luuKL(pre){
+ const mt=$('#klmt').value.trim(); if(!mt){toast('⛔ <b>Mô tả vi phạm</b> là bắt buộc');return}
+ const lop=$('#kllop').value, hs=$('#klhs').value, hv=$('#klhv').value, muc=+$('#klmuc').value, bp=$('#klbp').value;
+ const cc=canCuTruoc(hs,pre&&pre.sd), luat=bpLuat(lop,muc,cc.nhac.length>0,cc.pb.length>0);
+ let canhBao=null;
+ if(BP[bp].hang>BP[luat].hang){const ly=($('#klly')||{}).value; if(!ly||!ly.trim()){toast('⛔ Biện pháp nặng hơn Điều 14/15 chỉ định — <b>phải nêu lý do</b>');return}
+   canhBao={luat,ly:ly.trim()}}
+ const d=canDuyet(bp)&&!co('duyet');
+ const x=Q({hs,lop,hv,muc,bp,mota:mt,nguoi:R().n+' — '+R().cd.split(' — ')[0],ngay:HOMNAY,canhBao,
+   cancu:[...cc.nhac.slice(-2).map(z=>z.id),...(pre&&pre.sd?[pre.sd]:[])],
+   hotro:$$('#klkp input:checked').map(i=>i.value),tep:$('#kltep').checked?['bien-ban-su-viec.pdf']:[]});
+ x.log.push([dstr(HOMNAY)+' 09:05',R().n+' — '+R().cd.split(' — ')[0],'Lập — '+bpTen(bp),d?'Chờ Hiệu trưởng duyệt':'Có hiệu lực ngay']);
+ if(d) x.tt='choduyet'; else {x.khongDuyet=1; coHieuLucNgay(x);}
+ QD.unshift(x); closeM(); tab='kl'; gocNhin='qd'; loc='tat'; cur=x.id; render();
+ toast(d?`⚖ Đã lập <b>${bpTen(bp)}</b> cho em ${esc(HS[hs].n)} · <b>chờ Hiệu trưởng duyệt</b> — chưa báo phụ huynh`
+        :`⚠ <b>${bpTen(bp)}</b> có hiệu lực · <b>chỉ phụ huynh em đó</b> nhận thông báo · mốc Kỷ luật lên M1.1`);
+}
+
+function coHieuLucNgay(x){
+ x.hl=HOMNAY;
+ if(x.bp==='kiemdiem'){x.tt='chonop';x.han={nop:HOMNAY+7,xn:null}}
+ else x.tt='chothuchien';
+}
+
+/* ===== HÀNH ĐỘNG ===== */
+function act(a,v){
+ const x=byId(cur);
+ if(a==='close'){cur=null;render();return}
+ if(a==='mo'){cur=v;tab='kl';gocNhin='qd';loc='tat';render();return}
+ if(a==='taokl'){taoKL(null);return}
+ if(a==='demolink'){nhanDeepLink('?action=tao&ctx=SD09&return=M2.2');return}
+ if(a==='quaylai'){traVe=null;render();toast('← Quay về <b>M2.2 Sổ đầu bài</b> · <code>return=M2.2</code>');return}
+ if(a==='m11'){toast('↗ <b>M1.1 Hồ sơ học sinh — Phần F Kho quyết định</b> · <code>/M1.1?ctx='+(x?x.hs:'')+'&tab=F&return=M2.7</code>');return}
+ if(a==='m22'){toast('↗ <b>M2.2 Sổ đầu bài</b> — ghi nhận sự việc trong tiết (F4)');return}
+ if(a==='xemtep'){ghiLog(x,'👁 Xem tệp',v);xemTep(v,'Tệp văn bản xử lý của quyết định '+x.id+'.');render();$('#mask').classList.add('on');return}
+ if(a==='taitep'){ghiLog(x,'⬇ Tải tệp',v);render();toast('⬇ Đã tải · <b>đã ghi audit</b> — dữ liệu cá nhân trẻ em, Luật BVDLCN 91/2025');return}
+ if(a==='xuat'){moXuat();return}
+
+ if(a==='duyet'){
+  const lamDuyet=(kySo)=>{
+   closeM();
+   if(x.goc){apDinhChinh(x);ghiLog(x,'✓ Duyệt bản đính chính','Mốc M1.1 cập nhật · thông báo phụ huynh');render();
+     toast('✓ Đã duyệt bản đính chính <b>'+x.id+'</b> · phụ huynh nhận thông báo');return}
+   coHieuLucNgay(x); if(kySo===1)x.daKy=1; if(kySo===0)x.boKy=1;
+   ghiLog(x,'✓ Duyệt — quyết định có hiệu lực',kySo===0?'Bỏ qua ký số — nhóm A · đã ghi audit':kySo===1?'🔏 Đã ký số':'Ghi mốc Kỷ luật lên M1.1 · thông báo phụ huynh');
+   render();
+   toast('✓ Đã duyệt · quyết định <b>có hiệu lực</b> · <b>chỉ phụ huynh em đó</b> nhận thông báo'+(x.bp==='kiemdiem'?' · hạn nộp bản tự kiểm điểm <b>'+dstr(x.han.nop)+'</b>':''));
+  };
+  if(x.bp==='kiemdiem'&&!x.goc){
+   modal('🔏 Duyệt và ký quyết định',
+    `${x.canhBao?`<div class="warn">⚠ Người lập chọn biện pháp <b>nặng hơn</b> Điều 15 chỉ định (${bpTen(x.canhBao.luat)}). Lý do: <i>${esc(x.canhBao.ly)}</i></div>`:''}
+     <div class="info">Yêu cầu viết bản tự kiểm điểm là biện pháp duy nhất <b>có văn bản lưu hồ sơ nhà trường</b> (Đ.15 k.3) — ký số <b>nhóm A</b>, bỏ qua được và ghi audit.</div>`,
+    [['Hủy',0,''],['Bỏ qua ký số',()=>lamDuyet(0),''],['🔏 Ký bằng USB Token / SmartCA',()=>lamDuyet(1)]]);
+   return}
+  if(x.canhBao){modal('✓ Duyệt quyết định',`<div class="warn">⚠ Biện pháp <b>nặng hơn</b> Điều 14/15 chỉ định (${bpTen(x.canhBao.luat)}). Lý do của người lập: <i>${esc(x.canhBao.ly)}</i></div>`,
+    [['Hủy',0,''],['↩ Trả lại',()=>{closeM();act('tralai')},''],['✓ Vẫn duyệt',()=>lamDuyet(null)]]);return}
+  lamDuyet(null); return}
+
+ if(a==='tralai'){
+  modal('↩ Trả lại cho người lập',`<div class="fld"><label>Lý do trả lại <span class="req">*</span></label>
+    <textarea class="fldi" id="tlly" rows="3" placeholder="Người lập thấy lý do này ngay trên quyết định"></textarea></div>
+    <div class="roblk">Trả lại <b>không phải hủy</b> — GVCN sửa và gửi lại, hoặc rút đề nghị. Phụ huynh <b>không</b> nhận gì.</div>`,
+   [['Hủy',0,''],['↩ Trả lại',()=>{const ly=$('#tlly').value.trim(); if(!ly){toast('⛔ Phải nêu lý do trả lại');return}
+     x.tt='tralai'; x.traLai=ly; ghiLog(x,'↩ Trả lại',ly); closeM(); render(); toast('↩ Đã trả lại · GVCN nhận việc ở chip <b>Trả lại · đã rút</b>')}]]);
+  return}
+ if(a==='rut'){
+  modal('✕ Rút đề nghị',`<div class="fld"><label>Lý do rút <span class="req">*</span></label>
+    <textarea class="fldi" id="rtly" rows="2" placeholder="Ví dụ: hoàn cảnh gia đình — chuyển sang hỗ trợ"></textarea></div>
+    <div class="roblk">Bản ghi <b>không xóa</b> — chuyển trạng thái <b>Đã rút</b>, tìm lại ở chip <b>Trả lại · đã rút</b>. Chưa có hiệu lực nên không có gì gửi phụ huynh.</div>`,
+   [['Hủy',0,''],['✕ Rút',()=>{const ly=$('#rtly').value.trim(); if(!ly){toast('⛔ Phải nêu lý do rút');return}
+     x.tt='rut'; x.rut=ly; ghiLog(x,'✕ Rút đề nghị',ly); closeM(); render(); toast('✕ Đã rút · bản ghi giữ lại, lọc được')}]]);
+  return}
+ if(a==='guilai'){
+  modal('✎ Sửa và gửi lại',`<div class="warn" style="margin-top:0">↩ Hiệu trưởng trả lại: ${esc(x.traLai)}</div>
+    <div class="fld"><label>Mô tả vi phạm <span class="req">*</span></label><textarea class="fldi" id="glmt" rows="3">${esc(x.mota)}</textarea></div>`,
+   [['Hủy',0,''],['↗ Gửi lại cho Hiệu trưởng',()=>{const mt=$('#glmt').value.trim(); if(!mt){toast('⛔ Mô tả là bắt buộc');return}
+     x.mota=mt; x.tt=canDuyet(x.bp)?'choduyet':x.tt; if(!canDuyet(x.bp)){x.khongDuyet=1;coHieuLucNgay(x)}
+     ghiLog(x,'✎ Sửa và gửi lại',canDuyet(x.bp)?'Chờ Hiệu trưởng duyệt':'Có hiệu lực — cấu hình đã tắt duyệt'); closeM(); render();
+     toast('↗ Đã gửi lại — <b>chờ Hiệu trưởng duyệt</b>')}]]);
+  return}
+
+ if(a==='thuchien'){
+  modal('✓ Ghi nhận đã thực hiện',`<div class="info" style="margin-top:0">${x.bp==='xinloi'
+     ?'<b>Xin lỗi</b> là việc học sinh <b>dùng lời nói</b> thừa nhận hành vi, bày tỏ hối tiếc và mong được tha thứ (Đ.2 k.3).'
+     :'<b>Phê bình</b> là việc HT, GVCN <b>dùng lời nói trực tiếp nghiêm khắc</b> phân tích hành vi để học sinh nhận thức hậu quả (Đ.2 k.2).'}
+     Hệ thống chỉ ghi <b>đã thực hiện ngày nào</b>.</div>
+    <div class="fld"><label>Ghi chú <span style="font-weight:400;color:var(--ink3)">— tùy chọn</span></label><input class="fldi" id="thgc" placeholder="Ví dụ: trong giờ sinh hoạt lớp"></div>`,
+   [['Hủy',0,''],['✓ Ghi nhận',()=>{x.tt='xong';x.th=HOMNAY;ghiLog(x,'✓ Ghi nhận đã thực hiện',$('#thgc').value.trim());closeM();render();
+     toast('✓ Đã ghi nhận · quyết định <b>hoàn tất</b>')}]]);
+  return}
+ if(a==='nop'){
+  x.tep.push('ban-tu-kiem-diem-'+x.id+'.jpg'); x.tt='choxacnhan'; x.han.xn=HOMNAY+3;
+  ghiLog(x,'📎 Ghi nhận đã nộp bản tự kiểm điểm','Gia đình xác nhận trước '+dstr(x.han.xn));
+  render(); toast('📎 Đã ghi nhận · phụ huynh nhận <b>lời mời đến trường xác nhận</b> trước '+dstr(x.han.xn)); return}
+ if(a==='xacnhan'){
+  modal('👪 Gia đình đã xác nhận',`<div class="info" style="margin-top:0">Bản tự kiểm điểm <b>có xác nhận và cam kết của gia đình</b> với nhà trường
+    trong phối hợp quản lý, giáo dục, hỗ trợ học sinh — rồi <b>lưu trong hồ sơ nhà trường</b> (Đ.15 k.3 · Đ.19 k.3).</div>
+    <label style="font-weight:400"><input type="checkbox" id="xncb"> Phụ huynh đã <b>ký xác nhận và cam kết</b> trên bản giấy tại trường</label>`,
+   [['Hủy',0,''],['👪 Ghi nhận',()=>{if(!$('#xncb').checked){toast('⛔ Tích xác nhận đã ký giấy tại trường');return}
+     x.tt='xong'; ghiLog(x,'👪 Ghi nhận gia đình đã xác nhận','Hoàn tất thủ tục'); closeM(); render(); toast('👪 Đã ghi nhận · quyết định <b>hoàn tất</b>')}]]);
+  return}
+
+ if(a==='dinhchinh'){
+  modal('✎ Lập bản đính chính',
+   `<div class="warn" style="margin-top:0"><b>Quyết định kỷ luật không xóa được.</b> Sai thì lập bản đính chính — bản gốc giữ nguyên,
+     cả hai cùng nằm trong kho quyết định của học sinh. Xóa được thì một quyết định bất lợi có thể biến mất không dấu vết.</div>
+    <div class="fld"><label>Loại đính chính <span class="req">*</span></label>
+     <select class="fldi" id="dcl"><option value="sua">Sửa nội dung — quyết định vẫn giữ</option>
+      <option value="huy">Hủy bỏ quyết định — em không vi phạm / ra nhầm người</option></select></div>
+    <div class="fld"><label>Nội dung đính chính <span class="req">*</span></label>
+     <textarea class="fldi" id="dcnd" rows="3" placeholder="Cái gì sai và sửa thành gì"></textarea></div>
+    <div class="roblk">${canDuyet(x.bp)&&!co('duyet')?'Bản đính chính <b>chờ Hiệu trưởng duyệt</b>; bản gốc giữ hiệu lực tới lúc đó.':'Bản đính chính có hiệu lực ngay.'}
+     Mốc M1.1: <b>sửa</b> → mốc cập nhật + nhãn <i>Đã đính chính</i>; <b>hủy bỏ</b> → mốc rời dòng thời gian. Phụ huynh nhận thông báo.</div>`,
+   [['Hủy',0,''],['✎ Lập bản đính chính',()=>{
+     const v=$('#dcnd').value.trim(); if(!v){toast('⛔ Nội dung đính chính là bắt buộc');return}
+     const lo=$('#dcl').value, d=canDuyet(x.bp)&&!co('duyet');
+     const y=Q({hs:x.hs,lop:x.lop,hv:x.hv,muc:x.muc,bp:x.bp,mota:'ĐÍNH CHÍNH cho '+x.id+': '+v,
+       nguoi:R().n+' — '+R().cd.split(' — ')[0],ngay:HOMNAY,goc:x.id,loaiDC:lo,tt:d?'choduyet':'dinhchinh'});
+     y.log.push([dstr(HOMNAY)+' 09:05',R().n+' — '+R().cd.split(' — ')[0],'✎ Lập bản đính chính — '+(lo==='huy'?'hủy bỏ':'sửa nội dung'),d?'Chờ Hiệu trưởng duyệt':'Có hiệu lực']);
+     x.dc=y.id; ghiLog(x,'✎ Đã có bản đính chính',y.id);
+     if(!d) apDinhChinh(y);
+     QD.unshift(y); closeM(); cur=y.id; render();
+     toast('✎ Đã lập bản đính chính <b>'+y.id+'</b> · bản gốc <b>'+x.id+'</b> giữ nguyên'+(d?' · <b>chờ Hiệu trưởng duyệt</b>':' · phụ huynh nhận thông báo'));
+   }]]);
+  return}
+}
+function apDinhChinh(y){
+ y.tt='dinhchinh'; y.hl=HOMNAY;
+ const g=byId(y.goc); if(g&&y.loaiDC==='huy'){g.tt='huybo';ghiLog(g,'⊘ Hủy bỏ bằng đính chính',y.id)}
+}
+
+function moXuat(){
+ modal('⬇ Xuất báo cáo kỷ luật',
+  `<div class="danger"><b>Bản xuất chứa họ tên học sinh và nội dung kỷ luật</b> — dữ liệu cá nhân trẻ em (Luật BVDLCN 91/2025) và thông tin nhạy cảm về danh dự.</div>
+   <div class="fld"><label>Mục đích xuất <span class="req">*</span></label>
+    <select class="fldi" id="lmd"><option value="">— Chọn mục đích —</option>
+     <option>Báo cáo công tác học sinh cho Ban giám hiệu</option><option>Báo cáo theo yêu cầu Sở GDĐT</option>
+     <option>Hồ sơ phối hợp với gia đình học sinh</option></select></div>
+   <div class="fld"><label>Mức chi tiết</label><select class="fldi"><option>Tổng hợp theo lớp — không có tên học sinh</option><option>Danh sách quyết định — có tên</option></select></div>
+   <div class="roblk">Mục đích, người xuất và thời điểm được ghi nhật ký.</div>`,
+  [['Hủy',0,''],['⬇ Xuất',()=>{if(!$('#lmd').value){toast('⛔ Phải chọn mục đích xuất');return}
+    closeM(); toast('⬇ Đã xuất · <b>đã ghi nhật ký</b> mục đích, người xuất và thời điểm')}]]);
+}
+
+/* ═══════ M2.7 — tab ⚙ Danh mục (m2.7.danh_muc) ═══════
+   Ba khối: Loại vi phạm (Master, trường sửa) · Hình thức xử lý (KHÓA theo TT 19/2025) · Hoạt động hỗ trợ khắc phục (Đ.16). */
+let hienNgung=false;
+function viewDM(){
+ const sua=co('danhmuc'), cfg=co('cauhinh');
+ const HV=HANHVI.filter(h=>hienNgung||h.dung);
+ return `<div class="scopebar">⚙<div><b>Danh mục của menu Kỷ luật.</b> ${sua?'Bạn sửa được loại vi phạm và hoạt động hỗ trợ.':'Bạn chỉ xem.'}
+   ${cfg?' Bạn bật/tắt được <b>bước Hiệu trưởng duyệt</b>.':''} Mọi thay đổi ghi nhật ký.</div></div>
+  <div class="listw" style="padding:14px 16px">
+
+   <div class="card hl"><div class="ch">① Loại vi phạm <span style="font-weight:400;color:var(--ink3)">— Master; M2.2 Sổ đầu bài và M6.13 Chấm nền nếp đọc bằng mã</span></div><div class="cb p">
+    <div class="info" style="margin:0 0 10px">Mức độ phân theo <b>phạm vi ảnh hưởng</b> (TT 19/2025 Đ.12 k.2): <b>1</b> bản thân học sinh · <b>2</b> nhóm, lớp ·
+     <b>3</b> nhà trường. Mức ở đây là <b>mặc định</b> — người lập xác định lại theo từng sự việc.</div>
+    <table class="tb"><tr><th style="width:52px">Mã</th><th>Loại vi phạm</th><th style="width:78px">Mức mặc định</th><th style="width:190px">Căn cứ (Đ.12 k.1)</th><th style="width:110px"></th></tr>
+     ${HV.map(h=>`<tr style="${h.dung?'':'opacity:.55'}"><td><code>${h.id}</code></td><td>${esc(h.t)} ${h.moi?'<span class="st2 b">mới</span>':''} ${h.dung?'':'<span class="st2 n">Ngừng dùng</span>'}</td>
+       <td><span class="st2 ${h.m===3?'r':h.m===2?'w':'n'}">Mức ${h.m}</span></td><td style="font-size:12px">${CCTEN[h.cc]}</td>
+       <td>${sua?`<button class="btn xs" data-act="suahv" data-v="${h.id}">✎</button> <button class="btn xs" data-act="ngunghv" data-v="${h.id}">${h.dung?'Ngừng':'Dùng lại'}</button>`:''}</td></tr>`).join('')}</table>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:9px">
+     ${sua?'<button class="btn xs p" data-act="themhv">+ Thêm loại vi phạm</button>':''}
+     <label style="font-weight:400;font-size:12px"><input type="checkbox" data-act="hienngung" ${hienNgung?'checked':''}> Hiện cả loại ngừng dùng</label></div>
+    <div class="roblk dnote" style="margin-top:9px">Không có nút xóa: sổ đầu bài và chấm nền nếp M6.13 đã ghi theo mã — xóa thì dòng cũ mất tên. <b>Ngừng dùng</b> ẩn khỏi form lập,
+     giữ tên cho dòng cũ. Loại mới thêm: M6.13 tính điểm trừ <b>mặc định theo mức</b> tới khi Đội gắn điểm riêng.</div>
+   </div></div>
+
+   <div class="card"><div class="ch">② Hình thức xử lý — <b>khóa theo TT 19/2025 Điều 13</b> 🔒</div><div class="cb p">
+    <table class="tb"><tr><th>Biện pháp</th><th style="width:110px">Cấp học</th><th style="width:130px">Căn cứ áp dụng</th><th style="width:210px">Ở đâu · Hiệu trưởng duyệt</th></tr>
+     <tr><td>🔒 <b>Nhắc nhở</b></td><td>Mọi cấp</td><td>Đ.14 k.1 · Đ.15 k.1</td>
+      <td><span class="st2 n">Không lập ở menu này</span><div class="hint">Ghi nhận ở Sổ đầu bài / báo cáo tuần — mọi GV, NV (Đ.17 k.2)</div></td></tr>
+     ${['xinloi','phebinh','kiemdiem'].map(k=>`<tr><td>🔒 <b>${BP[k].t}</b></td><td>${BP[k].cap.map(capTen).join(' · ')}</td><td>${BP[k].dieu}</td>
+      <td><label style="font-weight:400;display:flex;gap:6px;align-items:center"><input type="checkbox" data-act="duyet_cfg" data-v="${k}" ${DUYET[k]?'checked':''} ${cfg?'':'disabled'}>
+       ${DUYET[k]?'<b>Bật</b> — GVCN lập → HT duyệt':'<b>Tắt</b> — có hiệu lực khi GVCN lập'}</label></td></tr>`).join('')}
+    </table>
+    ${cfg?'':'<div class="hint" style="margin-top:6px">Chỉ Hiệu trưởng bật/tắt được bước duyệt.</div>'}
+    <div class="danger" style="margin-top:11px"><b>TT 19/2025 đã bỏ khiển trách, cảnh cáo, đình chỉ học và đuổi học.</b>
+     Không còn Hội đồng kỷ luật. Danh mục này <b>không xóa, không đổi tên, không thêm</b> được — phần mềm không thể là công cụ ra một biện pháp đã bị bãi bỏ với trẻ em.
+     <div style="margin-top:7px"><button class="btn xs" data-act="thembp">+ Thêm hình thức kỷ luật</button></div></div>
+    <div class="roblk" style="margin-top:9px">🚪 <b>Buộc thôi học không còn là hình thức kỷ luật.</b> <i>Thôi học</i> là một <b>hồ sơ ở M1.6</b>
+     (gia đình nộp đơn, hoặc học sinh bỏ học) — không bao giờ là quyết định của menu này. <button class="rolnk" data-act="m16">↗ M1.6 Bảo lưu / Tái nhập / Thôi học</button></div>
+    <div class="roblk dnote" style="margin-top:9px">Bước <b>Hiệu trưởng duyệt</b> là trường <b>siết chặt hơn luật</b>: Đ.17 k.1 cho GVCN thực hiện mọi biện pháp. Vì vậy nó là
+     cấu hình, mặc định bật cả ba (chốt 14/9/2026), và tắt thì màn hình lập nói rõ quyết định có hiệu lực ngay.</div>
+   </div></div>
+
+   <div class="card"><div class="ch">③ Hoạt động hỗ trợ khắc phục hành vi vi phạm — Đ.16 <span class="st2 v">không phải hình thức kỷ luật</span></div><div class="cb p">
+    <div class="info" style="margin:0 0 10px">Áp dụng được <b>cả khi chưa có biện pháp kỷ luật</b> (Đ.16 k.2). Người áp dụng: người có thẩm quyền kỷ luật, hoặc người được Hiệu trưởng phân công (Đ.16 k.3).</div>
+    <table class="tb"><tr><th>Hoạt động</th><th style="width:100px">Nguồn</th><th style="width:95px"></th></tr>
+     ${HOTRO.map(k=>`<tr style="${k.dung?'':'opacity:.55'}"><td>${k.he?'🔒 ':''}${esc(k.t)}${k.canh?' <span class="st2 w">đã qua cảnh báo</span>':''}</td>
+       <td style="font-size:12px">${k.he?k.dieu:'Của trường · '+k.dieu}</td>
+       <td>${sua&&!k.he?`<button class="btn xs" data-act="ngungkp" data-v="${k.id}">${k.dung?'Ngừng':'Dùng lại'}</button>`:k.he?'<span style="color:var(--ink3);font-size:11px">dòng của thông tư</span>':''}</td></tr>`).join('')}</table>
+    ${sua?'<button class="btn xs p" style="margin-top:9px" data-act="themkp">+ Thêm hoạt động hỗ trợ</button>':''}
+    <div class="warn" style="margin-top:10px">⚠ <b>Không được</b> dùng biện pháp mang tính <b>bạo lực, xúc phạm nhân phẩm, danh dự, ảnh hưởng đến thể chất và tinh thần</b>
+     của học sinh (Đ.11 k.2 điểm d). Hoạt động hỗ trợ nhằm để em <b>thay đổi nhận thức, điều chỉnh hành vi, khắc phục hậu quả</b> — không để trừng phạt.</div>
+   </div></div>
+  </div>`;
+}
+
+const _actGoc=act;
+act=function(a,v){
+ if(a==='hienngung'){hienNgung=!hienNgung;render();return}
+ if(a==='m16'){toast('↗ <b>M1.6 Bảo lưu / Tái nhập / Thôi học</b> — tab ✕ Thôi học');return}
+ if(a==='thembp'){
+  modal('⛔ Không thêm được hình thức kỷ luật',
+   `<div class="danger" style="margin-top:0"><b>TT 19/2025 Điều 13 quy định đủ và đóng</b> danh sách biện pháp kỷ luật:
+     Tiểu học <b>Nhắc nhở · Yêu cầu xin lỗi</b>; THCS · THPT <b>Nhắc nhở · Phê bình · Yêu cầu viết bản tự kiểm điểm</b>.</div>
+    <div class="info">Các hình thức trường quen dùng — <b>khiển trách, cảnh cáo, đình chỉ học, đuổi học</b> — <b>đã bị bỏ</b> từ 31/10/2025.
+     Không còn Hội đồng kỷ luật.</div>
+    <div class="r" style="border:1px solid var(--line);border-radius:9px;margin-bottom:6px"><span>Muốn thêm một việc <b>giúp em khắc phục</b>
+     (phối hợp gia đình, tư vấn tâm lý…)?</span><button class="btn xs p" data-mb="k1">+ Thêm hoạt động hỗ trợ</button></div>
+    <div class="r" style="border:1px solid var(--line);border-radius:9px"><span>Học sinh <b>nghỉ hẳn</b>?</span><span style="font-size:12px">Hồ sơ thôi học ở <b>M1.6</b></span></div>`,
+   [['Đóng',0,''],['+ Thêm hoạt động hỗ trợ',()=>{closeM();act('themkp')}]]);
+  return}
+ if(a==='duyet_cfg'){
+  if(!co('cauhinh')){toast('⛔ Chỉ Hiệu trưởng bật/tắt bước duyệt');render();return}
+  const moi=DUYET[v]?0:1;
+  if(!moi){
+   modal('Tắt bước Hiệu trưởng duyệt — '+bpTen(v),
+    `<div class="warn" style="margin-top:0">Tắt thì <b>${bpTen(v)}</b> có hiệu lực <b>ngay khi GVCN lập</b>: phụ huynh nhận thông báo và mốc Kỷ luật lên Quá trình học tập ngay.</div>
+     <div class="info">Đúng luật: Đ.17 k.1 cho GVCN thực hiện mọi biện pháp. Bước duyệt là quy định nội bộ của trường.</div>
+     <div class="roblk">Quyết định <b>đang chờ duyệt</b> giữ nguyên luồng cũ — thay đổi chỉ áp cho quyết định lập từ bây giờ.</div>`,
+    [['Hủy',0,''],['Tắt bước duyệt',()=>{DUYET[v]=0;closeM();render();toast('Đã <b>tắt</b> bước duyệt cho '+bpTen(v)+' · đã ghi nhật ký')}]]);
+   render(); return}
+  DUYET[v]=1; render(); toast('Đã <b>bật</b> bước Hiệu trưởng duyệt cho '+bpTen(v)); return}
+ if(a==='themhv'||a==='suahv'){
+  const h=a==='suahv'?hvById(v):null;
+  modal(h?'✎ Sửa loại vi phạm '+h.id:'+ Thêm loại vi phạm',
+   `<div class="fld"><label>Tên loại vi phạm <span class="req">*</span></label><input class="fldi" id="hvt" value="${h?esc(h.t):''}"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+     <div class="fld"><label>Mức mặc định</label><select class="fldi" id="hvm">${[1,2,3].map(m=>`<option value="${m}" ${h&&h.m===m?'selected':''}>Mức ${m} — ${MUCTEN[m]}</option>`).join('')}</select></div>
+     <div class="fld"><label>Căn cứ</label><select class="fldi" id="hvc">${Object.keys(CCTEN).map(k=>`<option value="${k}" ${h&&h.cc===k?'selected':''}>${CCTEN[k]}</option>`).join('')}</select></div></div>
+    ${h?'<div class="warn">Mã <b>'+h.id+'</b> giữ nguyên. Đổi tên hoặc mức: sổ đầu bài và chấm nền nếp đọc tên mới ngay; <b>tuần nền nếp đã chốt giữ số cũ</b> (M6.13).</div>'
+      :'<div class="roblk">Mã cấp tự động <b>HV'+HVSEQ+'</b>. M6.13 tính điểm trừ mặc định theo mức cho tới khi gắn điểm riêng.</div>'}`,
+   [['Hủy',0,''],[h?'Lưu':'+ Thêm',()=>{const t=$('#hvt').value.trim(); if(!t){toast('⛔ Tên là bắt buộc');return}
+     if(HANHVI.some(z=>z!==h&&bo(z.t)===bo(t))){toast('⛔ Đã có loại vi phạm cùng tên');return}
+     if(h){h.t=t;h.m=+$('#hvm').value;h.cc=$('#hvc').value}
+     else HANHVI.push({id:'HV'+(HVSEQ++),t,m:+$('#hvm').value,cc:$('#hvc').value,dung:1,moi:1});
+     closeM();render();toast(h?'✎ Đã lưu · đã ghi nhật ký':'+ Đã thêm loại vi phạm')}]]);
+  return}
+ if(a==='ngunghv'){const h=hvById(v); h.dung=h.dung?0:1; render(); toast(h.dung?'Đã dùng lại '+h.id:'Đã ngừng dùng '+h.id+' — dòng cũ giữ tên');return}
+ if(a==='ngungkp'){const k=kpById(v); k.dung=k.dung?0:1; render(); return}
+ if(a==='themkp'){
+  modal('+ Thêm hoạt động hỗ trợ khắc phục',
+   `<div class="info" style="margin-top:0">Thêm theo <b>Đ.16 k.1 điểm e</b> — <i>"hoạt động hỗ trợ khác phù hợp với mục đích, nguyên tắc kỷ luật"</i>.
+     Đây <b>không phải hình thức kỷ luật</b>: không mang tên kỷ luật, không thay biện pháp của Điều 13.</div>
+    <div class="fld"><label>Tên hoạt động <span class="req">*</span></label><input class="fldi" id="kpt" placeholder="Ví dụ: Cùng GVCN lập kế hoạch học bù môn còn yếu"></div>
+    <div id="kpcb"></div>
+    <div class="warn">Không được mang tính <b>bạo lực, xúc phạm nhân phẩm, danh dự, ảnh hưởng thể chất và tinh thần</b> (Đ.11 k.2 d).
+     <div class="hint">TT 19/2025 <b>không liệt kê</b> hình phạt cụ thể nào (lao động, chép phạt…). Máy chỉ <b>cảnh báo</b> khi tên nghe như hình phạt — người thêm tự rà.</div></div>`,
+   [['Hủy',0,''],['+ Thêm',()=>{const t=$('#kpt').value.trim(); if(!t){toast('⛔ Tên là bắt buộc');return}
+     const hit=TU_HINH_PHAT.filter(w=>bo(t).includes(bo(w)));
+     if(hit.length&&!$('#kpok')){$('#kpcb').innerHTML=`<div class="danger" style="margin:0 0 10px">⚠ Tên có từ <b>${hit.map(esc).join(', ')}</b> — nghe như <b>hình phạt</b>.
+        Hoạt động hỗ trợ để em thay đổi nhận thức, không để trừng phạt. Sửa lại tên, hoặc tích xác nhận đã rà.
+        <label style="font-weight:400;display:block;margin-top:5px"><input type="checkbox" id="kpok"> Tôi đã rà: hoạt động này không mang tính trừng phạt, được em và gia đình đồng thuận</label></div>`;return}
+     if(hit.length&&!$('#kpok').checked){toast('⛔ Tích xác nhận đã rà, hoặc sửa tên');return}
+     HOTRO.push({id:'KP-e'+(KPSEQ++),t,he:0,dieu:'Đ.16 k.1 e',dung:1,canh:hit.length?1:0,nguoi:R().n,ngay:HOMNAY});
+     closeM();render();toast('+ Đã thêm hoạt động hỗ trợ'+(hit.length?' · <b>ghi nhật ký kèm cảnh báo</b>':''))}]]);
+  return}
+ return _actGoc(a,v);
+};
+
+/* ═══════ M2.7 — khởi động ═══════ */
+if(!(location.search&&nhanDeepLink(location.search))) render();
+</script>
+</body>
+</html>
