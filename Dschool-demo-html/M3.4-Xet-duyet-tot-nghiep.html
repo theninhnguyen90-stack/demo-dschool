@@ -475,7 +475,15 @@ let HS=[
   tb:{10:7.4,11:7.1,12:7.6},tuchon:['Địa lí'],tcn:'app',tcAt:'18/03/2026',ut:0,kk:0,nhac:1,
   ghi:'Gia đình mới chọn 1/2 môn trên App — chưa quyết môn thứ hai'},
  {ma:'12B-17',n:'Lưu Khánh Linh',lop:'12B',khoi:12,dt:'Điểm trường B',dk:true,
-  tb:{10:8.0,11:8.2,12:8.5},tuchon:['Ngoại ngữ 1','Địa lí'],tcn:'app',tcAt:'05/03/2026',ut:0,kk:0},
+  tb:{10:8.0,11:8.2,12:8.5},tuchon:['Ngoại ngữ 1','Địa lí'],tcn:'app',tcAt:'05/03/2026',ut:0,kk:0,
+  /* CSDL-2C: miễn thi MỘT môn — vẫn phải đủ điều kiện Đ.45 k1, máy KHÔNG tự kết luận tốt nghiệp */
+  mienThi:'de-nghi',mtKieu:'MT-4',mtHs:'IELTS 6.0 — cấp 12/11/2025, còn giá trị tới 12/11/2027',
+  ghi:'Có chứng chỉ IELTS 6.0 — gia đình đề nghị miễn thi môn Ngoại ngữ trong xét công nhận tốt nghiệp'},
+ /* CSDL-2C: miễn thi TẤT CẢ các môn — Đ.39 k1a; Đ.45 k2 cho kết luận công nhận tốt nghiệp mà không cần điểm thi */
+ {ma:'12A-07',n:'Đặng Minh Quân',lop:'12A',khoi:12,dt:'Điểm trường A',dk:true,
+  tb:{10:9.1,11:9.3,12:9.4},tuchon:['Vật lí','Hóa học'],tcn:'app',tcAt:'03/03/2026',ut:0,kk:0,
+  mienThi:'de-nghi',mtKieu:'MT-1',mtHs:'Quyết định triệu tập đội tuyển quốc gia dự thi Olympic Vật lí quốc tế — Bộ GDĐT, 02/2026',
+  ghi:'Được triệu tập vào HK2 lớp 12 dự kỳ thi chọn đội tuyển quốc gia Olympic Vật lí quốc tế'},
  {ma:'12B-25',n:'Vương Thị Hạnh',lop:'12B',khoi:12,dt:'Điểm trường B',dk:true,
   tb:{10:6.6,11:6.9,12:7.0},tuchon:null,tcn:null,ut:0,kk:0,
   ghi:'Gia đình chưa vào App chọn môn nào'},
@@ -483,6 +491,24 @@ let HS=[
   tb:{10:6.8,11:6.5,12:6.9},tuchon:['Sinh học','Hóa học'],tcn:'app',tcAt:'11/03/2026',ut:0.75,kk:0,dacCach:'de-nghi',
   ghi:'Bị tai nạn trước ngày thi, có xác nhận của bệnh viện — gia đình đề nghị xét đặc cách'},
 ];
+/* ===== CSDL-2C · MIỄN THI — Quy chế thi TN THPT kèm TT 24/2024, ĐIỀU 39 (tra bản gốc PDF Cục QLCL 20/9/2026) =====
+   MT-1..MT-3: miễn TẤT CẢ các môn  -> Đ.45 k2: ĐƯỢC CÔNG NHẬN TỐT NGHIỆP
+   MT-4 (Ngoại ngữ) · MT-5 (Ngữ văn): miễn MỘT môn -> vẫn phải đủ điều kiện Đ.45 k1, máy KHÔNG tự kết luận */
+const KIEU_MT=[
+ {ma:'MT-1',t:'Miễn tất cả các môn — đội tuyển Olympic quốc tế / khu vực các môn văn hóa',cc:'Đ.39 k1a',ca:1,
+  hs:'Danh sách miễn thi của Bộ GDĐT'},
+ {ma:'MT-2',t:'Miễn tất cả các môn — đội tuyển Olympic quốc tế / khu vực về KHKT, văn hóa - văn nghệ',cc:'Đ.39 k1b',ca:1,
+  hs:'Công văn đề nghị miễn thi của cơ quan tuyển chọn, gửi sở GDĐT trước ngày thi'},
+ {ma:'MT-3',t:'Miễn tất cả các môn — người khuyết tật đặc biệt nặng / nặng; nhiễm chất độc hóa học suy giảm ≥ 61%',cc:'Đ.39 k1c',ca:1,
+  hs:'Giấy xác nhận khuyết tật / giấy xác nhận nhiễm chất độc hóa học của cơ quan có thẩm quyền'},
+ {ma:'MT-4',t:'Miễn môn Ngoại ngữ — đội tuyển QG Olympic Ngoại ngữ, hoặc chứng chỉ ngoại ngữ bậc 3 trở lên',cc:'Đ.39 k2',ca:0,
+  hs:'Chứng chỉ ngoại ngữ còn giá trị đến ngày làm thủ tục dự thi'},
+ {ma:'MT-5',t:'Miễn môn Ngữ văn — người nước ngoài có chứng chỉ tiếng Việt bậc 3 trở lên',cc:'Đ.39 k3',ca:0,
+  hs:'Chứng chỉ tiếng Việt theo Khung năng lực tiếng Việt dùng cho người nước ngoài'},
+];
+const MT=ma=>KIEU_MT.find(k=>k.ma===ma);
+const mtCaKy=x=>x.mienThi==='duyet'&&MT(x.mtKieu)&&MT(x.mtKieu).ca===1;   /* miễn tất cả các môn */
+
 const MON_BB=['Toán','Ngữ văn'];
 /* 9 mon cua quy che. Truong TU KHAI mon minh day khi mo dot — xem DOTDK.mo.mon */
 const MON_QC=['Vật lí','Hóa học','Sinh học','Lịch sử','Địa lí','Tin học','Công nghệ (định hướng Công nghiệp)','Công nghệ (định hướng Nông nghiệp)','Ngoại ngữ 1','Giáo dục kinh tế và pháp luật'];
@@ -812,6 +838,10 @@ function dxtn(x){
 function liet(x){return monCua(x).filter(m=>DIEM[x.ma+'|'+m]!==undefined&&DIEM[x.ma+'|'+m]<=1.0)}
 function ketLuan12(x){
  if(x.dacCach==='duyet')return {kl:'dc',t:'🎓 Tốt nghiệp (đặc cách)',c:'v',ly:'Được xét đặc cách — '+(x.dcLy||'')};
+ /* CSDL-2C — Quy che Đ.45 k2: mien thi TAT CA cac mon (Đ.39 k1) thi duoc cong nhan tot nghiep.
+    MT-4 · MT-5 chi mien MOT mon nen KHONG roi vao nhanh nay — van phai du dieu kien Đ.45 k1. */
+ if(mtCaKy(x))return {kl:'dc',t:'🎓 Tốt nghiệp (miễn thi)',c:'v',
+   ly:'Miễn thi <b>tất cả các môn</b> — '+MT(x.mtKieu).cc+' ⇒ công nhận tốt nghiệp theo <b>Điều 45 k2</b>'};
  if(!duDiem(x))return {kl:'cho',t:'⏳ Chưa đủ điểm thi',c:'w',ly:'thiếu điểm '+monCua(x).filter(m=>DIEM[x.ma+'|'+m]===undefined).join(', ')};
  const l=liet(x);
  if(l.length)return {kl:'kh',t:'⛔ Chưa tốt nghiệp',c:'r',ly:`<b>Điểm liệt</b> môn ${l.map(m=>m+' ('+DIEM[x.ma+'|'+m].toFixed(2).replace('.',',')+')').join(', ')} — mọi môn phải <b>trên 1,0</b>`};
@@ -850,7 +880,7 @@ function tabKQ(){
  }
  h+=`<div class="bar">
    <input class="inp" id="q" placeholder="Tìm tên hoặc mã học sinh…" value="${q}">
-   <select class="fs" id="ftt">${['Tất cả','Chưa đủ điểm','Được công nhận','Chưa tốt nghiệp','Có điểm liệt','Đề nghị đặc cách','Đã cấp bằng'].map(v=>opt(fTT,v)).join('')}</select>
+   <select class="fs" id="ftt">${['Tất cả','Chưa đủ điểm','Được công nhận','Chưa tốt nghiệp','Có điểm liệt','Đề nghị đặc cách','Đề nghị miễn thi','Đã cấp bằng'].map(v=>opt(fTT,v)).join('')}</select>
    <div class="spacer"></div>
    ${!q?`<button class="btn xs" data-x="motat">▾ Mở tất cả</button><button class="btn xs" data-x="dongtat">▸ Đóng tất cả</button>`:''}
    ${(r.ky||F())&&!KY12?`<button class="btn sm p" data-x="ky12">🖊 Rà soát và ký quyết định</button>`:''}
@@ -858,11 +888,12 @@ function tabKQ(){
  let rows=ds.filter(x=>{
   if(q&&!(x.n+' '+x.ma).toLowerCase().includes(q.toLowerCase()))return false;
   const k=ketLuan12(x);
-  if(fTT==='Chưa đủ điểm')return !duDiem(x)&&x.dacCach!=='duyet';
+  if(fTT==='Chưa đủ điểm')return !duDiem(x)&&x.dacCach!=='duyet'&&!mtCaKy(x);
   if(fTT==='Được công nhận')return k.kl==='tn'||k.kl==='dc';
   if(fTT==='Chưa tốt nghiệp')return k.kl==='kh';
   if(fTT==='Có điểm liệt')return liet(x).length>0;
   if(fTT==='Đề nghị đặc cách')return x.dacCach==='de-nghi';
+  if(fTT==='Đề nghị miễn thi')return x.mienThi==='de-nghi';
   if(fTT==='Đã cấp bằng')return !!BANG12[x.ma];
   return true});
  h+='<div class="listw">';
@@ -889,9 +920,12 @@ function veKQ(items){
       ${x.kkCc?`<div class="mm" title="${x.kkCc.loai}">📎 có căn cứ</div>`:''}</td>
     <td>${d!==null?`<b style="font-size:14px">${d.toFixed(2).replace('.',',')}</b>`:'<span class="mm">—</span>'}</td>
     <td><span class="st2 ${k.c}">${k.t}</span><div class="mm">${k.ly}</div>
-      ${x.dacCach==='de-nghi'?'<div class="mm" style="color:var(--violet)">⚖ có đề nghị xét đặc cách</div>':''}</td>
+      ${x.dacCach==='de-nghi'?'<div class="mm" style="color:var(--violet)">⚖ có đề nghị xét đặc cách</div>':''}
+      ${x.mienThi==='de-nghi'?'<div class="mm" style="color:var(--violet)">⚖ có đề nghị miễn thi — '+x.mtKieu+'</div>':''}
+      ${x.mienThi==='duyet'&&!mtCaKy(x)?'<div class="mm" style="color:var(--violet)">⚖ miễn thi '+x.mtKieu+' — chỉ miễn MỘT môn, vẫn xét theo Đ.45 k1</div>':''}</td>
     <td>${b?`<b>${b.so}</b><div class="mm">${b.ngay}<br>${b.ks}</div>`:(k.kl==='tn'||k.kl==='dc')&&KY12?'<span class="st2 w">chưa cấp</span>':'<span class="mm">—</span>'}</td>
-    <td style="text-align:right">${!KY12&&(r.dacCach||F())&&x.dacCach?`<button class="btn xs ${x.dacCach==='de-nghi'?'p':''}" data-x="daccach" data-ma="${x.ma}">⚖</button>`:''}</td>
+    <td style="text-align:right">${!KY12&&(r.dacCach||F())&&x.dacCach?`<button class="btn xs ${x.dacCach==='de-nghi'?'p':''}" data-x="daccach" data-ma="${x.ma}">⚖</button>`:''}
+      ${!KY12&&(r.dacCach||F())&&x.mienThi?`<button class="btn xs ${x.mienThi==='de-nghi'?'p':''}" data-x="mienthi" data-ma="${x.ma}" title="Miễn thi — Quy chế Điều 39">🎫</button>`:''}</td>
    </tr>`}).join('')}</tbody></table>`;
 }
 
@@ -940,7 +974,11 @@ function panelHS(){
     cách xử lý là <b>nhắc gia đình</b>, rồi <b>nhập hộ có vết liên hệ</b> nếu vẫn không phản hồi.</div>`;
   h+='</div>';
   h+=`<div class="src"><div class="sh">📊 Xét công nhận tốt nghiệp <span class="tag">TT 24/2024</span></div>`;
-  if(!duDiem(x)&&x.dacCach!=='duyet')h+=`<div class="danger" style="margin:0">Chưa đủ điểm 4 môn — ${k.ly}</div>`;
+  if(!duDiem(x)&&x.dacCach!=='duyet'&&!mtCaKy(x))h+=`<div class="danger" style="margin:0">Chưa đủ điểm 4 môn — ${k.ly}</div>`;
+  else if(mtCaKy(x))h+=`<div class="ok" style="margin:0">🎫 <b>Miễn thi tất cả các môn</b> · ${x.mtKieu} — ${MT(x.mtKieu).cc}<br>
+    Hồ sơ kèm theo: <b>${x.mtHs||'—'}</b><br>
+    <span class="mm">Quy chế <b>Điều 45 k2</b>: thí sinh được miễn thi tất cả các bài thi thì <b>được công nhận tốt nghiệp</b> — không tính ĐXTN.
+    Trường <b>lập hồ sơ</b>, Sở xét (Đ.46 · Đ.47 k1c).</span></div>`;
   else{
    const thi=duDiem(x)?monCua(x).map(m=>DIEM[x.ma+'|'+m]).reduce((a,b)=>a+b,0)/4:0;
    h+=`<div class="kv">
@@ -1312,6 +1350,33 @@ function act(a,d){
     x.dacCach==='duyet'?['↩ Bỏ ghi nhận đặc cách',()=>{x.dacCach='de-nghi';toast('Đã bỏ ghi nhận đặc cách');render()},'d']
      :['✔ Ghi nhận đặc cách',()=>{x.dacCach='duyet';x.dcLy=$('#dchs').value;
        toast('Đã ghi nhận đặc cách cho '+x.n+' · hồ sơ gửi Sở');render()}]]);
+  return}
+ /* CSDL-2C — MIỄN THI: cùng một khuôn với Xét đặc cách (§5.9) */
+ if(a==='mienthi'){const x=HS.find(z=>z.ma===d.ma);
+  const kieu=x.mtKieu||'MT-1';
+  modal('🎫 Miễn thi trong kỳ thi tốt nghiệp THPT — '+x.n,
+   `<div class="danger">Miễn thi là <b>chế định của Quy chế thi</b> (kèm TT 24/2024, <b>Điều 39</b>),
+     <b>không phải quyền tùy nghi của trường</b>. Trường <b>lập hồ sơ</b>; xét công nhận thuộc
+     <b>Hội đồng xét công nhận tốt nghiệp THPT của Sở GDĐT</b> (Đ.46), và danh sách kèm hồ sơ thí sinh
+     <b>được đặc cách, miễn thi</b> là một phần bắt buộc của hồ sơ duyệt công nhận (Đ.47 k1c).
+     Hệ thống <b>ghi nhận để làm hồ sơ, không thay Sở quyết định</b>.</div>
+    <div class="kv"><div class="k">Học sinh</div><div><b>${x.n}</b> · ${x.lop}</div>
+     <div class="k">Lý do đề nghị</div><div>${x.ghi||'—'}</div>
+     <div class="k">Trạng thái</div><div>${x.mienThi==='duyet'?'<span class="st2 v">đã ghi nhận miễn thi</span>':'<span class="st2 w">mới là đề nghị</span>'}</div></div>
+    <div class="fld"><b>Kiểu miễn thi</b> <span class="mm">— danh mục theo Quy chế Điều 39</span>
+     <select class="fldi" id="mtk">${KIEU_MT.map(k=>`<option value="${k.ma}" ${k.ma===kieu?'selected':''}>${k.ma} · ${k.t}  (${k.cc})</option>`).join('')}</select></div>
+    <div class="fld"><b>Hồ sơ kèm theo</b> <span class="mm">— giấy phải có: <b>${MT(kieu).hs}</b></span>
+     <input class="fldi" id="mths" value="${(x.mtHs||'').replace(/"/g,'&quot;')}"></div>
+    <div class="info">${MT(kieu).ca===1
+      ?'Kiểu này miễn <b>tất cả các môn</b> ⇒ <b>Điều 45 k2</b>: thí sinh <b>được công nhận tốt nghiệp</b>, không cần điểm 4 môn.'
+      :'Kiểu này chỉ miễn <b>một môn</b> trong xét công nhận tốt nghiệp ⇒ máy <b>không tự kết luận tốt nghiệp</b>; em vẫn phải đủ điều kiện <b>Điều 45 k1</b>. Nếu em vẫn dự thi môn đó thì <b>bắt buộc dùng điểm thi</b> để tính ĐXTN (Đ.39 k2c · k3).'}</div>`,
+   [['Hủy',null,''],
+    x.mienThi==='duyet'?['↩ Bỏ ghi nhận miễn thi',()=>{x.mienThi='de-nghi';
+      toast('Đã bỏ ghi nhận miễn thi — bản ghi <b>không bị xóa</b>, quay về trạng thái <b>đề nghị</b>, tìm lại bằng bộ lọc <b>Đề nghị miễn thi</b>');render()},'d']
+     :['✔ Ghi nhận miễn thi',()=>{const k=$('#mtk').value,hs=($('#mths').value||'').trim();
+       if(!hs){toast('⛔ <b>Bắt buộc ghi hồ sơ kèm theo</b> — '+MT(k).hs);return}
+       x.mtKieu=k;x.mtHs=hs;x.mienThi='duyet';
+       toast('Đã ghi nhận miễn thi <b>'+k+'</b> cho '+x.n+' · hồ sơ gửi Sở');render()}]]);
   return}
  if(a==='kk'){const x=HS.find(z=>z.ma===d.ma),c=x.kkCc||{};
   modal('✎ Điểm khuyến khích — '+x.n,

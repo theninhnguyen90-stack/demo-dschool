@@ -565,7 +565,8 @@ const toCua=ai=>(ROLES[ai]&&ROLES[ai].to)||TO_NS[ai]||null;
    dungDuoc(x,ai): người ai được DÙNG bản ghi x (câu · nhóm câu · đề · ma trận) — của mình · được chia sẻ đích danh ·
    chia sẻ Tổ (tổ quản môn của bản ghi) / Toàn trường. Câu · nhóm câu chia sẻ Tổ / Trường phải «Đã duyệt»;
    chia sẻ đích danh không cần duyệt (quy tắc 6). Đề 🔒 bảo mật: chỉ tác giả + người được chia sẻ đích danh (quy tắc 9).
-   vaoDeMoi(x,ai): được đưa vào đề MỚI — thêm điều kiện không ngưng dùng (quy tắc 4) và không đang bị báo lỗi (quy tắc 6).
+   vaoDeMoi(x,ai): được đưa vào đề MỚI — thêm điều kiện không ngưng dùng (quy tắc 4), không đang bị báo cáo (quy tắc 6)
+     và không ở trạng thái cuối «✕ Đã hủy» (BCHL-1A C4 — vá ở BCHL-2Z 19/9/2026; trước đó câu đã hủy vẫn lọt vào đề mới).
    ai là mã người (GVBM · TTCM · GV_MINH …). Vai demo FULL không phải một người trong dữ liệu — menu tính theo tác giả bản ghi. */
 function dungDuoc(x,ai){
  if(!x) return false;
@@ -576,7 +577,7 @@ function dungDuoc(x,ai){
  if(x.pv==='to') return daDuyet&&!!MON[x.mon]&&toCua(ai)===MON[x.mon].to;
  return false;
 }
-const vaoDeMoi=(x,ai)=>dungDuoc(x,ai)&&!x.ngung&&!x.bl;
+const vaoDeMoi=(x,ai)=>dungDuoc(x,ai)&&!x.ngung&&!x.bl&&!x.huy;   /* ★ BCHL-2Z 19/9/2026: thêm `&& !x.huy` */
 
 /* ========== CÂY KIẾN THỨC (chủ: M12.4) ==========
    Hai cây ĐỘC LẬP (quy tắc 7). Mảng phẳng — nút trỏ cha. id = mã nút lúc tạo (bất biến); ma = mã hiện hành
@@ -724,6 +725,200 @@ const TEN_AP={ca:'Câu · nhóm',cau:'Câu',nhom:'Nhóm câu (M12.6)'};
 const tenLyBL=id=>(LY_BL.find(x=>x.id===id)||{ten:id||'—'}).ten;
 const lyBLCho=loai=>LY_BL.filter(x=>x.ap==='ca'||x.ap===loai);
 
+/* ══════════════ BCHL-1A (18/9/2026) · LÊN NỀN BCHL-2Z (19/9/2026) — CỜ ⚑ BỊ BÁO CÁO · TRẠNG THÁI ĐÃ HỦY · SÁU LOẠI LỖI ══════════════
+   🗃 KHỐI NỀN CỦA CẢ NHÓM. `BCHL-1A` dựng khối này ở `app.20` của M12.5 · M12.6; `1B` chép sang M12.7, `1C` chép sang
+   M12.2 · M12.3 — NĂM bản byte-identical. `BCHL-2Z` gom về đây và gỡ cả năm bản: sáu loại lỗi và phép định tuyến
+   phải là MỘT bộ — để năm bản sao thì ngày nào đó sáu menu hiểu «lỗi phân loại» theo sáu kiểu.
+   🛑 Sửa tệp này thì phải chép nguyên byte sang sáu demo còn lại và dựng lại cả bảy (BC-3).
+
+   ★ C1 — CỜ «⚑ Bị báo cáo» là MỘT TRỤC RIÊNG, chạy SONG SONG với trục duyệt (Riêng · Chờ duyệt · Đã duyệt · Bị trả lại).
+     Cờ **dẫn xuất** từ chính bản ghi báo cáo đang mở (`bl`) — KHÔNG dựng thêm một cờ boolean thứ hai, vì hai nguồn
+     sự thật là mâu thuẫn (CLAUDE.md: «trạng thái dẫn xuất được thì không làm nút bấm tay»).
+     Hệ quả cần nhớ: gỡ cờ = đóng bản ghi báo cáo ⇒ trường `tt` KHÔNG hề bị chạm ⇒ bản ghi quay về ĐÚNG trạng thái
+     duyệt cũ, không phải duyệt lại từ đầu. Bảng tham khảo nhập «Bị báo cáo» vào một trục thẳng thì mất thông tin đó.
+   ★ C4 — «✕ Đã hủy» là trạng thái CUỐI, lưu ở `huy = {ai, luc, ly}` — cũng một trục riêng, KHÔNG chen vào `TT_DUYET`
+     vì đúng lý do của C1. Bản ghi Đã hủy: không sửa, không xóa, không dùng lại, không vào đề mới, không hiện
+     trong danh sách mặc định — nhưng CÓ BỘ LỌC tìm lại (quy ước dự án: «không xóa, chỉ chuyển trạng thái, và phải
+     có bộ lọc tìm ra chúng»).
+     ⏸ Ngưng dùng ≠ ✕ Đã hủy: ngưng là tác giả tạm rút bản ghi còn ĐÚNG khỏi lưu thông, đảo ngược được bằng ▶ Dùng lại;
+     hủy là KẾT LUẬN của người xử lý báo cáo rằng bản ghi HỎNG, không sửa được — không đảo ngược.
+   ★ C5 — SÁU LOẠI LỖI. Hai loại phân loại KHÔNG nằm lại hàng đợi câu: chúng sinh một đề xuất sửa phân loại gửi
+     `M12.4` (`BCHL-1D` dựng phía nhận) và KHÔNG bật cờ ⚑ — gắn nhầm nhánh không làm câu sai, chỉ làm ma trận
+     đếm lệch; chặn câu khỏi đề mới vì một cái nhãn là phạt nhầm người.
+   ★ C6 — HỌC SINH KHÔNG BÁO CÁO ĐƯỢC: em làm bài bằng mã động theo lượt, không có tài khoản (quy tắc 12) ⇒ không
+     có ai để truy trách nhiệm, không có đường báo lại kết quả xử lý. Em thấy sai thì báo giáo viên; giáo viên
+     báo cáo trên màn chấm bài (`BCHL-1B`). */
+
+/* ── ① Danh mục loại lỗi — đủ SÁU loại của bảng anh Ninh gửi, mỗi mục mang một ĐỊNH TUYẾN ──
+   Danh mục vẫn là Master cấu hình được ở `M12.5 ⚙ ③` (không thay bằng sáu hằng số chết): mục đã dùng chỉ NGƯNG,
+   không xóa (quy tắc 4), nên năm mục chi tiết cũ ở lại để báo cáo cũ còn đọc được tên, mang `gop` trỏ về một
+   trong sáu loại. Hộp báo cáo chỉ hiện mục đang dùng ⇒ người báo thấy đúng sáu lựa chọn (nhóm câu thêm hai
+   loại ngữ liệu đã chốt ở F-10 của `M12.6`). */
+(function bcDanhMucLoaiLoi(){
+ const DOI_TEN={dap_an_sai:'Sai đáp án',khac:'Lỗi sai khác'};
+ const GOP={chua_ro:'nd_sai',sai_kt:'nd_sai',trinh_bay:'khac',trung:'khac',gan_sai:'sai_khung'};
+ const THEM=[{id:'nd_sai',ten:'Sai nội dung đề',ap:'ca',dt:'cau'},
+             {id:'loi_giai_sai',ten:'Sai lời giải',ap:'ca',dt:'cau'},
+             {id:'sai_khung',ten:'Sai phân loại Khung chương trình',ap:'ca',dt:'cay',cay:'bs'},
+             {id:'sai_mach',ten:'Sai phân loại Mạch kiến thức',ap:'ca',dt:'cay',cay:'mach'}];
+ LY_BL.forEach(x=>{if(DOI_TEN[x.id]) x.ten=DOI_TEN[x.id]; if(GOP[x.id]){x.ngung=true; x.gop=GOP[x.id]}});
+ THEM.forEach(x=>{if(!LY_BL.some(y=>y.id===x.id)) LY_BL.push(Object.assign({ngung:false},x))});
+ LY_BL.forEach(x=>{x.dt=x.dt||'cau'});
+ const TU=['nd_sai','dap_an_sai','loi_giai_sai','sai_khung','sai_mach','khac','ngu_lieu','ban_quyen'];
+ LY_BL.sort((a,b)=>(a.ngung?1:0)-(b.ngung?1:0)||TU.indexOf(a.id)-TU.indexOf(b.id));
+})();
+const SAU_LOAI=['nd_sai','dap_an_sai','loi_giai_sai','sai_khung','sai_mach','khac'];
+const lyBL=id=>LY_BL.find(x=>x.id===id)||{id:id,ten:id||'—',dt:'cau'};
+const veCayKT=id=>lyBL(id).dt==='cay';                 /* 🔀 loại phân loại — sang M12.4, không vào hàng đợi câu */
+const TEN_DT={cau:'Hàng đợi câu · bật cờ ⚑',cay:'🔀 Đề xuất sửa phân loại → M12.4'};
+const lyBLHien=loai=>lyBLCho(loai).filter(x=>!x.ngung);   /* hộp báo cáo chỉ hiện mục đang dùng */
+const GHI_CHU_MAX=200;                                     /* ghi chú bắt buộc, tối đa 200 ký tự */
+
+/* ── ② Cờ ⚑ và trạng thái Đã hủy — hai phép thử dùng chung sáu menu ── */
+const biBaoCao=x=>!!(x&&x.bl);                             /* cờ DẪN XUẤT, không có trường riêng */
+const daHuy=x=>!!(x&&x.huy);
+const TEN_CO='⚑ Bị báo cáo', TEN_HUY='✕ Đã hủy';
+/* ✅ BCHL-2Z (19/9/2026): `vaoDeMoi` ở ngay trên tệp này đã biết trạng thái «Đã hủy» (`&& !x.huy`) ⇒ hàm tạm
+   `vaoDeMoiX` của `BCHL-1A` đã BỊ BỎ; mọi menu gọi thẳng `vaoDeMoi`. Giữ thêm một bí danh là giữ HAI nguồn sự thật
+   cho cùng một phép kiểm — đúng thứ CLAUDE.md cấm. */
+
+/* ── ③ Đề xuất sửa phân loại sinh từ báo cáo (C5) — hình dạng bàn giao cho BCHL-1D ──
+   M12.4 nhận thêm `loai:'gan_lai'` bên cạnh `moi · doiten · ngung`; người duyệt giữ nguyên (TTCM môn tổ · PHT_CM). */
+const DX_CAY=[];
+/* ✅ BCHL-3A (19/9/2026): số thứ tự lấy MÃ CAO NHẤT ĐANG CÓ + 1, không lấy `DX_CAY.length+1`.
+   Dải `DXBC-` là dải của CẢ NHÓM: `M12.4` giữ `DXBC-01…05` trong dữ liệu riêng của nó, tệp nền này gieo
+   `DXBC-06…13`. Đếm theo độ dài mảng thì báo cáo mới sinh sẽ mang một mã đã có người dùng — hai bản ghi khác
+   nhau cùng một mã là thứ không tra ngược được, và lỗi ấy chỉ lộ ra ở lần báo cáo đầu tiên của phiên. */
+function dxCayMaMoi(){
+ let n=5;                                              /* 05 là mã cuối `M12.4` đang giữ */
+ DX_CAY.forEach(d=>{const m=/^DXBC-(\d+)$/.exec(d.id); if(m) n=Math.max(n,+m[1])});
+ return 'DXBC-'+p2(n+1);
+}
+function sinhDeXuatCay(ban,loaiLoi,ghiChu,loaiBan){
+ const l=lyBL(loaiLoi), cay=l.cay||'bs';
+ const d={id:dxCayMaMoi(),cay:cay,loai:'gan_lai',nut:ban[cay]||null,
+  tuBaoCao:{loai:loaiBan,id:ban.id,mon:ban.mon,khoi:ban.khoi,loaiLoi:loaiLoi},
+  ly:ghiChu,tg:role,luc:GIO_NAY,tt:'cho'};
+ DX_CAY.push(d); (ban.dxCay=ban.dxCay||[]).push(d.id);
+ return d;
+}
+const dxCayCua=ban=>DX_CAY.filter(d=>d.tuBaoCao.id===ban.id);
+/* đang CHỜ kết luận — nhãn 🌳 trên dòng và hộp cảnh báo của panel chỉ đọc cái này, KHÔNG đọc `dxCayCua`:
+   một đề xuất ĐÃ kết luận thì không còn là «có đề xuất sửa phân loại» nữa, nó đã thành VIỆC của một người cụ thể. */
+const dxCayCho=ban=>dxCayCua(ban).filter(d=>d.tt==='cho');
+
+/* ══ ④ BCHL-3A — CHIỀU VỀ: kết luận của `M12.4` chảy ngược về đúng người ══
+   ★ VÌ SAO KHỐI NÀY TỒN TẠI. Anh Ninh chốt `P-1` (`TC-15`, 19/9/2026) theo phương án «đóng ngay, không theo dõi»:
+     `M12.4` kết luận xong là ĐÓNG hồ sơ, không giữ một hàng đợi theo dõi nào — hàng đợi đọng việc mà chính người
+     duyệt không làm được gì thêm thì người dùng bỏ không nhìn nữa, và việc thật chìm theo. Chốt ấy đi kèm MỘT
+     ĐIỀU KIỆN: việc phải đến tận tay người làm được nó. Bỏ điều kiện thì chốt hỏng — `M12.4` chuyển việc đi mà
+     không ai nhận, và không có gì bù lại vì phía người duyệt đã đóng hồ sơ.
+   ⇒ Phía NHẬN phải TỰ ĐỌC `tt` của bản ghi mà bật việc lên. Đặt ở tệp nền vì `M12.5` · `M12.6` phải đọc ra
+     CÙNG một luật và nói CÙNG một bộ chữ — hai menu một bộ luật (tiền lệ: `↩ Thu hồi duyệt` chốt ở `M12.6`
+     áp cả `M12.5`). Để luật này ở `app.20` của từng menu là đẻ lại đúng cái lỗi hai bản sao mà `BCHL-2Z` vừa dọn.
+   🛑 HAI NGƯỜI KHÁC NHAU trên một bản ghi: `d.tg` là người BÁO · `banGhi.tg` là TÁC GIẢ. Chia sai thì việc đi sai
+     địa chỉ — `✕ Không áp dụng` là tin của người báo, tác giả không cần biết; `↗ Đã chuyển ngân hàng` là việc của
+     tác giả, người báo không sửa hộ được (quy tắc 5 — chia sẻ chỉ trao quyền dùng). */
+const DX_VIEC={
+ chuyen:{ai:'tg', bt:'🌳', nhan:'Có đề nghị đổi chỗ gắn phân loại — mở để sửa'},
+ apdung:{ai:'tg', bt:'🌳', nhan:'Nút mới đã có trên cây — gắn lại được rồi'},
+ khong :{ai:'bao',bt:'✕',  nhan:'Báo cáo của tôi không được áp dụng'}
+};  /* `cho` không có ở đây: chưa kết luận thì chưa sinh việc mới — dòng «có đề xuất sửa phân loại» đã báo lúc nó SINH.
+       `rut` cũng không: người đề xuất tự rút thì không có gì để báo cho ai. */
+const dxViec=d=>DX_VIEC[d.tt]||null;
+/* 🔑 3A-P4 — «ĐÃ XONG» là DẪN XUẤT, không có nút «đã xử lý»: trạng thái nào máy đọc ra được thì không làm nút bấm
+   tay (cùng luật với cờ ⚑ dẫn xuất từ `bl` — `C1`). Tác giả đổi chỗ gắn xong là dòng việc tự rơi khỏi dải. */
+function dxDaXong(d,ban){
+ if(!ban) return false;
+ const nay=ban[d.cay]||null;
+ if(d.tt==='chuyen') return nay!==(d.nut||null);                        /* đã rời khỏi chỗ gắn bị báo */
+ if(d.tt==='apdung') return nay===((d.duyet&&d.duyet.nutTao)||null);    /* đã gắn vào đúng nút vừa tạo */
+ return false;
+}
+/* việc của TÁC GIẢ bản ghi — chỉ những kết luận thuộc phía tác giả và CHƯA xong */
+const viecDXTacGia=ban=>ban?DX_CAY.filter(d=>d.tuBaoCao.id===ban.id&&dxViec(d)&&dxViec(d).ai==='tg'&&!dxDaXong(d,ban)):[];
+/* việc của NGƯỜI BÁO — `✕ Không áp dụng` có lý do BẮT BUỘC; lọc theo THỰC THỂ để `M12.5` không hiện tin của nhóm câu
+   và ngược lại (§5b.3 — báo cáo thuộc thực thể bị báo).
+   ⚠ Người báo có thể KHÔNG thấy bản ghi trong ngân hàng (bản ghi dùng riêng của người khác, hoặc tác giả thu hẹp
+   phạm vi sau lúc báo) — dòng vẫn phải đọc được lý do; menu tự quyết có mở được nội dung hay không (3A-P1). */
+/* ⏳ 3A-P5 — dòng `✕ Không áp dụng` là một TIN, không phải một việc: người báo đọc xong thì không còn gì để làm.
+   Nó vẫn nằm trong dải «cần xử lý» theo đúng `1D` §E.3, nhưng phải có đường RỜI ĐI, nếu không dải sẽ đọng mãi
+   một dòng không ai bấm được — đúng cái bệnh mà chốt `P-1` từ chối ở phía người duyệt. Cách rời đi chọn theo
+   NGÀY KẾT LUẬN (dẫn xuất, `3A-P4`): hết hạn thì dòng tự rơi. KHÔNG làm nút «đã đọc» — nút ấy là một trạng thái
+   riêng của từng người xem, thứ hệ thống không giữ ở đâu cả. Kết luận không mất: nó ở lại panel của bản ghi
+   (mục Báo cáo) và tra lại được bất cứ lúc nào. */
+const NGAY_TIN_DX=30;
+const soNgayTu=k=>Math.round((k2d(HOMNAY)-k2d(String(k).slice(0,10)))/864e5);
+const dxTinConMoi=d=>!d.duyet||soNgayTu(d.duyet.luc)<=NGAY_TIN_DX;
+const viecDXNguoiBao=(ai,loaiBan)=>DX_CAY.filter(d=>d.tg===ai&&d.tt==='khong'&&d.tuBaoCao.loai===loaiBan&&dxTinConMoi(d));
+
+/* ── BCHL-3A: DỮ LIỆU MẪU — đề xuất `DXBC-` ĐÃ KẾT LUẬN, để mở demo ra là thấy ô đón việc có việc ──
+   Vì sao gieo ở TỆP NỀN chứ không ở `app.20` của từng menu (điểm chốt `3A-P3`): `DX_CAY` đã ở nền từ `BCHL-2Z`;
+   để dữ liệu rời khỏi kho của nó là đẻ lại đúng cái lỗi hai bản sao mà `2Z` vừa dọn. Trên hệ thống thật những
+   dòng này do chính `M12.5` · `M12.6` đẩy sang `M12.4` lúc người báo chọn một trong hai loại lỗi phân loại, rồi
+   `M12.4` kết luận và đẩy ngược về — bảy demo là bảy trang rời nên không có kênh chạy thật giữa chúng.
+   🛑 Mã tiếp nối `DXBC-05` của `M12.4`: một dải mã cho cả nhóm, không trùng.
+   ⚠ Cây trong tệp nền là ẢNH CHỤP HÔM NAY (21/10/2026) — nút `MACH.TOAN.HHDL.GSS7.D1` và `MACH.VAN.DOC.DL8.D1`
+     đã có sẵn trong ảnh chụp ấy chính vì hai đề xuất `DXBC-08` · `DXBC-12` đã được áp dụng trước đó; không thêm
+     nút nào vào cây (số nút của `M12.4` §15 giữ nguyên 86 · 47). */
+[
+ /* ① CHỜ kết luận — dòng «có đề xuất sửa phân loại» đã có từ `BCHL-1A`, giữ nguyên để không đếm hai lần (ca A4) */
+ {id:'DXBC-06',cay:'bs',loai:'gan_lai',nut:'KNTT.T7.C1.B3.D1',
+  tuBaoCao:{loai:'cau',id:'Q05',mon:'toan',khoi:7,loaiLoi:'sai_khung'},
+  ly:'Câu tính lũy thừa của tích, đang gắn ở dạng «Lũy thừa của một số hữu tỉ» của Bài 3 — xin xem lại có đúng dạng không',
+  tg:'GV_MINH',luc:'2026-10-20 15:10',tt:'cho'},
+ /* ② ↗ ĐÃ CHUYỂN NGÂN HÀNG — việc của TÁC GIẢ Q10 (GVBM): nút đúng đã có trên cây, chỉ còn đổi chỗ gắn (ca A1) */
+ {id:'DXBC-07',cay:'mach',loai:'gan_lai',nut:'MACH.TOAN.SDS.SHT7.D2',
+  tuBaoCao:{loai:'cau',id:'Q10',mon:'toan',khoi:7,loaiLoi:'sai_mach'},
+  ly:'Câu tính hợp lí dùng tính chất phân phối, đang gắn ở «Các phép tính với số hữu tỉ» — theo tôi thuộc dạng quy tắc chuyển vế, tìm x',
+  tg:'GV_MINH',luc:'2026-10-16 09:25',tt:'chuyen',
+  duyet:{ai:'TTCM',luc:'2026-10-17 08:40',cach:'gan_lai',
+   ly:'Nút đúng đã có trên cây — đổi chỗ gắn ngay trên bản ghi, không cần sửa cây. Gắn sang «Quy tắc chuyển vế — tìm x» của mạch Số hữu tỉ.'}},
+ /* ③ ＋ ĐÃ ĐỔI THÀNH NÚT MỚI rồi ĐÃ ÁP DỤNG — `loai` nay là `moi`, `nut` đã bị gỡ, `tuBaoCao` GIỮ để còn vết nguồn (ca A2) */
+ {id:'DXBC-08',cay:'mach',loai:'moi',cha:'MACH.TOAN.HHDL.GSS7',ten:'Góc ở vị trí đặc biệt, tia phân giác',
+  tuBaoCao:{loai:'cau',id:'Q20',mon:'toan',khoi:7,loaiLoi:'sai_mach'},
+  ly:'Câu đúng/sai này đang treo ở CẤP MẠCH «Góc và đường thẳng song song» vì mạch chưa có dạng nào nhận nó',
+  tg:'GV_MINH',luc:'2026-10-07 20:05',tt:'apdung',
+  doiTu:{loai:'gan_lai',ai:'TTCM',luc:'2026-10-08 09:15'},
+  duyet:{ai:'TTCM',luc:'2026-10-09 10:20',nutTao:'MACH.TOAN.HHDL.GSS7.D1'}},
+ /* ④ ✕ KHÔNG ÁP DỤNG — việc của NGƯỜI BÁO (GVBM), KHÔNG phải của tác giả (Q12 là câu của TTCM) (ca A3) */
+ {id:'DXBC-09',cay:'mach',loai:'gan_lai',nut:'MACH.TOAN.SDS.ST7.D1',
+  tuBaoCao:{loai:'cau',id:'Q12',mon:'toan',khoi:7,loaiLoi:'sai_mach'},
+  ly:'√0,49 là bài làm tròn số thập phân, nên nằm ở dạng «Giá trị tuyệt đối, làm tròn số» mới đúng',
+  tg:'GVBM',luc:'2026-10-12 16:45',tt:'khong',
+  duyet:{ai:'TTCM',luc:'2026-10-13 08:10',
+   ly:'Câu hỏi là căn bậc hai số học của một số thập phân, không phải phép làm tròn — 0,7 là kết quả đúng chứ không phải số đã làm tròn. Dạng D1 đang gắn là đúng.'}},
+ /* ⑤ ✕ KHÔNG ÁP DỤNG về một câu DÙNG RIÊNG của người khác — người báo (TPCM) gặp Q35 ở màn chấm bài (cửa 4),
+       hôm nay KHÔNG thấy Q35 trong ngân hàng nữa mà vẫn phải đọc được lý do (điểm chốt `3A-P1`) */
+ {id:'DXBC-10',cay:'bs',loai:'gan_lai',nut:'KNTT.V8.B1.TV.D1',
+  tuBaoCao:{loai:'cau',id:'Q35',mon:'van',khoi:8,loaiLoi:'sai_khung'},
+  ly:'Câu hỏi về từ tượng hình trong thơ Đường luật — theo tôi thuộc bài đọc hiểu Bài 2, không phải Thực hành tiếng Việt Bài 1',
+  tg:'TPCM',luc:'2026-10-15 14:30',tt:'khong',
+  duyet:{ai:'TTCM_NV',luc:'2026-10-16 10:05',
+   ly:'Ngữ liệu chỉ là ví dụ minh họa; yêu cầu cần đạt là nhận biết từ tượng hình — đúng nội dung Thực hành tiếng Việt Bài 1. Chỗ gắn hiện tại giữ nguyên.'}},
+ /* ⑥ NHÓM CÂU — ↗ Đã chuyển ngân hàng, việc của tác giả N02 là GVCN (ca A7 · A1 của M12.6) */
+ {id:'DXBC-11',cay:'bs',loai:'gan_lai',nut:'KNTT.V8.B3.DOC',
+  tuBaoCao:{loai:'nhom',id:'N02',mon:'van',khoi:8,loaiLoi:'sai_khung'},
+  ly:'Nhóm đọc hiểu nghị luận đang gắn ở CẤP BÀI, cây đã có dạng Đọc hiểu văn bản nghị luận của bài đó',
+  tg:'GV_NGAN',luc:'2026-10-14 20:15',tt:'chuyen',
+  duyet:{ai:'TTCM_NV',luc:'2026-10-15 07:50',cach:'gan_lai',
+   ly:'Nút đúng đã có trên cây — đổi chỗ gắn ngay trên bản ghi, không cần sửa cây.'}},
+ /* ⑦ NHÓM CÂU — đổi thành nút mới rồi áp dụng; việc của tác giả N01 là TPCM (ca A7 · A2 của M12.6) */
+ {id:'DXBC-12',cay:'mach',loai:'moi',cha:'MACH.VAN.DOC.DL8',ten:'Đọc hiểu thơ Đường luật — nhận biết thể thơ, bố cục',
+  tuBaoCao:{loai:'nhom',id:'N01',mon:'van',khoi:8,loaiLoi:'sai_mach'},
+  ly:'Nhóm treo ở cấp mạch «Đọc hiểu thơ Đường luật 8» — mạch chưa có dạng nào để gắn xuống',
+  tg:'GVCN',luc:'2026-10-05 21:00',tt:'apdung',
+  doiTu:{loai:'gan_lai',ai:'TTCM_NV',luc:'2026-10-06 08:20'},
+  duyet:{ai:'TTCM_NV',luc:'2026-10-06 15:40',nutTao:'MACH.VAN.DOC.DL8.D1'}},
+ /* ⑧ NHÓM CÂU — ✕ Không áp dụng; việc của NGƯỜI BÁO (TPCM), tác giả N02 (GVCN) không nhận (ca A7 · A3 của M12.6) */
+ {id:'DXBC-13',cay:'mach',loai:'gan_lai',nut:'MACH.VAN.DOC.NL8',
+  tuBaoCao:{loai:'nhom',id:'N02',mon:'van',khoi:8,loaiLoi:'sai_mach'},
+  ly:'Nhóm này hỏi nhiều về phép liên kết câu, nên xếp sang mạch Tiếng Việt thì hợp hơn mạch Đọc',
+  tg:'TPCM',luc:'2026-10-11 09:05',tt:'khong',
+  duyet:{ai:'TTCM_NV',luc:'2026-10-12 13:25',
+   ly:'Ba câu con đều hỏi nội dung và lập luận của văn bản, phép liên kết chỉ là một ý nhỏ của câu 2 — nhóm thuộc mạch Đọc. Ma trận MT03 cũng đếm nhóm này ở mạch Đọc.'}}
+].forEach(d=>DX_CAY.push(d));
+
 /* ── HL-Z ③: QUY ƯỚC GẮN CÂY khi chia sẻ Tổ / Toàn trường — theo TỔ QUẢN MÔN, chỉ CẢNH BÁO (M12.5 NH-5). Chủ: M12.5 ⚙ ④ ── */
 const QUY_UOC={TT:{muc:'mot'},NV:{muc:'hai',ghi:'Tổ thống nhất 12/10/2026 — Q39 bị trả lại vì chưa gắn cây Mạch'},NN:{muc:'mot'},KH:{muc:'mot'}};
 const TEN_QU={khong:'Không yêu cầu',mot:'Ít nhất một cây',hai:'Đủ hai cây'};
@@ -824,7 +1019,7 @@ C('Q22','nlc','toan',7,'hieu','KNTT.T7.C4.B12.D1','MACH.TOAN.HHDL.TG7.D1','Tam g
    ⇒ cảnh báo trên bài làm. L03 bắt đầu 16/10, SAU lần sửa ⇒ không cảnh báo, em làm với đáp án 50. */
 C('Q23','tln','toan',7,'hieu','KNTT.T7.C4.B16.D1','MACH.TOAN.HHDL.TG7.D3','Tam giác ABC cân tại A có B̂ = 65°. Tính số đo góc A (độ).',null,['50'],
  {loiGiai:'Tam giác cân tại A ⇒ Ĉ = B̂ = 65° ⇒ Â = 180° − 2 · 65° = 50°.',taoLuc:'2026-09-28 20:15',
-  suaDoi:[{luc:'2026-10-14 10:20',ai:'GVBM',ly:'Xử lý báo lỗi — đáp án nhập nhầm số đo góc B (lượt L02 đã đính chính)',duyet:{ai:'TTCM',luc:'2026-10-15 08:10'},
+  suaDoi:[{luc:'2026-10-14 10:20',ai:'GVBM',ly:'Xử lý báo cáo — đáp án nhập nhầm số đo góc B (lượt L02 đã đính chính)',duyet:{ai:'TTCM',luc:'2026-10-15 08:10'},
    doi:[{k:'da',cu:['65'],moi:['50']},{k:'loiGiai',cu:'',moi:'Tam giác cân tại A ⇒ Ĉ = B̂ = 65° ⇒ Â = 180° − 2 · 65° = 50°.'}]}],
   blDaXuLy:[{ly:'Đáp án sai: 65 là số đo góc B — góc A = 50° (tự mở từ đính chính ở lượt L02)',ai:'GVBM',luc:'2026-10-14 10:00',
    loai:'dap_an_sai',ketQua:'Đã sửa 14/10 — đáp án «65» → «50»; TTCM duyệt 15/10',xlAi:'GVBM',xlLuc:'2026-10-14 10:20'}]});
@@ -885,7 +1080,11 @@ Object.assign(cauById('Q26'),{banCho:{nd:'Để biểu diễn tỉ lệ phần t
  ai:'GVBM',luc:'2026-10-20 21:40',ly:'Phương án D «bảng thống kê» không phải biểu đồ — HS loại ngay; thay bằng «biểu đồ cột» cho cùng loại. Thêm lời giải.'}});
 Object.assign(cauById('Q12'),{blDaXuLy:[{loai:'sai_kt',ly:'√0,49 = ±0,7 — phương án D «−0,7» cũng đúng',ai:'GV_MINH',luc:'2026-10-09 19:05',
  ketQua:'Bác — √ là căn bậc hai SỐ HỌC, không âm (KNTT Toán 7, Bài 6). −0,7 là căn bậc hai âm của 0,49, không phải √0,49',xlAi:'PHT_CM',xlLuc:'2026-10-10 07:50'}]});
-cauById('Q13').bl.loai='chua_ro'; cauById('Q27').bl.loai='chua_ro';
+/* ★ BCHL-2Z (19/9/2026): hai báo cáo mẫu mang loại `nd_sai` — MỘT trong SÁU loại đang dùng. Trước đó chúng mang mã
+   chi tiết cũ `chua_ro` (nay đã NGƯNG, gộp về `nd_sai`), và mỗi phiên con lại tự vá lấy ở `app.20` của mình:
+   `1A` vá cho M12.5, `1C` vá cho M12.2 · M12.3 — còn M12.1 · M12.4 · M12.6 · M12.7 thì không, nên CÙNG MỘT câu Q13
+   hiện tên loại lỗi khác nhau tùy mở ở menu nào. Sửa ở NGUỒN, bỏ bốn bản vá. */
+cauById('Q13').bl.loai='nd_sai'; cauById('Q27').bl.loai='nd_sai';
 
 /* ══════════ HL-Z ⑦ — LỊCH SỬ SỬA (Z-1 · Z-2): hợp đồng dùng chung cho M12.2 · M12.5 · M12.6 · M12.7 ══════════
    Câu lẻ và nhóm câu đều KHÔNG có phiên bản. Mỗi phần tử suaDoi mang mảng `doi` [{k, cu, moi}] trên các trường nội dung. */
@@ -985,7 +1184,7 @@ NH({id:'N04',mon:'toan',khoi:7,ten:'Biểu đồ đoạn thẳng — nhiệt đ�
    'Biểu đồ đoạn thẳng thích hợp để biểu diễn sự thay đổi nhiệt độ theo thời gian'],da:[1,0,1,1]}],
  lichSu:[{luc:'2026-10-06 16:00',ai:'TTCM',viec:'Tạo nhóm',ct:'3 câu con · Tổ chuyên môn — gửi duyệt'},
   {luc:'2026-10-10 14:00',ai:'PHT_CM',viec:'Duyệt',ct:'tác giả là TTCM nên PHT chuyên môn duyệt'},
-  {luc:'2026-10-19 21:40',ai:'GVBM',viec:'Báo lỗi',ct:'Ngữ liệu · câu 2'}]});
+  {luc:'2026-10-19 21:40',ai:'GVBM',viec:'Báo cáo',ct:'Ngữ liệu · câu 2'}]});
 /* N05 — GVBM, Tổ, CHỜ DUYỆT → việc của TTCM Tổ Toán – Tin (Group) và PHT_CM (School) */
 NH({id:'N05',mon:'toan',khoi:7,ten:'Biểu đồ hình quạt tròn — phương tiện đến trường',
  nguLieu:'Kết quả khảo sát phương tiện đến trường của 40 học sinh khối 7 được biểu diễn bằng biểu đồ hình quạt tròn (hình kèm):\nđi bộ 20% · xe đạp 45% · bố mẹ đưa đón 30% · xe buýt 5%.',
@@ -1029,7 +1228,7 @@ function cauTrongNhanh(id){
 function nhomTrongNhanh(id){const set=new Set(hauDue(id)),k=nutById(id).cay;return NHOM.filter(n=>n[k]&&set.has(n[k]))}
 
 /* ========== MA TRẬN ĐỀ (chủ: M12.3) — ô = (nút nội dung × mức độ × dạng) → số câu · điểm/câu ==========
-   ★ Kiểm đủ câu theo TỪNG Ô với NGƯỜI ĐANG DỰNG ma trận (vaoDeMoi — của mình · đã duyệt chia sẻ tới mình · không ngưng · không báo lỗi).
+   ★ Kiểm đủ câu theo TỪNG Ô với NGƯỜI ĐANG DỰNG ma trận (vaoDeMoi — của mình · đã duyệt chia sẻ tới mình · không ngưng · không bị báo cáo · không đã hủy).
    MT01 (tác giả TTCM) — Σ điểm 10 · 13 ô · thiếu ĐÚNG MỘT Ô: C2 × Vận dụng × Tự luận (0/1 — câu duy nhất Q42 bị ngưng 18/10,
      sau khi sinh D04 ngày 15/10). Tỉ lệ LỆCH CV 7991 có chủ ý (THCS — Sở hướng dẫn; tổ dùng Điền khuyết + Sắp xếp thay phần
      Trả lời ngắn) → M12.3 cảnh báo, vẫn lưu:  dạng  NLC 3 · Đ/S 2 · Trả lời ngắn 0 (CV: 2) · Điền khuyết 1 · Sắp xếp 1 · Tự luận 3;
@@ -2030,9 +2229,16 @@ const DX=[
 ];
 const dxById=id=>DX.find(d=>d.id===id);
 const dxNutGoc=d=>nutById(d.loai==='moi'?d.cha:d.nut);
-const dxMon=d=>{const n=dxNutGoc(d);return n?n.mon:null};
-const DX_LOAI={moi:'＋ Nút mới',doiten:'✎ Đổi tên',ngung:'⏸ Ngưng dùng'};
-const DX_TT={cho:['Chờ duyệt','w'],apdung:['Đã áp dụng','o'],khong:['Không áp dụng','r'],rut:['Đã rút','n']};
+/* môn của đề xuất — quyết định AI thấy và AI duyệt (Group = môn của tổ).
+   ★ BCHL-1D: đề xuất «gắn lại» có thể trỏ vào nút RỖNG (bản ghi chưa gắn cây nào) — lúc ấy môn lấy từ
+   chính bản ghi bị báo cáo, nếu không thì TTCM của tổ quản môn sẽ không thấy việc của mình. */
+const dxMon=d=>{const n=dxNutGoc(d);return n?n.mon:(d.tuBaoCao?d.tuBaoCao.mon:null)};
+const DX_LOAI={moi:'＋ Nút mới',doiten:'✎ Đổi tên',ngung:'⏸ Ngưng dùng',gan_lai:'🌳 Gắn lại phân loại'};
+/* ba loại người dùng TỰ gửi ở form «Đề xuất mới» — `gan_lai` KHÔNG có ở đây: nó chỉ sinh từ báo cáo
+   loại «Sai phân loại …» ở M12.5 · M12.6 (BCHL-1A C5), không ai gõ tay được. */
+const DX_LOAI_TAY={moi:DX_LOAI.moi,doiten:DX_LOAI.doiten,ngung:DX_LOAI.ngung};
+const DX_TT={cho:['Chờ duyệt','w'],apdung:['Đã áp dụng','o'],khong:['Không áp dụng','r'],rut:['Đã rút','n'],
+ chuyen:['↗ Đã chuyển ngân hàng','o']};
 /* phạm vi đọc: authored · Group (môn của tổ) · School */
 function dxThay(d){
  if(!can('dx_xem')) return false;
@@ -2043,6 +2249,7 @@ function dxThay(d){
 const coQuyenDuyet=d=>can('dx_duyet_all')||(can('dx_duyet_to')&&monTo().includes(dxMon(d)));
 /* máy kiểm: đề xuất còn áp dụng được lên cây hiện tại không */
 function kiemDX(d){
+ if(d.loai==='gan_lai') return kiemGanLai(d);   /* BCHL-1D — app.45; nút RỖNG là hợp lệ, không phải lỗi */
  const n=dxNutGoc(d);
  if(!n) return {ok:false,ly:'Nút '+(d.cha||d.nut)+' không còn trong cây (đã xóa)'};
  if(d.loai==='moi'){
@@ -2066,6 +2273,40 @@ function nghiTrung(a,b){
  return chung/(x.length+y.length-chung)>=0.75;
 }
 const anhEmTrung=(cha,ten,boId)=>conCua(cha).find(n=>n.id!==boId&&nghiTrung(n.ten,ten));
+
+/* ══════ BCHL-1D — DỮ LIỆU MẪU: đề xuất «gắn lại» sinh từ báo cáo ở M12.5 · M12.6 (luật S3 — dữ liệu riêng ở app.20) ══════
+   Trên hệ thống thật những dòng này do M12.5 / M12.6 đẩy sang lúc người báo chọn một trong hai loại lỗi phân loại.
+   Bảy demo của nhóm là bảy trang rời nên không có kênh chạy thật giữa chúng — gieo sẵn để mở demo là thấy đủ các ca.
+   🛑 Hình dạng bản ghi giữ NGUYÊN như PHIEU-BCHL-1A §E.3; dải mã DXBC- không lẫn với DX-xx do người dùng tự gõ. */
+[
+ /* ① nút ĐÚNG đã có sẵn trên cây — ca của lối «↗ Gắn lại ở ngân hàng» */
+ {id:'DXBC-01',cay:'mach',loai:'gan_lai',nut:'MACH.TOAN.SDS.SHT7.D1',
+  tuBaoCao:{loai:'cau',id:'Q08',mon:'toan',khoi:7,loaiLoi:'sai_mach'},
+  ly:'Câu này là sắp xếp — so sánh số hữu tỉ, đang gắn ở dạng «Nhận biết số hữu tỉ». Mạch có sẵn dạng so sánh, xin gắn lại cho đúng',
+  tg:'GVBM',luc:'2026-10-20 08:15',tt:'cho'},
+ /* ② nhóm câu Ngữ văn — dùng để đo phạm vi Group: TTCM Tổ Toán – Tin KHÔNG thấy dòng này */
+ {id:'DXBC-02',cay:'bs',loai:'gan_lai',nut:'KNTT.V8.B2.DOC',
+  tuBaoCao:{loai:'nhom',id:'N01',mon:'van',khoi:8,loaiLoi:'sai_khung'},
+  ly:'Nhóm đọc hiểu «Qua Đèo Ngang» đang gắn ở cấp Bài, đúng ra phải xuống dạng Đọc hiểu thơ Đường luật của bài đó',
+  tg:'GVCN',luc:'2026-10-19 21:40',tt:'cho'},
+ /* ③ bản ghi CHƯA gắn cây nào + cây thiếu nút — ca của lối «＋ Đổi thành đề xuất nút mới»; nut = null là hợp lệ */
+ {id:'DXBC-03',cay:'mach',loai:'gan_lai',nut:null,
+  tuBaoCao:{loai:'cau',id:'Q03',mon:'toan',khoi:7,loaiLoi:'sai_mach'},
+  ly:'Câu số đối chưa gắn mạch nào; mạch Số hữu tỉ chưa có dạng nào cho số đối — số nghịch đảo nên không có chỗ gắn',
+  tg:'GV_MINH',luc:'2026-10-20 11:05',tt:'cho'},
+ /* ④ đã kết thúc bằng lối ① — mở demo là thấy ngay trạng thái «↗ Đã chuyển ngân hàng» mà không phải bấm hết luồng */
+ {id:'DXBC-04',cay:'bs',loai:'gan_lai',nut:'KNTT.T7.C4.B16.D1',
+  tuBaoCao:{loai:'cau',id:'Q23',mon:'toan',khoi:7,loaiLoi:'sai_khung'},
+  ly:'Câu tính góc tam giác cân đang gắn ở dạng của Bài 16 nhưng nội dung thuộc dạng tam giác cân, nút ấy đã có',
+  tg:'GVBM',luc:'2026-10-14 16:30',tt:'chuyen',
+  duyet:{ai:'TTCM',luc:'2026-10-15 08:05',cach:'gan_lai',ly:'Nút đúng đã có trên cây — đổi chỗ gắn ngay trên bản ghi, không cần sửa cây.'}},
+ /* ⑤ đã kết thúc bằng lối ③ — báo cáo sai, bản ghi đang gắn đúng; lý do bắt buộc đã ghi */
+ {id:'DXBC-05',cay:'mach',loai:'gan_lai',nut:'MACH.TOAN.SDS.ST7.D2',
+  tuBaoCao:{loai:'cau',id:'Q42',mon:'toan',khoi:7,loaiLoi:'sai_mach'},
+  ly:'Bài toán mảnh vườn nên nằm ở mạch Hình học đo lường chứ không phải Số thực',
+  tg:'GVBM',luc:'2026-10-11 09:50',tt:'khong',
+  duyet:{ai:'TTCM',luc:'2026-10-12 14:20',ly:'Câu hỏi là căn bậc hai và làm tròn — hình vuông chỉ là bối cảnh. Mạch Số thực đang gắn là đúng; ma trận MT01 cũng đếm câu này ở Số thực'}}
+].forEach(d=>DX.push(d));
 
 
 /* ══════════════ M12.4 — TAB 1 · 2: CÂY BỘ SÁCH · CÂY MẠCH KIẾN THỨC (v1.1) ══════════════
@@ -2183,7 +2424,10 @@ function cayDs(cay,g){
 }
 function dongNut(n,gc,phang){
  const coCon=conCua(n.id).length>0, so=cauTrongNhanh(n.id).length, ng=ngungThuc(n.id), la=n.cap>=MAXCAP[n.cay];
- const dxCho=DX.filter(d=>d.tt==='cho'&&(d.cha||d.nut)===n.id&&dxThay(d)).length;
+ /* ✎ n = đề xuất sửa CHÍNH nút này · 🌳 n = đề xuất «gắn lại» của một bản ghi đang treo ở nút này (BCHL-1D) —
+    hai thứ khác nhau, gộp một con số thì người duyệt tưởng cây đang bị đề nghị sửa. */
+ const dxTrenNut=DX.filter(d=>d.tt==='cho'&&(d.cha||d.nut)===n.id&&dxThay(d));
+ const dxCho=dxTrenNut.filter(d=>!laGanLai(d)).length, dxGL=dxTrenNut.filter(laGanLai).length;
  const tip='Mã '+n.ma+' · cập nhật cuối '+k2s(n.sua.luc)+' bởi '+tenNS(n.sua.ai)+(n.mota?' · '+n.mota:'');
  return '<div class="trow'+(ng?' ng':'')+(ST.hl===n.id?' hl':'')+'" data-row="'+n.id+'">'
   +'<div class="tcell" style="padding-left:'+(phang?0:(n.cap-gc-1)*22)+'px">'
@@ -2192,7 +2436,8 @@ function dongNut(n,gc,phang){
   +(n.cay==='mach'&&n.cap===3&&n.khoi?'<span class="tg c">khối '+n.khoi+'</span>':'')
   +'<span class="mcode">'+esc(n.ma)+'</span>'
   +(n.tt==='ngung'?'<span class="st2 n" title="'+esc(n.lyDoNgung||'')+'">⏸ Ngưng</span>':ng?'<span class="st2 n">⏸ theo nút cha</span>':'')
-  +(dxCho?'<span class="tg b" data-dxnutgo="'+n.id+'" title="Đề xuất đang chờ trên nút này">✎ '+dxCho+'</span>':'')
+  +(dxCho?'<span class="tg b" data-dxnutgo="'+n.id+'" title="Đề xuất sửa nút này đang chờ duyệt">✎ '+dxCho+'</span>':'')
+  +(dxGL?'<span class="tg b" data-dxnutgo="'+n.id+'" title="Có bản ghi bị báo cáo gắn nhầm vào nút này — đề xuất gắn lại đang chờ ở tab 3">🌳 '+dxGL+'</span>':'')
   +(phang?'<span class="path">'+esc(duongDanTu(n.cha,gc))+'</span>':'')+'</div>'
   +'<button class="cauchip'+(so?'':' z')+'" data-tk="'+n.id+'" title="Thống kê câu hỏi của '+(la?'dạng':'cả nhánh')+'">'+so+' câu</button>'
   +'<div class="racts">'+hanhDong(n,so)+'</div></div>';
@@ -2513,6 +2758,8 @@ function xoaNut(id){
    Tác giả không tự duyệt. Máy kiểm đề xuất còn áp dụng được không (nút đã ngưng, đã xóa…) — không cho áp dụng mù. */
 function noiDungDX(d){
  const n=dxNutGoc(d);
+ if(laGanLai(d)) return '🌳 Gắn lại <b>'+esc(d.tuBaoCao.id)+'</b> — đang ở '
+  +(d.nut?'«'+esc(nutById(d.nut)?nutById(d.nut).ten:d.nut+' (đã xóa)')+'»':'<b>chưa gắn</b>');
  if(d.loai==='moi') return '<ins>＋ '+esc(d.ten)+'</ins> dưới «'+esc(n?n.ten:d.cha+' (đã xóa)')+'»';
  if(d.loai==='doiten') return '<span class="diff"><s>'+esc(d.tenCu||(n?n.ten:'?'))+'</s> → <ins>'+esc(d.tenMoi)+'</ins></span>';
  return '⏸ Ngưng «'+esc(n?n.ten:d.nut+' (đã xóa)')+'»';
@@ -2526,7 +2773,8 @@ function veDeXuat(){
  const ds=DX.filter(dxThay), cho=choToiDuyet(), coD=can('dx_duyet_to')||can('dx_duyet_all');
  if(ST.dxChip==null) ST.dxChip=cho.length?'toi':'cho';
  const chips=[...(coD?[['toi','✅ Chờ tôi duyệt',cho]]:[]),['cho','Đang chờ',ds.filter(d=>d.tt==='cho')],['cua','Của tôi',ds.filter(d=>d.tg===role)],
-  ['apdung','Đã áp dụng',ds.filter(d=>d.tt==='apdung')],['khong','Không áp dụng',ds.filter(d=>d.tt==='khong')],['rut','Đã rút',ds.filter(d=>d.tt==='rut')],['all','Tất cả',ds]];
+  ['apdung','Đã áp dụng',ds.filter(d=>d.tt==='apdung')],['chuyen','↗ Đã chuyển ngân hàng',ds.filter(d=>d.tt==='chuyen')],
+  ['khong','Không áp dụng',ds.filter(d=>d.tt==='khong')],['rut','Đã rút',ds.filter(d=>d.tt==='rut')],['all','Tất cả',ds]];
  const cur=chips.find(c=>c[0]===ST.dxChip)||chips[0]; ST.dxChip=cur[0];
  const list=cur[2].slice().sort((a,b)=>b.luc.localeCompare(a.luc)), chon=ST.dxChip==='toi';
  [...ST.dxChon].forEach(id=>{if(!cho.find(d=>d.id===id)) ST.dxChon.delete(id)});
@@ -2540,14 +2788,22 @@ function veDeXuat(){
  h+=list.map(d=>{const k=kiemDX(d), n=dxNutGoc(d);
   return '<div class="hrow'+(ST.dx===d.id?' on':'')+(d.tt==='cho'&&!k.ok?' warnl':'')+'" data-dx="'+d.id+'">'
    +'<div>'+(chon?'<input type="checkbox" class="dxcb" data-dxcb="'+d.id+'"'+(ST.dxChon.has(d.id)?' checked':'')+'>':'')+'</div>'
-   +'<div><b>'+d.id+'</b> <span class="tg a">'+DX_LOAI[d.loai]+'</span><div class="path">'+(d.cay==='bs'?'Bộ sách':'Mạch')+' · '+(dxMon(d)?MON[dxMon(d)].ten:'—')+'</div></div>'
-   +'<div>'+noiDungDX(d)+(d.tt==='cho'&&!k.ok?'<div class="path" style="color:var(--red)">⛔ '+esc(k.ly)+'</div>':'<div class="path">'+esc(n?duongDan(n.id):'')+'</div>')+'</div>'
-   +'<div class="hcol">'+esc(tenNS(d.tg))+'<div class="path">'+k2s(d.luc)+'</div></div>'
+   +'<div><b>'+d.id+'</b> <span class="tg a">'+DX_LOAI[d.loai]+'</span><div class="path">'+(d.cay==='bs'?'Bộ sách':'Mạch')+' · '+(dxMon(d)?MON[dxMon(d)].ten:'—')
+    +(coNguonBC(d)?' · khối '+d.tuBaoCao.khoi:'')+'</div>'
+    +(coNguonBC(d)?'<div class="tg b" title="Đề xuất này sinh từ một báo cáo loại «Sai phân loại …» ở '+menuNguon(d)+'">🌳 '+nhanNguon(d)+'</div>':'')+'</div>'
+   +'<div>'+noiDungDX(d)+(d.tt==='cho'&&!k.ok?'<div class="path" style="color:var(--red)">⛔ '+esc(k.ly)+'</div>'
+     :'<div class="path">'+esc(n?duongDan(n.id):laGanLai(d)?'chưa gắn cây '+(d.cay==='bs'?'Bộ sách':'Mạch kiến thức'):'')+'</div>')
+    +(coNguonBC(d)?'<div class="path">«'+esc(d.ly)+'» · '+lkNguon(d)+'</div>':'')+'</div>'
+   +'<div class="hcol">'+esc(tenNS(d.tg))+(coNguonBC(d)?' <span style="font-weight:400">(người báo)</span>':'')+'<div class="path">'+k2s(d.luc)+'</div></div>'
    +'<div class="hcol"><span class="st2 '+DX_TT[d.tt][1]+'">'+DX_TT[d.tt][0]+'</span></div></div>'}).join('')
   ||'<div class="empty">Không có đề xuất nào ở mục này.</div>';
  h+='</div><div class="panel">'+(open?veDX(ST.dx):'')+'</div></div>';
  h+=dnote('Đơn vị dòng là <b>một đề xuất</b>. Duyệt ngay ở panel phải, không chuyển tab. «Áp dụng» sửa cây thật và ghi vào lịch sử nút kèm mã đề xuất; '
-  +'«Không áp dụng» bắt lý do. Máy <b>kiểm lại</b> đề xuất trước khi áp dụng — nút có thể đã ngưng hoặc bị xóa sau lúc gửi.');
+  +'«Không áp dụng» bắt lý do. Máy <b>kiểm lại</b> đề xuất trước khi áp dụng — nút có thể đã ngưng hoặc bị xóa sau lúc gửi.'
+  +'<br><b>Loại thứ tư 🌳 Gắn lại phân loại</b> <i>(mã <b>DXBC-</b>)</i> không do ai gõ tay: nó sinh từ báo cáo loại «Sai phân loại Khung chương trình» '
+  +'hoặc «Sai phân loại Mạch kiến thức» ở <b>M12.5</b> · <b>M12.6</b> — câu không sai, chỉ <b>gắn nhầm nhánh</b>. Ba lối kết luận: '
+  +'<b>↗ Gắn lại ở ngân hàng</b> <i>(nút đúng đã có — trả bản ghi về menu chủ cho tác giả sửa chỗ gắn; M12.4 <b>không</b> sửa hộ)</i> · '
+  +'<b>＋ Đổi thành đề xuất nút mới</b> <i>(cây thiếu nút)</i> · <b>✕ Không áp dụng</b> <i>(báo cáo sai — lý do bắt buộc)</i>.');
  return h;
 }
 function veDX(id){
@@ -2555,26 +2811,41 @@ function veDX(id){
  const tr=!n?null:d.loai==='moi'?anhEmTrung(n.id,d.ten):d.loai==='doiten'?(n.cha?anhEmTrung(n.cha,d.tenMoi,n.id):null):null;
  let a='';
  if(d.tt==='cho'){
-  if(coQuyenDuyet(d)) a+='<button class="btn sm g" data-apdung="'+d.id+'">✓ Áp dụng</button><button class="btn sm" data-khongad="'+d.id+'">✕ Không áp dụng</button>';
+  /* ★ BCHL-1D — loại «gắn lại» KHÔNG có nút «✓ Áp dụng»: không có gì để áp lên cây. Ba lối riêng, xem app.45. */
+  if(laGanLai(d)){
+   if(coQuyenDuyet(d)) a+='<button class="btn sm g" data-ganlai="'+d.id+'">↗ Gắn lại ở '+menuNguon(d)+'</button>'
+    +'<button class="btn sm p" data-dnutmoi="'+d.id+'">＋ Đổi thành đề xuất nút mới</button>'
+    +'<button class="btn sm" data-khongad="'+d.id+'">✕ Không áp dụng</button>';
+  }else if(coQuyenDuyet(d)) a+='<button class="btn sm g" data-apdung="'+d.id+'">✓ Áp dụng</button><button class="btn sm" data-khongad="'+d.id+'">✕ Không áp dụng</button>';
   if(d.tg===role) a+='<button class="btn sm" data-rut="'+d.id+'">↩ Rút đề xuất</button>';
  }
  if(n) a+='<button class="btn sm" data-dvgo="'+n.id+'">🌳 Mở nút trên cây</button>';
+ if(coNguonBC(d)) a+=lkNguon(d,'↗ Mở '+d.tuBaoCao.id+' ở '+menuNguon(d));
  let h='<div class="ph"><div class="n" style="flex:1"><h2>'+d.id+' · '+DX_LOAI[d.loai]+'</h2><div class="m"><span class="st2 '+DX_TT[d.tt][1]+'">'+DX_TT[d.tt][0]+'</span>'
   +'<span class="pill">'+(d.cay==='bs'?'Cây Bộ sách':'Cây Mạch kiến thức')+'</span><span class="pill">'+(dxMon(d)?MON[dxMon(d)].ten:'—')+'</span></div></div>'
   +'<button class="btn sm" data-dong="1">✕</button></div><div class="cact">'+(a||'<span class="lockico">Chỉ xem</span>')+'</div><div class="pbody">';
- if(d.tt==='cho'){
+ if(d.tt==='cho'&&laGanLai(d)){
+  h+=(k.ok?'<div class="okbox">✅ Máy kiểm: bản ghi còn trong ngân hàng và <b>vẫn đang gắn đúng chỗ như lúc báo cáo</b> — kết luận được.</div>'
+   :'<div class="danger">⛔ Máy kiểm: <b>'+esc(k.ly)+'</b> — chỉ kết thúc được bằng «✕ Không áp dụng».</div>')
+   +'<div class="ro">Ba lối: <b>↗ Gắn lại ở '+menuNguon(d)+'</b> khi nút đúng <b>đã có sẵn</b> trên cây — M12.4 <b>không</b> sửa chỗ gắn hộ, '
+   +'chỗ gắn là trường của chính bản ghi, menu chủ là '+menuNguon(d)+' <i>(D1)</i>. · <b>＋ Đổi thành đề xuất nút mới</b> khi <b>cây thiếu nút</b>. · '
+   +'<b>✕ Không áp dụng</b> khi báo cáo sai, bản ghi đang gắn đúng.</div>';
+ }else if(d.tt==='cho'){
   h+=(k.ok?'<div class="okbox">✅ Máy kiểm: còn áp dụng được lên cây hiện tại.</div>':'<div class="danger">⛔ Máy kiểm: <b>'+esc(k.ly)+'</b> — chỉ kết thúc được bằng «Không áp dụng».</div>')
    +(tr?'<div class="warn">⚠ Nghi trùng với nút có sẵn «<b>'+esc(tr.ten)+'</b>» cùng cấp — người duyệt quyết.</div>':'');
   if(d.loai==='ngung'&&n){const ds=cauTrongNhanh(n.id);if(ds.length) h+='<div class="ro">'+ds.length+' câu đang gắn nhánh này — ngưng thì câu giữ nguyên gắn.</div>'}
  }
+ if(coNguonBC(d)) h+=theNguonBC(d);
  h+='<div class="card"><div class="ch">Nội dung</div><div class="cb">'
-  +f('Loại',DX_LOAI[d.loai])
+  +f('Loại',DX_LOAI[d.loai]+(d.doiTu?' <span style="font-weight:400">— đổi từ <b>'+DX_LOAI[d.doiTu.loai]+'</b> bởi '+esc(tenNS(d.doiTu.ai))+' · '+k2s(d.doiTu.luc)+'</span>':''))
   +f(d.loai==='moi'?'Nút cha':'Nút',n?esc(duongDan(n.id))+' <span class="mcode">'+esc(n.ma)+'</span>':'<span style="color:var(--red)">'+(d.cha||d.nut)+' — không còn trong cây</span>')
   +f('Đề xuất',noiDungDX(d))
   +f('Lý do','<span style="font-weight:400">'+esc(d.ly)+'</span>')
   +f('Người đề xuất',esc(tenNS(d.tg))+' · '+k2s(d.luc)+' '+d.luc.slice(11))
   +f('Người duyệt',d.duyet?esc(tenNS(d.duyet.ai))+' · '+k2s(d.duyet.luc):'<span style="font-weight:400">'+nguoiDuyetDX(d)+' — tác giả không tự duyệt</span>')
   +(d.tt==='khong'?f('Lý do không áp dụng','<span style="font-weight:400">'+esc(d.duyet.ly)+'</span>'):'')
+  +(d.tt==='chuyen'?f('Kết luận','↗ Đã chuyển <b>'+menuNguon(d)+'</b> cho tác giả sửa chỗ gắn — <b>cây không đổi</b>, M12.4 không sửa bản ghi'
+    +(d.duyet.ly?'<br><span style="font-weight:400">Lời nhắn: «'+esc(d.duyet.ly)+'»</span>':'')):'')
   +(d.tt==='rut'?f('Rút lúc',k2s(d.rutLuc)):'')
   +(d.duyet&&d.duyet.nutTao?f('Nút đã tạo','<a class="lk" data-dvgo="'+d.duyet.nutTao+'">'+esc(nutById(d.duyet.nutTao)?nutById(d.duyet.nutTao).ten:d.duyet.nutTao)+'</a>'):'')
   +'</div></div>';
@@ -2601,6 +2872,9 @@ function thucHienDX(d,ten,ma,mota,khoi){
 }
 function apDung(id){
  const d=dxById(id);
+ if(laGanLai(d)){chan('Không «áp dụng» được đề xuất gắn lại','<b>'+d.id+'</b> là loại <b>'+DX_LOAI.gan_lai+'</b> — không có gì để áp lên cây. '
+  +'Chỗ gắn của '+TEN_TU[d.tuBaoCao.loai]+' <b>'+d.tuBaoCao.id+'</b> là trường của chính bản ghi ấy, menu chủ <b>'+menuNguon(d)+'</b> <i>(D1)</i>. '
+  +'Dùng <b>↗ Gắn lại ở '+menuNguon(d)+'</b>, <b>＋ Đổi thành đề xuất nút mới</b> hoặc <b>✕ Không áp dụng</b>.');return}
  if(!coQuyenDuyet(d)){chan('Không có quyền duyệt','Đề xuất về môn <b>'+(dxMon(d)?MON[dxMon(d)].ten:'—')+'</b> — người duyệt: '+nguoiDuyetDX(d)+'.');return}
  if(d.tg===role){chan('Tác giả không tự duyệt','Đề xuất <b>'+d.id+'</b> do chính <b>'+esc(R().n)+'</b> gửi. Kiểm soát 4-eye: người áp dụng phải là người khác — '
   +nguoiDuyetDX(d)+'.'+(R().ma==='TTCM'?' Đề xuất của TTCM chuyển <b>PHT chuyên môn</b>.':''));return}
@@ -2632,7 +2906,9 @@ function apDung(id){
 function khongApDung(id,lyMacDinh){
  const d=dxById(id);
  if(!coQuyenDuyet(d)){chan('Không có quyền duyệt','Người duyệt: '+nguoiDuyetDX(d)+'.');return}
- if(d.tg===role){chan('Tác giả không tự duyệt','Muốn thôi đề xuất của chính mình thì dùng <b>↩ Rút đề xuất</b>.');return}
+ if(d.tg===role){chan(laGanLai(d)?'Người báo không tự xử lý':'Tác giả không tự duyệt',
+  laGanLai(d)?'Đề xuất <b>'+d.id+'</b> sinh từ báo cáo của chính bạn — '+nguoiDuyetDX(d)+' kết luận.'
+  :'Muốn thôi đề xuất của chính mình thì dùng <b>↩ Rút đề xuất</b>.');return}
  mfns.bKAD=()=>{const ly=$('#kadly').value.trim();
   if(!ly){$('#kaderr').innerHTML='<div class="danger" style="margin:8px 0 0">⛔ Lý do không áp dụng là bắt buộc — người đề xuất cần biết vì sao.</div>';return}
   d.tt='khong'; d.duyet={ai:role,luc:GIO_NAY,ly}; ghiAudit('Không áp dụng đề xuất',d.id); closeM(); render(); toast('✕ '+d.id+' — không áp dụng. Người đề xuất thấy lý do ở mục «Của tôi».')};
@@ -2649,6 +2925,7 @@ function rutDX(id){
 function apDungLoat(){
  const ok=[], bo=[];
  [...ST.dxChon].map(dxById).forEach(d=>{
+  if(laGanLai(d)) return bo.push([d,'Loại «Gắn lại phân loại» — không áp lên cây được; mỗi dòng phải chọn một trong ba lối ở panel phải']);
   if(d.tg===role) return bo.push([d,'Tác giả không tự duyệt']);
   const k=kiemDX(d); if(!k.ok) return bo.push([d,k.ly]);
   const n=dxNutGoc(d), tr=d.loai==='moi'?anhEmTrung(n.id,d.ten):d.loai==='doiten'&&n.cha?anhEmTrung(n.cha,d.tenMoi,n.id):null;
@@ -2678,7 +2955,7 @@ function veFormDX(){
  const n=nutById(F.nut);
  if(F.ten==null) F.ten=F.loai==='doiten'&&n?n.ten:'';
  let b='<div class="frow"><div><label class="lbl">Cây</label><select class="fldi" id="dxcay"><option value="bs"'+(F.cay==='bs'?' selected':'')+'>Bộ sách</option><option value="mach"'+(F.cay==='mach'?' selected':'')+'>Mạch kiến thức</option></select></div>'
-  +'<div><label class="lbl">Loại</label><select class="fldi" id="dxloai">'+Object.keys(DX_LOAI).map(k=>'<option value="'+k+'"'+(F.loai===k?' selected':'')+'>'+DX_LOAI[k]+'</option>').join('')+'</select></div></div>'
+  +'<div><label class="lbl">Loại</label><select class="fldi" id="dxloai">'+Object.keys(DX_LOAI_TAY).map(k=>'<option value="'+k+'"'+(F.loai===k?' selected':'')+'>'+DX_LOAI_TAY[k]+'</option>').join('')+'</select></div></div>'
   +'<label class="lbl">'+(F.loai==='moi'?'Nút cha — nút mới nằm dưới nút này':'Nút')+' *</label><select class="fldi" id="dxnut">'
   +ds.map(z=>'<option value="'+z.id+'"'+(z.id===F.nut?' selected':'')+'>'+'　'.repeat(z.cap-1)+esc(z.ten)+(ngungThuc(z.id)?' (ngưng)':'')+'</option>').join('')+'</select>'
   +(n?'<div class="path">'+esc(duongDan(n.id))+' · <span class="mcode">'+esc(n.ma)+'</span></div>':'');
@@ -2711,6 +2988,158 @@ mfns.bDXGUI=()=>{
  closeM(); ST.tab='dx'; ST.dxChip='cua'; ST.dx=d.id; ST.nut=null; render();
  toast('✎ Đã gửi <b>'+d.id+'</b> — chờ '+nguoiDuyetDX(d)+'.'+(ST.ret?' Quay lại '+esc(ST.ret)+' bằng liên kết trên đầu trang.':''));
 };
+
+/* ══════════════ BCHL-1D (19/9/2026) — M12.4 NHẬN ĐỀ XUẤT «GẮN LẠI» TỪ HAI LOẠI LỖI PHÂN LOẠI ══════════════
+   Sáu loại lỗi báo cáo của BCHL-1A không đi cùng một đường. Bốn loại (sai nội dung đề · sai đáp án · sai lời giải ·
+   lỗi khác) ở lại hàng đợi câu ở M12.5 · M12.6 và bật cờ ⚑ Bị báo cáo. HAI loại còn lại — «Sai phân loại Khung
+   chương trình» và «Sai phân loại Mạch kiến thức» — KHÔNG phải lỗi của câu: câu đúng, nhưng bị gắn nhầm nhánh
+   trên cây. Sửa chỗ gắn là việc của cây kiến thức, nên báo cáo hai loại ấy sinh thẳng một đề xuất gửi menu này.
+
+   ★ LOẠI THỨ TƯ `gan_lai` — bên cạnh `moi` · `doiten` · `ngung`. Hình dạng bản ghi do BCHL-1A bàn giao
+     (PHIEU-BCHL-1A §E.3) — 🛑 KHÔNG đổi tên trường, KHÔNG đổi mã `gan_lai`, KHÔNG đổi dải mã `DXBC-`:
+        { id:'DXBC-01', cay:'bs'|'mach', loai:'gan_lai', nut:<nút ĐANG gắn>|null,
+          tuBaoCao:{ loai:'cau'|'nhom', id:'Q08'|'N01', mon, khoi, loaiLoi:'sai_khung'|'sai_mach' },
+          ly:<ghi chú của người báo ≤ 200>, tg:<người báo>, luc, tt:'cho' }
+     Dải mã riêng để không lẫn với `DX-xx` mà người dùng tự gõ ở form «Đề xuất mới»: hai nguồn sinh khác nhau,
+     tra ngược khác nhau — trộn một dải thì không còn biết dòng nào đến từ báo cáo.
+
+   ★ BA LỐI CHO NGƯỜI DUYỆT (thẻ 1D gợi ý, phiên này CHỐT — lý do ở §9b của mô tả):
+     ① ↗ Gắn lại ở ngân hàng   — nút đúng đã có sẵn trên cây, chỉ là bản ghi gắn nhầm ⇒ deep-link về bản ghi
+        cho TÁC GIẢ sửa chỗ gắn. 🛑 M12.4 KHÔNG tự sửa: cây kiến thức sở hữu CẤU TRÚC cây, không sở hữu CHỖ GẮN
+        của từng câu — chỗ gắn là một trường của bản ghi câu / nhóm câu, chủ là M12.5 / M12.6. Tự sửa là phá D1
+        («mỗi thực thể chỉ có MỘT menu chủ được ghi»), và phá luôn lịch sử sửa của câu: bản ghi sẽ có một lần đổi
+        mà menu chủ không biết ai đổi, đề và bài làm đang dùng câu cũng không sinh được cảnh báo sửa.
+     ② ＋ Đổi thành đề xuất nút mới — cây THIẾU nút, không có chỗ nào đúng để gắn ⇒ chuyển `loai` sang `'moi'`,
+        đi tiếp luồng đề xuất nút mới đã có sẵn (máy kiểm · nghi trùng · áp dụng lên cây). Giữ nguyên `id` và
+        `tuBaoCao` nên vết «từ báo cáo …» không mất.
+     ③ ✕ Không áp dụng — báo cáo sai, bản ghi đang gắn đúng ⇒ lý do BẮT BUỘC, người báo đọc ở mục «Của tôi».
+
+   ★ NGƯỜI DUYỆT GIỮ NGUYÊN — Tổ trưởng chuyên môn của tổ quản môn (Group) · Phó hiệu trưởng chuyên môn (School),
+     đúng người đang duyệt `m12.4.de_xuat`. KHÔNG thêm Feature, KHÔNG thêm một ô quyền nào (C7 của cụm BCHL).
+     Tổ chưa có Tổ trưởng thì Phó hiệu trưởng chuyên môn nhận — luật TC-6 đã có sẵn, không viết thêm.
+     Tác giả không tự duyệt vẫn áp: người BÁO không xử lý chính đề xuất mình gửi. */
+
+/* ✅ BCHL-2Z (19/9/2026): danh mục `LY_BL` ở tệp nền nay có đủ sáu loại lỗi, kể cả `sai_khung` · `sai_mach` ⇒ bảng tạm
+   `TEN_LOI_PL` của `BCHL-1D` đã GỠ; tên loại lỗi đọc thẳng `tenLyBL` của nền — một danh mục, một tên. */
+const tenLoiPL=id=>tenLyBL(id);
+const laGanLai=d=>d.loai==='gan_lai';
+const coNguonBC=d=>!!d.tuBaoCao;                       /* còn đúng cả sau khi đổi sang «Nút mới» — giữ vết nguồn */
+const TEN_TU={cau:'câu',nhom:'nhóm câu'};
+const menuNguon=d=>d.tuBaoCao.loai==='nhom'?'M12.6':'M12.5';
+
+/* bản ghi bị báo cáo — M12.4 CHỈ ĐỌC. Đọc từ tệp nền dùng chung (CAU · NHOM) đúng như popup thống kê đọc số câu. */
+function banGhiCua(d){
+ if(!d.tuBaoCao) return null;
+ return d.tuBaoCao.loai==='nhom'?nhomById(d.tuBaoCao.id):cauById(d.tuBaoCao.id);
+}
+/* nhãn nguồn — bắt buộc trên mọi dòng và mọi panel của đề xuất sinh từ báo cáo */
+const nhanNguon=d=>'từ báo cáo '+TEN_TU[d.tuBaoCao.loai]+' '+d.tuBaoCao.id;
+/* deep-link NGƯỢC về bản ghi ở menu chủ. `action=sua` mở sẵn form sửa của M12.5 (M12.6 mở panel nhóm) —
+   tham số giữ nguyên bộ đã chốt ở E.2 của phiếu 1A. */
+function lkNguon(d,nhan){
+ const t=d.tuBaoCao, q='ctx='+t.id+(t.loai==='nhom'?'':'&action=sua')+'&return=M12.4';
+ return lienKet(menuNguon(d),q,nhan||('↗ '+menuNguon(d)+' · '+t.id));
+}
+
+/* ── máy kiểm riêng của loại thứ tư ──
+   Không kiểm «nút còn không» như ba loại kia: nút RỖNG là ca hợp lệ (bản ghi chưa gắn cây nào — chính là ca
+   phải đổi thành đề xuất nút mới). Thứ phải kiểm là bản ghi bị báo cáo còn đúng như lúc báo không. */
+function kiemGanLai(d){
+ const b=banGhiCua(d);
+ if(!b) return {ok:false,ly:TEN_TU[d.tuBaoCao.loai].replace(/^./,c=>c.toUpperCase())+' '+d.tuBaoCao.id
+  +' không còn trong ngân hàng — không còn chỗ gắn nào để sửa'};
+ if(b.huy) return {ok:false,ly:TEN_TU[d.tuBaoCao.loai].replace(/^./,c=>c.toUpperCase())+' '+d.tuBaoCao.id
+  +' đã ở trạng thái cuối «✕ Đã hủy» — bản ghi hỏng thì chỗ gắn không còn ý nghĩa'};
+ const nay=b[d.cay]||null;
+ if(nay!==(d.nut||null)) return {ok:false,ly:'Chỗ gắn đã đổi sau lúc báo cáo — nay '
+  +(nay?'ở «'+duongDan(nay)+'»':'BỎ TRỐNG')+', không còn là '+(d.nut?'«'+(nutById(d.nut)?duongDan(d.nut):d.nut)+'»':'«chưa gắn»')
+  +'. Tác giả có thể đã tự sửa'};
+ if(d.nut&&!nutById(d.nut)) return {ok:false,ly:'Nút '+d.nut+' không còn trong cây — bản ghi đang treo, sửa chỗ gắn ở '+menuNguon(d)};
+ return {ok:true};
+}
+
+/* ── ① ↗ GẮN LẠI Ở NGÂN HÀNG ── */
+function ganLaiONganHang(id){
+ const d=dxById(id), t=d.tuBaoCao, b=banGhiCua(d), k=kiemGanLai(d);
+ if(!coQuyenDuyet(d)){chan('Không có quyền duyệt','Đề xuất về môn <b>'+(dxMon(d)?MON[dxMon(d)].ten:'—')+'</b> — người duyệt: '+nguoiDuyetDX(d)+'.');return}
+ if(d.tg===role){chan('Người báo không tự xử lý','Đề xuất <b>'+d.id+'</b> sinh từ báo cáo của chính <b>'+esc(R().n)
+  +'</b>. Kiểm soát 4-eye: người kết luận phải là người khác — '+nguoiDuyetDX(d)+'.');return}
+ if(!k.ok){chan('Không chuyển được '+d.id,esc(k.ly)+'. Đề xuất phải kết thúc bằng «✕ Không áp dụng» có lý do.');return}
+ mfns.bGL=()=>{const nh=$('#glnhan').value.trim();
+  d.tt='chuyen'; d.duyet={ai:role,luc:GIO_NAY,ly:nh,cach:'gan_lai'};
+  ghiAudit('Chuyển tác giả gắn lại',d.id+' → '+menuNguon(d)+' · '+t.id);
+  closeM(); render();
+  toast('↗ <b>'+d.id+'</b> đã chuyển về <b>'+menuNguon(d)+'</b> — tác giả '+esc(tenNS(b.tg))+' sửa chỗ gắn của <b>'+t.id
+   +'</b>. M12.4 <b>không</b> sửa bản ghi. '+lkNguon(d,'↗ Mở '+t.id));};
+ modal('↗ Gắn lại ở '+menuNguon(d),
+  '<div class="ro">'+esc(tenLoiPL(t.loaiLoi))+' · '+TEN_TU[t.loai]+' <b>'+t.id+'</b> — '+esc(MON[t.mon]?MON[t.mon].ten:'—')+' khối '+t.khoi
+   +'<br>Đang gắn ở cây '+(d.cay==='bs'?'Bộ sách':'Mạch kiến thức')+': '+(d.nut?'<b>'+esc(duongDan(d.nut))+'</b>':'<b>chưa gắn</b>')
+   +'<br>Người báo: <b>'+esc(tenNS(d.tg))+'</b> · '+k2s(d.luc)+' — «'+esc(d.ly)+'»</div>'
+  +'<div class="warn">🛑 <b>M12.4 không sửa chỗ gắn hộ.</b> Cây kiến thức sở hữu <b>cấu trúc cây</b>; <b>chỗ gắn</b> của một '
+   +TEN_TU[t.loai]+' là một trường của chính bản ghi ấy, menu chủ là <b>'+menuNguon(d)+'</b> <i>(D1 — mỗi thực thể chỉ một menu chủ được ghi)</i>. '
+   +'Sửa ở đây thì bản ghi có một lần đổi mà menu chủ không ghi được vào lịch sử sửa, và đề · bài làm đang dùng nó không sinh được cảnh báo.</div>'
+  +'<div class="okbox">Nút đúng <b>đã có sẵn trên cây</b> — không cần sửa cây. Việc còn lại là đổi chỗ gắn của bản ghi: '
+   +lkNguon(d,'↗ Mở '+t.id+' ở '+menuNguon(d))+'</div>'
+  +'<label class="lbl">Lời nhắn cho tác giả <span style="font-weight:400">— không bắt buộc; hiện ở mục «Của tôi» của người báo</span></label>'
+  +'<textarea class="fldi" id="glnhan" rows="2">'+esc('Nút đúng đã có trên cây — đổi chỗ gắn ngay trên bản ghi, không cần sửa cây.')+'</textarea>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn g" data-mb="GL">↗ Chuyển tác giả gắn lại</button>');
+}
+
+/* ── ② ＋ ĐỔI THÀNH ĐỀ XUẤT NÚT MỚI ── */
+function doiThanhNutMoi(id){
+ const d=dxById(id), t=d.tuBaoCao;
+ if(!coQuyenDuyet(d)){chan('Không có quyền duyệt','Người duyệt: '+nguoiDuyetDX(d)+'.');return}
+ if(d.tg===role){chan('Người báo không tự xử lý','Đề xuất <b>'+d.id+'</b> sinh từ báo cáo của chính bạn — '+nguoiDuyetDX(d)+' kết luận.');return}
+ const b=banGhiCua(d), k=kiemGanLai(d);
+ if(!k.ok){chan('Không đổi được '+d.id,esc(k.ly)+'. Đề xuất phải kết thúc bằng «✕ Không áp dụng» có lý do.');return}
+ /* nút cha gợi ý: nút CHA của chỗ đang gắn (thiếu một dạng anh em), hoặc nút cùng môn – khối khi bản ghi chưa gắn */
+ const ds=thuTuCay(d.cay).filter(n=>n.cap<MAXCAP[n.cay]&&!ngungThuc(n.id)&&(!n.mon||n.mon===t.mon));
+ const dangGan=d.nut?nutById(d.nut):null;
+ let goi=dangGan?(dangGan.cap<MAXCAP[d.cay]?dangGan.id:dangGan.cha):(ds[0]?ds[0].id:'');
+ if(!ds.find(n=>n.id===goi)) goi=ds.length?ds[0].id:'';
+ if(!ds.length){chan('Cây chưa có nút nào nhận được nút con','Cây '+(d.cay==='bs'?'Bộ sách':'Mạch kiến thức')+' chưa có nút nào của môn <b>'
+  +esc(MON[t.mon]?MON[t.mon].ten:'—')+'</b> để đặt nút mới xuống dưới. Dựng nhánh trước ở tab '+(d.cay==='bs'?'1':'2')+', rồi quay lại đề xuất này.');return}
+ mfns.bDNM=()=>{const cha=$('#dnmcha').value, ten=$('#dnmten').value.trim();
+  if(!ten){$('#dnmerr').innerHTML='<div class="danger" style="margin:8px 0 0">⛔ Nhập tên nút mới.</div>';return}
+  const n=nutById(cha), tr=anhEmTrung(cha,ten);
+  if(tr&&!ST.dnmXN){ST.dnmXN=true;$('#dnmerr').innerHTML='<div class="warn" style="margin:8px 0 0">⚠ Nghi trùng với nút «<b>'+esc(tr.ten)
+   +'</b>» có sẵn cùng cấp — nếu đúng là nút ấy thì dùng <b>↗ Gắn lại ở '+menuNguon(d)+'</b>. Vẫn muốn thêm nút mới thì bấm lại.</div>';return}
+  d.loai='moi'; d.cha=cha; d.ten=ten; delete d.nut; ST.dnmXN=false;
+  d.doiTu={loai:'gan_lai',ai:role,luc:GIO_NAY};
+  ghiAudit('Đổi đề xuất gắn lại thành nút mới',d.id+' → dưới '+n.ma);
+  closeM(); ST.dx=d.id; render();
+  toast('＋ <b>'+d.id+'</b> nay là đề xuất <b>nút mới</b> dưới «'+esc(n.ten)+'» — vẫn mang vết «'+nhanNguon(d)+'». Bấm <b>✓ Áp dụng</b> để sửa cây.');};
+ ST.dnmXN=false;
+ modal('＋ Đổi '+d.id+' thành đề xuất nút mới',
+  '<div class="ro">'+esc(tenLoiPL(t.loaiLoi))+' · '+TEN_TU[t.loai]+' <b>'+t.id+'</b> — '+esc(MON[t.mon]?MON[t.mon].ten:'—')+' khối '+t.khoi
+   +'<br>Đang gắn: '+(d.nut?'<b>'+esc(duongDan(d.nut))+'</b>':'<b>chưa gắn</b>')+'<br>Người báo: <b>'+esc(tenNS(d.tg))+'</b> — «'+esc(d.ly)+'»</div>'
+  +'<div class="okbox">Lối này dùng khi <b>cây thiếu nút</b> — không có chỗ nào đúng để gắn. Đề xuất chuyển sang loại <b>＋ Nút mới</b> và '
+   +'đi tiếp luồng sẵn có: máy kiểm · nghi trùng · <b>✓ Áp dụng</b> sửa cây thật. Mã <b>'+d.id+'</b> và vết <i>«'+nhanNguon(d)+'»</i> giữ nguyên.</div>'
+  +'<label class="lbl">Nút cha — nút mới nằm dưới nút này *</label><select class="fldi" id="dnmcha">'
+  +ds.map(z=>'<option value="'+z.id+'"'+(z.id===goi?' selected':'')+'>'+'　'.repeat(z.cap-1)+esc(z.ten)+'</option>').join('')+'</select>'
+  +'<label class="lbl">Tên nút mới *</label><input class="fldi" id="dnmten" value="'+esc(d.ten||'')+'" placeholder="Tên dạng bài tập / đơn vị kiến thức còn thiếu">'
+  +'<div class="ro" style="margin-top:10px">Sau khi đổi, chỗ gắn của <b>'+t.id+'</b> vẫn do tác giả sửa ở <b>'+menuNguon(d)+'</b> — '
+   +'M12.4 chỉ dựng chỗ để gắn. '+lkNguon(d)+'</div><div id="dnmerr"></div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="DNM">＋ Đổi thành đề xuất nút mới</button>');
+}
+
+/* ── khối «Nguồn báo cáo» trong panel — D2: đủ bản ghi · môn · khối · nút đang gắn · ghi chú · người báo · lúc ── */
+function theNguonBC(d){
+ const t=d.tuBaoCao, b=banGhiCua(d), nay=b?(b[d.cay]||null):null;
+ return '<div class="card"><div class="ch">🌳 Nguồn — '+nhanNguon(d)+'</div><div class="cb">'
+  +f('Bản ghi',TEN_TU[t.loai].replace(/^./,c=>c.toUpperCase())+' <b>'+esc(t.id)+'</b> '+lkNguon(d)
+     +(b?'':' <span style="color:var(--red);font-weight:400">— không còn trong ngân hàng</span>')
+     +(b&&b.huy?' <span class="st2 r">✕ Đã hủy</span>':''))
+  +f('Môn · khối',esc(MON[t.mon]?MON[t.mon].ten:'—')+' · khối '+esc(t.khoi))
+  +f('Loại lỗi',esc(tenLoiPL(t.loaiLoi))+' <span style="font-weight:400">— báo cáo loại này <b>không</b> bật cờ ⚑ và <b>không</b> chặn bản ghi vào đề mới: gắn nhầm nhánh không làm câu sai, chỉ làm ma trận đếm lệch</span>')
+  +f('Nút đang gắn <span style="font-weight:400">(lúc báo)</span>',d.nut?(nutById(d.nut)?esc(duongDan(d.nut))+' <span class="mcode">'+esc(nutById(d.nut).ma)+'</span>'
+     :'<span style="color:var(--red)">'+esc(d.nut)+' — không còn trong cây</span>'):'<span class="cnt0">chưa gắn cây '+(d.cay==='bs'?'Bộ sách':'Mạch')+'</span>')
+  +(b&&nay!==(d.nut||null)?f('Nút đang gắn <span style="font-weight:400">(bây giờ)</span>',
+     '<span style="color:var(--red)">'+(nay?esc(duongDan(nay)):'bỏ trống')+' — đã đổi sau lúc báo cáo</span>'):'')
+  +f('Ghi chú của người báo','<span style="font-weight:400">'+esc(d.ly)+'</span>')
+  +f('Người báo',esc(tenNS(d.tg))+' · '+k2s(d.luc)+' '+d.luc.slice(11))
+  +'</div></div>';
+}
 
 
 /* ══════════════ M12.4 — NHẬP CÂY TỪ EXCEL (bước đối chiếu) · XUẤT CÂY ══════════════
@@ -2904,6 +3333,8 @@ function suKien(t,e){
  if((v=b('dxchip'))){ST.dxChip=v;ST.dx=null;render();return}
  if((v=b('dx'))){ST.dx=v;render();return}
  if((v=b('apdung'))){apDung(v);return}
+ if((v=b('ganlai'))){ganLaiONganHang(v);return}          /* BCHL-1D — ba lối của loại «gắn lại» */
+ if((v=b('dnutmoi'))){doiThanhNutMoi(v);return}
  if((v=b('khongad'))){khongApDung(v);return}
  if((v=b('rut'))){rutDX(v);return}
  /* bấm vào dòng (không trúng nút nào) = mở / đóng nhánh — không còn panel */

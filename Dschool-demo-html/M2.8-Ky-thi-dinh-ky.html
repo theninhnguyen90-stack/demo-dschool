@@ -384,7 +384,11 @@ const LOP={
  '9B1':{ss:36,dt:'B',he:'pt'},
  '8A1':{ss:41,dt:'A',he:'pt'},'8A2':{ss:39,dt:'A',he:'pt'},'8B1':{ss:37,dt:'B',he:'pt'},
  '3A1':{ss:30,dt:'A',he:'pt'},'5A1':{ss:35,dt:'A',he:'pt'},
- '4A1':{ss:33,dt:'A',he:'pt'},'4A2':{ss:31,dt:'A',he:'pt'},'4B1':{ss:29,dt:'B',he:'pt'}};
+ '4A1':{ss:33,dt:'A',he:'pt'},'4A2':{ss:31,dt:'A',he:'pt'},'4B1':{ss:29,dt:'B',he:'pt'},
+ /* Khoi 10 them cho cum GDDP (YK-08) — dat CUOI danh sach CO Y: thu tu khoa quyet dinh
+    thu tu sinh hoc sinh, chen o giua se lam lech du lieu mau cua nam ky thi cu. */
+ '10A1':{ss:38,dt:'A',he:'pt'},'10A2':{ss:37,dt:'A',he:'pt'},
+ '10A3':{ss:36,dt:'A',he:'pt'},'10A4':{ss:35,dt:'A',he:'clc'}};
 const khoi=l=>+l.match(/^\d+/)[0];
 const capHoc=l=>{const k=khoi(l); return k<=5?'TH':k<=9?'THCS':'THPT'};
 const khoi2cap=k=>k<=5?'TH':k<=9?'THCS':'THPT';
@@ -413,6 +417,12 @@ const GV={
  vth :{n:'Lý Thanh Vân',    cd:'Văn thư'},
  khoa:{n:'Hoàng Văn Khoa',  cd:'PHT chuyên môn'},
  tho2:{n:'Đinh Quang Thọ',  cd:'Tổ trưởng Toán — Lí'},
+ /* Mon Noi dung giao duc dia phuong: moi mach mot giao vien, va CHU TRI la cua TUNG LOP
+    (CV 5636/BGDDT-GDTrH 10/10/2023) — chu tri tong hop diem va nhan xet cua lop minh. */
+ van :{n:'Lê Thị Vân',      cd:'GV Ngữ văn — mạch ① Văn hóa, lịch sử, truyền thống'},
+ hanh:{n:'Đặng Minh Hà',    cd:'GV Địa lí — mạch ② Địa lí, kinh tế, hướng nghiệp'},
+ oanh:{n:'Tạ Thị Oanh',     cd:'GV GDKT&PL — mạch ③ Chính trị – xã hội, môi trường'},
+ namp:{n:'Phan Văn Nam',    cd:'GV Lịch sử — dạy cả ba mạch ở 10A4'},
  qtri:{n:'Quản trị demo',   cd:'Đủ quyền (demo)'}};
 const gvn=g=>(GV[g]||{n:g}).n;
 
@@ -420,7 +430,11 @@ const gvn=g=>(GV[g]||{n:g}).n;
 const MON_TH=['Tiếng Việt','Toán','Ngoại ngữ 1','Lịch sử và Địa lí','Khoa học','Tin học và Công nghệ'];
 const MON_TH_GIUAKY=['Tiếng Việt','Toán'];          /* chi lop 4-5, chi giua ky */
 const MON_THCS=['Toán','Ngữ văn','Tiếng Anh','Vật lí','Sinh học','Lịch sử'];
-const monCua=lop=>capHoc(lop)==='TH'?MON_TH:MON_THCS;
+/* THPT: them mon NOI DUNG GIAO DUC DIA PHUONG — 35 tiet/nam (TT 32/2018); o Phu Tho
+   chia BA MACH theo Quyet dinh 18 ngay 26/01/2026 cua UBND tinh. Day la mon duy nhat
+   cua bo demo nay co >= 2 phan, nen cung la mon duy nhat co dai goi y o buoc ④. */
+const MON_THPT=MON_THCS.concat(['Nội dung giáo dục địa phương']);
+const monCua=lop=>{const c=capHoc(lop); return c==='TH'?MON_TH:c==='THPT'?MON_THPT:MON_THCS};
 const thapPhan=kh=>khoi2cap(kh)!=='TH';             /* Tieu hoc: thang 10, KHONG thap phan */
 
 /* Giao vien bo mon cua tung cap (Lop, Mon) — doc tu phan cong M4.4 (nh3.3.1).
@@ -442,12 +456,55 @@ const GVBM={
  GVBM[l+'|Tiếng Việt']=l[0]==='4'?'hoa':'tho'; GVBM[l+'|Toán']=l[0]==='4'?'hoa':'tho';
  GVBM[l+'|Ngoại ngữ 1']='ngan'; GVBM[l+'|Lịch sử và Địa lí']=l[0]==='4'?'hoa':'tho';
  GVBM[l+'|Khoa học']=l[0]==='4'?'hoa':'tho'; GVBM[l+'|Tin học và Công nghệ']='tuan';});
+/* Khoi 10 — voi mon chia phan thi GVBM cua cap (Lop, Mon) doc ra la GIAO VIEN CHU TRI
+   CUA LOP DO (HDPC ⑥), khong phai mot nguoi cho ca mon: 10A1 co Van, 10A2 thay Ha,
+   10A3 co Oanh, 10A4 thay Nam. Day chinh la ca sinh ra "de rieng theo lop". */
+['10A1','10A2','10A3','10A4'].forEach((l,i)=>{
+ GVBM[l+'|Toán']=i%2?'mai':'chi'; GVBM[l+'|Ngữ văn']=i%2?'son':'lan';
+ GVBM[l+'|Tiếng Anh']='ngan'; GVBM[l+'|Vật lí']='hung';
+ GVBM[l+'|Sinh học']='tuan'; GVBM[l+'|Lịch sử']='tuan';
+ GVBM[l+'|Nội dung giáo dục địa phương']=['van','hanh','oanh','namp'][i];});
 const gvbmCua=(lop,mon)=>GVBM[lop+'|'+mon]||null;
 const gvbmCacLop=(lops,mon)=>[...new Set(lops.map(l=>gvbmCua(l,mon)).filter(Boolean))];
 
 /* HAI THUOC TINH DOC LAP — khong suy cai nay tu cai kia (tai lieu §3.3) */
 const HTHUC={lop:'Thi tại lớp',chung:'Thi chung toàn trường'};
 const CCHAM={phong:'GV chấm theo phòng',phach:'Dọc phách chấm chéo'};
+/* ===== THUOC TINH THU BA — DE CHUNG / DE RIENG THEO LOP (cum GDDP · YK-08 · 20/9/2026) =====
+   DOC LAP voi hai thuoc tinh tren: ca bon to hop cua (hinh thuc × cach cham) deu ket hop duoc
+   voi ca hai gia tri o day. Mac dinh 0 — y het hanh vi truoc cum GDDP. */
+const DERIENG={0:'Đề chung cho cả phạm vi',1:'Đề riêng theo lớp'};
+
+/* ===== CHIEU 🔗 TU M5.1 — "lop nay da hoc toi phan nao" (HDPC ④ ⑤) =====
+   M2.8 KHONG so huu du lieu nay: chu so huu 🔒 la M5.1 (bang chia so tiet theo phan ④ va
+   lich trien khai phan theo lop ⑤). O day chi giu BAN CHUP chi doc de ve DAI GOI Y o buoc ④.
+   🛑 Doc — khong ghi, khong chan, khong tu sinh de. */
+const PHANMON={'Nội dung giáo dục địa phương':[
+ ['P1','Mạch ① Văn hóa, lịch sử, truyền thống',12],
+ ['P2','Mạch ② Địa lí, kinh tế, hướng nghiệp',12],
+ ['P3','Mạch ③ Chính trị – xã hội, môi trường',11]]};
+/* Lich trien khai phan THEO LOP — dung so lieu demo M5.1 gieo cho ca PC4 sau khi bam
+   "↻ Goi y lich xoay vong": giai doan CHUNG 1–12 · 13–24 · 25–35, moi lop mot thu tu.
+   10A4 trung thu tu voi 10A1 nhung KHAC NGUOI day nen khong xung dot (PHIEU-GDDP-1A muc B8). */
+const LICHPHAN={'Nội dung giáo dục địa phương':{
+ '10A1':['P1','P2','P3'],'10A2':['P2','P3','P1'],
+ '10A3':['P3','P1','P2'],'10A4':['P1','P2','P3']}};
+const GIAIDOAN=[[1,12],[13,24],[25,35]];
+/* Demo: ky giua hoc ky I cua khoi 10 roi vao TUAN 18 cua nam hoc. Lop thi lech ngay thi
+   lech tuan theo — dung cai sinh ra "de rieng theo lop". */
+const TUAN_GOC=18, NGAY_GOC=7;
+const tuanCua=d=>TUAN_GOC+Math.floor((d-NGAY_GOC)/7);
+const tenPhan=(mon,ma)=>{const r=(PHANMON[mon]||[]).find(x=>x[0]===ma); return r?r[1]:ma};
+/* Cac phan lop do DA HOC tinh den tuan T; phan cuoi danh sach la phan DANG hoc. */
+function phanDaHoc(mon,lop,tuan){
+ const th=(LICHPHAN[mon]||{})[lop]; if(!th) return null;
+ const out=[];
+ th.forEach((ma,i)=>{const g=GIAIDOAN[i]; if(g&&tuan>=g[0]) out.push({ma:ma,tu:g[0],den:g[1],xong:tuan>g[1]})});
+ return out;
+}
+/* Mon nay o ky nay co >= 2 phan khong — dieu kien hien dai goi y (§4④) */
+const coPhan=(k,m)=>!!(PHANMON[m.mon]&&PHANMON[m.mon].length>1
+ &&LICHPHAN[m.mon]&&k.lops.some(l=>LICHPHAN[m.mon][l]));
 
 /* ===== HOC SINH ===== */
 const HO=['Nguyễn','Trần','Lê','Phạm','Hoàng','Vũ','Đặng','Bùi','Đỗ','Hồ','Ngô','Dương','Lý','Đinh'];
@@ -458,12 +515,18 @@ let _sd=20260817;
 const rnd=()=>{_sd=(_sd*1103515245+12345)&0x7fffffff; return _sd/0x7fffffff};
 const HS={};
 /* Moi lop 10 hoc sinh — du de chia phong that (2 phong khi max 24/phong) ma DOM van doc duoc */
+/* Khoi 10 la lop THEM SAU (cum GDDP). Sinh ten cho chung cung an vao day so ngau nhien
+   va lam LECH toan bo diem mau cua nam ky thi cu — nen chup lai hat giong truoc lop khoi 10
+   dau tien va tra lai sau vong lap. PC1 (chong hoi quy) doi hoi khong mot con so nao doi. */
+let _sdGiu=null;
 Object.keys(LOP).forEach(l=>{
+ if(khoi(l)===10&&_sdGiu===null) _sdGiu=_sd;
  for(let i=1;i<=10;i++){
   const id=l+'-'+String(i).padStart(2,'0');
   HS[id]={ho:HO[(rnd()*HO.length)|0],dem:DEM[(rnd()*DEM.length)|0],ten:TENR[(rnd()*TENR.length)|0],lop:l};
   HS[id].n=HS[id].ho+' '+HS[id].dem+' '+HS[id].ten;
  }});
+if(_sdGiu!==null) _sd=_sdGiu;
 const hsLop=l=>Object.keys(HS).filter(h=>HS[h].lop===l);
 const hsLops=ls=>ls.reduce((a,l)=>a.concat(hsLop(l)),[]);
 /* Sap theo TEN roi den DEM roi HO — dung chuan goi ten cua truong VN,
@@ -497,6 +560,23 @@ function thiXong(k,m){
  if(k.ht==='chung') return m.ngay<HOMNAY;
  return k.lops.every(l=>m.tiet[l]&&m.tiet[l].ngay<HOMNAY);
 }
+/* ===== MOC MO NHAP PHACH VA CHAM DIEM (§3.4.1) =====
+   De chung  : theo MON  — mo khi lop CUOI CUNG cua mon do da thi (rui ro: lop thi sau do de).
+   De rieng  : theo LOP  — lop nao thi xong mo lop do; khac de thi khong con gi de do.
+   🛑 Giai theo LOP chi DAN XUAT duoc khi phong thi = lop hoc. "Thi chung toan truong" thi moi
+   lop ngoi CUNG MOT BUOI nen hai moc trung nhau — day la dan xuat, khong phai ngoai le. */
+const deTheoLop=k=>!!k.deRieng&&k.ht==='lop';
+const thiXongLop=(k,m,l)=>{const t=m.tiet[l]; return !!(t&&t.ngay<HOMNAY)};
+const lopChuaThi=(k,m)=>k.lops.filter(l=>!thiXongLop(k,m,l));
+function moCham(k,m,p){
+ if(!deTheoLop(k)) return thiXong(k,m);
+ const l=p&&p.lop; return l?thiXongLop(k,m,l):k.lops.some(x=>thiXongLop(k,m,x));
+}
+/* Ho so de cua MOT LOP — chi ton tai o che do de rieng */
+function deCuaLop(m,l){m.deLop=m.deLop||{}; return m.deLop[l]=m.deLop[l]||{de:'',dapan:''}}
+/* De va dap an dung cho mot phong/lop — de chung thi van la mot cap tep cho ca mon */
+const deDung=(k,m,p)=>deTheoLop(k)&&p&&p.lop?deCuaLop(m,p.lop):{de:m.de,dapan:m.dapan};
+
 function ttKy(k){
  if(!k.trienKhai) return 'chua';
  if(!k.mons.length) return 'dang';
@@ -534,6 +614,9 @@ function M(o){o.tiet=o.tiet||{}; o.phong=o.phong||[]; o.sbd=o.sbd||{};
  o.nsPhach=o.nsPhach||null; o.nsCham=o.nsCham||[]; o.bangPhach=o.bangPhach||null;
  o.diemPhach=o.diemPhach||{}; o.diem=o.diem||{}; o.vang=o.vang||{};
  o.de=o.de||''; o.dapan=o.dapan||''; o.phieu=o.phieu||0; o.chot=o.chot||0;
+ /* Ho so de theo TUNG LOP — chi dung khi ky thi o che do "De rieng theo lop".
+    De chung van nam o o.de / o.dapan nhu cu, khong doi mot dong nao. */
+ o.deLop=o.deLop||{};
  o.congbo=o.congbo||0; o.pk=o.pk||[];
  /* Cua nhap cua LAN GHI GAN NHAT theo hoc sinh — {cua:'M2.5'|'M2.8',gv,ngay}. Khong co = nhap tai buoc ⑦.
     Mot ban ghi, hai cua (P19): M2.5 ghi THANG vao day, khong co ban sao nao o M2.5. */
@@ -550,6 +633,9 @@ function K(o){o.id='KT-'+(KSEQ++); o.mons=(o.mons||[]).map(M); o.log=o.log||[];
  /* Han nhan don phuc khao — MOT moc cho CA KY THI (chot 28/8/2026).
     null = chua dat; he thong goi y khi cong bo mon dau tien. */
  o.hanPK=o.hanPK||null;
+ /* Thuoc tinh thu ba (cum GDDP): 0 = de chung cho ca pham vi (MAC DINH, y het truoc day),
+    1 = moi lop mot de. Xem ghi chu o DERIENG va o deTheoLop(). */
+ o.deRieng=o.deRieng||0;
  return o}
 
 /* Ten goi y: Ky thi x Khoi lop x He dao tao x Diem truong */
@@ -626,17 +712,22 @@ const daPhach=m=>m.bangPhach?Object.keys(m.bangPhach).length:0;
 /* ===== HOP DONG DU LIEU VOI M2.5 (P16 Viec 2 · P19) =====
    M2.8 CUNG CAP theo Ky thi × Lop × Mon; M2.5 chi mo o DGgk/DGck khi DU dieu kien.
    Mot ban ghi, hai cua: M2.5 ghi thang vao m.diem cua M2.8, audit ghi cua nao. */
-function ttMonHD(k,m){
+/* Hop dong §5A.2 cap du lieu theo don vi "Ky thi × LOP × Mon", va chinh no ghi rang
+   trang_thai_mon SUY RA tu §3.4.1. Nen khi §3.4.1 giai theo lop (de rieng) thi truong nay
+   cung giai theo lop — VAN LA NAM DIEU KIEN, khong them dieu kien thu sau. */
+function ttMonHD(k,m,l){
  if(m.congbo) return 'da_cong_bo';
  if(m.chot) return 'da_chot';
- return thiXong(k,m)?'dang_cham':'chua_thi';
+ return (deTheoLop(k)&&l?thiXongLop(k,m,l):thiXong(k,m))?'dang_cham':'chua_thi';
 }
 const TTHD={chua_thi:'chưa thi',dang_cham:'đang chấm',da_chot:'đã chốt',da_cong_bo:'đã công bố'};
 function cuaM25(k,m,p){
- const nguoi=p&&p.cham?[p.cham]:[], t=ttMonHD(k,m), thieu=[];
+ const nguoi=p&&p.cham?[p.cham]:[], t=ttMonHD(k,m,p&&p.lop), thieu=[];
  if(k.ht!=='lop') thieu.push('thi chung toàn trường — điểm đi theo phòng thi, không theo lớp');
  if(k.cc!=='phong') thieu.push('dọc phách — giáo viên không được biết số phách ứng với em nào');
- if(t!=='dang_cham') thieu.push(t==='chua_thi'?'môn chưa thi xong ở mọi lớp — mốc mở chấm là lớp thi cuối (§3.4.1)':'môn '+TTHD[t]+' — sửa ở ⑧'+(t==='da_cong_bo'?' / ⑨ Phúc khảo':''));
+ if(t!=='dang_cham') thieu.push(t==='chua_thi'?(deTheoLop(k)&&p&&p.lop
+    ?'lớp '+p.lop+' chưa thi — đề riêng theo lớp nên mốc mở chấm là buổi thi của chính lớp này (§3.4.1)'
+    :'môn chưa thi xong ở mọi lớp — mốc mở chấm là lớp thi cuối (§3.4.1)'):'môn '+TTHD[t]+' — sửa ở ⑧'+(t==='da_cong_bo'?' / ⑨ Phúc khảo':''));
  if(k.ht==='lop'&&k.cc==='phong'&&!nguoi.length) thieu.push('lớp này chưa phân người chấm');
  if(p&&p.ky) thieu.push('người chấm đã ký xác nhận lớp này — gỡ chữ ký ở ⑦ mới mở lại');
  return {hinh_thuc:k.ht==='lop'?'tai_lop':'chung',cach_cham:k.cc==='phong'?'gv_cham':'doc_phach',
@@ -751,6 +842,48 @@ k5.mons.forEach(m=>{dungPhongLop(k5,m); m.phieu=0});
  k5.log.push(['26/8 17:30','Bùi Linh Chi — GV Toán','Ký xác nhận chấm xong Toán — Lớp 9A1','10 bài']);
 })();
 
+/* --- PC22 · PC24 — DE RIENG THEO LOP: giua ky I, khoi 10, Noi dung giao duc dia phuong ---
+   Bon lop 10 dung chung mot ke hoach giao duc nhung XOAY VONG ba mach (mo hinh A3 — M5.1 ⑤),
+   nen den tuan 18 moi lop dang o mot mach khac nhau. Mot de chung cho ca khoi la SAI QUY DINH
+   (CV 5636: de phai khop noi dung da day DEN THOI DIEM KIEM TRA), khong chi bat tien.
+   Trang thai gieo: 10A1 · 10A2 · 10A3 da thi (mo cham theo lop), 10A4 chua thi (con khoa). */
+const k6=K({ten:'',loai:'gk',hk:1,khoi:10,dts:['A'],ht:'lop',cc:'phong',deRieng:1,trienKhai:1,
+ mons:[mkMon(null,'Nội dung giáo dục địa phương',0,'',45)],
+ log:[['24/8 09:15','Hoàng Văn Khoa — PHT chuyên môn','Tạo kỳ thi','Thi tại lớp · GV chấm theo phòng'],
+      ['24/8 09:16','Hoàng Văn Khoa — PHT chuyên môn','Đổi phạm vi đề','Đề riêng theo lớp — bốn lớp 10 xoay vòng ba mạch, mỗi lớp đang ở một mạch khác nhau'],
+      ['24/8 09:20','Hoàng Văn Khoa — PHT chuyên môn','Triển khai kỳ thi','Lịch thi lên App phụ huynh']]});
+k6.ten=tenGoiY(k6); KT.push(k6);
+(function(){const m=k6.mons[0]; dungPhongLop(k6,m); m.phieu=0;
+ /* Ngay thi lech nhau theo tien do tung lop — khac de nen lech buoi KHONG con la rui ro.
+    Ba lop dau < HOMNAY (da thi), 10A4 sau HOMNAY (chua thi). */
+ m.tiet={'10A1':{ngay:7,tiet:3,gio:GIOTIET[3]},'10A2':{ngay:8,tiet:2,gio:GIOTIET[2]},
+         '10A3':{ngay:9,tiet:4,gio:GIOTIET[4]},'10A4':{ngay:14,tiet:3,gio:GIOTIET[3]}};
+ /* Ho so de: lop nao thi xong thi da nop de va dap an cua RIENG lop do; 10A4 chua mo. */
+ [['10A1','P1'],['10A2','P2'],['10A3','P3']].forEach(([l,ph])=>{const d=deCuaLop(m,l);
+  d.de='de-NDDP-GK1-'+l+'-'+ph+'.pdf'; d.dapan='dapan-NDDP-GK1-'+l+'-'+ph+'.pdf';
+  k6.log.push([dstr(m.tiet[l].ngay)+' 15:'+(10+k6.log.length)+'','Đinh Quang Thọ — TTCM',
+   'Tải lên đề thi và đáp án — lớp '+l,'khớp mạch đang học của lớp ('+ph+')'])});
+ /* 10A1 da cham xong va ky; 10A2 dang cham do; 10A3 vua thi, chua ai cham */
+ const p1=m.phong.find(p=>p.lop==='10A1'), p2=m.phong.find(p=>p.lop==='10A2');
+ p1.hs.forEach((h,i)=>{if(i===4)m.vang[h]=1; else m.diem[h]=Math.round((4+rnd()*6)*2)/2});
+ p1.ky={gv:'van',ngay:HOMNAY-2};
+ p2.hs.slice(0,6).forEach(h=>m.diem[h]=Math.round((4+rnd()*6)*2)/2);
+ k6.log.push(['25/8 16:40','Lê Thị Vân — GV Ngữ văn','Ký xác nhận chấm xong — Lớp 10A1','9 bài · 1 vắng']);
+})();
+
+/* --- PC23 — CUNG HINH DANG NHUNG DE CHUNG: moc mo cham quay ve theo MON ---
+   Cung khoi, cung mon, cung kieu lech ngay; chi khac MOT O CHON o buoc ①.
+   Vi con 10A4 chua thi nen ⑥ ⑦ khoa TOAN BO mon — do la cai gia cua de chung. */
+const k7=K({ten:'',loai:'ck',hk:1,khoi:10,dts:['A'],ht:'lop',cc:'phong',deRieng:0,trienKhai:1,
+ mons:[mkMon(null,'Nội dung giáo dục địa phương',0,'',45)],
+ log:[['26/8 08:30','Hoàng Văn Khoa — PHT chuyên môn','Tạo kỳ thi','Thi tại lớp · GV chấm theo phòng · Đề chung cho cả phạm vi'],
+      ['26/8 08:35','Hoàng Văn Khoa — PHT chuyên môn','Triển khai kỳ thi','Lịch thi lên App phụ huynh']]});
+k7.ten=tenGoiY(k7); KT.push(k7);
+(function(){const m=k7.mons[0]; dungPhongLop(k7,m); m.phieu=0;
+ m.tiet={'10A1':{ngay:7,tiet:3,gio:GIOTIET[3]},'10A2':{ngay:8,tiet:2,gio:GIOTIET[2]},
+         '10A3':{ngay:9,tiet:4,gio:GIOTIET[4]},'10A4':{ngay:14,tiet:3,gio:GIOTIET[3]}};
+})();
+
 const ktById=id=>KT.find(x=>x.id===id);
 
 /* ===== VAI TRO =====
@@ -845,7 +978,13 @@ function tt(k,b){
                              :ms.every(m=>m.phong.length&&m.phong.every(p=>p.cham));
   return okCoi&&okCham?'ok':(okCoi||okCham)?'dang':'chua';
  }
- if(b===4){const xong=ms.filter(m=>thiXong(k,m));
+ if(b===4){
+  /* De rieng theo lop: don vi ho so de la (mon × lop), va chi lop DA THI moi tinh */
+  if(deTheoLop(k)){const c=[];
+   ms.forEach(m=>k.lops.forEach(l=>{if(thiXongLop(k,m,l))c.push(deCuaLop(m,l))}));
+   if(!c.length) return 'na';
+   return c.every(d=>d.de&&d.dapan)?'ok':c.some(d=>d.de||d.dapan)?'dang':'chua';}
+  const xong=ms.filter(m=>thiXong(k,m));
   if(!xong.length) return 'na';
   return xong.every(m=>m.de&&m.dapan)?'ok':xong.some(m=>m.de||m.dapan)?'dang':'chua';}
  if(b===5){ if(k.nhanh&&!ms.some(m=>m.phieu)) return 'na';   /* ky tao nhanh: giay kiem tra thuong */
@@ -910,11 +1049,11 @@ function hienThi(k){
 function viecCuaToi(){
  const out=[];
  KT.forEach(k=>{if(!hienThi(k))return; k.mons.forEach((m,ix)=>{
-  if(k.cc==='phach'&&m.nsPhach===toiLa()&&thiXong(k,m)&&daPhach(m)<hsCuaMon(k,m).length)
+  if(k.cc==='phach'&&m.nsPhach===toiLa()&&moCham(k,m)&&daPhach(m)<hsCuaMon(k,m).length)
    out.push({k:k,ix:ix,v:'Nhập phách',n:hsCuaMon(k,m).length-daPhach(m)+' HS chưa có phách',b:6});
-  if(k.cc==='phach'&&m.nsCham.indexOf(toiLa())>=0&&thiXong(k,m)&&daNhap(k,m)<canNhap(k,m))
+  if(k.cc==='phach'&&m.nsCham.indexOf(toiLa())>=0&&moCham(k,m)&&daNhap(k,m)<canNhap(k,m))
    out.push({k:k,ix:ix,v:'Chấm & nhập điểm',n:canNhap(k,m)-daNhap(k,m)+' bài chưa có điểm',b:7});
-  if(k.cc==='phong') m.phong.forEach(p=>{if(p.cham===toiLa()&&thiXong(k,m)&&!p.ky){
+  if(k.cc==='phong') m.phong.forEach(p=>{if(p.cham===toiLa()&&moCham(k,m,p)&&!p.ky){
    const th=p.hs.filter(h=>!m.vang[h]&&diemHS(k,m,h)===null).length;
    if(th) out.push({k:k,ix:ix,v:'Chấm '+p.p,n:th+' bài chưa có điểm'
     +(cuaM25(k,m,p).mo?' · nhập được ngay trên M2.5 Bảng điểm môn':''),b:7})}});
@@ -948,12 +1087,14 @@ function viewDS(){
    +'<div class="rt">'+(k.nhanh?'<span class="st2 w" title="Tạo bằng lối nhanh — GV tự chọn tiết trong khoảng ngày">⚡ tạo nhanh</span>':'')
    +'<span class="st2 '+(k.ht==='chung'?'b':'n')+'">'+HTHUC[k.ht]+'</span>'
    +'<span class="st2 '+(k.cc==='phach'?'v':'n')+'">'+CCHAM[k.cc]+'</span>'
+   +(k.deRieng?'<span class="st2 w" title="Mỗi lớp một đề — mốc mở chấm chạy theo lớp">📄 Đề riêng theo lớp</span>':'')
    +'<span class="st2 '+st.c+'">'+st.t+'</span></div></div>';
  }).join('');
  return '<div class="stage"><div class="listw">'
   +'<div class="grow">📋 Kỳ thi định kỳ năm học 2026-2027<span class="ct">'+ds.length+' kỳ</span></div>'
-  +rows+'<div class="lgd dnote">Mỗi dòng hiện <b>hai thuộc tính độc lập</b>: hình thức tổ chức và cách chấm. '
-  +'Chúng <b>không suy ra nhau</b> — cả bốn tổ hợp đều hợp lệ và đều có mặt trong dữ liệu mẫu.</div></div></div>';
+  +rows+'<div class="lgd dnote">Mỗi dòng hiện <b>ba thuộc tính độc lập</b>: hình thức tổ chức · cách chấm · '
+  +'phạm vi đề. Chúng <b>không suy ra nhau</b> — bốn tổ hợp của hai thuộc tính đầu đều hợp lệ và đều có mặt trong '
+  +'dữ liệu mẫu; thuộc tính thứ ba mặc định là <b>Đề chung cho cả phạm vi</b> nên chỉ hiện khi khác mặc định.</div></div></div>';
 }
 
 /* ---------- WORKSPACE ---------- */
@@ -1061,7 +1202,7 @@ function b1(k){
   +'Mặc định bật hết. '+(khoi2cap(k.khoi)==='TH'?'<b style="color:var(--violet)">Tiểu học</b>: chỉ những môn '
   +'TT 27/2020 Điều 7 cho phép mới xuất hiện.':'')+'</div></div></div>';
 
- h+='<div class="card hl"><div class="ch">Hình thức tổ chức × Cách chấm — hai thuộc tính độc lập</div><div class="cb p">'
+ h+='<div class="card hl"><div class="ch">Ba thuộc tính độc lập — hình thức tổ chức × cách chấm × phạm vi đề</div><div class="cb p">'
   +'<table class="tb"><tr><td style="width:168px"><b>Hình thức tổ chức</b><div class="hint">Học sinh ngồi thi ở đâu</div></td><td>'
   +'<div class="mucs">'+Object.keys(HTHUC).map(x=>'<button class="muc'+(k.ht===x?' on ok':'')+'" '
    +(canSua&&!coDinh?'data-a="ht" data-v="'+x+'"':'disabled')+'>'+HTHUC[x]+'</button>').join('')+'</div>'
@@ -1076,7 +1217,25 @@ function b1(k){
   +'<div class="hint">'+(k.cc==='phach'
     ?'Mỗi môn cấu hình <b>nhân sự nhập phách</b> và <b>nhân sự chấm thi</b> riêng · bước ⑥ mở ra · màn hình chấm <b>không có tên học sinh</b>'
     :'Mỗi <b>phòng thi</b> chọn <b>một GVBM</b> của môn đó chấm và nhập điểm cho phòng ấy · bước ⑥ không dùng')
-  +'</div></td></tr></table>'
+  +'</div></td></tr>'
+  /* Thuoc tinh thu ba (cum GDDP · YK-08). MOT O CHON — khong tab moi, khong Feature moi.
+     Khong bi khoa boi coDinh: ky tao nhanh van chon duoc ca hai gia tri (mac dinh de chung). */
+  +'<tr><td><b>Phạm vi đề</b><div class="hint">Một đề cho cả phạm vi, hay mỗi lớp một đề</div></td><td>'
+  +'<div class="mucs">'+[0,1].map(x=>'<button class="muc'+((k.deRieng?1:0)===x?' on ok':'')+'" '
+   +(canSua?'data-a="deRieng" data-v="'+x+'"':'disabled')+'>'+DERIENG[x]+'</button>').join('')+'</div>'
+  +'<div class="hint">'+(k.deRieng
+    ?'Mỗi lớp <b>một đề riêng</b> · bước ④ nhận <b>một hồ sơ đề cho mỗi lớp</b> · mốc mở nhập phách và chấm điểm '
+     +'chuyển sang <b>theo LỚP</b> — lớp nào thi xong mở lớp đó'
+    :'Một đề dùng chung cho mọi lớp trong phạm vi · bước ④ nhận <b>một hồ sơ đề cho cả môn</b> · mốc mở chấm '
+     +'<b>theo MÔN</b> — chờ lớp cuối cùng thi xong')
+  +'</div>'
+  +(k.deRieng&&k.ht==='chung'?'<div class="warn" style="margin:8px 0 0">⚠ Đang là <b>Thi chung toàn trường</b>: '
+    +'phòng thi <b>trộn học sinh của nhiều lớp</b> nên đề phải phát theo lớp ngay trong phòng, và vì mọi lớp ngồi '
+    +'<b>cùng một buổi</b> nên mốc mở chấm theo lớp <b>trùng với</b> mốc theo môn — chọn "đề riêng" ở đây chỉ còn '
+    +'tác dụng ở <b>bước ④ hồ sơ đề</b>. Cảnh báo, <b>không chặn</b>: ba thuộc tính là độc lập.</div>':'')
+  +(k.deRieng?'<div class="hint">🛑 <b>Đơn vị chốt và công bố vẫn là MÔN</b> (ràng buộc 30) — mốc mở chấm đi theo lớp, '
+    +'việc chốt thì không. Môn chỉ chốt được khi <b>mọi lớp</b> đã đủ điểm và đủ chữ ký.</div>':'')
+  +'</td></tr></table>'
   +(k.ht==='chung'?'<div class="f" style="margin-top:8px"><div class="k">Số HS tối đa / phòng</div><div class="v">'
     +'<input class="fldi" style="width:110px" type="number" min="10" max="50" value="'+k.maxHS+'" '
     +(canSua?'data-ch="max"':'disabled')+'> <span class="hint" style="display:inline">→ cần <b>'
@@ -1084,7 +1243,12 @@ function b1(k){
   +'<div class="roblk dnote" style="margin-top:10px"><b>Hình thức tổ chức KHÔNG quyết định cách chấm.</b> '
   +'Bộ GDĐT không bắt buộc dọc phách với bài kiểm tra định kỳ (TT 22/2021, TT 27/2020 đều không có quy định), '
   +'nhưng <b>một số Sở GDĐT ra chỉ đạo riêng</b> yêu cầu <i>"mỗi bài kiểm tra có ít nhất 02 giáo viên chấm"</i> '
-  +'và cắt phách <b>kể cả bài làm tại lớp</b>. Vì vậy hai thuộc tính này chọn độc lập — cả bốn tổ hợp đều hợp lệ.</div>'
+  +'và cắt phách <b>kể cả bài làm tại lớp</b>. Vì vậy hai thuộc tính này chọn độc lập — cả bốn tổ hợp đều hợp lệ.'
+  +'<br><br><b>Phạm vi đề cũng không suy ra được từ hai thuộc tính kia.</b> '
+  +'<b>CV 5636/BGDĐT-GDTrH</b> 10/10/2023 đòi <i>"ma trận, nội dung bài kiểm tra định kì được xây dựng phù hợp với '
+  +'nội dung và thời lượng dạy học của chương trình <b>đến thời điểm kiểm tra</b>"</i> — mà các lớp dùng chung một môn '
+  +'vẫn có thể học <b>khác thứ tự phần</b> (M5.1 🔗 lịch triển khai phần theo lớp). Khi đó một đề chung là <b>sai quy định</b>, '
+  +'không phải chỉ bất tiện. Ngược lại, hai điểm trường lệch tiến độ <b>không còn phải tách thành hai kỳ thi</b>.</div>'
   +'</div></div>';
 
  h+='</div><div class="lgd">'+(canSua?'<button class="btn" data-a="log">📜 Nhật ký thay đổi ('+k.log.length+')</button>':'')
@@ -1116,8 +1280,12 @@ function b2(k){
      +'<td>'+(!t.ngay?'<span class="st2 n">'+(k.nhanh?'GV chưa chọn tiết':'chưa xếp')+'</span>':xong?'<span class="st2 o">✓ đã diễn ra — khoá sửa</span>'
        :k.trienKhai?'<span class="st2 b">đã báo lên App</span>':'<span class="st2 n">chưa công bố</span>')+'</td></tr>'}).join('')
    +'</table>'
+   /* Nut van con o ca hai che do; chi LOI NHAC doi — cung de thi lech buoi la rui ro do de,
+      khac de thi khong con gi de do, xep theo tien do tung lop moi la cai dung. */
    +(sua&&!k.nhanh?'<div class="cact"><button class="btn" data-a="xepDeu">↺ Xếp cùng ngày · cùng tiết cho mọi lớp</button>'
-     +'<span class="hint" style="margin-left:auto">Cùng đề mà lệch buổi thì lớp thi sau biết trước đề — nên xếp cùng giờ khi có thể.</span></div>':'')
+     +'<span class="hint" style="margin-left:auto">'+(deTheoLop(k)
+       ?'Kỳ này <b>mỗi lớp một đề</b> — lệch buổi <b>không còn là rủi ro lộ đề</b>. Xếp theo tiến độ từng lớp; nút này chỉ để làm nhanh khi muốn thi đồng loạt.'
+       :'Cùng đề mà lệch buổi thì lớp thi sau biết trước đề — nên xếp cùng giờ khi có thể.')+'</span></div>':'')
    +'<div class="warn" style="margin-top:11px">'+(k.lops.filter(l=>!m.tiet[l]).length
      ?'⚠ Còn <b>'+k.lops.filter(l=>!m.tiet[l]).length+' lớp '+(k.nhanh?'GV chưa chọn tiết':'chưa xếp lịch')+'</b>: '
       +k.lops.filter(l=>!m.tiet[l]).map(l=>l+(k.nhanh?' ('+esc(gvn(gvbmCua(l,m.mon)))+')':'')).join(', ')
@@ -1294,19 +1462,100 @@ function trungGio(k,m,p,g){
 /* ===== ④ HO SO DE THI & DAP AN — chi SAU khi mon do thi xong =====
    He thong CO Y KHONG giu de truoc gio thi: giu vao day chi tao them mot duong
    lo de qua tai khoan, trong khi truong van phai in de ngoai he thong. */
+/* ===== DAI GOI Y "lop nao da hoc toi phan nao" — CHIEU 🔗 tu M5.1 bang ⑤ =====
+   🛑 CHI LA THONG TIN. Khong chan thao tac nao, khong tu sinh de, khong goi ai phai lam gi.
+   🛑 Va KHONG noi M2.8 voi nhom M12 Hoc lieu so hoa: kien truc Hoc lieu quy tac 11 (chot
+   15/9/2026) — "khong ghi vao M2.3 · M2.5 · M2.8 · M3.1 hay hoc ba; khong deep-link, khong
+   ban chieu", va quy tac 9 — M2.8 buoc ④ "khong giu de truoc gio thi". Lan ranh da chot. */
+function daiGoiY(k,m){
+ if(!deTheoLop(k)||!coPhan(k,m)) return '';
+ const rows=k.lops.map(l=>{const t=m.tiet[l], tu=t?tuanCua(t.ngay):null;
+  return {l:l,t:t,tu:tu,ds:(tu!=null?phanDaHoc(m.mon,l,tu):null)}});
+ return '<div class="info"><b>📚 Đến thời điểm kiểm tra, lớp nào đã học tới phần nào</b> — '
+  +'đọc từ <b>M5.1 Kế hoạch giảng dạy</b> <button class="rolnk" data-a="dl">🔗</button> '
+  +'(bảng chia số tiết theo phần ④ và lịch triển khai phần theo lớp ⑤). '
+  +'<div class="hint" style="margin-top:6px">Căn cứ: <b>CV 5636/BGDĐT-GDTrH</b> 10/10/2023 — '
+  +'<i>"ma trận, nội dung bài kiểm tra định kì được xây dựng phù hợp với nội dung và thời lượng dạy học '
+  +'của chương trình <b>đến thời điểm kiểm tra</b>"</i>.</div>'
+  +'<table class="tb" style="margin-top:8px"><tr><th>Lớp</th><th>Buổi thi</th><th>Đã học các phần</th></tr>'
+  +rows.map(r=>'<tr><td><b>'+r.l+'</b></td>'
+    +'<td>'+(r.t?dfull(r.t.ngay)+' <span class="hint" style="display:inline">· tuần '+r.tu+'</span>'
+      :'<span class="st2 n">chưa xếp lịch</span>')+'</td>'
+    +'<td>'+(!r.ds?'<span class="hint" style="display:inline">lớp này không có lịch triển khai phần</span>'
+      :!r.ds.length?'<span class="hint" style="display:inline">chưa vào phần nào</span>'
+      :r.ds.map(x=>'<span class="st2 '+(x.xong?'o':'b')+'" style="margin-right:5px">'
+        +esc(tenPhan(m.mon,x.ma))+' <i style="font-style:normal;opacity:.8">· tuần '+x.tu+'–'+x.den
+        +(x.xong?'':' · đang học')+'</i></span>').join(''))+'</td></tr>').join('')
+  +'</table>'
+  +'<div class="hint" style="margin-top:7px">🛑 <b>Chỉ là thông tin — không chặn gì và không tự sinh đề.</b> '
+  +'Ai ra đề, ra thế nào là việc của tổ chuyên môn; hệ thống chỉ nói ra <b>lớp nào đã học tới đâu</b> để '
+  +'người ra đề khỏi phải tra sang menu khác. Ngân hàng đề của nhóm <b>🗃 Học liệu số hóa</b> '
+  +'<b>độc lập hoàn toàn</b> với điểm trên lớp — không có đường nối nào giữa hai bên.</div></div>';
+}
+
 function b4(k){
- const m=monHT(k), xong=thiXong(k,m), sua=co('de')&&xong&&!m.congbo;
- let h='<div class="listw"><div class="grow">📄 Hồ sơ đề thi &amp; đáp án<span class="ct">môn '+esc(m.mon)+'</span></div>'
-  +'<div class="cb p">'+chipMon(k);
- if(!xong) return h+'<div class="ro">🔒 <b>Hệ thống không giữ đề thi trước giờ thi — đây là chủ ý, không phải thiếu chức năng.</b>'
+ const m=monHT(k), rieng=deTheoLop(k), xong=thiXong(k,m);
+ let h='<div class="listw"><div class="grow">📄 Hồ sơ đề thi &amp; đáp án<span class="ct">môn '+esc(m.mon)
+  +' · '+DERIENG[k.deRieng?1:0]+'</span></div>'
+  +'<div class="cb p">'+chipMon(k)+daiGoiY(k,m);
+
+ /* --- LY DO KHONG GIU DE TRUOC GIO THI — dung chung cho ca hai che do --- */
+ const lyDo='<div class="ro">🔒 <b>Hệ thống không giữ đề thi trước giờ thi — đây là chủ ý, không phải thiếu chức năng.</b>'
   +'<div class="hint" style="margin-top:7px">Đề để trong hệ thống từ trước giờ thi thì mọi tài khoản có quyền ở '
   +'menu này đều là một đường lộ đề, và <b>audit chỉ phát hiện sau khi đã lộ</b>. Trong khi đó trường vẫn phải '
   +'in đề ngoài hệ thống và giao nhận bằng biên bản giấy — bản trong phần mềm chỉ là bản sao thừa, '
-  +'thêm rủi ro mà không thêm việc gì.</div></div>'
+  +'thêm rủi ro mà không thêm việc gì.</div></div>';
+
+ /* ================= DE RIENG THEO LOP — moi lop MOT ho so de ================= */
+ if(rieng){
+  const chua=lopChuaThi(k,m);
+  h+='<div class="ro">Kỳ này ở chế độ <b>Đề riêng theo lớp</b>: mỗi lớp <b>một hồ sơ đề và đáp án riêng</b>, '
+   +'mở ra <b>ngay sau buổi thi của chính lớp đó</b> — không phải chờ lớp cuối cùng của môn. '
+   +'Lý do mở sớm được: các lớp <b>khác đề</b> nên lớp thi sau không dò được gì từ bài đã chấm của lớp thi trước.</div>'
+   +lyDo
+   +'<table class="tb"><tr><th>Lớp</th><th>Buổi thi</th><th>Đề thi</th><th>Đáp án · thang điểm</th>'
+   +'<th>Người chấm lớp này</th><th>Thao tác</th></tr>'
+   +k.lops.map(l=>{
+     const t=m.tiet[l], moL=thiXongLop(k,m,l), d=deCuaLop(m,l), suaL=co('de')&&moL&&!m.congbo;
+     const p=m.phong.find(x=>x.lop===l);
+     const nc=k.cc==='phach'?(m.nsCham.map(gvn).join(', ')||'chưa phân')
+        :((p&&p.cham)?gvn(p.cham):'chưa phân');
+     return '<tr'+(moL?'':' class="thieu"')+'><td><b>'+l+'</b></td>'
+      +'<td>'+(!t?'<span class="st2 n">chưa xếp lịch</span>'
+        :moL?'<span class="st2 o">✓ '+dfull(t.ngay)+' — đã thi</span>'
+        :'<span class="st2 w">'+dfull(t.ngay)+' — chưa thi</span>')+'</td>'
+      +'<td>'+(!moL?'<span class="hint" style="display:inline">🔒 chưa mở</span>'
+        :d.de?'<b>'+esc(d.de)+'</b>':'<span class="st2 w">chưa nộp</span>')+'</td>'
+      +'<td>'+(!moL?'<span class="hint" style="display:inline">🔒 chưa mở</span>'
+        :d.dapan?'<b>'+esc(d.dapan)+'</b>'
+        :'<span class="st2 r">chưa nộp — người chấm đang thiếu thang điểm</span>')+'</td>'
+      +'<td class="hint">'+esc(nc)+'</td>'
+      +'<td>'+(!moL?'<span class="hint" style="display:inline">mở sau buổi thi của lớp</span>'
+        :(d.de?'<button class="btn xs" data-a="xemTepL" data-v="de|'+l+'">👁 Xem</button> ':'')
+         +(suaL?'<button class="btn xs" data-a="upDeL" data-v="'+l+'">⬆ '+(d.de?'Thay đề':'Nộp đề')+'</button> ':'')
+         +(d.dapan?'<button class="btn xs" data-a="xemTepL" data-v="dapan|'+l+'">👁 Đáp án</button> ':'')
+         +(suaL?'<button class="btn xs" data-a="upDapAnL" data-v="'+l+'">⬆ '+(d.dapan?'Thay đáp án':'Nộp đáp án')+'</button>':''))
+      +'</td></tr>'}).join('')
+   +'</table>'
+   +(chua.length?'<div class="warn" style="margin-top:10px">🔒 Còn <b>'+chua.length+' lớp chưa thi</b>: '
+     +chua.map(l=>l+(m.tiet[l]?' — '+dfull(m.tiet[l].ngay):' — chưa xếp lịch')).join(', ')
+     +'. Hồ sơ đề của các lớp này <b>mở sau buổi thi của chính lớp đó</b>.</div>'
+    :'<div class="info" style="margin-top:10px">✓ Mọi lớp đã thi xong — hồ sơ đề của cả '+k.lops.length+' lớp đều mở.</div>')
+   +'<div class="hint">Mọi lượt xem và tải <b>ghi audit</b>. Không có ngân hàng đề trong bản này — '
+   +'tổ chuyên môn soạn ngoài, sau buổi thi của lớp nào thì nộp tệp của lớp đó vào hồ sơ.</div>'
+   +'</div></div>';
+  return h;
+ }
+
+ /* ================= DE CHUNG CHO CA PHAM VI — mot ho so de cho ca mon ================= */
+ const sua=co('de')&&xong&&!m.congbo;
+ if(!xong) return h+lyDo
   +'<div class="warn">Môn <b>'+esc(m.mon)+'</b> <b>chưa thi xong</b>'
-  +(k.ht==='lop'?': còn <b>'+k.lops.filter(l=>!(m.tiet[l]&&m.tiet[l].ngay<HOMNAY)).join(', ')+'</b>. '
+  +(k.ht==='lop'?': còn <b>'+lopChuaThi(k,m).join(', ')+'</b>. '
     :' — buổi thi <b>'+(m.ngay!=null?dfull(m.ngay):'chưa xếp lịch')+'</b>. ')
-  +'Sau buổi thi cuối cùng của môn, bước này mở ra để <b>lưu hồ sơ</b>: đề, đáp án và thang điểm.</div></div></div>';
+  +'Sau buổi thi cuối cùng của môn, bước này mở ra để <b>lưu hồ sơ</b>: đề, đáp án và thang điểm.'
+  +(coPhan(k,m)?' <b>Kỳ này đang dùng một đề chung</b> — nếu các lớp học khác thứ tự phần thì cân nhắc '
+    +'đổi <b>Phạm vi đề</b> ở bước ① sang <b>Đề riêng theo lớp</b>.':'')+'</div></div></div>';
  h+='<div class="ro">Môn này đã thi xong — <b>nộp đề và đáp án vào hồ sơ kỳ thi</b>. Từ lúc này hai tệp có '
   +'<b>ba việc thật</b>: người chấm đối chiếu thang điểm · hội đồng phúc khảo đối chiếu lại ở bước ⑨ · '
   +'lưu hồ sơ cho thanh tra. Trước giờ thi thì chúng không phục vụ ai cả.</div>'
@@ -1387,6 +1636,36 @@ function b5(k){
  return h+'</div></div>';
 }
 
+/* Man hinh chan khi CHUA den moc — noi ro moc la gi va vi sao moc o do (§3.4.1) */
+function chanChuaThi(k,m){
+ const chua=lopChuaThi(k,m);
+ return '<div class="danger">⛔ '+(deTheoLop(k)
+   ?'Môn <b>'+esc(m.mon)+'</b> <b>chưa lớp nào thi xong</b>. Còn: <b>'
+    +chua.map(l=>l+(m.tiet[l]?' — '+dfull(m.tiet[l].ngay):' — chưa xếp lịch')).join(', ')+'</b>. '
+   :'Môn <b>'+esc(m.mon)+'</b> <b>chưa thi xong</b> ở tất cả '+(k.ht==='chung'?'các phòng':'các lớp')+'. '
+    +(k.ht==='lop'?'Còn: <b>'+chua.map(l=>l+(m.tiet[l]?' — '+dfull(m.tiet[l].ngay):' — chưa xếp lịch')).join(', ')+'</b>. '
+      :'Buổi thi: <b>'+(m.ngay!=null?dfull(m.ngay):'chưa xếp lịch')+'</b>. '))
+  +'</div><div class="roblk">'+(deTheoLop(k)
+   ?'Kỳ này ở chế độ <b>Đề riêng theo lớp</b> nên mốc mở là <b>buổi thi của CHÍNH LỚP đó</b>, không phải lớp cuối '
+    +'cùng của môn: các lớp khác đề thì lớp thi sau <b>không dò được gì</b> từ bài đã chấm của lớp thi trước. '
+    +'<b>Lớp nào thi xong là mở lớp đó</b> — ở đây chưa lớp nào thi.'
+   :'Mốc mở là <b>buổi thi cuối cùng của chính môn này</b>, không phải cả kỳ thi. '
+    +'Nếu mở sớm hơn: lớp thi sau có thể dò được đề từ bài đã chấm của lớp thi trước. '
+    +'Nếu chờ cả kỳ: toàn bộ việc chấm dồn vào sau ngày thi cuối, trong khi mốc chốt điểm học kỳ không lùi. '
+    +'<b>Các môn khác của kỳ thi này vẫn mở bình thường</b> nếu đã thi xong.')
+  +'</div></div></div>';
+}
+/* Dai dat o dau ⑥ va ⑦ khi moc chay theo LOP — noi ro lop nao dang mo, lop nao con khoa */
+function bandMocLop(k,m){
+ if(!deTheoLop(k)) return '';
+ const chua=lopChuaThi(k,m), mo=k.lops.length-chua.length;
+ return '<div class="info">📐 <b>Mốc mở chấm của kỳ này chạy theo LỚP</b> — vì mỗi lớp một đề. '
+  +'Đã mở <b>'+mo+'/'+k.lops.length+' lớp</b>'
+  +(chua.length?'; còn khóa: <b>'+chua.map(l=>l+(m.tiet[l]?' (thi '+dfull(m.tiet[l].ngay)+')':' (chưa xếp lịch)')).join(', ')+'</b>.'
+    :' — mọi lớp đã thi xong.')
+  +' <b>Đơn vị chốt và công bố vẫn là MÔN</b> (ràng buộc 30): chốt được khi <b>mọi lớp</b> đủ điểm và đủ chữ ký.</div>';
+}
+
 /* ===== ⑥ NHAP PHACH — SAU khi thi ===== */
 function b6(k){
  if(k.cc!=='phach') return '<div class="listw"><div class="empty" style="padding:34px">'
@@ -1399,14 +1678,7 @@ function b6(k){
  const hs=hsCuaMon(k,m), thieu=hs.filter(x=>!(m.bangPhach&&m.bangPhach[x]));
  let h='<div class="listw"><div class="grow">🔢 Nhập phách<span class="ct">môn '+esc(m.mon)+' · '
   +(hs.length-thieu.length)+'/'+hs.length+'</span></div><div class="cb p">'+chipMon(k);
- if(!thiXong(k,m)) return h+'<div class="danger">⛔ Môn <b>'+esc(m.mon)+'</b> <b>chưa thi xong</b> ở tất cả '
-  +(k.ht==='chung'?'các phòng':'các lớp')+'. '
-  +(k.ht==='lop'?'Còn: <b>'+k.lops.filter(l=>!(m.tiet[l]&&m.tiet[l].ngay<HOMNAY)).map(l=>l+(m.tiet[l]?' — '+dfull(m.tiet[l].ngay):' — chưa xếp lịch')).join(', ')+'</b>. '
-    :'Buổi thi: <b>'+(m.ngay!=null?dfull(m.ngay):'chưa xếp lịch')+'</b>. ')
-  +'</div><div class="roblk">Mốc mở là <b>buổi thi cuối cùng của chính môn này</b>, không phải cả kỳ thi. '
-  +'Nếu mở sớm hơn: lớp thi sau có thể dò được đề từ bài đã chấm của lớp thi trước. '
-  +'Nếu chờ cả kỳ: toàn bộ việc chấm dồn vào sau ngày thi cuối, trong khi mốc chốt điểm học kỳ không lùi. '
-  +'<b>Các môn khác của kỳ thi này vẫn mở bình thường</b> nếu đã thi xong.</div></div></div>';
+ if(!moCham(k,m)) return h+chanChuaThi(k,m);
 
  if(!m.nsPhach) return h+'<div class="danger">⛔ Môn này <b>chưa có nhân sự nhập phách</b>. '
   +'Về bước ③ chọn người trước — hệ thống không mở màn hình nhập phách cho người không được phân.'
@@ -1418,7 +1690,7 @@ function b6(k){
   +'Trong bản chạy thật, người có toàn quyền menu <b>thấy được tiến độ nhưng bảng ghép bị che</b> cho tới khi '
   +'chốt điểm — nếu không thì dọc phách mất tác dụng ngay từ đầu. '
   +'Ở demo hiển thị đầy đủ để thao tác thử. <b>Đây là điểm cần trường xác nhận</b> (§10 điểm 9).</div>';
- h+=bandKy(m.kyPhach,'Người nhập phách')
+ h+=bandMocLop(k,m)+bandKy(m.kyPhach,'Người nhập phách')
   +'<div class="cact" style="border-top:none;padding-left:0">'
   +'<button class="btn" data-a="taiMauPhach">⬇ Tải danh sách theo phòng (Excel)</button>'
   +(sua?'<button class="btn p" data-a="importPhach">⬆ Import số phách</button>':'')
@@ -1428,10 +1700,15 @@ function b6(k){
   +'<span class="hint" style="margin-left:auto">'+(thieu.length
     ?'⚠ còn <b>'+thieu.length+' học sinh chưa có số phách</b> — chưa ký được'
     :'✓ đủ số phách cho '+hs.length+' học sinh')+'</span></div>';
- h+=m.phong.map(p=>'<div class="gh on"><span class="cv">▶</span><span class="gt">'+esc(p.p)
-   +' <i>· '+p.hs.length+' bài</i></span><span class="num"><b>'
+ h+=m.phong.map(p=>{const moP=moCham(k,m,p);
+  return '<div class="gh on"><span class="cv">▶</span><span class="gt">'+esc(p.p)
+   +' <i>· '+p.hs.length+' bài</i>'+(moP?'':' <span class="st2 n">🔒 lớp chưa thi</span>')
+   +'</span><span class="num"><b>'
    +p.hs.filter(x=>m.bangPhach&&m.bangPhach[x]).length+'</b>/'+p.hs.length+' đã nhập phách</span></div>'
-  +'<div class="wbody"><table class="bd"><tr><th class="stt">#</th>'
+  +(moP?'':'<div class="wbody"><div class="gbar">🔒 Lớp <b>'+esc(p.lop||p.p)+'</b> '
+    +(m.tiet[p.lop]?'thi ngày <b>'+dfull(m.tiet[p.lop].ngay)+'</b>':'<b>chưa xếp lịch</b>')
+    +' — đề riêng theo lớp nên phách của lớp này <b>mở sau buổi thi của chính lớp</b>.</div></div>')
+  +(moP?'<div class="wbody"><table class="bd"><tr><th class="stt">#</th>'
    +(k.ht==='chung'?'<th>SBD</th>':'')+'<th class="tenhs">Họ và tên</th><th>Lớp</th><th class="dk">Số phách</th></tr>'
   +p.hs.map((x,i)=>{const ph=m.bangPhach&&m.bangPhach[x];
     return '<tr'+(ph?'':' class="thieu"')+'><td class="stt">'+(i+1)+'</td>'
@@ -1439,7 +1716,7 @@ function b6(k){
     +'<td class="tenhs">'+esc(HS[x].n)+'</td><td>'+HS[x].lop+'</td>'
     +'<td class="dk">'+(sua?'<input class="fldi" style="width:82px;padding:3px 6px;text-align:center" '
       +'value="'+(ph||'')+'" data-ch="phachIn" data-h="'+x+'">':(ph||'—'))+'</td></tr>'}).join('')
-  +'</table></div>').join('');
+  +'</table></div>':'')}).join('');
  return h+'<div class="lgd dnote">Không nhập thiếu học sinh nào: dòng chưa có phách <b>đổi màu</b> và '
   +'bộ đếm ở đầu nhóm luôn hiện — tìm ra chỗ thiếu mà không phải cuộn hết bảng.</div></div></div>';
 }
@@ -1449,33 +1726,34 @@ function b7(k){
  const m=monHT(k), toi=toiLa(), tp=thapPhan(k.khoi);
  let h='<div class="listw"><div class="grow">✍ Chấm &amp; nhập điểm<span class="ct">môn '+esc(m.mon)+' · '
   +daNhap(k,m)+'/'+canNhap(k,m)+'</span></div><div class="cb p">'+chipMon(k);
- if(!thiXong(k,m)) return h+'<div class="danger">⛔ Môn <b>'+esc(m.mon)+'</b> <b>chưa thi xong</b> ở tất cả '
-  +(k.ht==='chung'?'các phòng':'các lớp')+'. '
-  +(k.ht==='lop'?'Còn: <b>'+k.lops.filter(l=>!(m.tiet[l]&&m.tiet[l].ngay<HOMNAY)).map(l=>l+(m.tiet[l]?' — '+dfull(m.tiet[l].ngay):' — chưa xếp lịch')).join(', ')+'</b>. '
-    :'Buổi thi: <b>'+(m.ngay!=null?dfull(m.ngay):'chưa xếp lịch')+'</b>. ')
-  +'</div><div class="roblk">Mốc mở là <b>buổi thi cuối cùng của chính môn này</b>, không phải cả kỳ thi. '
-  +'Nếu mở sớm hơn: lớp thi sau có thể dò được đề từ bài đã chấm của lớp thi trước. '
-  +'Nếu chờ cả kỳ: toàn bộ việc chấm dồn vào sau ngày thi cuối, trong khi mốc chốt điểm học kỳ không lùi. '
-  +'<b>Các môn khác của kỳ thi này vẫn mở bình thường</b> nếu đã thi xong.</div></div></div>';
+ if(!moCham(k,m)) return h+chanChuaThi(k,m);
 
  if(!tp) h+='<div class="warn">🎓 <b>Tiểu học</b> — TT 27/2020 Điều 7: thang điểm 10, '
   +'<b>không cho điểm thập phân</b>. Điều 6 khoản 3: <i>"điểm không dùng để so sánh học sinh này với học sinh khác"</i> '
   +'— màn hình này <b>không có xếp hạng, không có top, không có biểu đồ so sánh</b>.</div>';
 
+ h+=bandMocLop(k,m);
  if(k.cc==='phong'){
   const cua=m.phong.filter(p=>co('cauhinh')||p.cham===toi);
   if(!cua.length) return h+'<div class="ro">Bạn không được phân chấm phòng nào của môn này.</div></div></div>';
   h+='<div class="ro">Cách chấm <b>GV chấm theo phòng</b>: bạn thấy <b>tên học sinh</b> vì chính bạn chấm bài đó. '
-   +'Mỗi lần sửa điểm đã lưu <b>đều ghi audit</b> kèm giá trị cũ.</div>'+bandCua(k,m)+bandDapAn(k,m)
-   +cua.map(p=>{const i=m.phong.indexOf(p);
+   +'Mỗi lần sửa điểm đã lưu <b>đều ghi audit</b> kèm giá trị cũ.</div>'+bandCua(k,m)
+   +(deTheoLop(k)?'':bandDapAn(k,m))
+   +cua.map(p=>{const i=m.phong.indexOf(p), moP=moCham(k,m,p);
     const c25=cuaM25(k,m,p), n25=p.hs.filter(x=>m.nguon[x]&&m.nguon[x].cua==='M2.5').length;
     return '<div class="gh on"><span class="cv">▶</span><span class="gt">'+esc(p.p)+' <i>· người chấm: '
     +esc(gvn(p.cham)||'chưa phân')+'</i>'
+    +(moP?'':' <span class="st2 n">🔒 lớp chưa thi</span>')
     +(k.ht==='lop'&&k.cc==='phong'?' <span class="c25 '+(c25.mo?'mo':'dong')+'">cửa M2.5: '+(c25.mo?'mở':'đóng')+'</span>'
       +(n25?' <span class="c25 src">'+n25+' điểm nhập tại M2.5</span>':''):'')
     +'</span><span class="num"><b>'
     +p.hs.filter(x=>!m.vang[x]&&diemHS(k,m,x)!==null).length+'</b>/'+p.hs.filter(x=>!m.vang[x]).length+' bài</span></div>'
-    +'<div class="wbody">'
+    +(moP?'':'<div class="wbody"><div class="gbar">🔒 Lớp <b>'+esc(p.lop||p.p)+'</b> '
+      +(m.tiet[p.lop]?'thi ngày <b>'+dfull(m.tiet[p.lop].ngay)+'</b>':'<b>chưa xếp lịch</b>')
+      +' — <b>đề riêng theo lớp</b> nên ô điểm của lớp này mở <b>sau buổi thi của chính lớp</b>, '
+      +'không phải sau lớp cuối cùng của môn.</div></div>')
+    +(moP?'<div class="wbody"'+'>'
+    +(deTheoLop(k)?bandDapAn(k,m,p):'')
     +(p.ky?'<div class="gbar">✍ <b>Đã ký xác nhận</b>: '+esc(gvn(p.ky.gv))+' — '+dstr(p.ky.ngay)
       +(co('cham')&&!m.chot?' <button class="btn xs" data-a="goKyPhong" data-v="'+i+'">↺ Gỡ chữ ký</button>':'')+'</div>'
      :'<div class="gbar">⚠ <b>Chưa ký xác nhận phòng này</b>'
@@ -1497,7 +1775,7 @@ function b7(k){
         :'<span class="hint" style="display:inline">⑦ tại đây</span>')+'</td>':'')
       +'<td><button class="btn xs" '+(khoa?'disabled':'data-a="vang" data-h="'+x+'"')+'>'
        +(m.vang[x]?'↺ Bỏ vắng':'V')+'</button></td></tr>'}).join('')
-    +'</table></div>'}).join('');
+    +'</table></div>':'')}).join('');
  }else{
   const laNS=m.nsCham.indexOf(toi)>=0, quanTri=co('cauhinh')&&!laNS;
   if(!m.nsCham.length) return h+'<div class="danger">⛔ Môn này <b>chưa có nhân sự chấm thi</b>. Về bước ③.</div></div></div>';
@@ -1554,13 +1832,18 @@ function bandCua(k,m){
 
 /* Dap an dat NGAY TRONG man hinh cham — de nguoi cham dung, chu khong phai
    nam o mot buoc khac ma ho khong vao duoc. */
-function bandDapAn(k,m){
- if(!m.dapan) return '<div class="warn">⚠ Môn này <b>chưa có đáp án và thang điểm</b> trong hồ sơ. '
+function bandDapAn(k,m,p){
+ /* De rieng theo lop: dap an la CUA LOP DO, nen bang nay nam trong tung nhom lop chu khong
+    dat mot lan o dau man hinh — nguoi cham lop nay khong dung dap an cua lop khac. */
+ const rieng=deTheoLop(k)&&p&&p.lop, d=deDung(k,m,p);
+ const dd=rieng?' — lớp '+p.lop:'';
+ if(!d.dapan) return '<div class="warn">⚠ '+(rieng?'Lớp <b>'+p.lop+'</b>':'Môn này')
+  +' <b>chưa có đáp án và thang điểm</b> trong hồ sơ. '
   +'Người chấm đang phải dùng bản giấy. Ban giám hiệu nộp tệp ở <b>bước ④</b>.</div>';
  return '<div class="info" style="display:flex;gap:9px;align-items:center;flex-wrap:wrap">'
-  +'<span style="flex:1;min-width:220px">📄 <b>Đáp án · thang điểm</b> môn '+esc(m.mon)+' — '+esc(m.dapan)
+  +'<span style="flex:1;min-width:220px">📄 <b>Đáp án · thang điểm</b> môn '+esc(m.mon)+esc(dd)+' — '+esc(d.dapan)
   +'. Mở ngay tại đây, không phải rời màn hình chấm. Lượt xem và tải <b>ghi audit</b>.</span>'
-  +'<button class="btn sm" data-a="xemTep" data-v="dapan">👁 Xem</button>'
+  +'<button class="btn sm" data-a="'+(rieng?'xemTepL" data-v="dapan|'+p.lop:'xemTep" data-v="dapan')+'">👁 Xem</button>'
   +'<button class="btn sm" data-a="taiTep" data-v="dapan">⬇ Tải</button></div>';
 }
 
@@ -1857,7 +2140,7 @@ function doiSoatDiem(tep){
 /* ===== TAO KY THI ===== */
 let nk=null;
 function moTao(){
- nk={loai:'ck',khoi:9,dts:['A'],ht:'chung',cc:'phach'};
+ nk={loai:'ck',khoi:9,dts:['A'],ht:'chung',cc:'phach',deRieng:0};
  veTao();
 }
 function veTao(){
@@ -1878,14 +2161,21 @@ function veTao(){
   +'<div class="fld"><label>Cách chấm</label><div class="mucs">'
   +Object.keys(CCHAM).map(x=>'<button class="muc'+(nk.cc===x?' on':'')+'" data-nk="cc" data-v="'+x+'">'
    +CCHAM[x]+'</button>').join('')+'</div></div>'
+  +'<div class="fld"><label>Phạm vi đề</label><div class="mucs">'
+  +[0,1].map(x=>'<button class="muc'+(nk.deRieng===x?' on':'')+'" data-nk="deRieng" data-v="'+x+'">'
+   +DERIENG[x]+'</button>').join('')+'</div>'
+  +'<div class="hint">'+(nk.deRieng?'Mỗi lớp một đề — bước ④ nhận một hồ sơ đề cho mỗi lớp, và mốc mở chấm chạy <b>theo lớp</b>.'
+    :'Mặc định. Một đề chung cho mọi lớp trong phạm vi; mốc mở chấm <b>theo môn</b> — chờ lớp cuối cùng thi xong.')
+  +' Đổi được ở bước ① cho tới khi triển khai.</div></div>'
   +'<div class="'+(hl.ok?'info':'danger')+'">'+(hl.ok?'Tên gợi ý: <b>'+esc(tenGoiY(nk))+'</b><br>'
    +'Phạm vi: <b>'+trong.length+' lớp</b> · <b>'+hsLops(trong).length+' học sinh</b>. '
    +'Tạo xong sẽ vào <b>bước ① Cấu hình</b> để chọn lớp dự thi và môn thi — '
    +'mặc định chọn hết, bỏ chọn thì có cảnh báo.'+(hl.luu?'<br>⚠ '+hl.luu:'')
    :'⛔ '+hl.vi)+'</div>',
   [['Huỷ','',closeM],['Tạo và cấu hình','p',hl.ok?()=>{
-    const k=K({ten:'',loai:nk.loai,hk:1,khoi:nk.khoi,dts:nk.dts.slice(),ht:nk.ht,cc:nk.cc,maxHS:24,trienKhai:0,
-      log:[[dstr(HOMNAY)+' 08:00',R().n+' — '+R().cd,'Tạo kỳ thi',HTHUC[nk.ht]+' · '+CCHAM[nk.cc]]]});
+    const k=K({ten:'',loai:nk.loai,hk:1,khoi:nk.khoi,dts:nk.dts.slice(),ht:nk.ht,cc:nk.cc,deRieng:nk.deRieng,maxHS:24,trienKhai:0,
+      log:[[dstr(HOMNAY)+' 08:00',R().n+' — '+R().cd,'Tạo kỳ thi',
+        HTHUC[nk.ht]+' · '+CCHAM[nk.cc]+' · '+DERIENG[nk.deRieng]]]});
     k.ten=tenGoiY(k);
     k.mons=monKhaDung(k).map(mn=>M({mon:mn,ngay:ngayHL(16),gio:'07:30',tl:45}));
     KT.push(k); dongBo(k); closeM(); cur=k.id; buoc=1; curMon=0; render();
@@ -1939,7 +2229,7 @@ let nn=null;
 /* pre = {khoi,mon,hk} khi mo tu M2.5 qua deep-link action=tao_nhanh (Q18): dien san khoi · mon · ky,
    chi mon do duoc chon san; mon khac cua khoi de nguoi tao tu bat. */
 function moNhanh(pre){
- nn={loai:'gk',khoi:pre&&pre.khoi||9,dts:['A'],tu:21,den:25,chon:[],tu25:!!pre};
+ nn={loai:'gk',khoi:pre&&pre.khoi||9,dts:['A'],tu:21,den:25,chon:[],deRieng:0,tu25:!!pre};
  nn.chon=monNhanh().filter(x=>!x.trung&&!x.ngoaiTo&&(!pre||!pre.mon||x.mon===pre.mon)).map(x=>x.mon);
  veNhanh();
 }
@@ -1975,17 +2265,30 @@ function veNhanh(){
     +ms.filter(x=>x.trung).map(x=>'<b>'+esc(x.mon)+'</b> — '+esc(x.trung.ten)).join(' · ')
     +' <i>(mỗi môn × học sinh × học kỳ đúng một điểm — §6 ràng buộc 1)</i>.</div>':'')
   +(R().to?'<div class="hint">Vai <b>TTCM</b> chỉ chọn được môn của tổ mình ('+R().to.join(', ')+').</div>':'')+'</div>'
+  /* Loi tao nhanh mo duoc CA HAI che do — mac dinh van la De chung. Ky tao nhanh von de GV
+     tu chon tiet nen cac lop gan nhu chac chan lech ngay: day chinh la cho "de rieng" co ich nhat. */
+  +'<div class="fld"><label>Phạm vi đề</label><div class="mucs">'
+  +[0,1].map(x=>'<button class="muc'+(nn.deRieng===x?' on':'')+'" data-nn="deRieng" data-v="'+x+'">'
+   +DERIENG[x]+'</button>').join('')+'</div>'
+  +'<div class="'+(nn.deRieng?'info':'hint')+'" style="margin-top:6px">'+(nn.deRieng
+    ?'Mỗi lớp một đề: chấm mở <b>ngay sau buổi thi của từng lớp</b>, không chờ lớp cuối — hợp với kỳ tại lớp '
+     +'vì GV tự chọn tiết nên các lớp thường lệch ngày. Hồ sơ đề ở ④ nhận <b>một cặp tệp cho mỗi lớp</b>.'
+    :'Mặc định — một đề chung cả khối. Vì GV tự chọn tiết nên các lớp thường <b>lệch ngày</b>, và chấm chỉ mở khi '
+     +'<b>lớp cuối cùng</b> đã thi.')+'</div></div>'
   +'<div class="fld"><label>Khoảng ngày kiểm tra</label>'
   +'<select class="fldi" style="width:200px" id="nnTu">'+opt(nn.tu)+'</select> → '
   +'<select class="fldi" style="width:200px" id="nnDen">'+opt(nn.den)+'</select>'
   +'<div class="hint">'+ng.length+' ngày học. GV <b>tự chọn một tiết của môn mình</b> ở từng lớp trong khoảng này. '
-  +'Chấm môn mở khi <b>lớp cuối cùng đã thi</b> — khoảng càng dài, chấm càng muộn.</div>'
+  +(nn.deRieng?'Chấm mở <b>ngay sau buổi thi của từng lớp</b> — khoảng dài không làm chậm việc chấm.'
+    :'Chấm môn mở khi <b>lớp cuối cùng đã thi</b> — khoảng càng dài, chấm càng muộn.')+'</div>'
   +(nn.den<nn.tu?'<div class="danger">⛔ Ngày kết thúc trước ngày bắt đầu.</div>'
-    :dai?'<div class="warn">⚠ Khoảng dài hơn một tuần — lớp thi sau có nhiều thời gian dò đề, và chấm môn mở muộn.</div>':'')+'</div>'
+    :dai?(nn.deRieng?'<div class="hint">Khoảng dài hơn một tuần — <b>không sao</b> với đề riêng theo lớp: khác đề thì lệch buổi không phải rủi ro, và chấm không phải chờ.</div>'
+      :'<div class="warn">⚠ Khoảng dài hơn một tuần — lớp thi sau có nhiều thời gian dò đề, và chấm môn mở muộn.</div>'):'')+'</div>'
   +'<div class="card"><div class="ch">Hệ thống tự làm — không phải đi chín bước</div><div class="cb p" style="font-size:12.5px;line-height:1.7">'
   +'<b>①</b> tên gợi ý · '+ls.length+' lớp · '+nn.chon.length+' môn &nbsp;·&nbsp; <b>②</b> khoảng ngày; <b>GV chọn tiết</b> &nbsp;·&nbsp; '
   +'<b>③</b> coi thi và người chấm = <b>GV bộ môn của từng lớp</b> (M4.4 🔗) &nbsp;·&nbsp; <b>④</b> hồ sơ đề nộp sau khi thi — như mọi kỳ &nbsp;·&nbsp; '
   +'<b>⑤</b> tự bỏ qua — giấy kiểm tra thường &nbsp;·&nbsp; <b>⑥</b> không dùng &nbsp;·&nbsp; <b>⑦ ⑧ ⑨</b> không đổi. '
+  +(nn.deRieng?'<b>④</b> một hồ sơ đề <b>cho mỗi lớp</b>; mốc mở chấm <b>theo lớp</b>. ':'')
   +'Điểm nhập ở <b>bước ⑦ hoặc ngay trên M2.5</b> — cùng một bản ghi.</div></div>'
   +'<div class="'+(duyet?'info':'warn')+'">'+(duyet?'Bạn có quyền <b>Duyệt</b> ở menu này — kỳ được <b>tạo và triển khai</b> cùng lúc, lịch lên App phụ huynh ngay, giáo viên nhận việc chọn tiết.'
     :'Bạn <b>không có quyền Duyệt</b> — kỳ tạo xong ở <b>Chưa triển khai</b>; PHT chuyên môn bấm <b>🚀 Triển khai</b> (checklist đã đủ sẵn).')+'</div>',
@@ -1994,9 +2297,9 @@ function veNhanh(){
     if(!hl.ok){toast('⛔ '+hl.vi); return}
     if(!nn.chon.length){toast('⛔ Chưa chọn môn nào.'); return}
     if(den<tu){toast('⛔ Ngày kết thúc trước ngày bắt đầu.'); return}
-    const k=K({ten:'',loai:nn.loai,hk:1,khoi:nn.khoi,dts:nn.dts.slice(),ht:'lop',cc:'phong',trienKhai:duyet?1:0,nhanh:{tu:tu,den:den},tao:toiLa(),
+    const k=K({ten:'',loai:nn.loai,hk:1,khoi:nn.khoi,dts:nn.dts.slice(),ht:'lop',cc:'phong',deRieng:nn.deRieng,trienKhai:duyet?1:0,nhanh:{tu:tu,den:den},tao:toiLa(),
       log:[[dstr(HOMNAY)+' 08:00',R().n+' — '+R().cd,'⚡ Tạo nhanh kỳ kiểm tra tại lớp',
-        'Khối '+nn.khoi+' · '+nn.chon.length+' môn · '+dstr(tu)+' – '+dstr(den)+' · GV tự chọn tiết']]});
+        'Khối '+nn.khoi+' · '+nn.chon.length+' môn · '+dstr(tu)+' – '+dstr(den)+' · GV tự chọn tiết · '+DERIENG[nn.deRieng]]]});
     k.ten=tenGoiY(k); k.mons=nn.chon.map(mn=>M({mon:mn,ngay:0,gio:'',tl:45}));
     KT.push(k); dongBo(k);
     if(duyet) ghiLog(k,'Triển khai kỳ thi','Tạo và triển khai cùng lúc — người tạo có quyền Duyệt');
@@ -2071,6 +2374,14 @@ function act(a,v,el){
     toast('Đã đổi sang <b>'+HTHUC[v]+'</b> · '+(v==='lop'
      ?'phòng thi = lớp học, <b>bỏ số báo danh</b>, coi thi điền sẵn theo GVBM'
      :'phải <b>chia phòng và cấp SBD</b> ở bước ②')); return}
+  /* Thuoc tinh thu ba — mot cu bam, khong keo theo dung lai phong hay xoa du lieu nao:
+     no chi doi DON VI cua ho so de (④) va MOC mo cham (§3.4.1). */
+  case 'deRieng': {const nv=+v; if((k.deRieng?1:0)===nv) return;
+    k.deRieng=nv; ghiLog(k,'Đổi phạm vi đề',DERIENG[nv]); render();
+    toast('Đã đổi sang <b>'+DERIENG[nv]+'</b> · '+(nv
+     ?'bước ④ nhận <b>một hồ sơ đề cho mỗi lớp</b>, mốc mở chấm chuyển sang <b>theo LỚP</b>'
+     :'bước ④ nhận <b>một hồ sơ đề cho cả môn</b>, mốc mở chấm quay về <b>theo MÔN</b> — chờ lớp cuối')
+     +(nv&&k.ht==='chung'?' · ⚠ đang là <b>Thi chung toàn trường</b>, mọi lớp thi cùng buổi nên hai mốc trùng nhau':'')); return}
   case 'cc': {k.cc=v; ghiLog(k,'Đổi cách chấm',CCHAM[v]); render();
     toast('Đã đổi sang <b>'+CCHAM[v]+'</b> · '+(v==='phach'
      ?'bước ⑥ <b>mở ra</b>, màn hình chấm <b>ẩn tên học sinh</b>'
@@ -2104,6 +2415,23 @@ function act(a,v,el){
   case 'upDe': case 'upDapAn': {const l=a==='upDe'?'de':'dapan';
     m[l]=(l==='de'?'de-':'dapan-')+bo1(m.mon)+'.pdf'; ghiLog(k,'Tải lên '+(l==='de'?'đề thi':'đáp án')+' môn '+m.mon,m[l]);
     render(); toast('✓ Đã tải lên <b>'+m[l]+'</b>'+(l==='dapan'?' · <b>khoá đến hết giờ thi</b>':'')); return}
+  case 'upDeL': case 'upDapAnL': {const l=v, t=a==='upDeL'?'de':'dapan', d=deCuaLop(m,l);
+    d[t]=(t==='de'?'de-':'dapan-')+bo1(m.mon)+'-'+l+'.pdf';
+    ghiLog(k,'Tải lên '+(t==='de'?'đề thi':'đáp án')+' môn '+m.mon+' — lớp '+l,d[t]);
+    render(); toast('✓ Đã tải lên <b>'+d[t]+'</b> · hồ sơ đề <b>riêng của lớp '+l+'</b>'); return}
+  case 'xemTepL': {const [t,l]=String(v).split('|'), d=deCuaLop(m,l);
+    modal('Xem tệp — '+(t==='de'?'Đề thi':'Đáp án')+' môn '+esc(m.mon)+' · lớp '+esc(l),
+    '<div class="viewer"><div class="vpage"><div class="vsheet"><h4>'+(t==='de'?'ĐỀ THI':'ĐÁP ÁN · THANG ĐIỂM')
+    +' — '+esc(m.mon).toUpperCase()+'<br>LỚP '+esc(l)+'</h4><div class="ln"></div><div class="ln"></div>'
+    +'<div class="ln s"></div><div class="ln"></div><div class="ln s"></div></div>'
+    +'<div class="vtool"><button>−</button><button>100%</button><button>+</button><button>⤢</button></div></div>'
+    +'<div class="vmeta"><div class="r"><b>Tệp</b>'+esc(d[t])+'</div>'
+    +'<div class="r"><b>Phạm vi đề</b>'+DERIENG[1]+' — riêng lớp '+esc(l)+'</div>'
+    +'<div class="r"><b>Người tải lên</b>Đinh Quang Thọ — TTCM</div>'
+    +'<div class="r"><b>Audit</b>Lượt xem này đã được ghi</div></div></div>'
+    +'<div class="hint">Mỗi lớp một tệp vì các lớp <b>học khác thứ tự phần</b> — nội dung kiểm tra phải khớp '
+    +'phần đã dạy <b>đến thời điểm kiểm tra</b> của chính lớp đó (CV 5636/BGDĐT-GDTrH).</div>',
+    [['Đóng','',closeM]]); return}
   case 'xemTep': {modal('Xem tệp — '+(v==='de'?'Đề thi':'Đáp án')+' môn '+esc(m.mon),
     '<div class="viewer"><div class="vpage"><div class="vsheet"><h4>'+(v==='de'?'ĐỀ THI':'ĐÁP ÁN · THANG ĐIỂM')
     +' — '+esc(m.mon).toUpperCase()+'</h4><div class="ln"></div><div class="ln"></div><div class="ln s"></div>'
@@ -2348,11 +2676,12 @@ document.addEventListener('click',e=>{
   e.target.classList.toggle('on',!on); e.target.textContent='💡 Ghi chú thiết kế: '+(on?'TẮT':'BẬT'); return}
  const nkb=e.target.closest('[data-nk]'); if(nkb){const f=nkb.dataset.nk, v=nkb.dataset.v;
   if(f==='dt'){const i=nk.dts.indexOf(v); if(i>=0){if(nk.dts.length>1)nk.dts.splice(i,1)} else nk.dts.push(v)}
-  else nk[f]=(f==='khoi'?+v:v);
+  else nk[f]=(f==='khoi'||f==='deRieng'?+v:v);
   veTao(); return}
  const nnb=e.target.closest('[data-nn]'); if(nnb){const f=nnb.dataset.nn, v=nnb.dataset.v;
   const tu=$('#nnTu'), den=$('#nnDen'); if(tu){nn.tu=+tu.value; nn.den=+den.value}
-  if(f==='dt'){const i=nn.dts.indexOf(v); if(i>=0){if(nn.dts.length>1)nn.dts.splice(i,1)} else nn.dts.push(v)}
+  if(f==='deRieng'){nn.deRieng=+v; veNhanh(); return}
+ if(f==='dt'){const i=nn.dts.indexOf(v); if(i>=0){if(nn.dts.length>1)nn.dts.splice(i,1)} else nn.dts.push(v)}
   else if(f==='mon'){const i=nn.chon.indexOf(v); if(i>=0)nn.chon.splice(i,1); else nn.chon.push(v)}
   else if(f==='khoi'){if(!hopLeKy(nn.loai,+v).ok){toast('⛔ '+hopLeKy(nn.loai,+v).vi); return} nn.khoi=+v;
    nn.chon=monNhanh().filter(x=>!x.trung&&!x.ngoaiTo).map(x=>x.mon)}

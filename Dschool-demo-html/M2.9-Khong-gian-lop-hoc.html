@@ -355,6 +355,24 @@ body.nn .dnote{display:none!important}
 .bd tr.dd-chua td{background:#fffbeb}
 .bd tr.dd-chua td.tenhs{color:var(--amber);font-weight:700}
 .bd td.gc{padding:6px 8px}
+
+/* ── GY18-H1 · gợi ý điểm danh từ sổ đầu bài (tầng ②) ── */
+.gybox{border:1px solid var(--line);border-radius:10px;background:#f8fafc;margin:0 0 11px;overflow:hidden}
+.gyh{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--line);font-weight:700;font-size:13px;flex-wrap:wrap}
+.gyr{padding:7px 13px;font-size:12.5px;border-bottom:1px solid #eef2f7;border-left:3px solid var(--line2)}
+.gyr.o{border-left-color:var(--green);background:#f0fdf4}
+.gyr.w{border-left-color:var(--amber);background:#fffbeb}
+.gyr.n{border-left-color:var(--line2);background:#fff;color:var(--ink2)}
+.gyn{padding:8px 13px;font-size:11.5px;color:var(--ink2);background:#fff}
+.gylech{padding:9px 13px;border-top:1px solid var(--line);background:#fff7ed;font-size:12.5px}
+.gylech table{margin-top:7px}
+tr.dd-gy td{background:#f8fafc}
+.ddb.gy{border-style:dashed;border-width:2px;font-weight:700;background:#fff}
+.ddb.gy.o{border-color:var(--green);color:var(--green)}
+.ddb.gy.b{border-color:var(--brand);color:var(--brand)}
+.ddb.gy.r{border-color:var(--red);color:var(--red)}
+.ddb.gy.w{border-color:var(--amber);color:var(--amber)}
+.ddb.gy.v{border-color:var(--violet);color:var(--violet)}
 </style>
 </head>
 <body class="nn"><script>/* sidebar da chuyen ve index.html — node an giu cho JS cu khong vo */
@@ -512,7 +530,10 @@ const TTDD={
  vkp:{t:'Vắng không phép',c:'r',k:'K'},
  vcr:{t:'Vắng chưa rõ lý do',c:'w',k:'?'},
  dm :{t:'Đi muộn',       c:'v', k:'M'}};
-const NGUON={gvcn:'GVCN chấm',don:'Từ đơn xin nghỉ (M2.4)',gvbm:'GVBM ghi biến động trong tiết (M2.2)',cam:'Camera cổng'};
+/* GY18-H1 — hai nhan nguon moi. 'goiy' KHONG phai ban ghi: no la tang ②, hien o o con trong.
+   'doichieu' la ket luan CUA GVCN sinh tu goi y — truy duoc ca nguoi chot lan nguon goi y. */
+const NGUON={gvcn:'GVCN chấm',don:'Từ đơn xin nghỉ (M2.4)',gvbm:'GVBM ghi biến động trong tiết (M2.2)',
+ cam:'Camera cổng',goiy:'⧉ Gợi ý từ sổ đầu bài',doichieu:'GVCN đã đối chiếu'};
 const DD={};
 const ddk=(l,d,h)=>l+'|'+d+'|'+h;
 const ddGet=(l,d,h)=>DD[ddk(l,d,h)]||null;
@@ -559,6 +580,14 @@ const YCDD=[
  {id:'YC-2',l:'8A1',d:HOMNAY-9,h:hsLop('8A1')[0],cu:'vcr',moi:'cm',
   ly:'Em có mặt, GVCN chấm nhầm dòng',by:'hung',at:HOMNAY-3,tt:'duyet',xl:'dung',xat:HOMNAY-2}];
 
+/* ===== GY18-H1 · BUOI HOC · TIET DAU CUA BUOI =====
+   Khung tiet: 1-5 buoi sang, 6-8 buoi chieu. Lop hoc HAI BUOI thi lich (M4.7) co ca tiet buoi chieu —
+   truong mot buoi khong phai khai gi, may tu suy theo SO BUOI CO TIET trong ngay (diem H1-P2). */
+const BUOI=t=>t<=5?'sang':'chieu';
+const BUOITEN={sang:'buổi sáng',chieu:'buổi chiều'};
+const HAI_BUOI={'9A1':1};
+const tietCua=l=>HAI_BUOI[l]?[1,2,3,4,5,6]:[1,2,3,4,5];
+
 /* ===== T3 · SO DAU BAI (chieu tu M2.2) =====
    Moi tiet mang DU noi dung GVBM da ghi — de bam vao mo duoc chi tiet, va de
    T6 rut ra duoc "nhung lan bi phe binh / duoc khen ngoi trong so dau bai". */
@@ -577,7 +606,7 @@ const sdbk=(l,d,t)=>l+'|'+d+'|'+t;
 Object.keys(LOP).filter(l=>LOP[l].hd).forEach(l=>{
  const ms=monCua(l), hs=hsLop(l);
  for(let d=0;d<=HOMNAY;d++){ if(laCN(d)) continue;
-  for(let t=1;t<=5;t++){
+  for(const t of tietCua(l)){
    const m=ms[(d*5+t)%ms.length], r=rnd();
    const o={mon:m,gv:pc(l,m),bai:pick(BAI),
     ky:d<HOMNAY?1:(t<=3?1:0), kyAt:d<HOMNAY?'sau tiết':'',
@@ -587,17 +616,88 @@ Object.keys(LOP).filter(l=>LOP[l].hd).forEach(l=>{
    SDB[sdbk(l,d,t)]=o;
   }}});
 /* Mot tiet Sinh hoc 8A1 hom qua GV quen ky — de badge viec ton cua vai GVBM co du lieu that */
-(function(){const d=HOMNAY-1; for(let t=1;t<=5;t++){const s=SDB[sdbk('8A1',d,t)];
+(function(){const d=HOMNAY-1; for(const t of tietCua('8A1')){const s=SDB[sdbk('8A1',d,t)];
  if(s&&s.mon==='Sinh học'){s.ky=0; s.kyAt=''; return}}})();
 const BAT_YTHUC={TH:0,THCS:1,THPT:1};
 /* Rut phe binh / khen ngoi cua mot HS trong khoang ngay */
 function sdbCuaHS(l,h,ds){
  const out=[];
- ds.forEach(d=>{for(let t=1;t<=5;t++){const s=SDB[sdbk(l,d,t)]; if(!s)continue;
+ ds.forEach(d=>{for(const t of tietCua(l)){const s=SDB[sdbk(l,d,t)]; if(!s)continue;
   s.pb.forEach(x=>{if(x.h===h)out.push({d:d,t:t,mon:s.mon,loai:'pb',ly:x.ly,gv:s.gv})});
   s.kn.forEach(x=>{if(x.h===h)out.push({d:d,t:t,mon:s.mon,loai:'kn',ly:x.ly,gv:s.gv})});
  }});
  return out.sort((a,b)=>b.d-a.d);
+}
+
+/* ===== GY18-H1 · TANG ① — XAC NHAN SI SO CUA TIET (du lieu cua M2.2, M2.9 chi DOC) =====
+   s.xn = null (chua nhap) | {du:1} (xac nhan lop du) | {du:0,ds:[hs]} (xac nhan co vang, KEM TEN).
+   Khac biet giua "chua nhap" va "xac nhan lop du" chinh la thu ma M2.9 can de biet co nen tin hay khong. */
+function tietDau(l,d,b){const ts=tietCua(l).filter(t=>BUOI(t)===b&&SDB[sdbk(l,d,t)]); return ts.length?ts[0]:null}
+const buoiCo=(l,d)=>['sang','chieu'].filter(b=>tietDau(l,d,b)!=null);
+
+/* Ngay da qua: xac nhan cua tiet dau KHOP voi ban chot cua GVCN — khong de goi y cu lam nhieu man hinh.
+   Chi hom nay moi dung nam ca H1-1…H1-5. */
+Object.keys(LOP).filter(l=>LOP[l].hd).forEach(l=>{
+ for(let d=0;d<HOMNAY;d++){ if(laCN(d)) continue;
+  buoiCo(l,d).forEach(b=>{
+   const t=tietDau(l,d,b), s=SDB[sdbk(l,d,t)]; if(!s) return;
+   const vang=hsLop(l).filter(h=>{const r=ddGet(l,d,h); return r&&r.tt!=='cm'&&r.tt!=='dm'});
+   s.xn=vang.length?{du:0,ds:vang,luc:'07:0'+(1+(t%8))}:{du:1,luc:'07:0'+(1+(t%8))};
+  });
+ }});
+
+/* ===== NAM CA CUA HOM NAY ===== */
+(function(){
+ const d=HOMNAY;
+ /* H1-1 · 9A2 — GVCN chua cham o nao; tiet dau bao LOP DU  => moi o trong deu co goi y */
+ (function(){const t=tietDau('9A2',d,'sang'); SDB[sdbk('9A2',d,t)].xn={du:1,luc:'07:06'}})();
+ /* H1-2 · 8B1 — tiet dau bao HAI EM VANG => dung hai o do co goi y, phan con lai TRONG */
+ (function(){const t=tietDau('8B1',d,'sang'), hs=hsLop('8B1');
+  SDB[sdbk('8B1',d,t)].xn={du:0,ds:[hs[2],hs[7]],luc:'07:08'}})();
+ /* H1-3 · 9A1 — GVCN da chot phan lon (3 em con trong). Tiet dau neu hai em:
+    mot em O TRONG  -> goi y tu dien; mot em GVCN DA CHOT 'Co mat' -> KHONG de, hien DE NGHI DINH CHINH. */
+ (function(){const t=tietDau('9A1',d,'sang'), hs=hsLop('9A1');
+  ddSet('9A1',d,hs[3],{tt:'cm',ng:'gvcn',by:'lan'});          /* chot cung, de ca dinh chinh khong doi theo hat giong */
+  SDB[sdbk('9A1',d,t)].xn={du:0,ds:[hs[1],hs[3]],luc:'07:05'}})();
+ /* H1-P1 · 9A1 buoi chieu — goi y den SAU khi GVCN da chot: cung mot luat, khong de, chi de nghi dinh chinh */
+ (function(){const t=tietDau('9A1',d,'chieu'), hs=hsLop('9A1'); if(t==null) return;
+  ddSet('9A1',d,hs[6],{tt:'cm',ng:'gvcn',by:'lan'});
+  SDB[sdbk('9A1',d,t)].xn={du:0,ds:[hs[6]],luc:'13:35'}})();
+ /* H1-5 · 10A1 — tiet dau CHUA AI GHI so: khong co goi y nao, va KHONG bao loi */
+ (function(){const t=tietDau('10A1',d,'sang'), s=SDB[sdbk('10A1',d,t)];
+  s.xn=null; s.ky=0; s.kyAt=''})();
+})();
+
+/* ===== TANG ② — GOI Y CUA MAY =====
+   Cung khuon ba tang da dung o YK-01 (cham cong tiet · M4.9 §4f.2) va diem danh KTX (M6.10 §2.1):
+   ① nguon ghi nhan -> ② may ghep thanh GOI Y -> ③ NGUOI KET LUAN. O day tang ③ la GVCN.
+   Goi y la DAN XUAT: sinh lai bat cu luc nao, KHONG luu thanh ban ghi, va KHONG chay ra ngoai man hinh nay
+   (khong sang bang tuan, khong vao bao cao chuyen can, khong gui thong bao cho phu huynh). */
+function goiY(l,d){
+ const out={};
+ if(laCN(d)) return out;
+ buoiCo(l,d).forEach(b=>{
+  const t=tietDau(l,d,b), s=SDB[sdbk(l,d,t)];
+  if(!s||!s.xn) return;
+  const ng={b:b,t:t,mon:s.mon,gv:s.gv,luc:s.xn.luc};
+  if(s.xn.du) hsLop(l).forEach(h=>{(out[h]=out[h]||[]).push(Object.assign({tt:'cm'},ng))});
+  /* xac nhan "co em vang" chi noi ve DUNG NHUNG EM DUOC NEU TEN — cac o con lai VAN TRONG (H1-2).
+     Nguoi thay chi khang dinh phan ho thay thieu; "ca lop du" la mot khang dinh KHAC, co nut rieng. */
+  else s.xn.ds.forEach(h=>{(out[h]=out[h]||[]).push(Object.assign({tt:'vcr'},ng))});
+ });
+ return out;
+}
+const nhomTT=tt=>(tt==='cm'||tt==='dm')?'co':'vang';
+/* Nguon goi y theo buoi — ve ca khi KHONG co goi y nao, de man hinh noi ro vi sao (H1-5) */
+const nguonGY=(l,d)=>buoiCo(l,d).map(b=>{const t=tietDau(l,d,b), s=SDB[sdbk(l,d,t)];
+ return {b:b,t:t,mon:s.mon,gv:s.gv,ghi:!!s.ky,xn:s.xn||null}});
+/* O con trong + co goi y => tu dien (hien o chinh o do, nhan nguon di kem) */
+const oTrongCoGY=(l,d)=>{const g=goiY(l,d); return hsLop(l).filter(h=>!ddGet(l,d,h)&&g[h])};
+/* O da co trang thai do GVCN dat, goi y noi KHAC NHOM => de nghi dinh chinh, KHONG de */
+function lechGY(l,d){
+ const g=goiY(l,d);
+ return hsLop(l).filter(h=>{const r=ddGet(l,d,h);
+  return r&&!r.dc&&g[h]&&g[h].some(z=>nhomTT(z.tt)!==nhomTT(r.tt))});
 }
 
 /* ===== T4 · BAI TAP VE NHA (chieu tu M2.3) =====
@@ -1031,7 +1131,7 @@ function viecLop(l){
 function viecBM(l){
  const v=[]; if(!LOP[l].hd) return v;
  const ms=monToi(l); let n=0;
- ngayHoc(TUAN_NAY).filter(d=>d<=HOMNAY).forEach(d=>{for(let t=1;t<=5;t++){const s=SDB[sdbk(l,d,t)];
+ ngayHoc(TUAN_NAY).filter(d=>d<=HOMNAY).forEach(d=>{for(const t of tietCua(l)){const s=SDB[sdbk(l,d,t)];
   if(s&&!s.ky&&ms.indexOf(s.mon)>=0)n++}});
  if(n) v.push({k:'ky',t:'Tiết '+ms.join(' · ')+' chưa ghi sổ',n:n+' tiết',tab:'T3'});
  return v;
@@ -1290,6 +1390,52 @@ const suaDuoc=(l,d)=>{
  if(chotTuan(tuanCua(d))) return 0;      /* sau chot tuan: phai de nghi */
  return 1;
 };
+/* ===== GY18-H1 · DAI GOI Y + DE NGHI DINH CHINH (tang ② tren man hinh cua tang ③) ===== */
+function daiGY(l,d,sd){
+ const ng=nguonGY(l,d), gy=goiY(l,d), trong=oTrongCoGY(l,d), lech=lechGY(l,d);
+ const mo=b=>b==='sang'?'🌅':'🌆';
+ let h='<div class="gybox"><div class="gyh">⧉ Gợi ý điểm danh từ sổ đầu bài <span class="st2 n">tầng ② — chưa phải kết luận</span>'
+  +(sd&&trong.length?'<span class="sp"></span><button class="btn xs g" data-a="apGY">⧉ Áp gợi ý ('+trong.length+' ô trống)</button>':'')
+  +'</div>';
+ h+=ng.map(z=>{
+  const ten='tiết '+z.t+' · '+esc(z.mon)+' · '+esc(gvn(z.gv));
+  if(!z.xn) return '<div class="gyr n">'+mo(z.b)+' <b>Tiết đầu '+BUOITEN[z.b]+'</b> — '+ten
+    +' <b>chưa xác nhận sĩ số</b>'+(z.ghi?' (đã ghi sổ nhưng bỏ trống ô xác nhận)':' — tiết chưa ghi sổ')
+    +'. <b>Không có gợi ý nào</b> cho buổi này, và đó <b>không phải lỗi</b>: giáo viên bộ môn '
+    +'<b>không có hạn</b> phải ghi sổ trước 08:30. Bạn chấm như bình thường.</div>';
+  if(z.xn.du) return '<div class="gyr o">'+mo(z.b)+' <b>Tiết đầu '+BUOITEN[z.b]+'</b> — '+ten
+    +' xác nhận <b>✓ Lớp đủ</b> lúc '+esc(z.xn.luc)+'. Gợi ý <b>Có mặt</b> cho mọi ô còn trống.</div>';
+  return '<div class="gyr w">'+mo(z.b)+' <b>Tiết đầu '+BUOITEN[z.b]+'</b> — '+ten
+    +' báo <b>'+z.xn.ds.length+' em vắng</b> lúc '+esc(z.xn.luc)+': '
+    +z.xn.ds.map(x=>'<b>'+esc(HS[x].n)+'</b>').join(', ')
+    +'. Gợi ý <b>chỉ điền đúng '+z.xn.ds.length+' ô đó</b> — các ô còn lại <b>vẫn để trống</b>, '
+    +'vì thầy cô chỉ khẳng định phần mình thấy thiếu, chưa khẳng định cả lớp đủ.</div>';
+ }).join('');
+ h+='<div class="gyn">Gợi ý là <b>dẫn xuất</b>: không phải bản ghi điểm danh, <b>không</b> lên bảng tuần, '
+  +'<b>không</b> vào báo cáo chuyên cần và <b>không</b> gửi thông báo cho phụ huynh — cho tới khi <b>bạn chốt</b>. '
+  +'<b>Hạn '+DEADLINE+' chỉ ràng buộc giáo viên chủ nhiệm</b>, không ràng buộc giáo viên bộ môn: '
+  +'ô xác nhận trong sổ đầu bài <b>không có hạn</b>, thầy cô ghi sổ buổi tối vẫn hợp lệ.</div>';
+ if(lech.length){
+  h+='<div class="gylech"><b>⚠ '+lech.length+' đề nghị đính chính</b> — ô này <b>bạn đã chốt</b>, '
+   +'gợi ý nói khác. Hệ thống <b>không đè</b>: bạn quyết.'
+   +'<table class="tb"><tr><th class="tenhs">Học sinh</th><th>Bạn đã chốt</th><th>Sổ đầu bài tiết đầu</th><th></th></tr>'
+   +lech.map(h2=>{const r=ddGet(l,d,h2), g=gy[h2].filter(z=>nhomTT(z.tt)!==nhomTT(r.tt))[0];
+     return '<tr><td class="tenhs">'+esc(HS[h2].n)+'</td>'
+      +'<td><span class="st2 '+TTDD[r.tt].c+'">'+TTDD[r.tt].t+'</span>'
+      +'<div class="hint">'+esc(NGUON[r.ng])+'</div></td>'
+      +'<td><span class="st2 '+TTDD[g.tt].c+'">'+TTDD[g.tt].t+'</span>'
+      +'<div class="hint">'+BUOITEN[g.b]+' · tiết '+g.t+' · '+esc(gvn(g.gv))+'</div></td>'
+      +'<td>'+(sd?(r.ng==='don'
+        ?'<span class="hint">🔒 bản ghi sinh từ <b>đơn xin nghỉ</b> — sửa ở M2.4</span>'
+         +' <button class="btn xs" data-a="dcGiu" data-h="'+h2+'">Giữ nguyên</button>'
+        :'<button class="btn xs p" data-a="dcSua" data-h="'+h2+'">Sửa theo gợi ý</button> '
+         +'<button class="btn xs" data-a="dcGiu" data-h="'+h2+'">Giữ nguyên</button>')
+        :'<span class="hint">tuần đã chốt — gửi <b>đề nghị sửa</b></span>')+'</td></tr>'}).join('')
+   +'</table></div>';
+ }
+ return h+'</div>';
+}
+
 function t2Ngay(){
  const hs=hsLop(cur), d=ngay;
  const chua=hs.filter(h=>!ddGet(cur,d,h));
@@ -1307,7 +1453,7 @@ function t2Ngay(){
   +(sd?'<button class="btn sm '+(chua.length?'p':'')+'" '+(chua.length?'data-a="ddNhanh"':'disabled')
      +'>⚡ Điểm danh nhanh'+(chua.length?' ('+chua.length+')':'')+'</button>':'')
   +'<div class="gsep"></div>'
-  +'<span class="num">Hạn chấm <b>'+DEADLINE+'</b></span></div>';
+  +'<span class="num">Hạn chấm <b>'+DEADLINE+'</b> <span class="hint" style="display:inline">— chỉ ràng buộc GVCN</span></span></div>';
  if(quaHan) h+='<div class="danger">⏰ <b>Chưa điểm danh '+chua.length+'/'+hs.length+' học sinh</b> và '
   +'đã quá hạn <b>'+DEADLINE+'</b>. Hệ thống đã báo GVCN và PHT đào tạo. '
   +'Chưa chấm đầu ngày thì <b>mọi tiết sau đều không có mốc so sánh</b>, và phụ huynh không nhận được '
@@ -1315,6 +1461,8 @@ function t2Ngay(){
  else if(chotTuan(tuanCua(d))) h+='<div class="warn">🔒 Tuần '+tuanCua(d)+' <b>đã chốt</b>. '
   +'Sửa điểm danh của ngày này phải <b>gửi đề nghị</b> cho PHT đào tạo duyệt — xem tab '
   +'<b>Đề nghị sửa</b>.</div>';
+ h+=daiGY(cur,d,sd);
+ const GY=goiY(cur,d);
  const dem={}; Object.keys(TTDD).forEach(k=>dem[k]=0);
  hs.forEach(x=>{const r=ddGet(cur,d,x); if(r)dem[r.tt]++});
  h+='<div class="sumbar">'+Object.keys(TTDD).map(k=>'<div class="it'+(k==='vkp'?' r':k==='cm'?' g':' w')+'"><b>'
@@ -1327,21 +1475,30 @@ function t2Ngay(){
   +'<table class="bd"><tr><th class="stt">#</th><th class="tenhs">Họ và tên</th>'
   +'<th>Trạng thái</th><th class="gc">Lý do · nguồn</th><th class="gc">Biến động trong tiết</th></tr>'
   +hs.map((x,i)=>{const r=ddGet(cur,d,x), bds=bdCua(cur,d,x);
-   return '<tr'+(r?'':' class="dd-chua"')+'><td class="stt">'+(i+1)+'</td>'
+   /* GY18-H1 — o CON TRONG ma co goi y: goi y TU DIEN ngay tren o, kem nhan nguon. Van la tang ②. */
+   const g=GY[x]&&!r?GY[x][0]:null;
+   return '<tr'+(r?'':(g?' class="dd-gy"':' class="dd-chua"'))+'><td class="stt">'+(i+1)+'</td>'
    +'<td class="tenhs">'+esc(HS[x].n)+(NHAN[x]?' <span class="st2 '+NHANM[NHAN[x][0][0]].c+'">'
      +NHANM[NHAN[x][0][0]].t+'</span>':'')+'</td>'
    +'<td>'+(sd?'<div class="ddrow">'
-     +Object.keys(TTDD).map(k=>{const on=!!(r&&r.tt===k);
-       return '<button class="ddb'+(on?' on '+TTDD[k].c:'')+'" data-a="dd" data-h="'+x+'" data-v="'+k+'"'
-        +' aria-pressed="'+on+'" title="'+TTDD[k].t+(on?' — đang chọn':'')+'">'+TTDD[k].k+'</button>'}).join('')
+     +Object.keys(TTDD).map(k=>{const on=!!(r&&r.tt===k), gk=!!(g&&g.tt===k);
+       return '<button class="ddb'+(on?' on '+TTDD[k].c:'')+(gk?' gy '+TTDD[k].c:'')+'" data-a="dd" data-h="'+x+'" data-v="'+k+'"'
+        +' aria-pressed="'+on+'" title="'+TTDD[k].t+(on?' — đang chọn':gk?' — gợi ý từ sổ đầu bài':'')+'">'+TTDD[k].k+'</button>'}).join('')
      +'</div><div class="hint" style="text-align:center;margin-top:3px">'
      +(r?'<b style="color:var(--'+({o:'green',b:'brand',r:'red',w:'amber',v:'violet'}[TTDD[r.tt].c])+')">'
-        +TTDD[r.tt].t+'</b>':'<b style="color:var(--amber)">chưa chấm</b>')+'</div>'
-     :(r?'<span class="st2 '+TTDD[r.tt].c+'">'+TTDD[r.tt].t+'</span>':'<span class="st2 n">chưa chấm</span>'))+'</td>'
+        +TTDD[r.tt].t+'</b>':g?'<b style="color:var(--ink3)">⧉ gợi ý: '+TTDD[g.tt].t+'</b>'
+        :'<b style="color:var(--amber)">chưa chấm</b>')+'</div>'
+     :(r?'<span class="st2 '+TTDD[r.tt].c+'">'+TTDD[r.tt].t+'</span>'
+        :g?'<span class="st2 n">⧉ gợi ý: '+TTDD[g.tt].t+'</span>':'<span class="st2 n">chưa chấm</span>'))+'</td>'
    +'<td class="gc">'+(r?(r.tt!=='cm'?'<b>'+TTDD[r.tt].t+'</b>'+(r.gio?' lúc '+r.gio:'')
        +(r.ly?'<br>'+esc(r.ly):'')+'<div class="hint">'+esc(NGUON[r.ng])+'</div>'
        :'<span class="hint">'+esc(NGUON[r.ng])+'</span>')
+     :g?'<span class="hint">'+esc(NGUON.goiy)+' <b>tiết '+g.t+'</b> · '+esc(gvn(g.gv))+'</span>'
+        +(sd?' <button class="btn xs" data-a="gyMot" data-h="'+x+'">⧉ Nhận gợi ý</button>':'')
+        +'<div class="hint">Chưa phải kết luận — bạn chốt thì bản ghi mới sinh ra.</div>'
      :'<span class="hint">—</span>')
+   +(r&&r.gy?'<div class="hint">sinh từ gợi ý ⧉ '+BUOITEN[r.gy.b]+' · tiết '+r.gy.t+' · '+esc(gvn(r.gy.gv))+'</div>':'')
+   +(r&&r.dc?'<div class="hint">✓ đã đối chiếu với sổ đầu bài — giữ nguyên kết luận của bạn</div>':'')
    +(r&&r.ng==='don'?'<div class="hint">🔒 Bản ghi <b>sinh từ đơn xin nghỉ</b> — sửa ở '
      +'<button class="rolnk" data-a="dl" data-v="M2.4 Đơn xin nghỉ của HS">↗ M2.4</button>, không sửa tại đây</div>':'')
    +'</td>'
@@ -1351,7 +1508,8 @@ function t2Ngay(){
   +'</table>'
   +'<div class="lgd">'+Object.keys(TTDD).map(k=>'<span><b>'+TTDD[k].k+'</b> '+TTDD[k].t+'</span>').join('')
   +'<span class="dnote" style="margin-left:auto">Mỗi bản ghi mang <b>nguồn</b>: GVCN chấm · sinh từ đơn nghỉ · '
-  +'GVBM ghi trong tiết · camera. Không có nguồn thì không ai trả lời được câu <b>“ai chịu trách nhiệm về con số này”</b>.</span></div></div>';
+  +'GVBM ghi trong tiết · camera · <b>GVCN đã đối chiếu</b> (chốt từ gợi ý sổ đầu bài). '
+  +'Không có nguồn thì không ai trả lời được câu <b>“ai chịu trách nhiệm về con số này”</b>.</span></div></div>';
  return h;
 }
 function t2Tuan(){
@@ -1371,7 +1529,10 @@ function t2Tuan(){
    return '<tr><td class="stt">'+(i+1)+'</td><td class="tenhs">'+esc(HS[x].n)+'</td>'+tds
     +'<td class="tb'+(ng>=3?' ':'')+'" '+(ng>=3?'style="color:var(--red)"':'')+'>'+ng+'</td></tr>'}).join('')
   +'</table><div class="lgd">'+Object.keys(TTDD).map(k=>'<span><b>'+TTDD[k].k+'</b> '+TTDD[k].t+'</span>').join('')
-  +'<span>–  chưa chấm</span></div></div>';
+  +'<span>–  chưa chấm</span>'
+  +'<span class="dnote" style="margin-left:auto">Bảng tuần chỉ đọc <b>kết luận của GVCN</b>. '
+  +'Gợi ý từ sổ đầu bài <b>không hiện ở đây</b> — chưa chốt thì chưa có gì để đếm, và chuyên cần là '
+  +'con số gửi ra ngoài trường.</span></div></div>';
  return h;
 }
 function t2Tiet(){
@@ -1425,7 +1586,7 @@ function t3(){
   +(bm?' — tiết môn '+esc(ms.join(' · ')):'')
   +'<span class="ct">bấm vào một tiết để xem nội dung giáo viên đã ghi</span></div>'
   +'<table class="bd"><tr><th class="stt">Tiết</th>'+ds.map(d=>'<th>'+dow(d)+'<span>'+dstr(d)+'</span></th>').join('')+'</tr>'
-  +[1,2,3,4,5].map(t=>'<tr><td class="stt">'+t+'</td>'
+  +tietCua(cur).map(t=>'<tr><td class="stt">'+t+(BUOI(t)==='chieu'?' <span class="hint" style="display:inline">chiều</span>':'')+'</td>'
    +ds.map(d=>{const s=SDB[sdbk(cur,d,t)];
     if(!s||d>HOMNAY) return '<td class="oc trong">–</td>';
     if(ms.indexOf(s.mon)<0) return '<td class="oc trong" style="background:#f8fafc" title="Tiết môn khác — ngoài phân công của bạn, dữ liệu không trả về">·</td>';
@@ -2458,6 +2619,60 @@ function act(a,v,el){
     render();
     if(v!=='cm') toast('Đã ghi <b>'+TTDD[v].t+'</b> cho '+esc(HS[h].n)+' — đã gửi thông báo cho phụ huynh.');
     return}
+  /* ===== GY18-H1 — tang ③: GVCN CHOT. Goi y khong tu bien thanh ban ghi bao gio. ===== */
+  case 'gyMot': {const h=el.dataset.h, g=goiY(cur,ngay)[h];
+    if(ddGet(cur,ngay,h)){toast('Ô này <b>đã có trạng thái</b> — gợi ý không đè, xem khối đề nghị đính chính.');return}
+    ddSet(cur,ngay,h,{tt:g[0].tt,ng:'doichieu',by:toiLa(),gy:g[0]});
+    render();
+    toast('✓ Đã chốt <b>'+TTDD[g[0].tt].t+'</b> cho '+esc(HS[h].n)
+     +' — nguồn <b>GVCN đã đối chiếu</b>, ghi audit'+(g[0].tt!=='cm'?' · đã gửi thông báo cho phụ huynh':'')); return}
+
+  case 'dcSua': {const h=el.dataset.h, r=ddGet(cur,ngay,h);
+    const g=goiY(cur,ngay)[h].filter(z=>nhomTT(z.tt)!==nhomTT(r.tt))[0];
+    if(r.ng==='don'){toast('⛔ Bản ghi <b>sinh từ đơn xin nghỉ</b> — sửa ở <b>M2.4</b>, không sửa tại đây.');return}
+    const cu=r.tt;
+    ddSet(cur,ngay,h,{tt:g.tt,ng:'doichieu',by:toiLa(),gy:g});
+    render();
+    toast('✓ Đã sửa <b>'+TTDD[cu].t+'</b> → <b>'+TTDD[g.tt].t+'</b> cho '+esc(HS[h].n)
+     +' theo gợi ý tiết '+g.t+' · ghi audit kèm giá trị cũ'); return}
+
+  case 'dcGiu': {const h=el.dataset.h, r=ddGet(cur,ngay,h);
+    r.dc=1; render();
+    toast('Giữ nguyên <b>'+TTDD[r.tt].t+'</b> cho '+esc(HS[h].n)
+     +' — bản ghi mang thêm nhãn <b>GVCN đã đối chiếu</b>. Sổ đầu bài <b>không bị sửa</b>: hai bên ghi hai việc khác nhau.'); return}
+
+  case 'apGY': {
+    const gy=goiY(cur,ngay), chua=oTrongCoGY(cur,ngay), hs=hsLop(cur);
+    if(!chua.length){toast('Không còn ô trống nào có gợi ý.');return}
+    const giu=hs.filter(h=>ddGet(cur,ngay,h));
+    const trongKhongGY=hs.filter(h=>!ddGet(cur,ngay,h)&&!gy[h]);
+    modal('⧉ Áp gợi ý từ sổ đầu bài — '+dfull(ngay)+' · lớp '+esc(cur),
+     '<div class="ro">Thao tác này <b>chốt</b> '+chua.length+' ô còn trống <b>theo gợi ý</b>. '
+     +'Bản ghi sinh ra mang nguồn <b>GVCN đã đối chiếu</b> — <b>bạn</b> là người chịu trách nhiệm, '
+     +'giáo viên bộ môn chỉ <b>ghi nhận</b> ở sổ đầu bài. Ô đã có trạng thái <b>giữ nguyên, không bị ghi đè</b>.</div>'
+     +'<div class="card"><div class="ch">Sẽ chốt theo gợi ý — '+chua.length+' em</div><div class="cb p">'
+     +'<div style="max-height:190px;overflow:auto">'+chua.map((h,i)=>'<div style="padding:3px 0;font-size:12.5px">'
+       +(i+1)+'. '+esc(HS[h].n)+' → <b>'+TTDD[gy[h][0].tt].t+'</b> '
+       +'<span class="hint" style="display:inline">'+BUOITEN[gy[h][0].b]+' · tiết '+gy[h][0].t+' · '
+       +esc(gvn(gy[h][0].gv))+'</span></div>').join('')+'</div></div></div>'
+     +'<div class="card"><div class="ch">Giữ nguyên — '+giu.length+' em đã có trạng thái'
+     +(trongKhongGY.length?' · '+trongKhongGY.length+' ô trống không có gợi ý':'')+'</div>'
+     +'<div class="cb p"><div style="max-height:140px;overflow:auto">'
+     +giu.map(h=>{const r=ddGet(cur,ngay,h);
+        return '<div style="padding:3px 0;font-size:12.5px">'+esc(HS[h].n)
+         +' <span class="st2 '+TTDD[r.tt].c+'">'+TTDD[r.tt].t+'</span>'
+         +(r.ng==='don'?' <span class="hint" style="display:inline">từ đơn M2.4</span>':'')+'</div>'}).join('')
+     +trongKhongGY.map(h=>'<div style="padding:3px 0;font-size:12.5px;color:var(--ink3)">'+esc(HS[h].n)
+        +' — ô trống, <b>không có gợi ý</b> nên vẫn để trống</div>').join('')
+     +'</div></div></div>'
+     +'<div class="hint">Liệt kê <b>đích danh</b> chứ không chỉ đếm số — giống ⚡ Điểm danh nhanh, và vì cùng một lý do: '
+     +'điểm danh là dữ liệu gửi thẳng cho phụ huynh trong ngày.</div>',
+     [['Huỷ','',closeM],['Xác nhận — chốt '+chua.length+' ô theo gợi ý','p',()=>{
+       chua.forEach(h=>ddSet(cur,ngay,h,{tt:gy[h][0].tt,ng:'doichieu',by:toiLa(),gy:gy[h][0]}));
+       closeM(); render();
+       toast('⧉ Đã chốt <b>'+chua.length+' ô</b> theo gợi ý sổ đầu bài. Nguồn <b>GVCN đã đối chiếu</b>, ghi audit. '
+        +'Từ lúc này con số mới vào <b>bảng tuần</b> và <b>báo cáo chuyên cần</b>.')}]]); return}
+
   case 'ddNhanh': {
     const chua=hsLop(cur).filter(h=>!ddGet(cur,ngay,h));
     if(!chua.length){toast('Mọi học sinh đã có trạng thái — không còn ô trống nào để điền.'); return}

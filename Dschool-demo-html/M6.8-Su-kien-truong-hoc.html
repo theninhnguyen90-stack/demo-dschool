@@ -490,13 +490,22 @@ const CFG={
       ngày» làm ví dụ cho việc đó. Giữ cả hai là HAI CƠ CHẾ NHẮC SONG
       SONG, mà cái tự động không qua ràng buộc 20f và không hiện ở khối
       📬 — nên người tổ chức không thấy nó, và nhắc tay lần nữa. */
- canRaAnh:true      /* bắt buộc xác nhận đã rà ảnh trước khi publish có ảnh */
+ /* ⛔ `canRaAnh` ĐÃ BỎ HẲN — 19/9/2026, cụm BTDS chốt ⑦ (HDBT §3.4).
+      Khuôn cũ của M6.8 (danh sách em không đồng ý + người đăng tự rà +
+      tích xác nhận, thêm ảnh thì xác nhận bị xóa) BỎ, vì sau di cư
+      M6.8 KHÔNG CÒN ĐĂNG GÌ LÊN APP — ảnh ở đây là TƯ LIỆU NỘI BỘ của
+      sự kiện. Cổng kiểm ảnh nay nằm ở M8.6 §9: hai vế TỪNG ẢNH, đọc sổ
+      đồng ý ở M1.1, KHÔNG TẮT ĐƯỢC (không một ô nào ở ⚙). Ảnh chỉ gặp
+      cổng khi người dùng bấm 📸 Đăng lên Bảng tin App.
+      ⚠ Một tham số trường không được đổi thì không cần ô cấu hình —
+      cùng lý do M6.14 §2 đã gỡ công tắc này khỏi ⚙ của M6.3. */
 };
 
 /* ══════════════════════════════════════════════════════════════════
-   ★★ DANH SÁCH HỌC SINH KHÔNG ĐỒNG Ý ĐĂNG ẢNH
-   Chiếu từ M1.1. Đây là thứ tài liệu nguồn hoàn toàn bỏ trống, mà nó
-   quyết định việc một tấm ảnh có được đăng hay không.
+   ★★ DANH SÁCH HỌC SINH CHƯA ĐỦ ĐỒNG Ý HÌNH ẢNH — 🔗 BẢN CHIẾU TỪ M1.1
+   ⚠ v2.8 (19/9/2026): danh sách này KHÔNG CÒN CHẶN GÌ ở M6.8. Nó ở lại
+   làm bản chiếu chỉ đọc (D2) để người tổ chức biết trước; cổng chặn
+   nằm ở M8.6 §9 và chạy TỪNG ẢNH với hai vế đầy đủ.
    Căn cứ: BLDS 2015 Đ.32 (dùng hình ảnh cá nhân phải được đồng ý;
    người dưới 15 tuổi phải được cha mẹ đồng ý) · Luật Trẻ em 2016.
    ══════════════════════════════════════════════════════════════════ */
@@ -510,38 +519,55 @@ const KHONG_DANG_ANH=[
 const khongDangAnhCua=dt=>KHONG_DANG_ANH.filter(x=>dt==='ALL'||x.dt===dt);
 
 /* ══════════════════════════════════════════════════════════════════
-   PHẠM VI PUBLISH — bao nhiêu PHỤ HUYNH thấy sự kiện
-   ★ 7/9/2026 (ràng buộc 20e): trường này KHÔNG cắt gì cho nhân sự.
-     Nhân sự nào thấy sự kiện nào là do PHẠM VI VAI (ma trận quyền §9) —
-     vai School thấy cả sự kiện gắn một điểm trường. Ba mức dưới đây là
-     ba nấc của MỘT trục duy nhất: tới bao nhiêu phụ huynh.
+   ★★ v2.8 (19/9/2026 — cụm BTDS, chốt ④ · HDBT §3.3)
+   `Phạm vi hiển thị` BA MỨC ĐÃ DI CƯ sang BÀI của M8.6 Bảng tin Đời
+   sống trường. Sự kiện KHÔNG còn khai «phụ huynh nào thấy» — vì sau
+   cụm BTDS phụ huynh KHÔNG thấy sự kiện nữa, họ thấy BÀI ở M8.6.
+   Ba mức cũ đi đâu:  Toàn trường → `toan_truong` · Điểm trường →
+   `diem_truong` · Chỉ nhân sự → BỎ (bài bảng tin luôn là bài cho phụ
+   huynh; không muốn cho phụ huynh xem thì KHÔNG TẠO BÀI). Bài có thêm
+   mức `khoi` — hợp lệ ở bài mà không hợp lệ ở sự kiện, xem §2.5.1.
+
+   ★ Ở lại đây đúng MỘT cờ hai giá trị — `cong_bo_phu_huynh`, NGOẠI LỆ
+     BẮT BUỘC của §3.3: di cư hết thì ràng buộc 20f MẤT TRẦN, và một
+     buổi làm việc nội bộ về một nhóm học sinh cụ thể có thể bị gửi
+     thông báo cho toàn trường. Cờ là TRẦN CHO PHÉP của hai đường ra
+     (hộp 📣 Gửi thông báo · nút 📸 Đăng lên Bảng tin App) — nó ⛔ KHÔNG
+     khai «phụ huynh nào thấy», ⛔ không có ba mức, ⛔ không đụng quyền
+     xem của nhân sự (20e giữ nguyên).
+
+   ⚠ Trường `pub` giữ nguyên TÊN trong mã nguồn nhưng nay mang BA giá
+     trị: `nhap` (chưa triển khai) · `duoc_cong_bo` · `noi_bo`.
    ══════════════════════════════════════════════════════════════════ */
-const PUBLISH={
- truong:['Toàn trường — mọi phụ huynh của trường','r'],
- dt    :['Điểm trường — chỉ phụ huynh có con học điểm đó','w'],
- ns    :['Chỉ nhân sự — không tới phụ huynh nào','o'],
- nhap  :['Chưa công bố','n']
+const CBPH={
+ duoc_cong_bo:['Được công bố tới phụ huynh','w'],
+ noi_bo      :['Nội bộ — không ra ngoài nhà trường','o'],
+ nhap        :['Chưa triển khai','n']
 };
-const denPH=p=>p==='truong'||p==='dt';
+const congBo=p=>p==='duoc_cong_bo';
 
 /* ══════════════════════════════════════════════════════════════════
    ★★ NHÓM NHẬN THÔNG BÁO — trục THỨ HAI, không phải trục phạm vi hiển thị
-   Ràng buộc 20f: hộp Gửi thông báo CHỈ CHÀO nhóm PHỤ HUYNH nằm trong
-   phạm vi hiển thị của sự kiện. Ràng buộc 20e: nhóm NHÂN SỰ luôn chào đủ,
-   chỉ giới hạn bởi PHẠM VI VAI của người gửi — phạm vi hiển thị của sự
-   kiện không cắt gì cho nhân sự.
-   ★ Khối giao với điểm trường (không phải hợp): sự kiện hiển thị ở
-     Điểm trường A thì «khối 9» nghĩa là khối 9 CỦA ĐIỂM A.
+   Ràng buộc 20f (viết lại v2.8): hộp Gửi thông báo CHỈ CHÀO nhóm PHỤ
+   HUYNH khi cờ `cong_bo_phu_huynh` = `duoc_cong_bo`; cờ `noi_bo` thì
+   chỉ chào nhóm nhân sự. Ràng buộc 20e: nhóm NHÂN SỰ luôn chào đủ, chỉ
+   giới hạn bởi PHẠM VI VAI của người gửi — cờ không cắt gì cho nhân sự.
+   ★ Khung nhóm phụ huynh nay đi theo ĐIỂM TRƯỜNG CỦA SỰ KIỆN (`e.dt`) —
+     một dữ kiện về sự kiện, không phải một chính sách hiển thị. Sự kiện
+     của Điểm trường A thì «khối 9» nghĩa là khối 9 CỦA ĐIỂM A (GIAO,
+     không phải hợp). Trước v2.8 khung này đọc từ `pub`; hai cách cho
+     CÙNG một kết quả trên mọi sự kiện mẫu, vì không sự kiện nào từng
+     hiển thị rộng hơn điểm trường của chính nó.
    ══════════════════════════════════════════════════════════════════ */
 const KHOI=[6,7,8,9];
 const PH_SO={A:{6:68,7:70,8:66,9:62}, B:{6:46,7:44,8:45,9:44}, C:{6:27,7:26,8:25,9:26}};
 const NS_SO={A:38,B:24,C:13};
 const phDT=d=>KHOI.reduce((a,k)=>a+PH_SO[d][k],0);
-/* điểm trường nào có phụ huynh thấy được sự kiện này */
-const dtThayDuoc=e=>e.pub==='truong'?Object.keys(DT):e.pub==='dt'?[e.dt]:[];
+/* điểm trường nào có nhóm phụ huynh được CHÀO RA cho sự kiện này */
+const dtNhomPH=e=>congBo(e.pub)?(e.dt==='ALL'?Object.keys(DT):[e.dt]):[];
 
 function nhomNhan(e){
- const pdt=dtThayDuoc(e), g=[];
+ const pdt=dtNhomPH(e), g=[];
  if(pdt.length){
   g.push({id:'ph:all',loai:'ph',so:pdt.reduce((a,d)=>a+phDT(d),0),
    ten:pdt.length>1?'Toàn bộ phụ huynh của trường':'Toàn bộ phụ huynh '+DT[pdt[0]]});
@@ -564,7 +590,7 @@ function soNhan(e,ids){
  else{
   const dts=Object.keys(DT).filter(d=>co('ph:dt:'+d));
   const ks=KHOI.filter(k=>co('ph:k:'+k));
-  const pdt=dtThayDuoc(e);
+  const pdt=dtNhomPH(e);
   pdt.forEach(d=>{KHOI.forEach(k=>{
    if(dts.includes(d)||ks.includes(k)) ph+=PH_SO[d][k]})});
  }
@@ -589,60 +615,61 @@ const SUKIEN=[];
 function themSK(o){SUKIEN.push({id:'SK-'+p2(++MSK),ls:[],anh:[],tb:[],...o})}
 (function seed(){
  const d=[
-  /* tên, loại, dt, từ, đến, địa điểm, thành phần, publish, chi, số ảnh, người tạo, mô tả */
+  /* tên, loại, dt, từ, đến, địa điểm, thành phần, CỜ công bố phụ huynh, chi, số ảnh, người tạo, mô tả */
   ['Lễ khai giảng năm học 2026-2027','hoctap','ALL','2026-09-05','2026-09-05','Sân trường Điểm trường A',
-   'Toàn thể cán bộ, giáo viên, học sinh và đại diện phụ huynh','truong',18500000,12,'huy',
+   'Toàn thể cán bộ, giáo viên, học sinh và đại diện phụ huynh','duoc_cong_bo',18500000,12,'huy',
    'Đón học sinh đầu cấp, đọc thư của Chủ tịch nước, đánh trống khai trường.'],
   ['Vui hội Trăng rằm','le','ALL','2026-09-25','2026-09-25','Sân trường hai điểm trường',
-   'Học sinh toàn trường, phụ huynh khối 6','truong',9200000,18,'tuan',
+   'Học sinh toàn trường, phụ huynh khối 6','duoc_cong_bo',9200000,18,'tuan',
    'Bày mâm cỗ theo lớp, rước đèn, phát quà Trung thu.'],
   ['Họp phụ huynh đầu năm học','ph','ALL','2026-09-19','2026-09-20','Các phòng học',
-   'Giáo viên chủ nhiệm và phụ huynh toàn trường','truong',0,0,'son',
+   'Giáo viên chủ nhiệm và phụ huynh toàn trường','duoc_cong_bo',0,0,'son',
    'Triển khai kế hoạch năm học, bầu ban đại diện cha mẹ học sinh các lớp.',
    {boi:'son',ngay:'2026-09-22',ly:'Họp phụ huynh theo lớp — không chụp ảnh và không phát sinh chi phí từ nhà trường'}],
   ['Kỷ niệm ngày Phụ nữ Việt Nam 20/10','nhansu','ALL','2026-10-20','2026-10-20','Hội trường Điểm trường A',
-   'Toàn thể cán bộ, giáo viên, nhân viên nữ','ns',6400000,7,'lien',
+   'Toàn thể cán bộ, giáo viên, nhân viên nữ','noi_bo',6400000,7,'lien',
    'Công đoàn tổ chức gặp mặt, tặng quà nữ cán bộ giáo viên.'],
   ['Hội thi văn nghệ chào mừng 20/11','thidua','ALL','2026-11-15','2026-11-16','Hội trường Điểm trường A',
-   'Học sinh toàn trường, giáo viên và phụ huynh','truong',24000000,26,'tuan',
+   'Học sinh toàn trường, giáo viên và phụ huynh','duoc_cong_bo',24000000,26,'tuan',
    'Mỗi khối dự thi hai tiết mục; chấm giải nhất, nhì, ba và giải phong trào.'],
   ['Lễ kỷ niệm ngày Nhà giáo Việt Nam 20/11','le','ALL','2026-11-20','2026-11-20','Sân trường Điểm trường A',
-   'Toàn thể nhà trường, đại biểu Phòng GD&ĐT, đại diện phụ huynh','truong',31500000,34,'huy',
+   'Toàn thể nhà trường, đại biểu Phòng GD&ĐT, đại diện phụ huynh','duoc_cong_bo',31500000,34,'huy',
    'Tuyên dương giáo viên, tri ân nhà giáo, học sinh tặng hoa.'],
   ['Hội nghị cán bộ, viên chức năm học 2026-2027','chuyenmon','ALL','2026-10-08','2026-10-08','Hội trường Điểm trường A',
-   'Toàn thể cán bộ, giáo viên, nhân viên','ns',4800000,5,'lien',
+   'Toàn thể cán bộ, giáo viên, nhân viên','noi_bo',4800000,5,'lien',
    'Thông qua quy chế chi tiêu nội bộ, ký giao ước thi đua.'],
   ['Khám sức khỏe định kỳ đầu cấp','hoctap','ALL','2026-10-15','2026-10-16','Phòng y tế và các phòng học',
-   'Học sinh khối 6 toàn trường, nhân viên y tế học đường','truong',5200000,4,'huong',
+   'Học sinh khối 6 toàn trường, nhân viên y tế học đường','duoc_cong_bo',5200000,4,'huong',
    'Khám thể lực, thị lực, răng hàm mặt cho học sinh đầu cấp theo Thông tư liên tịch 13/2016.'],
   ['Ngày hội đọc sách','thidua','A','2026-10-24','2026-10-24','Thư viện và sảnh Điểm trường A',
-   'Học sinh Điểm trường A','dt',3600000,9,'huong',
+   'Học sinh Điểm trường A','duoc_cong_bo',3600000,9,'huong',
    'Giới thiệu sách theo chủ đề, thi kể chuyện theo sách.'],
   ['Chuyên đề đổi mới phương pháp dạy học môn Toán','chuyenmon','ALL','2026-12-12','2026-12-12','Phòng họp Điểm trường A',
-   'Giáo viên tổ Toán hai điểm trường','ns',1200000,3,'son',
+   'Giáo viên tổ Toán hai điểm trường','noi_bo',1200000,3,'son',
    'Dự giờ tiết minh họa, thảo luận rút kinh nghiệm.'],
   /* đã qua nhưng CHƯA hoàn tất hồ sơ */
   ['Hội thao học sinh cấp trường','thidua','ALL','2026-12-06','2026-12-07','Sân vận động Điểm trường B',
-   'Học sinh toàn trường, giáo viên thể dục','truong',0,0,'tuan',
+   'Học sinh toàn trường, giáo viên thể dục','duoc_cong_bo',0,0,'tuan',
    'Thi đấu bóng đá, kéo co, chạy tiếp sức giữa các khối.'],
   ['Họp phụ huynh giữa học kỳ 1','ph','B','2026-11-28','2026-11-28','Các phòng học Điểm trường B',
-   'Giáo viên chủ nhiệm và phụ huynh Điểm trường B','dt',0,0,'khanh',
+   'Giáo viên chủ nhiệm và phụ huynh Điểm trường B','duoc_cong_bo',0,0,'khanh',
    'Thông báo kết quả giữa kỳ, trao đổi tình hình học tập.'],
   ['Tập huấn phòng cháy chữa cháy','dotxuat','ALL','2026-12-19','2026-12-19','Sân trường Điểm trường A',
-   'Toàn thể cán bộ, giáo viên, nhân viên và học sinh khối 9','ns',0,0,'huong',
+   'Toàn thể cán bộ, giáo viên, nhân viên và học sinh khối 9','noi_bo',0,0,'huong',
    'Phối hợp Công an phường hướng dẫn thoát hiểm và sử dụng bình chữa cháy.'],
   /* sắp diễn ra */
   ['Sơ kết học kỳ 1 năm học 2026-2027','hoctap','ALL','2027-01-12','2027-01-12','Hội trường Điểm trường A',
-   'Toàn thể cán bộ, giáo viên và học sinh','truong',0,0,'son',
+   'Toàn thể cán bộ, giáo viên và học sinh','duoc_cong_bo',0,0,'son',
    'Tổng kết kết quả học kỳ 1, khen thưởng học sinh giỏi và tập thể lớp xuất sắc.'],
   ['Hội chợ Xuân — Tết Đinh Mùi','le','ALL','2027-01-23','2027-01-24','Sân trường hai điểm trường',
-   'Học sinh toàn trường, phụ huynh, giáo viên','truong',0,0,'tuan',
+   'Học sinh toàn trường, phụ huynh, giáo viên','duoc_cong_bo',0,0,'tuan',
    'Gian hàng theo lớp, gói bánh chưng, viết thư pháp.'],
-  /* ★★ CA MẪU CỦA §2.5.1 — hiện trên feed TOÀN TRƯỜNG, nhưng chỉ gửi
-     thông báo cho KHỐI 9. Đúng cái bất đối xứng đã chốt 7/9/2026:
-     khối là mức độ LIÊN QUAN, không phải ranh giới THÀNH VIÊN. */
+  /* ★★ CA MẪU CỦA §2.5.1 — cờ công bố MỞ (bài trên Bảng tin để cả trường
+     xem được), nhưng chỉ gửi THÔNG BÁO cho KHỐI 9. v2.8 đọc lại thành
+     «BÀI rộng, THÔNG BÁO hẹp». Bất đối xứng vẫn đúng: khối là mức độ
+     LIÊN QUAN, không phải ranh giới THÀNH VIÊN. */
   ['Tư vấn hướng nghiệp và phân luồng sau THCS','hoctap','ALL','2027-01-10','2027-01-10','Hội trường Điểm trường A',
-   'Học sinh khối 9 và cha mẹ học sinh khối 9','truong',0,0,'son',
+   'Học sinh khối 9 và cha mẹ học sinh khối 9','duoc_cong_bo',0,0,'son',
    'Giới thiệu các luồng sau THCS, giải đáp hồ sơ dự tuyển vào lớp 10 và trường nghề.'],
   ['Họp phụ huynh cuối học kỳ 1','ph','ALL','2027-01-17','2027-01-18','Các phòng học',
    'Giáo viên chủ nhiệm và phụ huynh toàn trường','nhap',0,0,'son',
@@ -660,7 +687,7 @@ function themSK(o){SUKIEN.push({id:'SK-'+p2(++MSK),ls:[],anh:[],tb:[],...o})}
    anh:Array.from({length:soAnh},(_,i)=>({id:i+1,boi,ngay:den}))};
   o.tb=[]; o.daTK=(pub!=='nhap');
   o.ls=[[o.ngayTao,'Tạo sự kiện',boi]];
-  if(pub!=='nhap') o.ls.push([o.ngayTao,'🚀 Triển khai — '+PUBLISH[pub][0],boi]);
+  if(pub!=='nhap') o.ls.push([o.ngayTao,'🚀 Triển khai — '+CBPH[pub][0],boi]);
   if(soAnh) o.ls.push([den,'Tải lên '+soAnh+' ảnh',boi]);
   if(chi) o.ls.push([den,'Ghi tổng chi '+vnd(chi),boi]);
   if(hoanTat) o.ls.push([hoanTat.ngay,'Đánh dấu hoàn tất hồ sơ — '+hoanTat.ly,hoanTat.boi]);
@@ -669,7 +696,7 @@ function themSK(o){SUKIEN.push({id:'SK-'+p2(++MSK),ls:[],anh:[],tb:[],...o})}
  /* một sự kiện đã hủy — bản ghi vẫn còn */
  themSK({ten:'Tham quan Bảo tàng Dân tộc học khối 7','loai':'thidua',loai:'thidua',dt:'A',
   tu:'2026-12-13',den:'2026-12-13',noi:'Bảo tàng Dân tộc học Việt Nam',
-  tp:'Học sinh khối 7 Điểm trường A và giáo viên chủ nhiệm',pub:'dt',chi:0,boi:'huong',
+  tp:'Học sinh khối 7 Điểm trường A và giáo viên chủ nhiệm',pub:'duoc_cong_bo',chi:0,boi:'huong',
   mota:'Tham quan ngoại khóa theo chương trình Lịch sử — Địa lý.',
   ngayTao:'2026-11-20',anh:[],
   huy:{ngay:'2026-12-10',boi:'huong',ly:'Dự báo mưa lớn và rét đậm, không bảo đảm an toàn cho học sinh khi di chuyển. Nhà trường sẽ thông báo lịch mới sau.'},
@@ -682,7 +709,7 @@ function themSK(o){SUKIEN.push({id:'SK-'+p2(++MSK),ls:[],anh:[],tb:[],...o})}
        tieuDe:'HỦY — Tham quan Bảo tàng Dân tộc học khối 7',
        noiDung:'Dự báo mưa lớn và rét đậm, không bảo đảm an toàn cho học sinh khi di chuyển. Nhà trường sẽ thông báo lịch mới sau.',
        nhom:[{id:'ph:k:7',ten:'Phụ huynh khối 7 — Điểm trường A',so:70}],so:70}],
-  ls:[['2026-11-20','Tạo sự kiện','huong'],['2026-11-20','🚀 Triển khai — Điểm trường','huong'],
+  ls:[['2026-11-20','Tạo sự kiện','huong'],['2026-11-20','🚀 Triển khai — được công bố tới phụ huynh','huong'],
       ['2026-11-21','📣 Gửi thông báo TB-2026-31 — 70 người nhận','huong'],
       ['2026-12-10','HỦY sự kiện','huong'],
       ['2026-12-10','📣 Gửi thông báo hủy TB-2026-38 — 70 người nhận','huong']]});
@@ -720,16 +747,28 @@ function themSK(o){SUKIEN.push({id:'SK-'+p2(++MSK),ls:[],anh:[],tb:[],...o})}
   nhom:[{id:'ph:k:9',ten:'Phụ huynh khối 9 — toàn trường',so:132}]});
  /* v2.7 — lễ khai giảng đã có bài web nháp ở M8.5 (khớp dữ liệu mẫu demo M8.5: WEB-0147 nguồn SK-01) */
  SUKIEN.find(x=>x.ten==='Lễ khai giảng năm học 2026-2027').web={ma:'WEB-0147',tt:'Nháp',ngay:'2026-09-06'};
+ /* 🆕 BTDS-3Z 20/9/2026 — chốt ④: mã bài lấy M8.6 làm CHUẨN.
+    «Lễ khai giảng» ⇒ BT-0002 ở CẢ BA demo (M6.8 · M6.14 · M8.6). BT-0001 là «Sân trường mùa phượng nở» (tin_thuong).
+    M8.6 gieo BT-0002 với nguon {menu:'M6.8',ctx:'SK-01'}; M6.14 PT-01 trỏ chung bài này (điểm Y). */
+ SUKIEN.find(x=>x.ten==='Lễ khai giảng năm học 2026-2027').bt=
+  {ma:'BT-0002',tt:'Đang hiển thị',ngay:'2026-09-06',pv:'Toàn trường',anh:12,anhGiu:9};
+ /* ★ v2.8 — một sự kiện ĐÃ CÓ BÀI ở M8.6, để nút 📸 chạy được cả hai trạng thái:
+      «Đăng lên Bảng tin App» (chưa có bài) và «Bài BT-#### · trạng thái» (đã có).
+      Mã bài theo HDBT §3.1: BT-####. */
+ SUKIEN.find(x=>x.ten==='Lễ kỷ niệm ngày Nhà giáo Việt Nam 20/11').bt=
+  {ma:'BT-0112',tt:'Đang hiển thị',ngay:'2026-11-21',pv:'Toàn trường',anh:28,anhGiu:6};
 })();
 /* ══════════════════════════════════════════════════════════════════
    ★★ KHỐI LIÊN QUAN — điểm cần xác nhận I, chốt 7/9/2026
-   ⛔ ĐÂY KHÔNG PHẢI QUYỀN XEM. Ai thấy sự kiện vẫn hoàn toàn do
-      `pub` (phạm vi hiển thị) quyết định — ràng buộc 20d giữ nguyên:
-      phạm vi hiển thị KHÔNG có mức khối.
+   ⛔ ĐÂY KHÔNG PHẢI QUYỀN XEM — ràng buộc 20d giữ nguyên: SỰ KIỆN
+      không có mức khối nào, ở bất kỳ trục nào.
    Trường này chỉ làm ba việc, không việc nào đụng tới quyền xem:
      ① hộp 📣 Gửi thông báo TÍCH SẴN đúng khối (bỏ tích được);
-     ② thẻ sự kiện đeo chip «Khối 9» để người khối khác không đọc
-        nhầm là việc của mình — GIẢM ỒN bằng NHÃN, không bằng TƯỜNG;
+     ② ★ v2.8 — BƠM SANG `khoi_lien_quan[]` CỦA BÀI khi bấm 📸 Đăng lên
+        Bảng tin App; chip «Khối 9» trên thẻ App nay đọc trường CỦA BÀI,
+        không đọc sự kiện (đóng điểm I-App). Ở web, chip vẫn hiện trên
+        danh sách và panel làm NHÃN NỘI BỘ — GIẢM ỒN bằng NHÃN, không
+        bằng TƯỜNG;
      ③ tab Báo cáo gom được theo khối.
    Trước đó khối nằm trong `Thành phần` dạng chữ tự do — người đọc
    hiểu, máy không.  Để trống = sự kiện chung, không gắn khối nào.
@@ -803,19 +842,24 @@ function skTrongPhamVi(){
 const suaDuoc=e=>can('sua')&&!e.huy&&(e.boi===toiLa()||role==='HT'||role==='FULL');
 
 /* ══════════════════════════════════════════════════════════════════
-   ★★ ẢNH SỰ KIỆN — MÁY KHÔNG KIỂM ĐƯỢC, NÊN NÓ PHẢI NÓI RA
-   Hệ thống không nhận diện khuôn mặt (và cố ý không làm điều đó với
-   ảnh trẻ em). Vì vậy nó KHÔNG THỂ tự biết ảnh nào có mặt em không
-   đồng ý đăng. Thứ nó làm được — và phải làm — là NÊU RA giới hạn ấy
-   và bắt người đăng xác nhận đã tự rà.
+   ★★ ẢNH SỰ KIỆN — v2.8: TƯ LIỆU NỘI BỘ, KHÔNG CÓ CỔNG KIỂM Ở ĐÂY
+   (19/9/2026 — cụm BTDS chốt ⑦ · HDBT §3.4)
+
+   Trước v2.8, M6.8 tự đăng ảnh lên khối 📸 của App PH-HS, nên nó phải
+   tự dựng một cổng kiểm: danh sách em không đồng ý + người đăng tự rà
+   + tích xác nhận, thêm ảnh thì xác nhận bị xóa. Khuôn đó BỎ HẲN — vì
+   M6.8 KHÔNG CÒN ĐĂNG GÌ LÊN APP.
+
+   Nay ảnh ở đây là TƯ LIỆU NỘI BỘ của sự kiện: không ra ngoài, nên
+   không có gì để chặn. Ảnh chỉ GẶP CỔNG khi người dùng bấm
+   📸 Đăng lên Bảng tin App — cổng nằm ở M8.6 §9, khuôn CHẶT của M6.14
+   §2: hai vế TỪNG ẢNH (cha mẹ / người giám hộ VÀ học sinh từ đủ 7
+   tuổi), đọc sổ đồng ý ở M1.1, ảnh toàn cảnh không nhận diện cá nhân
+   thì không gắn ai, KHÔNG TẮT ĐƯỢC.
+
+   ⚠ Màn hình PHẢI NÓI RA điều đó ngay chỗ khối ảnh — người dùng thấy
+     ảnh nằm im trong sự kiện rất dễ tưởng nó «đã được kiểm».
    ══════════════════════════════════════════════════════════════════ */
-function canRaAnh(e){
- if(!CFG.canRaAnh) return null;
- if(!e.anh.length||!denPH(e.pub)) return null;
- const ds=khongDangAnhCua(e.dt==='ALL'?'ALL':e.dt);
- return ds.length?ds:null;
-}
-const daXacNhanRa=e=>!!e.raAnh;
 
 /* ══════════════════════════════════════════════════════════════════
    THỐNG KÊ
@@ -982,17 +1026,18 @@ function veDanhSach(){
  h+='<div class="tbw"><div class="ch">Sự kiện — năm học '+NAMHOC+' <span class="tg b">'+ds.length+'</span>'
   +'<span class="sp"></span><span class="xs">đơn vị dòng: <b>một sự kiện</b></span></div><div class="tbx"><table>'
   +'<tr><th>Mã</th><th>Sự kiện</th><th>Loại</th><th>Thời gian</th><th>Điểm trường</th>'
-  +'<th>Hiển thị</th><th class="num">📬</th><th class="num">Ảnh</th><th class="num">Tổng chi</th>'
+  +'<th>Công bố PH</th><th class="num">📬</th><th class="num">Ảnh</th><th class="num">Tổng chi</th>'
   +'<th>Trạng thái</th></tr>'
   +(ds.length?ds.map(e=>{const g=giaiDoan(e), [gn,gc]=GIAIDOAN[g], th=thieuHoSo(e);
     return '<tr class="rw'+(ST.cur===e.id?' on':'')+(e.huy?' rorow':th.length?' warnrow':g==='dang'?' okrow':'')
      +'" data-sk="'+e.id+'"><td><b>'+e.id+'</b></td>'
      +'<td><b>'+esc(e.ten)+'</b> '+chipKhoi(e)
+      +(e.bt?' <span class="tg c">📸 '+e.bt.ma+'</span>':'')
       +'<br><span class="xs">'+esc(e.noi)+'</span></td>'
      +'<td><span class="tg '+LOAI_SK[e.loai].c+'">'+LOAI_SK[e.loai].ten.split(' · ')[0]+'</span></td>'
      +'<td>'+k2s(e.tu)+(e.den!==e.tu?'<br>→ '+k2s(e.den):'')+'</td>'
      +'<td>'+(e.dt==='ALL'?'<b>Toàn trường</b>':DT[e.dt])+'</td>'
-     +'<td><span class="tg '+PUBLISH[e.pub][1]+'">'+PUBLISH[e.pub][0].split(' — ')[0]+'</span></td>'
+     +'<td><span class="tg '+CBPH[e.pub][1]+'">'+CBPH[e.pub][0].split(' — ')[0]+'</span></td>'
      +'<td class="num">'+(e.tb.length?'<b>'+e.tb.length+'</b><div class="xs">'+vn(nguoiDaNhan(e).so)+' người</div>':'—')+'</td>'
      +'<td class="num">'+(e.anh.length||'—')+'</td>'
      +'<td class="num">'+(e.chi?vnd(e.chi):'—')+'</td>'
@@ -1000,21 +1045,27 @@ function veDanhSach(){
       +(th.length?'<div class="xs" style="color:var(--amber)">'+th.join(', ')+'</div>':'')+'</td></tr>'}).join('')
    :'<tr><td colspan="10" class="empty">Không có sự kiện nào khớp bộ lọc.</td></tr>')
   +'</table></div></div>';
- h+=dnote('<b>★★ HAI TRỤC, KHÔNG PHẢI MỘT — và chúng KHÔNG có cùng bộ mức</b> <i>(v2.0 · chốt 7/9/2026)</i><br>'
-  +'Cột <b>Hiển thị</b> là <b>phạm vi hiển thị</b>: ai <b>thấy</b> sự kiện trên lịch và trên feed App. '
-  +'Cột <b>📬</b> là <b>đối tượng nhận</b>: ai đã <b>nhận push</b>, mỗi lần gửi một bản ghi riêng ở <b>M8.1</b>. '
-  +'Một sự kiện có thể <b>nằm trên feed toàn trường mà chưa từng gửi thông báo nào</b> — xem '
-  +'<b>Lễ tổng kết</b>; và có thể <b>gửi nhiều lần</b> — xem <b>Hội thi văn nghệ</b> (2 lần).<br>'
-  +'<b>Phạm vi hiển thị KHÔNG có mức khối, và đó là chủ ý</b> <i>(ràng buộc 20d)</i>. '
-  +'<b>Điểm trường chia theo NƠI</b> — không gia đình nào đi qua cả hai. '
-  +'<b>Khối chia theo CHẶNG</b> — mọi gia đình rồi sẽ đi qua tất cả. Khối là <b>mức độ liên quan</b>, '
-  +'không phải <b>ranh giới thành viên</b>; mà kiểm soát truy cập phải biện minh bằng <b>hại</b>, '
-  +'không phải bằng <b>ồn</b>. Ca mẫu: <b>Tư vấn hướng nghiệp</b> — hiển thị <b>toàn trường</b> '
-  +'<i>(khối 6 xem được, ba năm nữa đến lượt con họ)</i> nhưng chỉ gửi thông báo cho <b>khối 9</b> '
-  +'<i>(132 người — chỉ họ phải làm gì đó)</i>.<br>'
-  +'<b>Phạm vi hiển thị chỉ điều khiển PHỤ HUYNH</b> <i>(ràng buộc 20e)</i>. Nhân sự nào thấy sự kiện nào '
-  +'là do <b>phạm vi vai</b> — vai <b>School</b> vẫn thấy sự kiện gắn một điểm trường. Ba mức là '
-  +'<b>ba nấc của một trục</b>: tới bao nhiêu phụ huynh.');
+ h+=dnote('<b>★★ v2.8 — SỰ KIỆN KHÔNG CÒN LÀ NGUỒN CỦA KHỐI 📸 TRÊN APP</b> <i>(19/9/2026 — cụm BTDS chốt ② ④)</i><br>'
+  +'Cột <b>Công bố PH</b> là <b>cờ trần cho phép</b>, hai giá trị: sự kiện này có được <b>đem ra ngoài nhà '
+  +'trường</b> hay không. Nó <b>không</b> nói «phụ huynh nào thấy» — phụ huynh <b>không thấy sự kiện</b>; '
+  +'họ thấy <b>bài</b> ở <b>M8.6 Bảng tin Đời sống trường</b>, và <b>phạm vi hiển thị của bài</b> '
+  +'<i>(toàn trường · điểm trường · khối)</i> khai ở đó. Cột <b>📬</b> vẫn là <b>đối tượng nhận thông báo</b>: '
+  +'mỗi lần gửi một bản ghi riêng ở <b>M8.1</b>. Chip <b>📸 BT-####</b> là bài của sự kiện, nếu đã có.<br>'
+  +'<b>Vì sao cờ phải ở lại</b> <i>(NGOẠI LỆ BẮT BUỘC — HDBT §3.3)</i>: di cư hết thì ràng buộc <b>20f</b> '
+  +'<b>mất trần</b>, và một <b>buổi làm việc nội bộ về một nhóm học sinh cụ thể</b> có thể bị gửi thông báo '
+  +'cho <b>toàn trường</b>. Cờ giữ đúng cái trần đó, không giữ gì hơn.<br>'
+  +'<b>★ Mức `Khối` hợp lệ ở BÀI mà không hợp lệ ở SỰ KIỆN — lập luận cũ vẫn đứng</b> <i>(ràng buộc 20d)</i>. '
+  +'Sự kiện là <b>cơ chế kiểm soát truy cập</b>, nên phải biện minh bằng <b>hại</b>, không phải bằng <b>ồn</b>: '
+  +'<b>điểm trường chia theo NƠI</b> <i>(không gia đình nào đi qua cả hai)</i>, <b>khối chia theo CHẶNG</b> '
+  +'<i>(mọi gia đình rồi sẽ đi qua tất cả)</i> ⇒ khối là <b>mức độ liên quan</b>, không phải <b>ranh giới '
+  +'thành viên</b>. Bài là <b>nội dung</b>, không phải cơ chế truy cập — bài viết riêng cho phụ huynh khối 9 '
+  +'về buổi tư vấn vào 10 thì <b>hẹp theo khối là đúng nội dung</b>, và ở App nó bày ra như <b>bộ lọc bật '
+  +'sẵn mở rộng được</b>, <b>giao</b> với điểm trường. Đúng hai trong ba điều kiện mà §2.5.1 đã chốt sẵn.<br>'
+  +'<b>«Hiển thị rộng, thông báo hẹp» nay đọc là «BÀI rộng, THÔNG BÁO hẹp»</b> — ca mẫu '
+  +'<b>Tư vấn hướng nghiệp</b>: bài trên Bảng tin để <b>cả trường</b> xem, thông báo chỉ gửi <b>khối 9</b> '
+  +'<i>(132 người — chỉ họ phải làm gì đó)</i>. Đây là <b>điều kiện thứ ba</b> mà §2.5.1 đã dặn phải viết lại.<br>'
+  +'<b>Cờ không điều khiển nhân sự</b> <i>(ràng buộc 20e — giữ nguyên)</i>: nhân sự nào thấy sự kiện nào là do '
+  +'<b>phạm vi vai</b>, vai <b>School</b> vẫn thấy sự kiện gắn một điểm trường.');
  h+=dnote('<b>Trạng thái sự kiện là số DẪN XUẤT từ ngày</b>, không phải nút ai bấm: sự kiện diễn ra 20/11 thì '
   +'ngày 21/11 nó <b>đã qua</b>, dù có ai vào đổi trạng thái hay không. Chỉ <b>nháp</b> và <b>đã hủy</b> là do người đặt.<br>'
   +'Thứ thật sự cần theo dõi không phải «đã kết thúc chưa» mà là <b>«hồ sơ xong chưa»</b> — '
@@ -1031,7 +1082,7 @@ function veDanhSach(){
 function panelSK(){
  if(!ST.cur) return '<div class="panel"></div>';
  const e=skById(ST.cur); if(!e) return '<div class="panel"></div>';
- const g=giaiDoan(e), [gn,gc]=GIAIDOAN[g], th=thieuHoSo(e), ra=canRaAnh(e);
+ const g=giaiDoan(e), [gn,gc]=GIAIDOAN[g], th=thieuHoSo(e);
  let h='<div class="panel"><div class="ph"><b>'+e.id+'</b>'
   +'<span class="tg '+gc+'">'+gn+'</span>'
   +'<span class="pill">'+LOAI_SK[e.loai].ten+'</span><span class="sp"></span>'
@@ -1055,16 +1106,22 @@ function panelSK(){
   +esc(e.huy.ly)+'<br><span class="xs">Bản ghi <b>vẫn còn</b> — sự kiện đã công bố rồi hủy là thứ cần '
   +'giải thích được về sau.</span></div>';
 
- /* ★★ PHẠM VI HIỂN THỊ — trục 1. Nó KHÔNG nói gì về việc đã gửi thông báo hay chưa. */
- h+='<div class="'+(e.pub==='nhap'?'ro':denPH(e.pub)?'warn':'info')+'">'
-  +'<b>Phạm vi hiển thị: '+PUBLISH[e.pub][0]+'</b>'
-  +(denPH(e.pub)?'<br>Sự kiện <b>nằm trên lịch và trên feed App</b> của những phụ huynh này. '
-    +'Đây <b>chưa phải</b> việc đã gửi thông báo — xem khối <b>📬 Thông báo đã gửi</b> bên dưới. '
-    +'<b>Thông báo đã gửi không thu hồi được</b>: <b>🔇 Thu hồi</b> chỉ làm sự kiện biến khỏi lịch và feed, '
+ /* ★★ v2.8 — CỜ CÔNG BỐ PHỤ HUYNH. Đây là một TRẦN CHO PHÉP, không phải
+    phạm vi hiển thị: nó không nói «phụ huynh nào thấy» (việc đó của BÀI ở M8.6),
+    nó chỉ nói sự kiện này có được đem ra ngoài nhà trường hay không. */
+ h+='<div class="'+(e.pub==='nhap'?'ro':congBo(e.pub)?'warn':'info')+'">'
+  +'<b>Công bố phụ huynh: '+CBPH[e.pub][0]+'</b>'
+  +(congBo(e.pub)?'<br>Sự kiện <b>nằm trên lịch của trường</b>, và <b>hai đường ra được mở</b>: '
+    +'hộp <b>📣 Gửi thông báo</b> chào cả nhóm phụ huynh, và nút <b>📸 Đăng lên Bảng tin App</b> hiện ra. '
+    +'<b>Đây chưa phải việc đã công bố gì</b> — cờ là <b>trần cho phép</b>, không phải hành động. '
+    +'Phụ huynh <b>không thấy sự kiện</b>; họ thấy <b>bài</b> ở <b>M8.6 Bảng tin Đời sống trường</b> '
+    +'<span class="xs">(và phạm vi hiển thị của bài — toàn trường · điểm trường · khối — khai ở M8.6, không khai ở đây)</span>. '
+    +'<b>Thông báo đã gửi không thu hồi được</b>: <b>🔇 Thu hồi</b> chỉ làm sự kiện biến khỏi lịch, '
     +'không xóa được cái đã đến điện thoại người ta.'
-   :e.pub==='ns'?'<br>Chỉ nhân sự thấy — <b>không tới phụ huynh nào</b>. Hộp gửi thông báo sẽ '
-    +'<b>không chào nhóm phụ huynh nào</b>.'
-   :'<br><b>Chưa triển khai.</b> Sự kiện chưa lên lịch, chưa lên feed. Tạo trước để giữ chỗ là hợp lệ.')+'</div>';
+   :e.pub==='noi_bo'?'<br><b>Nội bộ</b> — sự kiện <b>không được đem ra ngoài nhà trường</b>. '
+    +'Hộp gửi thông báo <b>không chào nhóm phụ huynh nào</b>, và <b>không có nút 📸 Đăng lên Bảng tin App</b>. '
+    +'Nhân sự vẫn thấy sự kiện bình thường theo <b>phạm vi vai</b> <span class="xs">(ràng buộc 20e — cờ không đụng quyền xem của nhân sự)</span>.'
+   :'<br><b>Chưa triển khai.</b> Sự kiện chưa lên lịch. Tạo trước để giữ chỗ là hợp lệ.')+'</div>';
 
  /* ★★ 📬 THÔNG BÁO ĐÃ GỬI — trục 2. Mỗi dòng là MỘT bản ghi thật ở M8.1. */
  h+='<div class="tbw" style="margin-top:11px"><div class="ch">📬 Thông báo đã gửi '
@@ -1085,7 +1142,7 @@ function panelSK(){
    +'</table></div>';
  else h+='<div class="empty">'+(e.pub==='nhap'
    ?'Sự kiện <b>chưa triển khai</b> — chưa gửi được thông báo.'
-   :'<b>Chưa gửi thông báo nào.</b> Sự kiện vẫn nằm trên lịch và trên feed — '
+   :'<b>Chưa gửi thông báo nào.</b> Sự kiện vẫn nằm trên lịch — '
     +'<b>triển khai không đòi phải gửi thông báo</b>.')+'</div>';
  h+='</div>';
 
@@ -1098,19 +1155,17 @@ function panelSK(){
    +'<span>ảnh '+a.id+'<br>'+k2s(a.ngay)+'</span></div>').join('')
    +(e.anh.length>12?'<div class="pht"><i></i><span>+'+(e.anh.length-12)+'<br>ảnh nữa</span></div>':'')+'</div>';
  else h+='<div class="empty">Chưa có ảnh nào.'+(g==='qua'?' <b>Sự kiện đã qua</b> — hồ sơ chưa hoàn tất.':'')+'</div>';
+ /* ★★ v2.8 — NÓI RÕ ẢNH Ở ĐÂY CHƯA QUA CỔNG NÀO (HDBT §3.4).
+    Người dùng thấy ảnh nằm im trong sự kiện rất dễ tưởng nó «đã được kiểm». */
+ if(e.anh.length) h+='<div class="info" style="margin:0 10px 10px"><b>Ảnh ở đây là tư liệu nội bộ của sự kiện</b> — '
+  +'nó <b>không ra ngoài nhà trường</b>, nên <b>chưa qua cổng kiểm đồng ý nào</b>.<br>'
+  +'Cổng nằm ở <b>M8.6 §9</b> và chỉ chạy khi bạn bấm <b>📸 Đăng lên Bảng tin App</b>: '
+  +'<b>hai vế từng ảnh</b> <i>(cha mẹ / người giám hộ <b>và</b> học sinh từ đủ 7 tuổi)</i>, đọc sổ đồng ý ở '
+  +'<b>M1.1</b>, ảnh toàn cảnh không nhận diện cá nhân thì không gắn ai — và <b>không tắt được</b>.<br>'
+  +'<span class="xs"><b>Hệ thống không nhận diện khuôn mặt</b> — và cố ý không làm điều đó với ảnh trẻ em; '
+  +'ở M8.6 người đăng gắn tên em vào từng ảnh, việc đó <b>làm được</b> vì bài thường là một hoạt động của '
+  +'một lớp, một câu lạc bộ, một đợt.</span></div>';
  h+='</div></div>';
-
- /* ★ rà ảnh trước khi công bố */
- if(ra) h+='<div class="'+(daXacNhanRa(e)?'okbox':'danger')+'" style="margin-top:9px">'
-  +(daXacNhanRa(e)
-    ?'<b>✅ Đã xác nhận rà ảnh</b> — '+esc(tenNS(e.raAnh.boi))+', '+k2s(e.raAnh.ngay)
-     +'<br><span class="xs">Người đăng xác nhận ảnh không có mặt học sinh trong danh sách không đồng ý đăng ảnh.</span>'
-    :'<b>⚠️ Chưa xác nhận rà ảnh.</b> Có <b>'+ra.length+' học sinh</b> trong phạm vi này '
-     +'<b>không đồng ý đăng ảnh</b>, mà sự kiện đang công bố tới phụ huynh.<br>'
-     +'<b>Hệ thống không nhận diện khuôn mặt</b> — nó <b>không thể tự kiểm</b> ảnh nào có các em. '
-     +'Người đăng phải tự rà.'
-     +(suaDuoc(e)?'<br><button class="btn d" style="margin-top:7px" data-raanh="'+e.id+'">Rà ảnh và xác nhận</button>':''))
-  +'</div>';
 
  /* ★ tổng chi — v2.6: KHÔNG có đường đẩy sang M7.5 (điểm B, chốt cuối 7/9/2026) */
  h+='<div class="'+(e.chi?'okbox':'ro')+'" style="margin-top:9px">'
@@ -1145,9 +1200,15 @@ function panelSK(){
  }
  if(e.loai==='thidua'||e.loai==='le') h+='<button class="btn" data-m63="'+e.id+'">🔗 Liên kết phong trào M6.14</button>';
  /* v2.7 (14/9/2026, DOT1-P12 — E3): lối sang M8.5 Trang web trường. Chỉ vai có quyền Tạo ở m8.5.bai_cua_toi.
-    Sự kiện đã có bài web thì nút đổi thành lối mở bài đó — không tạo bài thứ hai từ cùng một nút. */
+    Sự kiện đã có bài web thì nút đổi thành lối mở bài đó — không tạo bài thứ hai từ cùng một nút.
+    ⛔ NÚT NÀY KHÔNG ĐỔI ở v2.8 — nó là đường sang TRANG WEB, không phải đường lên App. */
  if(!e.huy&&e.pub!=='nhap'&&WEB_T.includes(role))
   h+='<button class="btn" data-web="'+e.id+'">'+(e.web?'🌐 Bài web '+e.web.ma+' · '+e.web.tt:'🌐 Đăng tin lên web')+'</button>';
+ /* ★★ v2.8 (19/9/2026, cụm BTDS — HDBT §3.7): lối sang M8.6 Bảng tin Đời sống trường.
+    Chỉ hiện khi cờ = `duoc_cong_bo` VÀ vai có T ở `m8.6.bai_cua_toi` cho loại bài `su_kien_truong`.
+    Sự kiện đã có bài thì nút thành lối MỞ BÀI — khuôn nút cũ của §4.1.1, không tạo bài thứ hai. */
+ if(!e.huy&&congBo(e.pub)&&BT_T.includes(role))
+  h+='<button class="btn" data-bt="'+e.id+'">'+(e.bt?'📸 Bài '+e.bt.ma+' · '+e.bt.tt:'📸 Đăng lên Bảng tin App')+'</button>';
  if(!suaDuoc(e)&&!e.huy) h+='<span class="xs">'+(can('sua')
    ?'Chỉ <b>người tạo</b> hoặc <b>Hiệu trưởng</b> được sửa sự kiện này.'
    :'Vai của bạn <b>chỉ xem</b>.')+'</span>';
@@ -1316,27 +1377,33 @@ function veCauHinh(){
   +'mà «ai được tạo <b>loại nào</b>»</span>'
   +'<span class="chip">Hộp thoại tạo <b>chỉ hiện loại vai đó tạo được</b></span></div></div>';
 
- h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">2 · Hai trục phân phối '
-  +'<span class="tg a">v2.0</span><span class="sp"></span>'
+ h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">2 · Ba trục — và trục nào ở menu nào '
+  +'<span class="tg a">v2.8</span><span class="sp"></span>'
   +'<span class="xs">bộ mức KHÁC NHAU — có chủ ý</span></div><table>'
-  +'<tr><th style="width:34%">Trục</th><th>Các mức</th><th style="width:30%">Khai lúc nào</th></tr>'
-  +'<tr><td><b>Phạm vi hiển thị</b><div class="xs">ai <b>thấy</b> sự kiện</div></td>'
-  +'<td>'+Object.keys(PUBLISH).filter(k=>k!=='nhap').map(k=>'<span class="tg '+PUBLISH[k][1]+'">'
-    +PUBLISH[k][0].split(' — ')[0]+'</span>').join(' ')
-  +' <span class="xs">— <b>không có mức Khối</b></span></td>'
-  +'<td>một lần, khi <b>🚀 Triển khai</b></td></tr>'
+  +'<tr><th style="width:30%">Trục</th><th>Các mức</th><th style="width:28%">Khai ở đâu, lúc nào</th></tr>'
+  +'<tr><td><b>Cờ công bố phụ huynh</b><div class="xs">sự kiện có được <b>đem ra ngoài</b> không</div></td>'
+  +'<td>'+Object.keys(CBPH).filter(k=>k!=='nhap').map(k=>'<span class="tg '+CBPH[k][1]+'">'
+    +CBPH[k][0].split(' — ')[0]+'</span>').join(' ')
+  +' <span class="xs">— <b>TRẦN cho phép</b>, hai giá trị; ⛔ không khai «phụ huynh nào thấy»</span></td>'
+  +'<td><b>M6.8</b> — một lần, khi <b>🚀 Triển khai</b></td></tr>'
+  +'<tr class="okrow"><td><b>Phạm vi hiển thị của BÀI</b><div class="xs">phụ huynh nào <b>thấy bài</b></div></td>'
+  +'<td><span class="tg n">toan_truong</span> <span class="tg n">diem_truong</span> '
+  +'<span class="tg b">khoi</span> <span class="xs">— <b>CÓ mức Khối</b>: bộ <b>lọc bật sẵn</b>, '
+  +'phụ huynh <b>mở rộng ra xem được</b>; <b>giao</b> với điểm trường</span></td>'
+  +'<td><b>M8.6</b> — trên từng bài <i>(di cư khỏi sự kiện 19/9/2026)</i></td></tr>'
   +'<tr><td><b>Đối tượng nhận thông báo</b><div class="xs">ai <b>nhận push</b> lần này</div></td>'
   +'<td><span class="tg n">Toàn trường</span> <span class="tg n">Điểm trường</span> '
   +KHOI.map(k=>'<span class="tg b">Khối '+k+'</span>').join(' ')
-  +' <span class="tg n">Nhân sự</span> <span class="xs">— <b>CÓ mức Khối</b></span></td>'
-  +'<td><b>mỗi lần</b> bấm 📣 Gửi thông báo</td></tr>'
+  +' <span class="tg n">Nhân sự</span></td>'
+  +'<td><b>M6.8</b> — <b>mỗi lần</b> bấm 📣 Gửi thông báo</td></tr>'
   +'</table><div class="lgd">'
-  +'<span class="chip">Bất đối xứng là <b>chủ ý</b> — điểm trường chia theo <b>nơi</b>, '
-  +'khối chia theo <b>chặng</b> <i>(20d)</i></span>'
-  +'<span class="chip">Phạm vi hiển thị chỉ điều khiển <b>phụ huynh</b>; nhân sự đi theo '
-  +'<b>phạm vi vai</b> <i>(20e)</i></span>'
-  +'<span class="chip">Hộp gửi thông báo <b>chỉ chào nhóm phụ huynh trong phạm vi</b> <i>(20f)</i> — '
-  +'trừ <b>thông báo hủy</b>, được vượt phạm vi <i>(20g)</i></span></div></div>';
+  +'<span class="chip"><b>Mức `Chỉ nhân sự` đã BỎ</b> khi di cư — bài bảng tin <b>luôn</b> là bài cho phụ huynh; '
+  +'không muốn cho phụ huynh xem thì <b>không tạo bài</b></span>'
+  +'<span class="chip">Khối <b>không hợp lệ ở sự kiện</b> <i>(20d — cơ chế truy cập, biện minh bằng <b>hại</b>)</i> '
+  +'nhưng <b>hợp lệ ở bài</b> <i>(bài là <b>nội dung</b>)</i></span>'
+  +'<span class="chip">Cờ chỉ điều khiển <b>phụ huynh</b>; nhân sự đi theo <b>phạm vi vai</b> <i>(20e)</i></span>'
+  +'<span class="chip">Hộp gửi thông báo <b>chỉ chào nhóm phụ huynh khi cờ mở</b> <i>(20f)</i> — '
+  +'trừ <b>thông báo hủy</b>, được vượt trần <i>(20g)</i></span></div></div>';
 
  h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">3 · Quy mô phụ huynh và nhân sự '
   +'<span class="xs">— cơ sở tính số người nhận</span></div><table>'
@@ -1350,7 +1417,7 @@ function veCauHinh(){
   +'<td class="num"><b>'+vn(Object.keys(DT).reduce((a,d)=>a+phDT(d),0))+'</b></td>'
   +'<td class="num"><b>'+vn(Object.keys(DT).reduce((a,d)=>a+NS_SO[d],0))+'</b></td></tr>'
   +'</table><div class="lgd"><span class="chip">Khối <b>giao</b> với điểm trường, không phải hợp — '
-  +'sự kiện hiển thị ở <b>Điểm trường A</b> thì «khối 9» nghĩa là <b>khối 9 của điểm A</b> '
+  +'sự kiện thuộc <b>Điểm trường A</b> thì «khối 9» nghĩa là <b>khối 9 của điểm A</b> '
   +'<i>('+vn(PH_SO['A'][9])+' người)</i>, không phải khối 9 toàn trường '
   +'<i>('+vn(Object.keys(DT).reduce((a,d)=>a+PH_SO[d][9],0))+' người)</i></span></div></div>';
 
@@ -1361,15 +1428,27 @@ function veCauHinh(){
   +'<td><b>Bỏ hẳn 7/9/2026.</b> Hệ thống <b>không tự gửi nhắc</b>. '
   +'Nhắc là một lần <b>📣 Gửi thông báo</b> như mọi lần khác — người tổ chức chọn đối tượng, '
   +'tự soạn nội dung, và nó <b>hiện ở khối 📬</b> nên không báo trùng</td></tr>'
-  +'<tr class="warnrow"><td><b>Bắt buộc xác nhận đã rà ảnh trước khi công bố</b></td>'
-  +'<td><select class="fs" id="cfRa"><option value="1"'+(CFG.canRaAnh?' selected':'')+'>Bắt buộc</option>'
-   +'<option value="0"'+(CFG.canRaAnh?'':' selected')+'>Không bắt buộc</option></select></td>'
-  +'<td>Áp dụng khi sự kiện <b>có ảnh</b> và <b>công bố tới phụ huynh</b> — xem khối 3</td></tr>'
+  +'<tr class="rorow"><td><s>Bắt buộc xác nhận đã rà ảnh trước khi công bố</s> <span class="tg r">đã bỏ</span></td>'
+  +'<td><span class="xs">không còn</span></td>'
+  +'<td><b>Bỏ hẳn 19/9/2026</b> <i>(cụm BTDS chốt ⑦)</i>. M6.8 <b>không còn đăng gì lên App</b>, nên ở đây '
+  +'<b>không còn gì để chặn</b> — ảnh sự kiện là <b>tư liệu nội bộ</b>. Cổng kiểm ảnh nay ở <b>M8.6 §9</b>: '
+  +'<b>hai vế TỪNG ẢNH</b>, đọc sổ đồng ý ở <b>M1.1</b>, và <b>KHÔNG TẮT ĐƯỢC</b> — không một ô nào ở ⚙. '
+  +'<span class="xs">Một tham số trường không được đổi thì không cần ô cấu hình; để nó ở đây chỉ khiến '
+  +'người ta đi tìm công tắc không tồn tại — cùng lý do <b>M6.14 §2</b> đã gỡ công tắc này khỏi ⚙ của M6.3.</span></td></tr>'
   +'</table></div>';
 
- /* ★ danh sách không đồng ý đăng ảnh */
- h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">5 · Học sinh KHÔNG đồng ý đăng ảnh '
-  +'<span class="tg r">'+KHONG_DANG_ANH.length+' em</span><span class="tg c">chiếu từ M1.1</span></div><table>'
+ /* ★ v2.8 — danh sách nay là BẢN CHIẾU, không phải cổng: nó KHÔNG chặn gì ở M6.8 */
+ h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">5 · Học sinh chưa đủ đồng ý hình ảnh '
+  +'<span class="tg r">'+KHONG_DANG_ANH.length+' em</span><span class="tg c">🔗 bản chiếu từ M1.1</span>'
+  +'<span class="tg n">không chặn gì ở đây</span></div>'
+  +'<div class="warn" style="margin:0"><b>Danh sách này KHÔNG chặn gì ở M6.8</b> <i>(v2.8 — 19/9/2026)</i>. '
+  +'Nó ở lại để người tổ chức <b>biết trước</b>, và vì <b>ảnh sự kiện là tư liệu nội bộ</b> thì không có '
+  +'nghĩa vụ nào phát sinh. Cổng chặn nằm ở <b>M8.6 §9</b>, chạy <b>TỪNG ẢNH</b> với <b>hai vế đầy đủ</b> — '
+  +'không phải một ô tích cho cả sự kiện.<br>'
+  +'<span class="xs">⚠ Đây là <b>một chiều</b> của sổ đồng ý: nó chỉ nêu em <b>chưa đủ</b> vế nào. '
+  +'Sổ đầy đủ <i>(đủ / thiếu / từ chối, theo lớp, hai vế)</i> là của <b>M1.1</b> — M6.8 <b>chỉ đọc</b>, '
+  +'và ⛔ <b>không giữ danh sách riêng</b>: hai sự thật về cùng một em là chuyện M6.14 §2 điểm K đã chỉ ra.</span></div>'
+  +'<table>'
   +'<tr><th>Học sinh</th><th>Lớp</th><th>Điểm trường</th><th>Ghi nhận</th></tr>'
   +KHONG_DANG_ANH.map(x=>'<tr class="badrow"><td><b>'+esc(x.ten)+'</b></td><td>'+x.lop+'</td>'
     +'<td>'+DT[x.dt]+'</td><td style="font-size:11.5px">'+esc(x.ghi)+'</td></tr>').join('')
@@ -1377,13 +1456,20 @@ function veCauHinh(){
   +'<span class="chip">Căn cứ: <b>BLDS 2015 Đ.32</b> — dùng hình ảnh cá nhân phải được đồng ý; '
   +'người dưới 15 tuổi phải được <b>cha mẹ đồng ý</b></span>'
   +'<span class="chip"><b>Luật Trẻ em 2016</b> — hình ảnh cá nhân là thông tin về đời sống riêng tư</span>'
-  +'<span class="chip">Sửa danh sách này ở <b>M1.1</b> '+rolnk('🔗 M1.1')+'</span></div></div>';
+  +'<span class="chip">Sửa danh sách này ở <b>M1.1</b> '+rolnk('🔗 M1.1')+'</span>'
+  +'<span class="chip">Cổng kiểm ảnh: <b>M8.6 §9</b> '+rolnk('🔗 M8.6')+'</span></div></div>';
 
  h+='<div class="tbw"><div class="ch">6 · Ranh giới với menu khác</div><table>'
   +'<tr><th style="width:270px">Việc</th><th>Ở đâu</th></tr>'
   +'<tr class="warnrow"><td><b>Khoản chi thật của sự kiện</b></td>'
   +'<td><b>M7.5</b> — ở đây chỉ là <b>con số tổng để thống kê</b>, không phải sổ chi</td></tr>'
   +'<tr><td>Sự đồng ý đăng ảnh của học sinh</td><td><b>M1.1</b> — menu này <b>chỉ đọc</b></td></tr>'
+  +'<tr class="okrow"><td><b>Đưa nội dung sự kiện tới phụ huynh trên App</b></td>'
+  +'<td><b>M8.6 Bảng tin Đời sống trường</b> — <b>cửa DUY NHẤT</b> ra khối <b>📸 Đời sống trường</b> '
+  +'<i>(19/9/2026)</i>. M6.8 chỉ có <b>nút gọi sang</b>; <b>phạm vi hiển thị</b> và <b>cổng kiểm ảnh</b> ở đó</td></tr>'
+  +'<tr><td>Đăng tin ra ngoài trường</td><td><b>M8.5 Trang web trường</b> — kênh <b>kéo</b>, '
+  +'khuôn kiểm ảnh <b>lỏng hơn</b> <i>(không kiểm trước, xử lý theo phản ánh)</i>; '
+  +'<b>bất đối xứng với App là CỐ Ý</b></td></tr>'
   +'<tr><td>Thông báo chi tiết ngoài sự kiện</td><td><b>M8.1 Thông báo chủ động</b></td></tr>'
   +'<tr><td>Phong trào Đội — Đoàn</td><td><b>M6.14</b> — sự kiện thi đua liên kết hai chiều</td></tr>'
   +'<tr><td>Mượn hội trường, thiết bị cho sự kiện</td><td><b>M6.5 Yêu cầu CSVC</b></td></tr>'
@@ -1444,24 +1530,27 @@ function moTao(preId){
    +'<div class="frow" style="gap:14px;padding:2px 0 4px">'
    +KHOI.map(k=>'<label class="ck" style="padding:0"><input type="checkbox" data-fk="'+k+'"'
      +((f.khoi||[]).includes(k)?' checked':'')+'> Khối '+k+'</label>').join('')+'</div>'
-   +'<div class="ro">⛔ <b>Trường này KHÔNG quyết định ai thấy sự kiện</b> — quyền xem vẫn hoàn toàn do '
-   +'<b>Phạm vi hiển thị</b> ở dưới. Gắn khối chỉ để: hộp <b>📣 Gửi thông báo</b> <b>tích sẵn đúng khối</b>, '
-   +'thẻ sự kiện đeo <b>chip khối</b> cho gia đình khối khác khỏi đọc nhầm là việc của mình, và '
-   +'<b>Báo cáo</b> gom được theo khối.<br>Để trống nếu sự kiện <b>chung cho cả trường</b>. '
+   +'<div class="ro">⛔ <b>Trường này KHÔNG quyết định ai thấy gì</b> — nó là <b>NHÃN</b> '
+   +'<i>(ràng buộc 20h)</i>. Gắn khối chỉ để: hộp <b>📣 Gửi thông báo</b> <b>tích sẵn đúng khối</b>, '
+   +'<b>Báo cáo</b> gom được theo khối, và <b>bơm sang <code>khoi_lien_quan[]</code> của bài</b> khi bấm '
+   +'<b>📸 Đăng lên Bảng tin App</b> — chip khối trên thẻ App nay đọc trường <b>của bài</b> '
+   +'<span class="xs">(v2.8 — đóng điểm I-App)</span>.<br>Để trống nếu sự kiện <b>chung cho cả trường</b>. '
    +'Trước đây khối chỉ nằm trong ô <b>Thành phần</b> dạng chữ — người đọc hiểu, <b>máy thì không</b>.</div>';
   b+='<label class="lbl">Nội dung</label>'
    +'<textarea class="fldi" id="fMota" rows="2">'+esc(f.mota)+'</textarea>';
-  b+='<label class="lbl">Phạm vi hiển thị — <b>bao nhiêu phụ huynh thấy sự kiện</b></label>'
+  b+='<label class="lbl">Công bố phụ huynh <span class="xs">— trần cho phép, hai giá trị</span></label>'
    +'<select class="fldi" id="fPub">'
-   +Object.keys(PUBLISH).map(k=>'<option value="'+k+'"'+(f.pub===k?' selected':'')+'>'+PUBLISH[k][0]+'</option>').join('')
+   +Object.keys(CBPH).map(k=>'<option value="'+k+'"'+(f.pub===k?' selected':'')+'>'+CBPH[k][0]+'</option>').join('')
    +'</select>';
-  b+='<div class="ro">Trường này <b>KHÔNG gửi thông báo</b>. Nó chỉ quyết định ai <b>thấy</b> sự kiện '
-   +'trên lịch và trên feed App. Gửi thông báo là <b>nút riêng</b> <i>(📣 Gửi thông báo)</i>, bấm được '
-   +'<b>nhiều lần</b>, mỗi lần chọn đối tượng nhận riêng và tự soạn nội dung.'
+  b+='<div class="ro">Trường này <b>KHÔNG gửi thông báo</b> và <b>không đăng gì lên App</b>. Nó chỉ trả lời '
+   +'<b>sự kiện này có được đem ra ngoài nhà trường hay không</b> — mở khóa hộp <b>📣 Gửi thông báo</b> '
+   +'cho nhóm phụ huynh và nút <b>📸 Đăng lên Bảng tin App</b>.<br>'
+   +'⛔ Nó <b>không khai «phụ huynh nào thấy»</b>: phạm vi hiển thị <i>(toàn trường · điểm trường · khối)</i> '
+   +'là của <b>bài</b> ở <b>M8.6</b>, khai một lần ở đó <i>(cụm BTDS chốt ④ — một nơi khai, hết nguồn sự thật thứ hai)</i>.'
    +(f.sua?'':'<br>Để <b>Chưa triển khai</b> nếu chỉ muốn giữ chỗ — triển khai sau bằng nút <b>🚀 Triển khai</b>.')+'</div>';
-  if(denPH(f.pub)&&KHONG_DANG_ANH.length) b+='<div class="warn">Sự kiện tới <b>phụ huynh</b> — khi '
-   +'<b>tải ảnh lên</b>, hệ thống sẽ nhắc rà danh sách <b>'+KHONG_DANG_ANH.length
-   +' học sinh không đồng ý đăng ảnh</b>.</div>';
+  if(congBo(f.pub)) b+='<div class="info">Ảnh tải lên ở đây là <b>tư liệu nội bộ</b> — '
+   +'<b>không bị chặn và không phải rà gì</b>. Cổng kiểm đồng ý <b>hai vế từng ảnh</b> chỉ chạy ở '
+   +'<b>M8.6</b>, khi bạn bấm <b>📸 Đăng lên Bảng tin App</b>.</div>';
   /* ★ §2.6.1 — sửa sự kiện ĐÃ gửi thông báo thì hỏi có báo không.
      Mặc định TẮT vì phần lớn lần sửa là sửa vặt; nhưng đổi NGÀY thì BẬT SẴN,
      vì ngày là thứ người ta đã ghi vào lịch của mình. */
@@ -1502,13 +1591,15 @@ function moTao(preId){
 mfns.bLuuSK=()=>{
  const f=ST.f;
  if(f.sua){const e=skById(f.sua);
-  const cuPub=e.pub, dn=nguoiDaNhan(e);
+  const cuPub=e.pub, cuDT=e.dt, dn=nguoiDaNhan(e);
   const cuKhoi=(e.khoi||[]).join(',');
   Object.assign(e,{ten:f.ten.trim(),loai:f.loai,dt:f.dt,tu:f.tu,den:f.den,
    noi:f.noi.trim(),tp:f.tp.trim(),mota:f.mota.trim(),pub:f.pub,khoi:[...f.khoi]});
   ghiLS(e,'Sửa thông tin sự kiện');
   if(cuKhoi!==f.khoi.join(',')) ghiLS(e,'Đổi khối liên quan — '+tenKhoi(e));
-  if(cuPub!==f.pub) ghiLS(e,'Đổi phạm vi hiển thị — '+PUBLISH[f.pub][0]);
+  if(cuPub!==f.pub) ghiLS(e,'Đổi cờ công bố phụ huynh — '+CBPH[f.pub][0]);
+  /* ★ v2.8 — đổi ĐIỂM TRƯỜNG cũng làm khung nhóm phụ huynh hẹp lại (ràng buộc 20g), nên phải ghi vết */
+  if(cuDT!==f.dt) ghiLS(e,'Đổi điểm trường của sự kiện — '+(f.dt==='ALL'?'Toàn trường':DT[f.dt]));
   let g=null;
   if(f.bao&&dn.so){
    g=ghiTB(e,{loai:'thuong',tieuDe:'Thay đổi — '+e.ten,noiDung:(f.baoNoi||'').trim()
@@ -1522,12 +1613,12 @@ mfns.bLuuSK=()=>{
   themSK({ten:f.ten.trim(),loai:f.loai,dt:f.dt,tu:f.tu,den:f.den,noi:f.noi.trim(),
    tp:f.tp.trim(),mota:f.mota.trim(),pub:f.pub,chi:0,boi:toiLa(),ngayTao:HOMNAY,huy:null,anh:[],
    tb:[],khoi:f.khoi||[],daTK:(f.pub!=='nhap'),
-   ls:[[HOMNAY,'Tạo sự kiện',toiLa()]].concat(f.pub!=='nhap'?[[HOMNAY,'🚀 Triển khai — '+PUBLISH[f.pub][0],toiLa()]]:[])});
+   ls:[[HOMNAY,'Tạo sự kiện',toiLa()]].concat(f.pub!=='nhap'?[[HOMNAY,'🚀 Triển khai — '+CBPH[f.pub][0],toiLa()]]:[])});
   const e=SUKIEN[SUKIEN.length-1];
   closeM(); ST.tab='sk'; ST.cur=e.id; ST.chip='all'; render();
   toast('➕ Đã tạo <b>'+e.id+'</b>.'+(f.pub==='nhap'
    ?' Đang là <b>Nháp</b> — chưa lên lịch. Bấm <b>🚀 Triển khai</b> khi sẵn sàng.'
-   :' Đã triển khai — sự kiện lên lịch và lên feed. <b>Chưa gửi thông báo nào.</b>'));
+   :' Đã triển khai — sự kiện lên lịch. <b>Chưa gửi thông báo và chưa đăng bài nào.</b>'));
  }
 };
 /* ★ F — XÓA HẲN (chốt 7/9/2026). Chỉ sự kiện CHƯA TỪNG triển khai. */
@@ -1537,7 +1628,7 @@ function moXoa(id){
   '<div class="danger"><b>Xóa hẳn là XÓA THẬT — bản ghi biến mất, không tra lại được.</b><br>'
   +'Khác hẳn <b>✕ Hủy sự kiện</b>: hủy thì bản ghi <b>vẫn còn</b>, có chip riêng, giải thích được về sau.</div>'
   +'<div class="okbox"><b>Vì sao sự kiện này xóa được:</b> nó <b>chưa từng triển khai</b> — '
-  +'chưa lên lịch, chưa lên feed, <b>chưa ai ngoài nhà trường nhìn thấy</b>, và <b>chưa gửi thông báo nào</b>. '
+  +'chưa lên lịch, <b>chưa ai ngoài nhà trường nhìn thấy</b>, và <b>chưa gửi thông báo nào</b>. '
   +'Không có vết nào để giữ.<br><span class="xs">Sự kiện đã triển khai — kể cả khi sau đó '
   +'<b>🔇 Thu hồi</b> đưa nó về Nháp — thì <b>không xóa được nữa</b>, chỉ hủy.</span></div>'
   +'<div class="evkv"><div style="flex:1 1 100%"><span>Sự kiện</span><b>'+esc(e.ten)+'</b></div>'
@@ -1580,48 +1671,34 @@ function moThemAnh(id){
  const e=skById(id);
  modal('📷 Thêm ảnh — '+esc(e.ten),
   '<div class="info">Ảnh sự kiện thường có mặt học sinh. Đây là <b>hình ảnh cá nhân của trẻ em</b> — '
-  +'<b>BLDS 2015 Đ.32</b> và <b>Luật Trẻ em 2016</b>.</div>'
+  +'<b>BLDS 2015 Đ.32</b> · <b>Luật Trẻ em 2016</b> · <b>NĐ 56/2017 Đ.33 · Đ.36</b> · <b>Luật BVDLCN 91/2025</b>.<br>'
+  +'<span class="xs">Ở đây ảnh là <b>tư liệu nội bộ</b> — tải lên <b>không bị chặn</b> và <b>không phải rà gì</b>. '
+  +'Nghĩa vụ đồng ý phát sinh khi ảnh <b>ra ngoài nhà trường</b>, và cổng đó nằm ở <b>M8.6</b>.</span></div>'
   +'<label class="lbl">Chọn ảnh</label>'
   +'<div class="evg">'+Array.from({length:6},(_,i)=>'<div class="pht"><i></i><span>ảnh '+(i+1)+'</span></div>').join('')
   +'<div class="pht add"><span>＋<br>chọn thêm</span></div></div>'
   +'<div class="ro" style="margin-top:9px">Demo mô phỏng việc chọn 6 ảnh. '
-  +(denPH(e.pub)&&KHONG_DANG_ANH.length
-    ?'<br><b>Sự kiện này công bố tới phụ huynh</b> — sau khi tải lên, bạn sẽ được nhắc <b>rà danh sách '
-     +KHONG_DANG_ANH.length+' học sinh không đồng ý đăng ảnh</b>.':'')+'</div>',
+  +(congBo(e.pub)
+    ?'<br><b>Cờ công bố phụ huynh đang mở</b> — nếu về sau bạn bấm <b>📸 Đăng lên Bảng tin App</b> thì '
+     +'<b>từng ảnh</b> sẽ chạy cổng hai vế ở <b>M8.6</b>; ảnh thiếu vế nào bị <b>giữ nội bộ</b>, '
+     +'nêu <b>đích danh em nào thiếu vế nào</b>, và <b>không xóa khỏi hệ thống</b>.'
+    :'<br>Sự kiện đang <b>nội bộ</b> — ảnh không có đường ra ngoài nào.')+'</div>',
   '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="AnhOK">Tải 6 ảnh lên</button>');
  mfns.bAnhOK=()=>{
   const n=e.anh.length;
   for(let i=1;i<=6;i++) e.anh.push({id:n+i,boi:toiLa(),ngay:HOMNAY});
-  e.raAnh=null;                       /* thêm ảnh mới thì phải rà lại */
   ghiLS(e,'Tải lên 6 ảnh'); closeM(); render();
-  toast('📷 Đã tải <b>6 ảnh</b>.'+(canRaAnh(e)?' ⚠️ <b>Cần rà lại ảnh</b> trước khi phụ huynh xem.':''));
+  /* ★ v2.8 — KHÔNG còn xóa xác nhận rà ảnh: M6.8 không có xác nhận nào để xóa.
+     Luật «thêm ảnh mới thì ảnh đó chạy lại cổng» nay là luật của M8.6 §3.4 điểm 7,
+     áp cho ảnh thêm vào BÀI đang hiển thị — không phải ảnh thêm vào sự kiện. */
+  toast('📷 Đã tải <b>6 ảnh</b> vào tư liệu sự kiện.'
+   +(e.bt?' ⚠️ Sự kiện đã có bài <b>'+e.bt.ma+'</b> — ảnh mới <b>không tự vào bài</b>; thêm ở <b>M8.6</b> thì nó chạy cổng.':''));
  };
 }
-/* ★★ Rà ảnh — máy không kiểm được, nên nó nói ra và bắt người xác nhận */
-function moRaAnh(id){
- const e=skById(id), ds=canRaAnh(e)||[];
- modal('🔍 Rà ảnh trước khi công bố — '+e.id,
-  '<div class="danger"><b>Hệ thống KHÔNG nhận diện khuôn mặt</b> — và cố ý không làm điều đó với ảnh trẻ em. '
-  +'Vì vậy nó <b>không thể tự biết</b> ảnh nào có mặt các em dưới đây. <b>Người đăng phải tự rà.</b></div>'
-  +'<div class="tbw"><div class="ch">Học sinh không đồng ý đăng ảnh <span class="tg r">'+ds.length+' em</span></div><table>'
-  +'<tr><th>Học sinh</th><th>Lớp</th><th>Ghi nhận</th></tr>'
-  +ds.map(x=>'<tr class="badrow"><td><b>'+esc(x.ten)+'</b></td><td>'+x.lop+'</td>'
-    +'<td style="font-size:11.5px">'+esc(x.ghi)+'</td></tr>').join('')
-  +'</table></div>'
-  +'<div class="evkv"><div><span>Số ảnh cần rà</span><b>'+e.anh.length+'</b></div>'
-  +'<div><span>Công bố tới</span><b>'+PUBLISH[e.pub][0]+'</b></div></div>'
-  +'<label class="kchk" style="margin-top:9px"><input type="checkbox" id="raOk"> '
-  +'Tôi đã <b>xem từng ảnh</b> và xác nhận <b>không có mặt</b> các học sinh trong danh sách trên</label>'
-  +'<div class="ro">Nếu có ảnh chứa các em: <b>gỡ ảnh đó ra</b> rồi rà lại. Không có cách nào khác — '
-  +'đăng rồi thì <b>không thu hồi được</b> cái đã đến điện thoại phụ huynh.</div>',
-  '<button class="btn" data-mb="close">Để sau</button>'
-  +'<button class="btn p off" data-mb="RaOK" disabled>Xác nhận đã rà</button>');
- const cb=$('#raOk'); cb.onchange=()=>{const b=$('[data-mb="RaOK"]');
-  b.disabled=!cb.checked; b.classList.toggle('off',!cb.checked)};
- mfns.bRaOK=()=>{e.raAnh={boi:toiLa(),ngay:HOMNAY};
-  ghiLS(e,'Xác nhận đã rà ảnh — không có mặt học sinh không đồng ý đăng ảnh');
-  closeM(); render(); toast('✅ Đã ghi nhận xác nhận rà ảnh — có tên người và ngày.')};
-}
+/* ⛔ `moRaAnh` ĐÃ BỎ HẲN — 19/9/2026, cụm BTDS chốt ⑦.
+   Hộp «Rà ảnh và xác nhận» của v1.0–v2.7 không còn chỗ đứng: nó là cổng
+   của một đường ra mà M6.8 nay KHÔNG CÒN. Cổng thật nằm ở M8.6 §9 và
+   chạy TỪNG ẢNH, không phải một ô tích cho cả sự kiện. */
 function moXong(id){
  const e=skById(id), th=thieuHoSo(e);
  modal('✓ Đánh dấu hoàn tất hồ sơ — '+e.id,
@@ -1662,7 +1739,7 @@ function moHuy(id){
    +'được về sau</b>, không phải thứ để xóa đi.</div>'
    +'<div class="evkv"><div style="flex:1 1 100%"><span>Sự kiện</span><b>'+esc(e.ten)+'</b></div>'
    +'<div><span>Dự kiến</span><b>'+k2s(e.tu)+'</b></div>'
-   +'<div><span>Phạm vi hiển thị</span><b>'+PUBLISH[e.pub][0].split(' — ')[0]+'</b></div>'
+   +'<div><span>Công bố phụ huynh</span><b>'+CBPH[e.pub][0].split(' — ')[0]+'</b></div>'
    +'<div><span>Đã gửi</span><b>'+e.tb.length+' thông báo · '+vn(daNhan.so)+' người</b></div></div>';
 
   b+='<label class="lbl">Lý do hủy <span style="color:var(--red)">*</span></label>'
@@ -1679,12 +1756,14 @@ function moHuy(id){
      +'</div><div style="padding:9px 11px">'
      +daNhan.nhom.map(n=>'<label class="ck"><input type="checkbox" checked disabled> '+esc(n.ten)
        +' <span class="pill">'+vn(n.so)+' người</span>'
-       +(ngoai.some(x=>x.id===n.id)?' <span class="tg a">ngoài phạm vi hiện tại</span>':'')+'</label>').join('')
+       +(ngoai.some(x=>x.id===n.id)?' <span class="tg a">ngoài trần cho phép</span>':'')+'</label>').join('')
      +(ngoai.length?'<div class="ro"><b>★ '+vn(soNgoaiPV(e,daNhan.nhom))+' người trong danh sách này '
-       +'nay KHÔNG còn mở được sự kiện</b> — phạm vi hiển thị đã bị thu hẹp sau khi thông báo đã gửi. '
-       +'Họ vẫn được báo hủy: ràng buộc <b>20f</b> <i>(chỉ chào nhóm trong phạm vi)</i> '
+       +'nay NGOÀI trần cho phép hiện tại</b> — sau khi thông báo đã gửi, sự kiện đã bị '
+       +'<b>đổi điểm trường</b> hoặc <b>hạ cờ xuống Nội bộ</b>. '
+       +'Họ vẫn được báo hủy: ràng buộc <b>20f</b> <i>(chỉ chào nhóm phụ huynh trong trần)</i> '
        +'<b>không áp cho thông báo hủy</b> — người đã cầm tin trong tay mà không được báo hủy thì '
-       +'<b>họ vẫn đến</b>.</div>':'')
+       +'<b>họ vẫn đến</b>. <span class="xs">Đây là ràng buộc <b>20g</b>, giữ nguyên ở v2.8; chỉ đổi '
+       +'thứ sinh ra nó.</span></div>':'')
      +'</div></div>';
     b+='<label class="lbl">Nội dung thông báo hủy — <b>điền sẵn từ lý do</b>, sửa được</label>'
      +'<textarea class="fldi" id="hNoi" rows="3">'+esc(f.tuNoi?f.noi:noiHuy(e,f.ly))+'</textarea>';
@@ -1721,7 +1800,7 @@ function moHuy(id){
   closeM(); render();
   toast('Đã hủy <b>'+e.id+'</b>. <b>Bản ghi vẫn còn.</b>'
    +(g?' Đã gửi thông báo hủy <b>'+g.ma+'</b> tới <b>'+vn(g.so)+' người</b>'
-      +(ngoai.length?' — <b>gồm cả nhóm nay đã ngoài phạm vi hiển thị</b>':'')+'.'
+      +(ngoai.length?' — <b>gồm cả nhóm nay đã ngoài trần cho phép</b>':'')+'.'
      :daNhan.so?' ⛔ <b>'+vn(daNhan.so)+' người đã nhận thông báo KHÔNG được báo hủy.</b>':''));
  };
  ve();
@@ -1732,45 +1811,61 @@ const noiHuy=(e,ly)=>'Nhà trường thông báo: sự kiện «'+e.ten+'» dự
 
 /* ══════════════════════════════════════════════════════════════════
    ★★ v2.0 — 🚀 TRIỂN KHAI và 📣 GỬI THÔNG BÁO LÀ HAI THAO TÁC ĐỘC LẬP
-   Triển khai khai PHẠM VI HIỂN THỊ (một lần). Gửi thông báo chọn ĐỐI
-   TƯỢNG NHẬN (mỗi lần), nội dung do người dùng soạn, lặp bao nhiêu lần
-   tùy ý, mỗi lần sinh MỘT bản ghi thật ở M8.1.
+   ★★ v2.8 — TRIỂN KHAI CHỈ CÒN HAI TÁC DỤNG (cụm BTDS chốt ②):
+     ① đưa sự kiện LÊN LỊCH (§2.8 giữ nguyên);
+     ② MỞ KHÓA hai đường ra — hộp 📣 Gửi thông báo và nút 📸 Đăng lên
+        Bảng tin App — theo CỜ `cong_bo_phu_huynh` khai ở đây.
+   ⛔ Nó KHÔNG còn «đưa sự kiện vào feed App»: sau cụm BTDS phụ huynh
+      không thấy SỰ KIỆN, họ thấy BÀI ở M8.6.
+   Gửi thông báo vẫn là thao tác riêng, lặp được, nội dung người soạn,
+   mỗi lần sinh MỘT bản ghi thật ở M8.1.
    ══════════════════════════════════════════════════════════════════ */
 function moPub(id,go){
  const e=skById(id);
  if(go){ moThuHoi(id); return; }
- ST.f={pub:'truong'};
+ ST.f={pub:'duoc_cong_bo'};          /* ★ mặc định `duoc_cong_bo` — HDBT §3.3 */
  const ve=()=>{
   const f=ST.f, gia={...e,pub:f.pub};
   modal('🚀 Triển khai — '+e.id,
-   '<div class="info"><b>Triển khai đưa sự kiện lên lịch và lên feed App — nó KHÔNG gửi thông báo nào.</b><br>'
+   '<div class="info"><b>Triển khai đưa sự kiện lên LỊCH và mở khóa hai đường ra — nó KHÔNG gửi thông báo nào, '
+   +'và KHÔNG đăng gì lên App.</b><br>'
    +'Hai việc tách nhau có lý do: lễ tổng kết chốt ngày từ tháng 10 cần nằm trên lịch để các bộ phận xếp việc, '
-   +'nhưng <b>chưa đến lúc báo phụ huynh</b>. Gửi thông báo là nút riêng, bấm được <b>nhiều lần</b>.</div>'
+   +'nhưng <b>chưa đến lúc báo phụ huynh</b>. Gửi thông báo là nút riêng, bấm được <b>nhiều lần</b>; '
+   +'đưa nội dung tới phụ huynh là <b>soạn một bài ở M8.6</b>.</div>'
    +'<div class="evkv"><div style="flex:1 1 100%"><span>Sự kiện</span><b>'+esc(e.ten)+'</b></div>'
    +'<div><span>Thời gian</span><b>'+k2s(e.tu)+'</b></div>'
    +'<div><span>Điểm trường</span><b>'+(e.dt==='ALL'?'Toàn trường':DT[e.dt])+'</b></div></div>'
-   +'<label class="lbl">Phạm vi hiển thị — <b>bao nhiêu phụ huynh thấy sự kiện này</b></label>'
+   +'<label class="lbl">Công bố phụ huynh — <b>sự kiện này có được đem ra ngoài nhà trường không</b></label>'
    +'<select class="fldi" id="pSel">'
-   +Object.keys(PUBLISH).filter(k=>k!=='nhap').map(k=>'<option value="'+k+'"'+(f.pub===k?' selected':'')
-     +'>'+PUBLISH[k][0]+'</option>').join('')+'</select>'
-   +'<div class="ro">Trường này <b>chỉ điều khiển phụ huynh</b>. Nhân sự nào thấy sự kiện là do '
-   +'<b>phạm vi vai</b> — vai <b>School</b> vẫn thấy sự kiện gắn một điểm trường. '
-   +'Ba mức là <b>ba nấc của một trục</b>: tới bao nhiêu phụ huynh.</div>'
-   +(denPH(f.pub)
-     ?'<div class="warn"><b>Sẽ có '+vn(nhomNhan(gia).filter(x=>x.id==='ph:all')[0].so)+' phụ huynh</b> '
-      +'thấy sự kiện trên feed App. <b>Không ai nhận thông báo</b> cho tới khi bạn bấm <b>📣 Gửi thông báo</b>.'
-      +(e.anh.length&&KHONG_DANG_ANH.length?'<br>Sự kiện có <b>'+e.anh.length+' ảnh</b> — hệ thống sẽ yêu cầu '
-        +'<b>rà danh sách '+KHONG_DANG_ANH.length+' học sinh không đồng ý đăng ảnh</b>.':'')+'</div>'
-     :'<div class="info"><b>Chỉ nhân sự thấy</b> — không tới phụ huynh nào. Hộp gửi thông báo sẽ '
-      +'<b>không chào nhóm phụ huynh nào</b> <span class="xs">(ràng buộc 20f)</span>.</div>'),
+   +Object.keys(CBPH).filter(k=>k!=='nhap').map(k=>'<option value="'+k+'"'+(f.pub===k?' selected':'')
+     +'>'+CBPH[k][0]+'</option>').join('')+'</select>'
+   +'<div class="ro">Đây là một <b>TRẦN CHO PHÉP</b>, hai giá trị. ⛔ Nó <b>không khai «phụ huynh nào thấy»</b> — '
+   +'việc đó là của <b>bài</b> ở <b>M8.6</b> <i>(toàn trường · điểm trường · khối)</i>. '
+   +'⛔ Nó cũng <b>không đụng quyền xem của nhân sự</b>: nhân sự đi theo <b>phạm vi vai</b>, '
+   +'vai <b>School</b> vẫn thấy sự kiện gắn một điểm trường <span class="xs">(ràng buộc 20e)</span>.<br>'
+   +'<span class="xs">Trước v2.8 ô này là <b>Phạm vi hiển thị</b> ba mức; ba mức đã <b>di cư sang bài của M8.6</b> '
+   +'— một nơi khai, hết nguồn sự thật thứ hai <i>(cụm BTDS chốt ④)</i>.</span></div>'
+   +(congBo(f.pub)
+     ?'<div class="warn"><b>Hai đường ra được mở.</b> Hộp <b>📣 Gửi thông báo</b> sẽ chào tới '
+      +'<b>'+vn(nhomNhan(gia).filter(x=>x.id==='ph:all')[0].so)+' phụ huynh</b> '
+      +'<span class="xs">('+(e.dt==='ALL'?'toàn trường':DT[e.dt])+' — theo điểm trường của sự kiện)</span>, '
+      +'và nút <b>📸 Đăng lên Bảng tin App</b> hiện ra trong panel. '
+      +'<b>Chưa ai nhận gì</b> cho tới khi bạn bấm một trong hai.'
+      +(e.anh.length?'<br>Sự kiện có <b>'+e.anh.length+' ảnh</b> — ảnh <b>chỉ gặp cổng kiểm đồng ý ở M8.6</b> '
+        +'khi bạn bấm 📸; ở đây chúng là <b>tư liệu nội bộ</b>.':'')+'</div>'
+     :'<div class="info"><b>Nội bộ</b> — sự kiện <b>không được đem ra ngoài</b>. Hộp gửi thông báo '
+      +'<b>không chào nhóm phụ huynh nào</b> và <b>không có nút 📸</b> '
+      +'<span class="xs">(ràng buộc 20f — trần này là lý do cờ phải ở lại: một buổi làm việc nội bộ về một '
+      +'nhóm học sinh cụ thể không được gửi thông báo cho toàn trường)</span>.</div>'),
    '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="PubOK">🚀 Triển khai</button>');
   const sl=$('#pSel'); if(sl) sl.onchange=()=>{ST.f.pub=sl.value; ve()};
  };
- mfns.bPubOK=()=>{e.pub=ST.f.pub; e.daTK=true; ghiLS(e,'🚀 Triển khai — '+PUBLISH[e.pub][0]);
+ mfns.bPubOK=()=>{e.pub=ST.f.pub; e.daTK=true; ghiLS(e,'🚀 Triển khai — '+CBPH[e.pub][0]);
   closeM(); render();
-  toast('🚀 Đã triển khai <b>'+e.id+'</b> — sự kiện lên lịch và lên feed. '
-   +'<b>Chưa gửi thông báo nào</b>; dùng <b>📣 Gửi thông báo</b> khi muốn báo.'
-   +(canRaAnh(e)?' ⚠️ <b>Cần rà ảnh</b> — xem dải đỏ trong chi tiết.':''))};
+  toast('🚀 Đã triển khai <b>'+e.id+'</b> — sự kiện lên lịch. '
+   +(congBo(e.pub)
+     ?'<b>Chưa gửi thông báo và chưa đăng bài nào</b>; dùng <b>📣 Gửi thông báo</b> hoặc <b>📸 Đăng lên Bảng tin App</b>.'
+     :'Cờ <b>Nội bộ</b> — không có đường ra phụ huynh nào.'))};
  ve();
 }
 
@@ -1784,11 +1879,13 @@ function nguoiDaNhan(e){
  if(co('ns:all')) nhom=nhom.filter(n=>!n.id.startsWith('ns:dt:'));
  return {nhom,so:nhom.reduce((a,n)=>a+n.so,0)};
 }
-/* ★ nhóm nào đã nhận mà nay NẰM NGOÀI phạm vi hiển thị hiện tại — ràng buộc 20g
-   ⚠ So mã nhóm là KHÔNG ĐỦ: `ph:all` giữ nguyên mã nhưng ĐỔI NGHĨA khi phạm vi
+/* ★ nhóm nào đã nhận mà nay NẰM NGOÀI trần cho phép hiện tại — ràng buộc 20g
+   ⚠ v2.8: trần bị thu hẹp bằng HAI cách — đổi ĐIỂM TRƯỜNG của sự kiện, hoặc
+   hạ CỜ xuống `noi_bo` (khi đó không còn nhóm phụ huynh nào).
+   ⚠ So mã nhóm là KHÔNG ĐỦ: `ph:all` giữ nguyên mã nhưng ĐỔI NGHĨA khi khung
    hẹp lại — «toàn bộ phụ huynh» của sự kiện toàn trường là 549 người, của sự
    kiện một điểm trường chỉ còn 266. Nhóm cũ vẫn phải bị đánh dấu là ngoài
-   phạm vi, vì 283 người trong đó nay không mở được sự kiện nữa.
+   trần, vì 283 người trong đó nay không còn được sự kiện chào tới nữa.
    Nên so cả SỐ NGƯỜI: mã biến mất, HOẶC số cũ lớn hơn số hiện tại. */
 function ngoaiPV(e,nhom){
  const by=Object.fromEntries(nhomNhan(e).map(x=>[x.id,x.so]));
@@ -1808,10 +1905,10 @@ function moThuHoi(id){
  const ve=()=>{
   const f=ST.f;
   modal('🔇 Thu hồi sự kiện — '+e.id,
-   '<div class="warn"><b>Thu hồi chỉ làm sự kiện biến khỏi lịch và feed</b>, và đưa nó về <b>Nháp</b>. '
+   '<div class="warn"><b>Thu hồi chỉ làm sự kiện biến khỏi lịch</b>, và đưa nó về <b>Nháp</b>. '
    +'Nó <b>KHÔNG thu hồi được thông báo đã gửi</b> — cái đã đến điện thoại người ta thì đã đến rồi.</div>'
    +'<div class="evkv"><div style="flex:1 1 100%"><span>Sự kiện</span><b>'+esc(e.ten)+'</b></div>'
-   +'<div><span>Đang hiển thị</span><b>'+PUBLISH[e.pub][0].split(' — ')[0]+'</b></div>'
+   +'<div><span>Công bố phụ huynh</span><b>'+CBPH[e.pub][0].split(' — ')[0]+'</b></div>'
    +'<div><span>Đã gửi</span><b>'+e.tb.length+' thông báo · '+vn(daNhan.so)+' người</b></div></div>'
    +(daNhan.so?'<label class="ck"><input type="checkbox" id="tBao"'+(f.bao?' checked':'')+'> '
      +'<b>Gửi thông báo cho '+vn(daNhan.so)+' người đã nhận, nói rõ sự kiện tạm rút</b></label>'
@@ -1828,14 +1925,14 @@ function moThuHoi(id){
   const t=$('#tNoi'); if(t) t.oninput=()=>{ST.f.noi=t.value};
  };
  mfns.bThuHoiOK=()=>{
-  const f=ST.f, cu=PUBLISH[e.pub][0].split(' — ')[0];
+  const f=ST.f, cu=CBPH[e.pub][0].split(' — ')[0];
   if(f.bao&&daNhan.so){
    const t=ghiTB(e,{loai:'thuong',tieuDe:'Tạm rút khỏi lịch — '+e.ten,noiDung:f.noi,
     nhom:daNhan.nhom,so:daNhan.so});
    ghiLS(e,'📣 Gửi thông báo '+t.ma+' — '+t.so+' người nhận');
   }
-  e.pub='nhap'; ghiLS(e,'🔇 Thu hồi — bỏ phạm vi '+cu); closeM(); render();
-  toast('🔇 Đã thu hồi <b>'+e.id+'</b> — biến khỏi lịch và feed, quay về <b>Nháp</b>. '
+  e.pub='nhap'; ghiLS(e,'🔇 Thu hồi — bỏ cờ '+cu); closeM(); render();
+  toast('🔇 Đã thu hồi <b>'+e.id+'</b> — biến khỏi lịch, quay về <b>Nháp</b>. '
    +'<b>Thông báo đã gửi không thu hồi được.</b>');
  };
  ve();
@@ -1856,7 +1953,7 @@ function moGuiTB(id){
    +'người nhận. Đọc lại nội dung trước khi bấm gửi.</div>'
    +'<div class="evkv"><div style="flex:1 1 100%"><span>Sự kiện</span><b>'+esc(e.ten)+'</b></div>'
    +'<div><span>Thời gian</span><b>'+k2s(e.tu)+'</b></div>'
-   +'<div><span>Phạm vi hiển thị</span><b>'+PUBLISH[e.pub][0].split(' — ')[0]+'</b></div>'
+   +'<div><span>Công bố phụ huynh</span><b>'+CBPH[e.pub][0].split(' — ')[0]+'</b></div>'
    +'<div><span>Đã gửi trước đó</span><b>'+e.tb.length+' lần</b></div></div>';
 
   b+='<label class="lbl">Đối tượng nhận lần này</label>';
@@ -1869,21 +1966,24 @@ function moGuiTB(id){
    b+=ph.map(x=>'<label class="ck"><input type="checkbox" data-nn="'+x.id+'"'
      +(f.ids.includes(x.id)?' checked':'')+'> '+esc(x.ten)
      +' <span class="pill">'+vn(x.so)+' người</span></label>').join('');
-   if(e.pub==='dt') b+='<div class="ro">Sự kiện hiển thị ở <b>'+DT[e.dt]+'</b>, nên nhóm khối ở đây là '
-    +'<b>khối GIAO với điểm trường đó</b> — không phải khối toàn trường.</div>';
-  }else b+='<div class="empty">Sự kiện đang ở phạm vi <b>'+PUBLISH[e.pub][0].split(' — ')[0]+'</b> — '
-   +'<b>không có nhóm phụ huynh nào để chào</b>.<br><span class="xs">Gửi cho người '
-   +'<b>không mở được sự kiện</b> là đẩy họ tới một màn hình trống <i>(ràng buộc 20f)</i>. '
-   +'Muốn gửi cho phụ huynh thì <b>✏️ Sửa</b> để mở rộng phạm vi hiển thị trước.</span></div>';
+   if(e.dt!=='ALL') b+='<div class="ro">Sự kiện thuộc <b>'+DT[e.dt]+'</b>, nên nhóm khối ở đây là '
+    +'<b>khối GIAO với điểm trường đó</b> — không phải khối toàn trường. '
+    +'<span class="xs">Khung nhóm phụ huynh đi theo <b>điểm trường của sự kiện</b>, không phải theo cờ — '
+    +'cờ chỉ trả lời <b>có</b> hay <b>không</b>.</span></div>';
+  }else b+='<div class="empty">Cờ công bố phụ huynh đang là <b>'+CBPH[e.pub][0].split(' — ')[0]+'</b> — '
+   +'<b>không có nhóm phụ huynh nào để chào</b>.<br><span class="xs">Sự kiện nội bộ <b>không được đem ra '
+   +'ngoài nhà trường</b> <i>(ràng buộc 20f — trần cho phép)</i>: một buổi làm việc nội bộ về một nhóm '
+   +'học sinh cụ thể không được gửi thông báo cho toàn trường. '
+   +'Muốn gửi cho phụ huynh thì <b>✏️ Sửa</b> và đổi cờ sang <b>Được công bố tới phụ huynh</b> trước.</span></div>';
   b+='</div></div>';
 
   b+='<div class="tbw" style="margin-top:9px"><div class="ch">Nhân sự</div><div style="padding:9px 11px">'
    +ns.map(x=>'<label class="ck"><input type="checkbox" data-nn="'+x.id+'"'
      +(f.ids.includes(x.id)?' checked':'')+'> '+esc(x.ten)
      +' <span class="pill">'+vn(x.so)+' người</span></label>').join('')
-   +'<div class="ro">Nhóm nhân sự <b>luôn chào đủ</b>, kể cả khi sự kiện chỉ hiển thị ở một điểm trường — '
-   +'nhân sự đi theo <b>phạm vi vai</b>, không theo phạm vi hiển thị của sự kiện '
-   +'<span class="xs">(ràng buộc 20e)</span>.</div></div></div>';
+   +'<div class="ro">Nhóm nhân sự <b>luôn chào đủ</b>, kể cả khi sự kiện gắn một điểm trường và kể cả khi cờ '
+   +'là <b>Nội bộ</b> — nhân sự đi theo <b>phạm vi vai</b>, không theo cờ công bố phụ huynh '
+   +'<span class="xs">(ràng buộc 20e — giữ nguyên ở v2.8)</span>.</div></div></div>';
 
   b+='<label class="lbl">Tiêu đề <span style="color:var(--red)">*</span></label>'
    +'<input class="fldi" id="gTd" value="'+esc(f.tieuDe)+'">'
@@ -1965,6 +2065,78 @@ function moWeb(id){
  mfns.bwebOK=()=>{e.web={ma:'WEB-0'+(++MWEB),tt:'Nháp',ngay:HOMNAY};ghiLS(e,'🌐 Tạo bài nháp '+e.web.ma+' ở M8.5 (Đăng tin lên web)');
   closeM();toast('🌐 Đã tạo bài nháp <b>'+e.web.ma+'</b> ở M8.5 — mở «Bài của tôi» để viết tiếp.');render()};
 }
+/* ══════════════════════════════════════════════════════════════════
+   ★★ v2.8 — 📸 ĐĂNG LÊN BẢNG TIN APP → M8.6 (cụm BTDS chốt ② · HDBT §3.7)
+   M6.8 KHÔNG đăng gì lên App: nút này chỉ MỞ màn soạn bài của
+   M8.6 Bảng tin Đời sống trường, bơm sẵn tiêu đề · nội dung · ảnh ·
+   khối liên quan · nguồn. Ở đó bài mới khai PHẠM VI HIỂN THỊ của nó
+   (toàn trường · điểm trường · khối) và ảnh mới CHẠY CỔNG hai vế.
+
+   BT_T = vai có quyền T ở `m8.6.bai_cua_toi` cho loại bài
+   `su_kien_truong` — theo HDBT §3.7 «su_kien_truong theo vai tổ chức sự
+   kiện», nên đúng bằng tập vai tạo được sự kiện. ⚠ Văn thư KHÔNG có:
+   VT chỉ có `tin_thuong`. Bảng đầy đủ do thẻ 1A mục Q sở hữu — 3Z đối chiếu.
+   ══════════════════════════════════════════════════════════════════ */
+const BT_T=['FULL','HT','PCM','PDT','TCNS','TPT'];
+let MBT=112;
+function moBangTin(id){
+ const e=skById(id);
+ if(e.bt){
+  modal('📸 Bài trên Bảng tin App của sự kiện',
+   '<div class="evkv"><div style="flex:1 1 100%"><span>Sự kiện</span><b>'+esc(e.ten)+'</b></div>'
+   +'<div><span>Bài</span><b>'+e.bt.ma+'</b></div><div><span>Trạng thái ở M8.6</span><b>'+esc(e.bt.tt)+'</b></div>'
+   +'<div><span>Đăng ngày</span><b>'+k2s(e.bt.ngay)+'</b></div>'
+   +'<div><span>Phạm vi hiển thị của BÀI</span><b>'+esc(e.bt.pv)+'</b></div>'
+   +'<div><span>Ảnh trong bài</span><b>'+e.bt.anh+' hiện'+(e.bt.anhGiu?' · '+e.bt.anhGiu+' giữ nội bộ':'')+'</b></div></div>'
+   +(e.bt.anhGiu?'<div class="warn"><b>'+e.bt.anhGiu+' ảnh ở lại «giữ nội bộ»</b> — thiếu đồng ý một vế. '
+     +'Cổng ở <b>M8.6 §9</b> nêu <b>đích danh em nào thiếu vế nào</b>; ảnh <b>không bị xóa khỏi hệ thống</b>. '
+     +'Hai lối xử: <b>thu đồng ý ở M1.1</b> rồi quay lại, hoặc <b>✂ Bỏ ảnh vướng rồi đăng</b>.</div>':'')
+   +'<div class="ro">Bản chiếu chỉ đọc 🔗 — soạn, sửa, ẩn ảnh, ẩn bài <b>đều ở M8.6</b> <i>(D1 · D2)</i>.<br>'
+   +'<b>Một nút, một bài</b> — không tạo bài thứ hai từ cùng sự kiện <i>(khuôn nút cũ §4.1.1)</i>.<br>'
+   +'Deep-link: <code>/M8.6?ctx='+e.bt.ma+'&amp;return=M6.8</code></div>',
+   '<button class="btn" data-mb="close">Đóng</button><button class="btn p" data-mb="close">Mở ở M8.6</button>');
+  return;
+ }
+ modal('📸 Đăng lên Bảng tin App — '+e.id,
+  '<div class="info">Mở màn soạn <b>bài</b> của <b>M8.6 Bảng tin Đời sống trường</b> với sẵn nội dung sự kiện. '
+  +'<b>M8.6 là cửa DUY NHẤT ra khối 📸 Đời sống trường</b> của App PH-HS — nút này <b>không đăng gì</b>.<br>'
+  +'<span class="xs">Trước 19/9/2026, M6.8 tự đẩy sự kiện vào khối đó qua <b>🚀 Triển khai</b>; khối khi ấy có '
+  +'<b>hai nguồn</b> <i>(M6.8 · M6.14)</i> với <b>hai khuôn kiểm ảnh khác nhau</b>, và cùng một buổi lên App '
+  +'<b>hai lần</b>. Cụm BTDS đóng chuyện đó — còn <b>một</b> nguồn.</span></div>'
+  +'<div class="tbw"><div class="ch">Sẽ bơm sang bài</div><table>'
+  +'<tr><th style="width:190px">Trường ở bài</th><th>Giá trị mang sang</th></tr>'
+  +'<tr><td><b>loai_bai</b></td><td><span class="tg b">su_kien_truong</span> — quyết định vai nào soạn được</td></tr>'
+  +'<tr><td><b>nguon</b></td><td><code>{menu:\'M6.8\', ctx:\''+e.id+'\'}</code> — chỉ đọc, hiện thành dòng <b>Nguồn 🔗</b></td></tr>'
+  +'<tr><td><b>tieu_de</b></td><td>'+esc(e.ten)+'</td></tr>'
+  +'<tr><td><b>noi_dung</b></td><td>'+esc((e.mota||'—').slice(0,80))+(((e.mota||'').length>80)?'…':'')
+   +'<div class="xs">kèm <b>'+k2s(e.tu)+'</b> · <b>'+esc(e.noi||'—')+'</b> — bản ghi bài <b>không có</b> trường '
+   +'<code>ngay</code> hay <code>dia_diem</code> riêng; ngày và địa điểm là <b>nội dung</b>, người soạn viết lại cho phụ huynh đọc</div></td></tr>'
+  +'<tr><td><b>anh[]</b></td><td><b>'+e.anh.length+' ảnh</b> — <b>từng ảnh chạy cổng hai vế ở M8.6</b>, '
+   +'không phải một ô tích cho cả sự kiện</td></tr>'
+  +'<tr><td><b>khoi_lien_quan[]</b></td><td>'+(chipKhoi(e)||'<span class="xs">rỗng — sự kiện chung</span>')
+   +' <span class="xs">— chip khối trên thẻ App nay đọc trường này CỦA BÀI (đóng điểm I-App)</span></td></tr>'
+  +'<tr class="warnrow"><td><b>pham_vi_hien_thi</b></td><td><b>KHÔNG bơm</b> — bài tự khai ở M8.6: '
+   +'<span class="tg n">toan_truong</span> <span class="tg n">diem_truong</span> <span class="tg b">khoi</span>. '
+   +'Sự kiện <b>không còn trường này</b> <i>(cụm BTDS chốt ④)</i></td></tr>'
+  +'</table></div>'
+  +'<div class="warn"><b>Ảnh gặp cổng ở M8.6, không gặp ở đây.</b> Khuôn <b>chặt</b> của <b>M6.14 §2</b>, '
+  +'nay là chuẩn duy nhất cho <b>mọi</b> ảnh lên App: <b>không có nút «công bố tất cả ảnh»</b>; mỗi ảnh khai '
+  +'<b>toàn cảnh hay không</b>; ảnh toàn cảnh không nhận diện cá nhân thì <b>không gắn ai</b> và đăng được ngay; '
+  +'ảnh còn lại gắn <b>từng em</b> và đọc <b>sổ đồng ý hai vế ở M1.1</b>; thiếu vế nào thì ảnh ở lại '
+  +'<b>giữ nội bộ</b> kèm tên em và vế thiếu. <b>Không tắt được.</b><br>'
+  +'<span class="xs">Căn cứ: <b>NĐ 56/2017 Đ.33 · Đ.36</b> · <b>Luật BVDLCN 91/2025</b> · <b>BLDS 2015 Đ.32</b>.</span></div>'
+  +'<div class="ro">Deep-link: <code>/M8.6?action=tao&amp;nguon=m6.8&amp;ctx='+e.id+'&amp;return=M6.8</code><br>'
+  +'<span class="xs">Demo <b>mô phỏng</b> deep-link — M8.6 do thẻ <b>BTDS-1A</b> dựng, có thể chưa có trên đĩa lúc bạn xem.</span></div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="btOK">Tạo bài nháp ở M8.6</button>');
+ mfns.bbtOK=()=>{
+  e.bt={ma:'BT-0'+(++MBT),tt:'Nháp',ngay:HOMNAY,pv:'chưa khai — bài tự khai ở M8.6',anh:e.anh.length,anhGiu:0};
+  ghiLS(e,'📸 Tạo bài nháp '+e.bt.ma+' ở M8.6 (Đăng lên Bảng tin App)');
+  closeM(); render();
+  toast('📸 Đã tạo bài nháp <b>'+e.bt.ma+'</b> ở <b>M8.6</b> — mở «Bài của tôi» để khai '
+   +'<b>phạm vi hiển thị</b> và cho <b>'+e.anh.length+' ảnh chạy cổng hai vế</b>. '
+   +'<b>Sự kiện này không tự lên App.</b>');
+ };
+}
 function moM63(id){
  const e=skById(id);
  modal('🔗 Liên kết phong trào Đội — Đoàn',
@@ -1996,7 +2168,6 @@ function doiTab(t){ST.tab=t; ST.cur=null}
 function gCfg(){
  const g=(id,f)=>{const el=$(id); if(el) el.onchange=()=>{f(el.value); render();
   toast('⚙️ Đã đổi tham số.')}};
- g('#cfRa',v=>CFG.canRaAnh=v==='1');
 }
 document.addEventListener('click',e=>{
  const t=e.target;
@@ -2015,7 +2186,6 @@ document.addEventListener('click',e=>{
  const su=t.closest('[data-sua]'); if(su){moTao(su.dataset.sua); return}
  const ch=t.closest('[data-chi]'); if(ch){moChi(ch.dataset.chi); return}
  const ta=t.closest('[data-themanh]'); if(ta){moThemAnh(ta.dataset.themanh); return}
- const ra=t.closest('[data-raanh]'); if(ra){moRaAnh(ra.dataset.raanh); return}
  const xo=t.closest('[data-xong]'); if(xo){moXong(xo.dataset.xong); return}
  const hu=t.closest('[data-huy]'); if(hu){moHuy(hu.dataset.huy); return}
  const pb=t.closest('[data-pub]'); if(pb){moPub(pb.dataset.pub,false); return}
@@ -2024,6 +2194,7 @@ document.addEventListener('click',e=>{
  const xh=t.closest('[data-xoa]'); if(xh){moXoa(xh.dataset.xoa); return}
  const m6=t.closest('[data-m63]'); if(m6){moM63(m6.dataset.m63); return}
  const wb=t.closest('[data-web]'); if(wb){moWeb(wb.dataset.web); return}
+ const bt=t.closest('[data-bt]'); if(bt){moBangTin(bt.dataset.bt); return}
  if(t.id==='xuat'){xuat('Xuất danh sách sự kiện'); return}
  if(t.id==='xuatBC'){xuat('Xuất chi phí sự kiện cho Kế toán'); return}
 });

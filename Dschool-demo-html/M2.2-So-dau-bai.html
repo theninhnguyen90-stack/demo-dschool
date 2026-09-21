@@ -225,6 +225,29 @@ table.tb tr:last-child td{border-bottom:none}
 .ngoaicap{font-size:12px;color:var(--ink2);padding:8px 13px;background:#fffbeb;border-bottom:1px solid #fde68a}
 
 
+/* ── GY18-H1 · ô XÁC NHẬN sĩ số của tiết (không phải ô gõ số) ── */
+.xnbox{border:1px solid var(--line);border-left:3px solid var(--ink3);border-radius:9px;padding:10px 12px;margin-top:9px;background:#fff}
+.xnbox.du{border-left-color:var(--green);background:#f0fdf4}
+.xnbox.vang{border-left-color:var(--amber);background:#fffbeb}
+.xnbox.chua{border-left-color:var(--ink3);background:#f8fafc}
+.xnh{display:flex;align-items:center;gap:8px;font-weight:700;font-size:12.5px;flex-wrap:wrap}
+.xnhan{font-size:11px;color:var(--ink3);font-weight:400;margin-top:4px}
+.xnb{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap}
+.xnds{margin-top:9px}
+.xnck{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:12.5px}
+.xnck input{width:15px;height:15px;flex:0 0 15px}
+
+/* ══ GDDP (v2.5) — PHẦN của môn chia phần ═══════════════════════════════════
+   Dải «phần của tôi» ở đầu danh sách tiết của cặp, và dòng tên phần trên mỗi
+   dòng tiết. Môn một phần KHÔNG sinh phần tử nào — PC1 chạy y hệt hôm nay.   */
+.phandai{flex:1 1 100%;margin-top:6px;padding:7px 10px;border-radius:7px;
+  background:color-mix(in srgb,var(--violet) 7%,transparent);
+  border-left:3px solid var(--violet);font-size:12px;line-height:1.5}
+.phandai b{color:var(--violet)}
+.phandai span{font-size:11px;color:var(--ink3)}
+.phandai div{margin-top:2px;color:var(--ink2)}
+.phanln{font-size:11.5px;color:var(--violet);margin:2px 0 1px}
+
 /* ═══ KHUÔN SIDEBAR LỚP × MÔN — style.05-sidebar-lop.css ═══
    Đi cặp với app.05-sidebar-lop.js · gốc M2.5 (P16 · 14/9/2026) · dùng chung M2.2 · M2.3 · M2.5.
    CHÉP NGUYÊN BYTE sang mọi menu dùng khuôn; sửa ở một bên thì chép sang mọi bên.
@@ -589,15 +612,80 @@ const PC=[
  ['8A1','Vật lí','hung'],['8A1','Công nghệ','hung'],['8A1','Toán','chi'],['8A1','Sinh học','tuan'],['8A1','Hóa học','hanh'],['8A1','Tiếng Anh','ngan'],
  ['8A2','Vật lí','hung'],['8A2','Tiếng Anh','ngan'],
  ['9B1','Vật lí','hung'],['8B1','Vật lí','hung'],
- ['9A2','Thể dục','khanh']
+ ['9A2','Thể dục','khanh'],
+ /* GDDP — dòng cặp của môn CHIA PHẦN = giáo viên CHỦ TRÌ theo lớp (HDPC ⑥ · CV 5636). */
+ ['9A1','Nội dung giáo dục địa phương','hung'],
+ ['9A2','Hoạt động trải nghiệm - hướng nghiệp','lan']
 ];
 const DTTEN={A:'Điểm trường A',B:'Điểm trường B'};
+/* ══ GDDP · HDPC ① ② ⑥ ⑦ — PHƯƠNG THỨC TỔ CHỨC KIẾN THỨC · PHẦN (v2.5 · GDDP-2D) ══
+   BẢN CHIẾU CHỈ ĐỌC. Phương thức và phần là Master của M10.2 ② (panel tầng 2 của một
+   môn); lớp nào dùng phương thức nào là của M10.1 ⑥. M2.2 KHÔNG sở hữu gì ở đây và
+   KHÔNG tự tra lịch triển khai phần (M5.1 ⑤) — phần của một tiết là BẢN CHỤP đọc từ
+   M4.7 (§3.1b). Môn không có mặt trong bảng này = PT0 · một phần = MÀN HÌNH NHƯ HÔM NAY. */
+const PHAN={
+ 'Nội dung giáo dục địa phương':{pt:'PT1',ten:'Ba mạch nội dung',mh:'A',
+  cc:'QĐ 18 ngày 26/01/2026 — UBND tỉnh Phú Thọ',ds:[
+   {ma:'P1',ten:'Văn hóa – lịch sử – truyền thống'},
+   {ma:'P2',ten:'Địa lí – kinh tế – hướng nghiệp'},
+   {ma:'P3',ten:'Chính trị – xã hội – môi trường'}]},
+ 'Hoạt động trải nghiệm - hướng nghiệp':{pt:'PT1',ten:'Ba mạch hoạt động',mh:'B',
+  cc:'TT 32/2018 — 105 tiết/năm',ds:[
+   {ma:'P1',ten:'Sinh hoạt dưới cờ'},
+   {ma:'P2',ten:'Sinh hoạt lớp'},
+   {ma:'P3',ten:'Hoạt động giáo dục theo chủ đề'}]}
+};
+const dsPhan=mon=>(PHAN[mon]?PHAN[mon].ds:[]);
+const coPhan=mon=>dsPhan(mon).length>1;                 /* ≥ 2 phần mới gọi là «môn chia phần» */
+const tenPhan=(mon,ma)=>{const q=dsPhan(mon).find(x=>x.ma===ma); return q?q.ten:''};
+/* PHÂN CÔNG THEO PHẦN — HDPC ⑥, khóa (lop, mon, phan_ma) → giao_vien_id.
+   Môn một phần KHÔNG có dòng ở đây: nó dùng dòng cặp của PC như hôm nay.
+   Dòng cặp trong PC của một môn chia phần = GIÁO VIÊN CHỦ TRÌ THEO LỚP (la_chu_tri). */
+const PCPHAN=[
+ /* PC4 · A3 xoay vòng — Giáo dục địa phương 9A1, ba mạch Phú Thọ, ba giáo viên */
+ ['9A1','Nội dung giáo dục địa phương','P1','hung'],
+ ['9A1','Nội dung giáo dục địa phương','P2','lan'],
+ ['9A1','Nội dung giáo dục địa phương','P3','chi'],
+ /* PC2 · B song song — HĐTN 9A2: GVCN giữ hai mạch sinh hoạt, GV khác giữ mạch chủ đề.
+    Thầy Hùng CHỈ giữ MỘT phần và KHÔNG chủ trì ⇒ cặp này không có dòng của thầy ở PC. */
+ ['9A2','Hoạt động trải nghiệm - hướng nghiệp','P1','lan'],
+ ['9A2','Hoạt động trải nghiệm - hướng nghiệp','P2','lan'],
+ ['9A2','Hoạt động trải nghiệm - hướng nghiệp','P3','hung']
+];
+const phanCuaToi=(lop,mon,g)=>PCPHAN.filter(q=>q[0]===lop&&q[1]===mon&&q[3]===g).map(q=>q[2]);
+/* Dải «phần của tôi» — MỘT câu, dùng ở CẢ HAI chỗ: chú giải dòng sidebar (khuôn: title)
+   và đầu danh sách tiết của cặp. Môn một phần ⇒ chuỗi rỗng ⇒ không vẽ gì (PC1). */
+function daiPhan(lop,mon,g){
+ if(!coPhan(mon)) return '';
+ const cua=phanCuaToi(lop,mon,g), khac=dsPhan(mon).filter(q=>cua.indexOf(q.ma)<0);
+ if(!cua.length) return '';
+ return 'Phần của bạn: '+cua.map(m=>tenPhan(mon,m)).join(' · ')
+  +(khac.length?' — '+(khac.length===1?'phần còn lại':khac.length+' phần còn lại')
+    +' ('+khac.map(q=>q.ten).join(' · ')+') do giáo viên khác dạy':'');
+}
+
 const HS={
  1:{n:'Nguyễn Minh Anh',lop:'9A1'},2:{n:'Trần Quốc Bảo',lop:'9A1'},3:{n:'Lê Thu Hà',lop:'9A1'},
  4:{n:'Phạm Gia Huy',lop:'9A1'},5:{n:'Vũ Khánh Linh',lop:'9A2'},6:{n:'Đỗ Nam Khánh',lop:'9A2'},
  7:{n:'Hoàng Bảo Ngọc',lop:'8A1'},8:{n:'Ngô Tuấn Kiệt',lop:'8A1'},9:{n:'Bùi Thanh Tùng',lop:'8B1'},
  10:{n:'Phan Minh Châu',lop:'9A3'},
 };
+/* GY18-H1 — DANH SACH LOP DAY DU. O "Có em vắng → chọn tên" phai chon duoc tu CA LOP, khong phai tu
+   vai em dat ten tay. Muoi em o tren giu id so vi vangDN · bd · khen · nhac dang tro toi bang id do. */
+const _HO=['Nguyễn','Trần','Lê','Phạm','Hoàng','Vũ','Đặng','Bùi','Đỗ','Ngô','Dương','Đinh','Lý','Hồ'];
+const _DEM=['Văn','Thị','Minh','Anh','Quốc','Thu','Hải','Ngọc','Gia','Khánh','Hoài','Bảo'];
+const _TEN=['An','Bình','Chi','Dũng','Giang','Hà','Hùng','Khoa','Linh','Mai','Nam','Oanh','Phúc','Quân',
+ 'Sơn','Trang','Uyên','Vy','Xuân','Yến','Đạt','Thảo','Nhi','Long','Trâm','Kiên','Duy','Hạnh'];
+let _sd=20260828;
+const _rnd=()=>{_sd=(_sd*1103515245+12345)&0x7fffffff; return _sd/0x7fffffff};
+const _pick=a=>a[(_rnd()*a.length)|0];
+Object.keys(LOP).forEach(lop=>{
+ const co=Object.keys(HS).filter(h=>HS[h].lop===lop).length;
+ for(let i=co;i<LOP[lop].ss;i++)
+  HS[lop+'-'+String(i+1).padStart(2,'0')]={n:_pick(_HO)+' '+_pick(_DEM)+' '+_pick(_TEN),lop:lop};
+});
+const hsLop=lop=>Object.keys(HS).filter(h=>HS[h].lop===lop);
+
 const LYDO=['Lên phòng y tế','Tham dự hoạt động chung của trường','Tham dự cuộc thi, sự kiện',
             'Được gọi lên BGH hoặc phòng giáo vụ','Chưa rõ lý do','Khác'];
 /* LOẠI VI PHẠM — bản chiếu chỉ đọc Master M2.7 ⚙ Danh mục (P14: tên cũ "hành vi vi phạm", giữ mã HV*).
@@ -616,6 +704,12 @@ function S(o){
  o.vangDN=o.vangDN||[];   /* vang dau ngay — chi doc tu M2.9/T2 */
  o.bd=o.bd||[];           /* bien dong trong tiet — widget V7 */
  o.khen=o.khen||[]; o.nhac=o.nhac||[]; o.vp=o.vp||[];
+ /* GY18-H1 — O XAC NHAN SI SO cua tiet. KHONG phai o go so (§5.3 giu nguyen):
+    null = chua nhap · {du:1} = xac nhan lop du · {du:0,ds:[[hs,ly]]} = xac nhan co vang, KEM TEN. */
+ o.xn=o.xn||null;
+ /* Ban chieu chi doc tu M2.9/T2: GVCN da chot diem danh dau ngay cua ngay do chua.
+    Chua chot thi si so cua tiet TAM tinh theo o xac nhan — van la con so dan xuat, khong ai go. */
+ if(o.ddChot===undefined) o.ddChot=1;
  o.log=o.log||[];
  /* HAI MOC GIO cua dong so (YK-01 — thay cho MOT 'timestamp vao tiet'):
     ky  = gio LUU LAN DAU  (sinh khi o noi dung dau tien duoc luu — KHONG sinh khi mo man hinh)
@@ -637,6 +731,8 @@ SO.push(
  S({d:0,t:1,lop:'9A1',mon:'Vật lí',phong:'P.302',gv:'hung',gvg:'hung',ng:'tkb',
     tt:'ghi',ky:absW(2,0,421),nd:'Bài 3 — Công cơ học. Luyện tập bài 3.4 đến 3.7',muc:'Tốt',
     vangDN:[[2,'Vắng có phép — đơn xin nghỉ đã duyệt']],
+    /* GY18-H1 — tiet dau buoi sang: thay Hung xac nhan CO VANG, kem ten. Khop voi ban chot cua GVCN. */
+    xn:{du:0,ds:[[2,'']],boi:'hung',luc:'24/8 07:05'},
     log:[['24/8 07:01','Nguyễn Văn Hùng','✍ Bắt đầu ghi','Lưu lần đầu'],
          ['24/8 07:44','Nguyễn Văn Hùng','✓ Kết thúc','']]}),
  S({d:0,t:2,lop:'9A2',mon:'Vật lí',phong:'P.303',gv:'hung',gvg:'hung',ng:'tkb',
@@ -663,9 +759,12 @@ SO.push(
  /* ===== T4 26/8 — DIEM TRUONG B ca ngay ===== */
  S({d:2,t:1,lop:'9B1',mon:'Vật lí',phong:'B.101',gv:'hung',gvg:'hung',ng:'tkb',
     tt:'ghi',ky:absW(2,2,423),nd:'Bài 4 — Định luật về công',muc:'Tốt',
+    xn:{du:1,boi:'hung',luc:'26/8 07:04'},
     log:[['26/8 07:03','Nguyễn Văn Hùng','✍ Bắt đầu ghi','Lưu lần đầu'],['26/8 07:43','Nguyễn Văn Hùng','✓ Kết thúc','']]}),
  /* tiet DA QUA GIO ma CHUA GHI — so thieu bien ban tiet hoc */
- S({d:2,t:2,lop:'8B1',mon:'Vật lí',phong:'B.102',gv:'hung',gvg:'hung',ng:'tkb',tt:'chua'}),
+ /* GY18-H1 — GVCN 8B1 CHUA chot diem danh dau ngay hom do: si so cua tiet "chua co can cu",
+    va vi day la TIET DAU buoi sang nen o xac nhan o day se thanh goi y ben M2.9/T2. */
+ S({d:2,t:2,lop:'8B1',mon:'Vật lí',phong:'B.102',gv:'hung',gvg:'hung',ng:'tkb',tt:'chua',ddChot:0}),
  /* TIET TRUC TUYEN — co truc_tuyen theo tiet la du lieu LICH cua M4.7 (§3b.2); M2.2 chi hien nhan 🖥 */
  S({d:2,t:8,lop:'9B1',mon:'Vật lí',phong:'B.101',gv:'hung',gvg:'hung',ng:'tkb',truc:1,
     tt:'ghi',ky:absW(2,2,922),nd:'Bài 5 — Công suất (dạy trực tuyến, lớp học qua phòng họp trực tuyến)',muc:'Tốt',
@@ -681,6 +780,8 @@ SO.push(
  /* tiet day thay — thay Hung day thay co Mai o 9A3 (ngoai phan cong), ghi so muon */
  S({d:4,t:1,lop:'9A3',mon:'Vật lí',phong:'P.201',gv:'hung',gvg:'mai',ng:'thay',
     tt:'ghi',ky:absW(2,4,598),gkt:absW(2,4,600),nd:'Bài 5 — Công suất (dạy thay cô Mai)',muc:'Khá',
+    /* H1-P3: M2.2 luon thuoc GIAO VIEN THUC DAY — thay day thay xac nhan si so cua tiet do. */
+    xn:{du:1,boi:'hung',luc:'28/8 09:58'},
     log:[['28/8 09:58','Nguyễn Văn Hùng','✍ Bắt đầu ghi','Lưu lần đầu — sau giờ tiết'],
          ['28/8 10:00','Nguyễn Văn Hùng','✓ Kết thúc','Ghi sổ muộn 2 giờ 15′']]}),
  /* tiet da ghi — sang nay */
@@ -697,7 +798,38 @@ SO.push(
     log:[['28/8 10:00','Nguyễn Văn Hùng','✍ Bắt đầu ghi','Lưu lần đầu — TRƯỚC giờ tiết']]}),
  /* tiet chieu nay — chua toi gio */
  S({d:4,t:6,lop:'9A2',mon:'Vật lí',phong:'P.303',gv:'hung',gvg:'hung',ng:'tkb',tt:'chua'}),
- S({d:4,t:7,lop:'9A1',mon:'Vật lí',phong:'P.302',gv:'hung',gvg:'hung',ng:'tkb',tt:'chua'})
+ S({d:4,t:7,lop:'9A1',mon:'Vật lí',phong:'P.302',gv:'hung',gvg:'hung',ng:'tkb',tt:'chua'}),
+
+ /* ══ GDDP (v2.5) — TIẾT CỦA MÔN CHIA PHẦN ════════════════════════════════════════
+    `phan` là BẢN CHỤP chiếu từ M4.7 (HDPC ⑦ · §3.1b) — M2.2 không tự tra M5.1 ⑤.
+    `ng:'giaidoan'` = nguon_phat_sinh `theo_giai_doan`, KHÁC `ng:'thay'` (dạy thay):
+    hai thứ chảy vào HAI CHỖ KHÁC NHAU của bảng lương. */
+
+ /* PC4 · A3 — 9A1 Giáo dục địa phương, mạch 1 do thầy Hùng dạy tuần 1–12, Thứ Năm tiết 5.
+    (Thứ Tư thầy Hùng ở Điểm trường B cả ngày — giữ đúng lịch di chuyển của bộ dữ liệu này.)
+    PC21 — tiết MỜI KHÁCH: ghi thẳng vào ô «Nội dung dạy thực tế», KHÔNG có trường mới. */
+ S({d:3,t:5,lop:'9A1',mon:'Nội dung giáo dục địa phương',phan:'P1',phong:'P.302',
+    gv:'hung',gvg:'hung',ng:'giaidoan',giaidoan:'tuần 1 – tuần 12',
+    tt:'ghi',ky:absW(2,3,632),muc:'Tốt',
+    nd:'Mạch Văn hóa – lịch sử – truyền thống — Chủ đề 2: Hát Xoan Phú Thọ. Mời nghệ nhân Nguyễn Thị Lịch (phường Xoan An Thái) tới nói chuyện và dạy lớp một làn điệu.',
+    gc:'Nghệ nhân tới theo thư mời của nhà trường, có mặt cả tiết. Lớp học ở phòng đa năng.',
+    log:[['27/8 10:32','Nguyễn Văn Hùng','✍ Bắt đầu ghi','Lưu lần đầu'],
+         ['27/8 11:14','Nguyễn Văn Hùng','✓ Kết thúc','']]}),
+
+ /* Tiết thứ hai của mạch 1 — HÔM NAY, chưa ghi: cặp có con số việc «hôm nay» ở sidebar. */
+ S({d:4,t:4,lop:'9A1',mon:'Nội dung giáo dục địa phương',phan:'P1',phong:'P.302',
+    gv:'hung',gvg:'hung',ng:'giaidoan',giaidoan:'tuần 1 – tuần 12',tt:'chua'}),
+
+ /* PC2 · B song song — 9A2 HĐTN: thầy Hùng CHỈ giữ mạch «Hoạt động giáo dục theo chủ đề»,
+    KHÔNG chủ trì cặp ⇒ cặp này KHÔNG có dòng của thầy ở PC, nhưng vẫn phải có mặt ở sidebar.
+    Nhánh B ⇒ phần cố định cả năm ⇒ KHÔNG có nhãn nguồn nào. */
+ S({d:1,t:6,lop:'9A2',mon:'Hoạt động trải nghiệm - hướng nghiệp',phan:'P3',phong:'P.303',
+    gv:'hung',gvg:'hung',ng:'tkb',tt:'ghi',ky:absW(2,1,812),muc:'Khá',
+    nd:'Chủ đề 1 — Em với nhà trường: xây dựng nội quy nhóm lớp và cam kết thực hiện.',
+    log:[['25/8 13:32','Nguyễn Văn Hùng','✍ Bắt đầu ghi','Lưu lần đầu'],
+         ['25/8 14:14','Nguyễn Văn Hùng','✓ Kết thúc','']]}),
+ S({d:4,t:8,lop:'9A2',mon:'Hoạt động trải nghiệm - hướng nghiệp',phan:'P3',phong:'P.303',
+    gv:'hung',gvg:'hung',ng:'tkb',tt:'chua'})
 );
 /* ===== TUAN 1 (17/8 - 22/8) — de chung minh vi sao PHAI lui tuan duoc ===== */
 SO.push(
@@ -721,7 +853,21 @@ SO.push(
     log:[['20/8 07:52','Nguyễn Văn Hùng','✍ Bắt đầu ghi','Lưu lần đầu'],['20/8 08:33','Nguyễn Văn Hùng','✓ Kết thúc','']]}),
  S({w:1,d:4,t:1,lop:'9B1',mon:'Vật lí',phong:'B.101',gv:'hung',gvg:'hung',ng:'tkb',
     tt:'ghi',ky:absW(1,4,425),nd:'Bài 1 — Chuyển động cơ học',muc:'Tốt',
-    log:[['21/8 07:05','Nguyễn Văn Hùng','✍ Bắt đầu ghi','Lưu lần đầu'],['21/8 07:44','Nguyễn Văn Hùng','✓ Kết thúc','']]})
+    log:[['21/8 07:05','Nguyễn Văn Hùng','✍ Bắt đầu ghi','Lưu lần đầu'],['21/8 07:44','Nguyễn Văn Hùng','✓ Kết thúc','']]}),
+
+ /* ══ PC6 · BÀN GIAO — HDPC ⑥ «M4.7 biết dòng Bàn giao KHÔNG phải dạy thay» ══════
+    Mạch «Hoạt động giáo dục theo chủ đề» của 9A2 do cô Ngân giữ đến hết tuần 1, bàn giao
+    cho thầy Hùng từ tuần 2. Phép thử của M2.2 là một phép thử PHỦ ĐỊNH:
+      • tiết tuần 1 (cô Ngân) và tiết tuần 2 (thầy Hùng) đều có `gvg === gv`
+        ⇒ 🛑 KHÔNG tiết nào mang nhãn `🔁 Dạy thay` — bàn giao là đổi PHÂN CÔNG,
+          không phải thay người một buổi, và nó KHÔNG vào chỗ dạy thay của bảng công;
+      • khối «Lần trước dạy đến đâu» của thầy Hùng vẫn lấy đúng tiết của CÙNG PHẦN
+        do người trước dạy — mạch nội dung chạy tiếp, không đứt. */
+ S({w:1,d:1,t:6,lop:'9A2',mon:'Hoạt động trải nghiệm - hướng nghiệp',phan:'P3',phong:'P.303',
+    gv:'ngan',gvg:'ngan',ng:'tkb',tt:'ghi',ky:absW(1,1,812),muc:'Tốt',
+    nd:'Chủ đề 1 — Em với nhà trường: nhận diện nội quy và không gian học tập của lớp.',
+    log:[['18/8 13:32','Lý Thu Ngân','✍ Bắt đầu ghi','Lưu lần đầu'],
+         ['18/8 14:14','Lý Thu Ngân','✓ Kết thúc','']]})
 );
 /* tuan 1 cua lop 9A2 — de tab Theo doi ne nep co du lieu tuan truoc.
    (16/9) gio luu lan dau lay theo DUNG tiet — ban truoc go so co dinh 421 cho moi tiet nen tiet 4 · 5 hien nhan sai */
@@ -887,8 +1033,39 @@ function nhanGhi(x){
  if(x.ky < bd-CFG.truocGhi) return ['⏱ Ghi trước giờ tiết','w'];
  return null;
 }
-/* SI SO CO MAT = dan xuat, khong co o nhap tay */
-const coMat=x=>x.ss - x.vangDN.length - x.bd.length;
+/* ===== GY18-H1 · TIET DAU CUA BUOI · SI SO DAN XUAT =====
+   Khung gio: tiet 1-5 buoi sang, tiet 6-8 buoi chieu (bang GIO o dau tep). */
+const BUOI=t=>t<=5?'sang':'chieu';
+const BUOITEN={sang:'buổi sáng',chieu:'buổi chiều'};
+/* TIET DAU cua mot buoi = DAN XUAT tu lich (M4.7): tiet co thu tu NHO NHAT cua chinh lop do trong buoi do,
+   tinh ca tiet cua giao vien khac. Khong ai khai tay, khong o cau hinh. Tiet Huy khong tinh — khong ai day. */
+function tietDauBuoi(lop,w,d,buoi){
+ const ts=SO.filter(y=>y.lop===lop&&y.w===w&&y.d===d&&y.tt!=='huy'&&BUOI(y.t)===buoi).map(y=>y.t);
+ return ts.length?Math.min.apply(null,ts):null;
+}
+const laTietDau=x=>x.tt!=='huy'&&tietDauBuoi(x.lop,x.w,x.d,BUOI(x.t))===x.t;
+/* SI SO CO MAT = dan xuat, khong co o nhap tay. BA nguon theo thu tu uu tien:
+   ban CHOT cua GVCN (M2.9/T2) > o xac nhan cua CHINH tiet nay (tam tinh) > chua co can cu (khong doan). */
+function siSo(x){
+ if(x.ddChot) return {n:x.ss-x.vangDN.length-x.bd.length,ng:'chot',vang:x.vangDN.length};
+ if(x.xn)     return {n:x.ss-(x.xn.du?0:x.xn.ds.length)-x.bd.length,ng:'xn',vang:x.xn.du?0:x.xn.ds.length};
+ return {n:null,ng:'khong',vang:0};
+}
+const coMat=x=>{const s=siSo(x); return s.n==null?'—':s.n};
+/* BA trang thai phan biet duoc cua mot dong so (§4.1.2 — truoc day chi co "trong" va "khong trong") */
+const xnTT=x=>!x.xn?'chua':(x.xn.du?'du':'vang');
+const xnNhan=x=>({chua:['— chưa xác nhận sĩ số','n'],du:['✓ Lớp đủ','o'],
+ vang:['⚠ '+((x.xn&&x.xn.ds)?x.xn.ds.length:0)+' em vắng','w']})[xnTT(x)];
+/* GVCN DA chot ma xac nhan cua tiet noi khac -> KHONG doi ben nao, chi neu ra.
+   Ben M2.9 viec nay hien thanh DE NGHI DINH CHINH — GVCN quyet. */
+function lechXN(x){
+ if(!x.ddChot||!x.xn) return null;
+ const vangChot=x.vangDN.map(v=>String(v[0]));
+ const vangXN=x.xn.du?[]:x.xn.ds.map(z=>String(z[0]));
+ const them=vangXN.filter(h=>vangChot.indexOf(h)<0);       /* tiet bao vang · ban chot khong co */
+ const bot=vangChot.filter(h=>vangXN.indexOf(h)<0);        /* ban chot bao vang · tiet khong neu */
+ return (them.length||bot.length)?{them:them,bot:bot}:null;
+}
 /* cap hoc suy tu khoi cua lop */
 const capHoc=lop=>Number(lop[0])>=10?'THPT':'THCS';
 const batYThuc=lop=>CFG.ythuc[capHoc(lop)==='TH'?'TH':'THCS'];
@@ -918,14 +1095,21 @@ function tabs(){
    Đơn vị đổi theo tab: Ghi sổ = Lớp × Môn của tôi · Nề nếp = Lớp · Chờ tôi duyệt = hàng đợi · ⚙ = ẩn.
    Danh sách DỰNG TỪ PHẠM VI (PC · LOP), con số việc mới đếm từ dòng sổ. */
 const khoiOf=l=>Number(l.match(/^\d+/)[0]);
-const mucOf=(lop,mon,viec,ghi)=>({lop,mon,dt:LOP[lop].dt,dtTen:DTTEN[LOP[lop].dt],khoi:khoiOf(lop),viec,ghi});
+const mucOf=(lop,mon,viec,ghi,ghiDT)=>({lop,mon,dt:LOP[lop].dt,dtTen:DTTEN[LOP[lop].dt],khoi:khoiOf(lop),viec,ghi,ghiDT});
 const V=(n,t,c)=>({n,t,c});
 /* cap cua toi = phan cong (M4.5) ∪ cap co tiet toi THUC day (day thay — M4.7). Quyen ghi so theo gv_id. */
 function capCuaToi(){
  const g=me(); if(!g) return [];
- const ds=PC.filter(p=>p[2]===g).map(p=>({lop:p[0],mon:p[1],ghi:''}));
- SO.filter(x=>x.gv===g&&!ds.some(p=>p.lop===x.lop&&p.mon===x.mon))
-   .forEach(x=>{if(!ds.some(p=>p.lop===x.lop&&p.mon===x.mon))ds.push({lop:x.lop,mon:x.mon,ghi:'Không có trong phân công của bạn — có tiết bạn dạy thay cho '+GV[x.gvg].n+' (M4.7)'})});
+ const ds=[], co=(l,m)=>ds.some(p=>p.lop===l&&p.mon===m);
+ PC.filter(p=>p[2]===g).forEach(p=>{if(!co(p[0],p[1]))ds.push({lop:p[0],mon:p[1],ghi:''})});
+ /* GDDP · HDPC ⑥ — cặp tôi CHỈ GIỮ MỘT PHẦN: dòng cặp ở PC mang tên người CHỦ TRÌ, không
+    phải tên tôi, nên lọc theo PC là MẤT LỚP. Đơn vị phân công nay là (lop, mon, phan). */
+ PCPHAN.filter(p=>p[3]===g).forEach(p=>{if(!co(p[0],p[1]))ds.push({lop:p[0],mon:p[1],ghi:''})});
+ SO.filter(x=>x.gv===g&&!co(x.lop,x.mon))
+   .forEach(x=>{if(!co(x.lop,x.mon))ds.push({lop:x.lop,mon:x.mon,ghiDT:'Không có trong phân công của bạn — có tiết bạn dạy thay cho '+GV[x.gvg].n+' (M4.7)'})});
+ /* `ghi` = chú giải dòng sidebar (khuôn dùng làm title) — gộp cả hai câu.
+    `ghiDT` giữ riêng để dải phạm vi bên phải KHÔNG in lại câu về phần hai lần. */
+ ds.forEach(p=>{p.dai=daiPhan(p.lop,p.mon,g); p.ghi=[p.dai,p.ghiDT].filter(Boolean).join(' · ')});
  return ds;
 }
 /* lop trong pham vi cua tab Theo doi ne nep */
@@ -942,8 +1126,10 @@ function sblO(){
  if(tab==='cfg') return {che:'an'};
  if(tab==='ghi'&&r.gt){          /* Giam thi · PHT_DT: hang doi tiet bi huy — dung o «Tat ca», chon lop = loc */
   const H=scopeAll().filter(x=>x.tt==='huy');
-  return {che:'lop',tieuDe:'Lớp',hangDoi:{nhan:'Tất cả lớp · '+DTTEN[r.dtLock]},
-   phamVi:'Tiết bị hủy trong '+esc(DTTEN[r.dtLock])+' — chọn lớp là lọc',
+  /* vai Du quyen (demo) khong khoa diem truong nao — truoc day in ra "undefined" o day */
+  const dtN=(r.dtLock&&DTTEN[r.dtLock])?DTTEN[r.dtLock]:'toàn trường';
+  return {che:'lop',tieuDe:'Lớp',hangDoi:{nhan:'Tất cả lớp · '+dtN},
+   phamVi:'Tiết bị hủy trong '+esc(dtN)+' — chọn lớp là lọc',
    muc:lopPhamVi().map(l=>mucOf(l,null,[V(H.filter(x=>x.lop===l&&!x.ghichuGT).length,'chưa ghi chú','r'),
      V(H.filter(x=>x.lop===l&&x.w===curW).length,'tiết hủy','n')]))};
  }
@@ -954,7 +1140,7 @@ function sblO(){
     V(dem(p,x=>ttSo(x).k==='quagio'),'chưa ghi','r'),
     V(dem(p,x=>ttSo(x).k==='dang'),'ghi dở','w'),
     V(dem(p,x=>ttSo(x).k==='chodn'),'chờ duyệt','b'),
-    V(dem(p,x=>x.w===TUANNAY&&x.d===HOMNAY&&ttSo(x).k==='chua'),'hôm nay','o')],p.ghi));
+    V(dem(p,x=>x.w===TUANNAY&&x.d===HOMNAY&&ttSo(x).k==='chua'),'hôm nay','o')],p.ghi,p.ghiDT));
   /* viec gap nhat: dang ghi do → qua gio chua ghi → tiet hom nay chua ghi */
   const gap=['dang','quagio'].map(k=>mine.filter(x=>ttSo(x).k===k).sort((a,b)=>absW(a.w,a.d,a.t)-absW(b.w,b.d,b.t))[0]).find(Boolean)
     ||mine.find(x=>x.w===TUANNAY&&x.d===HOMNAY&&ttSo(x).k==='chua');
@@ -982,6 +1168,17 @@ function theoTiet(x){
  const o=SBL.o||{};
  if(o.hangDoi&&SBL.tatCa) return;           /* hang doi dang o «Tat ca» thi giu nguyen — khong tu loc */
  SBL.tatCa=false; SBL.lop=x.lop; SBL.mon=o.che==='lopmon'?x.mon:null;
+}
+
+/* ══ GDDP — BA NHÃN NGUỒN (§2.6.1). Trả [chữ, màu, chú giải] hoặc null.
+   🛑 `theo_giai_doan` KHÁC `day_thay`: hai thứ chảy vào HAI CHỖ khác nhau của bảng lương
+   (HDPC ⑦), nên KHÔNG gộp thành một nhãn chung. Môn một phần ⇒ chỉ còn nhánh dạy thay,
+   y hệt hôm nay (PC1). */
+function nhanNguon(x){
+ if(x.gvg!==x.gv) return ['🔁 Dạy thay','v','Bạn dạy thay '+GV[x.gvg].n+' — tiết này vào chỗ DẠY THAY của bảng công, không vào định mức của bạn'];
+ if(x.ng==='giaidoan') return ['⏱ Theo giai đoạn','b','Bạn dạy phần này theo KẾ HOẠCH'
+   +(x.giaidoan?' ('+x.giaidoan+')':'')+' — tiết nằm trong định mức của chính bạn, không phải việc phát sinh'];
+ return null;
 }
 
 /* ========== DAI PHAM VI ========== */
@@ -1044,7 +1241,9 @@ function viewGhi(){
  const n=k=>hn.filter(x=>ttSo(x).k===k).length;
  const capHd = r.gt ? (C.tatCa?'':`<div class="caphd"><h2>Lớp ${esc(C.lop)}</h2><span>${DTTEN[LOP[C.lop].dt]} · đang lọc hàng đợi theo lớp này</span></div>`)
    : C.lop?`<div class="caphd"><h2>${esc(C.lop)} · ${esc(C.mon)}</h2><span>${DTTEN[LOP[C.lop].dt]}${
-     C.muc&&C.muc.ghi?' · <span style="color:var(--violet)">'+esc(C.muc.ghi)+'</span>':''}</span></div>`:'';
+     C.muc&&C.muc.ghiDT?' · <span style="color:var(--violet)">'+esc(C.muc.ghiDT)+'</span>':''}</span>${
+     coPhan(C.mon)?`<div class="phandai">🧩 <b>${esc(PHAN[C.mon].ten)}</b> <span>${esc(PHAN[C.mon].cc)}</span>
+       <div>${esc(daiPhan(C.lop,C.mon,me())||'Bạn không giữ phần nào của môn này ở lớp này.')}</div></div>`:''}</div>`:'';
  const bang = r.gt ? `<div class="sumbar">
    <div class="it r"><b>${all.length}</b>tiết bị hủy tuần này</div>
    <div class="it ${all.filter(x=>!x.ghichuGT).length?'w':''}"><b>${all.filter(x=>!x.ghichuGT).length}</b>chưa có ghi chú</div>
@@ -1133,11 +1332,14 @@ function trow(x){
  return `<div class="trow ${x.tt==='huy'?'huy':''} ${cur===x.id?'on':''}" data-so="${x.id}">
   <div class="tm"><b>Tiết ${x.t}</b>${khung(x.t)}</div>
   <div class="bd"><b>${esc(x.mon)} · ${esc(x.lop)}</b>
+   ${x.phan&&coPhan(x.mon)?`<div class="phanln">🧩 phần ${esc(tenPhan(x.mon,x.phan))}</div>`:''}
    <div class="sub">Phòng ${esc(x.phong)} · ${DTTEN[LOP[x.lop].dt]}${khac?' · '+esc(GV[x.gv].n):''}${
      x.gvg!==x.gv?' · <span style="color:var(--violet)">↔ dạy thay cho '+esc(GV[x.gvg].n)+'</span>':''}</div></div>
   <div class="rt">
+   ${(ng=>ng?`<span class="st2 ${ng[1]}" title="${esc(ng[2])}">${ng[0]}</span>`:'')(nhanNguon(x))}
    ${x.muc?`<span class="st2 ${x.muc==='Tốt'?'o':x.muc==='Khá'?'b':x.muc==='Yếu'?'r':'w'}">Ý thức: ${x.muc}</span>`:''}
    ${nk?`<span class="st2 ${nk[1]}">${nk[0]}</span>`:''}
+   ${x.tt!=='huy'?`<span class="st2 ${xnNhan(x)[1]}" title="Xác nhận sĩ số của tiết — GY18-H1">${xnNhan(x)[0]}</span>`:''}
    <span class="st2 ${s.c}" title="Ghi sổ">${s.t}</span>
    ${(s.k==='chua'||s.k==='quagio')&&x.gv===me()?`<button class="btn sm ${s.k==='quagio'?'d':'p'}" data-so2="${x.id}">✍ Ghi sổ</button>`:''}
    ${s.k==='dang'&&x.gv===me()?`<button class="btn sm" data-so2="${x.id}">✎ Tiếp tục ghi</button>`:''}</div></div>`;
@@ -1172,7 +1374,7 @@ function panelSo(){
  }
 
  return `<div class="panel"><div class="ph">
-   <div class="n"><h2>${esc(x.mon)} · Lớp ${esc(x.lop)}</h2>
+   <div class="n"><h2>${esc(x.mon)}${x.phan&&coPhan(x.mon)?' <i style="font-weight:500;font-style:normal;color:var(--violet)">· phần '+esc(tenPhan(x.mon,x.phan))+'</i>':''} · Lớp ${esc(x.lop)}</h2>
     <div class="m"><span class="pill">${DOW[x.d]} ${NGAYW(x.w,x.d)}</span>
      <span class="pill">Tiết ${x.t} · ${khung(x.t)}</span>
      <span class="pill">Phòng ${esc(x.phong)}</span>${x.truc?'<span class="pill">🖥 trực tuyến</span>':''}
@@ -1235,10 +1437,16 @@ function blkSo(x,s,laToi,moKhoa,suaDuoc,th){
 
   <div class="card"><div class="ch">Thông tin cố định <span class="sp"></span>
     <span style="font-weight:400;font-size:11px;color:var(--ink3)">bản chiếu chỉ đọc từ M4.7</span></div><div class="cb">
+   ${x.phan&&coPhan(x.mon)?`<div class="f"><div class="k">Phần</div><div class="v">${esc(tenPhan(x.mon,x.phan))}
+     ${(ng=>ng&&ng[0].charAt(0)==='⏱'?`<span class="st2 ${ng[1]}">${ng[0]}</span>
+       <span style="font-weight:400;font-size:11px;color:var(--ink3)">— ${esc(x.giaidoan||'')}</span>`:'')(nhanNguon(x))}
+     <div style="font-weight:400;font-size:11px;color:var(--ink3);margin-top:3px">
+       ${esc(PHAN[x.mon].ten)} · bản chụp tại lúc sinh tiết — M2.2 không tự tra lịch triển khai phần (M5.1 ⑤)</div></div></div>`:''}
    <div class="f"><div class="k">Giáo viên thực dạy</div><div class="v">${esc(GV[x.gv].n)}
      ${x.gvg!==x.gv?`<span class="st2 v">🔁 Dạy thay cho ${esc(GV[x.gvg].n)}</span>`:''}</div></div>
    <div class="f"><div class="k">Nội dung dự kiến</div><div class="v" style="font-weight:400">
-     Bài 4 — Định luật về công <span class="rolnk" data-x="kh">🔗 Kế hoạch giảng dạy (M5.1)</span></div></div>
+     ${x.phan&&coPhan(x.mon)?'Theo bảng chia tiết của <b>phần '+esc(tenPhan(x.mon,x.phan))+'</b>':'Bài 4 — Định luật về công'}
+     <span class="rolnk" data-x="kh">🔗 Kế hoạch giảng dạy (M5.1)</span></div></div>
    <div class="f"><div class="k">Giờ lưu lần đầu</div><div class="v">${mocGio(x.ky)}</div></div>
    <div class="f"><div class="k">Giờ ✓ Kết thúc</div><div class="v">${mocGio(x.gkt)}
      <span style="font-weight:400;font-size:11px;color:var(--ink3)">— chỉ số nề nếp, không chảy sang M4.9</span></div></div>
@@ -1252,12 +1460,7 @@ function blkSo(x,s,laToi,moKhoa,suaDuoc,th){
      <textarea class="fldi ${moKhoa&&th.some(t=>t[0]==='nd')?'err':''}" id="fnd" rows="2" ${dis}
        placeholder="Bài, mục đã dạy">${esc(x.nd||'')}</textarea></div>
 
-    <div class="fld"><label>Sĩ số có mặt</label>
-     <div class="roblk"><b style="font-size:19px;color:var(--ink)">${coMat(x)}</b> / ${x.ss}
-      &nbsp;— <b>con số DẪN XUẤT, không có ô nhập tay</b><br>
-      <span style="font-size:11.5px">${x.ss} sĩ số − ${x.vangDN.length} vắng đầu ngày − ${x.bd.length} biến động trong tiết.
-      Cho gõ đè một con số thì nó không khớp với danh sách học sinh vắng, phụ huynh của em vắng không nhận được
-      thông báo, và báo cáo chuyên cần lệch với sổ đầu bài vĩnh viễn.</span></div></div>
+    ${blkSiSo(x,moKhoa)}
 
     ${blkDiemDanh(x,moKhoa)}
 
@@ -1280,16 +1483,74 @@ function blkSo(x,s,laToi,moKhoa,suaDuoc,th){
   </div>`;
 }
 
+/* ===== GY18-H1 — O XAC NHAN SI SO CUA TIET =====
+   Khong phai o go so: hai nut, va nhanh "co em vang" BAT chon TEN. Khong co han nop — giao vien ghi so
+   buoi toi van hop le (moc chot 24h cua §8.6.1 khong doi). */
+function blkSiSo(x,moKhoa){
+ const s=siSo(x), tt=xnTT(x), td=laTietDau(x), b=BUOI(x.t), nh=xnNhan(x);
+ return `<div class="fld"><label>Sĩ số có mặt</label>
+  <div class="roblk"><b style="font-size:19px;color:var(--ink)">${s.n==null?'—':s.n}</b> / ${x.ss}
+   &nbsp;— <b>con số DẪN XUẤT, không có ô nhập tay</b><br>
+   <span style="font-size:11.5px">${
+    s.ng==='chot'?`${x.ss} sĩ số − ${x.vangDN.length} vắng đầu ngày <b>(bản chốt của GVCN — M2.9/T2)</b>
+      − ${x.bd.length} biến động trong tiết.`
+   :s.ng==='xn'?`GVCN <b>chưa chốt điểm danh đầu ngày</b>. Đang <b>tạm tính theo ô xác nhận của chính tiết này</b>:
+      ${x.ss} sĩ số − ${s.vang} em bạn xác nhận vắng − ${x.bd.length} biến động trong tiết.
+      GVCN chốt xong thì con số lấy theo <b>bản chốt</b>, không lấy theo ô này.`
+   :`<b>Chưa có căn cứ.</b> GVCN chưa chốt điểm danh đầu ngày và tiết này chưa xác nhận sĩ số —
+      hệ thống <b>không đoán</b> một con số. Xác nhận ngay dưới đây.`}
+    Cho gõ đè một con số thì nó không khớp với danh sách học sinh vắng, phụ huynh của em vắng không nhận được
+    thông báo, và báo cáo chuyên cần lệch với sổ đầu bài vĩnh viễn.</span></div>
+
+  <div class="xnbox ${tt}">
+   <div class="xnh">Xác nhận sĩ số của tiết <span class="st2 ${nh[1]}">${nh[0]}</span>
+    <span class="sp"></span><span class="xnhan">không có hạn — ghi sổ buổi tối vẫn hợp lệ</span></div>
+   ${moKhoa?`<div class="xnb">
+     <button class="btn ${tt==='du'?'p':''}" data-x="xndu">✓ Lớp đủ</button>
+     <button class="btn ${tt==='vang'?'p':''}" data-x="xnvang">Có em vắng → chọn tên</button>
+     ${tt!=='chua'?`<button class="btn d" data-x="xnbo">↩ Bỏ xác nhận</button>`:''}</div>`:''}
+   ${tt==='vang'?`<div class="xnds">${x.xn.ds.map(([h,ly])=>`<div class="dd"><div class="nm">
+     <b>${esc(HS[h]?HS[h].n:h)}</b><span>${esc(ly||'chưa rõ lý do — lý do là việc của gia đình với GVCN')}</span>
+     </div></div>`).join('')}</div>`:''}
+   ${x.xn?`<div class="xnhan">${esc(GV[x.xn.boi]?GV[x.xn.boi].n:x.xn.boi)} xác nhận lúc ${esc(x.xn.luc)}</div>`:''}
+   ${(()=>{const L=lechXN(x); if(!x.xn||!x.ddChot) return '';
+     return L?`<div class="warn" style="margin-top:9px">⚠ <b>Lệch với bản chốt điểm danh đầu ngày của GVCN.</b>
+        ${L.them.length?`Tiết này báo vắng <b>${L.them.map(h=>esc(HS[h]?HS[h].n:h)).join(', ')}</b> mà bản chốt
+          không có. `:''}${L.bot.length?`Bản chốt báo vắng <b>${L.bot.map(h=>esc(HS[h]?HS[h].n:h)).join(', ')}</b>
+          mà tiết này không nêu. `:''}
+        <br>Hệ thống <b>không đè bên nào</b>: ${laTietDau(x)
+         ?`bên M2.9/T2 việc này hiện thành <b>đề nghị đính chính</b> để <b>GVCN quyết</b>`
+         :`tiết này không phải tiết đầu buổi nên chỉ ghi nhận tại chỗ`}, sổ đầu bài <b>giữ nguyên</b>
+        điều bạn xác nhận. Sĩ số ở trên vẫn tính theo <b>bản chốt</b> — nguồn của con số phải có <b>một chủ</b>.</div>`
+      :`<div class="xnhan" style="margin-top:7px">✓ Khớp bản chốt điểm danh đầu ngày của GVCN.</div>`})()}
+   <div class="roblk" style="margin-top:9px">${td
+    ?`⧉ <b>Đây là tiết đầu ${BUOITEN[b]} của lớp ${esc(x.lop)}</b> — <b>dẫn xuất từ lịch M4.7</b>
+       (tiết có thứ tự nhỏ nhất của lớp trong buổi), không ai khai tay. Xác nhận ở đây chảy sang
+       <b>M2.9/T2</b> thành <b>gợi ý</b> điểm danh đầu ngày — <b>người chốt vẫn là giáo viên chủ nhiệm</b>.
+       Bạn <b>không</b> chấm điểm danh và <b>không</b> sửa được ô nào của GVCN.`
+    :`Tiết này <b>không phải tiết đầu ${BUOITEN[b]}</b> nên xác nhận chỉ dùng cho <b>chính dòng sổ này</b>,
+       không thành gợi ý ở M2.9. Một buổi <b>một nguồn gợi ý</b>: nhiều nguồn thì GVCN phải xử ba bốn con số
+       nói khác nhau — đúng thứ mô hình ba tầng sinh ra để tránh.`}
+    <br><b>Vì sao phải có ô này:</b> một dòng sổ để trống trước đây <b>không nói được</b>
+    <i>«thầy chưa nhập»</i> khác <i>«thầy xác nhận lớp đủ»</i> — nên bên M2.9 không biết có nên tin con số hay không.</div>
+  </div></div>`;
+}
+
 /* Lan truoc day den dau — giai nhu cau pho bien nhat ma KHONG can dieu huong tuan.
    Voi mon 1 tiet/tuan, tiet gan nhat LUON o tuan truoc. */
 function lanTruoc(x){
- const truoc=SO.filter(y=>y.lop===x.lop&&y.mon===x.mon&&y.nd&&
+ /* GDDP (v2.5) — môn CHIA PHẦN thì «lần trước» là của PHẦN, không của cặp: người dạy mạch
+    Văn hóa – lịch sử hỏi «mạch của tôi tới đâu», không hỏi «tiết gần nhất của lớp là gì».
+    Trả lời bằng tiết của phần khác là TRẢ LỜI SAI CÂU HỎI. 🛑 Không rơi xuống lấy phần khác. */
+ const theoPhan = !!(x.phan&&coPhan(x.mon));
+ const truoc=SO.filter(y=>y.lop===x.lop&&y.mon===x.mon&&y.nd&&(!theoPhan||y.phan===x.phan)&&
     absW(y.w,y.d,GIO[y.t][0]) < absW(x.w,x.d,GIO[x.t][0]))
    .sort((a,b)=>absW(b.w,b.d,GIO[b.t][0])-absW(a.w,a.d,GIO[a.t][0]))[0];
  if(!truoc) return `<div class="roblk" style="margin-bottom:11px">Chưa có tiết nào trước đó của
-   <b>${esc(x.mon)} lớp ${esc(x.lop)}</b> trong năm học này.</div>`;
+   <b>${esc(x.mon)}${theoPhan?' · phần '+esc(tenPhan(x.mon,x.phan)):''} lớp ${esc(x.lop)}</b> trong năm học này.${
+   theoPhan?' Danh sách <b>chỉ tính phần của bạn</b> — tiết của phần khác cùng môn không phải là lần trước của bạn.':''}</div>`;
  const cungTuan = truoc.w===x.w;
- return `<div class="lastles">📖 <b>Lần trước dạy đến đâu</b> — ${DOW[truoc.d]} ${NGAYW(truoc.w,truoc.d)}
+ return `<div class="lastles">📖 <b>Lần trước dạy đến đâu</b>${theoPhan?' <span class="st2 v">phần '+esc(tenPhan(x.mon,x.phan))+'</span>':''} — ${DOW[truoc.d]} ${NGAYW(truoc.w,truoc.d)}
    tiết ${truoc.t}${cungTuan?'':` <span class="st2 w">${esc(TUAN[truoc.w-1].lb)}</span>`}
    <button class="rolnk" data-goto="${truoc.id}">Mở dòng sổ đó</button>
    <div style="margin-top:4px">${esc(truoc.nd)}</div>
@@ -1723,9 +1984,57 @@ function act(a,id){
       toast('✕ Đã từ chối · dòng sổ về <b>Đã chốt</b> · đề nghị <b>vẫn tra cứu được</b> ở bộ lọc Bị từ chối');
     }]]);return}
 
+ /* ===== GY18-H1 — XAC NHAN SI SO CUA TIET ===== */
+ if(a==='xndu'){
+   const x=byId(cur);
+   x.xn={du:1,boi:me(),luc:NGAYW(TUANNAY,HOMNAY)+' '+hhmm(GIONAY)};
+   luuLan1(x);
+   x.log.push([NGAYW(TUANNAY,HOMNAY)+' '+hhmm(GIONAY),GV[me()].n,'✓ Xác nhận sĩ số','Lớp đủ']);
+   render();
+   toast('✓ Đã xác nhận <b>lớp đủ</b>'+(laTietDau(x)
+     ?' · tiết đầu '+BUOITEN[BUOI(x.t)]+' — đã thành <b>gợi ý</b> ở M2.9/T2, <b>GVCN chốt</b>':'')); return}
+
+ if(a==='xnbo'){const x=byId(cur); x.xn=null;
+   x.log.push([NGAYW(TUANNAY,HOMNAY)+' '+hhmm(GIONAY),GV[me()].n,'↩ Bỏ xác nhận sĩ số','']);
+   render(); toast('Đã bỏ — dòng sổ trở lại <b>chưa xác nhận sĩ số</b>'); return}
+
+ if(a==='xnvang'){
+   const x=byId(cur), ds=hsLop(x.lop);
+   const dang=(x.xn&&!x.xn.du)?x.xn.ds.map(z=>String(z[0])):[];
+   modal('Có em vắng — chọn tên · '+esc(x.mon)+' lớp '+esc(x.lop),
+    `<div class="info">Đây <b>không phải</b> ô chấm điểm danh. Bạn ghi nhận <b>ai không có mặt trong tiết của bạn</b>;
+      ${laTietDau(x)?`vì đây là <b>tiết đầu ${BUOITEN[BUOI(x.t)]}</b>, ghi nhận này sang M2.9/T2 thành <b>gợi ý</b>
+        để <b>giáo viên chủ nhiệm chốt</b> — bạn không đặt trạng thái cho em nào.`
+       :`tiết này không phải tiết đầu buổi nên ghi nhận chỉ dùng cho dòng sổ này.`}</div>
+     <div class="roblk" style="margin-bottom:10px"><b>Không chọn lý do ở đây.</b> Giáo viên bộ môn biết
+      <i>em không có mặt</i>, không biết <i>em có đơn hay không</i> — lý do là việc của gia đình với GVCN, và
+      <code>Vắng có phép</code> chỉ sinh từ đơn ở <b>M2.4</b>. Chọn lý do ở đây là đoán hộ người khác.</div>
+     <input class="fldi" id="xntim" placeholder="Tìm theo tên…" style="margin-bottom:8px">
+     <div id="xnlist" style="max-height:230px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:6px 9px">
+      ${ds.map(h=>`<label class="xnck" data-n="${esc(HS[h].n.toLowerCase())}">
+        <input type="checkbox" value="${h}" ${dang.indexOf(String(h))>=0?'checked':''}> ${esc(HS[h].n)}</label>`).join('')}
+     </div>
+     <div class="roblk" style="margin-top:9px">Sĩ số có mặt <b>tự tính lại</b> từ danh sách này —
+      không có ô nào để gõ một con số (§5.3).</div>`,
+    [['Hủy',0],['Xác nhận',()=>{
+      const ck=[...document.querySelectorAll('#xnlist input:checked')].map(z=>z.value);
+      if(!ck.length){toast('⛔ Chưa chọn em nào — nếu lớp đủ thì bấm <b>✓ Lớp đủ</b>, hai việc đó khác nhau');return}
+      x.xn={du:0,ds:ck.map(h=>[h,'']),boi:me(),luc:NGAYW(TUANNAY,HOMNAY)+' '+hhmm(GIONAY)};
+      luuLan1(x);
+      x.log.push([NGAYW(TUANNAY,HOMNAY)+' '+hhmm(GIONAY),GV[me()].n,'✓ Xác nhận sĩ số',
+        ck.length+' em vắng: '+ck.map(h=>HS[h].n).join(', ')]);
+      closeM(); render();
+      toast('✓ Đã xác nhận <b>'+ck.length+' em vắng</b>'+(laTietDau(x)
+        ?' · sang M2.9/T2 thành <b>gợi ý</b> cho đúng '+ck.length+' ô đó — <b>GVCN chốt</b>':''));
+    }]]);
+   const tim=$('#xntim');
+   if(tim) tim.oninput=()=>{const q=tim.value.toLowerCase().trim();
+     document.querySelectorAll('#xnlist .xnck').forEach(z=>z.style.display=(!q||z.dataset.n.indexOf(q)>=0)?'':'none')};
+   return}
+
  if(a==='addbd'){
-   const x=byId(cur), ds=Object.keys(HS).filter(h=>HS[h].lop===x.lop&&
-     !x.vangDN.some(v=>v[0]==+h)&&!x.bd.some(b=>b[0]==+h));
+   const x=byId(cur), ds=hsLop(x.lop).filter(h=>
+     !x.vangDN.some(v=>v[0]==h)&&!x.bd.some(b=>b[0]==h));
    modal('+ Thêm học sinh vắng phát sinh trong tiết',
     `<div class="info">Bản ghi này thuộc <b>NH2.2.1</b>, Menu chủ là <b>M2.9/T2</b> — widget ở đây là
       <b>ngoại lệ V7</b>, được duyệt vì bạn đang đứng lớp. Thêm xong <b>gửi thông báo ngay</b> cho
@@ -1739,7 +2048,7 @@ function act(a,id){
        <b>Không có ô nhập số học sinh</b> — sĩ số có mặt tự tính lại từ danh sách này.</div></div>`,
     [['Hủy',0],['+ Thêm',()=>{
       const h=$('#bdhs').value; if(!h){toast('⛔ Không còn học sinh nào để thêm');return}
-      x.bd.push([+h,$('#bdly').value,NGAYW(TUANNAY,HOMNAY)+' '+hhmm(GIONAY)]);
+      x.bd.push([h,$('#bdly').value,NGAYW(TUANNAY,HOMNAY)+' '+hhmm(GIONAY)]);
       x.log.push([NGAYW(TUANNAY,HOMNAY)+' '+hhmm(GIONAY),GV[me()].n,'+ Biến động điểm danh',
         HS[h].n+' — '+$('#bdly').value+' · đã báo GVCN và phụ huynh']);
       closeM(); render();
@@ -1749,7 +2058,7 @@ function act(a,id){
 
  if(a==='addkhen'||a==='addnhac'){
    const x=byId(cur), khen=a==='addkhen';
-   const ds=Object.keys(HS).filter(h=>HS[h].lop===x.lop);
+   const ds=hsLop(x.lop);
    modal(khen?'+ Ghi nhận học sinh được khen':'+ Ghi nhận học sinh bị nhắc nhở',
     `<div class="warn"><b>Đây là GHI NHẬN SỰ VIỆC trong tiết.</b>
       ${khen?'Muốn tuyên dương chính thức thì bấm <code>↗ M2.10</code> sau khi ghi.'
@@ -1763,8 +2072,8 @@ function act(a,id){
       <textarea class="fldi" id="svly" rows="2"></textarea></div>`,
     [['Hủy',0],['+ Ghi nhận',()=>{
       const ly=$('#svly').value.trim(); if(!ly){toast('⛔ Mô tả là bắt buộc');return}
-      if(khen) x.khen.push([+$('#svhs').value,ly]);
-      else x.nhac.push([+$('#svhs').value,$('#svhv').value,ly]);
+      if(khen) x.khen.push([$('#svhs').value,ly]);
+      else x.nhac.push([$('#svhs').value,$('#svhv').value,ly]);
       closeM(); render(); toast(khen?'✓ Đã ghi nhận vào sổ · muốn tuyên dương chính thức thì ↗ M2.10'
         :'✓ Đã ghi nhắc nhở vào sổ · mã '+esc(x.nhac[x.nhac.length-1][1])+' · phê bình / tự kiểm điểm do GVCN lập ở M2.7');
     }]]);return}

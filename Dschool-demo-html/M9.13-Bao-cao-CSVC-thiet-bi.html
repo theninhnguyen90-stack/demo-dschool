@@ -1,119 +1,72 @@
-<!DOCTYPE html>
-<html lang="vi"><head><meta charset="utf-8">
-<title>M10.7 — Nhật ký hệ thống (Audit log)</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font:13px/1.45 "Segoe UI",Roboto,Arial,sans-serif;color:#1f2933;background:#eef1f5}
-.wrap{width:1360px;margin:0 auto;background:#fff;min-height:900px;position:relative}
-/* ── thanh vai trò demo ── */
-.rolebar{background:#1f2933;color:#cbd5e1;padding:6px 14px;display:flex;align-items:center;gap:10px;font-size:12px}
-.rolebar b{color:#fff}
-.rolebar select{font:12px inherit;padding:2px 6px;border-radius:4px;border:1px solid #475569;background:#111827;color:#e5e7eb}
-.rolebar .sc{margin-left:auto;color:#94a3b8}
-/* ── header ── */
-.hd{padding:10px 14px 0;border-bottom:1px solid #e3e8ef}
-.hd h1{font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px}
-.ro{background:#fef3c7;border:1px solid #fcd34d;color:#92400e;font-size:11px;font-weight:600;padding:1px 7px;border-radius:10px}
-.sub{color:#64748b;font-size:12px;margin:3px 0 7px}
-.sub a{color:#1d4ed8;text-decoration:none}
-.tabs{display:flex;gap:2px}
-.tabs button{font:13px inherit;border:1px solid #e3e8ef;border-bottom:none;background:#f6f8fa;color:#475569;padding:6px 14px;border-radius:6px 6px 0 0;cursor:pointer}
-.tabs button.on{background:#fff;color:#0f172a;font-weight:600;box-shadow:inset 0 2px 0 #1d4ed8}
-.tabs button:disabled{color:#cbd5e1;cursor:not-allowed;background:#f1f5f9}
-/* ── bộ lọc ── */
-.fl{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:7px 14px;background:#f8fafc;border-bottom:1px solid #e3e8ef;font-size:12px}
-.fl input[type=text]{width:190px}
-.fl input,.fl select{font:12px inherit;padding:3px 6px;border:1px solid #cbd5e1;border-radius:4px;background:#fff}
-.fl label{display:inline-flex;align-items:center;gap:4px;color:#475569}
-.fl .rs{margin-left:auto;color:#64748b}
-.btn{font:12px inherit;padding:3px 9px;border:1px solid #cbd5e1;background:#fff;border-radius:4px;cursor:pointer;color:#334155}
-.btn:hover{background:#f1f5f9}
-.btn.p{background:#1d4ed8;border-color:#1d4ed8;color:#fff}
-.btn:disabled{opacity:.45;cursor:not-allowed}
-/* ── bảng ── */
-table{width:100%;border-collapse:collapse;font-size:12px}
-th{background:#f1f5f9;color:#475569;font-weight:600;text-align:left;padding:5px 8px;border-bottom:1px solid #e3e8ef;position:sticky;top:0}
-td{padding:5px 8px;border-bottom:1px solid #eef1f5;vertical-align:top}
-tbody tr:hover{background:#f8fafc;cursor:pointer}
-tbody tr.sel{background:#eff6ff}
-.mono{font-family:Consolas,monospace;font-size:11px;color:#475569}
-.who b{font-weight:600}
-.who span{color:#64748b;font-size:11px}
-.tag{display:inline-block;font-size:11px;padding:0 6px;border-radius:9px;border:1px solid;line-height:16px}
-.a-tao{color:#166534;border-color:#bbf7d0;background:#f0fdf4}
-.a-sua{color:#92400e;border-color:#fde68a;background:#fffbeb}
-.a-xoa{color:#991b1b;border-color:#fecaca;background:#fef2f2}
-.a-duyet{color:#3730a3;border-color:#c7d2fe;background:#eef2ff}
-.a-kyso{color:#6b21a8;border-color:#e9d5ff;background:#faf5ff}
-.a-nhap,.a-xuat{color:#155e75;border-color:#a5f3fc;background:#ecfeff}
-.a-cauhinh{color:#334155;border-color:#cbd5e1;background:#f1f5f9}
-.a-xem{color:#7c2d12;border-color:#fed7aa;background:#fff7ed}
-.m1{color:#94a3b8}.m2{color:#b45309;font-weight:600}.m3{color:#b91c1c;font-weight:700}
-.co{display:inline-block;background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-size:10px;padding:0 5px;border-radius:8px;margin-right:3px;line-height:15px}
-.ar{background:#f1f5f9;color:#64748b;font-size:10px;border:1px solid #cbd5e1;border-radius:8px;padding:0 5px}
-.empty{padding:34px;text-align:center;color:#94a3b8}
-/* ── panel ── */
-.ov{position:fixed;inset:0;background:rgba(15,23,42,.32);display:none}
-.ov.on{display:block}
-.pn{position:fixed;top:0;right:0;width:620px;height:100%;background:#fff;box-shadow:-4px 0 18px rgba(0,0,0,.18);display:none;flex-direction:column}
-.pn.on{display:flex}
-.pn header{padding:10px 14px;border-bottom:1px solid #e3e8ef;background:#f8fafc}
-.pn header h2{font-size:14px;font-weight:600}
-.pn header .x{position:absolute;top:8px;right:12px;font-size:20px;color:#94a3b8;cursor:pointer;background:none;border:none}
-.pn .bd{padding:12px 14px;overflow:auto;flex:1}
-.pn footer{padding:8px 14px;border-top:1px solid #e3e8ef;background:#f8fafc;display:flex;gap:8px}
-.kv{display:grid;grid-template-columns:130px 1fr;gap:3px 10px;font-size:12px;margin-bottom:10px}
-.kv dt{color:#64748b}
-.diff{width:100%;border:1px solid #e3e8ef;border-radius:5px;overflow:hidden;margin-bottom:10px}
-.diff table{font-size:12px}
-.diff th{background:#f8fafc}
-.old{color:#b91c1c;background:#fef2f2}
-.new{color:#166534;background:#f0fdf4}
-.note{border-left:3px solid;padding:6px 9px;margin-bottom:9px;font-size:12px;border-radius:0 4px 4px 0}
-.n-w{border-color:#f59e0b;background:#fffbeb;color:#92400e}
-.n-i{border-color:#3b82f6;background:#eff6ff;color:#1e40af}
-.n-d{border-color:#ef4444;background:#fef2f2;color:#991b1b}
-.lk{display:block;color:#1d4ed8;text-decoration:none;padding:4px 0;font-size:12px}
-.lk:hover{text-decoration:underline}
-.lk.off{color:#94a3b8;cursor:not-allowed;text-decoration:none}
-/* ── rà soát ── */
-.rr{border:1px solid #e3e8ef;border-radius:6px;margin:0 14px 9px;overflow:hidden}
-.rr>div:first-child{background:#f8fafc;padding:6px 10px;border-bottom:1px solid #e3e8ef;display:flex;align-items:center;gap:8px}
-.rr h3{font-size:13px;font-weight:600}
-.rr .th{color:#64748b;font-size:11px;font-weight:400}
-.rr .nk{margin-left:auto;font-size:11px;color:#64748b;font-style:italic;max-width:430px;text-align:right}
-.cnt{background:#1d4ed8;color:#fff;border-radius:9px;padding:0 7px;font-size:11px;line-height:16px}
-.cnt.z{background:#cbd5e1;color:#475569}
-/* ── toast ── */
-.tt{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#1f2933;color:#fff;padding:8px 16px;border-radius:6px;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.3);display:none;z-index:60;max-width:640px}
-.tt.on{display:block}
-
-/* ══════════════════════════════════════════════════════════════════════════
-   M10.7 — phần CSS RIÊNG của tab ③ «Báo cáo tuân thủ» · phiên `BCM9-2C`
-
-   Chép từ `M9.13-Bao-cao-CSVC-thiet-bi/style.css` — phần của BA tệp nền
-   `KB` · `PV` · `XU` (từ dải giải thích trở xuống) + khối biến màu `:root`.
-
-   🛑 BA SỬA ĐỔI CÓ CHỦ Ý, không phải quên chép:
-   ① bỏ phần VỎ của M9.13 (`*` `body` `h1` `.hdr` `.wrap` `.tabs` `.rolebar`
-      `.main` …) — M10.7 đã có vỏ riêng, chép vào là ĐÈ LÊN hai tab cũ;
-   ② `.ro` và `.empty` trùng tên với style.css của M10.7 ⇒ thu về `#v3`
-      (và `#kbMask` · `#xuMask` cho hai lớp phủ mà tệp nền tự dựng ngoài `#v3`);
-   ③ `.btn` và `button` cũng trùng ⇒ khai lại CÓ PHẠM VI ở cuối tệp.
-   ══════════════════════════════════════════════════════════════════════════ */
-
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M9.13 Báo cáo CSVC & thiết bị — Dschool</title>
+<style>*{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#f1f5f9;--surface:#fff;--line:#e2e8f0;--line2:#cbd5e1;
  --ink:#0f172a;--ink2:#475569;--ink3:#94a3b8;--brand:#1d4ed8;--brand-soft:#eff6ff;
  --red:#dc2626;--red-soft:#fef2f2;--amber:#d97706;--amber-soft:#fffbeb;
  --green:#059669;--green-soft:#ecfdf5;--violet:#7c3aed}
+body{font:14px/1.5 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font:inherit}
+code{font:12px/1.4 Consolas,monospace;background:#f1f5f9;padding:1px 4px;border-radius:4px}
+
+.hdr{height:56px;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:13px;padding:0 15px;position:sticky;top:0;z-index:40}
+.logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px}
+.logo .mark{width:28px;height:28px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px}
+.school{color:var(--ink2);font-size:12.5px;border-left:1px solid var(--line);padding-left:13px;max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sel{border:1px solid var(--line2);border-radius:7px;padding:5px 9px;font-size:12.5px;background:#fff}
+.sel:disabled{background:#f1f5f9;color:var(--ink2);cursor:not-allowed}
+.spacer{flex:1}
+.icobtn{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;position:relative;font-size:15px}
+.icobtn:hover{background:var(--bg)}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--violet);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700}
+.lockico{font-size:11px;color:var(--ink3)}
+
+.wrap{display:flex;min-height:calc(100vh - 56px)}
+.main{flex:1;padding:14px 18px 60px;min-width:0}
+.tophd{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+h1{font-size:19px;font-weight:700}
+.crumb{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink2);margin-bottom:9px;flex-wrap:wrap}
+.crumb b{color:var(--ink)}
+.pill{font-size:10.5px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--ink2)}
+
+.btn{border:1px solid var(--line2);background:#fff;border-radius:8px;padding:7px 12px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--bg)}
+.btn.p{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn.d{background:var(--red);color:#fff;border-color:var(--red)}
+.btn.xs{padding:3px 8px;font-size:11.5px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+.tabs{display:flex;gap:3px;border-bottom:2px solid var(--line);margin:12px 0 0;flex-wrap:wrap}
+.tab1{padding:9px 14px;font-size:13.5px;font-weight:600;color:var(--ink2);border-bottom:2px solid transparent;margin-bottom:-2px;display:flex;align-items:center;gap:7px}
+.tab1.on{color:var(--brand);border-bottom-color:var(--brand)}
+.tab1 .b{background:var(--bg);color:var(--ink3);font-size:10px;font-weight:700;padding:1px 7px;border-radius:9px}
+.tab1.on .b{background:var(--brand);color:#fff}
+
+.rolebar{background:#0f172a;color:#cbd5e1;padding:8px 15px;display:flex;align-items:center;gap:7px;font-size:12.5px;flex-wrap:wrap}
+.rolebar b{color:#fff}
+.rb{border:1px solid #334155;border-radius:999px;padding:3px 10px;font-size:12px;color:#cbd5e1}
+.rb:hover{background:#1e293b;color:#fff}
+.rb.on{background:#fff;color:#0f172a;border-color:#fff;font-weight:700}
+.ntg{border:1px solid #334155;border-radius:999px;padding:3px 10px;font-size:12px;color:#cbd5e1}
+.ntg.on{background:#fbbf24;color:#3b2a05;border-color:#fbbf24;font-weight:700}
+.simw{font-size:11.5px;color:#94a3b8;display:flex;align-items:center;gap:6px;margin-left:auto}
+
 /* ─────────── dải giải thích: giữ NGẮN, đếm vào 20% của nh9 §9.1 ─────────── */
 .canh{padding:8px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin:9px 0;display:block}
 .canh.w{background:var(--amber-soft);border:1px solid #fde68a;color:#92400e}
 .canh.r{background:var(--red-soft);border:1px solid #fecaca;color:#991b1b}
 .canh.b{background:var(--brand-soft);border:1px solid #bfdbfe;color:#1e40af}
-#v3 .ro{background:#f8fafc;border:1px solid var(--line);color:var(--ink2);padding:7px 11px;border-radius:9px;font-size:11.5px;margin:8px 0;line-height:1.55}
+.ro{background:#f8fafc;border:1px solid var(--line);color:var(--ink2);padding:7px 11px;border-radius:9px;font-size:11.5px;margin:8px 0;line-height:1.55}
 .dnote{background:#fffbeb;border:1px dashed #fbbf24;color:#78350f;padding:8px 11px;border-radius:9px;font-size:12px;line-height:1.6;margin:9px 0}
-#v3 .empty,#kbMask .empty,#xuMask .empty{padding:30px;text-align:center;color:var(--ink3);font-size:12.5px}
+.empty{padding:30px;text-align:center;color:var(--ink3);font-size:12.5px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(140px);background:#0f172a;color:#fff;padding:11px 17px;border-radius:9px;font-size:13px;z-index:90;transition:transform .22s;max-width:92vw;line-height:1.55}
+.toast.on{transform:translateX(-50%)}
+.toast code{background:#1e293b;color:#e2e8f0}
 
 /* ═══════════ PV — phạm vi và thời gian ═══════════ */
 .pvbar{display:flex;gap:7px;align-items:center;flex-wrap:wrap;padding:7px 0}
@@ -262,473 +215,37 @@ tbody tr.sel{background:#eff6ff}
 .xqt ul{margin:3px 0 7px 16px}
 .xqt li{margin-bottom:2px;line-height:1.5}
 .xvet{border-top:1px dashed var(--line);padding-top:6px;color:var(--ink3)}
+</style>
+</head>
+<body><script>/* sidebar da chuyen ve index.html — node an giu cho JS cu khong vo */
+(function(){var n=document.createElement("nav");n.id="side";n.style.display="none";document.documentElement.appendChild(n)})();</script>
 
-/* ─── ③ hai lớp trùng tên: khai lại TRONG PHẠM VI tab ③ và hai lớp phủ ─── */
-#v3 button,#kbMask button,#xuMask button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
-#v3 .btn,#kbMask .btn,#xuMask .btn{border:1px solid var(--line2);background:#fff;border-radius:8px;padding:7px 12px;font-size:13px;display:inline-flex;align-items:center;gap:6px;color:var(--ink)}
-#v3 .btn:hover,#kbMask .btn:hover,#xuMask .btn:hover{background:var(--bg)}
-#v3 .btn.p,#kbMask .btn.p,#xuMask .btn.p{background:var(--brand);color:#fff;border-color:var(--brand)}
-#v3 .btn.d,#kbMask .btn.d,#xuMask .btn.d{background:var(--red);color:#fff;border-color:var(--red)}
-#v3 .btn:disabled,#xuMask .btn:disabled{opacity:.4;cursor:not-allowed}
 
-/* ─── riêng tab ③ — hai khối của một báo cáo tuân thủ ─── */
-#v3{padding:12px 14px 60px}
-#v3 .khoi{margin:16px 0 22px}
-#v3 .khoih{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:700;margin-bottom:2px;flex-wrap:wrap}
-#v3 .khoibc{font-size:10px;font-weight:800;letter-spacing:.05em;background:#ede9fe;color:#5b21b6;border-radius:5px;padding:2px 7px}
-#v3 .khoimo{font-size:12px;color:var(--ink2);line-height:1.6;margin-bottom:4px}
-#v3 .ranh{font-size:11.5px;color:var(--ink2);background:#f8fafc;border:1px solid var(--line);border-left:3px solid var(--violet);border-radius:0 9px 9px 0;padding:7px 11px;margin:9px 0;line-height:1.55}
-#v3 .phbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:8px 11px;margin:10px 0}
-#v3 .phn{font-size:12.5px;color:var(--ink2)}
-</style></head>
-<body><div class="wrap">
+<div class="rolebar" id="rolebar"></div>
 
-<div class="rolebar">
-  <b>DEMO</b> Chức danh đang xem:
-  <select id="role" onchange="doiVai()">
-    <option value="FULL">Đủ quyền (demo)</option>
-    <option value="IT">Quản trị hệ thống — toàn hệ thống</option>
-    <option value="HT">Hiệu trưởng — toàn trường</option>
-    <option value="PHT">Phó HT phụ trách điểm trường — Nam Hòa</option>
-    <option value="GVBM">Giáo viên bộ môn — chỉ nhật ký của tôi</option>
-  </select>
-  <span class="sc" id="scinfo"></span>
+<header class="hdr">
+  <div class="logo"><span class="mark">DS</span> Dschool</div>
+  <div class="school">THCS &amp; THPT Nguyễn Tất Thành</div>
+  <select class="sel" id="hnam"><option>Năm học 2026-2027</option><option>Năm học 2025-2026</option></select>
+  <select class="sel" id="hdt"></select>
+  <span class="lockico" id="dtlock"></span>
+  <div class="spacer"></div>
+  <button class="icobtn">🔔</button>
+  <button class="icobtn">💬</button>
+  <div class="avatar" id="ava">TĐ</div>
+</header>
+
+<div class="wrap">
+  <main class="main">
+    <div id="crumb"></div>
+    <div class="tophd"><h1 id="h1">Báo cáo CSVC &amp; thiết bị</h1><div class="spacer"></div><span id="topact"></span></div>
+    <div class="tabs" id="tabs"></div>
+    <div id="content"></div>
+  </main>
 </div>
 
-<div class="hd">
-  <h1>🧾 M10.7 — Nhật ký hệ thống <span class="ro">🔒 CHỈ ĐỌC TUYỆT ĐỐI</span></h1>
-  <div class="sub" id="sub"></div>
-  <div class="tabs">
-    <button id="tb1" onclick="doiTab(1)">Tra cứu</button>
-    <button id="tb2" onclick="doiTab(2)">Rà soát</button>
-    <button id="tb3" onclick="doiTab(3)">Báo cáo tuân thủ</button>
-  </div>
-</div>
-
-<!-- ══ TAB 1 ══ -->
-<div id="v1">
-  <div class="fl">
-    <input type="text" id="q" placeholder="Tìm người · đối tượng · nội dung…" oninput="ve()">
-    <select id="fu" onchange="ve()"></select>
-    <select id="fa" onchange="ve()"></select>
-    <select id="fm" onchange="ve()"></select>
-    <select id="ft" onchange="ve()">
-      <option value="7">7 ngày gần nhất</option>
-      <option value="30">30 ngày</option>
-      <option value="90">90 ngày</option>
-      <option value="0">Tất cả</option>
-    </select>
-    <select id="fl" onchange="ve()">
-      <option value="">Mọi mức bảo vệ</option>
-      <option value="1">① Thường</option>
-      <option value="2">② Quan trọng</option>
-      <option value="3">③ Bảo vệ cao</option>
-    </select>
-    <select id="fc" onchange="ve()">
-      <option value="">Mọi bản ghi</option>
-      <option value="*">⚑ Chỉ bản ghi có cờ</option>
-      <option value="tucap">⚑ tự cấp</option>
-      <option value="tuquyen">⚑ tự mở quyền</option>
-      <option value="boquakyso">⚑ bỏ qua ký số</option>
-      <option value="luingay">⚑ ghi lùi ngày</option>
-    </select>
-    <label><input type="checkbox" id="fz" onchange="ve()"> Bao gồm bản ghi đã archive</label>
-    <button class="btn" id="bx" onclick="xuat()">⬇ Xuất</button>
-    <span class="rs" id="rs"></span>
-  </div>
-  <div id="t1"></div>
-</div>
-
-<!-- ══ TAB 2 ══ -->
-<div id="v2" style="display:none;padding-top:10px">
-  <div class="note n-i" style="margin:0 14px 10px">
-    Danh sách này <b>không kết luận ai sai</b>. Nó chỉ nói <i>“chỗ này đáng nhìn”</i>. Ngưỡng đang là ngưỡng đề xuất, cần hiệu chỉnh sau vài tháng chạy thật.
-  </div>
-  <div id="t2"></div>
-</div>
-
-<!-- ══ TAB 3 — BÁO CÁO TUÂN THỦ (BCM9-2C) ══
-     Rỗng trong markup có chủ ý: tab này dựng bằng BỐN TỆP NỀN của nhóm 📊
-     (`CT` `KB` `PV` `XU`), và bốn tệp đó TỰ DỰNG DOM của chúng — `body.html`
-     không phải khai gì cho panel drill-down hay hộp thoại xuất. -->
-<div id="v3" style="display:none"></div>
-
-<div class="ov" id="ov" onclick="dong()"></div>
-<div class="pn" id="pn">
-  <header><h2 id="pt"></h2><button class="x" onclick="dong()">×</button></header>
-  <div class="bd" id="pb"></div>
-  <footer id="pf"></footer>
-</div>
-<div class="tt" id="tt"></div>
-</div>
-
-<script>
-/* ════════ DỮ LIỆU ════════ */
-const NGAY_NAY_LOG = new Date(2026,7,29);           // 29/08/2026
-const d = (m,day,h,mi)=>new Date(2026,m-1,day,h,mi);
-
-/* a: loại thao tác · m: mức bảo vệ (1/2/3) · f: cờ · kt: log kỹ thuật (chỉ IT thấy)
-   pd: có trường dữ liệu cá nhân trẻ em (Luật BVDLCN 91/2025) · ar: đã archive · dd: dữ liệu đã duyệt */
-let LOG = [
- {id:'L001',t:d(8,29,8,12),u:'Trịnh Thị Vân',cd:'Hiệu trưởng',dv:'Cơ sở chính',a:'duyet',m:2,
-  mn:'M7.5 Thu chi',ob:'Đề nghị thanh toán tháng 08/2026',ip:'118.70.12.19',tb:'Chrome · Windows',ss:'S-4471',
-  df:[['Trạng thái','Chờ duyệt','Đã duyệt'],['Người duyệt','—','Trịnh Thị Vân'],['Ghi chú duyệt','—','Đủ chứng từ']]},
-
- {id:'L002',t:d(8,29,7,48),u:'Lê Quốc Bình',cd:'Quản trị hệ thống',dv:'Cơ sở chính',a:'cauhinh',m:2,f:['tuquyen'],
-  mn:'M10.4 Chức danh & Phân quyền',ob:'Chức danh: Quản trị hệ thống',ip:'10.0.0.14',tb:'Edge · Windows',ss:'S-4468',
-  df:[['M7.5 Thu chi › tab ② Duyệt chi › Xem','—','✓ (Toàn trường)'],['M7.5 Thu chi › tab ② Duyệt chi › Duyệt','—','✓ (Toàn trường)']]},
-
- {id:'L003',t:d(8,28,22,41),u:'Trần Văn Hùng',cd:'Giáo viên bộ môn',dv:'Điểm trường Nam Hòa',a:'sua',m:1,
-  mn:'M5.2 Giáo án',ob:'Giáo án Toán 9 · Tuần 3',ip:'42.116.8.203',tb:'Chrome · Android',ss:'S-4402',
-  df:[['Nội dung','(bản 1 — 4 trang)','(bản 2 — 6 trang)'],['Trạng thái','Nháp','Chờ duyệt']]},
-
- {id:'L004',t:d(8,28,16,20),u:'Trịnh Thị Vân',cd:'Hiệu trưởng',dv:'Cơ sở chính',a:'kyso',m:3,
-  mn:'M2.9 Học bạ',ob:'Học bạ lớp 9A2 · 42 học sinh · năm học 2025–2026',ip:'118.70.12.19',tb:'Chrome · Windows',ss:'S-4390',
-  df:[['Trạng thái','Chờ ký','Đã ký số'],['Chứng thư số','—','CTS tổ chức · Viettel-CA · HSN 3A7F…'],['Thời điểm ký','—','28/08/2026 16:20:07']]},
-
- {id:'L005',t:d(8,28,14,32),u:'Đỗ Thị Lan',cd:'Văn thư',dv:'Cơ sở chính',a:'sua',m:1,pd:1,
-  mn:'M1.1 Hồ sơ học sinh',ob:'Nguyễn Minh Anh (9A2)',ip:'118.70.12.19',tb:'Chrome · Windows',ss:'S-4381',
-  df:[['Số điện thoại mẹ','0912345678','0912345699'],['Địa chỉ thường trú','12 Lê Lợi, P. Tân Bình','45 Nguyễn Trãi, P. Tân Bình'],
-      ['Lý do','—','Gia đình chuyển nhà, phụ huynh báo trực tiếp']]},
-
- {id:'L006',t:d(8,28,9,5),u:'Lê Quốc Bình',cd:'Quản trị hệ thống',dv:'Cơ sở chính',a:'xem',m:3,
-  mn:'M6.4 Camera',ob:'Camera lớp 9A2 · phát lại 27/08 13:00–14:00',ip:'10.0.0.14',tb:'Edge · Windows',ss:'S-4360',
-  df:[['Lý do khai báo','—','Xác minh phản ánh mất đồ dùng học tập']]},
-
- {id:'L007',t:d(8,27,20,14),u:'Nguyễn Thị Hà',cd:'Kế toán',dv:'Cơ sở chính',a:'tao',m:2,f:['boquakyso'],
-  mn:'M7.5 Thu chi',ob:'Phiếu thu PT-2608 · 12.400.000đ',ip:'118.70.12.19',tb:'Chrome · Windows',ss:'S-4344',
-  df:[['Số tiền','—','12.400.000đ'],['Ký số','(bắt buộc — nhóm A)','⚠ BỎ QUA — lý do: “CTS cá nhân hết hạn, xin ký bù sau”']]},
-
- {id:'L008',t:d(8,27,15,2),u:'Phạm Minh Đức',cd:'Tổ chức nhân sự',dv:'Cơ sở chính',a:'tao',m:2,f:['luingay'],
-  mn:'M4.3 Chức danh & Điểm công tác',ob:'Bổ nhiệm: Hoàng Thị Mai → Tổ trưởng tổ Ngữ văn',ip:'118.70.12.19',tb:'Chrome · Windows',ss:'S-4331',
-  df:[['Ngày hiệu lực','—','15/07/2026 (lùi 43 ngày so với ngày nhập)'],['Số quyết định','—','QĐ 118/QĐ-THCS'],['Tệp căn cứ','—','qd-118.pdf']]},
-
- {id:'L009',t:d(8,27,11,30),u:'Vũ Thị Hằng',cd:'Giáo viên chủ nhiệm',dv:'Điểm trường Nam Hòa',a:'xuat',m:3,
-  mn:'M8.3 Tin nhắn',ob:'Trích xuất hội thoại · PH Nguyễn Minh Anh · 01/08–27/08',ip:'42.116.8.203',tb:'Chrome · Windows',ss:'S-4318',
-  df:[['Mục đích','—','Cung cấp cho tổ tư vấn tâm lý theo đề nghị của phụ huynh'],['Số tin nhắn','—','86']]},
-
- {id:'L010',t:d(8,27,5,12),u:'Lê Quốc Bình',cd:'Quản trị hệ thống',dv:'Cơ sở chính',a:'cauhinh',m:2,kt:1,
-  mn:'M10.8 Đồng bộ CSDL ngành',ob:'Lịch đồng bộ tự động',ip:'10.0.0.14',tb:'Edge · Windows',ss:'S-4300',
-  df:[['Giờ chạy','02:00','05:00'],['Phạm vi','Hồ sơ HS','Hồ sơ HS + Hồ sơ GV']]},
-
- {id:'L011',t:d(8,26,17,40),u:'Hoàng Thị Mai',cd:'Tổ trưởng chuyên môn',dv:'Cơ sở chính',a:'duyet',m:2,
-  mn:'M5.2 Giáo án',ob:'Giáo án Ngữ văn 8 · Tuần 2 · Trần Văn Hùng',ip:'118.70.12.19',tb:'Chrome · Windows',ss:'S-4288',
-  df:[['Trạng thái','Chờ duyệt','Đã duyệt'],['Nhận xét','—','Đạt yêu cầu, bổ sung hoạt động nhóm ở HĐ3']]},
-
- {id:'L012',t:d(8,26,14,8),u:'Trần Văn Hùng',cd:'Giáo viên bộ môn',dv:'Điểm trường Nam Hòa',a:'sua',m:1,dd:1,
-  mn:'M2.5 Bảng điểm',ob:'9A2 · Toán · Giữa kỳ I',ip:'42.116.8.203',tb:'Chrome · Windows',ss:'S-4275',
-  df:[['Nguyễn Minh Anh · Điểm giữa kỳ','7.0','9.0'],['Trạng thái bảng điểm','Đã duyệt','Đã duyệt (sửa sau duyệt)'],
-      ['Lý do','—','Nhập nhầm cột, đã đối chiếu bài thi']]},
-
- {id:'L013',t:d(8,26,8,55),u:'Lê Quốc Bình',cd:'Quản trị hệ thống',dv:'Cơ sở chính',a:'tao',m:2,f:['tucap'],
-  mn:'M4.3 Chức danh & Điểm công tác',ob:'Bổ nhiệm: Lê Quốc Bình → Tổ chức nhân sự (kiêm nhiệm)',ip:'10.0.0.14',tb:'Edge · Windows',ss:'S-4266',
-  df:[['Chức danh','—','Tổ chức nhân sự'],['Từ ngày','—','26/08/2026'],['Số quyết định','—','QĐ 121/QĐ-THCS']]},
-
- {id:'L014',t:d(8,25,16,45),u:'Đỗ Thị Lan',cd:'Văn thư',dv:'Cơ sở chính',a:'xoa',m:1,
-  mn:'M1.1 Hồ sơ học sinh',ob:'Lê Văn Tú (7A1) — hồ sơ trùng',ip:'118.70.12.19',tb:'Chrome · Windows',ss:'S-4250',
-  df:[['Trạng thái','Đang học','Đã hủy (trùng hồ sơ với HS-7A1-0184)'],['Lý do','—','Nhập trùng khi tuyển sinh']],xoa:1},
-
- {id:'L015',t:d(8,25,10,12),u:'Nguyễn Thị Hà',cd:'Kế toán',dv:'Cơ sở chính',a:'nhap',m:1,
-  mn:'M7.5 Thu chi',ob:'Nhập sao kê ngân hàng 08/2026 · 214 dòng',ip:'118.70.12.19',tb:'Chrome · Windows',ss:'S-4241',
-  df:[['Dòng nhập thành công','—','208'],['Dòng bỏ qua','—','6 (không khớp mã học sinh)']]},
-
- {id:'L016',t:d(8,24,23,18),u:'Vũ Thị Hằng',cd:'Giáo viên chủ nhiệm',dv:'Điểm trường Nam Hòa',a:'tao',m:1,
-  mn:'M2.2 Sổ đầu bài',ob:'Sổ đầu bài 8A1 · tuần 34',ip:'42.116.8.203',tb:'Chrome · Android',ss:'S-4230',
-  df:[['Số tiết ghi','—','25']]},
-
- {id:'L017',t:d(8,24,15,30),u:'Trịnh Thị Vân',cd:'Hiệu trưởng',dv:'Cơ sở chính',a:'kyso',m:3,
-  mn:'M4.11 Chứng thư số',ob:'Quyết định 121/QĐ-THCS',ip:'118.70.12.19',tb:'Chrome · Windows',ss:'S-4222',
-  df:[['Trạng thái','Chờ ký','Đã ký số'],['Chứng thư số','—','CTS cá nhân · Trịnh Thị Vân · HSN 91C2…']]},
-
- {id:'L018',t:d(8,23,9,20),u:'Phạm Minh Đức',cd:'Tổ chức nhân sự',dv:'Cơ sở chính',a:'sua',m:1,
-  mn:'M4.1 Hồ sơ nhân sự',ob:'Trần Văn Hùng',ip:'118.70.12.19',tb:'Chrome · Windows',ss:'S-4210',
-  df:[['Trình độ đào tạo','Đại học','Thạc sĩ'],['Tệp minh chứng','—','bang-ths-hung.pdf']]},
-
- {id:'L019',t:d(8,22,14,0),u:'Lê Quốc Bình',cd:'Quản trị hệ thống',dv:'Cơ sở chính',a:'cauhinh',m:2,kt:1,
-  mn:'M10.5 Tài khoản & Bảo mật',ob:'Chính sách mật khẩu',ip:'10.0.0.14',tb:'Edge · Windows',ss:'S-4190',
-  df:[['Độ dài tối thiểu','8','10'],['Bắt buộc đổi lần đầu','Có','Có'],['Khóa sau số lần sai','10','5']]},
-
- {id:'L020',t:d(8,20,10,45),u:'Trần Văn Hùng',cd:'Giáo viên bộ môn',dv:'Điểm trường Nam Hòa',a:'xuat',m:2,pd:1,
-  mn:'M2.5 Bảng điểm',ob:'Bảng điểm 9A2 · Toán · HK I (42 dòng)',ip:'42.116.8.203',tb:'Chrome · Windows',ss:'S-4166',
-  df:[['Mục đích','—','Họp phụ huynh giữa kỳ'],['Định dạng','—','Excel']]},
-
- {id:'L021',t:d(8,18,8,30),u:'Lê Quốc Bình',cd:'Quản trị hệ thống',dv:'Cơ sở chính',a:'nhap',m:2,kt:1,
-  mn:'M10.8 Đồng bộ CSDL ngành',ob:'Pull dữ liệu CSDL ngành · đợt 08/2026',ip:'10.0.0.14',tb:'(tác vụ nền)',ss:'—',
-  df:[['Bản ghi nhận về','—','1.284'],['Chênh lệch cần xử lý','—','17']]},
-
- /* ── đã archive (ngoài 18 tháng) ── */
- {id:'L900',t:new Date(2024,8,12,10,15),u:'Đỗ Thị Lan',cd:'Văn thư',dv:'Cơ sở chính',a:'sua',m:1,ar:1,pd:1,
-  mn:'M1.1 Hồ sơ học sinh',ob:'Nguyễn Minh Anh (7A2 — năm học 2024–2025)',ip:'118.70.12.19',tb:'Chrome · Windows',ss:'S-1102',
-  df:[['Họ tên cha','Nguyễn Văn A','Nguyễn Văn An'],['Lý do','—','Sai chính tả theo giấy khai sinh']]},
- {id:'L901',t:new Date(2024,5,3,14,40),u:'Trần Văn Hùng',cd:'Giáo viên bộ môn',dv:'Điểm trường Nam Hòa',a:'tao',m:1,ar:1,
-  mn:'M5.2 Giáo án',ob:'Giáo án Toán 7 · Tuần 30',ip:'42.116.8.203',tb:'Chrome · Windows',ss:'S-0980',df:[['Trạng thái','—','Nháp']]},
- {id:'L902',t:new Date(2024,2,20,9,10),u:'Trịnh Thị Vân',cd:'Phó Hiệu trưởng',dv:'Cơ sở chính',a:'duyet',m:2,ar:0,
-  mn:'M5.1 Kế hoạch giảng dạy',ob:'KHGD tổ Toán–Tin · HK II 2023–2024',ip:'118.70.12.19',tb:'Chrome · Windows',ss:'S-0871',
-  df:[['Trạng thái','Chờ duyệt','Đã duyệt']]}
-];
-
-/* 12 lượt xuất của Văn thư trong 7 ngày → vượt ngưỡng 10 ở tab ② */
-const XOBJ=['Danh sách HS khối 6','Danh sách HS khối 7','Danh sách HS khối 8','Danh sách HS khối 9',
- 'Danh sách HS diện chính sách','Danh sách HS bán trú','Sổ đăng bộ khối 6','Sổ đăng bộ khối 9',
- 'Danh bạ liên hệ phụ huynh 9A2','Danh bạ liên hệ phụ huynh 9A3','Hồ sơ HS chuyển đến 08/2026','Hồ sơ HS chuyển đi 08/2026'];
-const XMD=['Báo cáo Phòng GDĐT','Đối chiếu thu học phí','Chuẩn bị họp phụ huynh','Rà soát hồ sơ đầu năm'];
-XOBJ.forEach(function(o,k){
-  LOG.push({id:'X'+(k+1),t:d(8,23+Math.floor(k/2),8+(k%6)*2,10+k),u:'Đỗ Thị Lan',cd:'Văn thư',dv:'Cơ sở chính',
-   a:'xuat',m:2,pd:1,mn:'M1.1 Hồ sơ học sinh',ob:o+' ('+(60+k*17)+' bản ghi)',
-   ip:'118.70.12.19',tb:'Chrome · Windows',ss:'S-43'+(10+k),
-   df:[['Mục đích','—',XMD[k%4]],['Số bản ghi','—',String(60+k*17)],['Định dạng','—','Excel']]});
-});
-
-/* ════════ VAI TRÒ ════════ */
-const VAI={
- FULL:{ten:'Đủ quyền (demo)',   ng:'Nguyễn Quản Trị', sc:'hethong', tabs:['1','2'], xuat:1},
- IT  :{ten:'Quản trị hệ thống', ng:'Lê Quốc Bình',    sc:'hethong', tabs:['1','2'], xuat:1},
- HT  :{ten:'Hiệu trưởng',       ng:'Trịnh Thị Vân',   sc:'truong',  tabs:['1','2'], xuat:1},
- PHT :{ten:'Phó HT phụ trách điểm trường', ng:'Đặng Văn Sơn', sc:'chinhanh', dv:'Điểm trường Nam Hòa', tabs:['1'], xuat:1},
- GVBM:{ten:'Giáo viên bộ môn',  ng:'Trần Văn Hùng',   sc:'own', u:'Trần Văn Hùng', tabs:['1'], xuat:0}};
-const SCTEN={hethong:'Toàn hệ thống (gồm cả nhật ký kỹ thuật)',truong:'Toàn trường',
-             chinhanh:'Điểm trường Nam Hòa',own:'Của tôi — Trần Văn Hùng'};
-let vai='FULL', tab=1, chon=null;
-const R=()=>VAI[vai];
-
-/* ════════ NHÃN ════════ */
-const ACT={tao:'Tạo',sua:'Sửa',xoa:'Xóa',duyet:'Duyệt',kyso:'Ký số',nhap:'Nhập',xuat:'Xuất',cauhinh:'Cấu hình',xem:'Xem (bảo vệ cao)'};
-const COTEN={tucap:'⚑ tự cấp',tuquyen:'⚑ tự mở quyền',boquakyso:'⚑ bỏ qua ký số',luingay:'⚑ ghi lùi ngày'};
-const COGOC={tucap:'M4.3',tuquyen:'M10.4',boquakyso:'Ký số Option (nhóm A)',luingay:'M4.3'};
-const MUCTEN={1:'① Thường',2:'② Quan trọng',3:'③ Bảo vệ cao'};
-const p2L=n=>(n<10?'0':'')+n;
-const fmt=t=>p2L(t.getDate())+'/'+p2L(t.getMonth()+1)+'/'+t.getFullYear()+' '+p2L(t.getHours())+':'+p2L(t.getMinutes());
-const escL=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-const ngay=t=>Math.floor((NGAY_NAY_LOG-new Date(t.getFullYear(),t.getMonth(),t.getDate()))/86400000);
-
-/* ════════ PHẠM VI = RÀNG BUỘC DỮ LIỆU ════════ */
-function trongPhamVi(r){
-  const R0=R();
-  if(R0.sc==='own')      return r.u===R0.u;
-  if(R0.sc==='chinhanh') return r.dv===R0.dv && !r.kt;
-  if(R0.sc==='truong')   return !r.kt;                 // HT không thấy log kỹ thuật thuần
-  return true;                                          // hethong: thấy tất cả
-}
-const nguon=()=>LOG.filter(trongPhamVi);
-
-/* ════════ META-AUDIT (§3.1) ════════ */
-let metaN=0;
-function ghiMeta(r){
-  metaN++;
-  const now=new Date(2026,7,29,9,20+metaN);
-  LOG.unshift({id:'M'+metaN,t:now,u:R().ng,cd:R().ten,dv:R().dv||'Cơ sở chính',a:'xem',m:3,meta:1,
-    mn:'M10.7 Nhật ký hệ thống',ob:'Xem bản ghi bảo vệ cao '+r.id+' — '+r.mn,
-    ip:'118.70.12.19',tb:'Chrome · Windows',ss:'S-4500',
-    df:[['Bản ghi được xem','—',r.id+' · '+r.mn+' · '+r.ob],['Người xem','—',R().ng+' — '+R().ten]]});
-  toast('⚠ Lượt xem này đã được ghi vào nhật ký (mức ③ — xem §3.1). Bản ghi <b>'+('M'+metaN)+'</b> vừa xuất hiện ở đầu danh sách.');
-}
-function toast(h){const e=document.getElementById('tt');e.innerHTML=h;e.classList.add('on');
-  clearTimeout(e._h);e._h=setTimeout(()=>e.classList.remove('on'),5200)}
-
-/* ════════ LỌC ════════ */
-function locHienTai(){
-  const q=document.getElementById('q').value.trim().toLowerCase(),
-        fu=document.getElementById('fu').value, fa=document.getElementById('fa').value,
-        fm=document.getElementById('fm').value, ft=+document.getElementById('ft').value,
-        fl=document.getElementById('fl').value, fc=document.getElementById('fc').value,
-        fz=document.getElementById('fz').checked;
-  return nguon().filter(function(r){
-    if(r.ar && !fz) return false;
-    if(ft && ngay(r.t)>ft) return false;
-    if(fu && r.u!==fu) return false;
-    if(fa && r.a!==fa) return false;
-    if(fm && r.mn!==fm) return false;
-    if(fl && String(r.m)!==fl) return false;
-    if(fc==='*' && !(r.f&&r.f.length)) return false;
-    if(fc && fc!=='*' && !(r.f&&r.f.indexOf(fc)>=0)) return false;
-    if(q){
-      const s=(r.u+' '+r.ob+' '+r.mn+' '+(r.df||[]).map(x=>x.join(' ')).join(' ')).toLowerCase();
-      if(s.indexOf(q)<0) return false;
-    }
-    return true;
-  }).sort((a,b)=>b.t-a.t);
-}
-
-/* ════════ VẼ TAB 1 ════════ */
-function ve(){
-  const rows=locHienTai();
-  document.getElementById('rs').innerHTML=rows.length+' bản ghi';
-  if(!rows.length){
-    document.getElementById('t1').innerHTML='<div class="empty">Không có bản ghi nào khớp bộ lọc.<br>'+
-      '<span style="font-size:12px">Nếu đang tìm bản ghi cũ, bật <b>Bao gồm bản ghi đã archive</b> — archive không phải là xóa.</span></div>';
-    return;
-  }
-  let h='<table><thead><tr><th style="width:118px">Thời điểm</th><th style="width:175px">Người thao tác</th>'+
-        '<th style="width:88px">Thao tác</th><th style="width:290px">Đối tượng</th><th>Tóm tắt thay đổi</th>'+
-        '<th style="width:96px">Mức</th></tr></thead><tbody>';
-  rows.forEach(function(r){
-    const s=r.df&&r.df.length ? (r.df.length===1||r.df.length===2 ? r.df[0][0]+': '+r.df[0][1]+' → '+r.df[0][2] : r.df.length+' trường') : '—';
-    h+='<tr class="'+(chon===r.id?'sel':'')+'" onclick="mo(\''+r.id+'\')">'+
-       '<td class="mono">'+fmt(r.t)+(r.ar?' <span class="ar">archive</span>':'')+'</td>'+
-       '<td class="who"><b>'+escL(r.u)+'</b><br><span>'+escL(r.cd)+'</span></td>'+
-       '<td><span class="tag a-'+r.a+'">'+ACT[r.a]+'</span></td>'+
-       '<td>'+escL(r.mn)+'<br><span style="color:#64748b">'+escL(r.ob)+'</span></td>'+
-       '<td>'+(r.f||[]).map(c=>'<span class="co">'+COTEN[c]+'</span>').join('')+escL(s)+'</td>'+
-       '<td class="m'+r.m+'">'+MUCTEN[r.m]+'</td></tr>';
-  });
-  document.getElementById('t1').innerHTML=h+'</tbody></table>';
-}
-
-/* ════════ PANEL ════════ */
-function mo(id){
-  const r=LOG.filter(x=>x.id===id)[0]; if(!r||!trongPhamVi(r)) return;
-  chon=id;
-  document.getElementById('pt').innerHTML=ACT[r.a]+' · '+escL(r.mn)+' · '+escL(r.ob);
-  let h='<dl class="kv">'+
-    '<dt>Người thao tác</dt><dd><b>'+escL(r.u)+'</b> — '+escL(r.cd)+' <span style="color:#94a3b8">(chức danh <b>tại thời điểm đó</b>)</span></dd>'+
-    '<dt>Đơn vị</dt><dd>'+escL(r.dv)+'</dd>'+
-    '<dt>Thời điểm</dt><dd class="mono">'+fmt(r.t)+'</dd>'+
-    '<dt>IP · thiết bị</dt><dd class="mono">'+escL(r.ip)+' · '+escL(r.tb)+'</dd>'+
-    '<dt>Mức bảo vệ</dt><dd class="m'+r.m+'">'+MUCTEN[r.m]+(r.m>=2?' — lưu vĩnh viễn, không archive':' — archive sau 18 tháng')+'</dd>'+
-    '<dt>Mã bản ghi</dt><dd class="mono">'+r.id+'</dd></dl>';
-
-  if(r.m===3&&!r.meta) h+='<div class="note n-d"><b>Bản ghi mức ③ — bảo vệ cao.</b> Lượt xem này của bạn <b>đã được ghi vào nhật ký</b>, kèm tên bạn và thời điểm. Không ai chặn bạn xem; chỉ là lượt xem có tên.</div>';
-  if(r.meta)          h+='<div class="note n-w"><b>Đây là bản ghi meta-audit</b> — sinh ra từ chính việc ai đó xem một bản ghi mức ③.</div>';
-  if(r.pd)            h+='<div class="note n-w"><b>Chứa trường dữ liệu cá nhân của trẻ em.</b> Lượt xem đã ghi audit theo <b>Luật BVDLCN 91/2025</b>.</div>';
-  if(r.dd)            h+='<div class="note n-w">Bản ghi <b>đã duyệt</b> nhưng bị sửa trực tiếp — đúng ra phải qua luồng thu hồi / duyệt lại.</div>';
-  (r.f||[]).forEach(function(c){
-    h+='<div class="note n-d"><b>'+COTEN[c]+'</b> — cờ do <b>'+COGOC[c]+'</b> gắn. Thao tác này <b>không bị chặn</b>; cơ chế là “không chặn, chỉ ghi”. Cờ chỉ có giá trị nếu lọc ra được — dùng bộ lọc <b>⚑ Chỉ bản ghi có cờ</b>.</div>';
-  });
-
-  h+='<div class="diff"><table><thead><tr><th style="width:34%">Trường</th><th style="width:33%">Trước</th><th style="width:33%">Sau</th></tr></thead><tbody>';
-  (r.df||[]).forEach(x=>{h+='<tr><td>'+escL(x[0])+'</td><td class="old">'+escL(x[1])+'</td><td class="new">'+escL(x[2])+'</td></tr>'});
-  h+='</tbody></table></div>';
-  h+='<div style="font-size:11px;color:#94a3b8;margin-bottom:9px">Mật khẩu không bao giờ hiển thị ở đây, kể cả dạng đã băm.</div>';
-
-  h+='<div style="border-top:1px solid #e3e8ef;padding-top:8px">';
-  h+='<a class="lk" href="#" onclick="toast(\'Deep-link: /M10.5?tab=log&amp;ctx='+r.ss+'&amp;return=M10.7\');return false">🔗 Xem phiên đăng nhập của lượt này <span style="color:#94a3b8">('+r.ss+') ↗ M10.5</span></a>';
-  if(r.xoa) h+='<span class="lk off">🔗 Mở bản ghi hiện tại — <b>bản ghi đã bị xóa lúc '+fmt(r.t)+'</b>; chính bản ghi nhật ký này là dấu vết của lượt xóa đó</span>';
-  else      h+='<a class="lk" href="#" onclick="toast(\'Deep-link: /'+r.mn.split(' ')[0]+'?ctx='+r.id+'&amp;return=M10.7\');return false">🔗 Mở bản ghi hiện tại <span style="color:#94a3b8">↗ '+r.mn.split(' ')[0]+'</span></a>';
-  h+='<a class="lk" href="#" onclick="locTheoNguoi(\''+escL(r.u)+'\');return false">🔎 Toàn bộ nhật ký của '+escL(r.u)+'</a></div>';
-
-  document.getElementById('pb').innerHTML=h;
-  document.getElementById('pf').innerHTML=
-    '<button class="btn" onclick="dong()">Đóng</button>'+
-    '<span style="margin-left:auto;color:#94a3b8;font-size:11px;align-self:center">🔒 Chỉ đọc — không có nút Sửa / Xóa ở bất kỳ vai trò nào</span>';
-  document.getElementById('pn').classList.add('on');
-  document.getElementById('ov').classList.add('on');
-  if(r.m===3 && !r.meta) ghiMeta(r);
-  ve();
-}
-function dong(){chon=null;
-  document.getElementById('pn').classList.remove('on');
-  document.getElementById('ov').classList.remove('on');ve()}
-function locTheoNguoi(u){dong();document.getElementById('fu').value=u;
-  document.getElementById('ft').value='0';document.getElementById('fz').checked=true;ve()}
-
-/* ════════ TAB 2 — RÀ SOÁT ════════ */
-function phatHien(){
-  const src=nguon().filter(r=>!r.ar), P=[];
-  /* A. cờ nhạy cảm 30 ngày */
-  const A=src.filter(r=>r.f&&r.f.length&&ngay(r.t)<=30);
-  P.push({t:'Cờ nhạy cảm trong 30 ngày',th:'ngưỡng ≥ 1',
-    nk:'Cờ nghĩa là “thao tác này đã được ghi lại có chủ đích”, không nghĩa là sai. Nhưng đây là mục cần xem trước tiên.',
-    rows:A.map(r=>[fmt(r.t),r.u+' — '+r.cd,(r.f||[]).map(c=>COTEN[c]).join(' '),r.mn+' · '+r.ob,r.id])});
-  /* B. xuất nhiều > 10 lượt / 7 ngày */
-  const dem={};
-  src.filter(r=>r.a==='xuat'&&ngay(r.t)<=7).forEach(r=>{dem[r.u]=(dem[r.u]||0)+1});
-  const B=Object.keys(dem).filter(u=>dem[u]>10);
-  P.push({t:'Xuất dữ liệu nhiều bất thường',th:'ngưỡng > 10 lượt / 1 người / 7 ngày',
-    nk:'Văn thư xuất nhiều là chuyện bình thường đầu năm học. Mục này chỉ để biết khối lượng, không để quy kết.',
-    rows:B.map(u=>['7 ngày gần nhất',u,dem[u]+' lượt xuất','Dữ liệu học sinh — thuộc Luật BVDLCN 91/2025',''])});
-  /* C. ngoài giờ hành chính */
-  const C=src.filter(r=>ngay(r.t)<=30&&(r.t.getHours()<6||r.t.getHours()>=21));
-  P.push({t:'Thao tác ngoài giờ hành chính',th:'trước 06:00 hoặc sau 21:00 · 30 ngày',
-    nk:'ĐÂY KHÔNG PHẢI LỖI. Rất nhiều giáo viên soạn bài buổi tối. Mục này chỉ là chỗ để nhìn khi đã có nghi vấn từ nguồn khác.',
-    rows:C.map(r=>[fmt(r.t),r.u+' — '+r.cd,ACT[r.a],r.mn+' · '+r.ob,r.id])});
-  /* D. sửa dữ liệu đã duyệt */
-  const D=src.filter(r=>r.dd&&ngay(r.t)<=30);
-  P.push({t:'Sửa dữ liệu đã duyệt',th:'ngưỡng ≥ 1 · 30 ngày',
-    nk:'Có thể hoàn toàn chính đáng (sửa lỗi nhập) nhưng đúng quy trình thì phải thu hồi rồi duyệt lại.',
-    rows:D.map(r=>[fmt(r.t),r.u+' — '+r.cd,ACT[r.a],r.mn+' · '+r.ob,r.id])});
-  /* E. xem nhật ký bảo vệ cao */
-  const E=src.filter(r=>r.meta);
-  P.push({t:'Xem nhật ký bảo vệ cao',th:'ngưỡng ≥ 1',
-    nk:'Sinh tự động khi ai đó mở một bản ghi mức ③ ở tab ①. Hãy mở thử một bản ghi Ký số / Camera / Trích xuất chat rồi quay lại đây.',
-    rows:E.map(r=>[fmt(r.t),r.u,'Xem bản ghi mức ③',r.ob,r.id])});
-  return P;
-}
-function ve2(){
-  let h='';
-  phatHien().forEach(function(p,i){
-    h+='<div class="rr"><div><h3>'+escL(p.t)+'</h3><span class="th">'+escL(p.th)+'</span>'+
-       '<span class="cnt'+(p.rows.length?'':' z')+'">'+p.rows.length+'</span>'+
-       '<span class="nk">'+escL(p.nk)+'</span></div>';
-    if(!p.rows.length) h+='<div style="padding:10px;color:#94a3b8;font-size:12px">Không có phát hiện nào.</div>';
-    else{
-      h+='<table><tbody>';
-      p.rows.forEach(function(r){
-        const c3 = r[2].indexOf('⚑')>=0
-          ? r[2].split(/\s+(?=⚑)/).map(function(x){return '<span class="co">'+escL(x)+'</span>'}).join('')
-          : escL(r[2]);
-        h+='<tr'+(r[4]?' onclick="tuRaSoat(\''+r[4]+'\')"':' style="cursor:default"')+'>'+
-           '<td class="mono" style="width:118px">'+escL(r[0])+'</td>'+
-           '<td style="width:215px">'+escL(r[1])+'</td>'+
-           '<td style="width:225px">'+c3+'</td>'+
-           '<td>'+escL(r[3])+'</td>'+
-           '<td style="width:66px;text-align:right;color:#1d4ed8">'+(r[4]?'xem →':'')+'</td></tr>';
-      });
-      h+='</tbody></table>';
-    }
-    h+='</div>';
-  });
-  document.getElementById('t2').innerHTML=h;
-}
-function tuRaSoat(id){doiTab(1);document.getElementById('ft').value='0';
-  document.getElementById('fz').checked=true;ve();mo(id)}
-
-/* ════════ XUẤT ════════ */
-function xuat(){
-  if(!R().xuat){toast('Chức danh này không có quyền XD (Export) ở M10.7.');return}
-  const n=locHienTai().length;
-  toast('Bản xuất '+n+' bản ghi — <b>bắt buộc chọn mục đích</b> trước khi tải. Chính lượt xuất này cũng ghi nhật ký, ở mức ②.');
-}
-
-/* ════════ TAB / VAI ════════ */
-function doiTab(t){
-  if(R().tabs.indexOf(String(t))<0) return;
-  tab=t; dong();
-  document.getElementById('tb1').className=t===1?'on':'';
-  document.getElementById('tb2').className=t===2?'on':'';
-  document.getElementById('v1').style.display=t===1?'':'none';
-  document.getElementById('v2').style.display=t===2?'':'none';
-  if(t===1) ve(); else ve2();
-}
-function napLoc(){
-  const src=nguon();
-  const uu=[],mm=[];
-  src.forEach(r=>{if(uu.indexOf(r.u)<0)uu.push(r.u); if(mm.indexOf(r.mn)<0)mm.push(r.mn)});
-  uu.sort(); mm.sort();
-  document.getElementById('fu').innerHTML='<option value="">Mọi người thao tác</option>'+uu.map(u=>'<option>'+escL(u)+'</option>').join('');
-  document.getElementById('fa').innerHTML='<option value="">Mọi loại thao tác</option>'+Object.keys(ACT).map(a=>'<option value="'+a+'">'+ACT[a]+'</option>').join('');
-  document.getElementById('fm').innerHTML='<option value="">Mọi menu</option>'+mm.map(m=>'<option>'+escL(m)+'</option>').join('');
-}
-function doiVai(){
-  vai=document.getElementById('role').value;
-  const R0=R();
-  document.getElementById('scinfo').innerHTML='Phạm vi dữ liệu: <b style="color:#fff">'+SCTEN[R0.sc]+'</b> · Quyền: X'+(R0.xuat?' + XD':'')+' — không có T·S·XO·D·ID';
-  document.getElementById('tb2').disabled=R0.tabs.indexOf('2')<0;
-  document.getElementById('bx').disabled=!R0.xuat;
-  document.getElementById('sub').innerHTML=
-    'Nhật ký <b>thao tác nghiệp vụ</b>: ai · khi nào · làm gì · trước → sau · IP và thiết bị. '+
-    'Đang tìm lượt <b>đăng nhập</b>? Nhật ký đăng nhập ở <a href="#" onclick="toast(\'Deep-link: /M10.5?tab=log&amp;return=M10.7\');return false">↗ M10.5 Tài khoản &amp; Bảo mật</a>.'+
-    (R0.sc==='own'?' <b style="color:#b45309">Bạn đang xem với phạm vi “Của tôi” — chỉ thấy nhật ký do chính bạn tạo ra, không phải màn hình bị ẩn bớt nút.</b>':'');
-  napLoc();
-  document.getElementById('q').value='';
-  document.getElementById('fz').checked=false;
-  document.getElementById('ft').value='7';
-  ['fu','fa','fm','fl','fc'].forEach(i=>document.getElementById(i).value='');
-  doiTab(R0.tabs.indexOf('1')>=0?1:2);
-}
-document.getElementById('role').value='FULL';   // trình duyệt tự khôi phục giá trị select khi F5 — ép về vai mặc định
-doiVai();
-
-/* ══════════════════════════════════════════════════════════════════════════
+<div class="toast" id="toast"></div>
+<script>/* ══════════════════════════════════════════════════════════════════════════
    TỆP NỀN 1/4 CỦA NHÓM 📊 BÁO CÁO — `app.10-nen-chi-tieu.js`  →  xuất ra `CT`
    Hợp đồng 🔒 HDBC · phiên `BCM9-0A` (20/9/2026) · sổ `PROMPT-BCM9-00-SO-DIEU-PHOI.md` §3
    🔄 HDBC v2 · phiên `BCM9-V24` (21/9/2026) — CHỈ THÊM, không đổi hàm nào:
@@ -2180,715 +1697,1433 @@ const XU = (function () {
   };
 })();
 
-
 /* ══════════════════════════════════════════════════════════════════════════
-   M10.7 — TAB ③ «BÁO CÁO TUÂN THỦ»  ·  Feature `m10.7.bao_cao_tuan_thu`
-   Cụm `BCM9` phiên `2C` (20/9/2026) · `BC-QT-04` + `BC-QT-06` · loại A · K9 + K5
+   NHÓM 📊 — TỆP DỮ LIỆU MẪU CHUNG · 🔒 HỢP ĐỒNG `HDDL` v1
+   Phiên `BCM9-V22` (21/9/2026) — chốt `H-3` của `CHOT-21-09-muoi-mot-diem-BCM9-Z`.
 
-   🛑 TAB NÀY CHỊU LUẬT NHÓM 📊, DÙ NẰM Ở NHÓM ⚙️ (sổ điều phối §2 `N11`).
-   Dựng từ BỐN TỆP NỀN `CT` `KB` `PV` `XU` — chép nguyên byte từ
-   `M9.13-Bao-cao-CSVC-thiet-bi/`. Chỉ `X` và `XD`: không một nút
-   Tạo · Sửa · Xóa · Duyệt nào, với mọi vai kể cả 🔓 Đủ quyền.
-   ⛔ Phiên sau ĐỪNG «dọn» tab này cho giống hai tab cũ.
+   ★ VÌ SAO CÓ TỆP NÀY.
+     Trước `V22`, mỗi demo `M9.x` tự gieo lớp · học sinh · nhân sự của riêng
+     mình ⇒ cùng một chỉ tiêu ra hai con số (`HS.06` M9.8 75 ⇄ M9.7 10 ·
+     `CM.04` M9.5 72,6 ⇄ M9.7 84,1). Người duyệt thấy sẽ kết luận «hệ thống
+     tính sai», trong khi thật ra chỉ là hai bộ dữ liệu mẫu. Nay MỘT tệp, chép
+     NGUYÊN BYTE như bốn tệp nền: bản gốc ở `demo-src/M9.13-Bao-cao-CSVC-thiet-bi/`,
+     băm ghi ở `_kien-truc-bao-cao.md` mục «Tệp dữ liệu mẫu chung».
 
-   ── Vì sao tệp này KHÔNG đụng `app.js` ngoài ba chỗ đổi tên ──────────────
-   `gen-demo.py` nối `app.js` + `app.1x` + `app.20` vào MỘT thẻ `<script>`,
-   nên mọi khai báo `const` ở đầu tệp nằm chung một phạm vi. `app.js` và tệp
-   nền `app.10` cùng khai ba tên `HOMNAY` · `esc` · `p2` ⇒ trùng `const` là
-   lỗi cú pháp, cả trang chết. Đã đổi tên PHÍA `app.js` (`NGAY_NAY_LOG` ·
-   `escL` · `p2L`) — 23 dòng, thuần đổi tên, 0 đổi hành vi. Mọi thứ còn lại
-   của tab ③ nằm trong tệp này: nó BỌC `doiTab` và `doiVai` của `app.js`
-   (khai báo hàm là ràng buộc ghi đè được) thay vì sửa hai hàm ấy.
+   ★ BỐN LUẬT CỦA TỆP (hợp đồng `HDDL`):
+     ① CHỈ DỮ LIỆU — ⛔ không hàm tính chỉ tiêu. Đếm là việc của `CT` đọc định
+       nghĩa ở từ điển; «đang học tại ngày chốt» là việc của demo (`dangHoc`).
+       Khối IIFE dưới đây chỉ TRẢI dữ liệu ra theo bước nhảy cố định.
+     ② HẠT GIỐNG THEO CHỈ SỐ — ⛔ không `Math.random()`, ⛔ không băm tổng mã ký
+       tự (tổng mã không phân biệt thứ tự ⇒ `6A3` · `7A2` · `8A1` ra giống hệt).
+       Bước nhảy chạy trên CHỈ SỐ em trong danh sách.
+     ③ HỢP LÝ VỀ NGHIỆP VỤ — sĩ số ≤ tối đa · bảo lưu vẫn giữ chỗ (em bảo lưu
+       vẫn có `lop`) · diện ưu tiên mang ngày XÁC NHẬN, `null` = chờ xác nhận,
+       ⛔ không tính · nhân sự tạm nghỉ dài VẪN trong danh sách.
+     ④ DEMO ĐỌC, ⛔ KHÔNG GHI — `DLC` bị đóng băng sâu. Demo cần biến đổi (thêm
+       trường riêng, vá một bản ghi) thì SAO CHÉP ra biến riêng trước.
 
-   ── HAI ĐỒNG HỒ TRÊN MỘT MÀN HÌNH — nói ra, không giấu ──────────────────
-   Hai tab cũ của `M10.7` chạy theo đồng hồ riêng của menu (29/8/2026);
-   bốn tệp nền của nhóm 📊 chốt `HOMNAY = 28/12/2026` cho cả 16 demo. Tab ③
-   theo đồng hồ của NHÓM 📊 — nếu không thì mọi kỳ chuẩn `nh9` §4 lệch đi
-   một quý so với 15 báo cáo kia. Dải nói rõ điều này ở đầu tab.
+   ★ NGUỒN CỦA TỪNG KHỐI — chuyển kèm, ⛔ không gieo lại:
+     · `hocSinh` — đúng bộ gieo đang chạy ở `M9.8` / `M9.1` (gốc `M9.1` v2.3
+       `app.js` + `app.50`, di trú qua `1B`, vá `HS[30]` của `1B`). Nhờ vậy
+       `HS.01` giữ 315 ở cả ba chỗ đo của phép kiểm 1.
+     · `nhanSu` — 26 giáo viên + bộ KPI của demo `M5.5` (qua `M9.5`), cùng thứ
+       tự ⇒ bộ sinh số giả ngẫu nhiên của `M5.5` không lệch pha. Nhân viên văn
+       phòng lấy tên của `M9.1` / `M9.8` (danh sách `NSL` · vai).
    ══════════════════════════════════════════════════════════════════════════ */
 
-const MENU_NAY_BC = 'M10.7';
+const DLC = (function () {
+  const d2 = n => String(n).padStart(2, '0');
+  const k = s => { const a = String(s).split('/'); return a[2] + '-' + d2(+a[1]) + '-' + d2(+a[0]) };
+  const dongBang = o => {
+    Object.keys(o).forEach(x => { const v = o[x]; if (v && typeof v === 'object' && !Object.isFrozen(v)) dongBang(v) });
+    return Object.freeze(o);
+  };
 
-/* ════════ ① VAI — mở rộng bảng vai của `app.js`, KHÔNG sửa dòng cũ ═══════
-   Quyền của tab ③ là quyền RIÊNG của một Feature khác, nên nó có ô riêng
-   (`tabs` · `sc3` · `xd3`), ⛔ không dùng lại `sc` của tab ① ②: một chức
-   danh có phạm vi `Của tôi` ở «Tra cứu» vẫn có thể có `School` ở báo cáo
-   tuân thủ — đó là hai Feature, hai dòng của bảng chuẩn.
+  /* ═══════════ ① ĐIỂM TRƯỜNG — `M10.2` ═══════════════════════════════════ */
+  const diemTruong = [
+    { ma: 'A', ten: 'Điểm trường A', dayDu: 'Điểm trường A — cơ sở chính', chinh: true },
+    { ma: 'B', ten: 'Điểm trường B', dayDu: 'Điểm trường B — điểm lẻ', chinh: false }
+  ];
 
-   Hai vai `VT` · `TCNS` (thêm ở `2C`) — 🔄 `V25` 21/9 GIỮ, đổi vai trò:
-   nay là hai vai KIỂM ÂM của chốt `H-7` (không thấy tab ③, deep-link ra
-   khối «không có quyền»), và là người thật của dữ liệu tab ① (Văn thư có
-   12 lượt xuất trong `LOG`). Ở tab ① ② chúng KHÔNG đổi gì: `sc:'own'` đúng
-   dòng «Mọi chức danh khác — Của tôi» của `M10.7` §7. */
-VAI.VT = { ten: 'Văn thư', ng: 'Đỗ Thị Lan', sc: 'own', u: 'Đỗ Thị Lan', tabs: ['1'], xuat: 0 };
-VAI.TCNS = { ten: 'Tổ chức nhân sự', ng: 'Phạm Minh Đức', sc: 'own', u: 'Phạm Minh Đức', tabs: ['1'], xuat: 0 };
+  /* ═══════════ ② NHÂN SỰ — `M4.1` · `M4.3` · số chốt KPI `M5.5` ═══════════
+     Cột: ma · tên · giới · vị trí việc làm · diện làm việc · tổ · điểm trường ·
+     cấp tính định mức (`M4.4` §5.5.2) · hạng · chức vụ · môn dạy · ngày vào
+     trường · KPI Quý I (điểm chốt · số tiêu chí chưa chấm) hoặc `null`.
+     🔑 KPI = SỐ CHỐT của `M5.5` tại kỳ Quý I (chốt 05/12/2026, tổ chấm tới
+     15/12) — `R20`: menu nào đọc KPI cũng đọc SỐ NÀY. `M9.5` tính lại bằng
+     thuật toán của `M5.5` ⇒ phải bằng; phép kiểm 1 bắt lệch.
+     ⚠ `null` ≠ 0: giáo viên mới tuyển 01/12 chưa có kỳ nào để chấm.        */
+  const VC = 'Viên chức', HD111 = 'Hợp đồng lao động theo NĐ 111/2022', HD68 = 'Hợp đồng theo NĐ 68/2000',
+    HD06 = 'Hợp đồng theo NĐ 06/2025', TK = 'Thuê khoán';
+  const TT = 'Tổ Toán — Tin', NV = 'Tổ Ngữ văn', NN = 'Tổ Ngoại ngữ', LHS = 'Tổ Lý — Hóa — Sinh',
+    SDG = 'Tổ Sử — Địa — GDCD', TDN = 'Tổ Thể dục — Nghệ thuật', BGH = 'Ban giám hiệu', VP = 'Tổ Văn phòng';
+  const nhanSu = [];
+  const ns = (ten, gioi, viTri, dien, to, dt, cap, hang, cv, mon, vao, kpi) => {
+    nhanSu.push({
+      ma: 'NS-' + String(nhanSu.length + 1).padStart(3, '0'), ten, gioi, viTri, dienLamViec: dien, to, dt,
+      capDinhMuc: cap, hang, chucVu: cv, kiemNhiem: [], monDay: mon, ngayVao: vao, gvcnLop: null,
+      trangThai: 'dang_lam', giaiDoan: [], dinhMucRieng: null, moiTuyen: null,
+      kpi: kpi ? { bo: 'B1', ky: 'Q1', diem: kpi[0], chuaCham: kpi[1] } : null
+    });
+  };
+  /* Ban giám hiệu — ⛔ không có KPI giáo viên (bộ `B1` là của giáo viên) */
+  ns('Nguyễn Quang Huy', 'nam', 'Hiệu trưởng', VC, BGH, 'A', 'THPT', 'I', 'Hiệu trưởng', ['Toán'], '2012-08-01', null);
+  ns('Vũ Đình Trung', 'nam', 'Phó hiệu trưởng', VC, BGH, 'A', 'THPT', 'I', 'PHT Chuyên môn', ['Vật lí'], '2014-08-01', null);
+  ns('Phạm Thu Hương', 'nu', 'Phó hiệu trưởng', VC, BGH, 'B', 'THCS', 'II', 'PHT Điểm trường B', ['Ngữ văn'], '2016-08-01', null);
+  /* 26 giáo viên — ĐÚNG thứ tự của `M5.5` */
+  ns('Trần Thị Bích', 'nu', 'Giáo viên', VC, TT, 'A', 'THPT', 'II', 'Tổ trưởng', ['Toán'], '2009-08-15', [86.9, 0]);
+  ns('Lê Văn Dũng', 'nam', 'Giáo viên', VC, TT, 'A', 'THCS', 'II', 'Tổ phó', ['Toán'], '2011-08-15', [77.9, 0]);
+  ns('Nguyễn Văn An', 'nam', 'Giáo viên', VC, TT, 'A', 'THCS', 'III', '', ['Toán'], '2015-08-15', [76.7, 0]);
+  ns('Hoàng Văn Nam', 'nam', 'Giáo viên', VC, TT, 'B', 'THCS', 'III', '', ['Toán'], '2017-08-15', [72.2, 0]);
+  ns('Đỗ Thị Lan', 'nu', 'Giáo viên', VC, TT, 'A', 'THCS', 'III', '', ['Tin học'], '2013-08-15', [81.9, 0]);
+  ns('Phạm Minh Tuấn', 'nam', 'Giáo viên', VC, TT, 'A', 'THPT', 'I', '', ['Toán'], '2008-08-15', [87.1, 0]);
+  ns('Nguyễn Thị Hạnh', 'nu', 'Giáo viên', VC, NV, 'A', 'THPT', 'I', 'Tổ trưởng', ['Ngữ văn'], '2007-08-15', [88.1, 0]);
+  ns('Trần Quốc Hưng', 'nam', 'Giáo viên', VC, NV, 'A', 'THCS', 'II', 'Tổ phó', ['Ngữ văn'], '2012-08-15', [77.5, 0]);
+  ns('Lê Thị Mai', 'nu', 'Giáo viên', VC, NV, 'A', 'THCS', 'III', '', ['Ngữ văn'], '2018-08-15', [78.9, 0]);
+  ns('Vũ Thị Ngọc', 'nu', 'Giáo viên', VC, NV, 'B', 'THCS', 'III', '', ['Ngữ văn'], '2019-08-15', [57, 0]);
+  ns('Đinh Văn Phúc', 'nam', 'Giáo viên', VC, NV, 'A', 'THPT', 'II', '', ['Ngữ văn'], '2010-08-15', [72.3, 0]);
+  ns('Bùi Thị Thu', 'nu', 'Giáo viên', VC, NN, 'A', 'THPT', 'II', 'Tổ trưởng', ['Tiếng Anh'], '2009-08-15', [87.8, 0]);
+  ns('Ngô Văn Kiên', 'nam', 'Giáo viên', VC, NN, 'A', 'THCS', 'III', 'Tổ phó', ['Tiếng Anh'], '2014-08-15', [80, 0]);
+  ns('Trịnh Thị Vân', 'nu', 'Giáo viên', VC, NN, 'A', 'THCS', 'III', '', ['Tiếng Anh'], '2020-08-15', [71.3, 0]);
+  ns('Hà Minh Đức', 'nam', 'Giáo viên', VC, NN, 'B', 'THCS', 'III', '', ['Tiếng Anh'], '2016-08-15', [78.3, 0]);
+  ns('Vũ Đình Khoa', 'nam', 'Giáo viên', VC, LHS, 'A', 'THPT', 'I', 'Tổ trưởng', ['Vật lí'], '2006-08-15', [87, 0]);
+  ns('Nguyễn Thu Hà', 'nu', 'Giáo viên', VC, LHS, 'A', 'THCS', 'II', 'Tổ phó', ['Khoa học tự nhiên'], '2011-08-15', [73.5, 0]);
+  ns('Trịnh Văn Sơn', 'nam', 'Giáo viên', VC, LHS, 'B', 'THCS', 'III', '', ['Khoa học tự nhiên'], '2017-08-15', [80.3, 0]);
+  ns('Đặng Thị Quỳnh', 'nu', 'Giáo viên', VC, LHS, 'A', 'THCS', 'III', '', ['Khoa học tự nhiên'], '2021-08-15', [73.2, 0]);
+  ns('Phan Thị Nhung', 'nu', 'Giáo viên', VC, SDG, 'A', 'THPT', 'II', 'Tổ trưởng', ['Lịch sử'], '2010-08-15', [59.7, 3]);
+  ns('Dương Văn Thắng', 'nam', 'Giáo viên', VC, SDG, 'B', 'THCS', 'III', 'Tổ phó', ['Lịch sử & Địa lí'], '2015-08-15', [61.3, 4]);
+  ns('Tạ Thị Bình', 'nu', 'Giáo viên', VC, SDG, 'A', 'THCS', 'III', '', ['Lịch sử & Địa lí'], '2019-08-15', [46.3, 3]);
+  ns('Nguyễn Thị Yến', 'nu', 'Giáo viên', VC, SDG, 'A', 'THCS', 'II', '', ['Giáo dục công dân'], '2012-08-15', [63.1, 4]);
+  ns('Trần Văn Hải', 'nam', 'Giáo viên', VC, TDN, 'A', 'THCS', 'III', 'Tổ trưởng', ['Giáo dục thể chất'], '2013-08-15', [60.1, 3]);
+  ns('Mai Thị Loan', 'nu', 'Giáo viên', VC, TDN, 'A', 'THCS', 'III', 'Tổ phó', ['Nghệ thuật'], '2016-08-15', [60.1, 3]);
+  ns('Đỗ Văn Trung', 'nam', 'Giáo viên', HD111, TDN, 'B', 'THCS', 'III', '', ['Giáo dục thể chất'], '2022-08-15', [48.8, 3]);
+  /* giáo viên mới tuyển giữa năm — CHƯA gán Môn được phép dạy ở `M4.4` ⇒ chưa có cấp tính định mức */
+  ns('Lương Thị Hồng', 'nu', 'Giáo viên', VC, NN, 'A', null, 'III', '', ['Tiếng Anh'], '2026-12-01', null);
+  /* giáo viên biệt phái ĐI — vẫn trong danh sách của trường, ⛔ không dạy, ⛔ không vào bộ KPI */
+  ns('Lê Thị Tâm', 'nu', 'Giáo viên', VC, SDG, 'A', 'THCS', 'III', '', ['Lịch sử & Địa lí'], '2014-08-15', null);
+  /* nhân viên — tên theo `M9.1` (`NSL`) và vai của `M9.8` */
+  ns('Đặng Văn Xuân', 'nam', 'Kế toán', VC, VP, 'A', null, null, 'Tổ trưởng Văn phòng', [], '2011-03-01', null);
+  ns('Mai Thị Yến', 'nu', 'Văn thư', VC, VP, 'A', null, null, '', [], '2015-09-01', null);
+  ns('Vương Thị Hiền', 'nu', 'Văn thư', HD111, VP, 'B', null, null, '', [], '2023-09-01', null);
+  ns('Phí Văn Sang', 'nam', 'Thủ quỹ', VC, VP, 'A', null, null, '', [], '2016-01-04', null);
+  ns('Hoàng Thị Yến', 'nu', 'Tổ chức nhân sự', VC, VP, 'A', null, null, '', [], '2014-02-10', null);
+  ns('Lê Thu Hằng', 'nu', 'Giáo vụ', VC, VP, 'A', null, null, '', [], '2017-08-01', null);
+  ns('Ninh Thị Thoa', 'nu', 'Giáo vụ', HD111, VP, 'B', null, null, '', [], '2024-08-01', null);
+  ns('Chu Văn Bách', 'nam', 'Y tế học đường', VC, VP, 'A', null, null, '', [], '2018-09-01', null);
+  ns('Quách Thị Nga', 'nu', 'Y tế học đường', HD111, VP, 'B', null, null, '', [], '2023-02-01', null);
+  ns('Dương Thị Cẩm', 'nu', 'Thư viện', HD111, VP, 'A', null, null, '', [], '2020-09-01', null);
+  ns('Lò Văn Tính', 'nam', 'Thiết bị', VC, VP, 'A', null, null, '', [], '2019-08-01', null);
+  ns('Kiều Thị Hoa', 'nu', 'Thiết bị', HD06, VP, 'B', null, null, '', [], '2025-09-01', null);
+  ns('Lâm Văn Giao', 'nam', 'Quản trị hệ thống', VC, VP, 'A', null, null, '', [], '2021-06-01', null);
+  ns('Diệp Thị Mơ', 'nu', 'Tư vấn học đường', HD111, VP, 'A', null, null, '', [], '2024-09-01', null);
+  ns('Tống Thị Hạnh', 'nu', 'Quản lý bán trú', HD111, VP, 'A', null, null, '', [], '2022-08-15', null);
+  ns('Âu Thị Liên', 'nu', 'Cấp dưỡng', HD111, VP, 'A', null, null, '', [], '2019-08-15', null);
+  ns('Kim Thị Hường', 'nu', 'Cấp dưỡng', HD111, VP, 'A', null, null, '', [], '2021-08-15', null);
+  ns('Ứng Thị Em', 'nu', 'Phục vụ · nấu ăn', TK, VP, 'B', null, null, '', [], '2024-08-15', null);
+  ns('Tạ Văn Định', 'nam', 'Bảo vệ', HD68, VP, 'A', null, null, '', [], '2010-05-01', null);
+  ns('Hứa Văn Tài', 'nam', 'Bảo vệ', HD111, VP, 'B', null, null, '', [], '2022-05-01', null);
+  ns('Mạc Thị Duyên', 'nu', 'Phục vụ vệ sinh', HD111, VP, 'A', null, null, '', [], '2020-03-01', null);
+  ns('Lương Văn Bảy', 'nam', 'Phục vụ vệ sinh', TK, VP, 'B', null, null, '', [], '2025-03-01', null);
+  const nsTen = t => nhanSu.find(x => x.ten === t);
+  /* định mức riêng Ban giám hiệu — `M4.4` §5.5 · TT 05/2025 */
+  nsTen('Nguyễn Quang Huy').dinhMucRieng = 2; nsTen('Vũ Đình Trung').dinhMucRieng = 4; nsTen('Phạm Thu Hương').dinhMucRieng = 4;
+  /* kiêm nhiệm — `M4.3` */
+  nsTen('Trần Văn Hải').kiemNhiem = ['Tổng phụ trách Đội'];
+  nsTen('Nguyễn Thị Hạnh').kiemNhiem = ['Chủ tịch Công đoàn'];
+  /* trạng thái THEO NGÀY — một người có thể đã nghỉ dài rồi đi làm lại */
+  Object.assign(nsTen('Lê Thị Mai'), { trangThai: 'tam_nghi_dai',
+    giaiDoan: [{ tt: 'tam_nghi_dai', tu: '2026-12-21', den: '2027-06-20', ly: 'Nghỉ thai sản — bàn giao phần Ngữ văn từ tuần 16' }] });
+  nsTen('Đỗ Thị Lan').giaiDoan = [{ tt: 'tam_nghi_dai', tu: '2026-11-09', den: '2026-12-15', ly: 'Nghỉ ốm dài ngày — đã đi làm lại' }];
+  Object.assign(nsTen('Lê Thị Tâm'), { trangThai: 'biet_phai_di',
+    giaiDoan: [{ tt: 'biet_phai_di', tu: '2026-09-01', den: '2027-08-31', ly: 'Biệt phái tới Trung tâm GDNN-GDTX huyện' }] });
+  nsTen('Lương Thị Hồng').moiTuyen = 'Tuyển bổ sung 01/12/2026 — chưa gán Môn được phép dạy ở M4.4';
 
-/* ma trận quyền của `m10.7.bao_cao_tuan_thu` — bảng chuẩn, dựng thành ô.
-   🔒 `H-7` (chốt 21/9/2026): tab ③ CHỈ `HT` · `IT` (+ `FULL` của demo).
-   `V25` gỡ `VT` · `TCNS` (và `TTVP` — vai này demo chưa từng khai). */
-const Q3 = {
-  FULL: { sc3: 'truong', xd3: 1 }, IT: { sc3: 'truong', xd3: 1 }, HT: { sc3: 'truong', xd3: 1 }
-  /* mọi vai khác: KHÔNG có dòng nào ⇒ không có quyền ⇒ tab không hiện */
-};
-const CHUA_QUYEN3 = 'Tab <b>Báo cáo tuân thủ</b> chỉ dành cho <b>Hiệu trưởng</b> và <b>quản trị hệ thống</b> — chốt 21/9/2026.';
-Object.keys(Q3).forEach(function (k) {
-  if (!VAI[k]) return;
-  VAI[k].sc3 = Q3[k].sc3; VAI[k].xd3 = Q3[k].xd3;
-  if (VAI[k].tabs.indexOf('3') < 0) VAI[k].tabs.push('3');
-});
+  /* ═══════════ ③ LỚP — `M10.1` · sĩ số tối đa · GVCN ══════════════════════
+     Sĩ số tối đa THCS 45 em/lớp (Điều lệ trường THCS — TT 32/2020 Đ.15).     */
+  const lop = [
+    ['6A1', 6, 'A', 'Lê Văn Dũng'], ['6A2', 6, 'A', 'Nguyễn Văn An'],
+    ['7A1', 7, 'A', 'Đỗ Thị Lan'], ['7B1', 7, 'B', 'Hà Minh Đức'],
+    ['8A1', 8, 'A', 'Trần Quốc Hưng'], ['8B1', 8, 'B', 'Trịnh Văn Sơn'],
+    ['9A1', 9, 'A', 'Lê Thị Mai'], ['9A2', 9, 'A', 'Ngô Văn Kiên'],
+    ['9A3', 9, 'A', 'Nguyễn Thị Yến'], ['9B1', 9, 'B', 'Dương Văn Thắng']
+  ].map(x => { const g = nsTen(x[3]); g.gvcnLop = x[0]; return { ma: x[0], khoi: x[1], dt: x[2], siSoToiDa: 45, gvcn: g.ma } });
 
-/* hai vai mới vào ô chọn vai — thêm, không sửa năm dòng cũ */
-(function () {
-  const s = document.getElementById('role'); if (!s) return;
-  [['VT', 'Văn thư — chỉ nhật ký của tôi'],
-  ['TCNS', 'Tổ chức nhân sự — chỉ nhật ký của tôi']].forEach(function (o) {
-    const e = document.createElement('option'); e.value = o[0]; e.textContent = o[1]; s.appendChild(e);
+  /* ═══════════ ④ HỌC SINH — `M1.1` · `M1.2` · `M1.5` · `M1.6` · `M1.7` ════
+     Trải ra ĐÚNG bộ gieo đang chạy ở `M9.8` / `M9.1` — bước nhảy nào cũng
+     giữ, vì bước nhảy quyết định số của từng lớp. Chỉ đổi CÁCH VIẾT
+     (mã điểm trường `A`/`B`, khóa tiếng Việt không dấu).                      */
+  const H = [];
+  const ten = ['Trần Quốc Bảo', 'Nguyễn Khánh Vy', 'Phạm Văn Đức', 'Lê Nhật Minh', 'Bùi Phương Linh',
+    'Đinh Hải Nam', 'Vũ Thanh Hà', 'Hoàng Gia Huy', 'Ngô Bảo Châu', 'Đỗ Thu Trang', 'Lý Minh Khôi', 'Cao Ngọc Ánh'];
+  let n = 0;
+  lop.forEach((l, li) => {
+    const so = [33, 31, 34, 33, 36, 30, 34, 32, 26, 31][li];
+    for (let i = 0; i < so; i++) {
+      n++;
+      H.push({ ma: 'HS-2026-' + String(300 + n).padStart(4, '0'), ten: ten[n % ten.length] + ' ' + (i + 1),
+        lop: l.ma, khoi: l.khoi, dt: l.dt, tt: 'hoc', uu: '', uu2: [], giay: 1, mdd: 1,
+        vaoNgay: '2026-08-01', roiNgay: null, sk: [], quaHan: 0 });
+    }
   });
+  const g = (i, o) => Object.assign(H[i], o);
+  /* chuyển đi · chuyển đến · bảo lưu · tái nhập · thôi học */
+  g(5, { tt: 'chuyendi', roiNgay: k('12/9/2026'), sk: [['chuyendi', k('12/9/2026'), 'M1.5', 'Chuyển tới THCS Lê Quý Đôn']] });
+  g(48, { tt: 'chuyendi', roiNgay: k('3/10/2026'), sk: [['chuyendi', k('3/10/2026'), 'M1.5', 'Gia đình chuyển vào TP.HCM']] });
+  g(97, { tt: 'chuyendi', roiNgay: k('21/11/2026'), sk: [['chuyendi', k('21/11/2026'), 'M1.5', 'Chuyển tới THCS Nguyễn Du']] });
+  g(12, { vaoNgay: k('20/9/2026'), sk: [['chuyenden', k('20/9/2026'), 'M1.5', 'Từ THCS Trần Phú']] });
+  g(60, { vaoNgay: k('14/10/2026'), sk: [['chuyenden', k('14/10/2026'), 'M1.5', 'Từ THCS Chu Văn An']] });
+  g(101, { vaoNgay: k('2/11/2026'), sk: [['chuyenden', k('2/11/2026'), 'M1.5', 'Từ trường ngoài tỉnh']], mdd: 0 });
+  g(140, { vaoNgay: k('8/11/2026'), sk: [['chuyenden', k('8/11/2026'), 'M1.5', 'Từ THCS Quang Trung']], mdd: 0 });
+  g(22, { tt: 'baoluu', sk: [['baoluu', k('1/10/2026'), 'M1.6', 'Điều trị dài ngày — hạn 1/4/2027']] });
+  g(75, { tt: 'baoluu', sk: [['baoluu', k('15/10/2026'), 'M1.6', 'Theo gia đình ra nước ngoài — hạn 15/10/2027']] });
+  g(130, { tt: 'baoluu', sk: [['baoluu', k('20/8/2026'), 'M1.6', 'Sức khỏe — HẠN 20/2/2027, QUÁ HẠN']], quaHan: 1 });
+  /* em 30 — vết vá của `1B`: bảo lưu 15/8/2026 (năm học trước) rồi mới tái nhập 5/11 */
+  g(30, { sk: [['baoluu', k('15/8/2026'), 'M1.6', 'Bảo lưu từ năm học 2025-2026 — hạn 15/8/2027'],
+    ['tainhap', k('5/11/2026'), 'M1.6', 'Tái nhập sau bảo lưu, vào lớp 7A1']] });
+  g(88, { tt: 'thoihoc', roiNgay: k('18/10/2026'), sk: [['thoihoc', k('18/10/2026'), 'M1.6', 'Gia đình xin thôi học']] });
+  [3, 19, 41, 66, 92, 110, 155].forEach((i, j) => {
+    const d = ['18/9/2026', '25/9/2026', '6/10/2026', '19/10/2026', '4/11/2026', '12/11/2026', '20/11/2026'][j];
+    H[i].sk.push(['chuyenlop', k(d), 'M1.7', 'Chuyển lớp trong năm']);
+  });
+  /* 16 diện chính sách — danh mục `M1.2` §3.1 (sau `CSDL-1D`); bước nhảy 37 */
+  const U = [['Con liệt sĩ', 2], ['Con thương binh, bệnh binh', 4], ['Học sinh dân tộc thiểu số', 11],
+  ['Học sinh mồ côi', 2], ['Hộ nghèo', 6], ['Hộ cận nghèo', 9], ['Học sinh khuyết tật', 5],
+  ['Học sinh vùng khó khăn', 7], ['Hoàn cảnh đặc biệt khó khăn khác', 3],
+  ['Con người có công với cách mạng', 2], ['Con anh hùng', 1], ['Bị bỏ rơi, mất nguồn nuôi dưỡng', 1],
+  ['Con hộ nghèo thuộc chương trình 135', 4], ['Chính sách học sinh dân tộc bán trú', 5],
+  ['Chính sách học sinh dân tộc nội trú', 2], ['Học sinh hưởng chính sách ăn trưa', 6]];
+  let idx = 2; U.forEach(x => { for (let i = 0; i < x[1]; i++) { if (H[idx]) H[idx].uu = x[0]; idx = (idx + 37) % H.length } });
+  [7, 17, 29, 44, 58, 71, 84, 99, 113, 127, 141, 158, 166, 180, 193, 205].forEach(i => { if (H[i]) H[i].giay = 0 });
+  [101, 140, 166].forEach(i => { if (H[i]) H[i].mdd = 0 });
+  /* giới · dân tộc — `CSDL-2B` */
+  const DTOC = ['Thái', 'Mông', 'Dao', 'Khmer', 'Nùng'];
+  H.forEach((h, i) => {
+    h.gt = (i % 40) < 19 ? 'nu' : 'nam';
+    h.dtoc = h.uu === 'Học sinh dân tộc thiểu số' ? DTOC[i % DTOC.length] : 'Kinh';
+    h.kt = null; h.kv = null; h.cks = []; h.dcTD = 0;
+  });
+  /* bốn hồ sơ đặc biệt: hai em chuyển đến CHỜ XẾP LỚP · hai em tốt nghiệp khóa trước */
+  const them = o => H.push(Object.assign({ ma: '', ten: '', lop: null, khoi: 6, dt: 'A', tt: 'hoc', uu: '', uu2: [],
+    giay: 1, mdd: 1, vaoNgay: '2026-08-01', roiNgay: null, sk: [], quaHan: 0, gt: 'nu', dtoc: 'Kinh', kt: null, kv: null, cks: [], dcTD: 0 }, o));
+  them({ ma: 'HS-2026-0621', ten: 'Nguyễn Hoàng Lâm', gt: 'nam', vaoNgay: k('24/11/2026'), kv: 'KV2',
+    sk: [['chuyenden', k('24/11/2026'), 'M1.5', 'Từ THCS Tân Hưng — chờ xếp lớp']] });
+  them({ ma: 'HS-2026-0622', ten: 'Tạ Khánh Ngân', vaoNgay: k('26/11/2026'), kv: null,
+    sk: [['chuyenden', k('26/11/2026'), 'M1.5', 'Từ tỉnh khác — chờ xếp lớp']] });
+  them({ ma: 'HS-2023-0088', ten: 'Vương Đình Khoa', gt: 'nam', lop: '9A1', khoi: 9, tt: 'totnghiep',
+    vaoNgay: k('1/8/2023'), roiNgay: k('31/5/2026'), kv: 'KV3', sk: [['totnghiep', k('31/5/2026'), 'M3.4', 'Tốt nghiệp THCS khóa 2023–2026']] });
+  them({ ma: 'HS-2023-0091', ten: 'Đoàn Thị Mỹ Duyên', lop: '9A2', khoi: 9, tt: 'totnghiep',
+    vaoNgay: k('1/8/2023'), roiNgay: k('31/5/2026'), kv: 'KV3', sk: [['totnghiep', k('31/5/2026'), 'M3.4', 'Tốt nghiệp THCS khóa 2023–2026']] });
+  /* diện thứ hai — đơn vị dòng của `M1.2` là EM × DIỆN */
+  const th2 = (dien, c0) => {
+    let c = 0; for (let i = 0; i < H.length && c < c0; i++) {
+      const h = H[i]; if (h.tt === 'hoc' && h.uu && h.uu !== dien && !h.uu2.length && i % 3 === 0) { h.uu2.push(dien); c++ }
+    }
+  };
+  th2('Chính sách học sinh dân tộc bán trú', 3);
+  th2('Con hộ nghèo thuộc chương trình 135', 2);
+  th2('Học sinh vùng khó khăn', 1);
+  /* khuyết tật — dạng · mức độ (Luật NKT 51/2010 Đ.3). Em cuối CHƯA KHAI mức độ */
+  const KT = [['Vận động', 'Khuyết tật nặng'], ['Nghe, nói', 'Khuyết tật nhẹ'],
+  ['Nhìn', 'Khuyết tật nặng'], ['Trí tuệ', 'Khuyết tật đặc biệt nặng'], ['Vận động', null]];
+  let j = 0; H.forEach(h => { if (h.uu === 'Học sinh khuyết tật' && j < KT.length) { h.kt = { dang: KT[j][0], muc: KT[j][1] }; j++ } });
+  /* khu vực — KHÔNG mặc định KV3 cho hồ sơ chưa khai (bước 37 bỏ trống) */
+  H.forEach((h, i) => {
+    if (h.kv) return;
+    if (i % 37 === 5) return;
+    h.kv = h.dt === 'B' ? (h.khoi <= 7 ? 'KV1' : 'KV2-NT') : (i % 5 ? 'KV3' : 'KV2');
+  });
+  /* cờ «Chưa khảo sát» — một em có thể mang NHIỀU cờ */
+  [[0, ['Biết bơi', 'Học tiếng dân tộc', 'Phụ huynh có điện thoại thông minh']], [11, ['Biết bơi', 'Phụ huynh có máy tính và Internet']],
+  [26, ['Phụ huynh có máy tính và Internet']], [38, ['Biết bơi']], [52, ['Học tiếng dân tộc', 'Phụ huynh có máy tính và Internet']],
+  [63, ['Biết bơi']], [79, ['Phụ huynh có máy tính và Internet', 'Phụ huynh có điện thoại thông minh']], [94, ['Biết bơi']],
+  [108, ['Học tiếng dân tộc']], [121, ['Biết bơi', 'Phụ huynh có máy tính và Internet']], [137, ['Phụ huynh có máy tính và Internet']],
+  [149, ['Biết bơi']], [162, ['Học tiếng dân tộc', 'Biết bơi']], [177, ['Phụ huynh có máy tính và Internet']],
+  [190, ['Phụ huynh có điện thoại thông minh']], [203, ['Biết bơi', 'Phụ huynh có máy tính và Internet']], [218, ['Học tiếng dân tộc']],
+  [231, ['Phụ huynh có máy tính và Internet']], [247, ['Biết bơi']], [266, ['Phụ huynh có máy tính và Internet', 'Phụ huynh có điện thoại thông minh']],
+  [288, ['Học tiếng dân tộc']], [305, ['Biết bơi']]].forEach(x => { if (H[x[0]]) H[x[0]].cks = x[1] });
+  /* cụm địa chỉ ở chế độ tự do — KHÔNG phải lỗi trong trường */
+  [4, 18, 33, 57, 72, 90, 115, 133, 158, 181, 225, 270].forEach((i, c) => { if (H[i]) H[i].dcTD = c % 3 + 1 });
+
+  /* ── diện: MỖI BẢN GHI MANG NGÀY XÁC NHẬN (`M1.2`) — `null` = chờ xác nhận ──
+     Toàn bộ diện của bộ gieo gốc xác nhận 10/8/2026 (trước mốc `HS.06`
+     15/8). 🆕 `V22` thêm NĂM bản ghi để luật «chỉ tính diện ĐÃ xác nhận tại
+     ngày chốt» chạy được trên màn hình: ba bản CHỜ xác nhận (⛔ không tính ở
+     bất kỳ ngày nào) và hai bản xác nhận GIỮA NĂM (chốt lùi trước ngày ấy thì
+     chưa tính).                                                              */
+  const XN0 = '2026-08-10';
+  H.forEach(h => { h.dien = [h.uu].concat(h.uu2).filter(Boolean).map(t => ({ ten: t, xacNhan: XN0 })) });
+  [[45, 'Hộ cận nghèo', null], [150, 'Học sinh vùng khó khăn', null], [250, 'Học sinh mồ côi', null],
+  [182, 'Hộ nghèo', '2026-10-15'], [113, 'Học sinh hưởng chính sách ăn trưa', '2026-11-20']]
+    .forEach(x => H[x[0]].dien.push({ ten: x[1], xacNhan: x[2] }));
+
+  const TTMA = { hoc: 'dang_hoc', baoluu: 'bao_luu', chuyendi: 'chuyen_di', thoihoc: 'thoi_hoc', totnghiep: 'tot_nghiep' };
+  const hocSinh = H.map(h => {
+    const skTT = h.sk.filter(s => s[0] === h.tt).slice(-1)[0];
+    return {
+      ma: h.ma, ten: h.ten, lop: h.lop, khoi: h.khoi, dt: h.dt, gioi: h.gt, danToc: h.dtoc,
+      trangThai: TTMA[h.tt], ngayTrangThai: skTT ? skTT[1] : h.vaoNgay, baoLuuQuaHan: h.quaHan,
+      vaoNgay: h.vaoNgay, roiNgay: h.roiNgay, suKien: h.sk, dien: h.dien,
+      giayDu: h.giay, maDinhDanh: h.mdd, khuVuc: h.kv, khuyetTat: h.kt, coChuaKhaoSat: h.cks, diaChiTuDo: h.dcTD
+    };
+  });
+
+  /* ═══════════ ⑤ VAI GẮN ĐIỂM TRƯỜNG — một điểm trường mỗi vai ═════════════
+     Phép kiểm phạm vi: hai demo cắt CÙNG một điểm trường. Vai không có ở đây
+     ⇒ demo giữ cách khai của mình. `dt: null` = phạm vi Trường.              */
+  const vai = {
+    HT: { ma: nsTen('Nguyễn Quang Huy').ma, dt: null },
+    PHT_CM: { ma: nsTen('Vũ Đình Trung').ma, dt: null },
+    PHT_DT: { ma: nsTen('Phạm Thu Hương').ma, dt: 'B' },
+    VT: { ma: nsTen('Mai Thị Yến').ma, dt: 'A' },
+    GVU: { ma: nsTen('Lê Thu Hằng').ma, dt: 'A' },
+    KT: { ma: nsTen('Đặng Văn Xuân').ma, dt: null },
+    TCNS: { ma: nsTen('Hoàng Thị Yến').ma, dt: null }
+  };
+
+  /* ═══════════ ⑥ MỐC — ⛔ không khai «hôm nay» thứ hai ═════════════════════
+     `HOMNAY` · năm học lấy HẰNG của tệp nền `app.10`; kỳ báo cáo lấy `PV.KY`
+     của `app.12` — ⛔ không chép. Ở đây chỉ mốc riêng của dữ liệu mẫu.       */
+  const moc = {
+    homNay: HOMNAY, namHoc: NAMHOC, khaiGiang: NAMHOC_TU, beGiang: NAMHOC_DEN,
+    vaoTruongMacDinh: '2026-08-01', dienXacNhanGoc: XN0,
+    kyKpi: [{ ky: 'Q1', ten: 'Quý I', tu: '2026-09-01', den: '2026-11-30', chot: '2026-12-05' }]
+  };
+
+  return dongBang({ phienBan: 'HDDL v1 · BCM9-V22 · 21/9/2026', diemTruong, lop, hocSinh, nhanSu, vai, moc });
 })();
 
-/* ════════ ② CỔNG `N5` — XD Ở FEATURE NGUỒN ══════════════════════════════
-   Luật sinh quyền của nhóm 📊 (sổ §5): vai có `XD` ở feature NGUỒN thì có
-   `X` ở tab báo cáo. Ở đây hai khối có hai nguồn khác nhau, nên một vai có
-   thể đọc được khối này mà không đọc được khối kia — và khi không đọc được
-   thì ô vẫn CHIẾM CHỖ kèm câu nói rõ thiếu quyền gì trên menu nào (`N5`).
+/* ══════════════════════════════════════════════════════════════════════════
+   M9.13 — BÁO CÁO CSVC & THIẾT BỊ · phần riêng ①: BẢN CHIẾU DỮ LIỆU + VAI TRÒ
+   Phiên `BCM9-0A` (20/9/2026) — demo mẫu của cụm `BCM9`.
 
-   🛑 Danh sách dưới lấy từ ma trận quyền của HAI MENU NGUỒN, không bịa:
-   · `m10.7.tra_cuu`      — `M10.7` §7: XD = Quản trị hệ thống · HT · PHT_ĐT
-   · `m0.5.dot_uy_quyen`  — `M0.5` §12: XD có ở mọi chức danh, nhưng phạm vi
-                             `School` CHỈ HT; 19 chức danh còn lại là `Own`.
-                             Báo cáo này đọc đợt của CẢ TRƯỜNG ⇒ cần `School`. */
-const XD_NGUON = {
-  FULL: ['m10.7.tra_cuu', 'm0.5.dot_uy_quyen'],
-  IT: ['m10.7.tra_cuu'],
-  HT: ['m10.7.tra_cuu', 'm0.5.dot_uy_quyen'],
-  PHT: ['m10.7.tra_cuu'],
-  VT: [], TCNS: [], GVBM: []
-};
-const NGUON_BC = {
-  'm10.7.tra_cuu': { menu: 'M10.7', ten: 'Tra cứu nhật ký (tab ①)' },
-  'm0.5.dot_uy_quyen': { menu: 'M0.5', ten: 'Đợt ủy quyền — cần phạm vi School' }
-};
-const coXD3 = f => (XD_NGUON[vai] || []).indexOf(f) >= 0;
+   🛑 MENU NÀY KHÔNG SỞ HỮU DỮ LIỆU NÀO. Mọi thứ dưới đây là BẢN CHIẾU của
+   `M6.4` · `M6.11` · `M6.5` · `M4.6`, gieo lại đúng như demo của bốn menu đó
+   để hai bên ra CÙNG MỘT CON SỐ. Một báo cáo ra số khác menu chủ thì người
+   dùng bỏ cả hai và quay về Excel.
 
-/* ════════ ③ BẢN CHIẾU DỮ LIỆU ═══════════════════════════════════════════
-   🛑 TAB NÀY KHÔNG SỞ HỮU DỮ LIỆU NÀO.
-   · khối ① chiếu nhật ký mức ② ③ của chính `M10.7` — cùng loài với `LOG`
-     của tab ①, nhưng nằm trong NĂM HỌC 2026-2027 để khớp đồng hồ nhóm 📊;
-   · khối ② chiếu `M0.5` — bảy đợt `ĐUQ-001…007` gieo lại NGUYÊN mã, nguyên
-     người, nguyên ngày, nguyên danh sách menu và nguyên số việc đã làm thay
-     của demo `M0.5`. Gieo lại khác đi là ra số khác, người duyệt sẽ tưởng
-     số cũ sai.                                                            */
+   ⚠ MÃ PHÒNG — dùng ĐÚNG MỘT BỘ: `A-101` · `B-102` (bộ của cụm CSVC:
+   `M6.4` · `M6.11` · `M6.5`). Cụm lịch – chấm công (`M4.7` · `M4.9`) dùng bộ
+   khác — `P.101` · `B.102`. Hai bộ đã lệch nhau từ trước (`YK01-D3` — phiên
+   riêng). `M9.13` KHÔNG đọc `M4.9`, nên không chạm bộ thứ hai.
+   ══════════════════════════════════════════════════════════════════════════ */
 
-/* ── 3a. Truy cập & xuất dữ liệu cá nhân (`BC-QT-04`) ────────────────── */
-const MD = {                       /* 5 mục đích — danh sách ĐÓNG của `XU` */
-  bc: 'Lập báo cáo gửi cơ quan quản lý cấp trên', dc: 'Đối chiếu số liệu nội bộ giữa các bộ phận',
-  lt: 'Lập hồ sơ lưu trữ theo quy định', kt: 'Phục vụ đoàn kiểm tra · thanh tra',
-  sv: 'Xử lý một sự vụ cụ thể đang phát sinh'
+const MENU_NAY = 'M9.13';
+
+/* ═══════════════ ① ĐIỂM TRƯỜNG · PHÒNG — chiếu `M6.4` tab 1 ═══════════ */
+const DT = { A: 'Điểm trường A', B: 'Điểm trường B', C: 'Điểm trường C' };
+const LOAIP = {
+  hoc: 'Phòng học thường', bomon: 'Phòng bộ môn', dachucnang: 'Phòng đa chức năng',
+  hoitruong: 'Hội trường', thuvien: 'Thư viện', yte: 'Phòng y tế', nhansu: 'Phòng nhân viên',
+  bep: 'Khu bếp — bán trú', ngoaitroi: 'Sân · khu ngoài trời', congvu: 'Nhà công vụ cho giáo viên'
 };
-const TR = {                       /* trường dữ liệu cá nhân đã lấy */
-  ht: 'Họ và tên', ns: 'Ngày sinh', lop: 'Lớp', chame: 'Họ tên cha · mẹ', sdt: 'Số điện thoại liên hệ',
-  dcu: 'Địa chỉ thường trú', diem: 'Điểm thành phần', uutien: 'Diện ưu tiên · số quyết định',
-  hsns: 'Hồ sơ nhân sự đầy đủ', sieu: 'Siêu dữ liệu tệp (không mở nội dung)',
-  cdluc: 'Chức danh lúc thao tác'
-};
-/* số dòng chi tiết của lần vẽ gần nhất — `XU.AUDIT` không giữ con số này,
-   mà lượt xuất vừa rồi lấy đúng bấy nhiêu dòng có họ tên ra khỏi hệ thống. */
-let _soDongHienTai = 0;
-let TCDL = [
-  { id: 'XU-20260914-01', ngay: '2026-09-14', gio: '09:12', nguoi: 'Đỗ Thị Lan', cd: 'Văn thư', mn: 'M1.1', ob: 'Danh sách học sinh khối 6', hv: 'xuat', bg: 128, tr: ['ht', 'ns', 'lop', 'chame', 'sdt'], md: 'bc', dau: 1 },
-  { id: 'XU-20260914-02', ngay: '2026-09-14', gio: '10:40', nguoi: 'Đỗ Thị Lan', cd: 'Văn thư', mn: 'M1.1', ob: 'Danh sách học sinh khối 7', hv: 'xuat', bg: 119, tr: ['ht', 'ns', 'lop', 'chame', 'sdt'], md: 'bc', dau: 1 },
-  { id: 'XU-20260921-01', ngay: '2026-09-21', gio: '15:05', nguoi: 'Vũ Thị Hằng', cd: 'Giáo viên chủ nhiệm', mn: 'M1.1', ob: 'Danh bạ liên hệ phụ huynh 9A2', hv: 'xuat', bg: 42, tr: ['ht', 'lop', 'chame', 'sdt'], md: 'sv', dau: 1 },
-  { id: 'XE-20260928-01', ngay: '2026-09-28', gio: '08:30', nguoi: 'Phạm Minh Đức', cd: 'Tổ chức nhân sự', mn: 'M4.1', ob: 'Hồ sơ nhân sự — 6 lượt mở hồ sơ', hv: 'xem', bg: 6, tr: ['hsns'], md: 'dc', dau: 0 },
-  { id: 'XU-20261006-01', ngay: '2026-10-06', gio: '14:20', nguoi: 'Đỗ Thị Lan', cd: 'Văn thư', mn: 'M1.1', ob: 'Học sinh diện chính sách', hv: 'xuat', bg: 37, tr: ['ht', 'lop', 'uutien'], md: 'lt', dau: 1 },
-  { id: 'XU-20261012-01', ngay: '2026-10-12', gio: '16:45', nguoi: 'Trịnh Thị Vân', cd: 'Hiệu trưởng', mn: 'M2.5', ob: 'Bảng điểm giữa kỳ I — khối 9', hv: 'xuat', bg: 168, tr: ['ht', 'lop', 'diem'], md: 'dc', dau: 1 },
-  {
-    id: 'XU-20261019-01', ngay: '2026-10-19', gio: '21:10', nguoi: 'Trần Văn Hùng', cd: 'Giáo viên bộ môn', mn: 'M2.5', ob: 'Bảng điểm Toán 9A2', hv: 'xuat', bg: 42, tr: ['ht', 'lop', 'diem'], md: 'sv', dau: 0,
-    lyDoDau: 'Xuất qua màn hình chưa nối cổng mức 2 — tệp không mang dấu, không tra ngược được ai đang giữ bản sao'
-  },
-  { id: 'XE-20261023-01', ngay: '2026-10-23', gio: '09:05', nguoi: 'Lê Quốc Bình', cd: 'Quản trị hệ thống', mn: 'M10.11', ob: 'Danh sách tệp lớp Hồ sơ sức khỏe (mức ③)', hv: 'xem', bg: 214, tr: ['sieu'], md: 'kt', dau: 0 },
-  { id: 'XU-20261103-01', ngay: '2026-11-03', gio: '10:15', nguoi: 'Trịnh Thị Vân', cd: 'Hiệu trưởng', mn: 'M1.1', ob: 'Danh sách học sinh toàn trường — đoàn kiểm tra', hv: 'xuat', bg: 412, tr: ['ht', 'ns', 'lop', 'dcu'], md: 'kt', dau: 1 },
-  { id: 'XU-20261103-02', ngay: '2026-11-03', gio: '10:40', nguoi: 'Trịnh Thị Vân', cd: 'Hiệu trưởng', mn: 'M4.1', ob: 'Danh sách nhân sự — đoàn kiểm tra', hv: 'xuat', bg: 58, tr: ['hsns'], md: 'kt', dau: 1 },
-  { id: 'XU-20261117-01', ngay: '2026-11-17', gio: '13:50', nguoi: 'Đỗ Thị Lan', cd: 'Văn thư', mn: 'M1.1', ob: 'Sổ đăng bộ khối 9', hv: 'xuat', bg: 168, tr: ['ht', 'ns', 'lop', 'dcu'], md: 'lt', dau: 1 },
-  { id: 'XE-20261125-01', ngay: '2026-11-25', gio: '20:05', nguoi: 'Vũ Thị Hằng', cd: 'Giáo viên chủ nhiệm', mn: 'M1.1', ob: 'Hồ sơ học sinh 9A2 — 11 lượt mở', hv: 'xem', bg: 11, tr: ['ht', 'chame', 'sdt'], md: 'sv', dau: 0 },
-  { id: 'XU-20261208-01', ngay: '2026-12-08', gio: '11:30', nguoi: 'Phạm Minh Đức', cd: 'Tổ chức nhân sự', mn: 'M4.1', ob: 'Hồ sơ nhân sự — báo cáo Sở tháng 12', hv: 'xuat', bg: 58, tr: ['hsns'], md: 'bc', dau: 1 },
-  { id: 'XU-20261221-01', ngay: '2026-12-21', gio: '15:20', nguoi: 'Đỗ Thị Lan', cd: 'Văn thư', mn: 'M1.1', ob: 'Danh sách học sinh bán trú — học kỳ I', hv: 'xuat', bg: 96, tr: ['ht', 'lop', 'chame'], md: 'dc', dau: 1 }
+const TT_PHONG = { dung: ['Đang sử dụng', 'o'], sua: ['Đang sửa', 'w'], dong: ['Đóng cửa', 'r'] };
+const PHONG = [
+  { id: 'A-101', ten: 'Phòng 101', dt: 'A', loai: 'hoc', tt: 'dung' },
+  { id: 'A-102', ten: 'Phòng 102', dt: 'A', loai: 'hoc', tt: 'dung' },
+  { id: 'A-103', ten: 'Phòng 103', dt: 'A', loai: 'hoc', tt: 'dung' },
+  { id: 'A-201', ten: 'P. Tin học 1', dt: 'A', loai: 'bomon', tt: 'dung' },
+  { id: 'A-202', ten: 'P. Vật lý', dt: 'A', loai: 'bomon', tt: 'dung' },
+  { id: 'A-203', ten: 'P. Sinh — Hóa', dt: 'A', loai: 'bomon', tt: 'sua', ghichu: 'Thay hệ thống bồn rửa và tủ hút — dự kiến xong 15/01/2027' },
+  { id: 'A-204', ten: 'P. Nghệ thuật 1', dt: 'A', loai: 'bomon', tt: 'dung' },
+  { id: 'A-301', ten: 'Hội trường', dt: 'A', loai: 'hoitruong', tt: 'dung' },
+  { id: 'A-302', ten: 'Thư viện', dt: 'A', loai: 'thuvien', tt: 'dung' },
+  { id: 'A-104', ten: 'Phòng y tế', dt: 'A', loai: 'yte', tt: 'dung' },
+  { id: 'A-B01', ten: 'Bếp ăn bán trú', dt: 'A', loai: 'bep', tt: 'dung' },
+  { id: 'B-101', ten: 'Phòng 101', dt: 'B', loai: 'hoc', tt: 'dung' },
+  { id: 'B-102', ten: 'Phòng 102', dt: 'B', loai: 'hoc', tt: 'dung' },
+  { id: 'B-201', ten: 'P. Tin học', dt: 'B', loai: 'bomon', tt: 'dung' },
+  { id: 'B-202', ten: 'P. Sinh học', dt: 'B', loai: 'bomon', tt: 'dung' },
+  { id: 'B-103', ten: 'Kho thiết bị', dt: 'B', loai: 'nhansu', tt: 'dung' },
+  { id: 'B-104', ten: 'Phòng 104 (cũ)', dt: 'B', loai: 'hoc', tt: 'dong', ghichu: 'Ngừng dùng sau sáp nhập — mái dột, chờ kinh phí sửa' },
+  { id: 'SAN.A', ten: 'Sân thể dục', dt: 'A', loai: 'ngoaitroi', tt: 'dung' },
+  { id: 'SAN.B', ten: 'Sân thể dục', dt: 'B', loai: 'ngoaitroi', tt: 'dung' },
+  { id: 'B-NCV1', ten: 'Nhà công vụ 1', dt: 'B', loai: 'congvu', tt: 'dung' },
+  { id: 'B-NCV2', ten: 'Nhà công vụ 2', dt: 'B', loai: 'congvu', tt: 'dung' },
+  { id: 'B-NCV3', ten: 'Nhà công vụ 3', dt: 'B', loai: 'congvu', tt: 'dung' }
 ];
+const phongById = id => PHONG.find(p => p.id === id);
 
-/* ── 3b. Đợt ủy quyền (`BC-QT-06`) — chiếu `M0.5`, gieo lại nguyên ───── */
-const NS_UQ = {
-  ns01: 'Nguyễn Quang Huy', ns02: 'Trần Thu Hà', ns03: 'Lý Thanh Bình', ns04: 'Hoàng Minh Tuấn',
-  ns05: 'Nguyễn Văn Nam', ns06: 'Lê Thị Thu', ns07: 'Vũ Thị Mai', ns08: 'Đặng Thị Hồng',
-  ns09: 'Nguyễn Thị Hoa', ns10: 'Lê Văn Minh', ns11: 'Ngô Thị Lan'
+/* ═══════════════ ② TÀI SẢN — chiếu `M6.4` tab 2 + kho cho mượn `M6.5` ═══
+   Gieo lại NGUYÊN mã và nguyên giá của hai demo nguồn.
+   ⚠ Hai demo nguồn đang gieo hai danh sách khác nhau: `M6.4` có 50 tài sản
+   (`TS-26-01…40` + 10 thiết bị chấm công `TS-26-71…80`), còn `M6.5` gieo
+   thêm 8 tài sản di động `TS-26-41…48` cho kho mượn mà sổ `M6.4` không có.
+   Báo cáo này lấy HỢP của hai bên — bỏ bên nào đi cũng là giấu một phần sổ.
+   Chênh lệch giữa hai demo nguồn ghi vào mục H của phiếu.                */
+const LOAITS = {
+  dayhoc: 'Thiết bị dạy học', vp: 'Tài sản văn phòng', bep: 'Thiết bị bếp',
+  yte: 'Thiết bị y tế', ntt: 'Nội thất', cntt: 'Thiết bị CNTT', chamcong: 'Thiết bị chấm công'
 };
-const CD_UQ = { HT: 'Hiệu trưởng', PHT_DT: 'PHT phụ trách điểm trường', TTCM: 'Tổ trưởng chuyên môn', GVCN: 'Giáo viên chủ nhiệm' };
-const DOT_UQ = [
-  {
-    id: 'ĐUQ-001', goc: 'ns01', cd: 'HT', nhan: 'ns02', tu: '2026-09-02', den: '2026-09-05', thatDen: '2026-09-05',
-    menus: ['M4.8', 'M6.9', 'M6.5', 'M6.8'], tt: 'Đã kết thúc', lyDo: 'Họp giao ban đầu năm học tại Sở GDĐT (4 ngày)',
-    viec: [['02/09 08:40', 'M6.9', 'Chỉ định người xử lý công văn đến 201/SGDĐT-KHTC'],
-    ['02/09 09:15', 'M6.9', 'Chỉ định người xử lý công văn đến 204/UBND-VX'],
-    ['03/09 14:02', 'M4.8', 'Đồng ý đơn nghỉ không lương 1 ngày — Phạm Văn Đức'],
-    ['03/09 16:30', 'M6.5', 'Duyệt mượn hội trường tổng duyệt khai giảng'],
-    ['04/09 10:10', 'M6.8', 'Duyệt kế hoạch «Vui Tết Trung thu» — toàn trường'],
-    ['05/09 11:45', 'M4.8', 'Đồng ý đơn nghỉ không lương 2 ngày — Bùi Quốc Hải']]
-  },
-  {
-    id: 'ĐUQ-002', goc: 'ns07', cd: 'TTCM', nhan: 'ns08', tu: '2026-10-12', den: '2026-10-16', thatDen: null,
-    menus: ['M4.7', 'M5.2'], tt: 'Đã hủy trước khi diễn ra', lyDo: 'Tập huấn giáo viên cốt cán môn Ngữ văn (5 ngày)', viec: []
-  },
-  {
-    id: 'ĐUQ-003', goc: 'ns04', cd: 'PHT_DT', nhan: 'ns11', tu: '2026-10-05', den: '2026-10-30', thatDen: '2026-10-14',
-    menus: ['M6.5', 'M6.8', 'M2.4'], tt: 'Đã kết thúc — tự kết thúc 15/10', lyDo: 'Điều trị tại bệnh viện, nghỉ ốm dài ngày',
-    viec: [['06/10 07:50', 'M6.5', 'Duyệt yêu cầu mượn phòng thực hành Lý — Điểm trường B'],
-    ['08/10 13:20', 'M2.4', 'Duyệt đơn xin nghỉ 5 ngày — HS Trần Hải Yến 6B1'],
-    ['13/10 09:05', 'M6.8', 'Duyệt kế hoạch sự kiện «Hội thi Rung chuông vàng» — Điểm trường B']]
-  },
-  {
-    id: 'ĐUQ-004', goc: 'ns01', cd: 'HT', nhan: 'ns02', tu: '2026-10-21', den: '2026-10-27', thatDen: '2026-10-27',
-    menus: ['M5.1', 'M5.2', 'M4.8', 'M1.3', 'M3.3', 'M6.9', 'M7.5'], tt: 'Đã kết thúc', lyDo: 'Công tác Bộ GDĐT — tập huấn quản lý trường học (7 ngày)',
-    viec: [['21/10 08:15', 'M1.3', 'Sửa ghi chú rà soát học bạ khối 9 (không duyệt — M1.3 không kèm Duyệt)'],
-    ['21/10 14:40', 'M4.8', 'Đồng ý đơn nghỉ không lương 2 ngày — Trịnh Thị Vân'],
-    ['22/10 09:30', 'M4.8', 'Đồng ý đơn nghỉ không lương 1 ngày — Đỗ Thị Bích Ngọc'],
-    ['22/10 15:05', 'M6.9', 'Chỉ định người xử lý công văn đến 318/SGDĐT-GDTrH']]
-  },
-  {
-    id: 'ĐUQ-005', goc: 'ns01', cd: 'HT', nhan: 'ns03', tu: '2026-10-21', den: '2026-10-27', thatDen: '2026-10-27',
-    menus: ['M6.5', 'M8.4', 'M6.8'], tt: 'Đã kết thúc', lyDo: 'Công tác Bộ GDĐT — giao PHT điểm trường A xử lý việc CSVC và khiếu nại',
-    viec: [['22/10 10:20', 'M6.5', 'Duyệt yêu cầu sửa máy chiếu phòng 204 — Điểm trường A']]
-  },
-  {
-    id: 'ĐUQ-006', goc: 'ns05', cd: 'TTCM', nhan: 'ns06', tu: '2026-10-19', den: '2026-10-31', thatDen: '2026-10-31',
-    menus: ['M4.7', 'M12.5', 'M5.2', 'M5.1'], tt: 'Đã kết thúc — mở rộng +M5.1 khi đang hiệu lực', lyDo: 'Tập huấn giáo viên cốt cán cấp tỉnh môn Toán (2 tuần)',
-    viec: [['19/10 15:10', 'M4.7', 'Xếp dạy thay tiết 3 Tin 8A1 ngày 20/10'],
-    ['20/10 09:40', 'M5.2', 'Duyệt giáo án tuần 7 — Lê Văn Minh (Toán 6)'],
-    ['21/10 10:00', 'M5.2', 'Nhận xét giáo án tuần 7 — Phạm Văn Đức (Tin 8)'],
-    ['22/10 14:25', 'M5.1', 'Duyệt kế hoạch giảng dạy Toán 7 — sửa đổi lần 2'],
-    ['23/10 07:45', 'M4.7', 'Xếp dạy thay 4 tiết Toán 6 ngày 23–24/10']]
-  },
-  {
-    id: 'ĐUQ-007', goc: 'ns09', cd: 'GVCN', nhan: 'ns10', tu: '2026-10-27', den: '2026-10-29', thatDen: '2026-10-29',
-    menus: ['M2.4', 'M2.2'], tt: 'Đã kết thúc', lyDo: 'Dự lớp bồi dưỡng chuyên đề giáo viên chủ nhiệm (3 ngày)', viec: []
-  }
+const TT_TS = {
+  tot: ['Tốt', 'o'], dung: ['Đang sử dụng', 'o'], baotri: ['Cần bảo trì', 'w'],
+  hong: ['Hỏng', 'r'], thanhly: ['Đã thanh lý', 'n']
+};
+const NAMNS = '2026';
+let MTS = 0;
+const TAISAN = [];
+const themTS = o => { TAISAN.push(Object.assign({ id: o.ma }, o)) };
+(function seedTS() {
+  const mau = [
+    ['Máy chiếu Epson EB-X06', 'dayhoc', 'A-101', '2023-08-15', 9800000, 'dung'],
+    ['Máy chiếu Epson EB-X06', 'dayhoc', 'A-103', '2023-08-15', 9800000, 'dung'],
+    ['Máy chiếu Sony VPL-EX435', 'dayhoc', 'A-201', '2022-03-10', 11200000, 'baotri'],
+    ['Máy chiếu di động BenQ MS550', 'dayhoc', null, '2024-09-01', 8500000, 'dung'],
+    ['Kính hiển vi quang học Olympus CX23', 'dayhoc', 'B-202', '2021-11-20', 24500000, 'tot'],
+    ['Kính hiển vi quang học Olympus CX23', 'dayhoc', 'B-202', '2021-11-20', 24500000, 'tot'],
+    ['Bộ thí nghiệm Vật lý 9', 'dayhoc', 'A-202', '2022-08-05', 6200000, 'dung'],
+    ['Bộ thí nghiệm Hóa học 8', 'dayhoc', 'A-203', '2022-08-05', 5800000, 'dung'],
+    ['Tủ hút khí độc', 'dayhoc', 'A-203', '2020-06-12', 38000000, 'hong'],
+    ['Đàn organ Yamaha PSR-E373', 'dayhoc', 'A-204', '2023-01-18', 7900000, 'dung'],
+    ['Máy tính để bàn Dell OptiPlex 3080', 'cntt', 'A-201', '2021-09-01', 13500000, 'dung'],
+    ['Máy tính để bàn Dell OptiPlex 3080', 'cntt', 'A-201', '2021-09-01', 13500000, 'dung'],
+    ['Máy tính để bàn Dell OptiPlex 3080', 'cntt', 'A-201', '2021-09-01', 13500000, 'baotri'],
+    ['Máy tính để bàn HP ProDesk 400', 'cntt', 'B-201', '2019-08-20', 11800000, 'hong'],
+    ['Máy tính để bàn HP ProDesk 400', 'cntt', 'B-201', '2019-08-20', 11800000, 'dung'],
+    ['Laptop Lenovo ThinkPad E14', 'cntt', null, '2024-02-14', 18900000, 'dung'],
+    ['Laptop Lenovo ThinkPad E14', 'cntt', null, '2024-02-14', 18900000, 'dung'],
+    ['Máy in Canon LBP2900', 'vp', 'A-104', '2020-01-10', 3200000, 'dung'],
+    ['Máy photocopy Ricoh MP2014', 'vp', 'A-104', '2022-05-30', 32000000, 'dung'],
+    ['Điều hòa Daikin 18000BTU', 'ntt', 'A-301', '2023-04-22', 16500000, 'dung'],
+    ['Điều hòa Daikin 18000BTU', 'ntt', 'A-301', '2023-04-22', 16500000, 'dung'],
+    ['Điều hòa Panasonic 12000BTU', 'ntt', 'A-103', '2021-05-08', 11200000, 'dung'],
+    ['Hệ thống âm thanh hội trường', 'ntt', 'A-301', '2022-09-14', 68000000, 'dung'],
+    ['Loa kéo di động', 'ntt', null, '2024-08-01', 4500000, 'dung'],
+    ['Tủ mát 2 cánh Sanaky', 'bep', 'A-B01', '2023-07-05', 18500000, 'dung'],
+    ['Tủ lưu mẫu thức ăn', 'bep', 'A-B01', '2023-07-05', 9200000, 'dung'],
+    ['Bếp công nghiệp 4 họng', 'bep', 'A-B01', '2023-07-05', 24000000, 'dung'],
+    ['Giường y tế 1 tay quay', 'yte', 'A-104', '2022-02-18', 5400000, 'dung'],
+    ['Tủ thuốc y tế 3 tầng', 'yte', 'A-104', '2022-02-18', 3800000, 'dung'],
+    ['Cân sức khỏe có thước đo', 'yte', 'A-104', '2022-02-18', 2600000, 'dung'],
+    ['Bàn ghế học sinh (bộ 20)', 'ntt', 'B-101', '2019-07-15', 24000000, 'dung'],
+    ['Bàn ghế học sinh (bộ 20)', 'ntt', 'B-102', '2019-07-15', 24000000, 'dung'],
+    ['Bàn ghế học sinh (bộ 20)', 'ntt', 'B-104', '2019-07-15', 24000000, 'baotri'],
+    ['Giá sách thư viện 5 tầng', 'ntt', 'A-302', '2020-10-02', 7800000, 'dung'],
+    ['Giá sách thư viện 5 tầng', 'ntt', 'A-302', '2020-10-02', 7800000, 'dung'],
+    ['Máy tính tra cứu thư viện', 'cntt', 'A-302', '2020-10-02', 9500000, 'baotri'],
+    /* ★ thanh lý CÓ NGÀY — «đã thanh lý» là một sự kiện xảy ra vào một ngày,
+       không phải một thuộc tính vĩnh viễn. Không có ngày thì báo cáo chốt tại
+       30/9 vẫn loại nó ra, trong khi hôm ấy nó còn nguyên trong sổ. */
+    ['Máy chiếu vật thể ELMO', 'dayhoc', 'B-201', '2018-09-10', 15600000, 'thanhly', '2026-10-05'],
+    ['Tủ hồ sơ sắt 4 ngăn', 'vp', 'B-103', '2019-03-25', 4200000, 'dung'],
+    ['Tủ hồ sơ sắt 4 ngăn', 'vp', 'B-103', '2019-03-25', 4200000, 'dung'],
+    ['Máy lọc nước nóng lạnh', 'ntt', 'B-103', '2023-03-08', 6800000, 'dung']
+  ];
+  mau.forEach((m, i) => {
+    const [ten, loai, phong, ngayMua, gia, tt, ngayThanhLy] = m;
+    const dt = phong ? phongById(phong).dt : (i % 3 === 0 ? 'B' : 'A');
+    themTS({ ma: 'TS-' + NAMNS.slice(2) + '-' + p2(++MTS), ten, loai, phong, dt, ngayMua, gia, tt, ngayThanhLy: ngayThanhLy || null, diDong: !phong });
+  });
+  /* kho cho mượn của M6.5 — TS-26-41…48 */
+  [['Máy chiếu di động Epson EB-E01', 'dayhoc', 'A', '2024-10-05', 8200000],
+  ['Máy chiếu di động Epson EB-E01', 'dayhoc', 'A', '2024-10-05', 8200000],
+  ['Máy chiếu di động Epson EB-E01', 'dayhoc', 'A', '2025-08-20', 8600000],
+  ['Laptop Lenovo ThinkPad E14', 'cntt', 'A', '2024-02-14', 18900000],
+  ['Bộ micro không dây Shure BLX288', 'ntt', 'B', '2024-05-09', 6500000],
+  ['Bộ micro không dây Shure BLX288', 'ntt', 'A', '2023-11-12', 6500000],
+  ['Máy ảnh Canon EOS 2000D', 'vp', 'A', '2022-12-20', 9500000],
+  ['Bộ dụng cụ thể thao lưu động', 'dayhoc', 'B', '2024-03-18', 5200000]
+  ].forEach(([ten, loai, dt, ngayMua, gia]) => {
+    themTS({ ma: 'TS-' + NAMNS.slice(2) + '-' + p2(++MTS), ten, loai, phong: null, dt, ngayMua, gia, tt: 'dung', diDong: true });
+  });
+})();
+/* thiết bị chấm công — dải mã riêng TS-26-7x (YK01-D · YK01-Z1) */
+[['TS-26-71', 'A-101', 14500000, 'dung'], ['TS-26-72', 'A-102', 14500000, 'dung'],
+['TS-26-73', 'A-103', 14500000, 'dung'], ['TS-26-74', 'A-201', 14500000, 'dung'],
+['TS-26-75', 'A-202', 14500000, 'dung'], ['TS-26-76', 'A-204', 6800000, 'baotri'],
+['TS-26-77', 'B-101', 6800000, 'dung'], ['TS-26-78', 'B-201', 5200000, 'dung'],
+['TS-26-79', 'B-202', 14500000, 'dung', null],
+/* ★ TS-26-80 mua 18/11/2026 — «đã mua, chưa cấu hình» (M6.4 §2.9). Ngày mua thật
+   làm nên khác biệt giữa bảng chốt 30/9 và bảng chốt hôm nay. */
+['TS-26-80', 'B-103', 14500000, 'dung', '2026-11-18']
+].forEach(([ma, phong, gia, tt, ngayMuaRieng]) => {
+  const dt = phongById(phong).dt;
+  themTS({
+    ma, ten: 'Thiết bị chấm công ' + ma.slice(-2), loai: 'chamcong', phong, dt,
+    ngayMua: ngayMuaRieng || (dt === 'A' ? '2026-07-20' : '2026-07-28'), gia, tt,
+    ngayThanhLy: null, diDong: false
+  });
+});
+const tsById = id => TAISAN.find(t => t.id === id);
+
+/* ═══════════════ ③ ĐIỀU CHUYỂN — chiếu `M6.11` tab 1 ═══════════════════ */
+const TT_DC = {
+  dexuat: ['Chờ điểm trường đích xác nhận', 'b'], dichok: ['Chờ Hiệu trưởng duyệt', 'w'],
+  vanchuyen: ['Đang vận chuyển', 'w'], hoantat: ['Đã hoàn tất', 'o'],
+  tuchoi: ['Điểm trường đích từ chối', 'r'], huy: ['Đã hủy', 'n']
+};
+const DIEUCHUYEN = [
+  { id: 'DC-01', ts: 'TS-26-05', nguon: 'B', dich: 'A', ngayDX: '2026-12-10', boiDX: 'Trịnh Văn Khánh', tt: 'dichok', ly: 'ĐT A mở phòng Sinh học mới, chưa có kính hiển vi.' },
+  { id: 'DC-02', ts: 'TS-26-39', nguon: 'B', dich: 'A', ngayDX: '2026-11-02', boiDX: 'Trịnh Văn Khánh', tt: 'hoantat', ngayXong: '2026-11-08', ly: 'Tủ hồ sơ dôi dư ở kho ĐT B.' },
+  { id: 'DC-03', ts: 'TS-26-14', nguon: 'B', dich: 'A', ngayDX: '2026-12-18', boiDX: 'Trịnh Văn Khánh', tt: 'tuchoi', ly: 'Máy tính hỏng — là việc SỬA CHỮA, không phải điều chuyển.' },
+  { id: 'DC-04', ts: 'TS-26-24', nguon: 'A', dich: 'B', ngayDX: '2026-12-22', boiDX: 'Lý Thanh Bình', tt: 'dexuat', ly: 'Loa kéo di động — ĐT B tổ chức ngày hội.' }
 ];
-const menuDaDung = d => { const s = {}; d.viec.forEach(v => s[v[1]] = 1); return Object.keys(s) };
-const ngayHieuLuc = d => d.thatDen ? (soNgay(d.tu, d.thatDen) + 1) : 0;
+/* lệnh ĐÃ HOÀN TẤT thì sổ tài sản phải đã đổi — giữ đúng như M6.4 */
+DIEUCHUYEN.filter(d => d.tt === 'hoantat').forEach(d => {
+  const t = tsById(d.ts); if (!t) return;
+  t.dt = d.dich; t.phong = null; t.diDong = true;
+});
 
-/* ════════ ④ PHẠM VI — ràng buộc DỮ LIỆU, không phải ẩn nút ══════════════ */
-const DV_CUA = {
-  'Đỗ Thị Lan': 'Cơ sở chính', 'Trần Văn Hùng': 'Điểm trường Nam Hòa', 'Vũ Thị Hằng': 'Điểm trường Nam Hòa',
-  'Trịnh Thị Vân': 'Cơ sở chính', 'Phạm Minh Đức': 'Cơ sở chính', 'Lê Quốc Bình': 'Cơ sở chính'
+/* ═══════════════ ④ PHIẾU SỬA CHỮA — chiếu `M6.11` tab 2 ════════════════ */
+const TT_BH = {
+  moi: ['Mới báo — chờ đến nơi xác nhận', 'r'], tiepnhan: ['Đã xác nhận tại chỗ', 'b'],
+  dangxuly: ['Đang sửa / thay', 'w'], xong: ['Đã xong', 'o'],
+  khongsua: ['Không sửa được — đã ghi giảm', 'n'], huy: ['Đã hủy', 'n']
 };
-const DV_VAI3 = { VT: 'Cơ sở chính' };
-const trongPV3 = r => R().sc3 === 'chinhanh' ? (DV_CUA[r.nguoi] || 'Cơ sở chính') === (DV_VAI3[vai] || 'Cơ sở chính') : true;
-const tenPV3 = () => R().sc3 === 'chinhanh' ? (DV_VAI3[vai] || 'Cơ sở chính') : 'Toàn trường';
-
-/* ════════ ⑤ HAI MÃ CHỈ TIÊU MỚI — khai ở đây, `Z` gom vào `nh9` §2 ══════
-   Nhóm mã `QT` — Quản trị & tuân thủ. Tài liệu 18/9 §5.12 đã đặt trước
-   `QT.05*` cho `BC-QT-04`; `QT.06` phiên này khai thêm cho `BC-QT-06`.
-   `QT.01…QT.04` để TRỐNG có chủ ý — tài liệu 18/9 giữ chúng cho `BC-QT-02`
-   và `BC-QT-03`, hai báo cáo không thuộc phiên này.                       */
-const mocQT = '2026-09-05';        /* nhật ký lên hệ thống từ ngày khai giảng */
-
-CT.khai({
-  ma: 'QT.05', ten: 'Lượt truy cập và xuất dữ liệu cá nhân', donVi: 'lượt', loaiSo: 'PS',
-  nguon: ['M10.7'], chieuHopLe: ['nguoi', 'thang', 'muc_dich', 'menu'], moc: mocQT,
-  canCu: 'Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15',
-  quyTacDem: {
-    tinhVao: ['Lượt XUẤT một danh sách có họ tên, đếm theo thời điểm bấm tải tệp',
-      'Lượt XEM một bản ghi có trường dữ liệu cá nhân của trẻ em hoặc của nhân sự',
-      'Cả lượt của chính người đang xem báo cáo này'],
-    khongTinh: ['Lượt xuất bảng chỉ có số (mức 1) — không phải dữ liệu cá nhân',
-      'Lượt xem danh sách mà không mở bản ghi nào',
-      'Lượt đăng nhập — ở M10.5, không phải nhật ký thao tác',
-      'Bản ghi đã archive ngoài năm học đang xem']
-  },
-  oPhu: {
-    xem: {
-      ten: 'Lượt xem dữ liệu cá nhân', donVi: 'lượt', loaiSo: 'PS', moc: mocQT,
-      quyTacDem: {
-        tinhVao: ['Lượt mở một bản ghi có trường dữ liệu cá nhân'],
-        khongTinh: ['Lượt xem danh sách mà không mở bản ghi nào', 'Lượt chủ thể dữ liệu xem về chính mình']
-      }
-    },
-    xuat: {
-      ten: 'Lượt xuất dữ liệu cá nhân (mức 2)', donVi: 'lượt', loaiSo: 'PS', moc: mocQT,
-      quyTacDem: {
-        tinhVao: ['Lượt tải một tệp có họ tên'],
-        khongTinh: ['Lượt xuất mức 1 — bảng chỉ có số', 'Lượt mở xem trước mà không tải']
-      }
-    },
-    banGhi: {
-      ten: 'Số bản ghi có tên đã lấy ra', donVi: 'bản ghi', loaiSo: 'PS', moc: mocQT,
-      quyTacDem: {
-        tinhVao: ['Số dòng có họ tên trong tệp đã tải, hoặc số bản ghi đã mở'],
-        khongTinh: ['Dòng tổng cộng của tệp', 'Dòng trống · dòng tiêu đề']
-      }
-    },
-    soTruong: {
-      ten: 'Số trường dữ liệu cá nhân đã lấy', donVi: 'trường', loaiSo: 'PS', moc: mocQT,
-      quyTacDem: {
-        tinhVao: ['Số trường KHÁC NHAU đã lấy trong nhóm dòng này — hợp của các lượt'],
-        khongTinh: ['Trường không phải dữ liệu cá nhân (mã lớp, mã tài sản…)',
-          'Cùng một trường lấy nhiều lần vẫn chỉ đếm một']
-      }
-    },
-    chuaDongDau: {
-      ten: 'Tệp chưa đóng dấu lượt xuất', donVi: 'tệp', loaiSo: 'PS', moc: mocQT,
-      quyTacDem: {
-        tinhVao: ['Lượt xuất có họ tên mà tệp KHÔNG mang dấu (người xuất · thời điểm · mục đích · mã audit)'],
-        khongTinh: ['Lượt xem — xem không sinh tệp', 'Lượt xuất mức 1']
-      }
-    }
-  }
-});
-
-CT.khai({
-  ma: 'QT.06', ten: 'Đợt ủy quyền và thao tác dưới chức danh tạm', donVi: 'đợt', loaiSo: 'PS',
-  nguon: ['M0.5', 'M10.7'], chieuHopLe: ['dot', 'nguoi_nhan', 'menu'], moc: mocQT,
-  quyTacDem: {
-    tinhVao: ['Đợt ủy quyền có khoảng hiệu lực GIAO với khoảng đang xem',
-      'Đếm cả đợt đã hủy và đợt tự kết thúc sớm — chúng là một phần của hồ sơ kiểm soát nội bộ'],
-    khongTinh: ['Đợt còn Chờ hiệu lực, chưa chạm khoảng đang xem',
-      'Ủy quyền KÝ CÔNG VĂN của M6.9 (mã UQ-xx) — loại khác, sổ khác']
-  },
-  oPhu: {
-    thaoTac: {
-      ten: 'Thao tác đã thực hiện dưới mặt nạ', donVi: 'thao tác', loaiSo: 'PS', moc: mocQT,
-      quyTacDem: {
-        tinhVao: ['Bản ghi mang đủ ba trường thuc_hien_boi · thay_cho · dot_uy_quyen (M0.5 §4 ràng buộc 2)'],
-        khongTinh: ['Thao tác người nhận làm bằng CHÍNH chức danh của họ — không phải làm thay',
-          'Thao tác của người gốc trong cùng khoảng — ủy quyền là thêm người, không chuyển quyền',
-          'Bước có ký số — ký số không bao giờ đi theo ủy quyền (M0.5 §3.3 C1)']
-      }
-    },
-    menuMo: {
-      ten: 'Menu trong mặt nạ của đợt', donVi: 'menu', loaiSo: 'PS', moc: mocQT,
-      quyTacDem: {
-        tinhVao: ['Menu người lập đã tick khi lập đợt, cộng menu mở rộng thêm khi đang hiệu lực'],
-        khongTinh: ['Menu người nhận vốn đã có quyền — đợt không mở thêm gì (M0.5 §7)']
-      }
-    },
-    menuKhongDung: {
-      ten: 'Menu mở mà không dùng tới', donVi: 'menu', loaiSo: 'PS', moc: mocQT,
-      quyTacDem: {
-        tinhVao: ['Menu có trong mặt nạ mà KHÔNG có thao tác nào dưới mặt nạ trong cả đợt'],
-        khongTinh: ['Menu người nhận có chạm bằng chức danh gốc của họ — không phải làm thay']
-      }
-    },
-    soNgay: {
-      ten: 'Số ngày hiệu lực thật', donVi: 'ngày', loaiSo: 'PS', moc: mocQT,
-      quyTacDem: {
-        tinhVao: ['Từ ngày bắt đầu tới ngày hiệu lực THẬT — đợt tự đóng khi người gốc thôi giữ chức danh (M0.5 §5)'],
-        khongTinh: ['Ngày ghi trên đợt mà đợt đã đóng trước đó', 'Đợt đã hủy — 0 ngày, không phải số ngày trên giấy']
-      }
-    }
-  }
-});
-
-/* ── nối phần TÍNH ──────────────────────────────────────────────────── */
-const trongKhoang = (ng, t) => ng >= t.tuNgay && ng <= t.denNgay;
-
-CT.nguonSo('QT.05', function (t, o) {
-  const ds = TCDL.filter(r => trongKhoang(r.ngay, t) && trongPV3(r) && (!t.loc || t.loc(r)));
-  const bgCua = r => ({
-    id: r.id, ten: r.nguoi + ' · ' + r.ob,
-    phu: k2s(r.ngay) + ' ' + r.gio + ' · ' + r.cd + ' · ' + r.mn + ' · ' + (r.hv === 'xuat' ? 'Xuất' : 'Xem')
-      + ' · ' + MD[r.md] + (r.hv === 'xuat' ? (r.dau ? ' · tệp đã đóng dấu' : ' · ⚠ tệp CHƯA đóng dấu') : ''),
-    so: vn(r.bg) + ' bản ghi'
-  });
-  if (o === 'xem') { const x = ds.filter(r => r.hv === 'xem'); return { giaTri: x.length, banGhiGoc: x.map(bgCua) } }
-  if (o === 'xuat') { const x = ds.filter(r => r.hv === 'xuat'); return { giaTri: x.length, banGhiGoc: x.map(bgCua) } }
-  if (o === 'banGhi') return { giaTri: ds.reduce((a, r) => a + r.bg, 0), banGhiGoc: ds.map(bgCua) };
-  if (o === 'soTruong') {
-    const s = {}; ds.forEach(r => r.tr.forEach(x => s[x] = 1));
-    return {
-      giaTri: Object.keys(s).length, banGhiGoc: Object.keys(s).map(k => ({ id: k, ten: TR[k] })),
-      ghiChu: 'Hợp của các lượt trong nhóm — cùng một trường lấy nhiều lần vẫn đếm một.'
-    };
-  }
-  if (o === 'chuaDongDau') {
-    const x = ds.filter(r => r.hv === 'xuat' && !r.dau);
-    return {
-      giaTri: x.length, banGhiGoc: x.map(r => ({ id: r.id, ten: r.ob, phu: r.lyDoDau || '—' })),
-      ghiChu: x.length ? 'Tệp không mang dấu thì <b>không tra ngược được ai đang giữ bản sao</b> — đây là lỗ hổng tuân thủ, không phải lỗi hiển thị.' : null
-    };
-  }
-  return { giaTri: ds.length, banGhiGoc: ds.map(bgCua) };
-});
-
-CT.nguonSo('QT.06', function (t, o) {
-  const ds = DOT_UQ.filter(d => d.tu <= t.denNgay && (d.thatDen || d.den) >= t.tuNgay && (!t.loc || t.loc(d)));
-  const nhan = d => d.id + ' · ' + NS_UQ[d.goc] + ' → ' + NS_UQ[d.nhan];
-  if (o === 'thaoTac') {
-    const bg = []; ds.forEach(d => d.viec.forEach(v => bg.push({ id: d.id, ten: v[2], phu: v[0] + ' · ' + v[1] })));
-    return { giaTri: bg.length, banGhiGoc: bg };
-  }
-  if (o === 'menuMo')
-    return {
-      giaTri: ds.reduce((a, d) => a + d.menus.length, 0),
-      banGhiGoc: ds.map(d => ({ id: d.id, ten: d.menus.join(' · '), phu: nhan(d), so: d.menus.length }))
-    };
-  if (o === 'menuKhongDung') {
-    const bg = [];
-    ds.forEach(d => { const du = menuDaDung(d); d.menus.filter(m => du.indexOf(m) < 0).forEach(m => bg.push({ id: d.id, ten: m, phu: nhan(d) })) });
-    return {
-      giaTri: bg.length, banGhiGoc: bg,
-      ghiChu: bg.length ? 'Mặt nạ rộng hơn việc thật. ⛔ <b>Không kết luận ai sai</b> — người lập đợt không biết trước mình sẽ cần menu nào; con số này để <b>lần sau tick hẹp hơn</b>.' : null
-    };
-  }
-  if (o === 'soNgay')
-    return {
-      giaTri: ds.reduce((a, d) => a + ngayHieuLuc(d), 0),
-      banGhiGoc: ds.map(d => ({ id: d.id, ten: nhan(d), phu: d.tt, so: ngayHieuLuc(d) + ' ngày' }))
-    };
-  return { giaTri: ds.length, banGhiGoc: ds.map(d => ({ id: d.id, ten: nhan(d), phu: d.tt })) };
-});
-
-/* ════════ ⑥ VẼ TAB ③ ════════════════════════════════════════════════════ */
-function nhomKhoi1() {
-  const t = PV.thamSoPS();
-  const ds = TCDL.filter(r => trongKhoang(r.ngay, t) && trongPV3(r));
-  const m = {};
-  ds.forEach(function (r) {
-    const k = thangCua(r.ngay) + '|' + r.nguoi + '|' + r.md;
-    if (!m[k]) m[k] = { id: k, nguoi: r.nguoi, thang: thangCua(r.ngay), md: r.md, cd: r.cd };
-  });
-  return Object.keys(m).sort().map(k => Object.assign(m[k], {
-    nhom: tenThang(m[k].thang), ten: m[k].nguoi, phu: m[k].cd + ' · ' + MD[m[k].md]
-  }));
-}
-
-function veKhoi1() {
-  const dong = nhomKhoi1();
-  const loc = d => r => r.nguoi === d.nguoi && thangCua(r.ngay) === d.thang && r.md === d.md;
-  let h = '<div class="khoi"><div class="khoih">① Truy cập &amp; xuất dữ liệu cá nhân'
-    + '<span class="khoibc">BC-QT-04</span>'
-    + '<span class="khoibc" style="background:#fee2e2;color:#991b1b">Luật BVDLCN 91/2025</span></div>'
-    + '<div class="khoimo">Một dòng = <b>một người · một tháng · một mục đích</b>. '
-    + 'Họ tên và chức danh là <b>của lúc thao tác</b>, không phải chức danh hiện tại.</div>';
-  h += KB.K9({
-    id: 'k1', tieuDe: 'Lượt truy cập và xuất dữ liệu cá nhân', ma: 'QT.05', chip: 'PS',
-    moTaKy: PV.moTaKhoang(), tenCotDau: 'Người · mục đích đã khai', gomNhom: true, dong: dong,
-    link: d => ({ menu: 'M10.7', ctx: 'tab=tra_cuu&nguoi=' + encodeURIComponent(d.nguoi) + '&thang=' + d.thang, nhan: 'Tra cứu nhật ký' }),
-    cot: [
-      { khoa: 'xem', ten: 'Lượt xem', kieu: 'so', nguon: 'm10.7.tra_cuu' },
-      { khoa: 'xuat', ten: 'Lượt xuất', kieu: 'so', nguon: 'm10.7.tra_cuu' },
-      { khoa: 'bg', ten: 'Bản ghi có tên', kieu: 'so', nguon: 'm10.7.tra_cuu' },
-      { khoa: 'tr', ten: 'Trường dữ liệu', donVi: 'khác nhau', kieu: 'so', nguon: 'm10.7.tra_cuu', khongCong: true },
-      { khoa: 'cd', ten: 'Tệp chưa đóng dấu', kieu: 'so', nguon: 'm10.7.tra_cuu', canhBao: k => k.giaTri > 0 }
-    ],
-    o: (d, c) => CT.doc('QT.05', PV.thamSoPS({ loc: loc(d) }),
-      c.khoa === 'xem' ? 'xem' : c.khoa === 'xuat' ? 'xuat' : c.khoa === 'bg' ? 'banGhi'
-        : c.khoa === 'tr' ? 'soTruong' : 'chuaDongDau'),
-    tongRieng: c => c.khoa === 'tr' ? CT.doc('QT.05', PV.thamSoPS(), 'soTruong') : null,
-    chuoiTrong: 'Không có lượt truy cập dữ liệu cá nhân nào trong khoảng đang xem.'
-  });
-
-  /* sổ chi tiết — khuôn `K5`, đúng biểu mẫu của tài liệu 18/9 §5.12 */
-  const t = PV.thamSoPS();
-  const ds = TCDL.filter(r => trongKhoang(r.ngay, t) && trongPV3(r)).sort((a, b) => (a.ngay + a.gio) < (b.ngay + b.gio) ? -1 : 1);
-  _soDongHienTai = ds.length;
-  /* v2 — lượt xuất mức 1 của mọi demo nhóm 📊: chỉ ở sổ, nhãn riêng, lọc được */
-  const dsM1 = TCDL_M1.filter(r => trongKhoang(r.ngay, t) && trongPV3(r));
-  const dsSo = (_hienM1 ? ds.concat(dsM1) : ds).sort((a, b) => (a.ngay + a.gio) < (b.ngay + b.gio) ? -1 : 1);
-  if (!coXD3('m10.7.tra_cuu')) {
-    h += '<div class="bg"><div class="bgh"><b>Sổ chi tiết từng lượt</b></div>'
-      + '<div class="noaccbox">🔒 <b>Sổ này bị ẩn.</b> Vai <b>' + escL(R().ten) + '</b> không có quyền '
-      + '<b>Xuất dữ liệu (XD)</b> ở <b>Tra cứu nhật ký — M10.7 tab ①</b>. '
-      + 'Có <b>' + ds.length + ' lượt</b> trong khoảng đang xem, không hiện ở đây.</div></div>';
-  } else {
-    if (dsM1.length) h += '<div class="pvbar"><span class="pvlb">Lượt xuất mức 1</span>'
-      + '<button class="pvk' + (_hienM1 ? ' on' : '') + '" data-tcm1="1" title="Bảng chỉ có số — không vào ba cột đếm của QT.05, chỉ hiện ở sổ này">'
-      + (_hienM1 ? '✓ Đang hiện ' : 'Hiện ') + dsM1.length + ' lượt «mức 1»</button></div>';
-    h += KB.K5({
-      tieuDe: 'Sổ chi tiết từng lượt — bản nộp khi cơ quan yêu cầu', chip: 'PS', moTaKy: PV.moTaKhoang(),
-      kiemSoHieu: false,
-      cot: [
-        { khoa: 'so', ten: 'Mã audit' },
-        { khoa: 'ngay', ten: 'Thời điểm' },
-        { khoa: 'nguoiLap', ten: 'Người thao tác · chức danh lúc đó' },
-        { khoa: 'hv', ten: 'Hành vi' },
-        { khoa: 'noiDung', ten: 'Menu · đối tượng' },
-        { khoa: 'sbg', ten: 'Bản ghi' },
-        { khoa: 'str', ten: 'Trường dữ liệu đã lấy' },
-        { khoa: 'tt', ten: 'Mục đích đã khai' },
-        { khoa: 'dau', ten: 'Dấu trên tệp' }
-      ],
-      banGhi: dsSo.map(r => r.muc === 1 ? ({
-        so: r.id, ngay: k2s(r.ngay) + ' ' + r.gio,
-        nguoiLap: r.nguoi + ' — ' + r.cd,
-        hv: 'Xuất · mức 1 (chỉ số)',
-        noiDung: r.mn + ' · ' + r.ob,
-        sbg: '—', str: '— (không có trường cá nhân)',
-        tt: '— (mức 1 không hỏi mục đích)',
-        dau: '✓ mã audit trên tệp'
-      }) : ({
-        so: r.id, ngay: k2s(r.ngay) + ' ' + r.gio,
-        nguoiLap: r.nguoi + ' — ' + r.cd,
-        hv: r.hv === 'xuat' ? 'Xuất' : 'Xem',
-        noiDung: r.mn + ' · ' + r.ob,
-        sbg: vn(r.bg), str: r.tr.map(x => TR[x]).join(', '),
-        tt: MD[r.md],
-        dau: r.hv === 'xuat' ? (r.dau ? '✓ đã đóng dấu' : '⚠ CHƯA đóng dấu') : '— (xem, không sinh tệp)'
-      })),
-      chuoiTrong: 'Không có lượt truy cập dữ liệu cá nhân nào trong khoảng đang xem.',
-      duoiBang: '<div class="ranh">Sổ này là <b>bản nộp</b>: nó chỉ bày lại nhật ký, ⛔ không sửa được dòng nào. '
-        + 'Muốn xem <i>trước → sau</i> của một thao tác thì mở nó ở tab ① <b>Tra cứu</b>.</div>'
+const CACH_XL = {
+  sua: 'Sửa chữa', thay: 'Thay thế', bosung: 'Mua bổ sung',
+  baotri: 'Bảo trì định kỳ', thanhly: 'Thanh lý — ghi giảm'
+};
+let MBH = 0;
+const BAOHONG = [];
+(function seedBH() {
+  [['2026-09-08', 'A-101', 'tb', 'Bóng đèn tuýp', 2, 'xong', 'thay', 180000, '2026-09-12'],
+  ['2026-09-16', 'B-101', 'tb', 'Quạt trần', 2, 'xong', 'sua', 150000, '2026-09-20'],
+  ['2026-10-01', 'A-201', 'ts', 'TS-26-03', 1, 'xong', 'sua', 2400000, '2026-10-03'],
+  ['2026-10-12', 'A-B01', 'tb', 'Bồn rửa', 1, 'xong', 'sua', 350000, '2026-10-15'],
+  ['2026-11-01', 'A-302', 'ts', 'TS-26-36', 1, 'xong', 'sua', 1250000, '2026-11-04'],
+  ['2026-08-25', 'A-101', 'ts', 'TS-26-01', 1, 'xong', 'bosung', 9800000, '2026-08-28'],
+  ['2026-12-01', 'A-104', 'ts', 'TS-26-19', 1, 'xong', 'baotri', 800000, '2026-12-05'],
+  ['2026-11-16', 'B-201', 'ts', 'TS-26-14', 1, 'dangxuly', 'sua', 900000, null],
+  ['2026-11-22', 'A-301', 'tb', 'Bóng đèn tuýp', 3, 'dangxuly', 'thay', 270000, null],
+  ['2026-11-28', 'A-203', 'tb', 'Bồn rửa', 1, 'dangxuly', 'thay', 12500000, null],
+  ['2026-12-18', 'B-104', 'tb', 'Bóng đèn tuýp', 6, 'tiepnhan', null, 0, null],
+  ['2026-12-26', 'A-203', 'tb', 'Ổ điện', 2, 'moi', null, 0, null],
+  ['2026-12-27', 'A-302', 'tb', 'Bóng đèn tuýp', 1, 'moi', null, 0, null],
+  ['2026-12-27', 'B-104', 'tb', 'Quạt trần', 3, 'moi', null, 0, null],
+  ['2026-12-28', 'A-201', 'ts', 'TS-26-13', 1, 'moi', null, 0, null]
+  ].forEach(([ngay, phong, lo, ref, sl, tt, cach, chiphi, ngayXong]) => {
+    BAOHONG.push({
+      id: 'BH-' + p2(++MBH), ngay, phong, dt: phongById(phong).dt, loaiDT: lo, ref, sl, tt, cach,
+      chiphi: chiphi || 0, ngayXong,
+      /* ngày tiếp nhận = ngày báo với mọi phiếu đã rời trạng thái «Mới báo» (đúng M6.11) */
+      ngayTN: tt === 'moi' ? null : ngay
     });
-  }
-  return h + '</div>';
-}
-
-function veKhoi2() {
-  const t = PV.thamSoPS();
-  const ds = DOT_UQ.filter(d => d.tu <= t.denNgay && (d.thatDen || d.den) >= t.tuNgay);
-  let h = '<div class="khoi"><div class="khoih">② Ủy quyền &amp; chức danh tạm'
-    + '<span class="khoibc">BC-QT-06</span></div>'
-    + '<div class="khoimo">Một dòng = <b>một đợt ủy quyền</b>. Đây là <b>kiểm soát nội bộ đọc từ nhật ký</b>, '
-    + 'cùng loài với khối ① — nên chung một tab, không tách Feature.</div>';
-  if (!coXD3('m0.5.dot_uy_quyen')) {
-    return h + '<div class="bg"><div class="bgh"><b>Đợt ủy quyền và thao tác dưới mặt nạ</b></div>'
-      + '<div class="noaccbox">🔒 <b>Khối này bị ẩn.</b> Vai <b>' + escL(R().ten) + '</b> không có quyền '
-      + '<b>Xuất dữ liệu (XD) phạm vi School</b> ở <b>Đợt ủy quyền — M0.5</b>. '
-      + 'Theo <b>M0.5 §12</b> chỉ <b>Hiệu trưởng</b> có phạm vi <b>School</b> ở Feature đó; 19 chức danh còn lại là '
-      + '<b>Own</b> — chỉ đợt mình giao hoặc mình nhận. Có <b>' + ds.length + ' đợt</b> trong khoảng đang xem, không hiện ở đây.'
-      + '<br>⏳ <b>Điểm cần anh chốt:</b> ma trận của phiên này cho vai đó <b>X trên cả tab</b>, '
-      + 'mà bảng chuẩn của nguồn thì không mở tới — xem mục H của phiếu.</div></div></div>';
-  }
-  h += KB.K9({
-    id: 'k2', tieuDe: 'Đợt ủy quyền và thao tác dưới chức danh tạm', ma: 'QT.06', chip: 'PS',
-    moTaKy: PV.moTaKhoang(), tenCotDau: 'Đợt · người ủy quyền → người nhận',
-    dong: ds.map(d => ({
-      id: d.id, ten: d.id + ' · ' + NS_UQ[d.goc] + ' → ' + NS_UQ[d.nhan],
-      phu: CD_UQ[d.cd] + ' · ' + k2s(d.tu) + ' → ' + k2s(d.thatDen || d.den) + ' · ' + d.tt,
-      mo: !d.thatDen
-    })),
-    link: d => ({ menu: 'M0.5', ctx: 'dot=' + encodeURIComponent(d.id), nhan: 'Đợt ủy quyền' }),
-    cot: [
-      { khoa: 'tt', ten: 'Thao tác dưới mặt nạ', kieu: 'so', nguon: 'm0.5.dot_uy_quyen' },
-      { khoa: 'mn', ten: 'Menu trong mặt nạ', kieu: 'so', nguon: 'm0.5.dot_uy_quyen' },
-      { khoa: 'mkd', ten: 'Menu mở mà không dùng', kieu: 'so', nguon: 'm0.5.dot_uy_quyen', canhBao: k => k.giaTri > 0 },
-      { khoa: 'ng', ten: 'Ngày hiệu lực thật', donVi: 'ngày', kieu: 'so', nguon: 'm0.5.dot_uy_quyen', khongCong: true }
-    ],
-    o: (d, c) => CT.doc('QT.06', PV.thamSoPS({ loc: x => x.id === d.id }),
-      c.khoa === 'tt' ? 'thaoTac' : c.khoa === 'mn' ? 'menuMo' : c.khoa === 'mkd' ? 'menuKhongDung' : 'soNgay'),
-    tongRieng: c => c.khoa === 'ng' ? CT.doc('QT.06', PV.thamSoPS(), 'soNgay') : null,
-    chuoiTrong: 'Không có đợt ủy quyền nào giao với khoảng đang xem.',
-    duoiBang: '<div class="ranh">⛔ Cột <b>Menu mở mà không dùng</b> <b>không kết luận ai sai</b> — '
-      + 'người lập đợt không biết trước mình cần menu nào; nó để <b>lần sau tick hẹp hơn</b>. '
-      + 'Dòng mờ = đợt <b>đã hủy</b> — vẫn trong sổ, vì hồ sơ kiểm soát phải trả lời được '
-      + '<i>«đợt nào lập rồi bỏ»</i>.</div>'
   });
-  return h + '</div>';
-}
+})();
+const bhMo = x => ['moi', 'tiepnhan', 'dangxuly'].includes(x.tt);
 
-function veTuanThu() {
-  napSoXU();                                  /* v2 — sổ audit của `XU`, mọi demo */
-  KB.moi();
-  PV.khoangMacDinh('tu_dau_nam');
-  let h = '<div class="canh b">🕐 Đồng hồ <b>nhóm 📊</b>: hôm nay <b>' + k2s(HOMNAY)
-    + '</b> · năm học <b>' + NAMHOC + '</b>. Hai tab kia theo đồng hồ demo M10.7 (29/08/2026) ⇒ '
-    + '<b>số ba tab không cộng với nhau</b>.</div>';
-  /* hai nút xuất — `XU` dựng, khác chữ · khác màu · khác popup.
-     Không có `XD` thì KHÔNG hiện nút, và NÓI RÕ vì sao (`N5`) — chứ không
-     để một cái nút bấm vào rồi báo lỗi. */
-  h += '<div class="phbar">' + (R().xd3
-    ? XU.veNut()
-    : '<span class="phn">🔒 Vai <b>' + escL(R().ten) + '</b> có <b>X</b> nhưng <b>không có XD</b> ở '
-    + 'Feature <b>m10.7.bao_cao_tuan_thu</b> — xem được trên màn hình, <b>không xuất ra tệp</b>.</span>')
-    + '</div>';
-  h += PV.daiMau();
-  const t0 = PV.thamSoPS();
-  const nTrong = TCDL.filter(r => trongKhoang(r.ngay, t0) && trongPV3(r)).length;
-  const nCa = TCDL.filter(r => trongKhoang(r.ngay, t0)).length;
-  h += PV.daiPhamVi(nTrong, 'lượt', nCa, tenPV3());
-  h += PV.khoang();
-  h += veKhoi1();
-  h += veKhoi2();
-  /* phát hành — `N9`: ký ở menu chủ, sổ phát hành ở `m9.9.so_phat_hanh` */
-  h += '<div class="ranh">📄 <b>Phát hành bản có ký</b> — HT ký, đóng dấu ngày chốt, bản phát hành về '
-    + '<b>m9.9.so_phat_hanh</b> (<b>N9</b>). ⛔ Ô ký <b>không phải quyền D</b>. '
-    + '<button class="btn xs" data-dl="M9.9" data-dlq="tab=so_phat_hanh&amp;return=' + MENU_NAY_BC + '">↗ M9.9</button></div>';
-  /* ranh giới `N7` — bắt buộc nói trên màn hình, mục F của phiếu */
-  h += '<div class="ranh"><b>Khác tab ① Tra cứu ở đâu.</b> Dòng của tab ① là <b>một bản ghi nhật ký</b> '
-    + '— <i>«hôm 12/9 ai sửa bản ghi này»</i>. Dòng ở đây là <b>một người · một tháng · một mục đích</b>, có <b>kỳ</b> '
-    + '— <i>«tháng 9 trường xuất dữ liệu cá nhân mấy lần, để làm gì»</i>. Tab ① để <b>điều tra</b>, tab này để '
-    + '<b>chứng minh tuân thủ</b>.</div>';
-  return h;
-}
+/* ═══════════════ ⑤ YÊU CẦU MƯỢN — chiếu `M6.5` ═════════════════════════
+   ⚠ Sổ mượn của M6.5 trong demo bắt đầu từ 05/12/2026 — quãng trước đó
+   KHÔNG phải bằng 0 mà là CHƯA CÓ DỮ LIỆU. Từ điển khai mốc 01/12/2026
+   cho hai ô con «lượt mượn» và «lượt bị từ chối vì trùng».              */
+let MYC = 0;
+const YEUCAU = [];
+const themYC = o => { YEUCAU.push(Object.assign({ id: 'YC-' + p2(++MYC) }, o)) };
+/* ① mượn phòng */
+[['A-301', '2026-12-30', [6, 7, 8], 'duyet', null],
+['A-201', '2026-12-29', [3, 4], 'cho', null],
+['A-204', '2026-12-31', [6, 7], 'cho', null],
+['A-302', '2026-12-24', [6, 7], 'xong', null],
+['B-201', '2026-12-30', [1, 2], 'cho', null],
+['B-202', '2026-12-23', [3, 4], 'xong', null],
+['A-301', '2026-12-26', [1, 2, 3], 'tuchoi', 'Hội trường đã có lịch tổng kết học kỳ cả buổi sáng 26/12 — trùng lịch'],
+['A-302', '2027-01-06', [6, 7], 'cho', null],
+['A-204', '2026-12-17', [8, 9], 'cho', null],
+['A-202', '2026-12-21', [6, 7], 'xong', null],
+['A-201', '2026-12-22', [1, 2], 'tuchoi', 'Trùng tiết Tin học 8A1 đã có trong thời khóa biểu'],
+['B-202', '2026-12-16', [1, 2], 'xong', null]
+].forEach(([phong, ngay, tiet, tt, lyTuChoi]) => {
+  themYC({ loai: 'phong', phong, dt: phongById(phong).dt, ngay, tiet, tt, lyTuChoi });
+});
+/* ② mượn thiết bị — ma = mã tài sản đã bàn giao */
+[['TS-26-41', '2026-12-15', '2026-12-22', 'dagiao', null],
+['TS-26-24', '2026-12-30', '2027-01-05', 'duyet', null],
+['TS-26-44', '2026-12-28', '2027-01-09', 'cho', null],
+['TS-26-48', '2026-12-12', '2026-12-18', 'datra', null],
+['TS-26-04', '2026-12-07', '2026-12-18', 'dagiao', null],
+['TS-26-47', '2026-12-18', '2026-12-24', 'datra', null],
+['TS-26-46', '2027-01-05', '2027-01-08', 'cho', null]
+].forEach(([ma, tu, den, tt]) => {
+  const t = tsById(ma);
+  themYC({ loai: 'tb', ma, dt: t ? t.dt : 'A', tuNgay: tu, denNgay: den, tt });
+});
 
-/* ════════ ⑦ NỐI DÂY — BỌC hai hàm của `app.js`, không sửa chúng ═════════ */
-KB.datMenu(MENU_NAY_BC);
-KB.noiQuyen(f => coXD3(f), f => NGUON_BC[f] || { menu: '?', ten: f });
-PV.noiVeLai(function () { if (tab === 3) document.getElementById('v3').innerHTML = veTuanThu() });
-XU.noiBoiCanh(function () {
-  const t = PV.thamSoPS();
-  const ds = TCDL.filter(r => trongKhoang(r.ngay, t) && trongPV3(r));
-  const kb = CT.khaiBao('QT.05');
+/* ═══════════════ ⑥ KHUNG TIẾT + THỜI KHÓA BIỂU — chiếu `M4.6` ══════════
+   🛑 Số buổi · số tiết mỗi buổi · số ngày dạy là của ĐIỂM TRƯỜNG, không
+   phải của bộ giờ (`M4.6` §8.1c.1). Đây là MẪU SỐ của CS.05 — đổi nó là
+   đổi tỉ lệ khai thác của cả trường.                                     */
+const KHUNGTIET = {
+  A: { ngayDay: 6, tietNgay: 9, ten: 'T2–T7 · 9 tiết/ngày' },
+  B: { ngayDay: 5, tietNgay: 9, ten: 'T2–T6 · 9 tiết/ngày' }
+};
+const TKB = {
+  'A-101': [[2, 5], [3, 5], [4, 5], [5, 5], [6, 5], [7, 4]],
+  'A-102': [[2, 5], [3, 5], [4, 5], [5, 5], [6, 5], [7, 4]],
+  'A-103': [[2, 5], [3, 5], [4, 5], [5, 5], [6, 5], [7, 4]],
+  'A-201': [[2, 2], [3, 2], [4, 2], [5, 2], [6, 2]],
+  'A-202': [[2, 2], [4, 2], [6, 2]],
+  'A-204': [[3, 2], [5, 2]],
+  'A-301': [],
+  'A-302': [[2, 2], [4, 2]],
+  'B-101': [[2, 5], [3, 5], [4, 5], [5, 5], [6, 5]],
+  'B-102': [[2, 5], [3, 5], [4, 5], [5, 5], [6, 5]],
+  'B-201': [[3, 2], [5, 2]],
+  'B-202': [[2, 2], [4, 2]]
+};
+
+/* ═══════════════ ⑦ ĐỢT KIỂM KÊ — chiếu `M6.4` tab 3 ════════════════════
+   Gieo lại ĐÚNG phép gieo của M6.4 (i%13 · i%11 · i%17 · i%9 · i%14) để
+   bảng chênh lệch của báo cáo trùng khít bảng đếm của menu chủ.          */
+const KQ_KK = {
+  khop: 'Khớp sổ', thieu: 'Thiếu — không tìm thấy', saiphong: 'Sai vị trí so với sổ',
+  hong: 'Hư hỏng — cần ghi giảm chất lượng', dathanhly: 'Đã thanh lý nhưng còn trong sổ'
+};
+const TT_KK = {
+  dem: ['Đang kiểm đếm', 'b'], doisoat: ['Kế toán đối chiếu', 'w'],
+  choky: ['Chờ Hiệu trưởng ký', 'r'], daky: ['Đã ký — hoàn tất', 'o'], huy: ['Đã hủy', 'n']
+};
+const CUOINAM = NAMNS + '-12-31';
+const KIEMKE = [];
+function chupSo(dt, pv, tuocTS) {
+  const snap = {};
+  TAISAN.filter(t => t.dt === dt && (pv === 'toanbo' || (pv === 'codinh' ? !!t.phong : !t.phong))
+    && (!tuocTS || tuocTS(t)))
+    .forEach(t => { snap[t.id] = { ten: t.ten, loai: t.loai, phong: t.phong, tt: t.tt, gia: t.gia } });
+  return snap;
+}
+(function seedKK() {
+  /* 1 · đợt sau sáp nhập — ĐÃ KÝ. Chụp sổ tại 30/6: chỉ tài sản mua trước mốc. */
+  const s1 = chupSo('B', 'toanbo', t => t.ngayMua <= '2026-06-30');
+  KIEMKE.push({
+    id: 'KK-01', dt: 'B', pv: 'toanbo', moc: '2026-06-30', tt: 'daky',
+    ten: 'Kiểm kê bàn giao sau sáp nhập — Điểm trường B', boi: 'Trịnh Văn Khánh', snap: s1,
+    kq: Object.keys(s1).reduce((a, k, i) => {
+      a[k] = { kq: i % 13 === 0 ? 'saiphong' : 'khop', gc: i % 13 === 0 ? 'Tìm thấy ở kho B-103, sổ ghi phòng B-201' : '' };
+      return a;
+    }, {}), thua: [],
+    hoiDong: ['Trịnh Văn Khánh — QL CSVC ĐT B', 'Hoàng Thị Yến — Kế toán', 'Lý Thanh Bình — PHT ĐT A'],
+    qd: { so: '08/BB-KK', ngay: '2026-07-05', boi: 'Nguyễn Quang Huy' }
+  });
+  /* 2 · cuối năm ngân sách ĐT A — ĐANG kiểm đếm (chưa đếm hết) */
+  const s2 = chupSo('A', 'codinh', t => t.ngayMua <= CUOINAM);
+  const kq2 = {};
+  Object.keys(s2).forEach((k, i) => {
+    if (i % 4 === 0) return;
+    kq2[k] = { kq: i % 11 === 0 ? 'hong' : i % 17 === 0 ? 'thieu' : 'khop', gc: i % 11 === 0 ? 'Vỡ vỏ, không bật được nguồn' : '' };
+  });
+  KIEMKE.push({
+    id: 'KK-02', dt: 'A', pv: 'codinh', moc: CUOINAM, tt: 'dem',
+    ten: 'Kiểm kê cuối năm ' + NAMNS + ' — thiết bị gắn cố định, Điểm trường A',
+    boi: 'Lý Thanh Bình', snap: s2, kq: kq2,
+    thua: [{ id: 'TH-1', ten: 'Quạt cây công nghiệp', loai: 'ntt', phong: 'A-301', uoc: 2800000 }],
+    hoiDong: ['Lý Thanh Bình — PHT ĐT A', 'Hoàng Thị Yến — Kế toán']
+  });
+  /* 3 · cuối năm ĐT B — CHỜ HIỆU TRƯỞNG KÝ (đã đếm hết, đã đối chiếu) */
+  const s3 = chupSo('B', 'toanbo', t => t.ngayMua <= CUOINAM);
+  const kq3 = {};
+  Object.keys(s3).forEach((k, i) => {
+    kq3[k] = {
+      kq: i % 9 === 0 ? 'saiphong' : i % 14 === 0 ? 'dathanhly' : 'khop',
+      gc: i % 9 === 0 ? 'Đã chuyển sang kho B-103 khi dọn phòng, chưa cập nhật sổ' : ''
+    };
+  });
+  KIEMKE.push({
+    id: 'KK-03', dt: 'B', pv: 'toanbo', moc: CUOINAM, tt: 'choky',
+    ten: 'Kiểm kê cuối năm ngân sách ' + NAMNS + ' — Điểm trường B',
+    boi: 'Trịnh Văn Khánh', snap: s3, kq: kq3, thua: [],
+    hoiDong: ['Trịnh Văn Khánh — QL CSVC ĐT B', 'Hoàng Thị Yến — Kế toán'],
+    doiSoat: { boi: 'Hoàng Thị Yến', luc: '2026-12-27' }
+  });
+  /* 4 · kho thiết bị linh động ĐT A — ĐANG kiểm đếm, chưa đếm dòng nào */
+  const s4 = chupSo('A', 'kho', t => t.ngayMua <= CUOINAM);
+  KIEMKE.push({
+    id: 'KK-04', dt: 'A', pv: 'kho', moc: CUOINAM, tt: 'dem',
+    ten: 'Kiểm kê cuối năm ' + NAMNS + ' — kho thiết bị linh động, Điểm trường A',
+    boi: 'Lý Thanh Bình', snap: s4, kq: {}, thua: [],
+    hoiDong: ['Lý Thanh Bình — QL CSVC ĐT A', 'Hoàng Thị Yến — Kế toán']
+  });
+})();
+const kkById = id => KIEMKE.find(k => k.id === id);
+const kkDaChot = () => KIEMKE.filter(k => ['choky', 'daky'].includes(k.tt));
+
+/* ═══════════ ⑧ 🔗 BẢN CHIẾU `m6.4.bao_cao_cong_trinh` (M6.4 tab 4b) ════
+   🛑 CHỈ ĐỌC PHẦN SỐ. Bốn dòng nhu cầu đầu tư (ô NHẬP, có `T`/`S`) KHÔNG
+   nhân bản sang đây — xem ranh giới `N7` ở mô tả §2.3.                   */
+const BCCT_CHIEU = {
+  nguon: 'm6.4.bao_cao_cong_trinh', capNhat: '2026-12-20',
+  cap: ['Kiên cố', 'Bán kiên cố', 'Cấp 4 xuống cấp / tạm', 'Nhờ mượn', '⚠ Chưa khai'],
+  dong: [
+    { ten: 'Số phòng học thường', so: [5, 1, 1, 0, 0] },
+    { ten: 'Số phòng học bộ môn', so: [4, 1, 0, 0, 0] },
+    { ten: 'Số phòng công vụ cho giáo viên', so: [0, 2, 1, 0, 0] }
+  ]
+};
+
+/* ═══════════════ ⑨ VAI TRÒ VÀ QUYỀN ════════════════════════════════════
+   Hai lớp, cố ý tách:
+   · `tab`  — Feature của CHÍNH M9.13 mà vai này có `X` (ma trận §Q)
+   · `xd`   — feature NGUỒN mà vai này có `XD` (lấy nguyên từ
+              `ma-tran-quyen-chuan-hoa.csv`, không bịa)
+   `N5`: một tab chỉ hiện khi vai có `X` ở tab đó; trong tab, một CỘT chỉ
+   hiện khi vai có `XD` ở feature nguồn của cột — thiếu thì ô vẫn chiếm chỗ
+   và NÓI RÕ thiếu quyền gì ở menu nào.                                   */
+const NGUON = {
+  'm6.4.tai_san_thiet_bi': { menu: 'M6.4', ten: 'Tài sản & thiết bị' },
+  'm6.4.kiem_ke_tai_san': { menu: 'M6.4', ten: 'Kiểm kê tài sản' },
+  'm6.4.bao_cao_cong_trinh': { menu: 'M6.4', ten: 'Báo cáo thực trạng công trình (tab 4b)' },
+  'm6.4.sua_chua_thay_the': { menu: 'M6.11', ten: 'Sửa chữa & thay thế' },
+  'm6.4.dieu_chuyen_giua_diem_truong': { menu: 'M6.11', ten: 'Điều chuyển giữa điểm trường' },
+  'm6.5.lich_muon_phong': { menu: 'M6.5', ten: 'Lịch mượn phòng' },
+  'm6.5.thiet_bi_dang_cho_muon': { menu: 'M6.5', ten: 'Thiết bị đang cho mượn' },
+  'm4.6.tkb_dang_ap_dung': { menu: 'M4.6', ten: 'TKB đang áp dụng' },
+  'm4.6.khung_tiet_rang_buoc': { menu: 'M4.6', ten: 'Khung tiết và ràng buộc' }
+};
+const MOI_NGUON = Object.keys(NGUON);
+const ROLES = {
+  FULL: {
+    n: 'Trần Minh Đức', cd: '🔓 Đủ quyền (demo)', sc: 'School', dt: null,
+    tab: ['kiem_ke', 'sua_chua', 'khai_thac'], xd: MOI_NGUON.slice()
+  },
+  QLA: {
+    n: 'Lý Thanh Bình', cd: 'QL CSVC — Điểm trường A', sc: 'Branch', dt: 'A',
+    tab: ['kiem_ke', 'sua_chua', 'khai_thac'], xd: MOI_NGUON.slice()
+  },
+  QLB: {
+    n: 'Trịnh Văn Khánh', cd: 'QL CSVC — Điểm trường B', sc: 'Branch', dt: 'B',
+    tab: ['kiem_ke', 'sua_chua', 'khai_thac'], xd: MOI_NGUON.slice()
+  },
+  HT: {
+    n: 'Nguyễn Quang Huy', cd: 'Hiệu trưởng', sc: 'School', dt: null,
+    tab: ['kiem_ke', 'sua_chua', 'khai_thac'],
+    xd: ['m6.4.tai_san_thiet_bi', 'm6.4.kiem_ke_tai_san', 'm6.4.bao_cao_cong_trinh',
+      'm6.4.sua_chua_thay_the', 'm6.4.dieu_chuyen_giua_diem_truong',
+      'm4.6.tkb_dang_ap_dung', 'm4.6.khung_tiet_rang_buoc']
+  },
+  PHTDT: {
+    n: 'Phạm Thu Hương', cd: 'PHT Điểm trường A', sc: 'Branch', dt: 'A',
+    tab: ['kiem_ke', 'sua_chua', 'khai_thac'],
+    xd: ['m6.4.tai_san_thiet_bi', 'm6.4.kiem_ke_tai_san', 'm6.4.bao_cao_cong_trinh',
+      'm6.4.sua_chua_thay_the', 'm6.4.dieu_chuyen_giua_diem_truong',
+      'm4.6.tkb_dang_ap_dung', 'm4.6.khung_tiet_rang_buoc']
+  },
+  PHTCM: {
+    n: 'Vũ Đình Trung', cd: 'PHT Chuyên môn', sc: 'School', dt: null,
+    tab: ['khai_thac'],
+    xd: ['m4.6.tkb_dang_ap_dung', 'm4.6.khung_tiet_rang_buoc']
+  },
+  KT: {
+    n: 'Hoàng Thị Yến', cd: 'Kế toán', sc: 'School', dt: null,
+    tab: ['kiem_ke'],
+    xd: ['m6.4.tai_san_thiet_bi', 'm6.4.kiem_ke_tai_san', 'm6.4.bao_cao_cong_trinh',
+      'm6.4.sua_chua_thay_the', 'm6.4.dieu_chuyen_giua_diem_truong', 'm6.5.thiet_bi_dang_cho_muon']
+  },
+  GVBM: {
+    n: 'Lê Văn Minh', cd: 'Giáo viên bộ môn', sc: 'Own', dt: 'A',
+    tab: [], xd: ['m4.6.tkb_dang_ap_dung']
+  }
+};
+let role = 'FULL';                                  /* 🔓 Đủ quyền đặt MẶC ĐỊNH */
+const R = () => ROLES[role];
+const coTab = t => R().tab.indexOf(t) >= 0;
+const coXD = f => R().xd.indexOf(f) >= 0;
+const dtHieuLuc = () => R().sc === 'School' ? ST.dt : R().dt;
+const tenPhamVi = () => {
+  const r = R(), d = dtHieuLuc();
+  return r.sc === 'School' ? (d === 'ALL' ? 'Toàn trường' : DT[d] + ' (đang lọc)') : DT[r.dt];
+};
+const trongPV = x => { const d = dtHieuLuc(); return d === 'ALL' || x.dt === d };
+
+const ST = { tab: null, dt: 'ALL', dotKK: 'KK-03', doiTuong: 'phong', note: false };
+
+/* ═══════════════ ⑩ NỐI NGUỒN SỐ CHO TỪ ĐIỂN CHỈ TIÊU ═══════════════════
+   Từ đây trở xuống là phần TÍNH của sáu mã. Tệp nền giữ phần KHAI; demo
+   giữ phần TÍNH. Không demo nào sửa tệp nền để nhét dữ liệu của mình vào. */
+
+/* — ngưỡng xử lý sửa chữa: 7 ngày làm việc (mặc định §8 điểm 1 của prompt).
+     Ngày làm việc ở đây = mọi ngày trừ Chủ nhật, đúng lịch 6 buổi/tuần của
+     điểm trường A. Con số này là ĐIỂM CHỜ CHỐT — ghi ở mục H của phiếu. */
+const NGUONG_QUAHAN = 7;
+function ngayLamViec(a, b) {
+  let n = 0, k = a;
+  while (k < b) { k = themNgay(k, 1); if (k2d(k).getDay() !== 0) n++ }
+  return n;
+}
+const trungVi = a => {
+  if (!a.length) return null;
+  const s = a.slice().sort((x, y) => x - y), m = s.length >> 1;
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+};
+
+/* ── VH.03 · CS.02 — tồn tài sản theo tình trạng và nguyên giá ───────── */
+/* ★ TỒN TẠI NGÀY CHỐT, không phải «hiện trạng hôm nay»: tài sản mua sau ngày
+   chốt chưa có trong sổ, tài sản thanh lý sau ngày chốt thì hôm ấy vẫn còn. */
+function tsTaiNgay(tham, loc) {
+  const ngay = tham.chotNgay > HOMNAY ? HOMNAY : tham.chotNgay;
+  return TAISAN.filter(t => trongPV(t) && t.ngayMua <= ngay
+    && !(t.tt === 'thanhly' && (!t.ngayThanhLy || t.ngayThanhLy <= ngay))
+    && (!loc || loc(t)));
+}
+CT.nguonSo('VH.03', (tham, o) => {
+  const ds = tsTaiNgay(tham, tham.loc);
   return {
-    truong: 'THCS & THPT Nguyễn Tất Thành',
-    baoCao: 'Báo cáo tuân thủ — Truy cập & xuất dữ liệu cá nhân (BC-QT-04) · Ủy quyền (BC-QT-06)',
-    menu: MENU_NAY_BC, nguoi: R().ng, chucDanh: R().ten, ky: PV.moTaKhoang(),
-    phamVi: tenPV3(),
-    toanTruong: TCDL.filter(r => trongKhoang(r.ngay, t)).length,
-    tongPhamVi: ds.length, donVi: 'lượt',
-    quyTac: (kb.quyTacDem.tinhVao || []).concat((kb.quyTacDem.khongTinh || []).map(x => 'KHÔNG tính: ' + x)),
-    truong_du_lieu: [
-      { khoa: 'ma', ten: 'Mã audit', batBuoc: true },
-      { khoa: 'luc', ten: 'Thời điểm', batBuoc: true },
-      { khoa: 'nguoi', ten: 'Người thao tác (họ tên)', nhay: true },
-      { khoa: 'cd', ten: 'Chức danh lúc thao tác', nhay: true },
-      { khoa: 'mn', ten: 'Menu · đối tượng' },
-      { khoa: 'bg', ten: 'Số bản ghi' },
-      { khoa: 'tr', ten: 'Trường dữ liệu đã lấy' },
-      { khoa: 'md', ten: 'Mục đích đã khai' },
-      { khoa: 'dau', ten: 'Dấu trên tệp' }
-    ],
-    soDong: ds.length,
-    xemTruoc: '<i>' + vn(nhomKhoi1().length) + ' dòng tổng hợp · ' + vn(ds.length) + ' lượt chi tiết</i>'
+    giaTri: ds.length,
+    banGhiGoc: ds.map(t => ({ id: t.id, ten: t.ten, phu: (t.phong || 'di động') + ' · ' + TT_TS[t.tt][0], so: trieu(t.gia) + ' tr' }))
+  };
+});
+CT.nguonSo('CS.02', (tham, o) => {
+  const ds = tsTaiNgay(tham, tham.loc);
+  return {
+    giaTri: ds.reduce((a, t) => a + t.gia, 0),
+    banGhiGoc: ds.map(t => ({ id: t.id, ten: t.ten, phu: TT_TS[t.tt][0], so: trieu(t.gia) + ' tr' }))
   };
 });
 
-/* ── lượt xuất MỨC 2 của chính tab này CŨNG là một lượt truy cập dữ liệu
-      cá nhân ⇒ nó phải TỰ HIỆN RA trong bảng ngay, không đợi tải lại trang.
-      Cùng tinh thần meta-audit §3.1 của tab ① — thứ chứng minh cơ chế chạy
-      thật chứ không phải chữ trên tài liệu.                               */
-/* ── HDBC v2 (`BCM9-V24`, việc 1 · `KT-2`) — NHẬN SỔ AUDIT CỦA `XU` ──────
-   Mọi demo nhóm 📊 nay ghi mỗi lượt xuất — CẢ HAI MỨC — thành một dòng đúng
-   khuôn `TCDL` vào sổ chung (`XU.KHOA_SO`). Tab này đọc sổ ấy mỗi lần vẽ:
-   · mức 2 → vào `TCDL`, tức vào `QT.05` như mọi lượt xuất có họ tên;
-   · mức 1 → vào `TCDL_M1`, CHỈ hiện ở sổ chi tiết, nhãn «mức 1», lọc được —
-     ⛔ không vào `QT.05`: quy tắc đếm của nó ghi «KHÔNG tính: lượt xuất bảng
-     chỉ có số (mức 1)». (Đang chạy theo phương án «có vào tab» — phiếu `V24`
-     mục H.)
-   Dòng đã gieo không đổi một chữ; dòng mới mang thêm `muc` · `trTen` · `mdTen`
-   và được đọc bằng CÙNG hàm với dòng cũ. Trùng mã audit thì bỏ qua — lượt
-   xuất của chính tab này đã vào qua `dongBoAudit()` bên dưới. */
-let TCDL_M1 = [];
-let _hienM1 = true;
-function napSoXU() {
-  const coRoi = {}; TCDL.forEach(r => coRoi[r.id] = 1); TCDL_M1.forEach(r => coRoi[r.id] = 1);
-  XU.docSoChung().forEach(function (a) {
-    if (!a || !a.id || coRoi[a.id]) return;
-    coRoi[a.id] = 1;
-    /* lượt của CHÍNH tab này (sổ còn giữ sau khi tải lại trang): chỉ hai trường
-       cá nhân vào cột, đúng như `dongBoAudit()`; demo khác: tên trường đã chọn */
-    const tr = a.mn === MENU_NAY_BC
-      ? (a.tr || []).map(k => ({ nguoi: 'ht', cd: 'cdluc' })[k]).filter(Boolean)
-      : (a.trTen && a.trTen.length ? a.trTen : a.tr || []).map(function (t) {
-        const k = 'xu:' + t; if (!TR[k]) TR[k] = t; return k;
-      });
-    const r = {
-      id: a.id, ngay: a.ngay || HOMNAY, gio: a.gio || '—', nguoi: a.nguoi || '—', cd: a.cd || '—',
-      mn: a.mn || '?', ob: a.ob || '—', hv: 'xuat', bg: a.bg == null ? 0 : a.bg, tr: tr,
-      md: Object.keys(MD).filter(k => MD[k] === a.mdTen)[0] || null, dau: 1, muc: a.muc
+/* ── CS.01 — chênh lệch kiểm kê, theo ĐỢT ĐÃ CHỐT ───────────────────── */
+function dongKK(k, loc) {
+  if (!k) return [];
+  return Object.keys(k.snap).filter(id => !loc || loc(k.snap[id], id))
+    .map(id => ({ id, s: k.snap[id], r: k.kq[id] || null }));
+}
+CT.nguonSo('CS.01', (tham, o) => {
+  const k = kkById(tham.dot || ST.dotKK);
+  if (!k) return { giaTri: null, banGhiGoc: [] };
+  if (!['choky', 'daky'].includes(k.tt))
+    return { giaTri: null, banGhiGoc: [], canhBao: { ma: 'DOT_DANG_KIEM', chu: 'đợt đang kiểm đếm — chưa chốt' } };
+  const ds = dongKK(k, tham.loc);
+  const co = x => x.r && ['khop', 'saiphong', 'hong'].includes(x.r.kq);
+  const dem = {
+    soSach: ds.length,
+    thucTe: ds.filter(co).length,
+    thieu: ds.filter(x => x.r && x.r.kq === 'thieu').length,
+    saiViTri: ds.filter(x => x.r && x.r.kq === 'saiphong').length,
+    treoSo: ds.filter(x => x.r && x.r.kq === 'dathanhly').length,
+    chuaGiaiTrinh: ds.filter(x => x.r && x.r.kq !== 'khop' && !(x.r.gc || '').trim()).length
+  };
+  const v = o ? dem[o] : (dem.thucTe - dem.soSach);
+  const loc2 = o === 'thieu' ? x => x.r && x.r.kq === 'thieu'
+    : o === 'saiViTri' ? x => x.r && x.r.kq === 'saiphong'
+      : o === 'treoSo' ? x => x.r && x.r.kq === 'dathanhly'
+        : o === 'thucTe' ? co
+          : o === 'chuaGiaiTrinh' ? x => x.r && x.r.kq !== 'khop' && !(x.r.gc || '').trim()
+            : o === 'soSach' ? () => true
+              : x => x.r && x.r.kq !== 'khop';
+  return {
+    giaTri: v,
+    ghiChu: o ? null : 'Đợt <b>' + esc(k.id) + '</b> — ' + esc(k.ten) + ', mốc ' + k2s(k.moc) + '.',
+    banGhiGoc: ds.filter(loc2).map(x => ({
+      id: x.id, ten: x.s.ten,
+      phu: (x.s.phong || 'di động') + ' · ' + (x.r ? KQ_KK[x.r.kq] : 'chưa đếm tới') + (x.r && x.r.gc ? ' — ' + x.r.gc : ''),
+      so: trieu(x.s.gia) + ' tr'
+    }))
+  };
+});
+
+/* ── CS.03 · CS.04 — sửa chữa ───────────────────────────────────────── */
+const bhTrongPV = loc => BAOHONG.filter(x => trongPV(x) && (!loc || loc(x)));
+CT.nguonSo('CS.03', (tham, o) => {
+  const ngay = tham.chotNgay > HOMNAY ? HOMNAY : tham.chotNgay;
+  const tu = tham.tuNgay, den = tham.denNgay > HOMNAY ? HOMNAY : tham.denNgay;
+  let ds, ve;
+  if (o === 'moTrongKhoang') {
+    ds = bhTrongPV(x => x.ngay >= tu && x.ngay <= den && (!tham.loc || tham.loc(x)));
+    ve = x => ({ id: x.id, ten: x.ref, phu: x.phong + ' · báo ' + k2s(x.ngay) + ' · ' + TT_BH[x.tt][0], so: x.sl });
+  } else if (o === 'xongTrongKhoang') {
+    ds = bhTrongPV(x => x.tt === 'xong' && x.ngayXong >= tu && x.ngayXong <= den && (!tham.loc || tham.loc(x)));
+    ve = x => ({ id: x.id, ten: x.ref, phu: x.phong + ' · xong ' + k2s(x.ngayXong) + ' · ' + CACH_XL[x.cach], so: x.sl });
+  } else if (o === 'chiPhi') {
+    ds = bhTrongPV(x => x.tt === 'xong' && x.ngayXong >= tu && x.ngayXong <= den && (!tham.loc || tham.loc(x)));
+    return {
+      giaTri: ds.reduce((a, x) => a + x.chiphi, 0),
+      banGhiGoc: ds.map(x => ({ id: x.id, ten: x.ref, phu: x.phong + ' · ' + CACH_XL[x.cach], so: vn(x.chiphi) + 'đ' }))
     };
-    if (a.muc === 1) TCDL_M1.push(r);
-    else { if (!r.md) r.md = 'dc'; TCDL.push(r); }
-  });
-}
-document.addEventListener('click', function (e) {
-  if (!e.target.closest('[data-tcm1]')) return;
-  _hienM1 = !_hienM1;
-  if (tab === 3) document.getElementById('v3').innerHTML = veTuanThu();
+  } else if (o === 'quaHan') {
+    ds = bhTrongPV(x => bhMo(x) && x.ngay <= ngay && ngayLamViec(x.ngay, ngay) > NGUONG_QUAHAN
+      && (!tham.loc || tham.loc(x)));
+    ve = x => ({ id: x.id, ten: x.ref, phu: x.phong + ' · báo ' + k2s(x.ngay) + ' · đã ' + ngayLamViec(x.ngay, ngay) + ' ngày làm việc', so: x.sl });
+  } else {
+    ds = bhTrongPV(x => bhMo(x) && x.ngay <= ngay && (!tham.loc || tham.loc(x)));
+    ve = x => ({ id: x.id, ten: x.ref, phu: x.phong + ' · ' + TT_BH[x.tt][0] + ' · báo ' + k2s(x.ngay), so: x.sl });
+  }
+  return { giaTri: ds.length, banGhiGoc: ds.map(ve) };
+});
+CT.nguonSo('CS.04', (tham, o) => {
+  const tu = tham.tuNgay, den = tham.denNgay > HOMNAY ? HOMNAY : tham.denNgay;
+  const ds = bhTrongPV(x => x.tt === 'xong' && x.ngayXong >= tu && x.ngayXong <= den && (!tham.loc || tham.loc(x)));
+  const ngay = ds.map(x => soNgay(x.ngayTN, x.ngayXong));
+  const v = o === 'lauNhat' ? (ngay.length ? Math.max.apply(null, ngay) : null) : trungVi(ngay);
+  return {
+    giaTri: v,
+    ghiChu: ds.length ? 'Trung vị của <b>' + ds.length + ' phiếu</b> đã hoàn thành trong khoảng.' : null,
+    banGhiGoc: ds.map(x => ({
+      id: x.id, ten: x.ref, phu: x.phong + ' · ' + k2s(x.ngayTN) + ' → ' + k2s(x.ngayXong),
+      so: soNgay(x.ngayTN, x.ngayXong) + ' ngày'
+    }))
+  };
 });
 
-let _nAudit = 0;
-function dongBoAudit() {
-  if (XU.AUDIT.length <= _nAudit) return;
-  let them = 0;
-  for (let i = _nAudit; i < XU.AUDIT.length; i++) {
-    const a = XU.AUDIT[i];
-    if (a.muc !== 2) continue;
-    if (TCDL.some(r => r.id === a.ma)) continue;       /* v2 — đã vào qua sổ chung */
-    /* chỉ TRƯỜNG CÁ NHÂN mới vào cột «Trường dữ liệu đã lấy» — bảy trường
-       còn lại của tệp (mã audit, thời điểm, menu…) không phải dữ liệu cá nhân */
-    const trCN = (a.truong || []).map(k => ({ nguoi: 'ht', cd: 'cdluc' })[k]).filter(Boolean);
-    TCDL.push({
-      id: a.ma, ngay: HOMNAY, gio: '—', nguoi: R().ng, cd: R().ten, mn: 'M10.7',
-      ob: 'Báo cáo tuân thủ — sổ chi tiết từng lượt', hv: 'xuat',
-      bg: _soDongHienTai, tr: trCN.length ? trCN : ['ht'],
-      md: Object.keys(MD).filter(k => MD[k] === a.mucDich)[0] || 'dc', dau: 1
+/* ── CS.05 — khai thác phòng · thiết bị ─────────────────────────────── */
+function soTuan(tu, den) { return Math.max(1, (soNgay(tu, den) + 1) / 7) }
+function tietTKBTrongKhoang(phong, tu, den) {
+  const t = TKB[phong]; if (!t) return 0;
+  let n = 0, k = tu;
+  while (k <= den) { const th = thuSo(k); t.forEach(([d, so]) => { if (d === th) n += so }); k = themNgay(k, 1) }
+  return n;
+}
+const ycPhong = (p, tu, den) => YEUCAU.filter(y => y.loai === 'phong' && y.phong === p
+  && y.ngay >= tu && y.ngay <= den);
+const phongKhaDung = p => p && p.tt === 'dung' && !['ngoaitroi', 'congvu'].includes(p.loai);
+/* ★ Nhận CẢ MỘT NHÓM đối tượng, không chỉ một. Phân tổ theo điểm trường ·
+   loại phòng · tháng là cộng TỬ SỐ và MẪU SỐ của cả nhóm rồi mới chia —
+   ⛔ không lấy trung bình các tỉ lệ dòng: một phòng dùng 2/2 tiết và một
+   phòng dùng 0/54 tiết ra «trung bình 50%», con số đó không có nghĩa nào. */
+CT.nguonSo('CS.05', (tham, o) => {
+  const tu = tham.tuNgay, den = tham.denNgay > HOMNAY ? HOMNAY : tham.denNgay;
+  const ids = tham.doiTuongIds || (tham.doiTuongId ? [tham.doiTuongId] : []);
+  /* ---- đối tượng là THIẾT BỊ ---- */
+  if (tham.kieu === 'tb') {
+    const ds = YEUCAU.filter(y => y.loai === 'tb' && ids.indexOf(y.ma) >= 0
+      && !(y.denNgay < tu || y.tuNgay > den) && ['duyet', 'dagiao', 'datra', 'xong'].includes(y.tt));
+    const daGiao = ds.filter(y => ['dagiao', 'datra'].includes(y.tt));
+    const ngayGiu = daGiao.reduce((a, y) => {
+      const a1 = y.tuNgay < tu ? tu : y.tuNgay, b1 = y.denNgay > den ? den : y.denNgay;
+      return a + Math.max(0, soNgay(a1, b1) + 1);
+    }, 0);
+    const ngayKD = (soNgay(tu, den) + 1) * ids.length;
+    if (o === 'luotMuon') return { giaTri: ds.length, banGhiGoc: ds.map(veYCTB) };
+    if (o === 'ngayMuon') return { giaTri: ngayGiu, banGhiGoc: daGiao.map(veYCTB) };
+    if (o === 'ngayKhaDung') return { giaTri: ngayKD, banGhiGoc: [] };
+    if (o === 'tuChoiTrung') return { giaTri: 0, banGhiGoc: [] };
+    if (o === 'tietDung' || o === 'tietKhaDung')
+      return { giaTri: null, banGhiGoc: [], ghiChu: 'Thiết bị mượn theo <b>ngày</b>, không theo tiết.' };
+    return {
+      giaTri: tile(ngayGiu, ngayKD),
+      veTrai: { ten: 'Ngày nằm trong tay người mượn', giaTri: ngayGiu, donVi: 'ngày' },
+      vePhai: { ten: 'Ngày khả dụng trong khoảng', giaTri: ngayKD, donVi: 'ngày' },
+      ghiChu: ids.length > 1 ? 'Gộp <b>' + ids.length + ' thiết bị</b> — cộng tử số và mẫu số rồi mới chia.'
+        : 'Mẫu số là <b>ngày</b>, không phải tiết.',
+      banGhiGoc: daGiao.map(veYCTB)
+    };
+  }
+  /* ---- đối tượng là PHÒNG ---- */
+  const ps = ids.map(phongById).filter(Boolean);
+  const ds = ps.reduce((a, p) => a.concat(ycPhong(p.id, tu, den)), []);
+  const duyet = ds.filter(y => ['duyet', 'xong'].includes(y.tt));
+  const tuChoiTrung = ds.filter(y => y.tt === 'tuchoi' && /trùng/i.test(y.lyTuChoi || ''));
+  const tietTKB = ps.reduce((a, p) => a + tietTKBTrongKhoang(p.id, tu, den), 0);
+  const tietMuon = duyet.reduce((a, y) => a + y.tiet.length, 0);
+  const psKD = ps.filter(phongKhaDung);
+  const tietKD = psKD.reduce((a, p) => {
+    const kt = KHUNGTIET[p.dt] || { ngayDay: 5, tietNgay: 9 };
+    return a + Math.round(kt.ngayDay * kt.tietNgay * soTuan(tu, den));
+  }, 0);
+  const motPhong = ps.length === 1 ? ps[0] : null;
+  if (o === 'luotMuon') return { giaTri: duyet.length, banGhiGoc: duyet.map(veYCPhong) };
+  if (o === 'tuChoiTrung') return { giaTri: tuChoiTrung.length, banGhiGoc: tuChoiTrung.map(veYCPhong) };
+  if (o === 'tietDung') return {
+    giaTri: tietTKB + tietMuon,
+    ghiChu: 'Thời khóa biểu <b>' + tietTKB + ' tiết</b> + mượn <b>' + tietMuon + ' tiết</b>.',
+    banGhiGoc: duyet.map(veYCPhong)
+  };
+  if (o === 'tietKhaDung') return {
+    giaTri: tietKD, banGhiGoc: [],
+    ghiChu: psKD.length
+      ? '<b>' + psKD.length + '/' + ps.length + ' phòng</b> khả dụng × khung tiết × '
+      + (Math.round(soTuan(tu, den) * 10) / 10) + ' tuần.'
+      : '<b>Không khả dụng</b> — ' + (motPhong ? (motPhong.tt === 'sua' ? 'phòng đang sửa'
+        : motPhong.tt === 'dong' ? 'phòng đã đóng cửa' : 'không xếp theo khung tiết') : 'không phòng nào khả dụng') + '.'
+  };
+  if (o === 'ngayMuon' || o === 'ngayKhaDung')
+    return { giaTri: null, banGhiGoc: [], ghiChu: 'Phòng mượn theo <b>tiết</b>, không theo ngày.' };
+  return {
+    giaTri: tietKD ? tile(tietTKB + tietMuon, tietKD) : null,
+    veTrai: { ten: 'Tiết sử dụng', giaTri: tietTKB + tietMuon, donVi: 'tiết' },
+    vePhai: { ten: 'Tiết khả dụng theo khung tiết', giaTri: tietKD, donVi: 'tiết' },
+    ghiChu: tietKD ? (ps.length > 1 ? 'Gộp <b>' + psKD.length + ' phòng khả dụng</b> — cộng tử số và mẫu số rồi mới chia.' : null)
+      : '<b>Phòng không khả dụng</b> — ' + ((motPhong && motPhong.ghichu) || (motPhong ? TT_PHONG[motPhong.tt][0] : '')) + '. '
+      + 'Để nó trong mẫu số thì tỉ lệ của cả trường tụt xuống vì một lý do không liên quan tới khai thác.',
+    banGhiGoc: duyet.map(veYCPhong)
+  };
+});
+function veYCPhong(y) {
+  return { id: y.id, ten: (phongById(y.phong) || {}).ten || y.phong, phu: k2s(y.ngay) + ' · tiết ' + y.tiet.join(', ') + (y.lyTuChoi ? ' · ' + y.lyTuChoi : ''), so: y.tiet.length + ' tiết' };
+}
+function veYCTB(y) {
+  const t = tsById(y.ma) || {};
+  return { id: y.id, ten: t.ten || y.ma, phu: k2s(y.tuNgay) + ' → ' + k2s(y.denNgay), so: (soNgay(y.tuNgay, y.denNgay) + 1) + ' ngày' };
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   M9.13 — phần riêng ②: KHUNG MÀN HÌNH VÀ BA TAB
+   Phiên `BCM9-0A` (20/9/2026)
+
+   Ba Feature — ba tab, đúng `N2` (một loại báo cáo = một Feature = một TAB):
+     ① `m9.13.kiem_ke`   Kiểm kê & tình trạng tài sản   BC-VH-06 · loại A · K6
+     ② `m9.13.sua_chua`  Sửa chữa & luân chuyển          BC-VH-07 · loại B · K9
+     ③ `m9.13.khai_thac` Khai thác phòng & thiết bị      BC-VH-08 · loại B · K2
+
+   🛑 KHÔNG MỘT NÚT GHI NÀO trên cả ba tab — nhóm 9 chỉ `X` và `XD` (`N4`).
+      Ký biên bản kiểm kê, khai nhu cầu đầu tư, đổi trạng thái phiếu sửa chữa:
+      tất cả đi qua deep-link về menu chủ.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+const TAB = [
+  { ma: 'kiem_ke', nhan: '1 · Kiểm kê & tình trạng tài sản', bc: 'BC-VH-06', loai: 'A', k: 'K6' },
+  { ma: 'sua_chua', nhan: '2 · Sửa chữa & luân chuyển', bc: 'BC-VH-07', loai: 'B', k: 'K9' },
+  { ma: 'khai_thac', nhan: '3 · Khai thác phòng & thiết bị', bc: 'BC-VH-08', loai: 'B', k: 'K2' }
+];
+
+/* ── TAB MẶC ĐỊNH THEO VIỆC, không theo số thứ tự ────────────────────
+   QL CSVC mở vào «Sửa chữa» vì họ có phiếu đang mở; Hiệu trưởng mở vào
+   «Kiểm kê» vì có đợt chờ chính ông ký. Mở vào tab đầu tiên cho mọi vai
+   là bắt một nửa người dùng bấm thêm một lần mỗi lần vào menu.          */
+function tabMacDinh() {
+  const co = TAB.filter(t => coTab(t.ma)).map(t => t.ma);
+  if (!co.length) return null;
+  if (role === 'QLA' || role === 'QLB') return co.indexOf('sua_chua') >= 0 ? 'sua_chua' : co[0];
+  if (role === 'HT' || role === 'KT') return co.indexOf('kiem_ke') >= 0 ? 'kiem_ke' : co[0];
+  if (role === 'PHTCM') return 'khai_thac';
+  return co[0];
+}
+
+/* ══════════════════════════ KHUNG ══════════════════════════════════════ */
+function rolebar() {
+  $('#rolebar').innerHTML = '<b>Vai trò:</b>' + Object.keys(ROLES).map(k =>
+    '<button class="rb' + (k === role ? ' on' : '') + '" data-r="' + k + '">' + esc(ROLES[k].cd) + '</button>').join('')
+    + '<span class="simw">Hôm nay (mô phỏng): <b style="color:#e2e8f0">' + kThu(HOMNAY) + ' ' + k2s(HOMNAY)
+    + ' — năm học ' + NAMHOC + '</b></span>'
+    + '<button class="ntg' + (ST.note ? ' on' : '') + '" id="btnNote">💡 Ghi chú thiết kế: ' + (ST.note ? 'BẬT' : 'TẮT') + '</button>';
+}
+function header() {
+  const r = R();
+  $('#ava').textContent = r.n.split(' ').slice(-2).map(x => x[0]).join('');
+  const khoa = r.sc !== 'School';
+  $('#hdt').innerHTML = (r.sc === 'School' ? '<option value="ALL">Tất cả điểm trường</option>' : '')
+    + Object.keys(DT).map(d => '<option value="' + d + '">' + DT[d] + '</option>').join('');
+  $('#hdt').value = khoa ? (r.dt || 'A') : ST.dt;
+  $('#hdt').disabled = khoa;
+  $('#dtlock').textContent = khoa ? '🔒 khóa theo phạm vi ' + r.sc : '';
+}
+function tabs() {
+  const co = TAB.filter(t => coTab(t.ma));
+  if (!co.length) { $('#tabs').innerHTML = ''; return }
+  if (!co.find(t => t.ma === ST.tab)) ST.tab = tabMacDinh();
+  $('#tabs').innerHTML = co.map(t => '<button class="tab1' + (t.ma === ST.tab ? ' on' : '')
+    + '" data-t="' + t.ma + '">' + esc(t.nhan) + '<span class="b">' + t.bc + '</span></button>').join('');
+}
+/* KỲ CHUẨN của từng tab (`nh9` §4) — áp lúc mở tab, không đè lựa chọn của người dùng */
+const KY_TAB = { kiem_ke: 'cuoi_ky_1', sua_chua: 'tu_dau_nam', khai_thac: 'thang_nay' };
+const moTab = t => { ST.tab = t; PV.khoangMacDinh(KY_TAB[t]) };
+
+const dnote = html => ST.note ? '<div class="dnote">💡 <b>Ghi chú thiết kế.</b> ' + html + '</div>' : '';
+
+/* dải phạm vi — chỉ hiện khi phạm vi THỰC SỰ cắt bớt (`PV.daiPhamVi`) */
+function daiPV(donVi, dsTrongPV, dsToanTruong) {
+  return PV.daiPhamVi(dsTrongPV, donVi, dsToanTruong, tenPhamVi());
+}
+
+/* ══════════════ TAB 1 · KIỂM KÊ & TÌNH TRẠNG TÀI SẢN ══════════════════
+   Khuôn K6 — biểu của trường ban hành (biên bản kiểm kê), có phần chữ ký
+   hội đồng. HAI KHỐI TÁCH HẲN vì hai loài số:
+     · khối A là TỒN  — tình trạng và nguyên giá tại NGÀY CHỐT
+     · khối B là PHÁT SINH — chênh lệch của MỘT ĐỢT kiểm kê
+   Gộp hai khối vào một bảng thì cột «Sổ sách» của đợt (chụp tại mốc) nằm
+   cạnh cột «Số lượng» của hôm nay, và không ai đọc ra hai mốc khác nhau.  */
+function veTab1() {
+  const nhom = Object.keys(LOAITS);
+  const dsTong = TAISAN.filter(t => t.tt !== 'thanhly');
+  const dsPV = dsTong.filter(trongPV);
+  let h = PV.chotNgay() + PV.daiCanhBao() + daiPV('tài sản', dsPV.length, dsTong.length);
+
+  /* ---------- khối A · TỒN ---------- */
+  const dongA = nhom.map(k => ({ id: k, ten: LOAITS[k], loc: t => t.loai === k }))
+    .filter(d => dsPV.some(d.loc));
+  const cotA = [
+    { khoa: 'so', ten: 'Số lượng', donVi: 'tài sản', kieu: 'so', nguon: 'm6.4.tai_san_thiet_bi' },
+    { khoa: 'tot', ten: 'Tốt · đang dùng', kieu: 'so', nguon: 'm6.4.tai_san_thiet_bi' },
+    { khoa: 'baotri', ten: 'Cần bảo trì', kieu: 'so', nguon: 'm6.4.tai_san_thiet_bi' },
+    { khoa: 'hong', ten: 'Hỏng', kieu: 'so', nguon: 'm6.4.tai_san_thiet_bi', canhBao: k => k.giaTri > 0 },
+    { khoa: 'gia', ten: 'Nguyên giá', donVi: 'triệu đ', kieu: 'tien', nguon: 'm6.4.tai_san_thiet_bi' }
+  ];
+  const locTT = { tot: t => ['tot', 'dung'].includes(t.tt), baotri: t => t.tt === 'baotri', hong: t => t.tt === 'hong' };
+  const khoiA = {
+    id: 'a', tieuDe: 'A · Tài sản có mã theo nhóm và tình trạng', ma: 'VH.03', chip: 'TON',
+    moTaKy: PV.moTaChot(), tenCotDau: 'Nhóm tài sản', cot: cotA, dong: dongA,
+    link: d => ({ menu: 'M6.4', ctx: 'tab=taisan&loai=' + d.id, nhan: 'Tài sản & thiết bị' }),
+    o: (d, c) => {
+      const loc = c.khoa === 'gia' || c.khoa === 'so' ? d.loc : t => d.loc(t) && locTT[c.khoa](t);
+      return CT.doc(c.khoa === 'gia' ? 'CS.02' : 'VH.03', PV.thamSo({ loc }));
+    }
+  };
+
+  /* ---------- khối B · PHÁT SINH theo ĐỢT ---------- */
+  const daChot = kkDaChot().filter(trongPV);
+  const dangKiem = KIEMKE.filter(k => k.tt === 'dem' && trongPV(k));
+  let khoiB = '', chonDot = '';
+  if (daChot.length) {
+    if (!daChot.find(k => k.id === ST.dotKK)) ST.dotKK = daChot[0].id;
+    const k = kkById(ST.dotKK);
+    chonDot = '<div class="pvbar"><span class="pvlb">📋 Đợt kiểm kê</span>'
+      + daChot.map(x => '<button class="pvk' + (x.id === ST.dotKK ? ' on' : '') + '" data-dot="' + x.id + '">'
+        + x.id + ' · ' + DT[x.dt] + ' · mốc ' + k2s(x.moc) + ' <i>' + TT_KK[x.tt][0] + '</i></button>').join('')
+      + '</div>';
+    const nhomB = nhom.filter(n => Object.keys(k.snap).some(id => k.snap[id].loai === n));
+    const dongB = nhomB.map(n => ({ id: n, ten: LOAITS[n], loc: s => s.loai === n }));
+    const cotB = [
+      { khoa: 'soSach', ten: 'Sổ sách tại mốc', kieu: 'so', nguon: 'm6.4.kiem_ke_tai_san' },
+      { khoa: 'thucTe', ten: 'Thực tế đếm được', kieu: 'so', nguon: 'm6.4.kiem_ke_tai_san' },
+      { khoa: null, ten: 'Chênh', kieu: 'so', nguon: 'm6.4.kiem_ke_tai_san', canhBao: k2 => k2.giaTri !== 0 },
+      { khoa: 'thieu', ten: 'Thiếu', kieu: 'so', nguon: 'm6.4.kiem_ke_tai_san', canhBao: k2 => k2.giaTri > 0 },
+      { khoa: 'saiViTri', ten: 'Sai vị trí', kieu: 'so', nguon: 'm6.4.kiem_ke_tai_san' },
+      { khoa: 'treoSo', ten: 'Thanh lý còn treo sổ', kieu: 'so', nguon: 'm6.4.kiem_ke_tai_san' }
+    ];
+    khoiB = KB.bang({
+      id: 'b', tieuDe: 'B · Chênh lệch của đợt ' + k.id + ' — ' + k.ten, ma: 'CS.01', chip: 'PS',
+      moTaKy: 'Mốc kiểm kê ' + k2s(k.moc) + ' · ' + TT_KK[k.tt][0],
+      tenCotDau: 'Nhóm tài sản', cot: cotB, dong: dongB,
+      link: d => ({ menu: 'M6.4', ctx: 'tab=kiemke&dot=' + k.id, nhan: 'Kiểm kê tài sản' }),
+      o: (d, c) => CT.doc('CS.01', PV.thamSo({ dot: k.id, loc: d.loc }), c.khoa || undefined)
     });
-    them++;
+    const chua = CT.doc('CS.01', PV.thamSo({ dot: k.id }), 'chuaGiaiTrinh');
+    if (chua.giaTri > 0) khoiB += '<div class="canh r">⚖ <b>' + chua.giaTri + ' dòng chênh lệch chưa giải trình</b> '
+      + '<i>(Luật Kế toán 2015 Đ.40 k.3)</i> '
+      + '<button class="btn xs" data-dl="M6.4" data-dlq="tab=kiemke&dot=' + k.id + '&loc=chualy&return=' + MENU_NAY + '">↗ Mở đợt</button></div>';
+  } else {
+    khoiB = '<div class="empty">Không có đợt kiểm kê nào đã chốt trong phạm vi đang xem.</div>';
   }
-  _nAudit = XU.AUDIT.length;
-  if (them && tab === 3) {
-    document.getElementById('v3').innerHTML = veTuanThu();
-    toast('⚖ Lượt xuất <b>mức 2</b> vừa rồi <b>chính nó là một lượt truy cập dữ liệu cá nhân</b> — '
-      + 'một dòng mới vừa hiện trong bảng ① kèm đúng mục đích anh đã khai.');
+  if (dangKiem.length) {
+    khoiB += '<div class="canh w">⏳ <b>' + dangKiem.length + ' đợt đang kiểm đếm — không vào bảng chênh lệch</b> ('
+      + dangKiem.map(k => k.id + ' · ' + DT[k.dt]).join(' · ') + ')</div>';
   }
-}
-document.addEventListener('click', function () { setTimeout(dongBoAudit, 0) });
 
-/* deep-link — dùng lại `toast()` của app.js, không đẻ cơ chế thứ hai */
-document.addEventListener('click', function (e) {
-  const dl = e.target.closest('[data-dl]'); if (!dl) return;
-  toast('↗ Deep-link sang <b>' + escL(dl.getAttribute('data-dl')) + '</b> — <code>?'
-    + escL(dl.getAttribute('data-dlq') || '') + '</code><br>'
-    + '<i>Demo một tệp: không mở được menu khác, nhưng đường dẫn là đường dẫn thật.</i>');
-});
+  /* ---------- khối chữ ký hội đồng + đóng dấu ---------- */
+  const k = daChot.length ? kkById(ST.dotKK) : null;
+  let chuKy = '';
+  if (k) {
+    chuKy = '<div class="ky"><div class="kyh">Hội đồng kiểm kê — ' + esc(k.ten) + '</div><div class="kyds">'
+      + k.hoiDong.map(x => '<div class="kyo"><span class="kyl"></span>' + esc(x) + '</div>').join('')
+      + '</div><div class="kytt">'
+      + (k.tt === 'daky'
+        ? '✅ <b>Đã ký</b> — biên bản ' + esc(k.qd.so) + ' ngày ' + k2s(k.qd.ngay) + ', người ký <b>' + esc(k.qd.boi) + '</b>.'
+        : '🕐 <b>Chờ Hiệu trưởng ký</b>' + (k.doiSoat ? ' — Kế toán đã đối chiếu ' + k2s(k.doiSoat.luc) + '.' : '') + ' '
+        + '<button class="btn xs" data-dl="M6.4" data-dlq="tab=kiemke&dot=' + k.id + '&viec=ky&return=' + MENU_NAY + '">↗ Ký biên bản tại M6.4 tab 3</button>')
+      + '</div>'
+      + '<div class="kyro">🛑 Ký thuộc <b>M6.4</b> — nhóm 📊 chỉ <b>Xem</b> · <b>Xuất</b>. Tệp xuất có đóng dấu ngày chốt, không thay chữ ký.</div></div>';
+  }
 
-/* ── BỌC `doiTab` và `doiVai` ─────────────────────────────────────────── */
-const _doiTab0 = doiTab, _doiVai0 = doiVai;
-/* `V25` — deep-link `?tab=bao_cao_tuan_thu` (hoặc `tab=3`): vai CÓ quyền mở
-   thẳng tab ③; vai KHÔNG có quyền thì tab vẫn ẩn khỏi thanh tab, nhưng vùng
-   nội dung nói rõ vì sao — không lặng lẽ rơi về tab ①. */
-const DL_TAB3 = (function () {
-  try { return /^(bao_cao_tuan_thu|3)$/.test(new URLSearchParams(location.search).get('tab') || ''); }
-  catch (e) { return false; }
-})();
-function veKhongQuyen3() {
-  /* `tab = 0`, KHÔNG phải 3: ba chỗ vẽ lại tab ③ (`PV.noiVeLai` · nút mức 1 ·
-     `dongBoAudit`) hỏi `tab === 3` — để 3 thì chúng vẽ báo cáo đè khối này */
-  tab = 0; dong();
-  document.getElementById('tb1').className = '';
-  document.getElementById('tb2').className = '';
-  document.getElementById('v1').style.display = 'none';
-  document.getElementById('v2').style.display = 'none';
-  const v = document.getElementById('v3'); v.style.display = '';
-  v.innerHTML = '<div class="noaccbox big noacc3">🔒 <b>Không mở được tab này.</b> Vai <b>' + escL(R().ten) + '</b> '
-    + 'không có quyền trên <code>m10.7.bao_cao_tuan_thu</code>.<br>' + CHUA_QUYEN3
-    + '<br><span style="color:var(--ink3)">Nhật ký của chính bạn vẫn xem ở tab <a href="#" onclick="doiTab(1);return false">Tra cứu</a>.</span></div>';
+  /* ---------- 🔗 chiếu m6.4.bao_cao_cong_trinh — N7 ---------- */
+  const bc = BCCT_CHIEU;
+  let chieu = '<div class="bg chieu"><div class="bgh"><b>🔗 Thực trạng công trình — bản chiếu</b>' + KB.chip('TON')
+    + '<span class="bgky">cập nhật ' + k2s(bc.capNhat) + '</span><span class="spacer"></span>'
+    + '<button class="btn xs" data-dl="M6.4" data-dlq="tab=baocaoct&return=' + MENU_NAY + '">↗ M6.4 tab 4b</button></div>'
+    + '<div class="tbx"><table class="bgt"><thead><tr><th>Chỉ tiêu</th>'
+    + bc.cap.map(c => '<th class="num">' + esc(c) + '</th>').join('') + '<th class="num">Tổng</th></tr></thead><tbody>'
+    /* ★ Ô của bản chiếu CŨNG BẤM ĐƯỢC — nguyên tắc số 1 không có ngoại lệ cho
+       bảng đi mượn. Khác ở chỗ nó không mở panel drill-down: dữ liệu thuộc
+       M6.4, nên bấm là ĐI VỀ CHỦ của nó, không phải xem một panel dựng lại. */
+    + bc.dong.map((d, i) => '<tr><td>' + esc(d.ten) + '</td>'
+      + d.so.map((s2, j) => '<td class="num"><button class="oso ochieu" data-dl="M6.4" '
+        + 'data-dlq="tab=baocaoct&dong=' + i + '&cap=' + j + '&return=' + MENU_NAY + '" '
+        + 'title="Số của M6.4 tab 4b — bấm để mở đúng ô này ở menu chủ">' + vn(s2) + '</button></td>').join('')
+      + '<td class="num"><button class="oso ochieu" data-dl="M6.4" data-dlq="tab=baocaoct&dong=' + i
+      + '&return=' + MENU_NAY + '"><b>' + vn(d.so.reduce((a, b2) => a + b2, 0)) + '</b></button></td></tr>').join('')
+    + '</tbody></table></div>'
+    + '<div class="chieuro">🛑 <b>Nhu cầu đầu tư khai ở M6.4 tab 4b</b> — tab đó có ô nhập, nhóm 📊 thì không (<b>N7</b>). Đây chỉ chiếu phần số.</div></div>';
+
+  return h + chonDot
+    + dnote('Hai khối <b>A</b> và <b>B</b> tách hẳn vì <b>hai loài số</b>: khối A đếm tại <i>ngày chốt</i>, khối B đếm trong <i>một đợt kiểm kê</i>. '
+      + 'Cột «Sổ sách tại mốc» của khối B là bản chụp lúc mở đợt, không phải sổ hôm nay — sổ vẫn động trong lúc ban kiểm kê đi đếm.')
+    + KB.bang(khoiA) + khoiB + chuKy + chieu;
 }
-doiTab = function (t) {
-  if (t === 3 && R().tabs.indexOf('3') < 0) { veKhongQuyen3(); return; }
-  if (R().tabs.indexOf(String(t)) < 0) return;
-  if (t === 3) {
-    tab = 3; dong();
-    document.getElementById('tb1').className = '';
-    document.getElementById('tb2').className = '';
-    document.getElementById('tb3').className = 'on';
-    document.getElementById('v1').style.display = 'none';
-    document.getElementById('v2').style.display = 'none';
-    document.getElementById('v3').style.display = '';
-    document.getElementById('v3').innerHTML = veTuanThu();
+
+/* ══════════════ TAB 2 · SỬA CHỮA & LUÂN CHUYỂN ════════════════════════
+   Khuôn K9 — bảng tiến độ. HAI BỘ ĐIỀU KHIỂN THỜI GIAN trên cùng một tab,
+   cố ý: dải trên hỏi «hôm nay còn tồn bao nhiêu», bảng dưới hỏi «trong kỳ
+   phát sinh bao nhiêu». Đó là hai câu hỏi khác nhau, không cộng vào nhau. */
+function veTab2() {
+  const dsTong = BAOHONG, dsPV = BAOHONG.filter(trongPV);
+  let h = daiPV('phiếu sửa chữa', dsPV.length, dsTong.length);
+
+  /* ---------- dải TỒN ---------- */
+  h += PV.chotNgay() + PV.daiCanhBao();
+  const ttMo = [['moi', 'Mới báo — chờ đến nơi xác nhận'], ['tiepnhan', 'Đã xác nhận tại chỗ'], ['dangxuly', 'Đang sửa / thay']];
+  h += KB.K1({
+    id: 't', tieuDe: 'Phiếu còn ĐANG MỞ tại ngày chốt', ma: 'CS.03', chip: 'TON',
+    moTaKy: PV.moTaChot(), tenCotDau: 'Trạng thái', donVi: 'phiếu',
+    nguon: 'm6.4.sua_chua_thay_the',
+    dong: ttMo.map(([k, t]) => ({ id: k, ten: t, loc: x => x.tt === k })),
+    link: d => ({ menu: 'M6.11', ctx: 'tab=suachua&tt=' + d.id, nhan: 'Sửa chữa & thay thế' }),
+    oSo: d => CT.doc('CS.03', PV.thamSo({ loc: d.loc }))
+  });
+  const qh = CT.doc('CS.03', PV.thamSo(), 'quaHan');
+  if (qh.giaTri > 0) h += '<div class="canh w">⏰ <b>' + qh.giaTri + ' phiếu quá ' + NGUONG_QUAHAN
+    + ' ngày làm việc</b> <i>(ngưỡng mặc định, chờ trường chốt)</i> '
+    + '<button class="btn xs" data-dl="M6.11" data-dlq="tab=suachua&loc=quahan&return=' + MENU_NAY + '">↗ M6.11</button></div>';
+
+  /* ---------- bảng K9 · PHÁT SINH theo tháng ---------- */
+  h += '<div class="pvcach">Bảng dưới đếm <b>trong khoảng</b> — không cộng với dải tồn ở trên.</div>';
+  h += PV.khoang();
+  const thang = [];
+  { let t = thangCua(PV.st.tuNgay); const het = thangCua(PV.st.denNgay); let dem = 0;
+    while (t <= het && dem++ < 24) {
+      thang.push(t);
+      const d = k2d(t + '-01'); d.setMonth(d.getMonth() + 1); t = thangCua(d2k(d));
+    } }
+  const trongThang = t => x => thangCua(x.ngay) === t;
+  const xongThang = t => x => x.ngayXong && thangCua(x.ngayXong) === t;
+  h += KB.K9({
+    id: 'k9', tieuDe: 'Tiến độ xử lý phiếu sửa chữa theo tháng', ma: 'CS.03', chip: 'PS',
+    moTaKy: PV.moTaKhoang(), tenCotDau: 'Tháng',
+    dong: thang.map(t => ({ id: t, ten: tenThang(t) })),
+    link: d => ({ menu: 'M6.11', ctx: 'tab=suachua&thang=' + d.id, nhan: 'Sửa chữa & thay thế' }),
+    cot: [
+      { khoa: 'moi', ten: 'Yêu cầu mới', kieu: 'so', nguon: 'm6.4.sua_chua_thay_the' },
+      { khoa: 'xong', ten: 'Hoàn thành', kieu: 'so', nguon: 'm6.4.sua_chua_thay_the' },
+      { khoa: 'tv', ten: 'Thời gian xử lý', donVi: 'ngày · trung vị', kieu: 'ngay', nguon: 'm6.4.sua_chua_thay_the' },
+      { khoa: 'qh', ten: 'Quá hạn', donVi: '> ' + NGUONG_QUAHAN + ' ngày LV', kieu: 'so', nguon: 'm6.4.sua_chua_thay_the', canhBao: k => k.giaTri > 0 },
+      { khoa: 'cp', ten: 'Chi phí ghi trên phiếu', donVi: 'nghìn đ', kieu: 'nghin', nguon: 'm6.4.sua_chua_thay_the' }
+    ],
+    o: (d, c) => {
+      const t = d.id;
+      if (c.khoa === 'moi') return CT.doc('CS.03', PV.thamSoPS({ loc: trongThang(t) }), 'moTrongKhoang');
+      if (c.khoa === 'xong') return CT.doc('CS.03', PV.thamSoPS({ loc: xongThang(t) }), 'xongTrongKhoang');
+      if (c.khoa === 'tv') return CT.doc('CS.04', PV.thamSoPS({ loc: xongThang(t) }));
+      if (c.khoa === 'qh') return CT.doc('CS.03', PV.thamSo({ loc: trongThang(t) }), 'quaHan');
+      return CT.doc('CS.03', PV.thamSoPS({ loc: xongThang(t) }), 'chiPhi');
+    },
+    tongRieng: c => c.khoa === 'tv' ? CT.doc('CS.04', PV.thamSoPS())
+      : c.khoa === 'qh' ? CT.doc('CS.03', PV.thamSo(), 'quaHan') : null,
+    duoiBang: '<div class="canh b">💰 Chi phí <b>ghi trên phiếu</b> ≠ quyết toán; tiền thật ở M7.5. '
+      + '<button class="btn xs" data-dl="M7.5" data-dlq="return=' + MENU_NAY + '">↗ M7.5</button></div>'
+  });
+
+  /* ---------- khối phụ · điều chuyển giữa điểm trường (K5) ---------- */
+  const tu = PV.st.tuNgay, den = PV.st.denNgay;
+  const dc = DIEUCHUYEN.filter(d => d.ngayDX >= tu && d.ngayDX <= den)
+    .filter(d => { const x = dtHieuLuc(); return x === 'ALL' || d.nguon === x || d.dich === x });
+  if (!coXD('m6.4.dieu_chuyen_giua_diem_truong')) {
+    h += '<div class="bg"><div class="bgh"><b>Điều chuyển giữa điểm trường</b></div>'
+      + '<div class="noaccbox">🔒 <b>Khối này bị ẩn.</b> Vai <b>' + esc(R().cd) + '</b> không có quyền '
+      + '<b>Xuất dữ liệu (XD)</b> ở <b>Điều chuyển giữa điểm trường — M6.11</b>. '
+      + 'Có <b>' + dc.length + ' lệnh</b> trong khoảng đang xem, không hiện ở đây.</div></div>';
+  } else {
+    h += KB.K5({
+      tieuDe: 'Khối phụ · Điều chuyển giữa điểm trường', chip: 'PS', moTaKy: PV.moTaKhoang(),
+      banGhi: dc.map(d => ({
+        so: d.id, ngay: k2s(d.ngayDX),
+        noiDung: (tsById(d.ts) || {}).ten + ' · ' + DT[d.nguon] + ' → ' + DT[d.dich],
+        nguoiLap: d.boiDX, nguoiKy: d.tt === 'hoantat' ? 'Hoàn tất ' + k2s(d.ngayXong) : '—',
+        tt: TT_DC[d.tt][0]
+      })),
+      kiemSoHieu: false,
+      chuoiTrong: 'Không có lệnh điều chuyển nào trong khoảng đang xem.',
+      duoiBang: '<div class="ro">Điều chuyển = <b>đổi hẳn nơi sở hữu</b>; mượn = dùng tạm (tab 3). '
+        + '<button class="btn xs" data-dl="M6.11" data-dlq="tab=dieuchuyen&return=' + MENU_NAY + '">↗ M6.11</button></div>'
+    });
+  }
+  return h + dnote('Tab này giáp <b>M6.11</b> — nhưng M6.11 trả lời <i>«phiếu nào của tôi chưa xong, bấm vào để xử lý»</i>, '
+    + 'còn tab này trả lời <i>«cả kỳ trường sửa bao nhiêu việc, mất bao lâu, tốn bao nhiêu»</i>. '
+    + 'Khác kỳ, khác dòng, khác người đọc — nên hai chỗ ra hai con số khác nhau là <b>đúng</b>.');
+}
+
+/* ══════════════ TAB 3 · KHAI THÁC PHÒNG & THIẾT BỊ ════════════════════
+   Khuôn K2 — bảng chéo. CHỈ SỐ PHÁT SINH: câu hỏi của tab này luôn là
+   «trong khoảng ấy phòng được dùng bao nhiêu», không có vế «tại ngày».    */
+function veTab3() {
+  const phongDem = PHONG.filter(p => !['ngoaitroi', 'congvu'].includes(p.loai));
+  const dsPV = phongDem.filter(trongPV);
+  let h = daiPV('phòng', dsPV.length, phongDem.length) + PV.khoang();
+
+  h += '<div class="pvbar"><span class="pvlb">🎯 Đối tượng</span>'
+    + '<button class="pvk' + (ST.doiTuong === 'phong' ? ' on' : '') + '" data-dtg="phong">Phòng</button>'
+    + '<button class="pvk' + (ST.doiTuong === 'tb' ? ' on' : '') + '" data-dtg="tb">Thiết bị cho mượn</button>'
+    + '<span class="pvmc">Phòng tính theo <b>tiết</b> · thiết bị theo <b>ngày</b>.</span></div>';
+  h += PV.chonChieu('CS.05', ['diem_truong', ST.doiTuong === 'phong' ? 'loai_phong' : 'loai_tai_san', 'thang', 'mon_hoc']);
+
+  /* ── dòng của bảng đổi theo CHIỀU PHÂN TỔ ──────────────────────────
+     Không cắt → một dòng một đối tượng. Cắt theo chiều → một dòng một
+     giá trị của chiều, và ô là số GỘP của cả nhóm (cộng tử số và mẫu số
+     rồi mới chia — xem ghi chú ở CS.05).                                */
+  const ct = PV.st.phanTo;
+  const kieu = ST.doiTuong;
+  const dsDT = kieu === 'phong' ? dsPV
+    : TAISAN.filter(t => t.diDong && !['thanhly', 'hong'].includes(t.tt) && trongPV(t));
+  let dong;
+  if (!ct) {
+    dong = dsDT.map(x => ({
+      id: x.id, ids: [x.id], ten: x.id + ' · ' + x.ten, nhom: DT[x.dt],
+      phu: kieu === 'phong' ? LOAIP[x.loai] + (x.tt !== 'dung' ? ' · ' + TT_PHONG[x.tt][0] : '') : LOAITS[x.loai],
+      mo: kieu === 'phong' && x.tt !== 'dung'
+    }));
+  } else if (ct === 'thang') {
+    const th = []; let t0 = thangCua(PV.st.tuNgay); const het = thangCua(PV.st.denNgay); let dem = 0;
+    while (t0 <= het && dem++ < 24) { th.push(t0); const d0 = k2d(t0 + '-01'); d0.setMonth(d0.getMonth() + 1); t0 = thangCua(d2k(d0)) }
+    dong = th.map(t => ({ id: t, ids: dsDT.map(x => x.id), ten: tenThang(t), thang: t }));
+  } else {
+    const khoa = ct === 'diem_truong' ? (x => x.dt) : (x => x.loai);
+    const ten = ct === 'diem_truong' ? (k => DT[k]) : (k => kieu === 'phong' ? LOAIP[k] : LOAITS[k]);
+    const nhomHoa = {};
+    dsDT.forEach(x => { (nhomHoa[khoa(x)] = nhomHoa[khoa(x)] || []).push(x.id) });
+    dong = Object.keys(nhomHoa).map(k => ({ id: k, ids: nhomHoa[k], ten: ten(k), phu: nhomHoa[k].length + (kieu === 'phong' ? ' phòng' : ' thiết bị') }));
+  }
+  const thamDong = d => {
+    const t = { kieu, doiTuongIds: d.ids };
+    if (d.thang) { const a = d.thang + '-01', b0 = k2d(a); b0.setMonth(b0.getMonth() + 1); b0.setDate(0); t.tuNgay = a > PV.st.tuNgay ? a : PV.st.tuNgay; t.denNgay = d2k(b0) < PV.st.denNgay ? d2k(b0) : PV.st.denNgay }
+    return PV.thamSoPS(t);
+  };
+  if (kieu === 'phong') {
+    h += KB.K2({
+      id: 'kt', tieuDe: 'Khai thác PHÒNG' + (ct ? ' — phân tổ theo ' + CT.CHIEU[ct] : ''),
+      ma: 'CS.05', chip: 'PS', moTaKy: PV.moTaKhoang(),
+      tenCotDau: ct ? CT.CHIEU[ct] : 'Phòng', dong, gomNhom: !ct && dtHieuLuc() === 'ALL',
+      link: d => ({ menu: 'M6.5', ctx: 'tab=lichmuon&phong=' + d.ids.join(','), nhan: 'Lịch mượn phòng' }),
+      cot: [
+        { khoa: 'luotMuon', ten: 'Lượt mượn', donVi: 'đã duyệt', kieu: 'so', nguon: 'm6.5.lich_muon_phong' },
+        { khoa: 'tietDung', ten: 'Tiết sử dụng', kieu: 'so', nguon: 'm4.6.tkb_dang_ap_dung' },
+        { khoa: null, ten: 'Tỉ lệ khai thác', kieu: 'tile', nguon: 'm4.6.khung_tiet_rang_buoc' },
+        { khoa: 'tuChoiTrung', ten: 'Bị từ chối vì trùng', kieu: 'so', nguon: 'm6.5.lich_muon_phong', canhBao: k => k.giaTri > 0 }
+      ],
+      o: (d, c) => CT.doc('CS.05', thamDong(d), c.khoa || undefined),
+      tongRieng: c => c.khoa ? null : CT.doc('CS.05', PV.thamSoPS({ kieu: 'phong', doiTuongIds: dsDT.map(x => x.id) }))
+    });
+    h += '<div class="ro">⛔ Ngoài mẫu số: phòng đang sửa · đóng cửa · sân · nhà công vụ — vẫn hiện thành dòng mờ.</div>';
+  } else {
+    h += KB.K2({
+      id: 'kt', tieuDe: 'Khai thác THIẾT BỊ cho mượn' + (ct ? ' — phân tổ theo ' + CT.CHIEU[ct] : ''),
+      ma: 'CS.05', chip: 'PS', moTaKy: PV.moTaKhoang(),
+      tenCotDau: ct ? CT.CHIEU[ct] : 'Thiết bị', gomNhom: !ct && dtHieuLuc() === 'ALL', dong,
+      link: d => ({ menu: 'M6.5', ctx: 'tab=thietbi&ts=' + d.ids.join(','), nhan: 'Thiết bị đang cho mượn' }),
+      cot: [
+        { khoa: 'luotMuon', ten: 'Lượt mượn', donVi: 'đã duyệt', kieu: 'so', nguon: 'm6.5.thiet_bi_dang_cho_muon' },
+        { khoa: 'ngayMuon', ten: 'Ngày cho mượn', kieu: 'so', nguon: 'm6.5.thiet_bi_dang_cho_muon' },
+        { khoa: null, ten: 'Tỉ lệ khai thác', kieu: 'tile', nguon: 'm6.5.thiet_bi_dang_cho_muon' }
+      ],
+      o: (d, c) => CT.doc('CS.05', thamDong(d), c.khoa || undefined),
+      tongRieng: c => c.khoa ? null : CT.doc('CS.05', PV.thamSoPS({ kieu: 'tb', doiTuongIds: dsDT.map(x => x.id) }))
+    });
+  }
+  return h + dnote('Tab này <b>không xếp hạng phòng</b> và <b>không có cột điểm thi đua</b>. '
+    + 'Một phòng bộ môn khai thác thấp có thể chỉ vì cả trường có hai lớp học môn đó — '
+    + 'quy một hoàn cảnh về một thứ hạng là nói dối bằng con số.');
+}
+
+/* ══════════════════════════ VẼ LẠI ════════════════════════════════════ */
+function ve() {
+  KB.moi();
+  rolebar(); header(); tabs();
+  if (!R().tab.length) {
+    $('#content').innerHTML = '<div class="noaccbox big">🔒 <b>Vai ' + esc(R().cd) + ' không có Feature nào của M9.13.</b><br>'
+      + 'Bảng chuẩn quyền <b>không có dòng nào</b> cho chức danh này ở ba Feature — '
+      + '<b>không có dòng nghĩa là không có quyền</b>. Việc CSVC của giáo viên ở <b>M6.5</b>: '
+      + '<button class="btn xs" data-dl="M6.5" data-dlq="return=' + MENU_NAY + '">↗ Mở M6.5</button></div>';
+    $('#topact').innerHTML = '';
     return;
   }
-  document.getElementById('v3').style.display = 'none';
-  document.getElementById('tb3').className = '';
-  _doiTab0(t);
+  const t = TAB.find(x => x.ma === ST.tab) || TAB[0];
+  $('#h1').textContent = 'Báo cáo CSVC & thiết bị';
+  $('#crumb').innerHTML = '<div class="crumb">📊 Báo cáo &amp; thống kê <span>›</span> <b>CSVC &amp; thiết bị</b> '
+    + '<span>›</span> ' + esc(t.nhan.replace(/^\d+ · /, ''))
+    + '<span class="pill">' + t.bc + '</span><span class="pill">loại ' + t.loai + '</span><span class="pill">khuôn ' + t.k + '</span></div>';
+  $('#topact').innerHTML = XU.veNut();
+  $('#content').innerHTML = PV.daiMau()
+    + (ST.tab === 'kiem_ke' ? veTab1() : ST.tab === 'sua_chua' ? veTab2() : veTab3());
+}
+
+/* ══════════════════════════ NỐI DÂY ═══════════════════════════════════ */
+KB.datMenu(MENU_NAY);
+KB.noiQuyen(f => coXD(f), f => NGUON[f] || { menu: '?', ten: f });
+PV.noiVeLai(ve);
+PV.doiTab = t => { if (coTab(t)) ST.tab = t };
+XU.noiBoiCanh(() => {
+  const t = TAB.find(x => x.ma === ST.tab) || TAB[0];
+  const ky = ST.tab === 'khai_thac' ? PV.moTaKhoang()
+    : ST.tab === 'sua_chua' ? PV.moTaChot() + ' · ' + PV.moTaKhoang() : PV.moTaChot();
+  const maCT = ST.tab === 'kiem_ke' ? 'VH.03' : ST.tab === 'sua_chua' ? 'CS.03' : 'CS.05';
+  const kb = CT.khaiBao(maCT);
+  return {
+    truong: 'THCS & THPT Nguyễn Tất Thành',
+    baoCao: 'Báo cáo CSVC & thiết bị — ' + t.nhan.replace(/^\d+ · /, '') + ' (' + t.bc + ')',
+    menu: MENU_NAY, nguoi: R().n, chucDanh: R().cd, ky,
+    phamVi: tenPhamVi(),
+    toanTruong: TAISAN.filter(x => x.tt !== 'thanhly').length,
+    tongPhamVi: TAISAN.filter(x => x.tt !== 'thanhly' && trongPV(x)).length,
+    donVi: 'tài sản',
+    quyTac: (kb.quyTacDem.tinhVao || []).concat((kb.quyTacDem.khongTinh || []).map(x => 'KHÔNG tính: ' + x)),
+    /* Danh sach truong DOI THEO TAB — muc 2 cua ba tab lay ba loai ban ghi khac nhau */
+    truong_du_lieu: TRUONG_XUAT[ST.tab],
+    soDong: soDongChiTiet()
+  };
+});
+/* ── ba danh sách trường của mức 2 — mỗi tab một bộ ────────────────────
+   Mức 2 của ba tab lấy ba loại bản ghi khác nhau, nên trường cá nhân cũng
+   khác: tab 1 là người kiểm đếm, tab 2 là người báo hỏng, tab 3 là người
+   mượn. Một danh sách dùng chung thì người xuất tab 3 vẫn phải bỏ chọn một
+   trường không có trong bảng họ đang xem. */
+const TRUONG_XUAT = {
+  kiem_ke: [
+    { khoa: 'ma', ten: 'Mã tài sản', batBuoc: true },
+    { khoa: 'ten', ten: 'Tên tài sản', batBuoc: true },
+    { khoa: 'phong', ten: 'Phòng đặt' },
+    { khoa: 'tt', ten: 'Tình trạng' },
+    { khoa: 'gia', ten: 'Nguyên giá' },
+    { khoa: 'kq', ten: 'Kết luận kiểm kê · ghi chú' },
+    { khoa: 'nguoiDem', ten: 'Người kiểm đếm (họ tên)', nhay: true, macDinh: false }
+  ],
+  sua_chua: [
+    { khoa: 'id', ten: 'Số phiếu', batBuoc: true },
+    { khoa: 'ngay', ten: 'Ngày báo · ngày xong', batBuoc: true },
+    { khoa: 'phong', ten: 'Phòng · đối tượng' },
+    { khoa: 'tt', ten: 'Trạng thái · cách xử lý' },
+    { khoa: 'chiphi', ten: 'Chi phí ghi trên phiếu' },
+    { khoa: 'nguoiBao', ten: 'Người báo hỏng (họ tên)', nhay: true, macDinh: false }
+  ],
+  khai_thac: [
+    { khoa: 'id', ten: 'Mã yêu cầu', batBuoc: true },
+    { khoa: 'doiTuong', ten: 'Phòng · thiết bị', batBuoc: true },
+    { khoa: 'ngay', ten: 'Ngày · tiết' },
+    { khoa: 'tt', ten: 'Trạng thái' },
+    { khoa: 'mucDich', ten: 'Mục đích sử dụng' },
+    { khoa: 'nguoiMuon', ten: 'Người mượn (họ tên)', nhay: true, macDinh: false }
+  ]
 };
-doiVai = function () {
-  _doiVai0();
-  const R0 = R();
-  /* `H-7`: vai không có quyền KHÔNG THẤY tab ③ (ẩn hẳn, không chỉ mờ) */
-  document.getElementById('tb3').style.display = R0.tabs.indexOf('3') < 0 ? 'none' : '';
-  /* `SCTEN.own` của app.js ghi cứng tên của vai GVBM. Hai vai mới cũng mang
-     phạm vi `Của tôi` nhưng là người khác — sửa nhãn ở đây thay vì đụng
-     `SCTEN` (hằng dùng chung của hai tab cũ). */
-  if (R0.sc === 'own' && R0.u && SCTEN.own.indexOf(R0.u) < 0) {
-    const e = document.getElementById('scinfo');
-    e.innerHTML = e.innerHTML.replace(SCTEN.own, 'Của tôi — ' + escL(R0.u));
-  }
-  if (R0.sc3) {
-    document.getElementById('scinfo').innerHTML +=
-      ' &nbsp;·&nbsp; <b style="color:#fff">Báo cáo tuân thủ</b>: ' + (R0.sc3 === 'truong' ? 'Toàn trường' : tenPV3())
-      + ' · X' + (R0.xd3 ? ' + XD' : ' — không có XD');
-  }
-  if (DL_TAB3) doiTab(3);
-};
+const soDongChiTiet = () => ST.tab === 'kiem_ke'
+  ? TAISAN.filter(trongPV).length
+  : ST.tab === 'sua_chua' ? BAOHONG.filter(trongPV).length
+    : YEUCAU.filter(trongPV).length;
+
 KB.gan(); PV.gan(); XU.gan();
-doiVai();
+
+document.addEventListener('click', e => {
+  const r = e.target.closest('[data-r]');
+  if (r) { role = r.getAttribute('data-r'); moTab(tabMacDinh()); ve(); return }
+  const t = e.target.closest('[data-t]');
+  if (t) { moTab(t.getAttribute('data-t')); ve(); return }
+  const d = e.target.closest('[data-dot]');
+  if (d) { ST.dotKK = d.getAttribute('data-dot'); ve(); return }
+  const g = e.target.closest('[data-dtg]');
+  if (g) { ST.doiTuong = g.getAttribute('data-dtg'); PV.st.phanTo = null; ve(); return }
+  if (e.target.closest('#btnNote')) { ST.note = !ST.note; ve(); return }
+  const dl = e.target.closest('[data-dl]');
+  if (dl) {
+    const m = dl.getAttribute('data-dl'), q = dl.getAttribute('data-dlq') || '';
+    toast('↗ Deep-link sang <b>' + esc(m) + '</b> — <code>?' + esc(q) + '</code><br>'
+      + '<i>Demo một tệp: không mở được menu khác, nhưng đường dẫn là đường dẫn thật.</i>');
+  }
+});
+$('#hdt').addEventListener('change', e => { ST.dt = e.target.value; ve() });
+
+function toast(h) {
+  const t = $('#toast'); t.innerHTML = h; t.classList.add('on');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), 4200);
+}
+
+/* ── công cụ nghiệm thu: đo MẬT ĐỘ CHỮ GIẢI THÍCH (`nh9` §9.1, ngưỡng ≤ 20%)
+   Gọi `doMatDoChu()` trong console. Đếm ký tự của mọi khối giải thích chia
+   cho ký tự của toàn màn hình đang hiện.                                 */
+function doMatDoChu() {
+  /* BCM9-Z 21/9/2026 · V18 (chốt Đ8): bỏ .noaccbox khỏi chữ giải thích — dòng «đã trừ N — thiếu quyền» là THÔNG TIN VẬN HÀNH (sổ §2), sửa MỘT LƯỢT cả 16 demo. */
+  const giai = '.canh,.ro,.dnote,.bvdl,.k3sep,.pvmc,.tongtru,.chieuro,.kyro,.pvcach,.info';
+  const goc = $('#content');
+  const tong = (goc.innerText || '').replace(/\s+/g, ' ').trim().length;
+  let chu = 0;
+  goc.querySelectorAll(giai).forEach(n => { chu += (n.innerText || '').replace(/\s+/g, ' ').trim().length });
+  const r = { tong, chuGiaiThich: chu, tiLe: Math.round(chu * 1000 / tong) / 10 + '%' };
+  console.log('Mật độ chữ giải thích —', ST.tab, r);
+  return r;
+}
+window.doMatDoChu = doMatDoChu;
+
+ST.tab = tabMacDinh();
+ve();
 </script>
-</body></html>
+</body>
+</html>

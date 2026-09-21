@@ -229,6 +229,7 @@ tr:last-child td{border-bottom:none}
   <main class="main">
     <div class="tophd"><h1>Đối tượng ưu tiên &amp; chính sách</h1><div class="spacer"></div>
       <button class="btn" data-x="them">+ Thêm diện cho học sinh</button>
+      <button class="btn" data-x="anhxa">⇄ Bảng dịch nhãn CSDL ngành</button>
       <button class="btn" data-x="xuat">⬇ Xuất</button></div>
     <div class="tabs" id="tabs"></div>
     <div id="content"></div>
@@ -258,15 +259,16 @@ const NAV=[
 ];
 
 /* edit: 1 = day du | 'dexuat' = chi tao de xuat | 0 = chi doc
-   giayto: 1 = thay tep | 0 = khong thay tep (KT) */
+   giayto: 1 = thay tep | 0 = khong thay tep (KT)
+   duyetCD: duyet khoi CHE DO dang huong — VT lap, HT duyet (CS-6, 19/9/2026) */
 const ROLE={
  /* Vai mặc định của demo (quy ước dự án): mọi năng lực bật, phạm vi rộng nhất — để người duyệt thao tác được
     trọn luồng (đề xuất · duyệt · thu hồi · giấy tờ · xuất) trên một màn hình. Hệ thống thật không có vai này. */
- FULL:{n:'Đủ quyền (demo)',sc:'Toàn trường',menu:'all',edit:1,duyet:1,giayto:1,xuat:1,thuhoi:1},
- VT:  {n:'Văn thư',sc:'Điểm trường',menu:['hs','lop','gt'],edit:1,duyet:1,giayto:1,xuat:1,thuhoi:1},
- GVCN:{n:'GVCN lớp 9A2',sc:'Lớp 9A2',menu:['hs','lop','gt'],edit:'dexuat',duyet:0,giayto:1,xuat:1,thuhoi:0},
- KT:  {n:'Kế toán',sc:'Điểm trường',menu:['tc','gt'],edit:0,duyet:0,giayto:0,xuat:1,thuhoi:0},
- HT:  {n:'Hiệu trưởng',sc:'Toàn trường',menu:'all',edit:0,duyet:0,giayto:1,xuat:1,thuhoi:0},
+ FULL:{n:'Đủ quyền (demo)',sc:'Toàn trường',menu:'all',edit:1,duyet:1,giayto:1,xuat:1,thuhoi:1,duyetCD:1},
+ VT:  {n:'Văn thư',sc:'Điểm trường',menu:['hs','lop','gt'],edit:1,duyet:1,giayto:1,xuat:1,thuhoi:1,duyetCD:0},
+ GVCN:{n:'GVCN lớp 9A2',sc:'Lớp 9A2',menu:['hs','lop','gt'],edit:'dexuat',duyet:0,giayto:1,xuat:1,thuhoi:0,duyetCD:0},
+ KT:  {n:'Kế toán',sc:'Điểm trường',menu:['tc','gt'],edit:0,duyet:0,giayto:0,xuat:1,thuhoi:0,duyetCD:0},
+ HT:  {n:'Hiệu trưởng',sc:'Toàn trường',menu:'all',edit:0,duyet:0,giayto:1,xuat:1,thuhoi:0,duyetCD:1},
 };
 let role='FULL', tab='ds', ptab='dien', cur=null, openG={}, sel=new Set();
 let fDIEN=new Set(), fKH=new Set(), fLOP=new Set(), fDT=new Set();
@@ -275,19 +277,51 @@ const R=()=>ROLE[role];
 const hdtVal=()=>$('#hdt').value;
 const showDTfilter=()=>hdtVal()==='Toàn trường';
 
-/* ===== danh muc dien uu tien — Master, cau hinh tai tab Cau hinh cua chinh Menu nay ===== */
+/* ===== danh muc dien uu tien — Master, cau hinh tai tab Cau hinh cua chinh Menu nay =====
+   cc   = can cu phap ly
+   ax   = o tuong ung cua CSDL nganh (hang ANH XA theo HDCS (2)) — doi TEN khi xuat, KHONG doi nghia
+   tien = dien CHAM TIEN: xac nhan hoac go phai bao Ke toan va bo phan lien quan */
 const DM={
  'Con liệt sĩ':              {vv:1,gt:'Giấy chứng nhận thân nhân liệt sĩ'},
  'Con thương binh, bệnh binh':{vv:1,gt:'Giấy chứng nhận thương binh / bệnh binh'},
- 'Học sinh dân tộc thiểu số': {vv:1,gt:'Giấy khai sinh (đã có ở M1.1)'},
- 'Học sinh mồ côi':          {vv:1,gt:'Giấy chứng tử · xác nhận của địa phương'},
+ 'Học sinh dân tộc thiểu số': {vv:1,gt:'Giấy khai sinh (đã có ở M1.1)',
+   ax:'— không ánh xạ — cổng lấy từ trường Dân tộc của hồ sơ'},
+ 'Học sinh mồ côi':          {vv:1,gt:'Giấy chứng tử · xác nhận của địa phương',
+   ax:'Mồ côi cả cha mẹ',axCanh:'Chỉ ánh xạ khi thuộc tính là <b>cả hai</b>. Mồ côi cha hoặc mẹ <b>không có ô nhận</b> ⇒ dòng nằm lại ở M10.8 tab ④'},
  'Hộ nghèo':                 {vv:0,gt:'Giấy chứng nhận hộ nghèo'},
  'Hộ cận nghèo':             {vv:0,gt:'Giấy chứng nhận hộ cận nghèo'},
- 'Học sinh khuyết tật':      {vv:2,gt:'Giấy xác nhận khuyết tật của Hội đồng cấp xã'},
- 'Học sinh vùng khó khăn':   {vv:0,gt:'Quyết định phân định vùng đang hiệu lực'},
- 'Hoàn cảnh đặc biệt khó khăn khác':{vv:0,gt:'Biên bản xét của nhà trường'},
+ 'Học sinh khuyết tật':      {vv:2,gt:'Giấy xác nhận khuyết tật của Hội đồng cấp xã',
+   ax:'Tàn tật, khuyết tật + ô Loại khuyết tật'},
+ 'Học sinh vùng khó khăn':   {vv:0,gt:'Quyết định phân định vùng đang hiệu lực',
+   ax:'Vùng đặc biệt khó khăn'},
+ 'Hoàn cảnh đặc biệt khó khăn khác':{vv:0,gt:'Biên bản xét của nhà trường',
+   ax:'Diện chính sách khác'},
+
+ /* ===== bay dien bo sung — cum CSDL, phien 1D (19/9/2026) ===== */
+ 'Con người có công với cách mạng':{vv:1,gt:'Giấy chứng nhận người có công',
+   cc:'Pháp lệnh 02/2020/UBTVQH14 (hiệu lực 01/7/2021) · NĐ 131/2021/NĐ-CP'},
+ 'Con anh hùng':             {vv:1,gt:'Quyết định phong tặng',
+   cc:'Pháp lệnh 02/2020/UBTVQH14 — Anh hùng LLVT nhân dân · Anh hùng Lao động trong thời kỳ kháng chiến'},
+ 'Bị bỏ rơi, mất nguồn nuôi dưỡng':{vv:1,gt:'Xác nhận của Ủy ban nhân dân cấp xã',
+   cc:'NĐ 20/2021/NĐ-CP — trẻ em không có nguồn nuôi dưỡng · hồ sơ gửi Chủ tịch UBND cấp xã'},
+ 'Con hộ nghèo thuộc chương trình 135':{vv:0,gt:'Giấy chứng nhận hộ nghèo + xác nhận thuộc địa bàn 135',
+   cc:'QĐ 1719/QĐ-TTg (CTMTQG vùng DTTS & miền núi, tên quen gọi “135”) · địa bàn theo QĐ 861/QĐ-TTg'},
+ 'Chính sách học sinh dân tộc bán trú':{vv:0,gt:'Quyết định hưởng chính sách',tien:1,
+   cc:'NĐ 66/2025/NĐ-CP (ban hành 12/3/2025, hiệu lực 01/5/2025) — Điều 4 điều kiện · Điều 6 k2 mức hưởng · Điều 8-9 xét duyệt, UBND cấp huyện phê duyệt'},
+ 'Chính sách học sinh dân tộc nội trú':{vv:0,gt:'Quyết định hưởng chính sách',tien:1,
+   cc:'NĐ 66/2025/NĐ-CP — Điều 6 k3 (học sinh trường PTDT nội trú)'},
+ 'Học sinh hưởng chính sách ăn trưa':{vv:0,gt:'Quyết định hưởng chính sách',tien:1,
+   cc:'NĐ 339/2025/NĐ-CP (ban hành và hiệu lực 25/12/2025) — HS tiểu học và THCS ở xã biên giới đất liền · Hiệu trưởng lập, phê duyệt và công khai danh sách'},
 };
 const DIEN=Object.keys(DM);
+/* bo phan phai duoc bao khi mot dien cham tien duoc xac nhan hoac bi go */
+const BAOAI={'Chính sách học sinh dân tộc bán trú':['M6.1','bộ phận bán trú'],
+             'Chính sách học sinh dân tộc nội trú':['M6.10','quản lý ký túc xá'],
+             'Học sinh hưởng chính sách ăn trưa':['M6.1','bộ phận bán trú']};
+/* khoan thu va ky bi anh huong — hop xac nhan phai neu DICH DANH, khong noi chung chung */
+const KHOANTHU={'Chính sách học sinh dân tộc bán trú':'Tiền ăn bán trú · Tiền ở bán trú — học kỳ I năm học 2026-2027 (kỳ thu tháng 9/2026)',
+                'Chính sách học sinh dân tộc nội trú':'Tiền ở nội trú · Tiền điện nước nội trú — học kỳ I năm học 2026-2027',
+                'Học sinh hưởng chính sách ăn trưa':'Tiền ăn trưa — học kỳ I năm học 2026-2027 (kỳ thu tháng 9/2026)'};
 
 /* ===== hoc sinh ===== */
 const HS={
@@ -375,7 +409,73 @@ let REC=[
  {id:116,hs:4,dien:'Học sinh khuyết tật',thuoc:'Khiếm thính · mức độ nặng',tt:'cxn',cap:'10/8/2026',
   dv:'Hội đồng xác định mức độ khuyết tật phường Yên Hòa',sv:'31/BB-HĐ',
   hh:'10/8/2029',ky:[],tep:1,doichieu:0,nguon:'PH đề xuất',ngayGui:'24/8/2026',nguoiGui:'Phạm Văn Long (Cha)'},
+
+ /* ===== ca C4 — dien CHAM TIEN dang hieu luc, co giay to, kem che do Cap gao ===== */
+ {id:117,hs:3,dien:'Chính sách học sinh dân tộc bán trú',thuoc:'Nhà cách trường 9 km, ở lại trường',tt:'ok',
+  cap:'05/9/2025',dv:'UBND huyện Định Hóa',sv:'1876/QĐ-UBND',
+  hh:'31/5/2027',ky:[['05/9/2025','31/5/2027']],tep:1,doichieu:1,nguon:'VT tạo',
+  nguoiXN:'Lê Thu Hằng (VT)',ngayXN:'08/9/2025',ms:[],
+  log:[['05/9/2025','Lê Thu Hằng (VT)','Tạo bản ghi','Nhập từ Quyết định 1876/QĐ-UBND của UBND huyện Định Hóa (NĐ 66/2025 Điều 8-9)'],
+       ['08/9/2025','Lê Thu Hằng (VT)','Xác nhận','Đã đối chiếu bản gốc · diện CHẠM TIỀN — đã báo Kế toán (M7.2) và bộ phận bán trú (M6.1)']]},
+
+ /* dien cham tien thu hai — de xuat dang cho, dung thu canh bao luc XAC NHAN */
+ {id:118,hs:7,dien:'Học sinh hưởng chính sách ăn trưa',thuoc:'Học tại xã biên giới đất liền',tt:'cxn',
+  cap:'12/8/2026',dv:'Trường THCS & THPT Nguyễn Tất Thành',sv:'214/QĐ-NTT',
+  hh:'31/5/2027',ky:[],tep:1,doichieu:0,nguon:'GVCN nhập thay',ngayGui:'20/8/2026',nguoiGui:'Trần Thị Mai (GVCN 8A1)'},
 ];
+
+/* =====================================================================
+   KHOI «CHE DO DANG HUONG» — CS-6 chot 19/9/2026, dat tai M1.2
+   BA DIEU BAT BUOC (chan rui ro «danh muc dien bi lan che do»):
+   (1) Bang RIENG, khong phai muc trong danh muc dien DM — khong hien o bo loc
+       «Dien uu tien», khong vao bo gom nhom theo Dien o F1, khong dem vao
+       «so dien dang hieu luc» cua hoc sinh.
+   (2) Moi che do BAT BUOC tro toi >=1 ban ghi DIEN lam can cu dang con hieu luc.
+       Khong con dien nao con hieu luc => canh bao tren dong, KHONG tu go che do.
+   (3) KHONG vao cong no hoc phi. Day la khoan NHA NUOC CAP CHO GIA DINH,
+       khong phai khoan TRUONG GIAM CHO GIA DINH. Phat sinh thi bao Ke toan
+       qua M7.5 (so thu chi), KHONG di qua M7.4.
+   ===================================================================== */
+const DMCD={
+ 'Hỗ trợ chi phí học tập':{dv:'đồng / tháng'},
+ 'Hỗ trợ nhà ở':          {dv:'đồng / tháng'},
+ 'Cấp tiền hàng tháng':   {dv:'đồng / tháng'},
+ /* Don vi PHAI khai, khong mac dinh la tien — cap gao ma luu nhu tien thi moi
+    phep cong ve sau deu sai */
+ 'Cấp gạo':               {dv:'kg gạo / tháng'},
+};
+const CDTEN=Object.keys(DMCD);
+
+/* tt: cho = cho Hieu truong duyet | huong = dang huong | dung = da dung */
+let CD=[
+ {id:201,hs:3,ten:'Cấp gạo',canCu:[117],muc:15,dv:'kg gạo / tháng',tt:'huong',
+  ky:[['05/9/2025','31/5/2027']],sqd:'1876/QĐ-UBND',dvcap:'UBND huyện Định Hóa',bh:'05/9/2025',
+  kp:'Ngân sách',tep:1,nguoiDuyet:'Nguyễn Đức Thắng (HT)',ngayDuyet:'08/9/2025',
+  ghi:'15 kg/tháng, hưởng không quá 9 tháng/năm học (NĐ 66/2025 Điều 6 khoản 2)'},
+
+ {id:202,hs:3,ten:'Hỗ trợ nhà ở',canCu:[117],muc:360000,dv:'đồng / tháng',tt:'huong',
+  ky:[['05/9/2025','31/5/2027']],sqd:'1876/QĐ-UBND',dvcap:'UBND huyện Định Hóa',bh:'05/9/2025',
+  kp:'Ngân sách',tep:1,nguoiDuyet:'Nguyễn Đức Thắng (HT)',ngayDuyet:'08/9/2025',
+  ghi:'Áp dụng khi học sinh phải tự túc chỗ ở (NĐ 66/2025 Điều 6 khoản 2)'},
+
+ /* che do do VAN THU lap, dang cho HIEU TRUONG duyet */
+ {id:203,hs:7,ten:'Hỗ trợ chi phí học tập',canCu:[108],muc:150000,dv:'đồng / tháng',tt:'cho',
+  ky:[['01/9/2026','31/5/2027']],sqd:'',dvcap:'',bh:'',
+  kp:'Ngân sách',tep:0,nguoiLap:'Phạm Văn Đức (VT)',ngayLap:'22/8/2026',
+  ghi:'Chờ Hiệu trưởng duyệt — chưa đính kèm quyết định'},
+
+ /* DIEU (2) chay that: can cu la ban ghi 109 DA BI THU HOI => canh bao, KHONG tu go */
+ {id:204,hs:8,ten:'Cấp tiền hàng tháng',canCu:[109],muc:250000,dv:'đồng / tháng',tt:'huong',
+  ky:[['01/01/2025','31/12/2026']],sqd:'77/QĐ-UBND',dvcap:'UBND phường Nghĩa Tân',bh:'01/01/2025',
+  kp:'Ngân sách',tep:1,nguoiDuyet:'Nguyễn Đức Thắng (HT)',ngayDuyet:'04/01/2025',
+  ghi:'Diện làm căn cứ đã bị thu hồi 20/5/2025 — hệ thống KHÔNG tự gỡ chế độ, chỉ cảnh báo để người xử lý'},
+];
+const cdOf=hs=>CD.filter(x=>x.hs===hs);
+const cdRec=id=>CD.find(x=>x.id===+id);
+/* can cu con hieu luc? — day chinh la thu giu «dien» va «che do» tach nhau */
+const cdCanCu=c=>(c.canCu||[]).map(rec).filter(Boolean);
+const cdCanCuSong=c=>cdCanCu(c).filter(r=>['ok','sap'].includes(stt(r)[0]));
+const fmMuc=c=>c.dv==='kg gạo / tháng'?c.muc+' kg':c.muc.toLocaleString('vi-VN')+' đ';
 
 /* ===== trang thai dan xuat theo ngay ===== */
 function pd(s){if(!s)return null;const [d,m,y]=s.split('/').map(Number);return new Date(y,m-1,d)}
@@ -559,7 +659,11 @@ function panel(hsId){
  const h=HS[hsId], rs=REC.filter(x=>x.hs===hsId);
  const okn=rs.filter(x=>stt(x)[0]==='ok'||stt(x)[0]==='sap').length;
  const gan=rs.filter(x=>x.hh&&['ok','sap'].includes(stt(x)[0])).sort((a,b)=>pd(a.hh)-pd(b.hh))[0];
- const T=[['dien','Các diện ('+rs.length+')'],['giayto','Giấy tờ'],['cs','Chính sách đang hưởng'],['log','Lịch sử']]
+ const cds=cdOf(hsId);
+ /* «Che do dang huong» la KHOI RIENG trong panel (Feature F3) — khong phai mot muc
+    cua danh muc dien, va KHONG cong vao «so dien dang hieu luc» o dau panel */
+ const T=[['dien','Các diện ('+rs.length+')'],['chedo','Chế độ đang hưởng ('+cds.length+')'],
+          ['giayto','Giấy tờ'],['cs','Chính sách đang hưởng'],['log','Lịch sử']]
   .filter(t=>!(t[0]==='giayto'&&!R().giayto));
  if(!T.some(t=>t[0]===ptab))ptab=T[0][0];
  return `<div class="ph"><div class="ava3">${h.i}</div>
@@ -569,7 +673,68 @@ function panel(hsId){
     ${gan?`<span class="st2 ${days(pd(gan.hh))<=30?'w':'n'}">Hạn gần nhất: ${gan.hh}</span>`:''}</div></div>
    <div class="spacer" style="flex:1"></div><button class="btn sm" id="pclose">✕ Đóng</button></div>
   <div class="ptabs">${T.map(t=>`<button class="ptab ${ptab===t[0]?'on':''}" data-ptab="${t[0]}">${t[1]}</button>`).join('')}</div>
-  <div class="pbody">${ptab==='dien'?tabDien(rs):ptab==='giayto'?tabGiayTo(rs):ptab==='log'?tabLog(rs):tabCS(rs)}</div>`}
+  <div class="pbody">${ptab==='dien'?tabDien(rs):ptab==='chedo'?tabCheDo(hsId):ptab==='giayto'?tabGiayTo(rs):ptab==='log'?tabLog(rs):tabCS(rs)}</div>`}
+
+/* ===== KHOI «CHE DO DANG HUONG» — CS-6 =====
+   Dien tra loi «em thuoc ve cai gi». Che do tra loi «em duoc huong cai gi».
+   Hai cau hoi khac nhau nen hai khoi khac nhau, du cung mot menu va cung mot bo giay to. */
+function tabCheDo(hsId){
+ const cds=cdOf(hsId);
+ const mo=`<div class="ro"><b>Diện</b> trả lời câu hỏi <i>em thuộc về cái gì</i>.
+   <b>Chế độ</b> trả lời câu hỏi <i>em được hưởng cái gì</i>. Hai câu hỏi khác nhau nên <b>hai khối khác nhau</b>,
+   dù cùng nằm trong một menu và cùng dựa trên một bộ giấy tờ.<br>
+   Khối này <b>không phải là diện</b>: không có trong danh mục diện, không vào bộ lọc <b>Diện ưu tiên</b>,
+   không vào bộ gom nhóm theo diện, và <b>không đếm vào «số diện đang hiệu lực»</b> ở đầu panel.</div>
+  <div class="danger" style="margin-top:0"><b>⛔ Bốn chế độ này KHÔNG vào công nợ học phí.</b>
+   Chúng là khoản <b>nhà nước cấp cho gia đình</b>, không phải khoản <b>trường giảm cho gia đình</b>.
+   Trộn vào công nợ thì số dư của học sinh sai, và sai theo hướng có lợi cho trường — loại sai không ai báo lỗi.
+   Phát sinh thì báo Kế toán ở <b>sổ thu chi</b> <span class="rolnk" data-go="M7.5">🔗 M7.5</span>,
+   ⛔ không đi qua <span class="rolnk" data-go="M7.4">M7.4</span>.</div>`;
+ if(!cds.length)return mo+`<div class="empty">Học sinh này chưa có chế độ hỗ trợ nào</div>
+   ${R().edit===1?'<div style="margin-top:10px"><button class="btn sm p" data-x="cd-them" data-id="'+hsId+'">+ Thêm chế độ</button></div>':''}`;
+ return mo+cds.map(c=>{
+  const song=cdCanCuSong(c), all=cdCanCu(c), mat=!song.length;
+  const lb=c.tt==='cho'?'<span class="st2 w">Chờ Hiệu trưởng duyệt</span>'
+    :c.tt==='dung'?'<span class="st2 n">Đã dừng</span>':'<span class="st2 o">✓ Đang hưởng</span>';
+  return `<div class="card ${mat?'exp':''}">
+   <div class="ch">${c.ten}<span class="pill">${fmMuc(c)} / tháng</span><span class="sp"></span>${lb}</div>
+   <div class="cb">
+    <div class="f"><div class="k">Mức hưởng</div><div class="v">${fmMuc(c)}
+      <span style="font-weight:400;color:var(--ink3);font-size:11.5px"> · đơn vị <b>${c.dv}</b> — khai tường minh, không mặc định là tiền</span></div></div>
+    <div class="f"><div class="k">Diện làm căn cứ</div><div class="v">
+      ${all.length?all.map(r=>{const [sc,sl,scl]=stt(r);
+        return `<div style="display:flex;gap:7px;align-items:center;margin-bottom:3px">
+          <span>${r.dien}</span><span class="st2 ${scl}">${sl}</span></div>`}).join('')
+       :'<span style="color:var(--red)">— chưa trỏ tới diện nào —</span>'}</div></div>
+    <div class="f"><div class="k">Kỳ hiệu lực</div><div class="v"><div class="ky">
+      ${c.ky.map((k,i)=>`<div class="kyi ${i===c.ky.length-1?'now':'old'}">${k[0]} → ${k[1]||'không thời hạn'}</div>`).join('')}
+     </div><div style="font-size:11.5px;color:var(--ink3);margin-top:5px">Dùng lại <b>cơ chế kỳ hiệu lực và gia hạn</b> của bản ghi diện — nối tiếp vào bản ghi, giữ lịch sử kỳ cũ.</div></div></div>
+    <div class="f"><div class="k">Số quyết định</div><div class="v">${c.sqd||'<span style="color:var(--ink3);font-weight:400">— chưa có —</span>'}</div></div>
+    <div class="f"><div class="k">Đơn vị cấp</div><div class="v">${c.dvcap||'<span style="color:var(--ink3);font-weight:400">— chưa có —</span>'}</div></div>
+    <div class="f"><div class="k">Ngày ban hành</div><div class="v">${c.bh||'<span style="color:var(--ink3);font-weight:400">— chưa có —</span>'}</div></div>
+    <div class="f"><div class="k">Nguồn kinh phí</div><div class="v">${c.kp}</div></div>
+    <div class="f"><div class="k">Tệp quyết định</div><div class="v">${R().giayto
+      ? (c.tep?'<span class="st2 o">✓ Đã đính kèm</span> <button class="btn xs" data-x="cd-xem" data-id="'+c.id+'">👁 Xem</button>'
+             :'<span class="st2 r">Chưa có</span>')
+      : '<span style="color:var(--ink3);font-size:11.5px">— ẩn — Kế toán xem mức hưởng và kỳ hiệu lực, không xem tệp (Luật BVDLCN 91/2025)</span>'}</div></div>
+    ${c.ghi?`<div class="f"><div class="k">Ghi chú</div><div class="v" style="font-weight:400">${c.ghi}</div></div>`:''}
+    ${c.nguoiDuyet?`<div class="f"><div class="k">Người duyệt</div><div class="v" style="font-weight:500">${c.nguoiDuyet} · ${c.ngayDuyet}</div></div>`
+      :c.nguoiLap?`<div class="f"><div class="k">Người lập</div><div class="v" style="font-weight:500">${c.nguoiLap} · ${c.ngayLap}</div></div>`:''}
+   </div>
+   ${mat?`<div class="danger" style="margin:0;border-radius:0;border-left:0;border-right:0;border-bottom:0">
+     ⚠ <b>Không còn diện làm căn cứ nào đang hiệu lực</b> —
+     ${all.map(r=>r.dien+' ('+stt(r)[1].replace(/<[^>]+>/g,'')+')').join(' · ')}.
+     Hệ thống <b>không tự gỡ chế độ</b>, chỉ cảnh báo: gỡ hay giữ là quyết định của người xử lý, và đó cũng là
+     <b>đường lần ngược khi kiểm toán</b>.</div>`:''}
+   <div class="cact">
+    ${c.tt==='cho'&&R().duyetCD?`<button class="btn xs p" data-x="cd-duyet" data-id="${c.id}">✓ Duyệt chế độ</button>`:''}
+    ${R().edit===1?`<button class="btn xs" data-x="cd-sua" data-id="${c.id}">✎ Sửa</button>`:''}
+    ${R().edit===1&&c.tt==='huong'?`<button class="btn xs" data-x="cd-dung" data-id="${c.id}">⏹ Dừng chế độ</button>`:''}
+    <span style="flex:1"></span>
+    <span style="font-size:11px;color:var(--ink3);align-self:center">Văn thư lập và sửa · Hiệu trưởng duyệt</span>
+   </div></div>`}).join('')
+  +(R().edit===1?'<div style="margin-top:10px"><button class="btn sm p" data-x="cd-them" data-id="'+hsId+'">+ Thêm chế độ</button></div>':'');
+}
 
 /* Lich su thao tac — ban ghi dien la can cu chi ngan sach, phai truy duoc vet */
 function tabLog(rs){
@@ -645,7 +810,9 @@ function tabCS(rs){
  const active=all.filter(([r])=>['ok','sap'].includes(stt(r)[0]));
  const dead=all.filter(([r])=>!['ok','sap'].includes(stt(r)[0]));
  return `<div class="ro"><b>Toàn bộ khối này chỉ đọc</b> — dữ liệu thuộc sở hữu của <b>M7.4 Chính sách miễn giảm</b>.
-   M1.2 <b>không chọn mức có lợi nhất</b>, chỉ ghi nhận đủ các diện; việc chọn mức là logic của M7.4.</div>
+   M1.2 <b>không chọn mức có lợi nhất</b>, chỉ ghi nhận đủ các diện; việc chọn mức là logic của M7.4.<br>
+   ⚠ <b>Đừng nhầm với tab «Chế độ đang hưởng».</b> Tab này là khoản <b>trường giảm cho gia đình</b> —
+   nó trừ vào công nợ học phí. Tab kia là khoản <b>nhà nước cấp cho gia đình</b> — nó ⛔ <b>không</b> vào công nợ.</div>
   ${active.length?`<table><tr><th>Loại miễn giảm</th><th>Khoản thu</th><th>Mức</th><th>Nguồn chi trả</th><th>Căn cứ</th></tr>
    ${active.map(([r,m])=>`<tr><td><b>${m[0]}</b></td><td>${m[1]}</td><td><b>${m[2]}</b></td><td>${m[3]}</td>
     <td>${r.dien}<span class="rolnk" data-go="M7.4">→ M7.4</span></td></tr>`).join('')}</table>`
@@ -655,6 +822,34 @@ function tabCS(rs){
   ${rs.filter(r=>['ok','sap'].includes(stt(r)[0])).length>1?`<div class="info" style="margin-top:12px">
     Học sinh này thuộc <b>nhiều diện</b>. Khối này hiện rõ <b>M7.4 đã chọn mức nào</b> để văn thư trả lời được câu hỏi
     của phụ huynh <i>"sao con tôi thuộc hai diện mà chỉ được giảm một"</i>.</div>`:''}`}
+
+/* ===== BA DIEN CHAM TIEN — canh bao bat buoc khi xac nhan hoac go =====
+   Hop xac nhan phai neu DICH DANH khoan thu va ky bi anh huong.
+   ⛔ M1.2 KHONG tu sua hoa don da phat hanh — chi bao de ke toan xu ly. */
+function canhBaoTien(r,viec){
+ const dm=DM[r.dien]; if(!dm||!dm.tien)return '';
+ const [ma,ten]=BAOAI[r.dien];
+ return `<div class="danger"><b>⚠ Diện này chạm tiền.</b> ${viec==='xác nhận'?'Xác nhận':'Gỡ'} xong, hệ thống báo ngay:
+   <div style="margin-top:6px">• <b>Kế toán</b> <span class="rolnk" data-go="M7.2">🔗 M7.2</span>
+    &nbsp;• <b>${ten}</b> <span class="rolnk" data-go="${ma}">🔗 ${ma}</span></div>
+   <div style="margin-top:7px;padding-top:7px;border-top:1px dashed #fecaca">
+    <b>Khoản thu và kỳ bị ảnh hưởng:</b><br>${KHOANTHU[r.dien]}</div>
+   <div style="margin-top:7px">⛔ <b>M1.2 không tự sửa hóa đơn đã phát hành.</b>
+    Kỳ đã phát hành muốn đổi thì lập phiếu điều chỉnh ở <span class="rolnk" data-go="M7.3">M7.3</span>.</div></div>`}
+
+/* ===== bang dich nhan sang danh muc cua CSDL nganh — hang ANH XA (HDCS (2)) ===== */
+function bangDich(){
+ const rows=DIEN.filter(d=>DM[d].ax).map(d=>`<tr><td><b>${d}</b></td>
+   <td>${DM[d].ax}${DM[d].axCanh?`<div style="color:var(--amber);font-size:11.5px;margin-top:3px">⚠ ${DM[d].axCanh}</div>`:''}</td></tr>`).join('');
+ modal('⇄ Bảng dịch nhãn sang danh mục của CSDL ngành',
+  `<div class="ro">Hạng <b>ánh xạ</b> theo hợp đồng dữ liệu <b>HDCS ②</b>: diện đã có sẵn dưới tên khác ở cổng —
+    khi xuất thì <b>đổi tên</b>, ⛔ <b>không đổi nghĩa</b>. Bảng này <b>chỉ đọc</b>, không phải nơi khai diện.</div>
+   <table><tr><th>Diện ở Dschool</th><th>Ô của cổng</th></tr>${rows}</table>
+   <div class="danger" style="margin-top:12px;margin-bottom:0">🛑 <b>Dòng «mồ côi cha hoặc mẹ» là ví dụ điển hình
+    của việc Dschool mịn hơn cổng.</b> ⛔ Không gộp về <i>Mồ côi cả cha mẹ</i> cho tiện — đó là <b>khai sai</b>.
+    Dòng không có ô nhận thì <b>nằm lại ở M10.8 tab ④ Việc chưa xong</b> với lý do nêu đích danh.</div>`,
+  [['Đóng',0]]);
+}
 
 /* ===== xem tep dinh kem — thay vi chi cho Tai ===== */
 function viewer(r){
@@ -758,6 +953,98 @@ function act(a,id){
  if(a==='bulk-clear'){sel.clear();render();return}
  if(a==='xem'){viewer(r);return}
  if(a==='toQueue'){tab='q';cur=null;render();return}
+ if(a==='anhxa'){bangDich();return}
+
+ /* ===== khoi CHE DO DANG HUONG — CS-6 ===== */
+ if(a==='cd-xem'){const c=cdRec(id);
+  modal('👁 Quyết định hưởng chế độ — '+c.ten,
+   `<div class="ro">Tệp quyết định dùng <b>cùng cơ chế che và audit</b> với tệp giấy tờ của bản ghi diện:
+     Kế toán không xem được, mọi lượt mở xem và tải đều ghi audit (Luật BVDLCN 91/2025).</div>
+    <div class="viewer"><div class="vpage"><div class="vsheet">
+      <h4>ỦY BAN NHÂN DÂN<br>${c.dvcap||'—'}</h4>
+      <div class="ln" style="width:45%;margin:9px auto"></div>
+      <h4 style="margin-top:12px">QUYẾT ĐỊNH</h4>
+      <div style="margin-top:6px">Về việc phê duyệt danh sách học sinh hưởng chế độ <b>${c.ten}</b></div>
+      <div style="margin-top:10px">Số: <b>${c.sqd||'—'}</b> · ngày <b>${c.bh||'—'}</b></div>
+      <div style="margin-top:6px">Học sinh: <b>${HS[c.hs].n}</b></div>
+      <div style="margin-top:4px">Mức hưởng: <b>${fmMuc(c)}</b> / tháng</div>
+      <div style="margin-top:4px">Nguồn kinh phí: <b>${c.kp}</b></div>
+      <div class="ln" style="margin-top:12px"></div><div class="ln" style="width:80%"></div>
+      <div style="margin-top:14px;text-align:right;padding-right:14px">Ký tên, đóng dấu</div></div>
+     <div class="vtool"><button>−</button><button>100%</button><button>+</button><button>⟲</button><button>⛶ Toàn màn hình</button></div></div>
+     <div class="vmeta"><div class="r"><b>Chế độ</b>${c.ten}</div>
+      <div class="r"><b>Kỳ</b>${c.ky[c.ky.length-1][0]} → ${c.ky[c.ky.length-1][1]||'—'}</div>
+      <div class="r" style="border:0"><b>Tệp</b>QD_${c.id}.pdf · 0,9 MB</div>
+      <div style="display:flex;flex-direction:column;gap:5px;margin-top:9px">
+       <button class="btn xs" data-x="tai">⬇ Tải xuống</button></div></div></div>`,
+   [['Đóng',0]]);return}
+
+ if(a==='cd-duyet'){const c=cdRec(id);
+  modal('✓ Duyệt chế độ — '+c.ten,
+   `<div class="ro">Học sinh <b>${HS[c.hs].n}</b> · ${HS[c.hs].lop} · do ${c.nguoiLap} lập ngày ${c.ngayLap}.<br>
+     <b>Văn thư lập và sửa, Hiệu trưởng duyệt.</b> Với chế độ ăn trưa theo NĐ 339/2025 thì chính Hiệu trưởng
+     là người lập, phê duyệt và công khai danh sách; với chế độ theo quyết định của UBND cấp huyện
+     (NĐ 66/2025) thì bước này là xác nhận nhà trường đã đối chiếu đúng quyết định.</div>
+    ${cdCanCuSong(c).length?`<div class="info"><b>Diện làm căn cứ đang còn hiệu lực:</b>
+       ${cdCanCuSong(c).map(r=>r.dien).join(' · ')}</div>`
+     :`<div class="danger"><b>Không còn diện làm căn cứ nào đang hiệu lực.</b> Mỗi chế độ <b>bắt buộc</b> trỏ tới
+        ít nhất một diện còn hiệu lực — đó là thứ giữ <i>diện</i> và <i>chế độ</i> tách nhau, và là đường lần ngược khi kiểm toán.</div>`}
+    <div class="f" style="padding-left:0"><div class="k">Mức hưởng</div><div class="v">${fmMuc(c)} / tháng
+      <span style="font-weight:400;color:var(--ink3);font-size:11.5px"> · đơn vị ${c.dv}</span></div></div>
+    <div class="warn" style="margin-bottom:0">Duyệt xong <b>không sinh công nợ học phí</b>.
+     Đây là khoản nhà nước cấp cho gia đình — phát sinh báo Kế toán ở <b>sổ thu chi M7.5</b>, ⛔ không đi qua M7.4.</div>`,
+   [['Hủy',0],['Duyệt',()=>{c.tt='huong';c.nguoiDuyet='Nguyễn Đức Thắng (HT)';c.ngayDuyet='25/8/2026';
+     toast('Đã duyệt chế độ · KHÔNG vào công nợ học phí · đã báo Kế toán ở sổ thu chi 🔗 M7.5');render()}]]);return}
+
+ if(a==='cd-dung'){const c=cdRec(id);
+  modal('⏹ Dừng chế độ — '+c.ten,
+   `<div class="warn">Dừng chế độ <b>không tạo bút toán nào</b> ở công nợ học phí. Phần đã cấp và phần dừng
+     do Kế toán xử lý ở <b>sổ thu chi</b> <span class="rolnk" data-go="M7.5">🔗 M7.5</span>.</div>
+    <div><b>Lý do dừng</b> <span style="color:var(--red)">*bắt buộc</span>
+     <select class="fldi"><option>Diện làm căn cứ đã hết hiệu lực hoặc bị thu hồi</option>
+      <option>Có quyết định dừng của cấp trên</option><option>Học sinh chuyển trường</option>
+      <option>Lý do khác</option></select></div>`,
+   [['Hủy',0],['Dừng chế độ',()=>{c.tt='dung';if(c.ky.length)c.ky[c.ky.length-1][1]='25/8/2026';
+     toast('Đã dừng chế độ · báo Kế toán ở sổ thu chi 🔗 M7.5 · ⛔ không đi qua M7.4');render()},'d']]);return}
+
+ if(a==='cd-sua'||a==='cd-them'){
+  const c=a==='cd-sua'?cdRec(id):null, hsId=c?c.hs:+id;
+  modal((c?'✎ Sửa chế độ — ':'+ Thêm chế độ cho ')+(c?c.ten:HS[hsId].n),
+   `<div class="ro">Danh mục chế độ là <b>Master</b>, cấu hình tại tab <b>⚙ Cấu hình</b> —
+     nhưng là <b>bảng riêng</b>, ⛔ không chung bảng với danh mục diện.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px">
+     <div><b>Chế độ</b> <span style="color:var(--red)">*</span>
+      <select class="fldi" id="cdten">${CDTEN.map(t=>`<option${c&&c.ten===t?' selected':''}>${t}</option>`).join('')}</select></div>
+     <div><b>Diện làm căn cứ</b> <span style="color:var(--red)">*bắt buộc</span>
+      <select class="fldi">${REC.filter(x=>x.hs===hsId&&['ok','sap'].includes(stt(x)[0])).map(x=>`<option${c&&(c.canCu||[]).includes(x.id)?' selected':''}>${x.dien}</option>`).join('')||'<option>— em này chưa có diện nào đang hiệu lực —</option>'}</select></div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px">
+     <div><b>Mức hưởng</b> <span style="color:var(--red)">*</span><input class="fldi" value="${c?c.muc:''}"></div>
+     <div><b>Đơn vị</b> <span style="color:var(--red)">*</span>
+      <select class="fldi" id="cddv"><option${c&&c.dv==='đồng / tháng'?' selected':''}>đồng / tháng</option>
+       <option${c&&c.dv==='kg gạo / tháng'?' selected':''}>kg gạo / tháng</option></select></div></div>
+    <div class="warn">⛔ <b>Đơn vị phải khai, không mặc định là tiền.</b> Cấp gạo mà lưu như tiền thì
+     mọi phép cộng sau này sai — và sai âm thầm, vì con số vẫn cộng được.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px">
+     <div><b>Kỳ hiệu lực từ</b><input class="fldi" value="${c?c.ky[c.ky.length-1][0]:''}" placeholder="dd/mm/yyyy"></div>
+     <div><b>đến</b><input class="fldi" value="${c?(c.ky[c.ky.length-1][1]||''):''}" placeholder="dd/mm/yyyy"></div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:11px">
+     <div><b>Số quyết định</b><input class="fldi" value="${c?c.sqd:''}"></div>
+     <div><b>Đơn vị cấp</b><input class="fldi" value="${c?c.dvcap:''}"></div>
+     <div><b>Ngày ban hành</b><input class="fldi" value="${c?c.bh:''}"></div></div>
+    <div style="margin-bottom:11px"><b>Nguồn kinh phí</b>
+     <select class="fldi"><option${c&&c.kp==='Ngân sách'?' selected':''}>Ngân sách</option>
+      <option${c&&c.kp==='Tài trợ'?' selected':''}>Tài trợ</option>
+      <option${c&&c.kp==='Khác'?' selected':''}>Khác</option></select></div>
+    <div><b>Tệp quyết định</b>
+     <div style="border:1.5px dashed var(--line2);border-radius:9px;padding:16px;text-align:center;color:var(--ink3);font-size:12.5px;margin-top:5px">📎 Kéo thả tệp quyết định — cùng cơ chế che và audit với tệp giấy tờ diện</div></div>`,
+   [['Hủy',0],[c?'Lưu':'Lập và gửi Hiệu trưởng duyệt',()=>{
+     if(c){c.ten=$('#cdten').value;c.dv=$('#cddv').value;toast('Đã lưu chế độ · ghi audit')}
+     else{CD.push({id:900+CD.length,hs:hsId,ten:$('#cdten').value,canCu:[(REC.find(x=>x.hs===hsId&&['ok','sap'].includes(stt(x)[0]))||{}).id].filter(Boolean),
+       muc:$('#cddv').value==='kg gạo / tháng'?15:360000,dv:$('#cddv').value,tt:'cho',
+       ky:[['25/8/2026','31/5/2027']],sqd:'',dvcap:'',bh:'',kp:'Ngân sách',tep:0,
+       nguoiLap:'Lê Thu Hằng (VT)',ngayLap:'25/8/2026',ghi:'Chờ Hiệu trưởng duyệt'});
+      toast('Đã lập chế độ · chờ Hiệu trưởng duyệt · ⛔ không sinh công nợ học phí')}
+     render()}]]);return}
 
  if(a==='chuyenGH'){
   const t=trung(r);
@@ -817,6 +1104,7 @@ function act(a,id){
        <div class="kyi now">Kỳ mới: ${r.cap} → <b>${r.hh}</b></div></div></div>`:''}
     ${khac.length?`<div class="warn">Em này <b>đã thuộc ${khac.length} diện khác</b>: ${khac.map(k=>k.dien).join(' · ')}.
       Sau khi xác nhận, <b>M7.4 sẽ chọn mức có lợi nhất</b> giữa các diện — M1.2 không chọn hộ.</div>`:''}
+    ${canhBaoTien(r,'xác nhận')}
     <div class="f" style="padding-left:0"><div class="k">Giấy tờ</div><div class="v">${DM[r.dien].gt}
       <span class="st2 w" style="margin-left:6px">Có tệp, chưa đối chiếu</span>
       <button class="btn xs p" data-x="xem" data-id="${r.id}" style="margin-left:6px">👁 Xem tệp</button></div></div>
@@ -841,8 +1129,11 @@ function act(a,id){
       toast('Đã gia hạn · nối kỳ vào bản ghi #'+gh.id+' · KHÔNG tạo bản ghi mới · trigger M7.4')}
      else{r.tt='ok';r.doichieu=1;r.ky=[[r.cap||'25/8/2026',r.hh]];
       r.nguoiXN='Lê Thu Hằng (VT)';r.ngayXN='25/8/2026';r.ms=r.ms||[];
-      (r.log=r.log||[]).push(['25/8/2026','Lê Thu Hằng (VT)','Xác nhận','Đã đối chiếu bản gốc · trigger M7.4']);
-      toast('Đã xác nhận · diện chuyển Đang hiệu lực · trigger M7.4 rà miễn giảm')}
+      const bao=DM[r.dien]&&DM[r.dien].tien;
+      (r.log=r.log||[]).push(['25/8/2026','Lê Thu Hằng (VT)','Xác nhận',
+        'Đã đối chiếu bản gốc · trigger M7.4'+(bao?' · diện CHẠM TIỀN — đã báo Kế toán (M7.2) và '+BAOAI[r.dien][1]+' ('+BAOAI[r.dien][0]+')':'')]);
+      toast(bao?'Đã xác nhận · đã báo Kế toán 🔗 M7.2 và '+BAOAI[r.dien][1]+' 🔗 '+BAOAI[r.dien][0]+' · ⛔ hóa đơn đã phát hành KHÔNG bị sửa'
+              :'Đã xác nhận · diện chuyển Đang hiệu lực · trigger M7.4 rà miễn giảm')}
      render()}]]);return}
 
  if(a==='nopLai'){
@@ -901,6 +1192,11 @@ function act(a,id){
   modal('🚫 Thu hồi diện ưu tiên',
    `<div class="danger"><b>Thu hồi ảnh hưởng tới tiền đã miễn giảm.</b> M1.2 chỉ đổi trạng thái và bắn trigger —
      phần đã miễn giảm do <b>M7.4</b> xử lý. Cần chọn đúng mốc thu hồi vì đó là căn cứ tính.</div>
+    ${canhBaoTien(r,'gỡ')}
+    ${cdOf(r.hs).filter(c=>(c.canCu||[]).includes(r.id)).length?`<div class="warn">
+      Diện này đang là <b>căn cứ của ${cdOf(r.hs).filter(c=>(c.canCu||[]).includes(r.id)).length} chế độ</b>:
+      ${cdOf(r.hs).filter(c=>(c.canCu||[]).includes(r.id)).map(c=>c.ten).join(' · ')}.
+      Thu hồi diện thì hệ thống <b>không tự gỡ chế độ</b> — chỉ gắn cảnh báo lên dòng chế độ để người xử lý quyết định.</div>`:''}
     <div style="margin-bottom:11px"><b>Mốc thu hồi</b>
      <select class="fldi"><option>Từ hôm nay (25/8/2026)</option>
       <option>Từ ngày phát hiện sai — nhập ngày cụ thể</option></select></div>
@@ -913,12 +1209,19 @@ function act(a,id){
    [['Hủy',0],['Thu hồi',()=>{r.tt='thuhoi';r.lyDoThuHoi='Gia đình đã thoát diện theo rà soát của địa phương';
      r.mocThuHoi='25/8/2026';r.nguoiThuHoi='Lê Thu Hằng (VT)';r.ngayThuHoi='25/8/2026';
      if(r.ky.length)r.ky[r.ky.length-1][1]='25/8/2026';
-     (r.log=r.log||[]).push(['25/8/2026','Lê Thu Hằng (VT)','🚫 Thu hồi','Mốc thu hồi 25/8/2026 — kỳ hiện tại bị cắt về mốc này · trigger M7.4']);
-     toast('Đã thu hồi · kỳ hiện tại cắt về mốc 25/8/2026 · trigger M7.4');render()},'d']]);return}
+     const bao=DM[r.dien]&&DM[r.dien].tien;
+     (r.log=r.log||[]).push(['25/8/2026','Lê Thu Hằng (VT)','🚫 Thu hồi','Mốc thu hồi 25/8/2026 — kỳ hiện tại bị cắt về mốc này · trigger M7.4'
+       +(bao?' · diện CHẠM TIỀN — đã báo Kế toán (M7.2) và '+BAOAI[r.dien][1]+' ('+BAOAI[r.dien][0]+')':'')]);
+     toast(bao?'Đã thu hồi · đã báo Kế toán 🔗 M7.2 và '+BAOAI[r.dien][1]+' 🔗 '+BAOAI[r.dien][0]+' · ⛔ hóa đơn đã phát hành KHÔNG bị sửa'
+             :'Đã thu hồi · kỳ hiện tại cắt về mốc 25/8/2026 · trigger M7.4');render()},'d']]);return}
 
  if(a==='them'){
   modal('+ Thêm diện ưu tiên cho học sinh',
    `<div class="ro">Danh mục diện là <b>Master</b>, cấu hình tại tab <b>⚙ Cấu hình</b> của chính Menu này.</div>
+    <div class="warn">Em nào <b>đã thuộc</b> <i>Con liệt sĩ</i> hoặc <i>Con thương binh, bệnh binh</i> thì
+     ⛔ <b>không khai thêm</b> <i>Con người có công với cách mạng</i> — theo Pháp lệnh ưu đãi người có công thì
+     liệt sĩ và thương binh <b>đã là</b> người có công. Hai diện mới chỉ dành cho trường hợp <b>chưa có diện riêng</b>.
+     Khai cả hai thì em đó đếm thành <b>hai diện</b> trong mọi báo cáo.</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px">
      <div><b>Học sinh</b> <span style="color:var(--red)">*</span>
       <input class="fldi" placeholder="Gõ tên hoặc mã HS để tìm…"></div>

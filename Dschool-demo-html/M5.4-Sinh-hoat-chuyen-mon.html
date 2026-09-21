@@ -99,7 +99,7 @@ h1{font-size:19px;font-weight:700}
 .gs{grid-template-columns:1.5fr .85fr .85fr 1fr 1.9fr}
 .gd{grid-template-columns:2.4fr 1.15fr .85fr .85fr .85fr 1.1fr}
 .gdd{grid-template-columns:2.6fr 1.2fr .9fr .6fr}
-.gsh{grid-template-columns:1.25fr 1.25fr 2fr .8fr 1fr 1.35fr}
+.gsh{grid-template-columns:1.15fr 1.1fr 1.75fr .7fr .9fr .95fr 1.3fr}   /* GY18-J1: them cot «Nop» */
 .stage.open .gsh{grid-template-columns:1.2fr 1.5fr}
 .gnc{grid-template-columns:1.5fr 1.9fr 1.15fr 1.7fr 1fr .8fr}
 .gvi{grid-template-columns:1.15fr 2.2fr 1.1fr 1.4fr}
@@ -276,6 +276,7 @@ h1{font-size:19px;font-weight:700}
   <button class="rb" data-r="TTCM">TTCM</button>
   <button class="rb" data-r="TPCM">TPCM</button>
   <button class="rb" data-r="GVBM">GVBM</button>
+  <button class="rb" data-r="GVTK">GVBM · thư ký buổi</button>
   <button class="rb" data-r="PHT_CM">PHT_CM</button>
   <button class="rb" data-r="HT">HT</button>
   <span style="margin-left:14px;padding-left:14px;border-left:1px solid #334155">Mốc demo:</span>
@@ -316,6 +317,10 @@ const dm=d=>p2(d.getDate())+'/'+p2(d.getMonth()+1);
 const THU=['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
 const thu=d=>THU[d.getDay()];
 const ngay=(a,b)=>Math.round((a-b)/86400000);
+/* GY18-J1 — dong ho cua PHIEN demo. Nhan «✏ bien ban da sua sau khi xem» so THOI DIEM ghi bien ban
+   voi THOI DIEM lanh dao xem; hai thao tac lam trong cung mot ngay demo thi so theo NGAY khong phan biet duoc.
+   luc() tra ve HOMNAY cong dan tung phut theo thu tu thao tac — hien thi van la HOMNAY (d2s chi in ngay). */
+let TICK=0;const luc=()=>new Date(HOMNAY.getTime()+(++TICK)*60000);
 const kd=s=>(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d');
 const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 function toast(m){const t=$('#toast');t.innerHTML=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),3800)}
@@ -323,10 +328,24 @@ function closeModal(){$('#mask').classList.remove('on')}
 function modal(t,b,f){$('#mh').innerHTML=t;$('#mb').innerHTML=b;$('#mf').innerHTML=f||'<button class="btn" data-x="close">Đóng</button>';$('#mask').classList.add('on');$('#mb').scrollTop=0}
 
 /* ===== TO CHUYEN MON ===== */
-const TOCM={'Tổ Toán — Tin':{mon:['Toán','Tin học'],tt:'Trần Thị Bích',
+/* ldpt — LANH DAO PHU TRACH TO (GY18-J1 · TD-05, 19/9/2026). Khai o M10.1 muc ⑤ To bo mon,
+   mot o nhan su KHONG BAT BUOC, dung canh To truong · To pho. M5.4 chi DOC ban chieu 🔗.
+   To chua khai (chuoi rong) => luoi do: bien ban van nop, gui toi MOI PHT chuyen mon va Hieu truong. */
+const TOCM={'Tổ Toán — Tin':{mon:['Toán','Tin học'],tt:'Trần Thị Bích',ldpt:'Phó HT Chuyên môn',
   gv:['Nguyễn Văn An','Trần Thị Bích','Lê Văn Dũng','Hoàng Văn Nam','Đỗ Thị Lan']},
- 'Tổ Lý — Hóa — Sinh':{mon:['KHTN','Vật lí','Hóa học','Sinh học'],tt:'Vũ Đình Khoa',
+ 'Tổ Lý — Hóa — Sinh':{mon:['KHTN','Vật lí','Hóa học','Sinh học'],tt:'Vũ Đình Khoa',ldpt:'',
   gv:['Vũ Đình Khoa','Nguyễn Thu Hà','Trịnh Văn Sơn']}};
+/* ===== NOP BIEN BAN CHO LANH DAO PHU TRACH — GY18-J1 (TD-05, 19/9/2026) =====
+   Gop y GV-TDRD: «Co chuc nang nop Bien ban sau hop to cho Lanh dao truong phu trach».
+   🛑 «Nop» KHONG phai mot buoc duyet: khong sinh ve o M0.2, khong co nut Dong y / Tu choi / Tra lai.
+   Chi HAI MOC:  ① «Da nop»  — DAN XUAT tu chu ky cua chu tri (buoi Da hoan tat), khong co nut rieng;
+                 ② «Lanh dao da xem» — NUT BAM TAY cua nguoi nhan, khong tu danh dau khi mo.
+   Cai truong thieu truoc J1 khong phai quyen xem (PHT_CM va HT da xem duoc moi bien ban o tab nay),
+   ma la: to truong khong biet minh da nop chua · lanh dao khong biet co bien ban moi · khong co vet «da xem». */
+const BGH_CM=['Phó HT Chuyên môn'];    /* moi PHT phu trach chuyen mon — M4.3 */
+const HIEUTRUONG='Hiệu trưởng';
+function nguoiNhan(to){const l=TOCM[to]?TOCM[to].ldpt:'';
+ return l?{ds:[l],luoi:false}:{ds:BGH_CM.concat([HIEUTRUONG]),luoi:true}}
 const toCuaGV={};Object.keys(TOCM).forEach(t=>TOCM[t].gv.forEach(g=>toCuaGV[g]=t));
 const NGHI={'Đỗ Thị Lan':'Nghỉ ốm dài ngày từ 09/11/2026 (M4.2)'};
 const HAN_BB=3;   /* ngay — cau hinh M10.6 */
@@ -435,9 +454,13 @@ function ttNC(n){const s=ncBuoc(n);
 /* ===== BUOI SINH HOAT ===== */
 let SSEQ=0;const SH=[];
 function addSH(o){const b={id:'S'+(++SSEQ),to:o.to||'Tổ Toán — Tin',ht:o.ht,ngay:o.ngay,gio:o.gio||'14h00 — 16h00',
- ct:o.ct||'Trực tiếp',dd:o.dd||'Phòng họp tổ (P.207)',ndDK:o.ndDK||'',nguoiGhiMau:o.nguoiGhiMau||'Lê Văn Dũng',
- chuTri:o.chuTri||'Trần Thị Bích',tp:o.tp?o.tp.slice():TOCM['Tổ Toán — Tin'].gv.slice(),
- dotXuat:!!o.dotXuat,ncId:o.ncId||'',cum:o.cum||null,bb:o.bb||null,ky:o.ky||null,huy:!!o.huy,ldHuy:o.ldHuy||''};
+ ct:o.ct||'Trực tiếp',dd:o.dd||'Phòng họp tổ (P.207)',ndDK:o.ndDK||'',nguoiGhiMau:o.nguoiGhiMau||o.thuKy||'Lê Văn Dũng',
+ /* thu_ky_buoi (GY18-H2, 18/9/2026) — khai theo TUNG BUOI, dung khuon truong nguoi chu tri: chon khi len lich,
+    co mac dinh (thu ky cua buoi gan nhat), DOI duoc, DE TRONG duoc. Khong phai mot vai trong he thong. */
+ chuTri:o.chuTri||'Trần Thị Bích',thuKy:o.thuKy||'',tp:o.tp?o.tp.slice():TOCM['Tổ Toán — Tin'].gv.slice(),
+ dotXuat:!!o.dotXuat,ncId:o.ncId||'',cum:o.cum||null,bb:o.bb||null,ky:o.ky||null,huy:!!o.huy,ldHuy:o.ldHuy||'',
+ /* xem — moc «Lanh dao da xem» (GY18-J1). null = chua xem. Moc «Da nop» KHONG luu o day: no DAN XUAT tu b.ky. */
+ xem:o.xem||null};
  b.lichSu=[{act:'Lên lịch buổi sinh hoạt',ng:b.chuTri,d:o.ngayTao||new Date(b.ngay.getTime()-5*864e5),
   note:b.tp.length+' thành viên'}];
  SH.push(b);return b}
@@ -449,12 +472,42 @@ const CACH={tu_danh_dau:'Tự đánh dấu hoàn thành',kem_minh_chung:'Kèm mi
 const TTGV={dang_lam:['Đang làm','b'],da_bao_hoan_thanh:['Đã báo hoàn thành — chờ nghiệm thu','w'],da_nghiem_thu:['Đã nghiệm thu','o'],huy:['Đã hủy','r']};
 const SUKIEN={tao:'Sinh vào M0.2 (biên bản đã ký)',bao_hoan_thanh:'Báo hoàn thành',nghiem_thu:'Nghiệm thu',tra_lai:'Trả lại',huy:'Hủy việc',go_xac_nhan_bien_ban:'Gỡ ký biên bản — việc giữ, gắn nhãn đang sửa'};
 let KSEQ=0,NHSEQ=0;
-function KL(nd,ai,han,cach,nhom){return {id:'KL'+(++KSEQ),cuoc_hop_id:null,menu_chu:'M5.4',nhom_id:nhom||('NH'+(++NHSEQ)),
- noi_dung:nd,nguoi_thuc_hien_id:ai,han:han||null,cach_bao_ket_qua:cach||'tu_danh_dau',trang_thai:'dang_lam',
+function KL(nd,ai,han,cach,nhom,hangio){return {id:'KL'+(++KSEQ),cuoc_hop_id:null,menu_chu:'M5.4',nhom_id:nhom||('NH'+(++NHSEQ)),
+ noi_dung:nd,nguoi_thuc_hien_id:ai,han:han||null,han_gio:hangio||null,cach_bao_ket_qua:cach||'tu_danh_dau',trang_thai:'dang_lam',
  bao_ket_qua:null,lich_su:[],nhan:[],nguon_xac_nhan:'chua_xac_nhan'}}
 /* nhap nhieu nguoi thi TACH nhieu dong cung nhom_id — moi dong MOT tai khoan */
-function KLnhieu(nd,ds,han,cach){const nh='NH'+(++NHSEQ);return ds.map(a=>KL(nd,a,han,cach,nh))}
-const quaHan=r=>!!(r.han&&r.trang_thai==='dang_lam'&&ngay(r.han,HOMNAY)<0);
+function KLnhieu(nd,ds,han,cach,hangio){const nh='NH'+(++NHSEQ);return ds.map(a=>KL(nd,a,han,cach,nh,hangio))}
+/* ═══ GY18-E2 · 20/9/2026 · HDDD ① han_gio — HAN CO GIO (TUY CHON), khuon chung voi M6.18 §2.10d ═══
+   ★ han la NGAY; han_gio la GIO 'HH:mm' TUY CHON. han_gio = null nghia la «trong ngay hom do»
+     — KHONG suy 23:59 khi tinh, KHONG bia 00:00 khi hien.
+   ★ Qua han van DAN XUAT, khong luu: co gio ⇒ (han, han_gio) < bay gio · khong gio ⇒ giu nguyen luat cu.
+   ★ Nhan dung DUNG CHU va DUNG NGUONG 60 PHUT cua M0.2 §4.3.1c.
+   ★ Ba tham so gio khai o M6.18 ⚙ khoi 2 — menu nay CHIEU 🔗, khong khai so rieng (D1). */
+const GIO_DEMO='09:10';                 /* dong ho demo co dinh de ca F9 lap lai duoc */
+const CFG_GIO={gioGoiY:'16:00',gioChip2:'17:00',truocHopPhut:120};   /* 🔗 chieu tu M6.18 ⚙ khoi 2 — KHONG phai nguon */
+const phutG=g=>{const a=String(g||'00:00').split(':');return (+a[0])*60+(+a[1])};
+const g2s=p=>p2(Math.floor(((p%1440)+1440)%1440/60))+':'+p2(((p%60)+60)%60);
+const quaHan=r=>{
+ if(!r.han||r.trang_thai!=='dang_lam') return false;
+ const d=ngay(r.han,HOMNAY);
+ if(d<0) return true;                   /* hom truoc tro ve truoc — luat cu, khong dung toi gio */
+ return d===0 && !!r.han_gio && phutG(r.han_gio)<phutG(GIO_DEMO);
+};
+function nhanQuaHan(r){                 /* CUNG CHU voi M0.2 §4.3.1c */
+ if(!quaHan(r)) return '';
+ if(ngay(r.han,HOMNAY)<0) return '⏰ quá '+(-ngay(r.han,HOMNAY))+' ngày';
+ const d=phutG(GIO_DEMO)-phutG(r.han_gio);
+ return d<60 ? '⏰ quá '+d+' phút' : '⏰ quá '+Math.floor(d/60)+' giờ';
+}
+/* moc han hien ra: dd/mm/yyyy · HH:mm khi co gio — 🛑 khong bia 00:00 */
+const mocHan=r=>r.han?d2s(r.han)+(r.han_gio?' · '+r.han_gio:''):'';
+/* chip «Truoc buoi sinh hoat sau» — chi hien khi buoi ke tiep CUA CHINH TO da co tren lich (khong tinh buoi cum) */
+function gioTruocBuoiSau(b){
+ const n=buoiSau(b); if(!n) return null;
+ const m=String(n.gio||'').match(/(\d{1,2})h(\d{2})/); if(!m) return null;
+ const p=(+m[1])*60+(+m[2])-CFG_GIO.truocHopPhut;
+ return p>0?{gio:g2s(p),buoi:n}:null;
+}
 /* nhac menu chu khac — GOI Y, KHONG CHAN (DD-4) */
 const GOIYMENU=[[/dự giờ/i,'M5.3 Dự giờ'],[/giáo án/i,'M5.2 Giáo án'],[/kế hoạch (dạy học|giảng dạy|giáo dục)/i,'M5.1 Kế hoạch giảng dạy'],
  [/câu hỏi|ngân hàng đề|đề kiểm tra/i,'M12.5 Ngân hàng câu hỏi'],[/bồi dưỡng|tập huấn/i,'M5.6 Đào tạo, bồi dưỡng']];
@@ -499,18 +552,18 @@ addNC({mon:'Tin học',khoi:8,bai:'Bài 7. Trực quan hóa dữ liệu',
 
 /* Buoi sinh hoat */
 const G=TOCM['Tổ Toán — Tin'].gv;
-addSH({ht:'dinhky',ngay:D(4,9),ndDK:'Triển khai nhiệm vụ năm học của tổ',
+addSH({ht:'dinhky',ngay:D(4,9),ndDK:'Triển khai nhiệm vụ năm học của tổ',thuKy:'Lê Văn Dũng',
  bb:BB('Tổ trưởng triển khai kế hoạch giáo dục của tổ năm học 2026-2027. Rà soát phân công giảng dạy, thống nhất khung phân phối chương trình các môn Toán và Tin học. Tổ thống nhất mỗi môn xây dựng 2 bài học nghiên cứu trong năm theo CV 4069.',
   'Thông qua kế hoạch giáo dục của tổ. Giao đồng chí Dũng dự thảo lịch sinh hoạt cả năm học.',null,
   [KL('Dự thảo lịch sinh hoạt tổ cả năm','Lê Văn Dũng',D(11,9),'kem_minh_chung')],['Ke-hoach-giao-duc-to-2026-2027.pdf'])});
-addSH({ht:'dinhky',ngay:D(18,9),ndDK:'Thống nhất ma trận đề kiểm tra giữa kỳ I',
+addSH({ht:'dinhky',ngay:D(18,9),ndDK:'Thống nhất ma trận đề kiểm tra giữa kỳ I',thuKy:'Lê Văn Dũng',
  bb:BB('Tổ rà soát ma trận đề kiểm tra giữa kỳ I cho Toán 6-9 và Tin học 6-9. Thống nhất tỉ lệ nhận biết — thông hiểu — vận dụng. Trao đổi cách ra câu hỏi vận dụng gắn tình huống thực tế.',
   'Thống nhất ma trận chung. Mỗi giáo viên nộp đề đề xuất trước 25/9.',null,
   KLnhieu('Nộp đề đề xuất giữa kỳ I',TOCM['Tổ Toán — Tin'].gv,D(25,9),'kem_minh_chung'))});
-addSH({ht:'ncbh',ngay:D(2,10),ncId:'N1',ndDK:'Xây dựng phương án bài học nghiên cứu — Toán 7 Bài 11',
+addSH({ht:'ncbh',ngay:D(2,10),ncId:'N1',ndDK:'Xây dựng phương án bài học nghiên cứu — Toán 7 Bài 11',thuKy:'Lê Văn Dũng',
  bb:BB('Tổ phân tích khó khăn của học sinh với mạch Thống kê. Cùng thiết kế phương án 3 hoạt động, thống nhất không giảng định nghĩa trước mà để học sinh tự rút ra tiêu chí phân loại. Phân công đồng chí Dũng dạy minh họa.',
   'Chốt phương án bài học. Dạy minh họa dự kiến tuần 10.',null,[])});
-addSH({ht:'dinhky',ngay:D(16,10),ndDK:'Rút kinh nghiệm kiểm tra giữa kỳ I',
+addSH({ht:'dinhky',ngay:D(16,10),ndDK:'Rút kinh nghiệm kiểm tra giữa kỳ I',thuKy:'Lê Văn Dũng',
  bb:BB('Phân tích phổ điểm giữa kỳ I của từng lớp. Tổ nhận thấy học sinh lớp 8 yếu ở phần hình học không gian. Bàn giải pháp hỗ trợ nhóm học sinh dưới trung bình.',
   'Giao mỗi giáo viên lập danh sách học sinh cần hỗ trợ và phương án kèm cặp.',null,
   KLnhieu('Lập danh sách học sinh cần hỗ trợ',TOCM['Tổ Toán — Tin'].gv,D(23,10),'bao_trong_cuoc_hop_sau'))});
@@ -522,19 +575,34 @@ addSH({ht:'cum',ngay:D(23,10),ct:'Kết hợp',dd:'THCS Lê Quý Đôn (trực t
   'Cụm thống nhất xây dựng kho học liệu dùng chung trên nền tảng của cụm. Tổ ta nhận phần đóng góp 20 câu hỏi vận dụng cho Toán 7.',null,
   [KL('Chia sẻ tham luận của cụm và bộ câu hỏi trường bạn gửi lên kho tài liệu của tổ','Nguyễn Văn An',D(27,11),'kem_minh_chung')],['Tham-luan-cum-Toan-Thong-ke.pptx'])});
 addSH({ht:'dinhky',ngay:D(9,10),huy:true,ldHuy:'Trùng lịch họp hội đồng sư phạm đột xuất — chuyển nội dung sang buổi 16/10.',
- ndDK:'Trao đổi kinh nghiệm sử dụng phần mềm chấm trắc nghiệm'});
-addSH({ht:'dinhky',ngay:D(30,10),
+ ndDK:'Trao đổi kinh nghiệm sử dụng phần mềm chấm trắc nghiệm',thuKy:'Lê Văn Dũng'});
+/* H2-2 · H2-3 · H2-4 — buoi CHO BIEN BAN co thu ky la mot GV THUONG (thay Dung ban lich coi, to doi thu ky buoi nay) */
+addSH({ht:'dinhky',ngay:D(30,10),thuKy:'Hoàng Văn Nam',
  ndDK:'Trao đổi kinh nghiệm dạy học phân hóa cho nhóm học sinh dưới trung bình'});
-addSH({ht:'dinhky',ngay:D(6,11),ndDK:'Rút kinh nghiệm tiết dạy minh họa Toán 7 và bàn kế hoạch 2 tuần tới',
+addSH({ht:'dinhky',ngay:D(6,11),ndDK:'Rút kinh nghiệm tiết dạy minh họa Toán 7 và bàn kế hoạch 2 tuần tới',thuKy:'Hoàng Văn Nam',
  bb:BB('Tổ nghe báo cáo kết quả tiết dạy minh họa Toán 7 Bài 11. Ba người dự đã nộp phiếu quan sát. Tổ trao đổi về việc phân vai trong nhóm để không học sinh nào bị bỏ lại. Bàn kế hoạch hai tuần tới: hoàn thiện ngân hàng câu hỏi đóng góp cho cụm.',
   'Thống nhất phương án điều chỉnh cho lần dạy sau. Giao đồng chí Dũng hoàn thiện 20 câu hỏi trước 20/11. Giao đồng chí An lập lại danh sách học sinh lớp 8 cần hỗ trợ phần hình học trước 13/11, và thử phiếu phân vai nhóm ở tiết Toán 8 rồi kể lại ở buổi sinh hoạt sau.',null,
   /* DD9 — buoi DA KY co ket luan giao viec cho Nguyen Van An va Le Van Dung */
   [KL('Hoàn thiện 20 câu hỏi vận dụng Toán 7 đóng góp kho học liệu của cụm','Lê Văn Dũng',D(20,11),'kem_minh_chung'),
-   KL('Lập lại danh sách học sinh lớp 8 cần hỗ trợ phần hình học — đủ các lớp khối 8','Nguyễn Văn An',D(13,11),'tu_danh_dau'),
+   /* GY18-E2 — ca HAN CO GIO: 13/11 luc 16:00. Han cu (hom truoc tro ve truoc) van doc «qua n ngay»,
+      KHONG bi gio keo thanh «qua n gio» — chung minh hai nhanh chay song song, khong nhanh nao de nhanh kia. */
+   KL('Lập lại danh sách học sinh lớp 8 cần hỗ trợ phần hình học — đủ các lớp khối 8','Nguyễn Văn An',D(13,11),'tu_danh_dau',null,'16:00'),
+   /* DOI CHUNG — viec thu hai cua An giu KHONG HAN (va do do khong gio): nhanh «chi ngay» phai con song */
    KL('Thử phiếu phân vai nhóm ở một tiết Toán 8 và kể lại kết quả','Nguyễn Văn An',null,'bao_trong_cuoc_hop_sau')])});
+/* H2-5 — buoi KHONG KHAI thu ky: chay y het nhu truoc GY18-H2 */
 addSH({ht:'dinhky',ngay:D(5,11),dotXuat:true,gio:'16h00 — 17h00',
  ndDK:'Họp đột xuất theo yêu cầu Hiệu trưởng — rà soát tiến độ chương trình giữa học kỳ'});
-addSH({ht:'dinhky',ngay:D(27,11),ndDK:'Đánh giá kết quả 2 tuần và chuẩn bị kiểm tra cuối kỳ I'});
+addSH({ht:'dinhky',ngay:D(27,11),ndDK:'Đánh giá kết quả 2 tuần và chuẩn bị kiểm tra cuối kỳ I',thuKy:'Hoàng Văn Nam'});
+/* J1-2 — buoi cua TO THU HAI, to nay CHUA KHAI lanh dao phu trach o M10.1 ⑤ => chay LUOI DO.
+   Chi vai School (PHT_CM · HT) va vai Du quyen thay duoc to nay — dung de ra ca J1-2 va J1-4. */
+addSH({to:'Tổ Lý — Hóa — Sinh',ht:'dinhky',ngay:D(13,11),chuTri:'Vũ Đình Khoa',thuKy:'Nguyễn Thu Hà',
+ tp:TOCM['Tổ Lý — Hóa — Sinh'].gv.slice(),dd:'Phòng bộ môn KHTN (P.105)',
+ ndDK:'Thống nhất phương án thực hành KHTN 8 và rà soát thiết bị thí nghiệm',
+ bb:BB('Tổ rà soát danh mục thiết bị thí nghiệm còn dùng được cho các bài thực hành KHTN 8 học kỳ I. Thống nhất gộp hai bài thực hành có cùng bộ dụng cụ để đủ thiết bị cho cả bốn lớp. Trao đổi cách ghi phiếu an toàn phòng thực hành.',
+  'Thống nhất phương án gộp bài thực hành. Giao đồng chí Hà rà lại danh mục thiết bị hỏng và báo sang bộ phận thiết bị.',null,
+  /* GY18-E2 — ca QUA HAN TRONG NGAY: han hom nay 08:00, dong ho demo 09:10 ⇒ «⏰ qua 1 gio»,
+     dung chu va dung nguong 60 phut voi M0.2 §4.3.1c va voi M6.18 §5.4. */
+  [KL('Rà danh mục thiết bị thí nghiệm hỏng của phòng KHTN','Nguyễn Thu Hà',D(20,11),'kem_minh_chung',null,'08:00')])});
 
 /* dien diem danh + chu ky cho cac buoi da co bien ban */
 SH.forEach(function(b){
@@ -552,6 +620,10 @@ SH.forEach(function(b){
  if(b.ngay.getTime()===D(23,10).getTime())return;
  b.ky={nguoi:b.chuTri,ngay:new Date(b.bb.ngayGhi.getTime()+864e5),kySo:true};
  b.lichSu.unshift({act:'Ký biên bản',ng:b.chuTri,d:b.ky.ngay,note:'Ký số bằng USB Token'});
+ /* GY18-J1 — ky xong la DA NOP, khong co thao tac «Nop» rieng: ghi luon vet cho du lieu mau */
+ const nn=nguoiNhan(b.to);
+ b.lichSu.unshift({act:'Nộp biên bản cho lãnh đạo phụ trách',ng:b.chuTri,d:b.ky.ngay,
+  note:(nn.luoi?'tổ chưa khai lãnh đạo phụ trách — gửi mọi PHT chuyên môn và Hiệu trưởng: ':'')+nn.ds.join(' · ')});
 });
 /* ket luan giao viec: gan cuoc hop · sinh viec cho buoi DA KY · dung lich su mau */
 SH.forEach(function(b){if(b.bb)b.bb.gv.forEach(r=>{r.cuoc_hop_id=b.id})});
@@ -576,6 +648,15 @@ function xongMau(r,dBao,dNT,nd){
  LS(g[1],'tra_lai','Trần Thị Bích',D(13,11),'Danh sách còn thiếu lớp 8A3 — kết luận giao đủ các lớp khối 8');
  g[1].trang_thai='dang_lam';
 })();
+/* GY18-J1 — gieo moc «Lanh dao da xem» cho hai buoi dau de cot «Nop» co du ba gia tri tren mot man hinh.
+   Bam tay, nen luon di kem NGUOI va THOI DIEM; y kien la TUY CHON va KHONG CHAN gi (co che nhan xet khong chan cua M5.2). */
+(function(){
+ const byD=(dd,mm,to)=>SH.filter(b=>b.ngay.getTime()===D(dd,mm).getTime()&&(!to||b.to===to))[0];
+ const dat=function(b,ng,d,yk){b.xem={nguoi:ng,luc:d,ykien:yk||''};
+  b.lichSu.unshift({act:'Lãnh đạo đã xem biên bản',ng:ng,d:d,note:yk?'kèm ý kiến — không chặn gì':'không ghi ý kiến'})};
+ dat(byD(4,9),'Phó HT Chuyên môn',D(8,9),'Kế hoạch giáo dục của tổ bám sát CV 4069. Đề nghị tổ chốt sớm hai bài học nghiên cứu để xếp lịch dạy minh họa không trùng tuần kiểm tra.');
+ dat(byD(18,9),'Phó HT Chuyên môn',D(22,9),'');
+})();
 SH.filter(b=>b.huy)[0].lichSu.unshift({act:'Hủy buổi',ng:'Trần Thị Bích',d:D(8,10),
  note:'Trùng lịch họp hội đồng sư phạm đột xuất — không xóa vật lý, tìm lại bằng bộ lọc Đã hủy'});
 
@@ -585,39 +666,81 @@ const CAP={
  TTCM:['xem','lich','bb','bbAll','ky','xoa','ncbh','phieu','xuat'],
  TPCM:['xem','lich','bb','ncbh','phieu','xuat'],
  GVBM:['xem','phieu','xuat'],
+ /* GVTK — cung nang luc GVBM. Quyen ghi bien ban KHONG den tu nang luc chuc danh ma tu BO LOC BAN GHI
+    (buoi ma minh la thu ky) tren Feature da co — xem ghiDuocBB(). */
+ GVTK:['xem','phieu','xuat'],
  PHT_CM:['xem','lich','xuat'],
  HT:['xem','xuat']};
 const ROLE={
- FULL:{n:'Đủ quyền — rà luồng nghiệp vụ',ava:'DQ',me:'Trần Thị Bích',to:['Tổ Toán — Tin'],
-  vt:{'Tổ Toán — Tin':'TT'},sc:'Mọi thao tác',mchu:['M4.7','M4.8','M5.1','M5.3','M4.3']},
+ /* GY18-J1 — vai Du quyen giu CA HAI to de ra tron luong nop (to da khai · to chua khai).
+    §8: giu 2+ to thi moi to mot dai rieng — dai chon to o toBar(). */
+ FULL:{n:'Đủ quyền — rà luồng nghiệp vụ',ava:'DQ',me:'Trần Thị Bích',to:['Tổ Toán — Tin','Tổ Lý — Hóa — Sinh'],
+  vt:{'Tổ Toán — Tin':'TT','Tổ Lý — Hóa — Sinh':'TT'},sc:'Mọi thao tác',mchu:['M4.7','M4.8','M5.1','M5.3','M4.3','M10.1','M10.9']},
  TTCM:{n:'Trần Thị Bích — Tổ trưởng Tổ Toán — Tin',ava:'TB',me:'Trần Thị Bích',to:['Tổ Toán — Tin'],
-  vt:{'Tổ Toán — Tin':'TT'},sc:'Group — Tổ Toán — Tin · chủ trì và ký biên bản',mchu:['M4.7','M5.1','M5.3','M4.3']}, /* YKNP 17/9: TTCM roi M4.8 (M4.8 v2.0 §13) => khong hien ↗ M4.8 */
+  vt:{'Tổ Toán — Tin':'TT'},sc:'Group — Tổ Toán — Tin · chủ trì và ký biên bản',mchu:['M4.7','M5.1','M5.3','M4.3','M10.1','M10.9']}, /* YKNP 17/9: TTCM roi M4.8 (M4.8 v2.0 §13) => khong hien ↗ M4.8 */
  TPCM:{n:'Lê Văn Dũng — Tổ phó',ava:'LD',me:'Lê Văn Dũng',to:['Tổ Toán — Tin'],
-  vt:{'Tổ Toán — Tin':'TP'},sc:'Group — lên lịch và ghi biên bản, KHÔNG ký, KHÔNG hủy buổi',mchu:['M4.7','M5.1','M5.3']},
+  vt:{'Tổ Toán — Tin':'TP'},sc:'Group — lên lịch và ghi biên bản, KHÔNG ký, KHÔNG hủy buổi',mchu:['M4.7','M5.1','M5.3','M10.1','M10.9']},
  GVBM:{n:'Nguyễn Văn An — Giáo viên bộ môn',ava:'NA',me:'Nguyễn Văn An',to:['Tổ Toán — Tin'],
-  vt:{'Tổ Toán — Tin':'GV'},sc:'Group xem · Own ghi phiếu quan sát trong chu trình NCBH · Own báo kết quả việc được giao',mchu:['M4.7','M5.1','M5.3']},
+  vt:{'Tổ Toán — Tin':'GV'},sc:'Group xem · Own ghi phiếu quan sát trong chu trình NCBH · Own báo kết quả việc được giao',mchu:['M4.7','M5.1','M5.3','M10.1','M10.9']},
+ GVTK:{n:'Hoàng Văn Nam — Giáo viên bộ môn, tổ cử làm thư ký buổi',ava:'HN',me:'Hoàng Văn Nam',to:['Tổ Toán — Tin'],
+  vt:{'Tổ Toán — Tin':'GV'},sc:'Group xem · ghi biên bản CHỈ buổi mình là thư ký · KHÔNG ký, KHÔNG hủy buổi, KHÔNG nghiệm thu việc giao',mchu:['M4.7','M5.1','M5.3','M10.1','M10.9']},
  PHT_CM:{n:'Phó Hiệu trưởng Chuyên môn',ava:'PC',me:'Phó HT Chuyên môn',to:[],
-  sc:'School — mọi tổ · lên lịch họp đột xuất theo yêu cầu HT',mchu:['M4.7','M4.8','M5.1','M5.3','M4.3']},
- HT:{n:'Hiệu trưởng — chỉ Đọc',ava:'HT',me:null,to:[],sc:'School — xem và xuất',mchu:['M4.7','M5.1']}};
+  sc:'School — mọi tổ · lên lịch họp đột xuất theo yêu cầu HT · nhận biên bản tổ mình phụ trách',
+  mchu:['M4.7','M4.8','M5.1','M5.3','M4.3','M10.1','M10.9']},
+ /* GY18-J1 — HT nay co DANH TINH (truoc la null vi «chi Doc»). Can ten that de bam duoc «✓ Da xem»
+    o luoi do: to chua khai lanh dao phu trach thi bien ban den ca Hieu truong. Van khong co viec nao
+    o tab «Viec cua toi» cua HT — nop khong sinh ve, va HT khong chu tri, khong ghi, khong ky buoi nao. */
+ HT:{n:'Hiệu trưởng — chỉ Đọc',ava:'HT',me:HIEUTRUONG,to:[],
+  sc:'School — xem và xuất · nhận biên bản của tổ chưa khai lãnh đạo phụ trách',
+  mchu:['M4.7','M5.1','M10.1','M10.9']}};
 let role='FULL';
 const R=()=>ROLE[role];
 const can=c=>CAP[role].indexOf(c)>=0;
 const grp=()=>R().to.length>0;
 const me=()=>R().me;
-/* Bo vai 'thu ky theo tung buoi' (chot 28/8/2026): menu chi ghi chep lai ket qua sinh hoat.
-   Ai co quyen ghi thi ghi; he thong tu ghi nhan NGUOI DA GHI vao bien ban. */
-const ghiDuocBB=b=>can('bb');
+/* THU KY BUOI — mo lai 18/9/2026 (GY18-H2 · TD-12 · gop y GY-AJNX «Tổ đã có thư kí ghi chép»).
+   Diem cho 28/8/2026 la «khong de mot vai gan theo tung buoi de roi phai de mot bo loc assigned rieng».
+   Nay gan DUNG CACH da lam voi nguoi chu tri — chon khi len lich, co mac dinh, doi duoc, de trong duoc —
+   nen KHONG de them co che nao: khong Feature moi, khong o quyen moi, chi la BO LOC BAN GHI tren S da co.
+   Thu ky CHI duoc ghi bien ban cua BUOI MINH LA THU KY; khong ky, khong huy buoi, khong nghiem thu viec giao. */
+const laThuKy=b=>!!(me()&&b.thuKy&&b.thuKy===me());
+const ghiDuocBB=b=>can('bb')||laThuKy(b);
+/* Mac dinh khi len lich: thu ky cua BUOI GAN NHAT co khai (H2-P3) — to thuong giu mot nguoi,
+   buoi nao nguoi do vang thi doi o ngay o chon. */
+function thuKyMacDinh(){const t=curTo();
+ const r=SH.filter(b=>b.to===t&&b.thuKy&&!b.huy).sort((a,b)=>b.ngay-a.ngay)[0];
+ return r?r.thuKy:''}
 /* Quyen ky thuoc ve NGUOI CHU TRI BUOI — dung nhu chu ky tren ban giay.
-   Mac dinh chu tri la to truong; to pho chu tri thay khi to truong vang thi to pho ky. */
+   Mac dinh chu tri la to truong; to pho chu tri thay khi to truong vang thi to pho ky.
+   🛑 THU KY KHONG KY (GY18-H2): ham nay KHONG doc b.thuKy. Luong «Cho ky → chu tri ky → khoa sua»
+   chinh la buoc xem lai — khong dung them buoc duyet thu hai. */
 const kyDuoc=b=>!!(me()&&b.chuTri===me());
 const doiCTDuoc=b=>can('lich');
 /* Go ky = go xac nhan (HDDD ①): nguoi chu tri da ky hoac to truong. */
 const goKyDuoc=b=>kyDuoc(b)||can('bbAll');
 /* Ket luan giao viec — nghiem thu / tra lai / huy: NGUOI CHU TRI BUOI (dung nguoi da ky), to truong luon lam duoc
    (loi thoat khi chu tri vang — cung bai hoc R16). Bao ket qua: CHINH nguoi thuc hien (S · Own).
-   Vai Du quyen (demo) bao thay duoc de ra tron luong. */
+   Vai Du quyen (demo) bao thay duoc de ra tron luong.
+   🛑 THU KY KHONG NGHIEM THU (GY18-H2): ham nay KHONG doc b.thuKy. Ghi bien ban la ghi chep,
+   nghiem thu la cong nhan ket qua — hai viec khac nhau, khong suy rong tu cai nay sang cai kia. */
 const ntDuoc=b=>role==='FULL'||!!(me()&&(b.chuTri===me()||(R().vt&&R().vt[b.to]==='TT')));
 const baoDuoc=r=>role==='FULL'||me()===r.nguoi_thuc_hien_id;
+/* ===== HAI MOC CUA VIEC NOP (GY18-J1) — dan xuat het muc co the =====
+   «Da nop» KHONG luu mot co nao: buoi Da hoan tat (co bien ban VA da ky) la da nop, thoi diem = luc ky.
+   Trang thai dan xuat duoc thi khong lam nut bam tay — hai nguon su that la mau thuan (quy uoc chung).
+   Nguoc lai «Lanh dao da xem» KHONG dan xuat duoc tu bat ky du lieu nao: mo man hinh khong phai la da doc,
+   nen no la nut bam tay, va chi nguoi nhan bam. */
+const daNop=b=>!b.huy&&!!b.bb&&!!b.ky;
+/* nhan «✏ bien ban da sua sau khi xem» — DAN XUAT: hoac bien ban bi go ky (khong con o moc da nop),
+   hoac noi dung duoc ghi lai sau thoi diem lanh dao xem. Nguoi xem khong mat viec da lam,
+   nhung phai biet ban minh xem khong con nguyen. */
+const suaSauXem=b=>!!(b.xem&&!b.huy&&(!daNop(b)||(b.bb&&b.bb.ngayGhi&&b.bb.ngayGhi>b.xem.luc)));
+/* ai bam duoc «✓ Da xem»: dung NGUOI NHAN cua to do. Vai Du quyen bam duoc de ra luong (quy uoc demo). */
+const nhanDuoc=b=>role==='FULL'||!!(me()&&nguoiNhan(b.to).ds.indexOf(me())>=0);
+/* con danh dau duoc khong: chua xem lan nao, HOAC da xem nhung ban hien tai da khac ban minh xem.
+   Neu chi cho bam mot lan thi nhan «da sua sau khi xem» khong bao gio go duoc — moc se ket vinh vien. */
+const xemDuoc=b=>daNop(b)&&nhanDuoc(b)&&(!b.xem||suaSauXem(b));
+const coVaiNhan=()=>role==='FULL'||!!(me()&&Object.keys(TOCM).some(t=>nguoiNhan(t).ds.indexOf(me())>=0));
 
 /* Sinh viec vao M0.2 CHI KHI bien ban da ky — goi luc ky (ke ca "Bo qua ky so": van tinh da xac nhan, co audit — ✅ P-1 chot 17/9) */
 function sinhViec(b,luc,ng){let n=0;
@@ -640,7 +763,7 @@ function viecBaoTrongBuoi(b){const o=[];
    r.trang_thai==='dang_lam'&&buoiSau(x)===b)o.push({b:x,r:r})})});
  return o}
 
-let V={tab:'so',pick:null,open:null,nc:null,qf:'',to:'',
+let V={tab:'so',pick:null,open:null,nc:null,qf:'',to:'',toF:'',
  nS:1,nHT:'',nNgay:'',nGio:'14h00 — 16h00',nCT:'Trực tiếp',nCT2:'',nDD:'',nND:'',nTK:'',nTP:{},nDX:false,nNC:'',nCum:{},
  ncTiet:'',muc:'',baoTep:[]};
 
@@ -650,7 +773,7 @@ const NAV=[
  ['ns','👨‍🏫 Nhân sự',[['M4.1','Hồ sơ nhân sự'],['M4.5','Phân công giảng dạy'],['M4.6','Thời khóa biểu'],['M4.7','Lịch giảng dạy'],['M4.8','Nghỉ phép']]],
  ['cm','📖 Chuyên môn',[['M5.1','Kế hoạch giảng dạy'],['M5.2','Giáo án'],['M5.3','Dự giờ'],['M5.4','Sinh hoạt chuyên môn'],['M5.5','Bộ KPI giáo viên'],['M5.6','Đào tạo, bồi dưỡng'],['M5.7','Bồi dưỡng thường xuyên']]],
  ['qt','⚙️ Quản trị',[['M10.1','Hồ sơ năm học'],['M10.9','Lịch nghỉ & Ngày đặc biệt'],['M10.6','Trung tâm cấu hình']]]];
-const NAVOK={FULL:'all',TTCM:['lop','cm','ns'],TPCM:['lop','cm'],GVBM:['lop','cm'],
+const NAVOK={FULL:'all',TTCM:['lop','cm','ns'],TPCM:['lop','cm'],GVBM:['lop','cm'],GVTK:['lop','cm'],
  PHT_CM:['lop','cm','ns','qt'],HT:'all'};
 function sidebar(){
  const a=NAVOK[role],full=a==='all';
@@ -663,17 +786,37 @@ function sidebar(){
     (nb?'<span class="nb">'+nb+'</span>':'')+'</div>'}).join('')}).join('');
 }
 function curTo(){if(!grp())return '';if(!V.to||R().to.indexOf(V.to)<0)V.to=R().to[0];return V.to}
-function baseS(){let r=SH.slice();if(grp())r=r.filter(b=>b.to===curTo());return r}
-function baseN(){let r=NCBH.slice();if(grp())r=r.filter(n=>n.to===curTo());return r}
+/* GY18-J1 — tu khi so co buoi cua HAI to, vai School (PHT_CM · HT) phai co BO LOC To (§8:
+   «Vai School khong giu chuc danh Group nen nhan bo loc To thay vi dai tab»). Truoc J1 ca so chi
+   co buoi cua mot to nen thieu bo loc khong lo ra. V.toF = '' nghia la xem tat ca cac to. */
+function baseS(){let r=SH.slice();
+ if(grp())r=r.filter(b=>b.to===curTo());else if(V.toF)r=r.filter(b=>b.to===V.toF);
+ return r}
+function baseN(){let r=NCBH.slice();
+ if(grp())r=r.filter(n=>n.to===curTo());else if(V.toF)r=r.filter(n=>n.to===V.toF);
+ return r}
+/* dai chon to: vai Group giu 2+ to => moi to mot dai (§8) · vai School => bo loc To */
+function toBar(){
+ const ds=grp()?R().to:Object.keys(TOCM);
+ if(grp()&&ds.length<2)return '';
+ const cur=grp()?curTo():V.toF;
+ const B=(v,lb)=>'<button class="qf '+(cur===v?'on':'')+'" data-x="chonTo" data-t="'+esc(v)+'">'+esc(lb)+'</button>';
+ return '<div class="bar">'+(grp()?'':B('','Tất cả các tổ'))+ds.map(t=>B(t,t)).join('')+
+  '<span class="sum"><span>'+(grp()?'Bạn giữ <b>'+ds.length+'</b> tổ — mỗi tổ một dải riêng (§8)'
+   :'Phạm vi <b>School</b> — <b>bộ lọc Tổ</b> thay cho dải tab (§8)')+'</span></span></div>';
+}
 
 /* ===== TAN SUAT — TT 15/2026 Dieu 14: it nhat 1 lan / 2 tuan ===== */
-function tanSuat(moc){
+function tanSuat(moc,to){
  /* MOI buoi da ghi vao so deu tinh, ke ca buoi dot xuat (R12 — chot 28/8/2026).
     Ngay nghi doc tu M10.9 KHONG tinh vao khoang cach (R17) — nghi he/Tet/bao thi to khong phai hop.
     Khung nam hoc doc tu M10.1: het ngay ketThucNam thi NGUNG DEM han, khong nhac tiep suot he. */
  const N=moc||HOMNAY;
- const da=baseS().filter(b=>!b.huy&&b.ngay<=N).sort((a,b)=>b.ngay-a.ngay);
- const sap=baseS().filter(b=>!b.huy&&b.ngay>N).sort((a,b)=>a.ngay-b.ngay)[0];
+ /* GY18-J1 — moc «1 lan / 2 tuan» la nghia vu cua TUNG TO (§1.3), nen phep dem phai khoanh theo to.
+    Truoc J1 ca so chi co mot to nen goi khong tham so van dung; nay co hai to thi phai truyen to vao. */
+ const B=baseS().filter(b=>!b.huy&&(to?b.to===to:true));
+ const da=B.filter(b=>b.ngay<=N).sort((a,b)=>b.ngay-a.ngay);
+ const sap=B.filter(b=>b.ngay>N).sort((a,b)=>a.ngay-b.ngay)[0];
  const dangNghi=trongNghi(N);
  if(!da.length)return {gapLich:999,gapHoc:999,cuoi:null,sap:sap,dangNghi:dangNghi,nghiTru:0};
  const gapLich=ngay(N,da[0].ngay);
@@ -689,7 +832,8 @@ function viecCuaToi(){
  baseS().filter(b=>!b.huy).forEach(function(b){
   const st=ttSH(b);
   if(st==='Chờ biên bản'&&ghiDuocBB(b))
-   o.push({k:'bb',id:b.id,ic:'✍',tieu:'Ghi biên bản sinh hoạt',mo:HT_[b.ht].t+' · '+thu(b.ngay)+' '+d2s(b.ngay),
+   o.push({k:'bb',id:b.id,ic:'✍',tieu:laThuKy(b)?'Ghi biên bản sinh hoạt — bạn là thư ký buổi này':'Ghi biên bản sinh hoạt',
+    mo:HT_[b.ht].t+' · '+thu(b.ngay)+' '+d2s(b.ngay)+(b.thuKy?' · thư ký: '+b.thuKy:' · không khai thư ký'),
     han:'Buổi đã diễn ra, sổ chưa có nội dung'});
   if(st==='Chờ ký'&&kyDuoc(b))
    o.push({k:'ky',id:b.id,ic:'🖊',tieu:'Ký biên bản sinh hoạt',mo:HT_[b.ht].t+' · '+thu(b.ngay)+' '+d2s(b.ngay),
@@ -763,7 +907,7 @@ function render(){
    const b=t[0]==='so'?baseS().filter(z=>!z.huy).length:(t[0]==='nc'?baseN().length:viecCuaToi().length);
    return '<button class="tab1 '+(V.tab===t[0]?'on':'')+'" data-x="tab" data-t="'+t[0]+'">'+t[1]+
     (b?'<span class="b'+(t[0]==='viec'?' al':'')+'">'+b+'</span>':'')+'</button>'}).join('')+'</div>'+
- scopeBar()+(V.tab==='so'?tabSo():V.tab==='nc'?tabNC():tabViec());
+ scopeBar()+toBar()+(V.tab==='so'?tabSo():V.tab==='nc'?tabNC():tabViec());
 }
 
 /* ===== TAB 1 — SO GHI CHEP ===== */
@@ -774,14 +918,18 @@ function lichNghiBar(){
   '<span class="sp"></span>'+dlink('M10.9','Các đợt nghỉ','dot-nghi')+'</div>';
 }
 function nhacTanSuat(){
- const ts=tanSuat();
+ const ds=grp()?[curTo()]:(V.toF?[V.toF]:Object.keys(TOCM));
+ return ds.map(t=>nhacMotTo(t,ds.length>1)).join('');
+}
+function nhacMotTo(to,nhieu){
+ const ts=tanSuat(null,to),ten=nhieu?'<b>'+esc(to)+'</b> — ':'';
  if(!ts.cuoi)return '';
  if(ts.dangNghi)
-  return '<div class="scope">🌴 Đang trong <b>'+esc(ts.dangNghi.t)+'</b> ('+d2s(ts.dangNghi.tu)+' → '+d2s(ts.dangNghi.den)+', theo M10.9). '+
+  return '<div class="scope">'+ten+'🌴 Đang trong <b>'+esc(ts.dangNghi.t)+'</b> ('+d2s(ts.dangNghi.tu)+' → '+d2s(ts.dangNghi.den)+', theo M10.9). '+
    '<b>Không nhắc tần suất trong kỳ nghỉ</b> — tổ không phải sinh hoạt khi học sinh không đến trường. '+
    'Đếm lại từ ngày đi học trở lại.</div>';
  if(ts.gapHoc<14)return '';
- return '<div class="scope am">⏰ Buổi sinh hoạt gần nhất của tổ là <b>'+d2s(ts.cuoi.ngay)+'</b>, đã <b>'+ts.gapHoc+' ngày thực học</b>'+
+ return '<div class="scope am">'+ten+'⏰ Buổi sinh hoạt gần nhất của tổ là <b>'+d2s(ts.cuoi.ngay)+'</b>, đã <b>'+ts.gapHoc+' ngày thực học</b>'+
   (ts.nghiTru?' <span style="color:var(--ink3)">('+ts.gapLich+' ngày theo lịch, trừ '+ts.nghiTru+' ngày nghỉ theo M10.9)</span>':'')+'. '+
   '<b>TT 15/2026 Điều 14</b> yêu cầu tổ chuyên môn sinh hoạt <b>ít nhất 01 lần trong 02 tuần</b>.'+
   (ts.sap?' Buổi kế tiếp đang đặt lịch <b>'+d2s(ts.sap.ngay)+'</b>.':' <b>Chưa có buổi nào được đặt lịch tiếp.</b>')+
@@ -795,13 +943,18 @@ function tabSo(){
  else if(V.qf==='chobb')r=r.filter(b=>ttSH(b)==='Chờ biên bản');
  else if(V.qf==='choky')r=r.filter(b=>ttSH(b)==='Chờ ký');
  else if(V.qf==='huy')r=r.filter(b=>b.huy);
+ /* GY18-J1 — chip cho NGUOI NHAN: bien ban da nop ma minh chua danh dau da xem.
+    Day la mot BO LOC tren chinh tab nay, KHONG phai mot tab moi va KHONG phai mot hang doi duyet:
+    tab nay dang hien dung tap bien ban do, them cho thu hai la hai nguon su that. */
+ else if(V.qf==='chuaxem')r=r.filter(b=>!b.huy&&daNop(b)&&!b.xem&&nhanDuoc(b));
  else if(V.qf.indexOf('ht:')===0)r=r.filter(b=>!b.huy&&b.ht===V.qf.slice(3));
  else r=r.filter(b=>!b.huy);
  r.sort((a,b)=>b.ngay-a.ngay);
  const QF=[['','Tất cả'],['sap','Sắp diễn ra'],['chobb','Chờ biên bản'],['choky','Chờ ký']]
+  .concat(coVaiNhan()?[['chuaxem','📥 Chưa xem']]:[])
   .concat(Object.keys(HT_).map(k=>['ht:'+k,HT_[k].t])).concat([['huy','Đã hủy']]);
  const head='<div class="hdrow gsh"><div>Ngày · Giờ</div><div>Hình thức</div><div>Nội dung</div>'+
-  '<div class="kx">Điểm danh</div><div>Trạng thái</div><div class="kx">Thao tác</div></div>';
+  '<div class="kx">Điểm danh</div><div>Trạng thái</div><div class="kx">Nộp</div><div class="kx">Thao tác</div></div>';
  return nhacTanSuat()+lichNghiBar()+'<div class="bar">'+QF.map(q=>'<button class="qf '+(V.qf===q[0]?'on':'')+'" data-x="qf" data-t="'+q[0]+'">'+q[1]+'</button>').join('')+
   '<span class="sum"><span>Đang xem <b>'+r.length+'</b> buổi</span></span></div>'+
  '<div class="stage '+(V.pick?'open':'')+'"><div class="listw">'+
@@ -812,6 +965,14 @@ function ddSum(b){
  if(!b.bb||!b.bb.dd)return {co:0,ph:0,kh:0,tong:b.tp.length};
  let co=0,ph=0,kh=0;b.tp.forEach(function(t){const v=b.bb.dd[t];if(v==='comat')co++;else if(v==='phep')ph++;else kh++});
  return {co:co,ph:ph,kh:kh,tong:b.tp.length};
+}
+/* cot «Nop» — BA gia tri, DAN XUAT het (GY18-J1). Khong co gia tri thu tu nao kieu «cho duyet». */
+function nopCell(b){
+ if(b.huy||!b.bb)return '<span style="color:var(--ink3)">—</span>';
+ const sua=suaSauXem(b)?'<div style="margin-top:2px"><span class="st2 r">✏ đã sửa sau khi xem</span></div>':'';
+ if(!daNop(b))return '<span class="st2 n">Chưa nộp</span>'+sua;
+ if(b.xem)return '<span class="st2 o">Đã xem '+dm(b.xem.luc)+'</span>'+sua;
+ return '<span class="st2 b">Đã nộp '+dm(b.ky.ngay)+'</span>';
 }
 function rowS(b){
  const st=ttSH(b),H=HT_[b.ht],d=ddSum(b);
@@ -826,20 +987,28 @@ function rowS(b){
   '<div class="kx">'+(b.bb?'<b>'+d.co+'</b>/'+d.tong+(d.ph?'<div style="font-size:10.5px;color:var(--amber)">'+d.ph+' vắng phép</div>':'')+
     (d.kh?'<div style="font-size:10.5px;color:var(--red)">'+d.kh+' vắng KP</div>':''):'<span style="color:var(--ink3)">—</span>')+'</div>'+
   '<div>'+st2(st)+'</div>'+
+  '<div class="kx">'+nopCell(b)+'</div>'+
   '<div class="kx" style="display:flex;gap:4px;flex-wrap:wrap">'+actS(b)+'</div></div>';
 }
 function actS(b){
  const st=ttSH(b),o=[];
  const B=(lb,a,c)=>'<button class="btn xs '+(c||'')+'" data-x="'+a+'" data-i="'+b.id+'">'+lb+'</button>';
  if(b.huy){o.push(B('Xem','pick'));return o.join('')}
+ /* GY18-H2 — doi thu ky mo tu luc len lich cho toi khi ky (sau khi ky thi bien ban khoa sua, R7).
+    Nguoi co quyen len lich doi duoc — cung cua voi «Sua lich»; thu ky khong tu doi minh. */
  if(st==='Sắp diễn ra'){o.push(B('Xem','pick'));
   if(can('lich'))o.push(B('Sửa lịch','suaLich'));
+  if(can('lich'))o.push(B('Đổi thư ký','doiTK'));
   if(can('xoa'))o.push(B('Hủy buổi','huy'));return o.join('')}
  if(st==='Chờ biên bản'&&ghiDuocBB(b))o.push(B('✍ Ghi biên bản','moBB','p'));
+ if(st==='Chờ biên bản'&&can('lich'))o.push(B('Đổi thư ký','doiTK'));
  if(st==='Chờ ký'){if(kyDuoc(b))o.push(B('🖊 Ký biên bản','ky','p'));
   if(ghiDuocBB(b))o.push(B('Sửa biên bản','moBB'));
+  if(can('lich'))o.push(B('Đổi thư ký','doiTK'));
   if(!kyDuoc(b)&&doiCTDuoc(b))o.push(B('Đổi người chủ trì','doiCT'));}
  o.push(B('Xem','pick'));
+ /* GY18-J1 — nut cua NGUOI NHAN. Chi co MOT nut: khong «Dong y», khong «Tra lai», khong «Tu choi». */
+ if(xemDuoc(b))o.push(B(b.xem?'✓ Đã xem bản sửa':'✓ Đã xem','daXem','p'));
  if(st==='Đã hoàn tất'&&goKyDuoc(b))o.push(B('↩ Gỡ ký','goKy'));
  if(st==='Đã hoàn tất'&&can('xuat'))o.push(B('Xuất','xuat1'));
  return o.join('');
@@ -879,7 +1048,7 @@ function rowKL(b,r,oBuoiSau){
    (cuoi&&cuoi.su_kien==='tra_lai'&&r.trang_thai==='dang_lam'?'<div style="font-size:11px;color:var(--red)">↩ Trả lại '+d2s(cuoi.luc)+': '+esc(cuoi.ly_do)+'</div>':'')+
    (r.trang_thai==='huy'&&cuoi&&cuoi.ly_do?'<div style="font-size:11px;color:var(--red)">✕ '+esc(cuoi.ly_do)+'</div>':'')+'</div>'+
   '<div><b>'+esc(r.nguoi_thuc_hien_id)+'</b><div style="font-size:11px;color:'+(qh?'var(--red)':'var(--ink3)')+'">'+
-   (r.han?(qh?'Quá hạn '+(-ngay(r.han,HOMNAY))+' ngày · hạn '+d2s(r.han):'Hạn '+d2s(r.han)):'Không đặt hạn')+'</div></div>'+
+   (r.han?(qh?nhanQuaHan(r)+' · hạn '+mocHan(r):'Hạn '+mocHan(r)+(r.han_gio?'':' <span title="Không đặt giờ = trong ngày hôm đó — không suy 23:59">(cả ngày)</span>')):'Không đặt hạn')+'</div></div>'+
   '<div style="font-size:11.5px;display:flex;gap:5px;align-items:center;flex-wrap:wrap">'+
    (sinh?'<span class="st2 '+(qh?'r':T[1])+'">'+(qh?'Quá hạn':T[0])+'</span>'
     :'<span class="st2 n" title="HDDD ①: sinh vào M0.2 chỉ khi biên bản đã xác nhận">⏸ Chưa sinh vào M0.2 — biên bản chưa ký</span>')+
@@ -903,6 +1072,65 @@ function secDen(b){const den=viecBaoTrongBuoi(b);if(!den.length)return '';
   '<div class="ro">Việc giao với cách <b>«Báo trong buổi sinh hoạt sau»</b> — người thực hiện kể lại trong buổi, chủ trì nghiệm thu. Việc vẫn nằm ở M0.2 của người đó tới khi được nghiệm thu.</div>'+
   '<div class="box">'+den.map(x=>rowKL(x.b,x.r,x.b)).join('')+'</div>'}
 
+/* ===== BAN IN — HAI CHU KY (GY18-H2, 18/9/2026) =====
+   Ban giay cua so ghi chep xua nay co HAI chu ky: chu tri va thu ky. §7.4 da giu chu ky vi ly do do.
+   Truoc 18/9 khong co cho khai thu ky nen o thu hai phai lay tam «Nguoi ghi bien ban»;
+   nay buoi co khai thu ky thi in DUNG TEN THU KY THAT. Khong khai thi giu nguyen cach cu — khong o trong. */
+function khoiChuKy(b){
+ const tk=b.thuKy||b.bb.nguoiGhi,tam=!b.thuKy;
+ const o=(vai,ten,duoi)=>'<div style="flex:1;text-align:center;padding:9px 6px">'+
+  '<div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)">'+vai+'</div>'+
+  '<div style="height:34px"></div><div style="font-weight:600">'+esc(ten)+'</div>'+
+  '<div style="font-size:10.5px;color:var(--ink3);margin-top:2px">'+duoi+'</div></div>';
+ return '<div class="ro" style="margin-top:9px">🖨 <b>Bản in</b> — biên bản là một trang của <b>Sổ ghi chép hoạt động của tổ</b>, '+
+  'bản giấy trước đây có <b>hai chữ ký</b>. Bản số in đúng hai ô đó:</div>'+
+  '<div style="display:flex;border:1px solid var(--line);border-radius:8px;margin-top:6px;background:var(--surface)">'+
+   o('Thư ký buổi',tk,tam?'(ô này lấy tạm <b>người ghi biên bản</b> — buổi không khai thư ký)':'ghi biên bản · không ký số')+
+   '<div style="width:1px;background:var(--line)"></div>'+
+   o('Chủ trì buổi',b.chuTri,b.ky?(b.ky.kySo?'🔏 đã ký số '+d2s(b.ky.ngay):'⚠ bỏ qua ký số · '+d2s(b.ky.ngay)):'chưa ký')+
+  '</div>'+
+  (tam?'<div style="font-size:11px;color:var(--ink3);margin-top:5px">Buổi này <b>không khai thư ký</b> nên ô thứ nhất điền theo <b>người đã ghi</b> — '+
+   'đúng cách bản v1.1 đã làm, không đổi gì.</div>'
+   :'<div style="font-size:11px;color:var(--ink3);margin-top:5px">🖊 <b>Chỉ có chữ ký của chủ trì là chữ ký pháp lý</b> — ô thư ký là tên người ghi, '+
+    '<b>không phải một bước duyệt</b>. Thư ký không ký số, không xác nhận biên bản.</div>');
+}
+
+/* ===== KHOI «NOP CHO LANH DAO PHU TRACH» — HAI MOC (GY18-J1) ===== */
+function secNop(b){
+ if(b.huy||!b.bb)return '';
+ const nn=nguoiNhan(b.to),nop=daNop(b),sua=suaSauXem(b);
+ let s='<h3 class="sech">Nộp cho lãnh đạo phụ trách <span class="pill">không phải một bước duyệt</span></h3>';
+ s+='<div class="ro">🛑 <b>Nộp không sinh việc phê duyệt.</b> Biên bản <b>không</b> vào hàng đợi <i>Chờ tôi duyệt</i> của ai, '+
+  'và <b>không có nút Đồng ý · Từ chối · Trả lại</b> ở bất kỳ đâu trong khối này. Sinh hoạt tổ là hồ sơ chuyên môn của chính tổ '+
+  '(TT 15/2026 Đ.21 k.2) — bắt xin phê duyệt là đẻ thêm thủ tục, đúng thứ <b>Chỉ thị 138/CT-BGDĐT</b> nhắm tới. '+
+  'Chỉ hai mốc: <b>Đã nộp</b> (dẫn xuất từ chữ ký, không có nút riêng) và <b>Lãnh đạo đã xem</b> (người nhận bấm tay).</div>';
+ if(nn.luoi)s+='<div class="warn">⚠ <b>'+esc(b.to)+' chưa khai lãnh đạo phụ trách.</b> Biên bản <b>vẫn được nộp</b> — gửi tới '+
+  '<b>mọi Phó hiệu trưởng chuyên môn và Hiệu trưởng</b>, nên <b>không biên bản nào rơi vào hư không</b>. '+
+  'Khai một người ở '+dlink('M10.1','M10.1 ⑤ Tổ bộ môn','to-bo-mon')+' thì thông báo đi đúng một địa chỉ.</div>';
+ s+='<div class="f"><div class="k">Người nhận</div><div class="v">'+nn.ds.map(x=>'<b>'+esc(x)+'</b>').join(' · ')+
+  (nn.luoi?' <span class="st2 y">lưới đỡ — tổ chưa khai</span>':' <span class="pill">🔗 khai ở M10.1 ⑤ Tổ bộ môn</span>')+'</div></div>';
+ s+='<div class="f"><div class="k">Đã nộp</div><div class="v">'+(nop
+   ?'<span class="st2 o">Đã nộp '+d2s(b.ky.ngay)+'</span><span style="font-weight:400;color:var(--ink3)">dẫn xuất từ chữ ký của '+esc(b.ky.nguoi)+
+    (b.ky.kySo?'':' (bỏ qua ký số — vẫn tính đã xác nhận)')+' — không có nút «Nộp» nào để bấm</span>'
+   :'<span class="st2 n">Chưa nộp</span><span style="font-weight:400;color:var(--ink3)">biên bản chưa ký. '+
+    'Chủ trì <b>'+esc(b.chuTri)+'</b> ký xong là buổi tự mang mốc «Đã nộp»</span>')+'</div></div>';
+ s+='<div class="f"><div class="k">Lãnh đạo đã xem</div><div class="v">'+(b.xem
+   ?'<span class="st2 o">Đã xem '+d2s(b.xem.luc)+'</span><b>'+esc(b.xem.nguoi)+'</b>'
+   :'<span class="st2 w">Chưa xem</span><span style="font-weight:400;color:var(--ink3)">không tự đánh dấu khi mở — người nhận phải bấm</span>')+'</div></div>';
+ if(b.xem&&b.xem.ykien)s+='<div class="f"><div class="k">Ý kiến của lãnh đạo</div><div class="v" style="font-weight:400">'+
+  esc(b.xem.ykien)+' <span class="pill">không chặn gì · cả tổ đọc được</span></div></div>';
+ if(b.xem&&!b.xem.ykien)s+='<div class="f"><div class="k">Ý kiến của lãnh đạo</div><div class="v" style="font-weight:400;color:var(--ink3)">'+
+  '— không ghi ý kiến — <span class="pill">ô ý kiến là tùy chọn</span></div></div>';
+ if(sua)s+='<div class="warn">✏ <b>Biên bản đã sửa sau khi xem.</b> Mốc <b>Đã nộp</b> đã gỡ theo chữ ký; mốc <b>Đã xem</b> '+
+  '<b>giữ nguyên</b> — người xem không mất việc đã làm, nhưng phải biết bản mình xem <b>không còn nguyên</b>. '+
+  'Ký lại là nộp lại; nhãn này mất khi nội dung không đổi thêm nữa hoặc khi lãnh đạo xem lại.</div>';
+ if(xemDuoc(b))s+='<div style="margin-top:8px"><button class="btn p" data-x="daXem" data-i="'+b.id+'">'+(b.xem?'✓ Đã xem bản sửa':'✓ Đã xem')+'</button>'+
+  '<span class="pill" style="margin-left:8px">một nút duy nhất — không có Đồng ý · Trả lại</span></div>';
+ else if(nop&&(!b.xem||sua))s+='<div class="ro" style="margin-top:8px">Nút <b>✓ Đã xem</b> chỉ hiện với <b>người nhận</b> của tổ này. '+
+  'Vai đang chọn không phải người nhận nên chỉ đọc được mốc, không đánh dấu hộ.</div>';
+ return s;
+}
+
 const DDN={comat:['Có mặt','on'],phep:['Vắng có phép','on ph'],khong:['Vắng không phép','on kp']};
 function panelS(){
  const b=shBy(V.pick);if(!b)return '';
@@ -918,7 +1146,11 @@ function panelS(){
   '<div class="f"><div class="k">Cách thức</div><div class="v">'+esc(b.ct)+'</div></div>'+
   '<div class="f"><div class="k">Địa điểm</div><div class="v" style="font-weight:400">'+esc(b.dd)+'</div></div>'+
   '<div class="f"><div class="k">Nội dung dự kiến</div><div class="v" style="font-weight:400">'+esc(b.ndDK)+'</div></div>'+
-  '<div class="f"><div class="k">Chủ trì</div><div class="v">'+esc(b.chuTri)+'</div></div>'+
+  '<div class="f"><div class="k">Chủ trì</div><div class="v">'+esc(b.chuTri)+' <span class="pill">người ký biên bản</span></div></div>'+
+  /* GY18-H2 — thu ky buoi dung ngay duoi nguoi chu tri vi hai truong cung mot khuon */
+  '<div class="f"><div class="k">Thư ký buổi</div><div class="v">'+(b.thuKy
+    ?esc(b.thuKy)+' <span class="pill">ghi biên bản</span>'
+    :'<span style="font-weight:400;color:var(--ink3)">— không khai — <span class="pill">TTCM / TPCM ai vào trước thì ghi</span></span>')+'</div></div>'+
   '';
  if(b.ncId&&ncBy(b.ncId))s+='<div class="f"><div class="k">Chu trình NCBH</div><div class="v">🔬 '+esc(ncBy(b.ncId).bai)+
    ' <button class="btn xs" data-x="moNC" data-k="'+b.ncId+'">Mở chu trình</button></div></div>';
@@ -948,11 +1180,14 @@ function panelS(){
     '<button class="btn xs" data-x="xemTep" data-k="'+esc(f)+'">👁 Xem</button>'+
     '<button class="btn xs" data-x="taiTep" data-k="'+esc(f)+'">⬇ Tải</button></div>').join('');
   s+='<h3 class="sech">Chữ ký</h3>';
-  s+='<div class="f"><div class="k">Người ghi biên bản</div><div class="v">'+esc(b.bb.nguoiGhi)+' · '+(b.bb.ngayGhi?d2s(b.bb.ngayGhi):'—')+'</div></div>';
+  s+='<div class="f"><div class="k">Người ghi biên bản</div><div class="v">'+esc(b.bb.nguoiGhi)+' · '+(b.bb.ngayGhi?d2s(b.bb.ngayGhi):'—')+
+   (b.thuKy&&b.bb.nguoiGhi!==b.thuKy?' <span class="st2 y">≠ thư ký buổi ('+esc(b.thuKy)+')</span>':'')+'</div></div>';
   s+='<div class="f"><div class="k">Chủ trì ký</div><div class="v">'+(b.ky
     ?esc(b.ky.nguoi)+' · '+d2s(b.ky.ngay)+(b.ky.kySo?' <span class="st2 o">🔏 Ký số</span>':' <span class="st2 w">⚠ Bỏ qua ký số</span>')
     :'<span class="st2 w">Chưa ký</span>')+'</div></div>';
+  s+=khoiChuKy(b);
  }
+ s+=secNop(b);
  if(!b.bb&&!b.huy)s+=secDen(b);
  s+='<h3 class="sech">Lịch sử thao tác</h3><div class="logl">'+
   b.lichSu.map(l=>'<div class="logi"><b>'+esc(l.act)+'</b><span class="mm">'+esc(l.ng)+' · '+d2s(l.d)+(l.note?' · '+esc(l.note):'')+'</span></div>').join('')+'</div>';
@@ -1014,7 +1249,18 @@ function moBBScreen(b){                 /* mo man hinh ghi bien ban tren mot BAN
   gv:(b.bb?b.bb.gv:[]).filter(r=>r.trang_thai!=='huy'),tep:(b.bb?b.bb.tep:[]).slice()};
  V.open=b.id;V.pick=null;V.nc=null;
 }
+/* GY18-E2 — trang thai O NHAP han cua muc ④ (giu qua moi lan render).
+   gio=false la MAC DINH: o gio AN, va KHONG dien san gi khi chua tich. */
+const VKL={nd:'',ai:'',han:'',gio:false,hangio:'',cach:'tu_danh_dau'};
+function hutKL(){
+ if($('#vnd'))VKL.nd=$('#vnd').value; if($('#vai'))VKL.ai=$('#vai').value;
+ if($('#vhan'))VKL.han=$('#vhan').value; if($('#vcach'))VKL.cach=$('#vcach').value;
+ if(VKL.gio&&$('#vhangio'))VKL.hangio=$('#vhangio').value;
+ if(!VKL.han)VKL.gio=false;             /* mat han ngay ⇒ o tich mo, gio roi ve null */
+}
+function resetKL(){VKL.nd='';VKL.ai='';VKL.han='';VKL.gio=false;VKL.hangio='';VKL.cach='tu_danh_dau'}
 function hutNhap(){                     /* giu lai chu dang go truoc moi lan render lai */
+ hutKL();
  if(!BBTMP)return;
  if($('#bnd'))BBTMP.nd=$('#bnd').value;
  if($('#bkl'))BBTMP.kl=$('#bkl').value;
@@ -1027,11 +1273,20 @@ function manBB(){
   '<button data-x="back">Sổ ghi chép của tổ</button> › <span class="cur">Biên bản '+d2s(b.ngay)+'</span></div>'+
  '<div class="scope am" style="margin:0 0 10px">📓 Biên bản này là <b>một trang của Sổ ghi chép hoạt động của tổ</b> — hồ sơ bắt buộc theo '+
   '<b>TT 15/2026 Điều 21 khoản 2</b>. Ghi xong thì <b>chủ trì ký</b>; ký rồi <b>khóa sửa</b> (R7).</div>'+
+ /* GY18-H2 — noi ro cho nguoi dang ghi la ho vao bang cua nao, va cua do dung o dau */
+ (laThuKy(b)?'<div class="scope vi" style="margin:0 0 10px">🖊 Bạn đang ghi với tư cách <b>thư ký của buổi này</b>. '+
+   'Cửa này mở vì <b>tên bạn ở trường «Thư ký buổi»</b>, không phải vì chức danh — buổi khác không khai bạn thì bạn không ghi được. '+
+   'Ghi xong, biên bản chuyển <b>Chờ ký</b> và <b>'+esc(b.chuTri)+'</b> (chủ trì) ký. '+
+   '<b>Bạn không ký, không hủy buổi, không nghiệm thu việc được giao.</b></div>'
+  :(b.thuKy?'<div class="ro" style="margin:0 0 10px">🖊 Thư ký buổi này là <b>'+esc(b.thuKy)+'</b>. '+
+    'TTCM / TPCM <b>vẫn ghi và sửa được</b> để chốt trước khi ký — hệ thống ghi nhận <b>ai đã ghi lần cuối</b> vào ô «Người ghi biên bản» và vào lịch sử.</div>'
+   :'<div class="ro" style="margin:0 0 10px">🖊 Buổi này <b>không khai thư ký</b> — <b>TTCM hoặc TPCM, ai vào trước thì ghi</b>, đúng như trước.</div>'))+
  '<div class="sumbar">'+
   '<div class="mt"><b>'+thu(b.ngay)+' '+d2s(b.ngay)+'</b>'+esc(b.gio)+'</div>'+
   '<div class="mt"><b>'+H.t+'</b>'+esc(b.ct)+'</div>'+
-  '<div class="mt"><b>'+esc(b.chuTri)+'</b>Chủ trì</div>'+
-  '<div class="mt"><b>'+esc(me()||'—')+'</b>Người ghi</div>'+
+  '<div class="mt"><b>'+esc(b.chuTri)+'</b>Chủ trì · ký</div>'+
+  '<div class="mt"><b>'+(b.thuKy?esc(b.thuKy):'— không khai —')+'</b>Thư ký buổi</div>'+
+  '<div class="mt"><b>'+esc(me()||'—')+'</b>Người ghi (đang mở)</div>'+
   '<div style="flex:1"></div>'+
   '<button class="btn p sm" data-x="luuBB" data-i="'+b.id+'">Lưu biên bản</button></div>'+
 
@@ -1057,11 +1312,20 @@ function manBB(){
   (b.ky?'':(cu.gv.some(r=>r.nguon_xac_nhan==='bien_ban_da_xac_nhan')?'<div class="warn">✏ Biên bản <b>đã gỡ ký</b> để sửa — việc đã sinh <b>giữ nguyên ở M0.2</b> kèm nhãn «Biên bản đang sửa». Bỏ một việc đã sinh thì việc đó chuyển <b>Đã hủy</b> (lý do «bỏ khi sửa biên bản»); việc mới chỉ sinh khi <b>ký lại</b>.</div>':''))+
   '<div id="vlist">'+(cu.gv.length?cu.gv.map((r,i)=>rowViec(r,i)).join(''):'<div style="color:var(--ink3);font-size:12.5px">Chưa giao việc nào</div>')+'</div>'+
   '<div style="display:flex;gap:7px;margin-top:9px;flex-wrap:wrap">'+
-   '<input class="inp" id="vnd" style="flex:2;min-width:200px" placeholder="Nội dung việc">'+
-   '<select class="fs" id="vai">'+TOCM[b.to].gv.map(t=>'<option>'+esc(t)+'</option>').join('')+'<option value="*">Cả tổ (tách mỗi người một dòng)</option></select>'+
-   '<input class="fs" id="vhan" type="date" title="Để trống = không đặt hạn">'+
-   '<select class="fs" id="vcach">'+Object.keys(CACH).map(c=>'<option value="'+c+'">'+CACH[c]+'</option>').join('')+'</select>'+
-   '<button class="btn" data-x="themViec" data-i="'+b.id+'">+ Thêm việc</button></div></div>'+
+   '<input class="inp" id="vnd" style="flex:2;min-width:200px" placeholder="Nội dung việc" value="'+esc(VKL.nd)+'">'+
+   '<select class="fs" id="vai">'+TOCM[b.to].gv.map(t=>'<option'+(VKL.ai===t?' selected':'')+'>'+esc(t)+'</option>').join('')+'<option value="*"'+(VKL.ai==='*'?' selected':'')+'>Cả tổ (tách mỗi người một dòng)</option></select>'+
+   /* ═══ GY18-E2 — HAN: ngay bat buoc, GIO tuy chon qua O TICH (khuon chung M6.18 §2.10d) ═══
+      O gio AN khi chua tich; tich thi hien ra DA DIEN SAN gio goi y tu ⚙ (chieu 🔗 M6.18).
+      KHONG dien san khi chua tich — mot cu bam, nhung cu bam do LA TIN HIEU Y CHI. */
+   '<input class="fs" id="vhan" type="date" title="Để trống = không đặt hạn" value="'+VKL.han+'" onchange="hutKL();render()">'+
+   '<label class="pill" style="cursor:pointer" title="'+(VKL.han?'Giờ là TÙY CHỌN — không tích thì hạn là cả ngày hôm đó':'Chưa có hạn ngày thì không tích giờ được — giờ không có ngày thì vô nghĩa')+'"><input type="checkbox" data-x="klGioTick" data-i="'+b.id+'"'+(VKL.gio?' checked':'')+(VKL.han?'':' disabled')+'> Đặt giờ cụ thể</label>'+
+   (VKL.gio&&VKL.han?'<input class="fs" id="vhangio" type="time" style="max-width:110px" value="'+(VKL.hangio||CFG_GIO.gioGoiY)+'">'
+     +[CFG_GIO.gioGoiY,CFG_GIO.gioChip2].map(g=>'<button class="btn xs" data-x="klGioChip" data-i="'+b.id+'" data-k="'+g+'">'+g+'</button>').join('')
+     +(function(){const t=gioTruocBuoiSau(b);return t?'<button class="btn xs" data-x="klGioChip" data-i="'+b.id+'" data-k="'+t.gio+'" title="Buổi '+d2s(t.buoi.ngay)+' · '+esc(t.buoi.gio)+' — trừ '+CFG_GIO.truocHopPhut+' phút (⚙ M6.18)">Trước buổi sinh hoạt sau</button>'
+      :'<span style="font-size:10.5px;color:var(--ink3)">chưa có buổi kế tiếp ⇒ không có chip «Trước buổi sinh hoạt sau»</span>'})():'')+
+   '<select class="fs" id="vcach">'+Object.keys(CACH).map(c=>'<option value="'+c+'"'+(VKL.cach===c?' selected':'')+'>'+CACH[c]+'</option>').join('')+'</select>'+
+   '<button class="btn" data-x="themViec" data-i="'+b.id+'">+ Thêm việc</button>'+
+   (VKL.gio?'<div style="flex-basis:100%;font-size:10.5px;color:var(--ink3)">Bỏ tích ⇒ về <b>hạn cả ngày</b>; giá trị giờ <b>không giữ ngầm</b> — giữ ngầm rồi tích lại ra số cũ là một mốc sống lại ngoài ý người dùng. Ba con số gợi ý khai ở <b>M6.18 ⚙ khối 2</b>, menu này chỉ 🔗 chiếu.</div>':'')+'</div></div>'+
  (secDen(b)?'<div class="gsec">'+secDen(b)+'</div>':'')+
 
  '<div class="gsec"><h3>⑤ Tệp đính kèm <span class="pill">tùy chọn</span></h3>'+
@@ -1073,7 +1337,7 @@ function manBB(){
 }
 function rowViec(r,i){const sinh=r.nguon_xac_nhan==='bien_ban_da_xac_nhan',g=menuChuKhac(r.noi_dung);
  return '<div class="atch"><span>📌</span><span class="nm">'+esc(r.noi_dung)+' — <b>'+esc(r.nguoi_thuc_hien_id)+'</b> · '+
-  (r.han?'hạn '+d2s(r.han):'không đặt hạn')+' · '+CACH[r.cach_bao_ket_qua]+
+  (r.han?'hạn '+mocHan(r):'không đặt hạn')+' · '+CACH[r.cach_bao_ket_qua]+
   (sinh?' <span class="st2 '+TTGV[r.trang_thai][1]+'">🔗 đã sinh · '+TTGV[r.trang_thai][0]+'</span>':' <span class="st2 n">chưa sinh</span>')+
   (g?' <span style="font-size:10.5px;color:var(--violet)">💡 menu chủ '+g+' — gợi ý</span>':'')+'</span>'+
  '<button class="btn xs" data-x="boViec" data-k="'+i+'">Bỏ</button></div>'}
@@ -1191,6 +1455,7 @@ function gomY(n){                       /* MAY chi dem — cung co che da dung o
 /* ===== HOP THOAI LEN LICH BUOI SINH HOAT ===== */
 function dlgNew(){V.nS=1;V.nHT='';V.nNgay='';V.nGio='14h00 — 16h00';V.nCT='Trực tiếp';V.nDD='Phòng họp tổ (P.207)';
  V.nND='';V.nTP={};V.nDX=false;V.nNC='';V.nCum={};V.nCT2=grp()?TOCM[curTo()].tt:'';
+ V.nTK=grp()?thuKyMacDinh():'';                     /* GY18-H2 — mac dinh lay thu ky buoi gan nhat (H2-P3) */
  (grp()?TOCM[curTo()].gv:[]).forEach(g=>V.nTP[g]=true);renderNew()}
 function renderNew(){
  const step=['Hình thức','Thời gian & địa điểm','Thành phần & thư ký'];
@@ -1224,7 +1489,13 @@ function renderNew(){
    '<label class="lbl">Nội dung dự kiến <b>*</b></label><input class="inp" id="nND" style="width:100%" value="'+esc(V.nND)+'">'+
    '<label class="lbl" style="margin-top:11px"><button class="dmb '+(V.nDX?'on':'')+'" data-x="nDX">⚡ Buổi họp đột xuất</button></label>'+
    '<div class="ro" style="margin-top:7px">TT 15/2026 Đ.14 cho phép tổ <b>họp đột xuất</b> theo yêu cầu công việc hoặc khi Hiệu trưởng yêu cầu. '+
-   'Buổi đột xuất <b>không tính vào mốc "1 lần/2 tuần"</b> (R12) — vì đó là việc phát sinh, không thay thế sinh hoạt định kỳ.</div>';
+   /* Sua 18/9/2026 (GY18-H2 muc E.6): cau cu ghi "buoi dot xuat KHONG tinh vao moc" — trai R12 va trai
+      diem chot #5 ngay 28/8 ("moi buoi da ghi vao so deu tinh"), va trai chinh hop xac nhan cua cung hop thoai nay.
+      Sot tu truoc 28/8. Ly do cua chot #5: quy tac cu tao ra MOT CAI NUT do nguoi dung tu bam ma lam doi
+      con so thong ke — ai cung co the lam dai nhac bien mat bang cach tick mot o. */
+   'Buổi đột xuất <b>vẫn tính vào mốc "1 lần/2 tuần"</b> như mọi buổi khác (R12) — <b>đã ghi vào sổ hoạt động của tổ thì đó là một lần sinh hoạt</b>. '+
+   'Nhãn <b>⚡ Đột xuất</b> chỉ <b>mô tả</b> hoàn cảnh của buổi, <b>không đổi một con số nào</b>. '+
+   'Không muốn tính thì <b>đừng tạo buổi ở đây</b> — một cái tick không được phép làm dải nhắc biến mất.</div>';
   if(V.nNgay){const d=dparse(V.nNgay);
    const ban=(grp()?TOCM[curTo()].gv:[]).filter(g=>TIET.some(x=>x.gv===g&&x.ngay.getTime()===d.getTime()));
    if(ban.length)body+='<div class="warn" style="margin-top:9px">⚠ Ngày '+d2s(d)+' có <b>'+ban.length+' thành viên đang có tiết dạy</b>: '+
@@ -1242,15 +1513,38 @@ function renderNew(){
    '<select class="fs" id="nCT2" style="width:100%">'+gvs.filter(g=>V.nTP[g]).map(g=>'<option'+(V.nCT2===g?' selected':'')+'>'+esc(g)+'</option>').join('')+'</select>'+
    '<div class="ro" style="margin-top:7px">Mặc định là <b>Tổ trưởng</b>. Đổi được vì tổ trưởng có thể vắng — và <b>chữ ký trên biên bản là chữ ký của người chủ trì thật</b>, '+
    'không phải của chức danh. Người chủ trì đổi được về sau nếu buổi bị kẹt ở <b>Chờ ký</b>.</div>'+
-   '<div class="ro" style="margin-top:9px">📓 Menu này <b>chỉ ghi chép lại kết quả sinh hoạt để thống kê</b> — không phân công thư ký trong hệ thống. '+
-   'Ai trong tổ có quyền ghi thì ghi; hệ thống <b>tự ghi nhận người đã ghi</b> vào biên bản và vào lịch sử thao tác. '+
-   'Việc phân công thư ký là chuyện nội bộ của tổ, không cần một cửa nữa trong phần mềm.</div>';
+   /* GY18-H2 — o chon thu ky buoi, DUNG KHUON o chon nguoi chu tri ngay tren */
+   '<label class="lbl">Thư ký buổi <span class="pill">tùy chọn — người ghi biên bản</span></label>'+
+   '<select class="fs" id="nTK2" style="width:100%">'+
+    '<option value="">— Không khai thư ký —</option>'+
+    gvs.filter(g=>V.nTP[g]).map(g=>'<option'+(V.nTK===g?' selected':'')+'>'+esc(g)+'</option>').join('')+'</select>'+
+   (V.nTK&&V.nTK===V.nCT2?'<div class="warn" style="margin-top:7px">⚠ <b>'+esc(V.nTK)+'</b> vừa chủ trì vừa làm thư ký. '+
+    '<b>Không chặn</b> — tổ nhỏ hoặc buổi ít người vẫn có thể như vậy. Nhưng bản in sẽ có <b>hai ô chữ ký của cùng một người</b>, '+
+    'đúng như bản giấy thì vô nghĩa — cân nhắc chọn người khác ghi.</div>':'')+
+   '<div class="ro" style="margin-top:7px">🖊 Mặc định lấy <b>thư ký của buổi gần nhất</b> — tổ thường giữ một người. '+
+   'Buổi nào người đó vắng thì <b>đổi ngay ở đây</b>, hoặc <b>để trống</b>: khi đó vẫn <b>TTCM / TPCM ai vào trước thì ghi</b> như trước.<br>'+
+   'Thư ký <b>chỉ được ghi biên bản của đúng buổi này</b> — <b>không ký</b>, <b>không hủy buổi</b>, <b>không nghiệm thu việc được giao</b>. '+
+   'Chữ ký vẫn là của <b>người chủ trì</b>; luồng <i>Chờ ký → chủ trì ký → khóa sửa</i> chính là bước tổ trưởng xem lại, '+
+   '<b>không có thêm bước duyệt nào</b>.</div>'+
+   '<div class="ro" style="margin-top:9px">📓 Đây <b>không phải một vai trong hệ thống</b> — không có chức danh «thư ký», không có hàng đợi riêng. '+
+   'Nó là <b>một trường của buổi</b>, khai giống hệt người chủ trì. Hệ thống vẫn <b>tự ghi nhận ai đã ghi</b> vào ô '+
+   '<i>Người ghi biên bản</i> và vào lịch sử — thư ký có nhờ người khác gõ hộ thì vết vẫn đúng.</div>';
  }
  modal('Lên lịch buổi sinh hoạt chuyên môn',body,
   (V.nS>1?'<button class="btn" data-x="nBack">← Quay lại</button>':'')+'<button class="btn" data-x="close">Hủy</button>'+
   (V.nS<3?'<button class="btn p" data-x="nNext">Tiếp →</button>':'<button class="btn p" data-x="nSave">Lên lịch buổi</button>'));
 }
 function dparse(s){const a=(s||'').split('-');return new Date(+a[0],+a[1]-1,+a[2])}
+
+/* GY18-J1 — ky xong LA da nop: ghi vet «Nop cho lanh dao phu trach» va tra ve cau bao cho toast.
+   Day khong phai mot buoc rieng cua nguoi dung — khong co nut «Nop», chi la he qua cua chu ky. */
+function nopXong(b){
+ const nn=nguoiNhan(b.to);
+ b.lichSu.unshift({act:'Nộp biên bản cho lãnh đạo phụ trách',ng:b.chuTri,d:HOMNAY,
+  note:(nn.luoi?'tổ chưa khai lãnh đạo phụ trách — gửi mọi PHT chuyên môn và Hiệu trưởng: ':'')+nn.ds.join(' · ')});
+ return '<br>📤 <b>Đã nộp</b> — thông báo tới <b>'+nn.ds.map(esc).join(' · ')+'</b>'+
+  (nn.luoi?' <i>(tổ chưa khai lãnh đạo phụ trách — lưới đỡ)</i>':'')+'. Không sinh việc duyệt nào.';
+}
 
 /* ===== KY BIEN BAN — Ky so Option ===== */
 function dlgKy(id){const b=shBy(id);
@@ -1269,7 +1563,7 @@ let XK=2;
 function dlgXuat(){XK=2;
  modal('⬇ Xuất dữ liệu sinh hoạt chuyên môn',
   '<label class="lbl">Xuất cái gì</label><div class="seg" style="grid-template-columns:1fr" id="xks">'+
-  [[1,'Một biên bản sinh hoạt','Word/PDF theo mẫu của tổ'],
+  [[1,'Một biên bản sinh hoạt','Word/PDF theo mẫu của tổ — <b>hai ô chữ ký</b>: thư ký buổi · chủ trì'],
    [2,'SỔ GHI CHÉP HOẠT ĐỘNG CỦA TỔ','Toàn bộ buổi trong năm, theo thứ tự thời gian, có mục lục — <b>bản in nộp thanh tra</b>'],
    [3,'Hồ sơ một chu trình nghiên cứu bài học','Phương án + phiếu quan sát + kết luận'],
    [4,'Bảng điểm danh sinh hoạt theo giáo viên','⚖ có dữ liệu cá nhân']]
@@ -1297,7 +1591,7 @@ document.addEventListener('click',function(e){
  const rb=e.target.closest('.rb');
  if(rb&&rb.dataset.r){role=rb.dataset.r;
   Array.prototype.forEach.call(document.querySelectorAll('.rb'),b=>b.classList.toggle('on',b===rb));
-  V.tab='so';V.pick=null;V.open=null;V.nc=null;V.qf='';V.to='';V.muc='';DDTMP={};BBTMP=null;
+  V.tab='so';V.pick=null;V.open=null;V.nc=null;V.qf='';V.to='';V.toF='';V.muc='';DDTMP={};BBTMP=null;
   closeModal();render();return}
  const el=e.target.closest('[data-x]');if(!el)return;
  const a=el.dataset.x,id=el.dataset.i,k=el.dataset.k,v=el.dataset.v;
@@ -1306,6 +1600,8 @@ document.addEventListener('click',function(e){
   case 'close':closeModal();break;
   case 'tab':V.tab=el.dataset.t;V.pick=null;V.muc='';render();break;
   case 'qf':V.qf=el.dataset.t;V.pick=null;V.muc='';render();break;
+  case 'chonTo':{const t=el.dataset.t;if(grp())V.to=t;else V.toF=t;
+   V.pick=null;V.muc='';V.nc=null;render();break}
   case 'pick':V.pick=(V.pick===id?null:id);V.muc='';render();break;
   case 'pickFrom':V.tab='so';V.pick=id;V.muc='';render();break;
   case 'closepick':V.pick=null;V.muc='';render();break;
@@ -1327,7 +1623,9 @@ document.addEventListener('click',function(e){
   case 'nHT':V.nHT=v;renderNew();break;
   case 'nCT':V.nCT=v;luuB2();renderNew();break;
   case 'nDX':V.nDX=!V.nDX;luuB2();renderNew();break;
-  case 'nTP':V.nTP[k]=!V.nTP[k];if(!V.nTP[V.nCT2]){const c=Object.keys(V.nTP).filter(x=>V.nTP[x]);V.nCT2=c[0]||''}renderNew();break;
+  case 'nTP':V.nTP[k]=!V.nTP[k];if(!V.nTP[V.nCT2]){const c=Object.keys(V.nTP).filter(x=>V.nTP[x]);V.nCT2=c[0]||''}
+   if(V.nTK&&!V.nTP[V.nTK])V.nTK='';       /* bo tick nguoi dang la thu ky => ve «khong khai», khong tu gan nguoi khac */
+   renderNew();break;
   case 'nBack':{if(V.nS===2)luuB2();V.nS--;renderNew();break}
   case 'nNext':{
    if(V.nS===1){if(!V.nHT){toast('⚠ Chưa chọn hình thức sinh hoạt');return}
@@ -1343,14 +1641,20 @@ document.addEventListener('click',function(e){
    renderNew();break}
   case 'nSave':{
    if($('#nCT2'))V.nCT2=$('#nCT2').value;
+   if($('#nTK2'))V.nTK=$('#nTK2').value;
    const tp=Object.keys(V.nTP).filter(x=>V.nTP[x]);
    if(tp.length<2){toast('⚠ Buổi sinh hoạt phải có <b>ít nhất 2 người</b>');return}
    const b=addSH({ht:V.nHT,ngay:dparse(V.nNgay),gio:V.nGio,ct:V.nCT,dd:V.nDD,ndDK:V.nND,
-    chuTri:V.nCT2||TOCM[curTo()].tt,tp:tp,dotXuat:V.nDX,ncId:V.nNC,ngayTao:HOMNAY,
+    chuTri:V.nCT2||TOCM[curTo()].tt,thuKy:V.nTK||'',tp:tp,dotXuat:V.nDX,ncId:V.nNC,ngayTao:HOMNAY,
     cum:V.nHT==='cum'?V.nCum:null});
+   if(b.thuKy)b.lichSu[0].note+=' · thư ký buổi: '+b.thuKy;
    modal('✅ Đã lên lịch buổi sinh hoạt',
     '<div class="blk"><div class="ic">·</div><div class="tx"><b>'+tp.length+' người</b> nhận thông báo về buổi '+thu(b.ngay)+' '+d2s(b.ngay)+'</div></div>'+
-    '<div class="blk"><div class="ic">✍</div><div class="tx">Sau khi buổi diễn ra, việc <b>Ghi biên bản</b> hiện ở tab <i>Việc của tôi</i> của Tổ trưởng và Tổ phó</div></div>'+
+    '<div class="blk"><div class="ic">✍</div><div class="tx">Sau khi buổi diễn ra, việc <b>Ghi biên bản</b> hiện ở tab <i>Việc của tôi</i> của Tổ trưởng và Tổ phó'+
+     (b.thuKy?' <b>và của thư ký buổi — '+esc(b.thuKy)+'</b>. Thư ký <b>chỉ ghi được biên bản buổi này</b>, không ký, không hủy buổi, không nghiệm thu việc giao'
+      :'. Buổi này <b>không khai thư ký</b> — TTCM / TPCM ai vào trước thì ghi')+'</div></div>'+
+    (b.thuKy?'<div class="blk"><div class="ic">🖊</div><div class="tx"><b>'+esc(b.thuKy)+'</b> nhận thông báo về việc ghi biên bản. '+
+     'Bản in giữ <b>hai chữ ký</b> như bản giấy: <b>'+esc(b.chuTri)+'</b> (chủ trì) và <b>'+esc(b.thuKy)+'</b> (thư ký)</div></div>':'')+
     '<div class="blk"><div class="ic">📅</div><div class="tx"><b>Tính vào</b> mốc "ít nhất 1 lần/2 tuần" của TT 15/2026 Điều 14'+
      (V.nDX?' — <b>kể cả buổi đột xuất</b>: đã ghi vào sổ hoạt động của tổ thì đó là một lần sinh hoạt (R12)':'')+'</div></div>'+
     (V.nHT==='cum'?'<div class="blk"><div class="ic">🏫</div><div class="tx">Sinh hoạt cụm — hệ thống <b>chỉ ghi nhận trường mình tham gia</b>, không quản lý cụm</div></div>':'')+
@@ -1377,15 +1681,21 @@ document.addEventListener('click',function(e){
   /* --- bien ban --- */
   case 'moBB':{const b=B();closeModal();moBBScreen(b);render();break}
   case 'setDD':hutNhap();DDTMP[k]=v;render();break;
-  case 'themViec':{const b=B(),nd=$('#vnd').value.trim(),ai=$('#vai').value,han=$('#vhan').value,cach=$('#vcach').value;
+  case 'themViec':{const b=B();hutKL();const nd=VKL.nd.trim(),ai=VKL.ai||$('#vai').value,han=VKL.han,cach=VKL.cach;
+   const hg=(han&&VKL.gio&&(VKL.hangio||CFG_GIO.gioGoiY))?(VKL.hangio||CFG_GIO.gioGoiY):null;   /* khong tich ⇒ null; KHONG suy 23:59 */
    if(!nd){toast('⚠ Chưa nhập <b>nội dung việc</b>');break}
    if(!ai){toast('⚠ Chưa chọn <b>người thực hiện</b>');break}
    hutNhap();
-   const moi=ai==='*'?KLnhieu(nd,TOCM[b.to].gv,han?dparse(han):null,cach):[KL(nd,ai,han?dparse(han):null,cach)];
+   const moi=ai==='*'?KLnhieu(nd,TOCM[b.to].gv,han?dparse(han):null,cach,hg):[KL(nd,ai,han?dparse(han):null,cach,null,hg)];
    moi.forEach(r=>{r.cuoc_hop_id=b.id;BBTMP.gv.push(r)});
    const g=menuChuKhac(nd);
-   toast('📌 Đã thêm '+(moi.length>1?'<b>'+moi.length+' dòng</b> (mỗi người một dòng, cùng nhóm)':'việc')+' — <b>chưa lưu</b>; việc chỉ sinh vào M0.2 khi <b>biên bản đã ký</b>'+
+   resetKL();
+   toast('📌 Đã thêm '+(moi.length>1?'<b>'+moi.length+' dòng</b> (mỗi người một dòng, cùng nhóm)':'việc')+(hg?' · hạn <b>'+hg+'</b>':'')+' — <b>chưa lưu</b>; việc chỉ sinh vào M0.2 khi <b>biên bản đã ký</b>'+
     (g?'<br>💡 Nội dung có menu chủ <b>'+g+'</b> — gợi ý, không chặn':''));render();break}
+  /* GY18-E2 — o tich «Dat gio cu the»: bo tich ⇒ han_gio ve null, KHONG giu ngam gia tri cu */
+  case 'klGioTick':{hutKL();if(!VKL.han){toast('⛔ Chưa có <b>hạn ngày</b> — giờ không có ngày thì vô nghĩa');render();break}
+   VKL.gio=!VKL.gio;VKL.hangio=VKL.gio?CFG_GIO.gioGoiY:'';render();break}
+  case 'klGioChip':{hutKL();if(VKL.gio)VKL.hangio=k;render();break}
   case 'boViec':{hutNhap();const r=BBTMP.gv[+k];
    if(r.trang_thai==='da_nghiem_thu'){toast('⛔ Việc <b>đã nghiệm thu</b> — không bỏ khỏi biên bản được; kết quả đã được chủ trì công nhận');break}
    BBTMP.gv.splice(+k,1);
@@ -1443,6 +1753,11 @@ document.addEventListener('click',function(e){
    modal('↩ Gỡ ký biên bản',
     '<div class="warn">Gỡ ký = <b>gỡ xác nhận</b> biên bản <b>'+d2s(b.ngay)+'</b>. Buổi về <b>Chờ ký</b>, mở lại được <b>Sửa biên bản</b>; ký lại mới hoàn tất (R7).</div>'+
     (d.sinh?'<div class="ro">📋 <b>'+d.sinh+'</b> việc đã sinh vào M0.2 <b>giữ nguyên</b>, gắn nhãn <b>«Biên bản đang sửa»</b>. Bỏ việc nào khi sửa thì việc đó <b>Đã hủy</b>; việc thêm mới chỉ sinh khi <b>ký lại</b>.</div>':'')+
+    /* GY18-J1 — go ky keo theo moc NOP, nhung KHONG keo theo moc DA XEM */
+    '<div class="ro">📤 Mốc <b>Đã nộp</b> <b>gỡ theo</b> chữ ký (nó dẫn xuất từ chữ ký, không lưu riêng).'+
+    (b.xem?' Mốc <b>Lãnh đạo đã xem</b> của <b>'+esc(b.xem.nguoi)+'</b> ngày <b>'+d2s(b.xem.luc)+'</b> <b>GIỮ NGUYÊN</b>, '+
+     'kèm nhãn <b>«✏ biên bản đã sửa sau khi xem»</b> — người xem không mất việc đã làm, nhưng phải biết bản mình xem không còn nguyên.'
+     :' Biên bản này <b>chưa có ai đánh dấu đã xem</b>.')+'</div>'+
     '<label class="lbl">Lý do gỡ ký <span style="color:var(--red)">*</span></label><input class="inp" id="gkLd" style="width:100%" placeholder="Sửa một hồ sơ bắt buộc đã ký phải có vết">',
     '<button class="btn" data-x="close">Không gỡ</button><button class="btn d" data-x="goKyDo" data-i="'+b.id+'">↩ Gỡ ký</button>');break}
   case 'goKyDo':{const b=B(),ld=$('#gkLd').value.trim();
@@ -1472,7 +1787,7 @@ document.addEventListener('click',function(e){
      r.lich_su.push({luc:HOMNAY,nguoi:me()||b.nguoiGhiMau,su_kien:'huy',ly_do:'bỏ khi sửa biên bản'});gvMoi.push(r);nHuy++}});
    giu.forEach(r=>gvMoi.push(r));
    b.bb={nd:nd,kl:kl,dd:Object.assign({},DDTMP),gv:gvMoi,tep:BBTMP.tep.slice(),
-    nguoiGhi:me()||b.nguoiGhiMau,ngayGhi:HOMNAY};
+    nguoiGhi:me()||b.nguoiGhiMau,ngayGhi:luc()};
    if(nHuy)b.lichSu.unshift({act:'Hủy việc đã sinh khi sửa biên bản',ng:me()||b.nguoiGhiMau,d:HOMNAY,note:nHuy+' việc — lý do «bỏ khi sửa biên bản»'});
    b.lichSu.unshift({act:cu?'Sửa biên bản':'Ghi biên bản',ng:me()||b.nguoiGhiMau,d:HOMNAY,
     note:co+'/'+b.tp.length+' có mặt'});
@@ -1483,6 +1798,49 @@ document.addEventListener('click',function(e){
 
   /* --- ky --- */
   case 'ky':closeModal();dlgKy(id);break;
+  /* GY18-H2 — doi thu ky buoi. KHONG bat ly do (khac «Doi nguoi chu tri»): thu ky khong ky,
+     doi thu ky khong doi ai chiu trach nhiem ve noi dung. Van ghi lich su de co vet. */
+  case 'doiTK':{const b=B();
+   modal('Đổi thư ký buổi sinh hoạt',
+    '<div class="ro">Thư ký hiện tại: <b>'+(b.thuKy?esc(b.thuKy):'— không khai —')+'</b>. '+
+    'Thư ký là <b>một trường của buổi</b>, khai giống người chủ trì — đổi được vì người được cử có thể vắng đúng hôm đó.</div>'+
+    '<div class="ro">🖊 Thư ký <b>chỉ ghi được biên bản của đúng buổi này</b>. Không ký, không hủy buổi, không nghiệm thu việc được giao — '+
+    'đổi thư ký <b>không đổi ai chịu trách nhiệm</b> về nội dung biên bản, nên <b>không bắt ghi lý do</b> (khác với đổi người chủ trì). Vẫn ghi vào lịch sử thao tác.</div>'+
+    (b.bb?'<div class="warn">Biên bản đã ghi — ô <b>Người ghi biên bản</b> giữ nguyên <b>'+esc(b.bb.nguoiGhi)+'</b>, '+
+     'vì đó là vết của người đã thao tác thật. Đổi thư ký chỉ đổi <b>ô chữ ký thư ký trên bản in</b> và người được ghi tiếp.</div>':'')+
+    '<label class="lbl">Thư ký mới</label><select class="fs" id="tkMoi" style="width:100%">'+
+     '<option value="">— Không khai thư ký —</option>'+
+     b.tp.map(x=>'<option'+(b.thuKy===x?' selected':'')+'>'+esc(x)+'</option>').join('')+'</select>',
+    '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="doiTKDo" data-i="'+b.id+'">Đổi thư ký</button>');break}
+  case 'doiTKDo':{const b=B(),moi=$('#tkMoi').value;
+   if(moi===b.thuKy){closeModal();toast('Thư ký không đổi');break}
+   const cu=b.thuKy;b.thuKy=moi;
+   b.lichSu.unshift({act:'Đổi thư ký buổi',ng:me()||b.chuTri,d:HOMNAY,note:(cu||'— không khai —')+' → '+(moi||'— không khai —')});
+   closeModal();V.pick=b.id;
+   toast(moi?'✓ Thư ký buổi nay là <b>'+esc(moi)+'</b> — việc <b>Ghi biên bản</b> hiện ở <i>Việc của tôi</i> của người đó'
+    :'✓ Buổi này <b>không khai thư ký</b> — TTCM / TPCM ai vào trước thì ghi, như trước khi có trường này');
+   render();break}
+  /* GY18-J1 — «✓ Da xem»: MOT nut, khong doi hoi quyet dinh nao. Khong «Dong y», khong «Tra lai».
+     Khong tu danh dau khi mo panel: day la moc to truong se dung de noi «em da nop, thay da xem»,
+     tu dong hoa theo luot mo se ghi «da xem» cho mot cu bam nham. */
+  case 'daXem':{const b=B();
+   modal('✓ Đánh dấu «Lãnh đạo đã xem»',
+    '<div class="ro">Biên bản <b>'+thu(b.ngay)+' '+d2s(b.ngay)+'</b> — <b>'+esc(b.to)+'</b>. Người xem: <b>'+esc(me()||'—')+'</b>.</div>'+
+    (b.xem?'<div class="ro">✏ Bạn đã đánh dấu đã xem ngày <b>'+d2s(b.xem.luc)+'</b>, sau đó biên bản <b>bị sửa</b>. '+
+     'Bấm lại là ghi mốc cho <b>bản hiện tại</b> — nhãn «biên bản đã sửa sau khi xem» gỡ theo. Ý kiến cũ'+
+     (b.xem.ykien?' («'+esc(b.xem.ykien)+'»)':'')+' sẽ được thay bằng ý kiến lần này.</div>':'')+
+    '<div class="warn">🛑 Đây <b>không phải một bước duyệt</b>. Không có <b>Đồng ý</b>, không có <b>Trả lại</b>, không có <b>Từ chối</b> — '+
+    'bấm <b>✓ Đã xem</b> chỉ ghi một <b>mốc</b> để sau này tổ và lãnh đạo đối chiếu được. Biên bản <b>đã có hiệu lực từ lúc chủ trì ký</b>, '+
+    'không chờ ai đồng ý.</div>'+
+    '<label class="lbl">Ý kiến (tùy chọn) — hiện <b>nguyên văn cho cả tổ</b></label>'+
+    '<textarea class="inp" id="xmYk" style="width:100%;min-height:76px" placeholder="Để trống cũng được. Ý kiến chuyên môn KHÔNG chặn gì — cùng cơ chế nhận xét không chặn của M5.2."></textarea>',
+    '<button class="btn" data-x="close">Để sau</button><button class="btn p" data-x="daXemDo" data-i="'+b.id+'">✓ Đã xem</button>');break}
+  case 'daXemDo':{const b=B(),yk=$('#xmYk').value.trim();
+   b.xem={nguoi:me()||nguoiNhan(b.to).ds[0],luc:luc(),ykien:yk};
+   b.lichSu.unshift({act:'Lãnh đạo đã xem biên bản',ng:b.xem.nguoi,d:HOMNAY,note:yk?'kèm ý kiến — không chặn gì':'không ghi ý kiến'});
+   closeModal();V.pick=b.id;
+   toast('✓ Đã ghi mốc <b>Lãnh đạo đã xem</b> — <b>không</b> sinh việc duyệt nào'+
+    (yk?'<br>💬 Ý kiến hiện <b>nguyên văn cho cả tổ</b>, không chặn thao tác nào':''));render();break}
   case 'doiCT':{const b=B();
    modal('Đổi người chủ trì buổi sinh hoạt',
     '<div class="ro">Biên bản đang <b>Chờ ký</b> mà người chủ trì hiện tại là <b>'+esc(b.chuTri)+'</b>. '+
@@ -1499,15 +1857,18 @@ document.addEventListener('click',function(e){
    b.lichSu.unshift({act:'Đổi người chủ trì',ng:me(),d:HOMNAY,note:cu+' → '+moi+' · '+ld});
    closeModal();toast('✓ Người chủ trì nay là <b>'+esc(moi)+'</b> — ghi Audit Log kèm lý do');render();break}
   case 'kySo':{const b=B();b.ky={nguoi:b.chuTri,ngay:HOMNAY,kySo:true};
-   const n=sinhViec(b,HOMNAY,b.chuTri);
+   const n=sinhViec(b,HOMNAY,b.chuTri),np=nopXong(b);
    b.lichSu.unshift({act:'Ký biên bản',ng:b.chuTri,d:HOMNAY,note:'Ký số bằng USB Token / SmartCA — biên bản khóa sửa'+(n?' · sinh '+n+' việc vào M0.2':'')});
-   closeModal();V.pick=b.id;toast('🔏 Đã ký số — biên bản <b>khóa sửa</b>, buổi chuyển <b>Đã hoàn tất</b>'+(n?'<br>📋 Sinh <b>'+n+'</b> việc vào <b>M0.2 Việc của tôi</b> của người thực hiện':''));render();break}
+   closeModal();V.pick=b.id;toast('🔏 Đã ký số — biên bản <b>khóa sửa</b>, buổi chuyển <b>Đã hoàn tất</b>'+(n?'<br>📋 Sinh <b>'+n+'</b> việc vào <b>M0.2 Việc của tôi</b> của người thực hiện':'')+np);render();break}
   case 'kyBoQua':{const b=B();b.ky={nguoi:b.chuTri,ngay:HOMNAY,kySo:false};
+   /* GY18-J1 — bo qua ky so VAN la da nop: «Da nop» dan xuat tu chu ky, va P-1 da chot bo qua ky so
+      van tinh «bien ban da xac nhan». Neu khong tinh thi truong chua co chung thu so khong bao gio nop duoc. */
    /* ✅ P-1 (chot 17/9): bo qua ky so van tinh «bien ban da xac nhan» (co audit) */
    const n=sinhViec(b,HOMNAY,b.chuTri);
+   const np=nopXong(b);
    b.lichSu.unshift({act:'Ký biên bản — BỎ QUA ký số',ng:b.chuTri,d:HOMNAY,
     note:'Ghi Audit Log, đồng bộ tình trạng chứng thư số sang M4.3'+(n?' · vẫn tính đã xác nhận — sinh '+n+' việc vào M0.2':'')});
-   closeModal();V.pick=b.id;toast('⚠ Đã <b>bỏ qua ký số</b> — ghi Audit Log và đồng bộ M4.3. Biên bản vẫn <b>Đã hoàn tất</b>'+(n?'<br>📋 Vẫn tính <b>đã xác nhận</b> — sinh <b>'+n+'</b> việc vào M0.2':''));render();break}
+   closeModal();V.pick=b.id;toast('⚠ Đã <b>bỏ qua ký số</b> — ghi Audit Log và đồng bộ M4.3. Biên bản vẫn <b>Đã hoàn tất</b>'+(n?'<br>📋 Vẫn tính <b>đã xác nhận</b> — sinh <b>'+n+'</b> việc vào M0.2':'')+np);render();break}
 
   /* --- NCBH --- */
   case 'newNC':{
@@ -1568,7 +1929,8 @@ document.addEventListener('click',function(e){
 document.addEventListener('change',function(e){
  const t=e.target;
  if(t.id==='nNgay'){V.nNgay=t.value;renderNew();return}
- if(t.id==='nCT2'){V.nCT2=t.value;return}
+ if(t.id==='nCT2'){V.nCT2=t.value;renderNew();return}
+ if(t.id==='nTK2'){V.nTK=t.value;renderNew();return}    /* ve lai de hien canh bao mem chu tri kiem thu ky (H2-P2) */
  if(t.id==='nNC'){V.nNC=t.value;return}
  if(t.id==='hdt'){toast('🏫 Bộ chọn Điểm trường <b>không cắt dữ liệu</b> — tổ chuyên môn của trường sáp nhập có giáo viên ở nhiều điểm trường, sổ hoạt động là của cả tổ');return}
  if(t.id==='hnam'){if(t.selectedIndex===1)toast('🔒 Năm học <b>Đã kết thúc</b> — chỉ đọc. Sổ ghi chép năm cũ vẫn tra cứu và xuất được');return}

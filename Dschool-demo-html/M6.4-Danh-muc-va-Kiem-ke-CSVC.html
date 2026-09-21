@@ -1403,6 +1403,456 @@ function veNhomLoaiCC(){
   +'<span class="chip">Thiết bị chấm công <b>không di động</b> — M6.5 không cho mượn</span></div></div>';
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   M6.4 · CẤP CÔNG TRÌNH — NHÀ CÔNG VỤ — BÁO CÁO THỰC TRẠNG CÔNG TRÌNH
+   Cụm CSDL (YK-06) · phiên CSDL-1F · 19/9/2026 · bản chốt §4.7
+   Tệp RIÊNG của M6.4 — KHÔNG phải tệp nền chung.
+
+   ★ VÌ SAO DỮ LIỆU NẰM Ở ĐÂY CHỨ KHÔNG Ở app.10-nen-chung-csvc.js
+     app.10 phải GIỐNG HỆT TỪNG BYTE với bản của M6.11, mà phiên này ⛔ không được sửa M6.11.
+     Nên toàn bộ thuộc tính mới (capCT · donViChoMuon · day), loại địa điểm mới và ba địa điểm
+     nhà công vụ được VÁ vào PHONG ở đây — đúng cách YK01-D đã làm lượt đầu (app.16).
+     Khi nào M6.11 cần đọc cấp công trình (ví dụ lệnh điều chuyển sang một dãy cấp 4) thì
+     DỜI phần dữ liệu xuống app.10 và chép sang M6.11 — việc của một phiên có quyền ghi cả hai.
+
+   ★ VÌ SAO GẮN Ở ĐỊA ĐIỂM, KHÔNG GẮN Ở LOẠI ĐỊA ĐIỂM
+     Hai phòng cùng loại «Phòng học thường» rất hay khác cấp công trình, vì chúng nằm ở hai dãy
+     nhà khác nhau: dãy chính đổ mái bằng, dãy sau là nhà cấp 4 dựng tạm sau sáp nhập. Gắn ở
+     LOẠI thì hoặc khai sai cho một nửa số phòng, hoặc phải đẻ ra «Phòng học thường (cấp 4)» —
+     tức là nhét chất lượng công trình vào tên loại, nơi không ai đi tìm nó.
+
+   ★ VÌ SAO ĐỊA ĐIỂM NGOÀI TRỜI KHÔNG PHẢI KHAI
+     Sân thể dục không phải công trình xây dựng có cấp. Bắt khai thì nó nằm mãi trong bộ lọc
+     «⚠ Chưa khai» và không bao giờ ra được — đúng cái bẫy mà YK01-A3 đã tránh khi loại địa điểm
+     mang cờ «không lắp được thiết bị» ra khỏi mẫu số ba con số chấm công.
+
+   ⛔ KHÔNG CHẠM: cờ khongLapTB và mọi thứ của YK01-D (chấm công tiết).
+      Nhà công vụ mang loại «congvu» — KHÔNG nằm trong LOAI_DAY (['hoc','bomon']) nên vaiTroCC()
+      trả 'ngoai' và ba con số 9/10 · 1 · 2 KHÔNG đổi. Đã đo lại sau khi vá.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ══════════════ ① DANH MỤC CẤP CÔNG TRÌNH ══════════════ */
+const CAPCT={
+ kiencuo:{n:'Kiên cố',        c:'o'},
+ bankc  :{n:'Bán kiên cố',    c:'b'},
+ cap4   :{n:'Cấp 4 xuống cấp / tạm', c:'r'},
+ nhomuon:{n:'Nhờ mượn',       c:'n'}};
+const CAPCT_KEY=Object.keys(CAPCT);
+/* Loại địa điểm KHÔNG phải công trình xây dựng ⇒ không khai cấp, không vào bộ lọc «chưa khai». */
+const CT_MIEN=['ngoaitroi'];
+const capCTApDung=ph=>!CT_MIEN.includes(ph.loai);
+
+/* ══════════════ ② LOẠI ĐỊA ĐIỂM MỚI — NHÀ CÔNG VỤ CHO GIÁO VIÊN ══════════════
+   Thuộc NHÓM ĐỊA ĐIỂM, không phải phòng học:
+     ⛔ không vào phép đếm phòng học nào (dòng 2 và 2b của báo cáo đếm riêng),
+     ⛔ không vào DINHMUC nên khối 2 tab ⚙ không sinh dòng định mức cho nó,
+     ⛔ không mang cờ chấm công, không vào mẫu số ba con số (không thuộc LOAI_DAY).
+   Có Cấp công trình như mọi địa điểm khác — cổng hỏi «nhà công vụ kiên cố hay tạm». */
+LOAIP.congvu='Nhà công vụ cho giáo viên';
+/* ★ CT-3 ✅ anh Ninh chốt 19/9/2026: TÁCH — «Phòng học thường» và «Phòng bộ môn» là HAI dòng chỉ tiêu.
+   Lý do tách là SUẤT ĐẦU TƯ KHÁC NHAU (một phòng bộ môn Lý–Hóa đắt hơn hẳn một phòng học thường),
+   nên tách luôn cả cặp dòng nhu cầu đầu tư — giữ chung một ô kinh phí thì tách mất ý nghĩa.
+   Tách ra thì lúc đẩy lên cổng CỘNG LẠI được; gộp rồi thì KHÔNG tách ra được (M10.8 — phiếu §E.2). */
+const LOAI_HOC_THUONG=['hoc'];    /* dòng 2  */
+const LOAI_BO_MON=['bomon'];      /* dòng 2b */
+const LOAI_CONGVU='congvu';
+
+/* ══════════════ ③ DÃY NHÀ — đơn vị để đặt cấp công trình HÀNG LOẠT ══════════════
+   Trường khai một lượt theo dãy chứ không đi từng phòng: cả dãy được xây cùng một đợt,
+   cùng một hồ sơ thiết kế, nên cùng một cấp. Đi từng phòng là 20 lần bấm cho một sự thật. */
+const DAYNHA={
+ 'A1'   :{ten:'Dãy A — tầng 1 khu chính', dt:'A'},
+ 'A2'   :{ten:'Dãy A — tầng 2 phòng bộ môn', dt:'A'},
+ 'A3'   :{ten:'Dãy A — tầng 3 hội trường · thư viện', dt:'A'},
+ 'AP'   :{ten:'Khu phụ trợ — bếp bán trú', dt:'A'},
+ 'B1'   :{ten:'Dãy B — nhà chính', dt:'B'},
+ 'B-C4' :{ten:'Dãy B — nhà cấp 4 (dựng sau sáp nhập)', dt:'B'},
+ 'B-NCV':{ten:'Khu nhà công vụ', dt:'B'},
+ 'B-NVH':{ten:'Nhà văn hóa xã — phần mượn', dt:'B'}};
+
+/* ══════════════ ④ VÁ DỮ LIỆU ĐỊA ĐIỂM ĐANG CÓ ══════════════
+   capCT = null ⇒ «chưa khai» (không chặn gì cả, chỉ mang nhãn ⚠ và có bộ lọc tìm lại).
+   Ca mẫu C7: điểm trường B có dãy cấp 4 ba phòng (B-101 · B-102 · B-104), hai phòng bộ môn
+   CHƯA KHAI (B-201 · B-202), và hai phòng nhà công vụ nhờ mượn của Nhà văn hóa xã. */
+const CT_SEED={
+ 'A-101':['kiencuo','A1'], 'A-102':['kiencuo','A1'], 'A-103':['kiencuo','A1'], 'A-104':['kiencuo','A1'],
+ 'A-201':['kiencuo','A2'], 'A-202':['kiencuo','A2'], 'A-203':['kiencuo','A2'], 'A-204':['kiencuo','A2'],
+ 'A-301':['kiencuo','A3'], 'A-302':['kiencuo','A3'],
+ 'A-B01':['bankc'  ,'AP'],
+ 'B-201':[null     ,'B1'],   /* ⚠ chưa khai — cột phụ của báo cáo */
+ 'B-202':[null     ,'B1'],   /* ⚠ chưa khai */
+ 'B-103':['bankc'  ,'B1'],
+ 'B-101':['cap4'   ,'B-C4'], 'B-102':['cap4','B-C4'], 'B-104':['cap4','B-C4']};
+PHONG.forEach(p=>{
+ const s=CT_SEED[p.id];
+ p.capCT = s ? s[0] : null;
+ p.day   = s ? s[1] : null;
+ p.donViChoMuon = '';
+});
+
+/* ── ba địa điểm nhà công vụ (ca C7) ──
+   B-NCV1 là nhà của trường; B-NCV2 · B-NCV3 mượn của Nhà văn hóa xã — đúng cảnh thật của
+   trường vùng khó: không đủ nhà công vụ thì mượn phòng của xã cho giáo viên ở. */
+PHONG.push(
+ {id:'B-NCV1',ten:'Nhà công vụ số 1',dt:'B',tang:1,loai:LOAI_CONGVU,succhua:0,dt2:36,tb:[],tt:'dung',
+  capCT:'bankc',day:'B-NCV',donViChoMuon:'',ghichu:'Hai phòng ở khép kín — giáo viên điểm trường B'},
+ {id:'B-NCV2',ten:'Phòng ở mượn số 1',dt:'B',tang:1,loai:LOAI_CONGVU,succhua:0,dt2:24,tb:[],tt:'dung',
+  capCT:'nhomuon',day:'B-NVH',donViChoMuon:'Nhà văn hóa xã Tân Lập',
+  ghichu:'Mượn theo văn bản số 42/UBND-VH ngày 15/8/2026 của UBND xã Tân Lập'},
+ {id:'B-NCV3',ten:'Phòng ở mượn số 2',dt:'B',tang:1,loai:LOAI_CONGVU,succhua:0,dt2:24,tb:[],tt:'dung',
+  capCT:'nhomuon',day:'B-NVH',donViChoMuon:'Nhà văn hóa xã Tân Lập',
+  ghichu:'Mượn theo văn bản số 42/UBND-VH ngày 15/8/2026 của UBND xã Tân Lập'});
+
+/* ── tra cứu ── */
+const capCTCua=ph=>ph&&ph.capCT?CAPCT[ph.capCT]:null;
+const chuaKhaiCT=ph=>capCTApDung(ph)&&!ph.capCT;
+function dayTrongPhamVi(){
+ const d=dtHieuLuc();
+ return Object.keys(DAYNHA).filter(k=>d==='ALL'||DAYNHA[k].dt===d);
+}
+
+/* ══════════════ ⑤ SỐ LỚP — DẪN XUẤT TỪ M10.1 ③ ══════════════
+   Bản chiếu chỉ đọc. Con số lấy đúng demo M10.1 (40 lớp · 3 điểm trường: NTT 21 · VL 12 · TH 7).
+   ⚠ Mã điểm trường của hai demo khác nhau (M6.4 dùng A·B·C, M10.1 dùng NTT·VL·TH) — cùng loại
+     lệch đã ghi ở YK01-D3 với mã phòng; ở đây ánh xạ A↔NTT · B↔VL · C↔TH.
+   ⛔ KHÔNG có ô nhập: số lớp là của M10.1, gõ lại ở đây thì hai menu sẽ kể hai con số. */
+const SOLOP_M101={A:21,B:12,C:7};
+const soLopCua=dt=>dt==='ALL'?Object.keys(SOLOP_M101).reduce((a,k)=>a+SOLOP_M101[k],0):(SOLOP_M101[dt]||0);
+
+/* ══════════════ ⑥ SỔ NHU CẦU ĐẦU TƯ — TRƯỜNG «THẬT», NGƯỜI NHẬP ══════════════
+   Yearly: khai lại mỗi năm học, vì nhu cầu đầu tư là con số của MỘT năm.
+   nguon = nhãn xuất xứ của khối số này (khai tay · kế thừa từ năm nào). */
+const NAMBC=['2026-2027','2025-2026'];
+const oTrong=()=>({phNhuCau:0,phKinhPhi:0,bmNhuCau:0,bmKinhPhi:0,cvNhuCau:0,cvKinhPhi:0,gc:'',nguon:null});
+const BCCT={};
+NAMBC.forEach(n=>{BCCT[n]={};Object.keys(DT).forEach(d=>BCCT[n][d]=oTrong())});
+Object.assign(BCCT['2026-2027'].B,{phNhuCau:3,phKinhPhi:1800,bmNhuCau:1,bmKinhPhi:700,cvNhuCau:1,cvKinhPhi:450,
+ gc:'Ba phòng dãy cấp 4 đã nứt tường, dự toán theo suất đầu tư phòng học kiên cố (600 tr/phòng). '
+   +'Phòng bộ môn Lý – Hóa cần 700 tr vì kèm hệ thống điện, nước và tủ hút.',
+ nguon:'khai tay — Trịnh Văn Khánh · 05/12/2026'});
+Object.assign(BCCT['2025-2026'].A,{phNhuCau:1,phKinhPhi:600,nguon:'khai tay — Lý Thanh Bình · 12/09/2025'});
+Object.assign(BCCT['2025-2026'].B,{phNhuCau:2,phKinhPhi:1200,nguon:'khai tay — Trịnh Văn Khánh · 12/09/2025'});
+const bcO=(nam,dt)=>BCCT[nam][dt]||(BCCT[nam][dt]=oTrong());
+function bcGop(nam,dt){
+ if(dt!=='ALL') return bcO(nam,dt);
+ const o=oTrong(), ds=Object.keys(DT);
+ ds.forEach(d=>{const x=bcO(nam,d);o.phNhuCau+=x.phNhuCau;o.phKinhPhi+=x.phKinhPhi;
+  o.bmNhuCau+=x.bmNhuCau;o.bmKinhPhi+=x.bmKinhPhi;
+  o.cvNhuCau+=x.cvNhuCau;o.cvKinhPhi+=x.cvKinhPhi});
+ o.nguon='cộng từ '+ds.filter(d=>bcO(nam,d).nguon).length+' điểm trường';
+ return o;
+}
+
+/* ══════════════ ⑦ ĐẾM THEO CẤP CÔNG TRÌNH ══════════════
+   Trả về {tong, kiencuo, bankc, cap4, nhomuon, chuaKhai}.
+   ★ tong = kiencuo + bankc + cap4 + nhomuon + chuaKhai — CHƯA KHAI LÀ MỘT CỘT RIÊNG,
+     không dồn vào cột nào. Xem lý do ở lyDoChuaKhai(). */
+function demCap(ds){
+ const o={tong:ds.length,chuaKhai:0};
+ CAPCT_KEY.forEach(k=>o[k]=0);
+ ds.forEach(p=>{if(p.capCT) o[p.capCT]++; else o.chuaKhai++});
+ return o;
+}
+function chiTieuBC(nam,dt){
+ const ps=PHONG.filter(p=>dt==='ALL'||p.dt===dt);
+ const hoc=ps.filter(p=>LOAI_HOC_THUONG.includes(p.loai));
+ const bm =ps.filter(p=>LOAI_BO_MON.includes(p.loai));
+ const cv =ps.filter(p=>p.loai===LOAI_CONGVU);
+ const o=bcGop(nam,dt);
+ return {hoc:demCap(hoc),bm:demCap(bm),cv:demCap(cv),soLop:soLopCua(dt),nhap:o,
+  soHoc:hoc.length,soBM:bm.length,soCV:cv.length};
+}
+
+/* ══════════════ ⑧ LÝ DO CỘT «CHƯA KHAI» — viết thẳng ra màn hình ══════════════ */
+function lyDoChuaKhai(){
+ return 'Phòng <b>chưa khai cấp công trình</b> hiện ở <b>một cột riêng</b>, ⛔ <b>không dồn vào «Kiên cố»</b> '
+  +'cho tổng khớp.<br>'
+  +'Dồn vào Kiên cố thì bảng vẫn cộng đúng, mọi con số vẫn đẹp, và <b>không ai phát hiện ra gì cả</b> — '
+  +'đó chính là chỗ nguy hiểm. Cái sai không nằm ở phép cộng mà nằm ở <b>nội dung</b>: hệ thống đang nói với '
+  +'cơ quan cấp trên rằng <b>trường có thêm mấy phòng kiên cố</b>, trong khi sự thật chỉ là <b>chưa ai đi khai</b> '
+  +'mấy phòng đó. Đây là số liệu dùng để <b>xét phân bổ vốn đầu tư</b>: khai thừa phòng kiên cố thì trường '
+  +'tự đẩy mình xuống cuối danh sách ưu tiên, và <b>không có cách nào truy ngược</b> để biết vì sao — vì bảng '
+  +'không còn dấu vết nào của phần chưa khai.<br>'
+  +'Để riêng một cột thì tổng vẫn đúng <i>(tổng = bốn cấp + chưa khai)</i>, người đọc <b>thấy ngay phần còn '
+  +'thiếu</b>, và có <b>bộ lọc ⚠ Chưa khai cấp công trình</b> ở tab 1 để đi khai nốt. '
+  +'Một ô trống nhìn thấy được thì sửa được; một ô trống bị lấp cho đẹp thì không.';
+}
+
+/* ══════════════ ⑨ Ô CẤP CÔNG TRÌNH TRONG DANH SÁCH PHÒNG (tab 1) ══════════════ */
+function oCapCT(ph){
+ if(!capCTApDung(ph))
+  return '<span style="color:var(--ink3)">—</span>'
+   +'<div style="font-size:10.5px;color:var(--ink3)">không phải công trình</div>';
+ const c=capCTCua(ph);
+ if(!c) return '<span class="st2 w">⚠ Chưa khai cấp công trình</span>';
+ return '<span class="st2 '+c.c+'">'+c.n+'</span>'
+  +(ph.donViChoMuon?'<div style="font-size:10.5px;color:var(--ink3)">của '+esc(ph.donViChoMuon)+'</div>':'')
+  +(ph.day?'<div style="font-size:10.5px;color:var(--ink3)">'+esc(DAYNHA[ph.day]?DAYNHA[ph.day].ten:ph.day)+'</div>':'');
+}
+
+/* ══════════════ ⑩ KHỐI CẤP CÔNG TRÌNH TRÊN MÀN HÌNH MỘT PHÒNG ══════════════ */
+function khoiCapCT(ph){
+ if(!capCTApDung(ph))
+  return '<div class="tbw" style="margin-bottom:12px"><div class="ch">🏗 Cấp công trình '
+   +'<span class="tg c">ngoài phạm vi khai</span></div>'
+   +'<div style="padding:10px 12px;font-size:12px;color:var(--ink2)">Địa điểm loại <b>'+LOAIP[ph.loai]
+   +'</b> <b>không phải công trình xây dựng</b> nên không khai cấp — và <b>không</b> vào bộ lọc '
+   +'«⚠ Chưa khai». Bắt khai thì nó nằm mãi trong danh sách việc tồn mà không bao giờ ra được.</div></div>';
+ const c=capCTCua(ph);
+ return '<div class="tbw" style="margin-bottom:12px"><div class="ch">🏗 Cấp công trình '
+  +(c?'<span class="st2 '+c.c+'">'+c.n+'</span>':'<span class="st2 w">⚠ Chưa khai</span>')
+  +'<span class="sp"></span>'
+  +(can('phong')?'<button class="btn xs" data-suaphong="'+ph.id+'">✏️ Khai / sửa</button>':'')
+  +(can('phong')?'<button class="btn xs" id="hangLoat">🏗 Đặt hàng loạt</button>':'')+'</div>'
+  +'<div class="tbw"><div class="kv"><span>Dãy nhà</span><b>'
+   +(ph.day?esc(DAYNHA[ph.day]?DAYNHA[ph.day].ten:ph.day):'<i style="font-weight:400;color:var(--ink3)">chưa xếp dãy</i>')+'</b></div>'
+  +(ph.capCT==='nhomuon'?'<div class="kv"><span>Đơn vị cho mượn</span><b>'
+     +(ph.donViChoMuon?esc(ph.donViChoMuon):'<span style="color:var(--red);font-weight:400">⚠ chưa ghi — báo cáo cấp trên luôn hỏi mượn của ai</span>')
+     +'</b></div>':'')
+  +'<div class="kv"><span>Vào chỉ tiêu nào của báo cáo</span><b>'
+   +(LOAI_HOC_THUONG.includes(ph.loai)?'Dòng 2 — Số phòng học'
+     :LOAI_BO_MON.includes(ph.loai)?'Dòng 2b — Số phòng học bộ môn'
+     :ph.loai===LOAI_CONGVU?'Dòng 3 — Số phòng công vụ cho giáo viên'
+     :'<i style="font-weight:400;color:var(--ink3)">không vào chỉ tiêu nào</i>')+'</b></div></div>'
+  +'<div style="font-size:11.5px;color:var(--ink2);padding:9px 12px">Cấp công trình gắn ở <b>từng địa điểm</b>, '
+  +'không gắn ở loại — hai phòng cùng loại <b>Phòng học thường</b> vẫn khác cấp khi chúng ở hai dãy nhà khác nhau. '
+  +'Giá trị trống <b>không chặn gì cả</b>, chỉ mang nhãn ⚠ và nằm trong bộ lọc để văn thư đi khai nốt.</div></div>';
+}
+
+/* ══════════════ ⑪ ĐẶT CẤP CÔNG TRÌNH HÀNG LOẠT ══════════════ */
+function datHangLoat(){
+ const r=R(), days=dayTrongPhamVi();
+ mfns.bHL=()=>{
+  const pv=$('#hlPV').value, cap=$('#hlCap').value, don=$('#hlDon').value.trim();
+  if(!cap){toast('⚠️ Chưa chọn cấp công trình.');return}
+  if(cap==='nhomuon'&&!don){
+   toast('⚠️ <b>Nhờ mượn</b> thì <b>bắt buộc ghi đơn vị cho mượn</b> — báo cáo cấp trên luôn hỏi mượn của ai.');return}
+  const ds=PHONG.filter(p=>capCTApDung(p)&&(pv.slice(0,4)==='DAY:'?p.day===pv.slice(4):p.dt===pv.slice(3)));
+  if(!ds.length){toast('⚠️ Phạm vi này không có địa điểm nào phải khai cấp.');return}
+  const de=$('#hlDe').checked;
+  let n=0;
+  ds.forEach(p=>{if(!de&&p.capCT) return; p.capCT=cap; p.donViChoMuon=(cap==='nhomuon'?don:''); n++});
+  closeM();
+  toast('🏗 Đã đặt <b>'+CAPCT[cap].n+'</b> cho <b>'+n+'</b> địa điểm'
+   +(n<ds.length?' <i>('+(ds.length-n)+' địa điểm đã có cấp — giữ nguyên vì không tick ghi đè)</i>':'')
+   +'. Tab <b>Báo cáo thực trạng công trình</b> tính lại ngay.');
+  render();
+ };
+ modal('🏗 Đặt cấp công trình hàng loạt',
+  '<div class="info">Trường khai <b>một lượt theo dãy nhà hoặc theo điểm trường</b>, không đi từng phòng — '
+  +'cả dãy xây cùng một đợt, cùng một hồ sơ thiết kế nên cùng một cấp. '
+  +'Phòng lẻ khác cấp thì sửa lại từng cái sau.</div>'
+  +'<label class="lbl">Phạm vi áp dụng</label><select class="fldi" id="hlPV">'
+  +(r.sc==='School'?'<optgroup label="Theo điểm trường">':'')
+  +(r.sc==='School'?Object.keys(DT):[r.dt]).map(d=>{
+     const n=PHONG.filter(p=>p.dt===d&&capCTApDung(p)).length;
+     return '<option value="DT:'+d+'">'+DT[d]+' — '+n+' địa điểm</option>'}).join('')
+  +(r.sc==='School'?'</optgroup>':'')
+  +'<optgroup label="Theo dãy nhà">'+days.map(k=>{
+     const n=PHONG.filter(p=>p.day===k&&capCTApDung(p)).length;
+     return '<option value="DAY:'+k+'">'+esc(DAYNHA[k].ten)+' — '+n+' địa điểm</option>'}).join('')
+  +'</optgroup></select>'
+  +'<label class="lbl">Cấp công trình <span style="color:var(--red)">*</span></label>'
+  +'<select class="fldi" id="hlCap"><option value="">— chọn —</option>'
+  +CAPCT_KEY.map(k=>'<option value="'+k+'">'+CAPCT[k].n+'</option>').join('')+'</select>'
+  +'<label class="lbl">Đơn vị cho mượn <span style="font-weight:400;color:var(--ink3)">— bắt buộc khi chọn <b>Nhờ mượn</b></span></label>'
+  +'<input class="fldi" id="hlDon" placeholder="VD: Nhà văn hóa xã Tân Lập">'
+  +'<label class="kchk" style="margin-top:11px"><input type="checkbox" id="hlDe"> '
+  +'<b>Ghi đè cả những địa điểm ĐÃ có cấp</b></label>'
+  +'<div style="font-size:11.5px;color:var(--ink3);margin-top:3px">Không tick <i>(mặc định)</i> thì chỉ điền vào '
+  +'<b>chỗ còn trống</b> — dùng để khai nốt phần thiếu mà không đụng vào cái người khác đã khai đúng.</div>'
+  +'<div class="warn" style="margin-top:10px">Địa điểm <b>ngoài trời</b> <i>(sân, khu ngoài trời)</i> '
+  +'<b>không nằm trong phạm vi</b> — chúng không phải công trình xây dựng có cấp.</div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="HL">Đặt cấp</button>');
+}
+
+/* ══════════════ ⑫ TAB 4b — BÁO CÁO THỰC TRẠNG CÔNG TRÌNH ══════════════
+   Feature m6.4.bao_cao_cong_trinh. Đơn vị dòng: MỘT CHỈ TIÊU.
+   ⛔ Không ký số — đây là số liệu báo cáo, không phải một quyết định. Ký số ở menu này chỉ có
+      đúng một chỗ: biên bản kiểm kê (Nhóm A). Cho báo cáo này một chữ ký là nói rằng con số đã
+      được ai đó chịu trách nhiệm chốt, trong khi nó vẫn đổi theo danh mục địa điểm từng ngày. */
+const namBCHopLe=n=>NAMBC.includes(n)?n:NAMBC[0];
+function veBaoCaoCT(){
+ const nam=namBCHopLe(ST.namBC), dt=dtHieuLuc(), s=chiTieuBC(nam,dt);
+ const namTruoc=NAMBC[NAMBC.indexOf(nam)+1]||null;
+ const sua=can('nhapBC')&&dt!=='ALL';
+ let h=scopeBar();
+ h+='<div class="bar">'
+  +'<span style="font-size:12px;color:var(--ink2)">Năm học</span>'
+  +'<select class="sel" id="bcNam">'+NAMBC.map(n=>'<option value="'+n+'"'+(n===nam?' selected':'')+'>'+n+'</option>').join('')+'</select>'
+  +'<span class="chip">Điểm trường: <b>'+(dt==='ALL'?'Tất cả':DT[dt])+'</b> <i style="font-weight:400">— đổi ở thanh trên cùng</i></span>'
+  +'<div class="spacer"></div>'
+  +(can('nhapBC')?'<button class="btn" id="bcKeThua">⧉ Kế thừa từ năm học trước</button>':'')
+  +(can('nhapBC')?'<button class="btn p" id="bcNhap">✏️ Nhập nhu cầu đầu tư</button>':'')
+  +(can('xuat')?'<button class="btn" id="xuatBC">📤 Xuất</button>':'')+'</div>';
+
+ h+=dnote('Đơn vị dòng là <b>một chỉ tiêu</b>. <b>Dòng 1 · 2 · 2b · 3 máy tính ra</b> từ danh mục lớp '
+  +'<i>(M10.1 ③)</i> và danh mục địa điểm <i>(tab 1)</i> — <b>⛔ không có ô nhập</b>. Chỉ sáu dòng '
+  +'<b>2.1 · 2.2 · 2b.1 · 2b.2 · 3.1 · 3.2</b> là người nhập.<br>'
+  +'<b>⛔ Không ký số.</b> Đây là <b>số liệu báo cáo</b>, không phải quyết định — nó tính lại mỗi lần '
+  +'danh mục địa điểm đổi, nên một chữ ký trên nó sẽ <b>hết đúng ngay hôm sau</b> mà vẫn còn nằm đó.');
+
+ /* ── bảng ma trận ── */
+ const cot=k=>'<td class="num">'+(k||'<span style="color:var(--ink3)">—</span>')+'</td>';
+ const rong='<td class="num" style="color:var(--ink3)">—</td>';
+ const hang=x=>'<span class="tg '+(x==='thật'?'b':'c')+'">'+x+'</span>';
+ const dongDX=(so,ten,dv,dem,ghi)=>'<tr>'
+  +'<td class="num" style="color:var(--ink3)">'+so+'</td>'
+  +'<td><b>'+ten+'</b> '+hang('dẫn xuất')+(ghi?'<div style="font-size:10.5px;color:var(--ink3)">'+ghi+'</div>':'')+'</td>'
+  +'<td style="font-size:11.5px">'+dv+'</td>'
+  +'<td class="num"><b>'+dem.tong+'</b></td>'
+  +CAPCT_KEY.map(k=>cot(dem[k])).join('')
+  +'<td class="num"'+(dem.chuaKhai?' style="background:var(--amber-soft)"':'')+'>'
+   +(dem.chuaKhai?'<b style="color:var(--amber)">'+dem.chuaKhai+'</b>':'<span style="color:var(--ink3)">0</span>')+'</td></tr>';
+ const dongNhap=(so,ten,dv,gt,vuot)=>'<tr'+(vuot?' class="warnrow"':'')+'>'
+  +'<td class="num" style="color:var(--ink3)">'+so+'</td>'
+  +'<td>'+ten+' '+hang('thật')+(vuot?'<div style="font-size:10.5px;color:var(--amber)"><b>⚠ vượt số phòng hiện có</b> — đã ghi chú</div>':'')+'</td>'
+  +'<td style="font-size:11.5px">'+dv+'</td>'
+  +'<td class="num"><b>'+(gt?vn(gt):'<span style="color:var(--ink3)">0</span>')+'</b></td>'
+  +rong+rong+rong+rong+rong+'</tr>';
+
+ const vuotPH=s.nhap.phNhuCau>s.hoc.tong, vuotBM=s.nhap.bmNhuCau>s.bm.tong, vuotCV=s.nhap.cvNhuCau>s.cv.tong;
+ h+='<div class="tbw"><div class="ch">📋 Báo cáo thực trạng công trình — '+nam
+  +' <span class="tg c">🔗 số lớp từ M10.1 ③</span><span class="tg c">🔗 số phòng từ tab 1</span>'
+  +'<span class="sp"></span><span class="st2 n">⛔ không ký số</span></div>'
+  +'<div class="tbx"><table style="min-width:1080px"><tr>'
+  +'<th class="num" style="width:44px">#</th><th>Chỉ tiêu</th><th>Đơn vị</th>'
+  +'<th class="num">Tổng số</th>'
+  +CAPCT_KEY.map(k=>'<th class="num">'+CAPCT[k].n+'</th>').join('')
+  +'<th class="num" style="background:var(--amber-soft)">⚠ Chưa khai</th></tr>'
+  +'<tr><td class="num" style="color:var(--ink3)">1</td>'
+   +'<td><b>Số lớp</b> '+hang('dẫn xuất')
+   +'<div style="font-size:10.5px;color:var(--ink3)">đếm lớp của năm học ở <b>M10.1 ③</b> — 🔗 chỉ đọc</div></td>'
+   +'<td style="font-size:11.5px">Lớp</td><td class="num"><b>'+s.soLop+'</b></td>'
+   +rong+rong+rong+rong+rong+'</tr>'
+  +dongDX('2','Số phòng học','Phòng',s.hoc,'đếm địa điểm loại <b>Phòng học thường</b>')
+  +dongNhap('2.1','Số phòng học <b>có nhu cầu đầu tư</b>','Phòng',s.nhap.phNhuCau,vuotPH)
+  +dongNhap('2.2','<b>Dự kiến kinh phí</b>','Triệu đồng',s.nhap.phKinhPhi,false)
+  /* ★ CT-3 ✅ chốt 19/9/2026 — TÁCH phòng bộ môn thành dòng riêng, chen bằng hậu tố «2b» (CS-S8) */
+  +dongDX('2b','Số phòng học bộ môn','Phòng',s.bm,'đếm địa điểm loại <b>Phòng bộ môn</b> — tách khỏi dòng 2 theo chốt <b>CT-3</b>')
+  +dongNhap('2b.1','Số phòng bộ môn <b>có nhu cầu đầu tư</b>','Phòng',s.nhap.bmNhuCau,vuotBM)
+  +dongNhap('2b.2','<b>Dự kiến kinh phí</b>','Triệu đồng',s.nhap.bmKinhPhi,false)
+  +dongDX('3','Số phòng công vụ cho giáo viên','Phòng',s.cv,'đếm địa điểm loại <b>Nhà công vụ cho giáo viên</b>')
+  +dongNhap('3.1','Số phòng công vụ <b>có nhu cầu đầu tư</b>','Phòng',s.nhap.cvNhuCau,vuotCV)
+  +dongNhap('3.2','<b>Dự kiến kinh phí</b>','Triệu đồng',s.nhap.cvKinhPhi,false)
+  +'</table></div>'
+  +'<div class="lgd">'
+  +'<span class="chip">Tổng số = <b>bốn cấp + Chưa khai</b></span>'
+  +'<span class="chip">Dòng 1 · 2 · 2b · 3 <b>không có ô nhập</b></span>'
+  +'<span class="chip"><b>Phòng học thường</b> và <b>phòng bộ môn</b> tách hai dòng — <b>suất đầu tư khác nhau</b> <i>(CT-3)</i></span>'
+  +'<span class="chip">Nguồn số nhập: <b>'+esc(s.nhap.nguon||'chưa khai')+'</b></span>'
+  +'</div></div>';
+
+ if(s.nhap.gc) h+='<div class="info"><b>Ghi chú của người nhập:</b> '+esc(s.nhap.gc)+'</div>';
+ if(!sua&&can('nhapBC')) h+='<div class="warn">Đang xem <b>tất cả điểm trường</b> — sáu dòng người nhập là '
+  +'<b>tổng cộng lại</b>. Chọn <b>một điểm trường</b> ở thanh trên cùng để nhập.</div>';
+ if(!can('nhapBC')) h+='<div class="info">Vai này <b>chỉ xem</b> — thấy đủ cả số phòng lẫn dự kiến kinh phí, '
+  +'nhưng <b>không sửa được ô nào</b>. Số phòng là dẫn xuất <i>(sửa ở tab 1)</i>; nhu cầu đầu tư do '
+  +'QL CSVC hoặc người phụ trách thiết bị khai.</div>';
+
+ h+=dnote(lyDoChuaKhai());
+ /* danh sách chỗ còn thiếu — để bấm sang khai luôn */
+ const thieu=PHONG.filter(p=>(dt==='ALL'||p.dt===dt)&&chuaKhaiCT(p));
+ if(thieu.length) h+='<div class="tbw"><div class="ch">⚠ '+thieu.length
+  +' địa điểm chưa khai cấp công trình<span class="sp"></span>'
+  +(can('phong')?'<button class="btn xs" id="hangLoat">🏗 Đặt hàng loạt</button>':'')+'</div>'
+  +'<div class="tbx"><table><tr><th>Địa điểm</th><th>Loại</th><th>Dãy nhà</th><th>Vào chỉ tiêu</th><th></th></tr>'
+  +thieu.map(p=>'<tr class="warnrow"><td><b>'+esc(p.ten)+'</b>'
+   +'<div style="font-size:11px;color:var(--ink3)">'+p.id+' · '+DT[p.dt]+'</div></td>'
+   +'<td style="font-size:11.5px">'+LOAIP[p.loai]+'</td>'
+   +'<td style="font-size:11.5px">'+(p.day?esc(DAYNHA[p.day]?DAYNHA[p.day].ten:p.day):'—')+'</td>'
+   +'<td style="font-size:11.5px">'+(LOAI_HOC_THUONG.includes(p.loai)?'Dòng 2'
+     :LOAI_BO_MON.includes(p.loai)?'<b>Dòng 2b</b>':p.loai===LOAI_CONGVU?'Dòng 3':'—')+'</td>'
+   +'<td><button class="btn xs" data-phong="'+p.id+'">Mở ▸</button></td></tr>').join('')
+  +'</table></div></div>';
+ return h;
+}
+
+/* ── hộp nhập sáu dòng «thật» ── */
+function nhapBC(){
+ const nam=namBCHopLe(ST.namBC), dt=dtHieuLuc();
+ if(dt==='ALL'){toast('⚠️ Chọn <b>một điểm trường</b> ở thanh trên cùng trước khi nhập — '
+  +'nhu cầu đầu tư khai theo từng điểm trường.');return}
+ const o=bcO(nam,dt), s=chiTieuBC(nam,dt);
+ mfns.bBC=()=>{
+  const a=+$('#bcPH').value||0, b=+$('#bcPK').value||0;
+  const e=+$('#bcBM').value||0, f=+$('#bcBK').value||0;
+  const c=+$('#bcCV').value||0, d=+$('#bcCK').value||0;
+  const gc=$('#bcGC').value.trim();
+  /* ★ RÀNG BUỘC MỀM: vượt số phòng hiện có thì CẢNH BÁO, không chặn — có trường xin đầu tư
+     phòng chưa xây. Nhưng BẮT GHI CHÚ, để người đọc báo cáo biết đó là cố ý chứ không phải gõ nhầm. */
+  const vuot=[];
+  if(a>s.hoc.tong) vuot.push('Số phòng học có nhu cầu đầu tư <b>'+a+'</b> &gt; số phòng học hiện có <b>'+s.hoc.tong+'</b>');
+  if(e>s.bm.tong)  vuot.push('Số phòng bộ môn có nhu cầu đầu tư <b>'+e+'</b> &gt; số phòng bộ môn hiện có <b>'+s.bm.tong+'</b>');
+  if(c>s.cv.tong)  vuot.push('Số phòng công vụ có nhu cầu đầu tư <b>'+c+'</b> &gt; số phòng công vụ hiện có <b>'+s.cv.tong+'</b>');
+  if(vuot.length&&!gc){
+   toast('⚠️ '+vuot.join('<br>⚠️ ')+'<br><b>Không bị chặn</b> — nhưng phải <b>ghi chú vì sao</b> '
+    +'<i>(xin đầu tư phòng chưa xây là chuyện bình thường; gõ nhầm một chữ số thì không)</i>.');return}
+  Object.assign(o,{phNhuCau:a,phKinhPhi:b,bmNhuCau:e,bmKinhPhi:f,cvNhuCau:c,cvKinhPhi:d,gc,
+   nguon:'khai tay — '+R().n+' · '+k2s(HOMNAY)});
+  closeM(); toast('💾 Đã lưu nhu cầu đầu tư của <b>'+DT[dt]+'</b> — năm học '+nam
+   +(vuot.length?'. <b>⚠ Có dòng vượt số phòng hiện có</b> — đã kèm ghi chú.':'.')); render();
+ };
+ modal('✏️ Nhu cầu đầu tư — '+DT[dt]+' · '+nam,
+  '<div class="info">Sáu con số này là <b>trường «thật»</b> — người khai, hệ thống lưu nguyên. '
+  +'Số phòng và số lớp ở bốn dòng kia <i>(1 · 2 · 2b · 3)</i> là <b>dẫn xuất</b>, không nhập ở đây.</div>'
+  +'<div class="tbw" style="margin-bottom:10px"><div class="kv"><span>Số phòng học <i>(thường)</i> hiện có</span><b>'+s.hoc.tong+'</b></div>'
+  +'<div class="kv"><span>Số phòng học <b>bộ môn</b> hiện có</span><b>'+s.bm.tong+'</b></div>'
+  +'<div class="kv"><span>Số phòng công vụ hiện có</span><b>'+s.cv.tong+'</b></div></div>'
+  +'<div class="frow"><div><label class="lbl">2.1 · Số phòng học có nhu cầu đầu tư</label>'
+  +'<input type="number" class="fldi" id="bcPH" min="0" value="'+o.phNhuCau+'"></div>'
+  +'<div><label class="lbl">2.2 · Dự kiến kinh phí <i>(triệu đồng)</i></label>'
+  +'<input type="number" class="fldi" id="bcPK" min="0" value="'+o.phKinhPhi+'"></div></div>'
+  +'<div class="frow"><div><label class="lbl">2b.1 · Số phòng <b>bộ môn</b> có nhu cầu đầu tư</label>'
+  +'<input type="number" class="fldi" id="bcBM" min="0" value="'+o.bmNhuCau+'"></div>'
+  +'<div><label class="lbl">2b.2 · Dự kiến kinh phí <i>(triệu đồng)</i></label>'
+  +'<input type="number" class="fldi" id="bcBK" min="0" value="'+o.bmKinhPhi+'"></div></div>'
+  +'<div style="font-size:11.5px;color:var(--ink3);margin-top:4px">Phòng bộ môn khai <b>riêng</b> '
+  +'<i>(CT-3 — anh Ninh chốt 19/9/2026)</i>: <b>suất đầu tư khác hẳn</b> phòng học thường vì kèm hệ thống '
+  +'điện, nước, tủ hút, bàn thí nghiệm. Gộp một ô kinh phí thì không còn nói được điều đó.</div>'
+  +'<div class="frow"><div><label class="lbl">3.1 · Số phòng công vụ có nhu cầu đầu tư</label>'
+  +'<input type="number" class="fldi" id="bcCV" min="0" value="'+o.cvNhuCau+'"></div>'
+  +'<div><label class="lbl">3.2 · Dự kiến kinh phí <i>(triệu đồng)</i></label>'
+  +'<input type="number" class="fldi" id="bcCK" min="0" value="'+o.cvKinhPhi+'"></div></div>'
+  +'<label class="lbl">Ghi chú <span style="font-weight:400;color:var(--ink3)">— bắt buộc khi số nhu cầu vượt số phòng hiện có</span></label>'
+  +'<textarea class="fldi" id="bcGC" rows="2">'+esc(o.gc)+'</textarea>'
+  +'<div class="warn" style="margin-top:9px">Số nhu cầu <b>vượt</b> số phòng hiện có thì hệ thống '
+  +'<b>cảnh báo ⚠ chứ không chặn</b> — trường xin đầu tư <b>phòng chưa xây</b> là chuyện bình thường. '
+  +'Nhưng khi vượt thì <b>bắt ghi chú</b>: người đọc báo cáo phải phân biệt được <i>cố ý</i> với <i>gõ nhầm</i>.</div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="BC">Lưu</button>');
+}
+
+/* ── ⧉ kế thừa từ năm học trước ── */
+function keThuaBC(){
+ const nam=namBCHopLe(ST.namBC), dt=dtHieuLuc();
+ const truoc=NAMBC[NAMBC.indexOf(nam)+1];
+ if(!truoc){toast('⚠️ <b>'+nam+'</b> là năm học cũ nhất trong sổ — không có năm trước để kế thừa.');return}
+ if(dt==='ALL'){toast('⚠️ Chọn <b>một điểm trường</b> trước — kế thừa chạy theo từng điểm trường.');return}
+ const cu=bcO(truoc,dt), nay=bcO(nam,dt);
+ mfns.bKT=()=>{
+  Object.assign(nay,{phNhuCau:cu.phNhuCau,phKinhPhi:cu.phKinhPhi,bmNhuCau:cu.bmNhuCau,bmKinhPhi:cu.bmKinhPhi,
+   cvNhuCau:cu.cvNhuCau,cvKinhPhi:cu.cvKinhPhi,
+   gc:cu.gc,nguon:'⧉ kế thừa từ '+truoc+' — '+R().n+' · '+k2s(HOMNAY)});
+  closeM(); toast('⧉ Đã kế thừa sáu dòng từ <b>'+truoc+'</b>. Khối số mang nhãn nguồn '
+   +'<b>⧉ kế thừa từ '+truoc+'</b> — sửa lại thì nhãn đổi thành «khai tay».'); render();
+ };
+ const dong=(t,a,b)=>'<tr><td>'+t+'</td><td class="num">'+vn(a)+'</td><td class="num"><b>'+vn(b)+'</b></td></tr>';
+ modal('⧉ Kế thừa từ năm học '+truoc+' — '+DT[dt],
+  '<div class="info">Chỉ kế thừa <b>sáu dòng người nhập</b>. Số lớp và số phòng là <b>dẫn xuất của năm đang xem</b> — '
+  +'không có gì để kế thừa, và kế thừa chúng thì báo cáo năm nay sẽ kể số phòng của năm ngoái.</div>'
+  +'<div class="tbx"><table><tr><th>Dòng</th><th class="num">Đang có ('+nam+')</th><th class="num">Sẽ ghi (từ '+truoc+')</th></tr>'
+  +dong('2.1 · Số phòng học có nhu cầu đầu tư',nay.phNhuCau,cu.phNhuCau)
+  +dong('2.2 · Dự kiến kinh phí (triệu đồng)',nay.phKinhPhi,cu.phKinhPhi)
+  +dong('2b.1 · Số phòng bộ môn có nhu cầu đầu tư',nay.bmNhuCau,cu.bmNhuCau)
+  +dong('2b.2 · Dự kiến kinh phí (triệu đồng)',nay.bmKinhPhi,cu.bmKinhPhi)
+  +dong('3.1 · Số phòng công vụ có nhu cầu đầu tư',nay.cvNhuCau,cu.cvNhuCau)
+  +dong('3.2 · Dự kiến kinh phí (triệu đồng)',nay.cvKinhPhi,cu.cvKinhPhi)
+  +'</table></div>'
+  +'<div class="warn" style="margin-top:10px">Nguồn năm '+truoc+': <b>'+esc(cu.nguon||'chưa khai')+'</b>. '
+  +'Ghi đè toàn bộ sáu dòng đang có.</div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="KT">Kế thừa</button>');
+}
+
 /* ══════════════ M6.4 — PHẦN RIÊNG: số liệu kiểm kê dẫn xuất ══════════════ */
 function kkTrongPhamVi(){const d=dtHieuLuc();
  return KIEMKE.filter(k=>d==='ALL'||k.dt===d)}
@@ -1462,21 +1912,24 @@ const CFG={nguongHT:10000000,nguongKy:50000000,nguongSuaLon:5000000,khoaKhiKiemK
    'tonghop' · 'ngansach' · 'duyetNho' · 'kyLon' — tab 4 Đợt mua sắm (dời từ M6.5, giữ nguyên người có quyền). */
 /* 'chamcong' (YK01-D) — có quyền ở M4.9 ⚙ Chấm công (TCNS · NVCC xem-sửa; PHT_DT · HT xem). Như 'baohong':
    M6.4 chỉ dùng để quyết có hiện deep-link ↗ M4.9 hay không — QL CSVC KHÔNG có, nên thấy nhãn 🔗 mà không có nút. */
+/* 'bcct' · 'nhapBC' (CSDL-1F) — tab 4b Báo cáo thực trạng công trình, Feature m6.4.bao_cao_cong_trinh.
+   'bcct' = thấy tab; 'nhapBC' = nhập bốn dòng «thật» (nhu cầu đầu tư · dự kiến kinh phí).
+   Kế toán và Hiệu trưởng có 'bcct' mà KHÔNG có 'nhapBC': thấy đủ kinh phí, không sửa được số phòng. */
 const QALL=['xem','phong','taisan','nhapTS','deXuatDC','nhanDC','duyetDC','kiemke','doisoat','kyKK',
- 'baohong','tonghop','ngansach','duyetNho','kyLon','cauhinh','xuat','chamcong'];
+ 'baohong','tonghop','ngansach','duyetNho','kyLon','cauhinh','xuat','chamcong','bcct','nhapBC'];
 /* ma = mã nhân sự ở bảng NS (tệp nền mua sắm) — để ghi vết trên đề xuất / đợt đúng người */
 const ROLES={
  FULL:{ma:'duc',n:'Trần Minh Đức',cd:'🔓 Đủ quyền (demo)',sc:'School',dt:null,q:QALL},
  QLA :{ma:'binh',n:'Lý Thanh Bình',cd:'QL CSVC — Điểm trường A',sc:'Branch',dt:'A',
-       q:['xem','phong','taisan','nhapTS','deXuatDC','nhanDC','kiemke','baohong','tonghop','cauhinh','xuat']},
+       q:['xem','phong','taisan','nhapTS','deXuatDC','nhanDC','kiemke','baohong','tonghop','cauhinh','xuat','bcct','nhapBC']},
  QLB :{ma:'khanh',n:'Trịnh Văn Khánh',cd:'QL CSVC — Điểm trường B',sc:'Branch',dt:'B',
-       q:['xem','phong','taisan','nhapTS','deXuatDC','nhanDC','kiemke','baohong','tonghop','cauhinh','xuat']},
+       q:['xem','phong','taisan','nhapTS','deXuatDC','nhanDC','kiemke','baohong','tonghop','cauhinh','xuat','bcct','nhapBC']},
  KT  :{ma:'yen',n:'Hoàng Thị Yến',cd:'Kế toán',sc:'School',dt:null,
-       q:['xem','doisoat','ngansach','xuat']},
+       q:['xem','doisoat','ngansach','xuat','bcct']},
  PHT :{ma:'huong',n:'Phạm Thu Hương',cd:'PHT Điểm trường A',sc:'Branch',dt:'A',
-       q:['xem','duyetNho','xuat','chamcong']},
+       q:['xem','duyetNho','xuat','chamcong','bcct']},
  HT  :{ma:'huy',n:'Nguyễn Quang Huy',cd:'Hiệu trưởng',sc:'School',dt:null,
-       q:['xem','duyetDC','kyKK','kyLon','xuat','chamcong']}
+       q:['xem','duyetDC','kyKK','kyLon','xuat','chamcong','bcct']}
 };
 let role='FULL';
 const R=()=>ROLES[role];
@@ -1488,6 +1941,7 @@ const tsTrongPhamVi=()=>{const d=dtHieuLuc();return TAISAN.filter(t=>d==='ALL'||
 
 const ST={tab:'phong',dt:'A',curP:null,curTS:null,curDC:null,curKK:null,curBH:null,curDot:null,sub:'dem',
  chipP:'all',chipTS:'all',chipDC:'dang',chipKK:'all',chipCT:'moi',q:'',qts:'',qkk:'',qct:'',lockk:'all',
+ namBC:'2026-2027',
  namBH:NAMNS,thangBH:null};
 
 /* ========== KHUNG MÀN HÌNH ========== */
@@ -1528,6 +1982,12 @@ function tabsOK(){
  /* ★ 14/9/2026: «Đợt mua sắm» dời từ M6.5 (tab 5 cũ) — giữ mã Feature m6.5.dot_mua_sam */
  const nm=viecMuaSam();
  if(can('xem')) out.push(['dotms','4 · Đợt mua sắm',nm||null]);
+ /* ★ 19/9/2026 (CSDL-1F): tab mới CHEN BẰNG HẬU TỐ «4b» — không đánh số lại tab nào đang có (CS-S8).
+    Đánh lại ⚙ Cấu hình thành 6 thì mọi góp ý của trường đang ghi «tab 5» hóa sai; giữ số cũ và
+    chen 4b là cách tệp này vẫn làm với mục (§8b · khối 1b · 1c · ràng buộc 11b). ⚙ vẫn đứng cuối.
+    Badge: số địa điểm chưa khai cấp công trình trong phạm vi — việc còn tồn, ai cũng thấy. */
+ if(can('bcct')){const nc=phongTrongPhamVi().filter(chuaKhaiCT).length;
+  out.push(['baocaoct','4b · Báo cáo thực trạng công trình',nc||null]);}
  if(can('cauhinh')) out.push(['cauhinh','5 · ⚙ Cấu hình']);
  /* ★ tách 14/9/2026: «Điều chuyển giữa điểm trường» và «Sửa chữa & thay thế» sang M6.11 */
  return out;
@@ -1589,15 +2049,19 @@ function vePhong(){
   ['co','⚠ Có thiết bị cần xử lý',ds0.filter(x=>tinhTrangPhong(x.id).co).length],
   ['dung','Đang sử dụng',ds0.filter(x=>x.tt==='dung').length],
   ['sua','Đang sửa',ds0.filter(x=>x.tt==='sua').length],
-  ['dong','Đóng cửa',ds0.filter(x=>x.tt==='dong').length]];
- let ds=ST.chipP==='all'?ds0:ST.chipP==='co'?ds0.filter(x=>tinhTrangPhong(x.id).co):ds0.filter(x=>x.tt===ST.chipP);
+  ['dong','Đóng cửa',ds0.filter(x=>x.tt==='dong').length],
+  /* CSDL-1F — giá trị trống KHÔNG chặn gì, nhưng phải TÌM LẠI ĐƯỢC để đi khai nốt */
+  ['chuact','⚠ Chưa khai cấp công trình',ds0.filter(chuaKhaiCT).length]];
+ let ds=ST.chipP==='all'?ds0:ST.chipP==='co'?ds0.filter(x=>tinhTrangPhong(x.id).co)
+  :ST.chipP==='chuact'?ds0.filter(chuaKhaiCT):ds0.filter(x=>x.tt===ST.chipP);
  if(q) ds=ds.filter(x=>kd(x.ten).includes(q)||kd(x.id).includes(q)||kd(LOAIP[x.loai]).includes(q));
  let h=scopeBar();
  h+='<div class="bar">'+chips.map(([k,n,c])=>'<button class="chip'+(ST.chipP===k?' on':'')+'" data-chp="'+k+'"'
-   +(k==='co'&&c?' style="border-color:var(--amber);color:var(--amber)"':'')+'>'+n
+   +((k==='co'||k==='chuact')&&c?' style="border-color:var(--amber);color:var(--amber)"':'')+'>'+n
    +' <b style="margin-left:4px">'+c+'</b></button>').join('')
   +'<input class="inp" id="qp" placeholder="🔍 Tìm phòng, mã, loại…" value="'+esc(ST.q)+'">'
   +'<div class="spacer"></div>'
+  +(can('phong')?'<button class="btn" id="hangLoat">🏗 Đặt cấp công trình hàng loạt</button>':'')
   +(can('phong')?'<button class="btn p" id="themPhong">➕ Thêm phòng</button>':'')
   +(can('xuat')?'<button class="btn" id="xuatP">📤 Xuất</button>':'')+'</div>';
  /* YK01-D — ba con số triển khai chấm công, đếm cùng cách với ⚙ M4.9 §4f.7b (app.16) */
@@ -1608,17 +2072,18 @@ function vePhong(){
   +'Cột <b>Thiết bị gắn liền</b> đếm <b>đèn, quạt, bảng, ổ điện, bồn rửa</b> — thứ <b>không có mã tài sản</b> '
   +'nhưng hỏng thì lớp không học được. Danh mục tài sản (tab 2) chỉ quản thứ có mã và có nguyên giá; '
   +'nếu chỉ có nó thì «phòng 101 hỏng 2 bóng đèn» <b>không nằm ở đâu trong hệ thống cả</b>.');
- h+='<div class="tbw"><div class="tbx"><table style="min-width:1160px"><tr><th>Phòng</th>'
-  +'<th class="num">Tầng</th><th>Loại</th><th class="num">Sức chứa</th>'
+ h+='<div class="tbw"><div class="tbx"><table style="min-width:1320px"><tr><th>Phòng</th>'
+  +'<th class="num">Tầng</th><th>Loại</th><th>🏗 Cấp công trình</th><th class="num">Sức chứa</th>'
   +'<th>Thiết bị gắn liền</th><th class="num">Tài sản có mã</th><th>Phiếu báo hỏng <span class="tg c">🔗 M6.11</span></th>'
   +'<th>🕐 Điểm chấm công <span class="tg c">🔗 M4.9</span></th><th>Trạng thái</th><th></th></tr>';
- if(!ds.length) h+='<tr><td colspan="10"><div class="empty">Không có phòng nào khớp.</div></td></tr>';
+ if(!ds.length) h+='<tr><td colspan="11"><div class="empty">Không có phòng nào khớp.</div></td></tr>';
  h+=gomDT(ds,x=>x.dt,ph=>{
   const [tn,tc]=TT_PHONG[ph.tt], tt=tinhTrangPhong(ph.id);
   const dx=bhCuaPhong(ph.id).filter(bhMo).length, moi=bhCuaPhong(ph.id).filter(c=>c.tt==='moi').length;
   return '<tr'+(ph.tt==='dong'?' class="rorow"':tt.co?' class="warnrow"':'')+'>'
    +'<td><b>'+esc(ph.ten)+'</b><div style="font-size:11px;color:var(--ink3)">'+ph.id+' · '+DT[ph.dt]+'</div></td>'
    +'<td class="num">'+ph.tang+'</td><td style="font-size:11.5px">'+LOAIP[ph.loai]+'</td>'
+   +'<td>'+oCapCT(ph)+'</td>'
    +'<td class="num">'+(ph.succhua||'—')+'</td>'
    +'<td style="font-size:11.5px">'+(tt.hongTB?'<span class="st2 r">'+tt.hongTB+' cái hỏng</span> ':'')
      +(tt.thieuTB?'<span class="st2 w">'+tt.thieuTB+' dòng thiếu</span> ':'')
@@ -1631,10 +2096,11 @@ function vePhong(){
    +'<td style="font-size:11.5px">'+oDiemCC(ph)+'</td>'
    +'<td><span class="st2 '+tc+'">'+tn+'</span></td>'
    +'<td><button class="btn xs" data-phong="'+ph.id+'">Mở ▸</button></td></tr>';
- },10,!!q);
+ },11,!!q);
  h+='</table></div><div class="lgd">'
   +'<span class="chip">Mọi cột tình trạng là <b>số dẫn xuất</b> — không nhập tay ở danh sách</span>'
-  +'<span class="chip">Phòng <b>không xóa</b> — <b>Đóng cửa</b> là trạng thái</span></div></div>';
+  +'<span class="chip">Phòng <b>không xóa</b> — <b>Đóng cửa</b> là trạng thái</span>'
+  +'<span class="chip"><b>Cấp công trình</b> gắn ở <b>từng địa điểm</b>, không gắn ở loại — trống thì <b>không chặn</b>, chỉ mang nhãn ⚠</span></div></div>';
  return h;
 }
 /* ── màn hình một phòng: theo dõi tài sản, thiết bị và việc xử lý trong năm học ── */
@@ -1667,6 +2133,7 @@ function veMotPhong(){
   +'có người <b>xác nhận đã sửa / thay xong</b>.<br>'
   +'Trạng thái dẫn xuất mà có nút sửa tay thì sớm muộn hai con số sẽ lệch nhau, và không ai biết con số nào đúng.');
  h+=khoiDiemCCPhong(ph);   /* YK01-D — 🔗 M4.9 */
+ h+=khoiCapCT(ph);         /* CSDL-1F — cấp công trình của địa điểm */
  /* thiết bị gắn liền */
  h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">Thiết bị gắn liền phòng '
   +'<span class="tg c">không có mã tài sản riêng</span>'
@@ -1742,14 +2209,21 @@ function themPhong(){
   if(!ten) loi.push('Chưa có tên phòng');
   if(loi.length){toast('⚠️ Chưa thêm được:<br>• '+loi.join('<br>• '));return}
   const dt=$('#tpDT').value, loai=$('#tpLoai').value;
+  /* CSDL-1F — cấp công trình để TRỐNG được: không chặn tạo địa điểm vì một ô chưa ai đi khai */
+  const cap=$('#tpCap').value||null, don=$('#tpDon').value.trim();
+  if(cap==='nhomuon'&&!don){
+   toast('⚠️ Chọn <b>Nhờ mượn</b> thì <b>bắt buộc ghi đơn vị cho mượn</b> — báo cáo cấp trên luôn hỏi mượn của ai.');return}
   PHONG.push({id,ten,dt,tang:+$('#tpTang').value||1,loai,succhua:+$('#tpSC').value||0,
-   dt2:+$('#tpDien').value||0,tb:[],tt:'dung'});
+   dt2:+$('#tpDien').value||0,tb:[],tt:'dung',
+   capCT:cap,day:$('#tpDay').value||null,donViChoMuon:cap==='nhomuon'?don:''});
   /* sinh sẵn dòng thiết bị theo định mức của loại phòng — người dùng sửa lại được */
-  const dm=DINHMUC[loai]||[['Bóng đèn tuýp',4],['Ổ điện',2]];
-  if($('#tpDM').checked) dm.forEach(([t,n])=>themTBRow(id,t,n,0,n,''));
+  /* ⛔ Nhà công vụ KHÔNG có định mức thiết bị gắn liền — nó là chỗ ở, không phải phòng dạy học */
+  const dm=DINHMUC[loai]||[];
+  if($('#tpDM').checked&&dm.length) dm.forEach(([t,n])=>themTBRow(id,t,n,0,n,''));
   closeM(); ST.curP=id;
   toast('✅ Đã thêm phòng <b>'+esc(ten)+'</b> ('+id+') tại '+DT[dt]+'.'
-   +($('#tpDM').checked?' Đã sinh sẵn <b>'+dm.length+' dòng thiết bị theo định mức</b> — sửa lại được.':'')
+   +($('#tpDM').checked&&dm.length?' Đã sinh sẵn <b>'+dm.length+' dòng thiết bị theo định mức</b> — sửa lại được.'
+     :!dm.length?' Loại <b>'+LOAIP[loai]+'</b> <b>không có định mức thiết bị</b> — địa điểm mới trống trơn.':'')
    +' Đã <b>báo sang M4.6</b> để xếp tiết được.'); render();
  };
  modal('➕ Thêm phòng',
@@ -1766,6 +2240,16 @@ function themPhong(){
   +'<div><label class="lbl">Tầng</label><input type="number" class="fldi" id="tpTang" value="1" min="1"></div>'
   +'<div><label class="lbl">Loại</label><select class="fldi" id="tpLoai">'
   +Object.keys(LOAIP).map(x=>'<option value="'+x+'">'+LOAIP[x]+'</option>').join('')+'</select></div></div>'
+  +'<div class="frow"><div><label class="lbl">🏗 Cấp công trình</label><select class="fldi" id="tpCap">'
+  +'<option value="">— chưa khai —</option>'
+  +CAPCT_KEY.map(x=>'<option value="'+x+'">'+CAPCT[x].n+'</option>').join('')+'</select></div>'
+  +'<div><label class="lbl">Dãy nhà</label><select class="fldi" id="tpDay"><option value="">— chưa xếp dãy —</option>'
+  +dayTrongPhamVi().map(x=>'<option value="'+x+'">'+esc(DAYNHA[x].ten)+'</option>').join('')+'</select></div></div>'
+  +'<label class="lbl">Đơn vị cho mượn <span style="font-weight:400;color:var(--ink3)">— bắt buộc khi cấp công trình là <b>Nhờ mượn</b></span></label>'
+  +'<input class="fldi" id="tpDon" placeholder="VD: Nhà văn hóa xã Tân Lập">'
+  +'<div style="font-size:11.5px;color:var(--ink3);margin-top:4px">Để trống cấp công trình <b>không bị chặn</b> — '
+  +'địa điểm mang nhãn <b>⚠ Chưa khai</b> và nằm trong bộ lọc cùng tên để khai nốt sau. '
+  +'Cả một dãy thì dùng <b>🏗 Đặt cấp công trình hàng loạt</b>.</div>'
   +'<div class="frow"><div><label class="lbl">Sức chứa (số HS)</label>'
   +'<input type="number" class="fldi" id="tpSC" value="40"></div>'
   +'<div><label class="lbl">Diện tích (m²)</label><input type="number" class="fldi" id="tpDien" value="50"></div></div>'
@@ -1826,6 +2310,12 @@ function suaPhong(id){
   if(tt!=='dung'&&ph.tt==='dung'&&!$('#spGC').value.trim()){
    toast('⚠️ Chuyển phòng sang <b>'+TT_PHONG[tt][0]+'</b> thì <b>bắt buộc ghi lý do</b> — '
     +'thời khóa biểu M4.6 sẽ phải xếp lại và người xếp cần biết vì sao.');return}
+  const cap=$('#spCap')?($('#spCap').value||null):ph.capCT;
+  const don=$('#spDon')?$('#spDon').value.trim():'';
+  if(cap==='nhomuon'&&!don){
+   toast('⚠️ Cấp công trình <b>Nhờ mượn</b> thì <b>bắt buộc ghi đơn vị cho mượn</b> — '
+    +'báo cáo cấp trên luôn hỏi mượn của ai, và không ai nhớ hộ được sau một năm.');return}
+  if($('#spCap')){ph.capCT=cap; ph.donViChoMuon=(cap==='nhomuon'?don:''); ph.day=$('#spDay').value||null}
   ph.tt=tt; ph.ghichu=$('#spGC').value.trim(); ph.succhua=+$('#spSC').value||ph.succhua; closeM();
   toast('💾 Đã lưu <b>'+esc(ph.ten)+'</b>.'+(tt!=='dung'?' Đã <b>báo sang M4.6</b> — phòng này không xếp tiết được nữa.':''));
   render();
@@ -1835,6 +2325,16 @@ function suaPhong(id){
   +'<div class="kv"><span>Điểm trường</span><b>'+DT[ph.dt]+'</b> <span class="tg c">không sửa được</span></div>'
   +'<div class="kv"><span>Loại</span><b>'+LOAIP[ph.loai]+'</b></div>'
   +'<div class="kv"><span>Tài sản đang đặt tại đây</span><b>'+nts+'</b></div></div>'
+  +(capCTApDung(ph)
+    ?'<div class="frow"><div><label class="lbl">🏗 Cấp công trình</label><select class="fldi" id="spCap">'
+     +'<option value="">— chưa khai —</option>'
+     +CAPCT_KEY.map(x=>'<option value="'+x+'"'+(ph.capCT===x?' selected':'')+'>'+CAPCT[x].n+'</option>').join('')+'</select></div>'
+     +'<div><label class="lbl">Dãy nhà</label><select class="fldi" id="spDay"><option value="">— chưa xếp dãy —</option>'
+     +dayTrongPhamVi().map(x=>'<option value="'+x+'"'+(ph.day===x?' selected':'')+'>'+esc(DAYNHA[x].ten)+'</option>').join('')+'</select></div></div>'
+     +'<label class="lbl">Đơn vị cho mượn <span style="font-weight:400;color:var(--ink3)">— bắt buộc khi chọn <b>Nhờ mượn</b></span></label>'
+     +'<input class="fldi" id="spDon" value="'+esc(ph.donViChoMuon||'')+'" placeholder="VD: Nhà văn hóa xã Tân Lập">'
+    :'<div class="info">Địa điểm loại <b>'+LOAIP[ph.loai]+'</b> <b>không khai cấp công trình</b> — '
+     +'không phải công trình xây dựng có cấp.</div>')
   +'<label class="lbl">Sức chứa (số học sinh)</label><input type="number" class="fldi" id="spSC" value="'+(ph.succhua||0)+'">'
   +'<label class="lbl">Trạng thái</label><select class="fldi" id="spTT">'
   +Object.keys(TT_PHONG).map(k=>'<option value="'+k+'"'+(ph.tt===k?' selected':'')+'>'+TT_PHONG[k][0]+'</option>').join('')
@@ -2813,16 +3313,23 @@ function veCauHinh(){
   +'<button class="btn" id="layCH">⧉ Lấy cấu hình từ năm học…</button></div>';
  h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">1 · Danh mục loại phòng và loại tài sản '
   +'<span class="tg c">Master — dùng chung toàn trường</span></div>'
-  +'<div class="tbx"><table><tr><th>Loại phòng</th><th class="num">Đang có</th>'
+  +'<div class="tbx"><table><tr><th>Loại địa điểm</th><th class="num">Đang có</th>'
+  +'<th class="num">🏗 Chưa khai cấp</th>'
   +'<th>Loại tài sản</th><th class="num">Đang có</th></tr>';
  const lp=Object.keys(LOAIP), lt=Object.keys(LOAITS), n=Math.max(lp.length,lt.length);
  for(let i=0;i<n;i++){
-  h+='<tr><td>'+(lp[i]?LOAIP[lp[i]]:'')+'</td>'
+  const ck=lp[i]?PHONG.filter(p=>p.loai===lp[i]&&chuaKhaiCT(p)).length:0;
+  const mien=lp[i]&&CT_MIEN.includes(lp[i]);
+  h+='<tr><td>'+(lp[i]?LOAIP[lp[i]]+(lp[i]===LOAI_CONGVU?' <span class="tg a">🆕 nhóm địa điểm</span>':''):'')+'</td>'
    +'<td class="num">'+(lp[i]?PHONG.filter(p=>p.loai===lp[i]).length:'')+'</td>'
+   +'<td class="num">'+(!lp[i]?'':mien?'<span class="tg c">không khai</span>'
+     :ck?'<b style="color:var(--amber)">'+ck+'</b>':'0')+'</td>'
    +'<td>'+(lt[i]?LOAITS[lt[i]]:'')+'</td>'
    +'<td class="num">'+(lt[i]?TAISAN.filter(t=>t.loai===lt[i]).length:'')+'</td></tr>';
  }
- h+='</table></div><div class="lgd"><span class="chip">Loại <b>đang có phòng/tài sản thì không xóa được</b> — chỉ ẩn khỏi danh sách chọn</span></div></div>';
+ h+='</table></div><div class="lgd"><span class="chip">Loại <b>đang có phòng/tài sản thì không xóa được</b> — chỉ ẩn khỏi danh sách chọn</span>'
+  +'<span class="chip">🆕 <b>Nhà công vụ cho giáo viên</b> thuộc <b>nhóm địa điểm</b>, <b>không phải phòng học</b> — không vào phép đếm phòng học nào, không có định mức thiết bị</span>'
+  +'<span class="chip"><b>Cấp công trình</b> gắn ở <b>từng địa điểm</b> <i>(tab 1)</i>, không gắn ở loại — <b>Sân · khu ngoài trời</b> không khai</span></div></div>';
  /* YK01-D — nhóm loại Thiết bị chấm công → app.16-cham-cong-thiet-bi.js */
  h+=veNhomLoaiCC();
  /* 1b · 1c — thiết bị theo môn & bài học (DOT1-P2B, 14/9/2026) → app.62-mon-bai.js */
@@ -2830,6 +3337,9 @@ function veCauHinh(){
  h+='<div class="tbw" style="margin-bottom:12px"><div class="ch">2 · Định mức thiết bị gắn liền theo loại phòng '
   +'<span class="tg c">Master</span>'
   +'<span class="sp"></span>'+(can('cauhinh')?'<button class="btn xs" id="themDM">➕ Thêm dòng định mức</button>':'')+'</div>'
+  +'<div style="font-size:11.5px;color:var(--ink2);padding:9px 12px 0"><b>Nhà công vụ cho giáo viên</b> '
+  +'<b>không có dòng ở đây</b> — nó là <b>chỗ ở</b>, không phải phòng dạy học; định mức đèn · quạt · bảng · ổ điện '
+  +'không nói được gì về một căn nhà công vụ.</div>'
   +'<div class="tbx"><table><tr><th>Loại phòng</th><th>Định mức</th><th class="num">Số phòng đang áp</th><th></th></tr>'
   +Object.keys(DINHMUC).map(k=>{const n=PHONG.filter(x=>x.loai===k).length;
    return '<tr><td><b>'+LOAIP[k]+'</b></td>'
@@ -3142,6 +3652,7 @@ function render(){
  else if(ST.tab==='taisan') h+=veTaiSan();
  else if(ST.tab==='kiemke') h+=veKiemKe();
  else if(ST.tab==='dotms') h+=veMuaSam();
+ else if(ST.tab==='baocaoct') h+=veBaoCaoCT();   /* CSDL-1F — tab 4b */
  else h+=veCauHinh();
  c.innerHTML=h;
  if(ST.tab==='cauhinh') gCfg();
@@ -3205,6 +3716,11 @@ document.addEventListener('click',e=>{
  /* YK01-D — nút điều chuyển bị chặn vì thiết bị đang là điểm chấm công: bấm thì NÓI RA vì sao + nơi gỡ */
  const cb=t.closest('[data-cc]'); if(cb){const x=chanCC(tsById(cb.dataset.cc),'Đề xuất điều chuyển');
   if(x) modal('⛔ Đề xuất điều chuyển bị chặn','<div class="danger">'+x.html+'</div>','<button class="btn p" data-mb="close">Đã hiểu</button>');return}
+ /* CSDL-1F — tab 4b Báo cáo thực trạng công trình */
+ if(t.id==='hangLoat'){datHangLoat();return}
+ if(t.id==='bcNhap'){nhapBC();return}
+ if(t.id==='bcKeThua'){keThuaBC();return}
+ if(t.id==='xuatBC'){xuat();return}
  const dmc=t.closest('[data-dm]'); if(dmc){suaDM(dmc.dataset.dm);return}
  /* tab 5 · khối 1b · 1c — thiết bị theo môn & bài (DOT1-P2B) */
  const slt=t.closest('[data-sualtb]'); if(slt){ST.fl=null;suaLoai(slt.dataset.sualtb);return}
@@ -3235,6 +3751,7 @@ document.addEventListener('click',e=>{
  if(['xuatP','xuatTS','xuatKK'].includes(t.id)){xuat();return}
 });
 $('#hdt').onchange=e=>{ST.dt=e.target.value;render()};
+document.addEventListener('change',e=>{if(e.target.id==='bcNam'){ST.namBC=e.target.value;render()}});
 document.addEventListener('input',e=>{
  const id=e.target.id, map={qp:'q',qts:'qts',qkk:'qkk'};
  if(map[id]){ST[map[id]]=e.target.value;const p=e.target.selectionStart;render();
@@ -3247,7 +3764,7 @@ document.addEventListener('input',e=>{
  const d=THAM.get('dt'); if(d&&(d==='ALL'||DT[d])) ST.dt=d;
  if(R().sc!=='School'&&R().dt) ST.dt=R().dt;
  const tab=THAM.get('tab'), ctx=THAM.get('ctx'), act=THAM.get('action');
- if(['phong','taisan','kiemke','dotms','cauhinh'].includes(tab)) ST.tab=tab;
+ if(['phong','taisan','kiemke','dotms','baocaoct','cauhinh'].includes(tab)) ST.tab=tab;
  if(ctx&&tsById(ctx)){ST.tab='taisan';ST.curTS=ctx}
  else if(ctx&&phongById(ctx)){ST.tab='phong';ST.curP=ctx}
  else if(ctx&&dotById(ctx)){ST.tab='dotms';ST.curDot=ctx}

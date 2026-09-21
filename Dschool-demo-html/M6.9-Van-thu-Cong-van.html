@@ -362,7 +362,329 @@ tr.hdrow2 td{background:#f1f5f9;font-size:11.5px;color:var(--ink2);padding:6px 1
 .tl>div.now::before{background:var(--brand);border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
 .tl .tt{font-weight:700}
 .tl .mt{color:var(--ink3);font-size:11px}
-</style>
+
+/* ══════════════════════════════════════════════════════════════════════════
+   CSS CỦA BỐN TAB BÁO CÁO ĐẶT TẠI MENU CHỦ — `BCM9-3C` (20/9/2026)
+
+   Trích từ `demo-src/M9.13-Bao-cao-CSVC-thiet-bi/style.css` (phần của nhóm 📊:
+   dải giải thích · PV · KB · panel drill-down · XU), rồi ĐÓNG KHUNG mọi bộ chọn
+   dưới `body.bc9`.
+
+   Vì sao phải đóng khung — không phải để cho đẹp:
+   menu chủ đã có sẵn `.ro` `.dnote` `.empty` `.toast` `.badrow` `.tbx` `.big`
+   của riêng nó. Dán thẳng CSS của nhóm 📊 vào thì sáu tab cũ của `M6.9`, ba tab
+   của `M6.12`, bốn tab của `M8.1`, hai tab của `M8.4` ĐỔI HÌNH mà không ai đụng
+   vào chúng — đúng thứ prompt `3C` §1 cấm ("tab cũ giữ nguyên từng dòng").
+   `body.bc9` chỉ được gắn khi tab báo cáo đang mở.
+
+   Hai bộ chọn KHÔNG đóng khung, cố ý: panel `#kbMask` và hộp xuất `#xuMask` do
+   tệp nền tự tạo và gắn thẳng vào `<body>`, nên chúng sống lâu hơn tab. Rời tab
+   báo cáo là lớp `bc9` mất — nếu quy tắc ẩn cũng đóng khung theo thì hai nút đó
+   thành hai khối trần hiện giữa màn hình của tab khác.
+   ══════════════════════════════════════════════════════════════════════════ */
+#kbMask,#xuMask{display:none}
+
+/* ─────────── dải giải thích: giữ NGẮN, đếm vào 20% của nh9 §9.1 ─────────── */
+
+body.bc9 .canh{padding:8px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin:9px 0;display:block}
+
+body.bc9 .canh.w{background:var(--amber-soft);border:1px solid #fde68a;color:#92400e}
+
+body.bc9 .canh.r{background:var(--red-soft);border:1px solid #fecaca;color:#991b1b}
+
+body.bc9 .canh.b{background:var(--brand-soft);border:1px solid #bfdbfe;color:#1e40af}
+
+body.bc9 .ro{background:#f8fafc;border:1px solid var(--line);color:var(--ink2);padding:7px 11px;border-radius:9px;font-size:11.5px;margin:8px 0;line-height:1.55}
+
+body.bc9 .dnote{background:#fffbeb;border:1px dashed #fbbf24;color:#78350f;padding:8px 11px;border-radius:9px;font-size:12px;line-height:1.6;margin:9px 0}
+
+body.bc9 .empty{padding:30px;text-align:center;color:var(--ink3);font-size:12.5px}
+
+body.bc9 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(140px);background:#0f172a;color:#fff;padding:11px 17px;border-radius:9px;font-size:13px;z-index:90;transition:transform .22s;max-width:92vw;line-height:1.55}
+
+body.bc9 .toast.on{transform:translateX(-50%)}
+
+body.bc9 .toast code{background:#1e293b;color:#e2e8f0}
+/* ═══════════ PV — phạm vi và thời gian ═══════════ */
+
+body.bc9 .pvbar{display:flex;gap:7px;align-items:center;flex-wrap:wrap;padding:7px 0}
+
+body.bc9 .pvlb{font-size:11.5px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.03em}
+
+body.bc9 .pvd{border:1px solid var(--line2);border-radius:8px;padding:5px 9px;font-size:12.5px;background:#fff}
+
+body.bc9 .pvthu{font-size:11.5px;color:var(--ink3)}
+
+body.bc9 .pvsep{color:var(--ink3)}
+
+body.bc9 .pvky{display:flex;gap:4px;flex-wrap:wrap;margin-left:6px}
+
+body.bc9 .pvk{border:1px solid var(--line2);background:#fff;border-radius:999px;padding:3px 10px;font-size:11.5px;color:var(--ink2)}
+
+body.bc9 .pvk:hover{background:var(--bg)}
+
+body.bc9 .pvk.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+
+body.bc9 .pvk.cam{opacity:.42;cursor:not-allowed;border-style:dashed}
+
+body.bc9 .pvk i{font-style:normal;color:var(--ink3);font-size:10.5px}
+
+body.bc9 .pvk.on i{color:#dbeafe}
+
+body.bc9 .pvcut{background:#fff;border:1px solid var(--line);border-left:3px solid var(--brand);border-radius:9px;padding:7px 12px;font-size:12.5px;color:var(--ink2);margin:8px 0}
+
+body.bc9 .pvcut i{color:var(--ink3);font-size:11.5px}
+
+body.bc9 .pvmau{display:flex;gap:5px;align-items:center;flex-wrap:wrap;padding:6px 0 2px}
+
+body.bc9 .pvm{border:1px dashed var(--line2);background:#fff;border-radius:8px;padding:4px 10px;font-size:11.5px;color:var(--ink2)}
+
+body.bc9 .pvm.on{background:#eef2ff;border-color:#818cf8;border-style:solid;color:#3730a3;font-weight:700}
+
+body.bc9 .pvm.x{color:var(--red);border-color:#fecaca}
+
+body.bc9 .pvmc{font-size:11px;color:var(--ink3);margin-left:6px}
+
+body.bc9 .pvcach{font-size:11.5px;color:var(--ink3);margin:14px 0 0;border-top:1px dashed var(--line2);padding-top:10px}
+/* ═══════════ KB — bảng ═══════════ */
+
+body.bc9 .bg{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:10px 0}
+
+body.bc9 .bgh{display:flex;align-items:center;gap:9px;padding:10px 13px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:13.5px;flex-wrap:wrap}
+
+body.bc9 .bgky{font-size:11.5px;color:var(--ink2);background:#fff;border:1px solid var(--line);border-radius:999px;padding:2px 9px}
+
+body.bc9 .bgma{font-size:10.5px;font-weight:700;color:var(--violet);background:#f5f3ff;border:1px solid #ddd6fe;border-radius:5px;padding:1px 6px}
+
+body.bc9 .lschip{font-size:9.5px;font-weight:800;letter-spacing:.05em;padding:2px 7px;border-radius:5px;white-space:nowrap}
+
+body.bc9 .lschip.ton{background:#e0e7ff;color:#3730a3}
+
+body.bc9 .lschip.ps{background:#fef3c7;color:#92400e}
+
+body.bc9 .lschip.dx{background:#ecfdf5;color:#065f46}
+
+body.bc9 .tbx{overflow-x:auto}
+
+body.bc9 .bgt{width:100%;border-collapse:collapse;font-size:12.5px}
+
+body.bc9 .bgt th{text-align:left;font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:7px 9px;border-bottom:1px solid var(--line);background:#fbfdff;white-space:nowrap;vertical-align:bottom}
+
+body.bc9 .bgt th i{display:block;font-style:normal;text-transform:none;letter-spacing:0;font-weight:400;color:var(--ink3);font-size:9.5px}
+
+body.bc9 .bgt td{padding:5px 9px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+
+body.bc9 .bgt td.num, body.bc9 .bgt th.num{text-align:right;font-variant-numeric:tabular-nums}
+
+body.bc9 .bgt tr:last-child td{border-bottom:none}
+
+body.bc9 .dphu{display:block;font-size:10.5px;color:var(--ink3);font-weight:400}
+
+body.bc9 .nhomrow td{background:#f1f5f9;font-size:10.5px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.05em;padding:4px 9px}
+
+body.bc9 .tongrow td{background:#f8fafc;font-weight:700;border-top:2px solid var(--line2)}
+
+body.bc9 .tongtru{display:block;font-size:9.5px;font-weight:400;color:var(--amber)}
+
+body.bc9 .dongmo td{opacity:.55}
+
+body.bc9 .badrow td{background:var(--red-soft)}
+
+body.bc9 .bgt.so td{font-size:12px}
+
+body.bc9 .bgid{font-size:10.5px;color:var(--ink3);white-space:nowrap;width:70px}
+
+
+body.bc9 .oso{border:1px solid transparent;border-radius:6px;padding:2px 7px;font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink);text-decoration:underline dotted var(--line2) 1px;text-underline-offset:3px}
+
+body.bc9 .oso:hover{background:var(--brand-soft);border-color:#bfdbfe;color:var(--brand)}
+
+body.bc9 .oso.odx{color:#065f46}
+
+body.bc9 .oso.ochieu{color:var(--ink2);text-decoration-style:dashed}
+
+body.bc9 .oso.ochieu:hover{color:var(--brand)}
+
+body.bc9 .oso.oxau{color:var(--red)}
+
+body.bc9 .oso.ocb{font-size:10.5px;font-weight:600;color:var(--amber);background:var(--amber-soft);border-color:#fde68a;text-decoration:none}
+
+body.bc9 .oro{color:var(--ink3)}
+
+body.bc9 .noacc{font-size:10.5px;font-weight:700;color:var(--ink3);background:#f1f5f9;border:1px dashed var(--line2);border-radius:6px;padding:2px 7px;display:inline-block}
+
+body.bc9 .noaccbox{padding:12px 14px;background:#f8fafc;border-top:1px dashed var(--line2);font-size:12.5px;line-height:1.65;color:var(--ink2)}
+
+body.bc9 .noaccbox.big{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:26px 22px;margin-top:14px;font-size:13.5px}
+
+body.bc9 .k3sep{font-size:11.5px;color:var(--ink2);background:#fffbeb;border:1px dashed #fbbf24;border-radius:8px;padding:7px 11px;margin:4px 0}
+
+body.bc9 .bvdl{font-size:12px;color:#991b1b;background:var(--red-soft);border:1px solid #fecaca;border-radius:9px;padding:8px 11px;margin:9px 0;line-height:1.6}
+
+body.bc9 .k8h{font-size:16px;font-weight:700;margin:12px 0 6px}
+
+body.bc9 .k8m{margin:10px 0}
+
+body.bc9 .k8nx{font-size:12.5px;line-height:1.7;color:var(--ink2)}
+/* khối chữ ký + bản chiếu */
+
+body.bc9 .ky{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:13px 15px;margin:10px 0}
+
+body.bc9 .kyh{font-size:13px;font-weight:700;margin-bottom:9px}
+
+body.bc9 .kyds{display:flex;gap:16px;flex-wrap:wrap}
+
+body.bc9 .kyo{font-size:12px;color:var(--ink2);min-width:200px}
+
+body.bc9 .kyl{display:block;border-bottom:1px dotted var(--line2);height:26px;margin-bottom:3px}
+
+body.bc9 .kytt{margin-top:10px;font-size:12.5px}
+
+body.bc9 .kyro{margin-top:9px;font-size:11.5px;color:var(--ink3);line-height:1.55;border-top:1px dashed var(--line);padding-top:8px}
+
+body.bc9 .chieu{border-style:dashed}
+
+body.bc9 .chieuro{padding:9px 13px;font-size:11.5px;color:var(--ink2);background:#f8fafc;border-top:1px dashed var(--line2);line-height:1.6}
+/* ═══════════ KB — panel drill-down ═══════════ */
+
+body.bc9 .kbmask{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:70;display:none;justify-content:flex-end}
+
+body.bc9 .kbmask.on{display:flex}
+
+body.bc9 .kbpanel{background:#fff;width:640px;max-width:96vw;height:100%;display:flex;flex-direction:column;box-shadow:-10px 0 30px rgba(15,23,42,.18)}
+
+body.bc9 .kbh{padding:13px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:9px;font-size:14px;flex-wrap:wrap}
+
+body.bc9 .kbdong{color:var(--ink2);font-weight:600}
+
+body.bc9 .kbx{font-size:16px;color:var(--ink3);width:30px;height:30px;border-radius:8px}
+
+body.bc9 .kbx:hover{background:var(--bg);color:var(--ink)}
+
+body.bc9 .kbb{padding:14px 16px;overflow-y:auto;flex:1}
+
+body.bc9 .kbso{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;margin-bottom:10px}
+
+body.bc9 .kbso i{font-size:12px;font-weight:400;color:var(--ink3);font-style:normal}
+
+body.bc9 .kbcb{font-size:14px;color:var(--amber);font-weight:600}
+
+body.bc9 .kbps{display:flex;align-items:center;gap:12px;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:10px 13px;margin-bottom:10px}
+
+body.bc9 .kbpsl{flex:1}
+
+body.bc9 .kbpsl span{display:block;font-size:11px;color:var(--ink3)}
+
+body.bc9 .kbpsl b{font-size:16px;font-variant-numeric:tabular-nums}
+
+body.bc9 .kbpsc{font-size:11px;color:var(--ink3)}
+
+body.bc9 .kbgc{font-size:12px;color:var(--ink2);background:var(--brand-soft);border:1px solid #bfdbfe;border-radius:8px;padding:7px 11px;margin-bottom:10px;line-height:1.6}
+
+body.bc9 .kbqt{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:12px}
+
+body.bc9 .kbqth{background:#f8fafc;padding:7px 12px;font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--line)}
+
+body.bc9 .kbqtv, body.bc9 .kbqtx{padding:9px 12px;font-size:12px;line-height:1.6}
+
+body.bc9 .kbqtv{background:#f6fefb}
+
+body.bc9 .kbqtx{background:#fffafa;border-top:1px solid var(--line)}
+
+body.bc9 .kbqtv b{color:var(--green)}
+
+body.bc9 .kbqtx b{color:var(--red)}
+
+body.bc9 .kbqtv ul, body.bc9 .kbqtx ul{margin:4px 0 0 17px}
+
+body.bc9 .kbqtv li, body.bc9 .kbqtx li{margin-bottom:3px;color:var(--ink2)}
+
+body.bc9 .kbcc{padding:7px 12px;font-size:11.5px;color:#92400e;background:var(--amber-soft);border-top:1px solid var(--line)}
+
+body.bc9 .kbng{padding:7px 12px;font-size:11px;color:var(--ink3);border-top:1px solid var(--line);background:#fbfdff}
+
+body.bc9 .kbbg{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:12px}
+
+body.bc9 .kblk{display:flex;flex-direction:column;gap:6px;padding-bottom:20px}
+
+body.bc9 .kblkc{font-size:11px;color:var(--ink3);line-height:1.55}
+/* ═══════════ XU — xuất hai mức ═══════════ */
+
+body.bc9 .xunut{display:inline-flex;gap:7px;flex-wrap:wrap}
+
+body.bc9 .xu1{background:#fff;border-color:var(--line2)}
+
+body.bc9 .xu2{background:#fff5f5;border-color:#fecaca;color:#991b1b;font-weight:600}
+
+body.bc9 .xu2 i{font-style:normal;font-weight:400;font-size:11px}
+
+body.bc9 .xu2:hover{background:#fee2e2}
+
+body.bc9 .xumask{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:80;display:none;place-items:center}
+
+body.bc9 .xumask.on{display:grid}
+
+body.bc9 .xumodal{background:#fff;border-radius:13px;width:720px;max-width:94vw;max-height:88vh;display:flex;flex-direction:column}
+
+body.bc9 .xuh{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700;font-size:14.5px;display:flex;align-items:center;gap:9px}
+
+body.bc9 .xub{padding:15px 18px;overflow-y:auto;font-size:13px;line-height:1.65}
+
+body.bc9 .xuf{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+
+body.bc9 .xtag{font-size:10px;font-weight:800;padding:2px 8px;border-radius:5px;letter-spacing:.04em}
+
+body.bc9 .xtag.t1{background:#e0e7ff;color:#3730a3}
+
+body.bc9 .xtag.t2{background:#fee2e2;color:#991b1b}
+
+body.bc9 .xcanh{background:var(--red-soft);border:1px solid #fecaca;color:#991b1b;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:12px}
+
+body.bc9 .xok{background:var(--green-soft);border:1px solid #a7f3d0;color:#065f46;padding:9px 12px;border-radius:9px;font-size:12.5px;margin-bottom:12px;line-height:1.6}
+
+body.bc9 .xm{margin-bottom:14px}
+
+body.bc9 .xm>b{display:block;font-size:12.5px;margin-bottom:6px}
+
+body.bc9 .xm>b i{font-weight:400;color:var(--ink3);font-size:11.5px;font-style:normal}
+
+body.bc9 .xmd{display:flex;flex-direction:column;gap:4px}
+
+body.bc9 .xr{display:flex;align-items:center;gap:8px;font-size:12.5px;padding:5px 9px;border:1px solid var(--line);border-radius:8px;cursor:pointer}
+
+body.bc9 .xr:hover{background:var(--bg)}
+
+body.bc9 .xtr{display:flex;gap:8px;flex-wrap:wrap}
+
+body.bc9 .xc{display:flex;align-items:center;gap:6px;font-size:12px;padding:4px 9px;border:1px solid var(--line);border-radius:8px;cursor:pointer}
+
+body.bc9 .xnhay{font-size:9.5px;color:var(--red);background:var(--red-soft);border-radius:4px;padding:0 5px}
+
+body.bc9 .xdau2{font-size:12px;color:var(--ink2);background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:8px 11px}
+
+body.bc9 .xfile{border:1px solid var(--line2);border-radius:10px;overflow:hidden;background:#fff}
+
+body.bc9 .xdau{padding:12px 15px;border-bottom:1px solid var(--line);text-align:center;background:#fbfdff}
+
+body.bc9 .xd1{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink2)}
+
+body.bc9 .xd2{font-size:15px;font-weight:700;margin:3px 0}
+
+body.bc9 .xd3{font-size:12px;color:var(--ink2)}
+
+body.bc9 .xd4{font-size:11.5px;color:var(--ink3)}
+
+body.bc9 .xbody{padding:22px 15px;text-align:center;color:var(--ink3);font-size:12px;background:#fafbfc}
+
+body.bc9 .xcuoi{padding:10px 15px;border-top:1px solid var(--line);font-size:11px;color:var(--ink2);background:#fbfdff}
+
+body.bc9 .xqt b{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3)}
+
+body.bc9 .xqt ul{margin:3px 0 7px 16px}
+
+body.bc9 .xqt li{margin-bottom:2px;line-height:1.5}
+
+body.bc9 .xvet{border-top:1px dashed var(--line);padding-top:6px;color:var(--ink3)}</style>
 </head>
 <body class="nn">
 <script>/* sidebar da chuyen ve index.html — node an giu cho JS cu khong vo */
@@ -781,7 +1103,10 @@ function tabsOK(){
  out.push(['di','3 · Sổ công văn Đi',null]);
  out.push(['tra','4 · Tra cứu',null]);
  if(can('uyquyen')||can('kyUQ')) out.push(['uq','5 · Ủy quyền ký',null]);
- if(can('cauhinh')) out.push(['cfg','6 · ⚙ Cấu hình',null]);
+ /* ★ BCM9-3C — tab báo cáo (m6.9.bao_cao_van_thu), đặt TRƯỚC ⚙ Cấu hình
+    theo tiền lệ CS-S8: ⚙ giữ số cuối. Chỉ hiện với vai có X ở prompt §6. */
+ if(typeof bcVTCoTab==='function'&&bcVTCoTab()) out.push(['bc','6 · 📊 Báo cáo văn thư',null]);
+ if(can('cauhinh')) out.push(['cfg','7 · ⚙ Cấu hình',null]);
  return out;
 }
 function tabs(){
@@ -1591,11 +1916,14 @@ function moThemUQ(){
 function render(){
  rolebar(); header(); sidebar(); tabs();
  const c=$('#content'); $('#crumb').innerHTML='';
+ /* ★ BCM9-3C — khung CSS của nhóm 📊 chỉ bật khi tab báo cáo đang mở */
+ if(typeof BC!=='undefined'&&BC) BC.batKhung(ST.tab==='bc');
  if(ST.tab==='viec')      c.innerHTML=veViec();
  else if(ST.tab==='den')  c.innerHTML=veSoDen();
  else if(ST.tab==='di')   c.innerHTML=veSoDi();
  else if(ST.tab==='tra')  c.innerHTML=veTraCuu();
  else if(ST.tab==='uq')   c.innerHTML=veUyQuyen();
+ else if(ST.tab==='bc')  {c.innerHTML=veBaoCaoVanThu(); $('#topact').innerHTML=BCN?BC.nutXuat(bcVTCoXuat()):'';}
  else                    {c.innerHTML=veCauHinh(); gCfg();}
  const nn=document.body.classList.contains('nn');
  $('#btnNote').classList.toggle('on',!nn);
@@ -1646,6 +1974,2172 @@ document.addEventListener('click',e=>{
 });
 render();
 
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MỞ KHUNG CHO BỐN TỆP NỀN CỦA NHÓM 📊 — `BCM9-3C` (20/9/2026)
+   Cặp với `app.14-dong-khung-bao-cao.js`. Giữa hai tệp này là bốn tệp nền 🔒 HDBC
+   chép nguyên byte: `app.10-nen-chi-tieu.js` · `app.11-khuon-bang.js`
+   `app.12-pham-vi-thoi-gian.js` · `app.13-xuat-hai-muc.js`.
+
+   ── Vì sao phải có cặp tệp này ────────────────────────────────────────────
+   Tệp nền khai ở phạm vi ngoài cùng: `const $` `const esc` `const vn` `const kd`
+   `const THU` `const kThu` `const thuSo` `const HOMNAY` … Menu chủ ĐÃ CÓ đúng
+   những tên đó. `gen-demo.py` gộp mọi tệp JS vào MỘT thẻ `<script>`, nên khai
+   trùng một tên ở phạm vi ngoài cùng là **SyntaxError — cả trang chết**, không
+   phải một lỗi nhỏ ở một tab.
+
+   Ba lối ra đã cân nhắc:
+     ① đổi tên trong tệp nền  → ⛔ phá hợp đồng 🔒 HDBC (chép nguyên byte)
+     ② đổi tên ở menu chủ     → ⛔ sửa sáu tab cũ, phạm `3C` §1
+     ③ bọc tệp nền vào một khung riêng → ✅ tệp nền KHÔNG đổi một byte, menu chủ
+        KHÔNG đổi một tên; tên của nền chỉ che tên của menu chủ BÊN TRONG khung.
+
+   Bốn menu chủ của phiên `3C` là bốn ca đầu tiên nhét nhóm 📊 vào một menu
+   nghiệp vụ đang sống. Phiên `2C` (`M10.7`) sẽ gặp y hệt — chép cặp tệp này.
+
+   ⚠ Thứ tự nạp là do TÊN TỆP: `gen-demo.py` gộp `app.js` trước, rồi `app.*.js`
+   theo thứ tự chữ cái. `app.10-mo-…` < `app.10-nen-…` < `app.11` < `app.12`
+   < `app.13` < `app.14-dong-…`. Đổi tên một trong sáu tệp là vỡ khung.
+   Riêng `M6.12` còn có sẵn `app.10-du-lieu.js` — `du-` < `mo-` nên nó vẫn nằm
+   NGOÀI khung, đúng như phải thế.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* `var` — không phải `const`: câu lệnh này phải đọc được (giá trị `undefined`)
+   ngay cả ở những menu mà `app.js` gọi `render()` ở dòng cuối, tức là TRƯỚC khi
+   khung này chạy. Tab báo cáo tự biết mình chưa sẵn sàng bằng cách hỏi `BCN`. */
+var BCN = null;
+
+(function () {
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TỆP NỀN 1/4 CỦA NHÓM 📊 BÁO CÁO — `app.10-nen-chi-tieu.js`  →  xuất ra `CT`
+   Hợp đồng 🔒 HDBC · phiên `BCM9-0A` (20/9/2026) · sổ `PROMPT-BCM9-00-SO-DIEU-PHOI.md` §3
+   🔄 HDBC v2 · phiên `BCM9-V24` (21/9/2026) — CHỈ THÊM, không đổi hàm nào:
+      + 64 chiều phân tổ của 14 phiên vào `CHIEU` (việc 5) · + `VH.05` (việc 7).
+
+   🛑 CHÉP NGUYÊN BYTE sang mọi demo M9.x và mọi tab báo cáo đặt tại menu chủ.
+      Sửa một bên thì chép sang mọi bên còn lại, rồi đo lại băm và ghi vào phiếu.
+      Lệch một byte = DỪNG, báo người dùng.
+
+   ── Vì sao có tệp này ────────────────────────────────────────────────────
+   `nh9` §2.1: MỌI BÁO CÁO ĐỌC CÔNG THỨC TỪ TỪ ĐIỂN, KHÔNG TỰ TÍNH.
+   Hai demo tự tính một chỉ tiêu là hai con số khác nhau cho cùng một cái tên —
+   và người đọc không có cách nào biết cái nào đúng.
+
+   ── Ba thứ tệp này giữ ───────────────────────────────────────────────────
+   ① Tiện ích chung của cả nhóm 📊 (ngày tháng · thoát HTML · định dạng số)
+   ② TỪ ĐIỂN CHỈ TIÊU — khai báo, KHÔNG có dữ liệu
+   ③ `CT.doc()` — cổng duy nhất để một tab lấy một con số
+
+   ── Ranh giới cố ý: KHAI Ở NỀN, NỐI NGUỒN Ở `app.20` ─────────────────────
+   Tệp nền giống nhau tới từng byte ở 16 demo, nên nó KHÔNG được chứa dữ liệu
+   của demo nào. Vì vậy một mã chỉ tiêu tách làm hai phần:
+     · phần KHAI  (tên · loại số · quy tắc đếm · nguồn · chiều hợp lệ · mốc dữ liệu)
+       → ở đây, dùng chung, không đổi giữa các demo;
+     · phần TÍNH  (đọc dữ liệu mẫu ra con số)
+       → `app.20` của từng demo gọi `CT.nguonSo(ma, fn)` để nối vào.
+   Chưa nối nguồn thì `CT.doc()` trả `canhBao:'CHUA_NOI_NGUON'` và nói rõ tên mã —
+   KHÔNG trả 0. Một bảng ghi 0 vì quên nối nguồn là nói sai về nhà trường.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ───────────────────────── ① TIỆN ÍCH CHUNG ───────────────────────── */
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g,
+  c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const p2 = n => String(n).padStart(2, '0');
+const vn = n => Number(n).toLocaleString('vi-VN');
+const vnd = n => vn(n) + 'đ';
+/* tiền trên bảng báo cáo đọc bằng TRIỆU — bảng kiểm kê toàn trường có cột nguyên giá
+   chín chữ số, để nguyên đồng thì cột rộng gấp đôi mà không ai đọc tới hàng đơn vị */
+const trieu = n => (Math.round(Number(n) / 100000) / 10).toLocaleString('vi-VN');
+const tile = (t, m) => m ? Math.round(t * 1000 / m) / 10 : null;
+const kd = s => (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd');
+
+const THU = ['CN', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+const d2k = d => d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
+const k2d = k => { const [a, b, c] = k.split('-').map(Number); return new Date(a, b - 1, c) };
+const d2s = d => p2(d.getDate()) + '/' + p2(d.getMonth() + 1) + '/' + d.getFullYear();
+const k2s = k => k ? d2s(k2d(k)) : '—';
+const kThu = k => THU[k2d(k).getDay()];
+const thuSo = k => k2d(k).getDay() + 1;                 /* CN=1 · T2=2 … T7=7 */
+const themNgay = (k, n) => { const d = k2d(k); d.setDate(d.getDate() + n); return d2k(d) };
+const soNgay = (a, b) => Math.round((k2d(b) - k2d(a)) / 86400000);
+const thangCua = k => (k || '').slice(0, 7);
+const tenThang = t => 'Tháng ' + Number(t.slice(5, 7)) + '/' + t.slice(0, 4);
+/* mọi tệp nền dùng chung một «hôm nay mô phỏng» — demo CSVC đang đứng ở đây */
+const HOMNAY = '2026-12-28';
+const NAMHOC = '2026-2027';
+const NAMHOC_TU = '2026-09-05';                         /* khai giảng — M10.1 */
+const NAMHOC_DEN = '2027-05-31';                        /* bế giảng  — M10.1 */
+
+/* ─────────────────────── ② CHIỀU PHÂN TỔ CHUẨN ───────────────────────
+   `nh9` §3 chuẩn hóa chiều một lần cho cả hệ thống. Tệp nền giữ TÊN HIỂN THỊ;
+   danh sách giá trị của từng chiều là dữ liệu của demo, khai ở `app.20`.
+   🛑 Không phải chỉ tiêu nào cũng cắt được theo mọi chiều — mỗi mã khai
+   `chieuHopLe` của mình, và bộ chọn CHẶN ngay chiều không hợp lệ thay vì
+   để người dùng tạo ra một con số vô nghĩa rồi mới báo lỗi. */
+const CHIEU = {
+  nam_hoc: 'Năm học', ky: 'Kỳ', diem_truong: 'Điểm trường', khoi: 'Khối', lop: 'Lớp',
+  he_dao_tao: 'Hệ đào tạo', mon_hoc: 'Môn học', gioi_tinh: 'Giới tính', dan_toc: 'Dân tộc',
+  dien_uu_tien: 'Diện ưu tiên', to_chuyen_mon: 'Tổ chuyên môn', to_chuc: 'Tổ chức',
+  thang: 'Tháng', tuan: 'Tuần',
+  /* chiều riêng của nhóm 🧰 CSVC — `BCM9-0A` khai, `Z` gom vào `nh9` §3 */
+  loai_tai_san: 'Nhóm tài sản', tinh_trang: 'Tình trạng', loai_phong: 'Loại phòng',
+  dot_kiem_ke: 'Đợt kiểm kê', cach_xu_ly: 'Cách xử lý', loai_doi_tuong: 'Loại đối tượng',
+
+  /* ── HDBC v2 (`BCM9-V24`, 21/9/2026) — chiều riêng của 14 phiên, gom một lần.
+     Tên hiển thị chép NGUYÊN CHỮ từ chỗ demo gán lúc chạy (`app.2x` · `app.16`)
+     — lệch một chữ thì demo đè nền và bản v2 vô nghĩa. Dòng gán ở demo còn
+     nguyên (gán lại cùng giá trị — vô hại), `PHIEU-BCM9-V24` mục E liệt kê để
+     dọn sau. Nguồn sự thật của tên: `nh9` §3.                                 */
+  /* 👥 Học sinh — `M9.8` (+ `M9.1`) */
+  khu_vuc: 'Khu vực tuyển sinh', dang_khuyet_tat: 'Dạng khuyết tật', muc_khuyet_tat: 'Mức độ khuyết tật',
+  loai_bien_dong: 'Loại biến động', dot_tuyen_sinh: 'Đợt tuyển sinh', hang_muc_hb: 'Hạng mục học bổng',
+  hinh_thuc: 'Hình thức', loai_thieu_sot: 'Loại thiếu sót', co_khao_sat: 'Cờ khảo sát',
+  /* 👨‍🏫 Nhân sự — `M9.4` (+ `M9.1` · `M9.7`) */
+  nhom_nhan_su: 'Nhóm nhân sự', trinh_do_dao_tao: 'Trình độ đào tạo', hang_cdnn: 'Hạng chức danh nghề nghiệp',
+  khung_ngoai_ngu: 'Khung năng lực ngoại ngữ', dien_lam_viec: 'Diện làm việc', loai_nghi: 'Loại nghỉ',
+  muc_xep_loai: 'Mức xếp loại', loai_hop: 'Loại cuộc họp', don_vi: 'Đơn vị',
+  to_chuc_bo_phan: 'Tổ · bộ phận', to_chuyen_mon_ns: 'Tổ chuyên môn',
+  /* 📖 Chuyên môn — `M9.5` */
+  chuong_trinh_bdtx: 'Chương trình BDTX', phan_mon: 'Phần của môn',
+  /* 🏫 Vận hành — `M9.6` */
+  khu_ktx: 'Khu ký túc xá', kho_sach: 'Kho sách', loai_ban_doc: 'Loại bạn đọc',
+  loai_su_kien: 'Loại sự kiện', muc_do_yte: 'Mức độ ca y tế',
+  /* 💰 Tài chính — `M9.7` */
+  khoan_thu: 'Khoản thu', nhom_tien: 'Nhóm tiền', dai_tuoi_no: 'Dải tuổi nợ',
+  chinh_sach_mien_giam: 'Chính sách miễn giảm', ly_do_phieu: 'Lý do phiếu',
+  /* 🎖 Đoàn - Đội — `M9.14` */
+  chi_doan: 'Chi đoàn · chi đội', nhiem_ky: 'Nhiệm kỳ', to_chuc_bao_tro: 'Tổ chức bảo trợ',
+  loai_clb: 'Loại (CLB · đội · nhóm)', quy: 'Quý (theo năm học)', danh_muc_thu_chi: 'Danh mục thu chi',
+  /* 🗃 Học liệu — `M9.11` */
+  dang_cau: 'Dạng câu hỏi', muc_do: 'Mức độ', loai_loi: 'Loại lỗi', nguon_tao_de: 'Nguồn tạo đề', loai_de: 'Loại đề',
+  /* 🏆 Ôn luyện — `M9.12` */
+  cap_thi: 'Cấp thi', cap_boi_duong: 'Cấp bồi dưỡng', dot: 'Đợt', loai_giai: 'Loại giải',
+  /* 🏠 Điều hành · ⚙️ — `M9.1` */
+  lop_luu_tru: 'Lớp lưu trữ', chuoi_duyet: 'Chuỗi duyệt', menu_chu: 'Menu chủ',
+  /* 🗂 Văn thư · 💬 Giao tiếp — bốn tab tại menu chủ (`3C`) */
+  so_van_ban: 'Sổ (Đến · Đi)', loai_van_ban: 'Loại văn bản', muc_khan: 'Mức khẩn',
+  co_quan_doi_tac: 'Cơ quan gửi · nơi nhận', don_vi_soan: 'Đơn vị soạn', trang_thai_xu_ly: 'Trạng thái xử lý',
+  nhom_ho_so: 'Nhóm hồ sơ', trang_thai_luu_tru: 'Trạng thái lưu trữ',
+  loai_thong_bao: 'Loại thông báo', nhom_nhan: 'Nhóm nhận', kenh_phat: 'Kênh phát',
+  chu_de_phan_anh: 'Chủ đề phản ánh', hinh_thuc_ket_thuc: 'Hình thức kết thúc', nguon_tiep_nhan: 'Nguồn tiếp nhận'
+};
+
+/* ─────────────────── ③ TỪ ĐIỂN CHỈ TIÊU — bộ máy ─────────────────── */
+const CT = (function () {
+  const D = {};                                          /* mã → khai báo */
+
+  /* ── khai một chỉ tiêu ──────────────────────────────────────────────
+     {ma, ten, donVi, loaiSo:'TON'|'PS'|'DAN_XUAT', nguon:['M6.4'],
+      chieuHopLe:[…], moc:'yyyy-mm-dd',
+      quyTacDem:{tinhVao:[…tiếng Việt…], khongTinh:[…tiếng Việt…]},
+      canCu:'…' (tùy chọn — văn bản pháp lý),
+      oPhu:{ <khóa ô>: {ten, loaiSo, donVi, moc, quyTacDem} }  (tùy chọn)}
+
+     ★ `oPhu` — vì sao có. Một BẢNG có nhiều cột mà cả bảng chỉ mang MỘT mã
+     chỉ tiêu: `CS.05 Tỉ lệ khai thác` bày ra bốn cột (lượt mượn · tiết sử dụng ·
+     tỉ lệ · lượt bị từ chối vì trùng). Nguyên tắc số 1 đòi MỌI ô bấm được và
+     MỌI ô có quy tắc đếm riêng — nên từng ô con khai quy tắc của nó, thay vì
+     đẻ thêm mã chỉ tiêu cho mỗi cột (mã chỉ tiêu là danh mục của cả hệ thống,
+     không phải tên cột của một bảng).
+     Ô con cũng có `moc` RIÊNG được: sổ mượn phòng bắt đầu chạy sau thời khóa
+     biểu, nên «lượt mượn» chưa có dữ liệu trong quãng mà «tiết sử dụng» đã có. */
+  function khai(o) {
+    if (!o || !o.ma) throw new Error('CT.khai: thiếu mã');
+    if (D[o.ma]) throw new Error('CT.khai: mã ' + o.ma + ' đã khai — không khai đè');
+    if (!o.quyTacDem || !o.quyTacDem.tinhVao) throw new Error('CT.khai: ' + o.ma + ' thiếu quyTacDem.tinhVao');
+    D[o.ma] = Object.assign({ chieuHopLe: [], nguon: [], oPhu: {} }, o, { tinh: null });
+    return D[o.ma];
+  }
+
+  /* nối phần TÍNH — `app.20` của từng demo gọi, một lần cho mỗi mã.
+     fn(thamSo, oPhu) → {giaTri, banGhiGoc:[…], ghiChu} */
+  function nguonSo(ma, fn) {
+    if (!D[ma]) throw new Error('CT.nguonSo: chưa khai mã ' + ma);
+    D[ma].tinh = fn;
+  }
+
+  const co = ma => !!D[ma];
+  const khaiBao = ma => D[ma] || null;
+  const danhSach = () => Object.keys(D).sort();
+  const ten = ma => (D[ma] || {}).ten || ma;
+
+  /* chiều hợp lệ — bộ chọn phải hỏi hàm này TRƯỚC khi bày một chiều ra */
+  const chieuOK = (ma, chieu) => !!D[ma] && D[ma].chieuHopLe.indexOf(chieu) >= 0;
+  const chieuCua = ma => (D[ma] || { chieuHopLe: [] }).chieuHopLe.slice();
+
+  /* mốc dữ liệu sớm nhất của một ô (ô con có mốc riêng thì lấy của ô con) */
+  function mocCua(ma, o) {
+    const d = D[ma]; if (!d) return null;
+    if (o && d.oPhu[o] && d.oPhu[o].moc) return d.oPhu[o].moc;
+    return d.moc || null;
+  }
+
+  /* ★ «CHƯA CÓ DỮ LIỆU» ≠ 0 ────────────────────────────────────────────
+     Một báo cáo ghi 0 cho quãng nhà trường chưa dùng phần mềm là NÓI SAI VỀ
+     NHÀ TRƯỜNG: người đọc hiểu là «kỳ đó không có việc gì xảy ra», trong khi
+     sự thật là «hệ thống không biết». Hai câu đó khác nhau, và chỉ câu thứ hai
+     là đúng. Nên ô ghi «dữ liệu có từ …», không ghi 0. */
+  function thieuDuLieu(moc, tham) {
+    if (!moc) return null;
+    const dau = tham.cheDo === 'chot' ? tham.chotNgay : tham.tuNgay;
+    if (!dau || dau >= moc) return null;
+    return { ma: 'CHUA_CO_DU_LIEU', moc, chu: 'dữ liệu có từ ' + k2s(moc) };
+  }
+
+  /* ── CỔNG DUY NHẤT để một tab lấy một con số ────────────────────────
+     CT.doc(ma, {cheDo, chotNgay, tuNgay, denNgay, phamVi, phanTo, loc}, oPhu?)
+     → {ma, o, ten, giaTri, donVi, loaiSo, quyTacDem, nguon, chieuHopLe,
+        banGhiGoc:[…], canhBao:null|{ma,chu}, ghiChu}                       */
+  function doc(ma, tham, o) {
+    const d = D[ma];
+    if (!d) return loi(ma, o, 'KHONG_CO_MA', 'mã chỉ tiêu «' + ma + '» chưa có trong từ điển');
+    const oKhai = o ? d.oPhu[o] : null;
+    if (o && !oKhai) return loi(ma, o, 'KHONG_CO_O', 'mã ' + ma + ' không khai ô con «' + o + '»');
+    tham = tham || {};
+    if (tham.phanTo && !chieuOK(ma, tham.phanTo))
+      return loi(ma, o, 'CHIEU_KHONG_HOP_LE',
+        'không cắt được ' + ma + ' theo chiều «' + (CHIEU[tham.phanTo] || tham.phanTo) + '»');
+    if (!d.tinh) return loi(ma, o, 'CHUA_NOI_NGUON',
+      'mã ' + ma + ' đã khai nhưng app.20 chưa gọi CT.nguonSo()');
+
+    const nen = {
+      ma, o: o || null,
+      ten: oKhai ? oKhai.ten : d.ten,
+      donVi: (oKhai && oKhai.donVi) || d.donVi || '',
+      loaiSo: (oKhai && oKhai.loaiSo) || d.loaiSo,
+      quyTacDem: (oKhai && oKhai.quyTacDem) || d.quyTacDem,
+      nguon: d.nguon.slice(), chieuHopLe: d.chieuHopLe.slice(),
+      canCu: d.canCu || null
+    };
+    const thieu = thieuDuLieu(mocCua(ma, o), tham);
+    if (thieu) return Object.assign(nen, { giaTri: null, banGhiGoc: [], canhBao: thieu });
+
+    let kq;
+    try { kq = d.tinh(tham, o) || {} }
+    catch (e) { return loi(ma, o, 'LOI_TINH', String(e && e.message || e)) }
+    return Object.assign(nen, {
+      giaTri: kq.giaTri == null ? null : kq.giaTri,
+      banGhiGoc: kq.banGhiGoc || [],
+      ghiChu: kq.ghiChu || null,
+      veTrai: kq.veTrai || null, vePhai: kq.vePhai || null,   /* ô dẫn xuất — hai vế của phân số */
+      canhBao: kq.canhBao || null
+    });
+  }
+
+  function loi(ma, o, maLoi, chu) {
+    return {
+      ma, o: o || null, ten: ten(ma), giaTri: null, donVi: '', loaiSo: 'TON',
+      quyTacDem: { tinhVao: ['—'], khongTinh: ['—'] }, nguon: [], chieuHopLe: [],
+      banGhiGoc: [], canhBao: { ma: maLoi, chu }
+    };
+  }
+
+  return { khai, nguonSo, doc, co, khaiBao, danhSach, ten, chieuOK, chieuCua, mocCua, CHIEU };
+})();
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TỪ ĐIỂN — CÁC MÃ ĐÃ KHAI
+   ---------------------------------------------------------------------------
+   Ở đây chỉ có những mã phiên `0A` thực sự dùng. Mười lăm phiên sau khai thêm
+   mã của mình Ở `app.20` bằng `CT.khai({…})` rồi `CT.nguonSo()`, VÀ ghi mã mới
+   vào MỤC C của phiếu — phiên `Z` gom một lần vào `nh9` §2. 🛑 Không phiên nào
+   sửa tệp nền này để thêm mã của riêng mình.
+
+   ★ Quy tắc đếm viết bằng TIẾNG VIỆT, không viết công thức toán. Câu này hiện
+   NGUYÊN VĂN trong panel drill-down, và người đọc nó là kế toán, văn thư,
+   hiệu trưởng — không phải người viết mã.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── VH.03 — đã có trong `nh9` §2.8, KHÔNG khai lại nội dung, chỉ khai đủ
+      bảy thuộc tính để `CT.doc()` chạy được. Nguồn sự thật vẫn là `nh9`. ── */
+CT.khai({
+  ma: 'VH.03', ten: 'Kiểm kê CSVC theo tình trạng', donVi: 'tài sản',
+  loaiSo: 'TON', nguon: ['M6.4'], moc: '2026-08-15',
+  chieuHopLe: ['diem_truong', 'loai_tai_san', 'tinh_trang', 'loai_phong'],
+  quyTacDem: {
+    tinhVao: [
+      'Mọi tài sản có mã trong sổ tài sản, tại ngày chốt, thuộc phạm vi đang xem.',
+      'Tính theo TÌNH TRẠNG ghi trên sổ: Tốt · Đang sử dụng · Cần bảo trì · Hỏng.'
+    ],
+    khongTinh: [
+      'Tài sản đã thanh lý TÍNH TỚI NGÀY CHỐT — đã ra khỏi sổ. Tài sản thanh lý SAU ngày chốt thì hôm ấy vẫn còn trong sổ, nên vẫn tính.',
+      'Thiết bị gắn liền phòng (đèn, quạt, bảng, ổ điện): không có mã tài sản và không có nguyên giá, nên nằm ở một sổ khác của M6.4.',
+      'Địa điểm và công trình: đó là chỗ đặt tài sản, không phải tài sản có mã.'
+    ]
+  }
+});
+
+/* ── Năm mã MỚI của nhóm `CS` — `BCM9-0A` khai, `Z` gom vào `nh9` §2 ──
+      Nguồn đề xuất: `PHAN-TICH-BAO-CAO-DSCHOOL-2026-09-18.md` §7.3 ── */
+
+CT.khai({
+  ma: 'CS.01', ten: 'Chênh lệch kiểm kê', donVi: 'tài sản',
+  loaiSo: 'PS', nguon: ['M6.4'], moc: '2026-06-30',
+  canCu: 'Luật Kế toán 2015 Đ.40 k.3 — có chênh lệch thì phải xác định nguyên nhân trước khi lập báo cáo tài chính',
+  chieuHopLe: ['diem_truong', 'loai_tai_san', 'dot_kiem_ke'],
+  quyTacDem: {
+    tinhVao: [
+      'Chênh lệch = số đếm được THỰC TẾ trừ số ghi trên SỔ SÁCH, của một đợt kiểm kê ĐÃ CHỐT (đã ký hoặc đang chờ Hiệu trưởng ký).',
+      'Sổ sách lấy theo bản chụp tại mốc kiểm kê, không lấy sổ hôm nay — sổ vẫn động trong lúc ban kiểm kê đi đếm.'
+    ],
+    khongTinh: [
+      'Đợt ĐANG KIỂM ĐẾM — chưa đếm hết thì mọi con số chênh lệch đều là chênh lệch giả.',
+      'Đợt đã hủy.',
+      'Tài sản thừa (có thật mà không có trong sổ): đếm riêng, không trừ vào chênh lệch, vì thừa và thiếu là hai sự việc khác nhau.'
+    ]
+  },
+  oPhu: {
+    soSach: {
+      ten: 'Số lượng theo sổ sách tại mốc', loaiSo: 'PS', donVi: 'tài sản',
+      quyTacDem: { tinhVao: ['Số tài sản trong bản chụp sổ tại mốc kiểm kê của đợt.'], khongTinh: ['Tài sản mua sau mốc kiểm kê.'] }
+    },
+    thucTe: {
+      ten: 'Số lượng đếm được thực tế', loaiSo: 'PS', donVi: 'tài sản',
+      quyTacDem: {
+        tinhVao: ['Số tài sản ban kiểm kê đã đếm và kết luận là Khớp sổ, Sai vị trí, hoặc Hư hỏng — ba kết luận này đều là «có mặt».'],
+        khongTinh: ['Tài sản kết luận Thiếu — không tìm thấy.', 'Tài sản chưa đếm tới.']
+      }
+    },
+    thieu: {
+      ten: 'Trong đó: thiếu — không tìm thấy', loaiSo: 'PS', donVi: 'tài sản',
+      quyTacDem: {
+        tinhVao: ['Tài sản ban kiểm kê kết luận là Thiếu.'],
+        khongTinh: ['Tài sản Sai vị trí — có mặt, chỉ nằm khác chỗ sổ ghi.', 'Tài sản đã có lệnh điều chuyển hoàn tất SAU mốc kiểm kê: máy giải thích trước khi người viết «mất».']
+      }
+    },
+    saiViTri: {
+      ten: 'Trong đó: sai vị trí so với sổ', loaiSo: 'PS', donVi: 'tài sản',
+      quyTacDem: { tinhVao: ['Tài sản tìm thấy ở phòng khác với phòng sổ ghi.'], khongTinh: ['Tài sản di động — vốn không cố định ở phòng nào.'] }
+    },
+    treoSo: {
+      ten: 'Trong đó: đã thanh lý còn treo sổ', loaiSo: 'PS', donVi: 'tài sản',
+      quyTacDem: { tinhVao: ['Tài sản sổ ghi đã thanh lý nhưng bản chụp vẫn còn — phải ghi giảm.'], khongTinh: ['Tài sản đã ghi giảm xong.'] }
+    },
+    chuaGiaiTrinh: {
+      ten: 'Dòng chênh lệch chưa giải trình', loaiSo: 'PS', donVi: 'dòng',
+      quyTacDem: {
+        tinhVao: ['Mỗi tài sản có kết luận khác «Khớp sổ» mà ô ghi chú còn trống.'],
+        khongTinh: ['Dòng đã có ghi chú nguyên nhân — dù ngắn.']
+      }
+    }
+  }
+});
+
+CT.khai({
+  ma: 'CS.02', ten: 'Giá trị tài sản theo nhóm · tình trạng', donVi: 'triệu đồng',
+  loaiSo: 'TON', nguon: ['M6.4'], moc: '2026-08-15',
+  chieuHopLe: ['diem_truong', 'loai_tai_san', 'tinh_trang'],
+  quyTacDem: {
+    tinhVao: [
+      'Cộng NGUYÊN GIÁ của tài sản có mã, tại ngày chốt, thuộc phạm vi đang xem.',
+      'Nguyên giá là giá ghi sổ lúc mua, không phải giá còn lại.'
+    ],
+    khongTinh: [
+      'Tài sản đã thanh lý tính tới ngày chốt.',
+      'Tài sản mua sau ngày chốt — hôm ấy chưa có trong sổ.',
+      'Thiết bị gắn liền phòng — không có nguyên giá riêng.',
+      'Hao mòn và khấu hao: Dschool không giữ sổ khấu hao; con số đó ở phần mềm kế toán của trường.'
+    ]
+  }
+});
+
+CT.khai({
+  ma: 'CS.03', ten: 'Yêu cầu sửa chữa theo trạng thái', donVi: 'phiếu',
+  loaiSo: 'TON', nguon: ['M6.11'], moc: '2026-08-25',
+  chieuHopLe: ['diem_truong', 'thang', 'loai_doi_tuong', 'cach_xu_ly'],
+  quyTacDem: {
+    tinhVao: ['Phiếu sửa chữa / thay thế còn ĐANG MỞ tại ngày chốt — trạng thái Mới báo, Đã xác nhận tại chỗ, hoặc Đang sửa / thay.'],
+    khongTinh: ['Phiếu đã xong.', 'Phiếu không sửa được — đã ghi giảm.', 'Phiếu đã hủy.']
+  },
+  oPhu: {
+    moTrongKhoang: {
+      ten: 'Phiếu mở mới trong khoảng', loaiSo: 'PS', donVi: 'phiếu',
+      quyTacDem: {
+        tinhVao: ['Phiếu có NGÀY BÁO nằm trong khoảng đang xem.'],
+        khongTinh: ['Phiếu mở trước khoảng, dù đến nay vẫn chưa xong — nó là số TỒN, đếm ở bảng bên trên.']
+      }
+    },
+    xongTrongKhoang: {
+      ten: 'Phiếu hoàn thành trong khoảng', loaiSo: 'PS', donVi: 'phiếu',
+      quyTacDem: {
+        tinhVao: ['Phiếu có NGÀY XONG nằm trong khoảng, bất kể mở từ bao giờ.'],
+        khongTinh: ['Phiếu kết luận không sửa được — đó không phải hoàn thành, đếm riêng.']
+      }
+    },
+    quaHan: {
+      ten: 'Phiếu quá hạn xử lý', loaiSo: 'TON', donVi: 'phiếu',
+      quyTacDem: {
+        tinhVao: ['Phiếu còn đang mở tại ngày chốt và đã quá NGƯỠNG XỬ LÝ tính từ ngày báo.'],
+        khongTinh: ['Phiếu đã xong, dù xong muộn — nó vào cột thời gian xử lý, không vào cột quá hạn.']
+      }
+    },
+    chiPhi: {
+      ten: 'Chi phí sửa chữa đã ghi trên phiếu', loaiSo: 'PS', donVi: 'nghìn đồng',
+      quyTacDem: {
+        tinhVao: ['Cộng ô chi phí của phiếu HOÀN THÀNH trong khoảng.'],
+        khongTinh: [
+          'Phiếu chưa xong — số trên đó là dự kiến, không phải số đã chi.',
+          '🛑 Đây KHÔNG phải số quyết toán. Số tiền thật của trường nằm ở M7.5 Thu chi; ô này chỉ là số người giữ CSVC ghi trên phiếu.'
+        ]
+      }
+    }
+  }
+});
+
+CT.khai({
+  ma: 'CS.04', ten: 'Thời gian xử lý sửa chữa', donVi: 'ngày',
+  loaiSo: 'DAN_XUAT', nguon: ['M6.11'], moc: '2026-08-25',
+  chieuHopLe: ['diem_truong', 'thang', 'cach_xu_ly'],
+  quyTacDem: {
+    tinhVao: [
+      'TRUNG VỊ của (ngày hoàn thành trừ ngày tiếp nhận), tính trên các phiếu ĐÃ HOÀN THÀNH trong khoảng.',
+      'Dùng trung vị chứ không dùng trung bình: một phiếu chờ linh kiện ba tháng kéo lệch trung bình của cả tháng, trong khi trung vị vẫn nói đúng «phần lớn phiếu xong sau mấy ngày».'
+    ],
+    khongTinh: [
+      'Phiếu chưa xong — chưa có vế thứ hai của phép trừ.',
+      'Phiếu không sửa được.',
+      '🛑 Không cắt theo NGƯỜI xử lý. Cắt được thì có người sẽ xếp hạng thợ theo số ngày, mà số ngày phụ thuộc vào linh kiện và kinh phí chứ không phụ thuộc vào người.'
+    ]
+  },
+  oPhu: {
+    lauNhat: {
+      ten: 'Phiếu lâu nhất trong khoảng', loaiSo: 'DAN_XUAT', donVi: 'ngày',
+      quyTacDem: { tinhVao: ['Số ngày xử lý của phiếu lâu nhất đã hoàn thành trong khoảng.'], khongTinh: ['Phiếu chưa xong.'] }
+    }
+  }
+});
+
+CT.khai({
+  ma: 'CS.05', ten: 'Tỉ lệ khai thác phòng / thiết bị', donVi: '%',
+  loaiSo: 'DAN_XUAT', nguon: ['M6.5', 'M4.6'], moc: '2026-09-05',
+  chieuHopLe: ['diem_truong', 'loai_phong', 'loai_tai_san', 'thang'],
+  quyTacDem: {
+    tinhVao: [
+      'Với PHÒNG — tử số: số TIẾT phòng thực sự có người dùng trong khoảng (tiết theo thời khóa biểu cộng tiết được duyệt cho mượn); mẫu số: số TIẾT KHẢ DỤNG theo khung tiết của M4.6 — số ngày dạy trong tuần nhân số tiết mỗi ngày của điểm trường đó, nhân số tuần trong khoảng.',
+      'Với THIẾT BỊ CHO MƯỢN — tử số: số NGÀY thiết bị nằm trong tay người mượn; mẫu số: số ngày của khoảng. Thiết bị mượn theo ngày, không theo tiết, nên hai đối tượng có hai mẫu số khác nhau và KHÔNG so với nhau được.'
+    ],
+    khongTinh: [
+      'Phòng ĐANG SỬA và phòng đã đóng cửa: chúng không khả dụng, để trong mẫu số thì tỉ lệ của cả trường tụt xuống vì một lý do không liên quan tới khai thác.',
+      'Sân và khu ngoài trời — không xếp theo khung tiết.',
+      'Ngày nghỉ theo lịch M10.9 nằm ngoài số ngày dạy trong tuần.',
+      '🛑 Không có cột xếp hạng phòng. Một phòng bộ môn khai thác thấp có thể vì cả trường chỉ có hai lớp học môn đó.'
+    ]
+  },
+  oPhu: {
+    luotMuon: {
+      ten: 'Lượt mượn đã duyệt', loaiSo: 'PS', donVi: 'lượt', moc: '2026-12-01',
+      quyTacDem: {
+        tinhVao: ['Yêu cầu mượn phòng ở trạng thái Đã duyệt hoặc Đã dùng xong, có NGÀY DÙNG trong khoảng.'],
+        khongTinh: ['Yêu cầu còn chờ duyệt.', 'Yêu cầu bị từ chối hoặc đã hủy.', '⚠ Sổ mượn phòng của M6.5 bắt đầu chạy 01/12/2026 — quãng trước đó KHÔNG phải bằng 0, mà là chưa có dữ liệu.']
+      }
+    },
+    tietDung: {
+      ten: 'Tiết sử dụng', loaiSo: 'PS', donVi: 'tiết',
+      quyTacDem: {
+        tinhVao: ['Tiết theo thời khóa biểu đang áp dụng của M4.6, cộng tiết của lượt mượn đã duyệt.'],
+        khongTinh: ['Tiết trùng — một tiết đã có trong thời khóa biểu thì lượt mượn cùng tiết đó không cộng thêm lần nữa.']
+      }
+    },
+    tietKhaDung: {
+      ten: 'Tiết khả dụng theo khung tiết', loaiSo: 'PS', donVi: 'tiết',
+      quyTacDem: {
+        tinhVao: ['Số ngày dạy trong tuần nhân số tiết mỗi ngày của điểm trường (khung tiết M4.6), nhân số tuần trong khoảng.'],
+        khongTinh: ['Ngày phòng đang sửa hoặc đóng cửa.']
+      }
+    },
+    ngayMuon: {
+      ten: 'Ngày thiết bị nằm trong tay người mượn', loaiSo: 'PS', donVi: 'ngày', moc: '2026-12-01',
+      quyTacDem: {
+        tinhVao: ['Số ngày từ lúc bàn giao tới lúc nhận lại, cắt theo khoảng đang xem; thiết bị chưa trả thì tính tới ngày cuối khoảng.'],
+        khongTinh: ['Yêu cầu đã duyệt mà chưa bàn giao — thiết bị vẫn ở kho.', 'Thiết bị đã thanh lý hoặc đang hỏng.']
+      }
+    },
+    ngayKhaDung: {
+      ten: 'Ngày khả dụng trong khoảng', loaiSo: 'PS', donVi: 'ngày', moc: '2026-12-01',
+      quyTacDem: {
+        tinhVao: ['Số ngày của khoảng đang xem — thiết bị di động cho mượn được cả ngày nghỉ.'],
+        khongTinh: ['Ngày thiết bị đang có phiếu sửa chữa mở.']
+      }
+    },
+    tuChoiTrung: {
+      ten: 'Lượt bị từ chối vì trùng lịch', loaiSo: 'PS', donVi: 'lượt', moc: '2026-12-01',
+      quyTacDem: {
+        tinhVao: ['Yêu cầu mượn bị từ chối mà lý do có nêu trùng lịch — đây là tín hiệu THIẾU PHÒNG, không phải lỗi của ai.'],
+        khongTinh: ['Yêu cầu bị từ chối vì lý do khác (sai mục đích, người mượn tự rút).', '⚠ Sổ mượn phòng bắt đầu chạy 01/12/2026.']
+      }
+    }
+  }
+});
+
+/* ── VH.05 — HDBC v2 (`BCM9-V24`, việc 7). Mã có sẵn trong `nh9` §2.8
+      (tên · loại số PHÁT SINH · nguồn M6.9 lấy nguyên từ đó); các thuộc tính
+      còn lại chép nguyên từ khai báo của `M6.9` `app.16` — phiên `3C` là phiên
+      đầu tiên dùng mã này thật, và khai báo ở đó gỡ trong CÙNG lượt, vì
+      `CT.khai` ném lỗi khi khai trùng. Phần TÍNH vẫn nối ở `M6.9` `app.16`. ── */
+CT.khai({
+  ma: 'VH.05', ten: 'Số công văn đến / đi', donVi: 'văn bản', loaiSo: 'PS',
+  nguon: ['M6.9'], moc: '2026-09-01',
+  chieuHopLe: ['thang', 'so_van_ban', 'loai_van_ban', 'muc_khan'],
+  canCu: 'NĐ 30/2020/NĐ-CP Đ.15 — số và ký hiệu văn bản là duy nhất trong một năm',
+  quyTacDem: {
+    tinhVao: [
+      'Công văn ĐẾN: đếm theo NGÀY NHẬN — ngày văn thư vào sổ, không phải ngày cơ quan gửi ban hành.',
+      'Công văn ĐI: đếm theo NGÀY KÝ — vì số hiệu chỉ cấp sau khi ký (NĐ 30/2020 Đ.15).',
+      'Văn bản MẬT vẫn được đếm: che trích yếu là che NỘI DUNG, không phải bỏ văn bản khỏi sổ.'
+    ],
+    khongTinh: [
+      'Bản thảo công văn Đi chưa ký (Nháp · Chờ duyệt · Chờ ký · Bị trả lại) — chưa có số hiệu thì chưa là một văn bản của năm.',
+      'Công văn Đến đã HỦY đăng ký — dòng vẫn nằm trong sổ để sổ không có lỗ trống, nhưng không phải một văn bản đến thật.',
+      'Công văn ngoài phạm vi của vai đang xem (vai phạm vi Own chỉ thấy văn bản liên quan đến mình).'
+    ]
+  }
+});
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TỆP NỀN 2/4 CỦA NHÓM 📊 BÁO CÁO — `app.11-khuon-bang.js`  →  xuất ra `KB`
+   Hợp đồng 🔒 HDBC · phiên `BCM9-0A` (20/9/2026)
+   🔄 HDBC v2 · phiên `BCM9-V24` (21/9/2026) — CHỈ THÊM, mọi khai báo cũ chạy
+      y như v1:
+      · việc 2 — `dong[].nguonDong` · `dong[].linkDong`: một bảng lấy dòng từ
+        nhiều menu nguồn thì MỖI DÒNG mang nguồn và deep-link của nó. Ưu tiên
+        dòng → cột → bảng. Không khai thì y như v1.
+      · việc 4 — cả bảng thiếu quyền nguồn ⇒ MỘT dải `.noaccbox` thay cho N ô
+        `🔒 ẩn`. Tắt bằng `kb.daiKhoa: false` (trở về N ô như v1).
+      · việc 3 (phần của `KB`) — dải BVDLCN của `K4` mang `data-kbk4`, để `XU`
+        nhận ra đang đứng trên lưới có họ tên. Chữ không đổi.
+      · chữ `title` của ô `🔒 ẩn` đọc «Xem (X)» thay «Xuất dữ liệu (XD)» — theo
+        `CG-3` (21/9): cổng `N5` đọc `X` ở nguồn.
+
+   🛑 CHÉP NGUYÊN BYTE sang mọi demo M9.x. Lệch một byte = DỪNG, báo người dùng.
+
+   ── Việc của tệp này ─────────────────────────────────────────────────────
+   Dựng CHÍN KHUÔN BIỂU MẪU `K1…K9` (tài liệu 18/9 §6) từ một khai báo, để một
+   demo báo cáo chỉ phải viết «bảng này dòng là gì, cột là gì, ô lấy mã nào» —
+   không vẽ lại bảng, không tự quyết cách bày chip, dòng Tổng, hay panel.
+
+   ── Bốn thứ tệp này BẮT BUỘC mang, không tắt được ───────────────────────
+   ① CHIP LOẠI SỐ cạnh tiêu đề bảng — TỒN (chốt tại ngày) / PHÁT SINH (từ → đến)
+      / DẪN XUẤT. Loại số là một CHIP, không phải một đoạn văn (`nh9` §9.1).
+   ② DÒNG TỔNG, và tổng NÓI RÕ đã trừ bao nhiêu ô vì thiếu quyền (`N5`).
+   ③ `KB.drill()` — panel: danh sách bản ghi gốc + quy tắc đếm bằng tiếng Việt
+      + deep-link về menu chủ. 🛑 KHÔNG Ô SỐ NÀO KHÔNG BẤM ĐƯỢC, kể cả ô dẫn
+      xuất — ô dẫn xuất mở panel có HAI VẾ của phân số.
+   ④ Khối `.noacc` — thiếu `XD` ở feature nguồn thì ô VẪN CHIẾM CHỖ và ghi rõ
+      thiếu quyền gì trên menu nào. Ẩn mà im lặng là để người đọc tin vào một
+      con số đã bị cắt mà không biết.
+
+   ── Tệp nền tự dựng DOM của mình ────────────────────────────────────────
+   Panel drill-down tự tạo node khi dùng lần đầu. `body.html` của từng demo
+   KHÔNG phải khai gì cho `KB` — 16 demo không phải nhớ thêm một quy ước nào.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+const KB = (function () {
+
+  /* ── cổng quyền: `app.20` của từng demo nối vào ──────────────────────
+     KB.quyenNguon(maFeature) → true nếu VAI ĐANG XEM có `XD` ở feature nguồn.
+     KB.moTaNguon(maFeature)  → {menu:'M6.5', ten:'Lịch mượn phòng'}
+     Chưa nối thì coi như có đủ quyền — để demo chưa khai quyền vẫn chạy. */
+  let quyenNguon = () => true;
+  let moTaNguon = ma => ({ menu: (ma || '').split('.')[0].toUpperCase().replace('M', 'M'), ten: ma });
+  const noiQuyen = (fnQuyen, fnMoTa) => { if (fnQuyen) quyenNguon = fnQuyen; if (fnMoTa) moTaNguon = fnMoTa; };
+
+  /* menu đang đứng — dùng cho `&return=` của mọi deep-link */
+  let MENU_NAY = 'M9.x';
+  const datMenu = m => { MENU_NAY = m };
+
+  /* ── kho ô đã vẽ: khóa → {ket, cot, dong, kb} ───────────────────────── */
+  const O = {};
+  let seq = 0;
+
+  /* ───────────────────────── chip loại số ───────────────────────────── */
+  const TEN_LOAI = {
+    TON: ['TỒN', 'đếm tại một thời điểm — Chốt tại ngày', 'ton'],
+    PS: ['PHÁT SINH', 'đếm trong một khoảng — Từ → đến', 'ps'],
+    DAN_XUAT: ['DẪN XUẤT', 'tính từ hai số khác — bấm vào ô để xem hai vế', 'dx']
+  };
+  function chip(loai) {
+    const t = TEN_LOAI[loai] || TEN_LOAI.TON;
+    return '<span class="lschip ' + t[2] + '" title="' + esc(t[1]) + '">' + t[0] + '</span>';
+  }
+
+  /* ───────────────────── định dạng một giá trị ──────────────────────── */
+  function soRa(v, kieu) {
+    if (v == null) return '—';
+    if (kieu === 'tien') return trieu(v);
+    if (kieu === 'nghin') return vn(Math.round(v / 1000));
+    if (kieu === 'tile') return (Math.round(v * 10) / 10).toLocaleString('vi-VN') + '%';
+    if (kieu === 'ngay') return (Math.round(v * 10) / 10).toLocaleString('vi-VN');
+    if (kieu === 'chu') return esc(v);
+    return vn(v);
+  }
+
+  /* ─────────────────────────── vẽ MỘT ô ──────────────────────────────
+     Ba đường ra, theo đúng thứ tự ưu tiên:
+       ① thiếu `XD` ở feature nguồn  → khối `.noacc`, ô vẫn chiếm chỗ
+       ② chưa có dữ liệu cho quãng   → «dữ liệu có từ …», KHÔNG ghi 0
+       ③ có số                        → nút bấm được                        */
+  function veO(kb, dong, cot, ket) {
+    /* v2 · việc 2 — nguồn THEO DÒNG đứng trước nguồn của cột và của bảng */
+    const nguon = (dong && dong.nguonDong) || cot.nguon || (kb.nguon || null);
+    if (nguon && !quyenNguon(nguon)) {
+      const m = moTaNguon(nguon);
+      return { html: '<span class="noacc" title="Thiếu quyền Xem (X) ở ' + esc(m.ten) + ' — ' + esc(m.menu) + '">🔒 ẩn</span>', tru: true, khoa: nguon };
+    }
+    if (!ket) return { html: '<span class="oro">—</span>', tru: false };
+    if (ket.canhBao) {
+      const cb = ket.canhBao;
+      const k = 'o' + (++seq);
+      O[k] = { ket, cot, dong, kb };
+      const chu = cb.ma === 'CHUA_CO_DU_LIEU' ? cb.chu : cb.chu;
+      return {
+        html: '<button class="oso ocb" data-kbo="' + k + '">⚠ ' + esc(chu) + '</button>',
+        tru: true, khongCo: true
+      };
+    }
+    const k = 'o' + (++seq);
+    O[k] = { ket, cot, dong, kb };
+    const cls = 'oso' + (cot.kieu === 'tile' || ket.loaiSo === 'DAN_XUAT' ? ' odx' : '')
+      + (cot.canhBao && cot.canhBao(ket, dong) ? ' oxau' : '');
+    return { html: '<button class="' + cls + '" data-kbo="' + k + '">' + soRa(ket.giaTri, cot.kieu) + '</button>', tru: false };
+  }
+
+  /* ══════════════════════ LÕI — dựng một bảng ══════════════════════════
+     kb = {khuon, tieuDe, ma, chip, moTaKy, ghiChuKy, cot:[…], dong:[…],
+           o:(dong,cot)=>ket, tong:true|false, tongRieng:fn, gomNhom:bool,
+           nguon:'m6.4.x', chuoiTrong:'…', duoiBang:'…html…'}              */
+  function bang(kb) {
+    const cot = kb.cot || [];
+    const dong = kb.dong || [];
+    const loai = kb.chip || (kb.ma && CT.khaiBao(kb.ma) ? CT.khaiBao(kb.ma).loaiSo : 'TON');
+    let h = '<div class="bg" data-bg="' + esc(kb.id || '') + '">';
+
+    /* đầu bảng — tiêu đề · chip loại số · nhãn kỳ */
+    h += '<div class="bgh"><b>' + esc(kb.tieuDe || '') + '</b>' + chip(loai)
+      + (kb.moTaKy ? '<span class="bgky">' + esc(kb.moTaKy) + '</span>' : '')
+      + (kb.ma ? '<span class="bgma" title="' + esc(CT.ten(kb.ma)) + '">' + esc(kb.ma) + '</span>' : '')
+      + '<span class="spacer"></span>' + (kb.nutPhai || '') + '</div>';
+
+    if (!dong.length) {
+      h += '<div class="empty">' + esc(kb.chuoiTrong || 'Không có dòng nào trong phạm vi đang xem.') + '</div></div>';
+      return h;
+    }
+
+    const hDau = h.length;                 /* v2 · việc 4 — chỗ cắt nếu cả bảng bị khóa */
+    let oKhoa = 0; const nguonKhoa = [];
+    h += '<div class="tbx"><table class="bgt"><thead><tr><th>' + esc(kb.tenCotDau || 'Chỉ tiêu') + '</th>';
+    cot.forEach(c => h += '<th class="num" title="' + esc(c.chuThich || '') + '">' + esc(c.ten)
+      + (c.donVi ? '<i>' + esc(c.donVi) + '</i>' : '') + '</th>');
+    h += '</tr></thead><tbody>';
+
+    const tong = cot.map(() => ({ v: 0, co: false, tru: 0, khongCo: 0, gop: [], mau: null }));
+    let nhomHienTai = null;
+
+    dong.forEach(d => {
+      if (kb.gomNhom && d.nhom && d.nhom !== nhomHienTai) {
+        nhomHienTai = d.nhom;
+        h += '<tr class="nhomrow"><td colspan="' + (cot.length + 1) + '">' + esc(d.nhom) + '</td></tr>';
+      }
+      h += '<tr' + (d.mo ? ' class="dongmo"' : '') + '>'
+        + '<td>' + (d.bac ? '<span class="bac"></span>' : '') + '<b>' + esc(d.ten) + '</b>'
+        + (d.phu ? '<span class="dphu">' + esc(d.phu) + '</span>' : '') + '</td>';
+      cot.forEach((c, i) => {
+        const ket = kb.o(d, c);
+        const r = veO(kb, d, c, ket);
+        h += '<td class="num">' + r.html + '</td>';
+        if (r.khoa) { oKhoa++; if (nguonKhoa.indexOf(r.khoa) < 0) nguonKhoa.push(r.khoa); }
+        if (r.tru) { tong[i].tru++; if (r.khongCo) tong[i].khongCo++; }
+        else if (ket && ket.giaTri != null && c.kieu !== 'tile' && c.kieu !== 'ngay' && !c.khongCong) {
+          tong[i].v += Number(ket.giaTri); tong[i].co = true;
+          tong[i].mau = tong[i].mau || ket;
+          tong[i].gop.push({ id: '', ten: d.ten, so: soRa(ket.giaTri, c.kieu) });
+        }
+      });
+      h += '</tr>';
+    });
+
+    /* ── v2 · việc 4 — CẢ BẢNG thiếu quyền nguồn ⇒ MỘT dải thay cho N ô ────
+       N ô `🔒 ẩn` lặp lại nói N lần cùng một câu, và dòng Tổng «đã trừ N dòng»
+       thành một con số không còn gì để trừ. Một dải nói một lần: thiếu quyền
+       gì, trên menu nào, và bảng có bao nhiêu dòng không hiện. Chỉ khi MỌI ô
+       số của bảng đều bị khóa — khóa một phần thì vẫn là ô `🔒 ẩn` như v1.  */
+    if (kb.daiKhoa !== false && cot.length && oKhoa === dong.length * cot.length) {
+      h = h.slice(0, hDau) + '<div class="noaccbox kbdai">🔒 <b>Cả bảng bị ẩn</b> — vai đang xem không có quyền '
+        + '<b>Xem (X)</b> ở ' + nguonKhoa.map(n => { const m = moTaNguon(n); return '<b>' + esc(m.ten) + ' — ' + esc(m.menu) + '</b>' }).join(' · ')
+        + '. Bảng có <b>' + dong.length + ' dòng</b>, không hiện ở đây.</div>';
+      if (kb.duoiBang) h += kb.duoiBang;
+      return h + '</div>';
+    }
+
+    /* ── dòng Tổng — và NÓI RÕ đã trừ bao nhiêu (N5) ─────────────────── */
+    if (kb.tong !== false) {
+      h += '<tr class="tongrow"><td><b>' + esc(kb.tenTong || 'Tổng') + '</b></td>';
+      cot.forEach((c, i) => {
+        const t = tong[i];
+        let o;
+        if (kb.tongRieng && kb.tongRieng(c) != null) {
+          const ket = kb.tongRieng(c);
+          const r = veO(kb, { id: '_tong', ten: 'Tổng' }, c, ket);
+          o = r.html;
+        } else if (c.kieu === 'tile' || c.kieu === 'ngay' || c.khongCong) {
+          o = '<span class="oro" title="Cột này không cộng dọc được — tỉ lệ và trung vị của cả bảng không phải tổng của các dòng">—</span>';
+        } else if (t.co) {
+          /* ★ Ô TỔNG CŨNG BẤM ĐƯỢC. Câu hỏi hay bị hỏi nhất về một bảng là
+             «tổng này gồm những dòng nào», và nó chính là câu mà tổng phải trả
+             lời được — nhất là khi tổng đã bị trừ bớt vì thiếu quyền (N5). */
+          const ketT = Object.assign({}, t.mau, {
+            ten: 'Tổng — ' + ((t.mau && t.mau.ten) || esc(c.ten)),
+            giaTri: t.v, banGhiGoc: t.gop, veTrai: null, vePhai: null,
+            ghiChu: 'Cộng <b>' + t.gop.length + ' dòng</b> của bảng'
+              + (t.tru ? '; <b>đã trừ ' + t.tru + ' dòng</b> ('
+                + (t.tru - t.khongCo ? (t.tru - t.khongCo) + ' thiếu quyền' : '')
+                + (t.tru - t.khongCo && t.khongCo ? ' · ' : '')
+                + (t.khongCo ? t.khongCo + ' chưa có dữ liệu' : '') + ')' : '') + '.'
+          });
+          o = veO(kb, { id: '_tong', ten: 'Tổng' }, Object.assign({}, c, { canhBao: null }), ketT).html;
+        } else {
+          o = '—';
+        }
+        const ghi = [];
+        if (t.tru - t.khongCo > 0) ghi.push('đã trừ ' + (t.tru - t.khongCo) + ' dòng — thiếu quyền');
+        if (t.khongCo > 0) ghi.push('đã trừ ' + t.khongCo + ' dòng — chưa có dữ liệu');
+        h += '<td class="num">' + o + (ghi.length ? '<span class="tongtru">' + esc(ghi.join(' · ')) + '</span>' : '') + '</td>';
+      });
+      h += '</tr>';
+    }
+    h += '</tbody></table></div>';
+    if (kb.duoiBang) h += kb.duoiBang;
+    h += '</div>';
+    return h;
+  }
+
+  /* ══════════════════════ CHÍN KHUÔN BIỂU MẪU ══════════════════════════
+     Mỗi khuôn là một cách SẮP một bảng, không phải một bộ mã riêng. Chín
+     khuôn phủ hết 81 báo cáo của tài liệu 18/9 — mẫu thứ mười chỉ tốn
+     một dòng cấu hình (`N8`), không tốn một khuôn.                       */
+
+  /* ── K1 · Bảng phân tổ MỘT chiều ─────────────────────────────────────
+     Một chỉ tiêu, cắt theo một chiều. Dòng = giá trị của chiều;
+     cột = Số lượng + Tỉ lệ + dòng Tổng.                                 */
+  function K1(kb) {
+    const tongSo = (kb.dong || []).reduce((a, d) => {
+      const k = kb.oSo(d); return a + (k && k.giaTri != null ? Number(k.giaTri) : 0);
+    }, 0);
+    return bang(Object.assign({}, kb, {
+      khuon: 'K1', tenCotDau: kb.tenCotDau || (CT.CHIEU[kb.chieu] || 'Chỉ tiêu'),
+      cot: [
+        { khoa: 'so', ten: 'Số lượng', donVi: kb.donVi || '', kieu: 'so', nguon: kb.nguon },
+        { khoa: 'tl', ten: 'Tỉ lệ', kieu: 'tile', nguon: kb.nguon, khongCong: true }
+      ],
+      o: (d, c) => {
+        const k = kb.oSo(d);
+        if (c.khoa === 'so') return k;
+        if (!k || k.giaTri == null) return k;
+        return Object.assign({}, k, {
+          ten: 'Tỉ lệ — ' + k.ten, loaiSo: 'DAN_XUAT', donVi: '%',
+          giaTri: tile(Number(k.giaTri), tongSo),
+          veTrai: { ten: k.ten + ' của dòng này', giaTri: Number(k.giaTri), donVi: kb.donVi || '' },
+          vePhai: { ten: 'Tổng toàn bảng', giaTri: tongSo, donVi: kb.donVi || '' }
+        });
+      }
+    }));
+  }
+
+  /* ── K2 · Bảng chéo HAI chiều ────────────────────────────────────────
+     Dòng × cột, ô = số (và % nếu có mẫu số rõ). Gom nhóm Điểm trường →
+     Khối → Lớp bằng `gomNhom:true` + `dong[].nhom`.                     */
+  function K2(kb) { return bang(Object.assign({ gomNhom: true }, kb, { khuon: 'K2' })) }
+
+  /* ── K3 · HAI KHỐI: TỒN + PHÁT SINH ──────────────────────────────────
+     🛑 HAI BẢNG TÁCH HẲN, hai nhãn, hai bộ điều khiển thời gian.
+     KHÔNG BAO GIỜ cộng chéo hai khối — đó là lỗi nghiệm thu, không phải
+     chuyện thẩm mỹ: cộng một số tồn với một số phát sinh ra một con số
+     không có nghĩa nào trong đời thật.                                   */
+  function K3(kb) {
+    return '<div class="k3">'
+      + bang(Object.assign({}, kb.khoiTon, { khuon: 'K3', chip: 'TON' }))
+      + '<div class="k3sep">🛑 Hai khối dưới đây <b>không cộng chéo</b> — khối trên đếm tại một thời điểm, khối dưới đếm trong một khoảng.</div>'
+      + bang(Object.assign({}, kb.khoiPS, { khuon: 'K3', chip: 'PS' }))
+      + '</div>';
+  }
+
+  /* ── K4 · Lưới người × ngày / danh sách chi tiết ──────────────────────
+     Dòng = một người / một học sinh. Luôn kèm dải Luật BVDLCN 91/2025:
+     bảng này có HỌ TÊN, nên xuất nó là xuất dữ liệu cá nhân.             */
+  function K4(kb) {
+    return '<div class="bvdl" data-kbk4="1">⚖ Bảng này có <b>họ tên</b> — xuất ra là <b>xuất dữ liệu cá nhân</b>. '
+      + 'Nút <b>Danh sách chi tiết</b> bắt chọn mục đích, chọn trường, đóng dấu tệp và ghi audit '
+      + '<i>(Luật BVDLCN 91/2025)</i>.</div>'
+      + bang(Object.assign({ tong: false, tenCotDau: 'Họ và tên' }, kb, { khuon: 'K4' }));
+  }
+
+  /* ── K5 · Sổ / phiếu ─────────────────────────────────────────────────
+     Một bản ghi một dòng, theo thời gian. Bắt buộc: SỐ HIỆU LIÊN TỤC,
+     KHÔNG NHẢY SỐ — sổ nhảy số là sổ không dùng được làm căn cứ, nên
+     khuôn tự dò và nói ra chỗ đứt.                                       */
+  function K5(kb) {
+    const ds = kb.banGhi || [];
+    let canh = '';
+    if (kb.kiemSoHieu !== false && ds.length > 1) {
+      const so = ds.map(x => Number(String(x.so || '').replace(/\D/g, ''))).filter(n => !isNaN(n)).sort((a, b) => a - b);
+      const dut = [];
+      for (let i = 1; i < so.length; i++) if (so[i] - so[i - 1] > 1) dut.push(so[i - 1] + ' → ' + so[i]);
+      if (dut.length) canh = '<div class="canh r">⚠ <b>Sổ nhảy số</b> ở ' + dut.length + ' chỗ: ' + esc(dut.join(' · '))
+        + '. Sổ có số hiệu đứt quãng thì không dùng làm căn cứ được — kiểm lại ở menu chủ.</div>';
+    }
+    let h = '<div class="bg"><div class="bgh"><b>' + esc(kb.tieuDe || 'Sổ') + '</b>' + chip(kb.chip || 'PS')
+      + (kb.moTaKy ? '<span class="bgky">' + esc(kb.moTaKy) + '</span>' : '') + '</div>' + canh;
+    if (!ds.length) return h + '<div class="empty">' + esc(kb.chuoiTrong || 'Sổ chưa có dòng nào trong khoảng đang xem.') + '</div></div>';
+    h += '<div class="tbx"><table class="bgt so"><thead><tr>'
+      + (kb.cot || [{ khoa: 'so', ten: 'Số hiệu' }, { khoa: 'ngay', ten: 'Ngày' }, { khoa: 'noiDung', ten: 'Nội dung' },
+      { khoa: 'nguoiLap', ten: 'Người lập' }, { khoa: 'nguoiKy', ten: 'Người ký' }, { khoa: 'tt', ten: 'Trạng thái' }])
+        .map(c => '<th>' + esc(c.ten) + '</th>').join('') + '</tr></thead><tbody>';
+    const cot = kb.cot || [{ khoa: 'so' }, { khoa: 'ngay' }, { khoa: 'noiDung' }, { khoa: 'nguoiLap' }, { khoa: 'nguoiKy' }, { khoa: 'tt' }];
+    ds.forEach(x => {
+      h += '<tr>' + cot.map(c => '<td>' + (c.ve ? c.ve(x) : esc(x[c.khoa] == null ? '—' : x[c.khoa])) + '</td>').join('') + '</tr>';
+    });
+    h += '</tbody></table></div>' + (kb.duoiBang || '') + '</div>';
+    return h;
+  }
+
+  /* ── K6 · Biểu CỐ ĐỊNH (của Bộ hoặc của trường ban hành) ──────────────
+     Loại A · C — cấu trúc KHÔNG ĐỔI ĐƯỢC. Mỗi ô của biểu phải ánh xạ tới
+     một mã chỉ tiêu; ô CHƯA ánh xạ được thì NÊU ĐÍCH DANH, không để trống
+     cho người đọc tự đoán. Kèm khối chữ ký + đóng dấu ngày chốt.         */
+  function K6(kb) {
+    let h = '<div class="k6">';
+    (kb.khoi || []).forEach(kh => { h += bang(Object.assign({ khuon: 'K6' }, kh)) });
+    const chua = (kb.oChuaAnhXa || []);
+    if (chua.length) {
+      h += '<div class="canh w"><b>' + chua.length + ' ô của biểu chưa ánh xạ được vào mã chỉ tiêu nào</b> — '
+        + 'nêu đích danh ở đây thay vì để trống: ' + chua.map(x => '<b>' + esc(x.o) + '</b> <i>(' + esc(x.ly) + ')</i>').join(' · ')
+        + '. Người ký phải biết mình đang ký một biểu còn ô do người điền tay.</div>';
+    }
+    if (kb.chuKy) h += kb.chuKy;
+    h += '</div>';
+    return h;
+  }
+
+  /* ── K7 · Tệp đối soát cho hệ thống ngoài ─────────────────────────────
+     Cột do HỆ ĐÍCH quy định. Bắt buộc kèm BẢNG ĐỐI CHIẾU SỐ TỔNG hai
+     chiều TRƯỚC khi tải — và không làm tròn: chênh một đồng vẫn là chênh. */
+  function K7(kb) {
+    let h = '<div class="k7"><div class="canh b">📤 Cột của bảng này do <b>' + esc(kb.heDich || 'hệ đích')
+      + '</b> quy định — Dschool không đổi được. Đối chiếu số tổng trước khi tải.</div>';
+    h += bang(Object.assign({ khuon: 'K7', tong: true }, kb));
+    if (kb.doiChieu) {
+      h += '<div class="bg"><div class="bgh"><b>Đối chiếu số tổng — hai chiều</b>' + chip('TON') + '</div><div class="tbx"><table class="bgt"><thead><tr>'
+        + '<th>Chỉ tiêu đối chiếu</th><th class="num">Dschool</th><th class="num">' + esc(kb.heDich || 'Hệ đích') + '</th><th class="num">Chênh</th></tr></thead><tbody>';
+      kb.doiChieu.forEach(r => {
+        const ch = (r.a == null || r.b == null) ? null : r.a - r.b;
+        h += '<tr' + (ch ? ' class="badrow"' : '') + '><td>' + esc(r.ten) + '</td><td class="num">' + vn(r.a)
+          + '</td><td class="num">' + (r.b == null ? '—' : vn(r.b)) + '</td><td class="num">'
+          + (ch == null ? '—' : (ch === 0 ? '0' : '<b>' + vn(ch) + '</b>')) + '</td></tr>';
+      });
+      h += '</tbody></table></div></div>';
+    }
+    return h + '</div>';
+  }
+
+  /* ── K8 · Báo cáo VĂN BẢN (sơ kết · tổng kết · đột xuất) ──────────────
+     Căn cứ → phần SỐ (nhúng K1/K2/K3) → nhận xét, phương hướng → chữ ký.
+     🛑 Phần số SINH TỪ CHỈ TIÊU, không gõ tay: một báo cáo tổng kết có số
+     gõ tay là một báo cáo không ai đối chiếu lại được.                    */
+  function K8(kb) {
+    let h = '<div class="k8"><div class="k8h">' + esc(kb.tieuDe || 'Báo cáo') + '</div>';
+    if (kb.canCu) h += '<div class="k8m"><b>Căn cứ</b><ul>' + kb.canCu.map(c => '<li>' + esc(c) + '</li>').join('') + '</ul></div>';
+    h += '<div class="k8m"><b>Phần số liệu</b> <i>— sinh từ từ điển chỉ tiêu, không gõ tay</i>' + (kb.phanSo || '') + '</div>';
+    if (kb.nhanXet) h += '<div class="k8m"><b>Nhận xét và phương hướng</b><div class="k8nx">' + kb.nhanXet + '</div></div>';
+    if (kb.chuKy) h += kb.chuKy;
+    return h + '</div>';
+  }
+
+  /* ── K9 · Bảng TIẾN ĐỘ / TUÂN THỦ ────────────────────────────────────
+     «Còn thiếu gì, ai chậm». Dòng = đối tượng phải làm; cột = mốc / trạng
+     thái. 🛑 MỖI Ô HỎNG PHẢI BẤM ĐƯỢC VỀ CHỖ SỬA — một bảng nói «thiếu»
+     mà không dẫn tới chỗ sửa chỉ tạo thêm việc đi tìm.                    */
+  function K9(kb) {
+    return bang(Object.assign({ gomNhom: false }, kb, { khuon: 'K9' }));
+  }
+
+  /* ════════════════════ PANEL DRILL-DOWN ════════════════════════════════
+     Ba thứ bắt buộc, không thiếu thứ nào (`M9.1` §7):
+       ① danh sách BẢN GHI GỐC — không phải lại một con số khác
+       ② QUY TẮC ĐẾM bằng tiếng Việt — tính vào gì · KHÔNG tính gì
+       ③ DEEP-LINK về menu chủ, mang theo bộ lọc, kèm `&return=`           */
+  function nodePanel() {
+    let m = $('#kbMask');
+    if (m) return m;
+    m = document.createElement('div');
+    m.id = 'kbMask'; m.className = 'kbmask';
+    m.innerHTML = '<div class="kbpanel"><div class="kbh"><b id="kbTen"></b>'
+      + '<span class="spacer"></span><button class="kbx" id="kbDong">✕</button></div>'
+      + '<div class="kbb" id="kbBody"></div></div>';
+    document.body.appendChild(m);
+    m.addEventListener('click', e => { if (e.target === m || e.target.id === 'kbDong') dong() });
+    return m;
+  }
+  const dong = () => { const m = $('#kbMask'); if (m) m.classList.remove('on') };
+
+  function drill(khoa) {
+    const o = O[khoa]; if (!o) return;
+    const { ket, cot, dong: d, kb } = o;
+    nodePanel();
+    $('#kbTen').innerHTML = esc(ket.ten) + ' — <span class="kbdong">' + esc(d.ten) + '</span>' + chip(ket.loaiSo);
+    let h = '';
+
+    /* giá trị + hai vế nếu là ô dẫn xuất */
+    h += '<div class="kbso">' + (ket.canhBao ? '<span class="kbcb">⚠ ' + esc(ket.canhBao.chu) + '</span>'
+      : '<b>' + soRa(ket.giaTri, cot.kieu) + '</b> <i>' + esc(ket.donVi || '') + '</i>') + '</div>';
+    if (ket.veTrai && ket.vePhai) {
+      h += '<div class="kbps"><div class="kbpsl"><span>' + esc(ket.veTrai.ten) + '</span><b>'
+        + vn(ket.veTrai.giaTri) + ' ' + esc(ket.veTrai.donVi || '') + '</b></div>'
+        + '<div class="kbpsc">chia cho</div>'
+        + '<div class="kbpsl"><span>' + esc(ket.vePhai.ten) + '</span><b>'
+        + vn(ket.vePhai.giaTri) + ' ' + esc(ket.vePhai.donVi || '') + '</b></div></div>';
+    }
+    if (ket.ghiChu) h += '<div class="kbgc">' + ket.ghiChu + '</div>';
+
+    /* ② quy tắc đếm — nguyên văn từ từ điển */
+    const q = ket.quyTacDem || { tinhVao: [], khongTinh: [] };
+    h += '<div class="kbqt"><div class="kbqth">Quy tắc đếm</div>'
+      + '<div class="kbqtv"><b>Tính vào</b><ul>' + (q.tinhVao || []).map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div>'
+      + '<div class="kbqtx"><b>KHÔNG tính</b><ul>' + (q.khongTinh || []).map(x => '<li>' + esc(x) + '</li>').join('') + '</ul></div>';
+    if (ket.canCu) h += '<div class="kbcc">⚖ Căn cứ: ' + esc(ket.canCu) + '</div>';
+    h += '<div class="kbng">Mã chỉ tiêu <b>' + esc(ket.ma) + (ket.o ? ' · ô ' + esc(ket.o) : '') + '</b>'
+      + ' · nguồn ' + (ket.nguon || []).map(x => '<b>' + esc(x) + '</b>').join(' · ')
+      + ' · cắt được theo ' + (ket.chieuHopLe || []).map(x => esc(CT.CHIEU[x] || x)).join(' · ') + '</div></div>';
+
+    /* ① bản ghi gốc */
+    const bg = ket.banGhiGoc || [];
+    h += '<div class="kbbg"><div class="kbqth">Bản ghi gốc — ' + bg.length + ' dòng</div>';
+    if (!bg.length) h += '<div class="empty">Không có bản ghi nào.</div>';
+    else {
+      h += '<div class="tbx"><table class="bgt"><tbody>';
+      bg.slice(0, 200).forEach(r => {
+        h += '<tr><td class="bgid">' + esc(r.id || '') + '</td><td>' + esc(r.ten || '')
+          + (r.phu ? '<span class="dphu">' + esc(r.phu) + '</span>' : '') + '</td>'
+          + '<td class="num">' + (r.so == null ? '' : esc(r.so)) + '</td></tr>';
+      });
+      h += '</tbody></table></div>';
+      if (bg.length > 200) h += '<div class="ro">Hiển thị 200 dòng đầu trên ' + bg.length + '.</div>';
+    }
+    h += '</div>';
+
+    /* ③ deep-link về menu chủ */
+    /* v2 · việc 2 — deep-link THEO DÒNG đứng trước link của cột và của bảng */
+    const lk = (d && (typeof d.linkDong === 'function' ? d.linkDong(d) : d.linkDong))
+      || (typeof cot.link === 'function' ? cot.link(d) : cot.link) || (typeof kb.link === 'function' ? kb.link(d) : kb.link);
+    if (lk) {
+      h += '<div class="kblk"><button class="btn p" data-dl="' + esc(lk.menu) + '" data-dlq="'
+        + esc((lk.ctx || '') + (lk.ctx ? '&' : '') + 'return=' + MENU_NAY) + '">↗ Mở danh sách này tại '
+        + esc(lk.menu) + (lk.nhan ? ' — ' + esc(lk.nhan) : '') + '</button>'
+        + '<span class="kblkc">Mang theo bộ lọc đang xem, và <b>return=' + esc(MENU_NAY) + '</b> để quay lại đúng chỗ này.</span></div>';
+    }
+    $('#kbBody').innerHTML = h;
+    $('#kbMask').classList.add('on');
+  }
+
+  /* gắn một lần — bắt mọi nút ô số trên trang, kể cả ô vẽ sau */
+  function gan() {
+    if (gan._da) return; gan._da = true;
+    document.addEventListener('click', e => {
+      const b = e.target.closest('[data-kbo]');
+      if (b) { drill(b.getAttribute('data-kbo')); return }
+      const dl = e.target.closest('[data-dl]');
+      if (dl && $('#kbMask') && $('#kbMask').classList.contains('on')) dong();
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') dong() });
+  }
+
+  /* dọn kho ô trước mỗi lần vẽ lại — không dọn thì kho phình theo số lần vẽ */
+  function moi() { Object.keys(O).forEach(k => delete O[k]); seq = 0; }
+
+  return {
+    K1, K2, K3, K4, K5, K6, K7, K8, K9,
+    bang, drill, gan, moi, chip, soRa, noiQuyen, datMenu, dong,
+    get MENU() { return MENU_NAY }
+  };
+})();
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TỆP NỀN 3/4 CỦA NHÓM 📊 BÁO CÁO — `app.12-pham-vi-thoi-gian.js` → xuất `PV`
+   Hợp đồng 🔒 HDBC · phiên `BCM9-0A` (20/9/2026)
+   🔄 HDBC v2 · phiên `BCM9-V24` (21/9/2026) — CHỈ THÊM: hai kỳ `hl_giao` ·
+      `hl_bao_cao` vào `KY` (việc 6).
+
+   🛑 CHÉP NGUYÊN BYTE sang mọi demo M9.x. Lệch một byte = DỪNG, báo người dùng.
+
+   ── Vì sao phải là nền chung ─────────────────────────────────────────────
+   Đây đúng là chỗ mỗi phiên dễ làm mỗi kiểu: một demo để `Chốt tại ngày` mặc
+   định là hôm nay, demo kia để là cuối kỳ; một demo cảnh báo khi lùi ngày,
+   demo kia không. Hai cách làm ấy sinh ra hai con số khác nhau cho cùng một
+   câu hỏi, và người đọc không có cách nào biết mình đang xem cái nào.
+
+   ── Bốn thứ tệp này giữ ──────────────────────────────────────────────────
+   ① `PV.chotNgay()`   — số TỒN: lùi được mọi ngày trong năm học, ra khỏi hôm
+                          nay thì DẢI CẢNH BÁO hiện, không tắt được
+   ② `PV.khoang()`     — số PHÁT SINH: Từ → đến, mặc định theo KỲ CHUẨN (`nh9` §4)
+   ③ `PV.daiPhamVi()`  — «268 tài sản · phạm vi ĐT A · toàn trường 412»,
+                          và CHỈ hiện khi phạm vi THỰC SỰ cắt bớt dữ liệu
+   ④ `PV.napMau()`     — mẫu báo cáo định kỳ là một BỘ THAM SỐ (`N8`),
+                          không phải một Feature, không phải một khuôn mới
+   ══════════════════════════════════════════════════════════════════════════ */
+
+const PV = (function () {
+
+  /* ───────────────── KỲ BÁO CÁO CHUẨN — `nh9` §4 ─────────────────────
+     Lịch này là Master, cấu hình tại `M10.6`; ngày cụ thể lấy từ `M10.9`.
+     Ở demo đặt theo năm học 2026-2027 của `M10.1`. Mốc «Đầu năm» là 5/9. */
+  const KY = {
+    dau_nam: { ten: 'Đầu năm', chot: '2026-09-05', tu: '2026-09-05', den: '2026-09-30' },
+    giua_ky_1: { ten: 'Giữa kỳ I', chot: '2026-11-02', tu: '2026-09-05', den: '2026-11-02' },
+    cuoi_ky_1: { ten: 'Cuối kỳ I', chot: '2026-12-31', tu: '2026-09-05', den: '2026-12-31' },
+    giua_ky_2: { ten: 'Giữa kỳ II', chot: '2027-03-15', tu: '2027-01-01', den: '2027-03-15' },
+    cuoi_nam: { ten: 'Cuối năm', chot: '2027-05-31', tu: '2026-09-05', den: '2027-05-31' },
+    thang_nay: { ten: 'Tháng này', chot: HOMNAY, tu: HOMNAY.slice(0, 8) + '01', den: HOMNAY },
+    tu_dau_nam: { ten: 'Từ đầu năm học tới hôm nay', chot: HOMNAY, tu: NAMHOC_TU, den: HOMNAY },
+    /* HDBC v2 (`BCM9-V24`, việc 6) — hai kỳ của nhóm 🗃 Học liệu, chép NGUYÊN
+       CHỮ từ `M9.11` `app.30`: mốc sổ giao bài `M12.7` và sổ báo cáo học liệu
+       bắt đầu chạy. Không bày thành nút ở `chotNgay()` · `khoang()` (hai danh
+       sách nút ấy cố định) — tab gọi `PV.khoangMacDinh('hl_giao')`. */
+    hl_giao: { ten: 'Từ khi sổ giao bài chạy', chot: HOMNAY, tu: '2026-10-12', den: HOMNAY },
+    hl_bao_cao: { ten: 'Từ khi sổ báo cáo học liệu chạy', chot: HOMNAY, tu: '2026-10-04', den: HOMNAY }
+  };
+
+  /* ── BA MẪU ĐỊNH KỲ DÙNG CHUNG cho cả 16 demo ───────────────────────
+     Mẫu = {tab, cheDo, chotNgay | tu·den, phanTo}. Mẫu riêng của từng nhóm
+     khai thêm ở `app.20` bằng `PV.themMau()` — vẫn là một dòng cấu hình. */
+  const MAU = {
+    dau_nam: { ten: '📌 Đầu năm', mo: 'Số liệu chốt ngày khai giảng', cheDo: 'chot', ky: 'dau_nam' },
+    cuoi_ky_1: { ten: '📌 Cuối kỳ I', mo: 'Số liệu chốt 31/12 và phát sinh cả kỳ I', cheDo: 'ca_hai', ky: 'cuoi_ky_1' },
+    cuoi_nam: { ten: '📌 Cuối năm', mo: 'Số liệu chốt bế giảng và phát sinh cả năm học', cheDo: 'ca_hai', ky: 'cuoi_nam' }
+  };
+  const themMau = (ma, o) => { MAU[ma] = o };
+
+  /* ───────────────────────── TRẠNG THÁI ─────────────────────────────── */
+  const st = {
+    chotNgay: HOMNAY,
+    tuNgay: HOMNAY.slice(0, 8) + '01',
+    denNgay: HOMNAY,
+    phamVi: 'ALL',            /* mã điểm trường, hoặc 'ALL' */
+    phanTo: null,
+    mauDangDung: null,
+    /* ★ người dùng đã tự đặt khoảng chưa. Mỗi tab có KỲ CHUẨN riêng (`nh9` §4)
+       và tab được mở bằng kỳ của nó; nhưng một khi người dùng tự chọn ngày,
+       chuyển tab KHÔNG được ghi đè lựa chọn ấy — đổi số dưới tay người đang
+       đọc là cách nhanh nhất làm họ mất tin vào bảng. */
+    tuTay: false
+  };
+  /* tab gọi khi mở: đặt khoảng theo kỳ chuẩn của tab, trừ khi người dùng đã tự đặt */
+  function khoangMacDinh(maKy) {
+    if (st.tuTay || !KY[maKy]) return;
+    st.tuNgay = KY[maKy].tu; st.denNgay = KY[maKy].den;
+  }
+  let veLai = () => { };
+  const noiVeLai = fn => { veLai = fn };
+
+  /* tham số truyền cho `CT.doc()` */
+  const thamSo = them => Object.assign({
+    cheDo: 'chot', chotNgay: st.chotNgay, tuNgay: st.tuNgay, denNgay: st.denNgay,
+    phamVi: st.phamVi, phanTo: st.phanTo
+  }, them || {});
+  const thamSoPS = them => thamSo(Object.assign({ cheDo: 'khoang' }, them || {}));
+
+  const laHomNay = () => st.chotNgay === HOMNAY;
+  const moTaChot = () => 'Chốt tại ngày ' + k2s(st.chotNgay);
+  const moTaKhoang = () => 'Từ ' + k2s(st.tuNgay) + ' → ' + k2s(st.denNgay);
+
+  /* ══════════════ ① CHỐT TẠI NGÀY — cho số TỒN ══════════════════════
+     Lùi được MỌI ngày trong năm học. Nút lùi nhanh theo kỳ chuẩn.        */
+  function chotNgay() {
+    let h = '<div class="pvbar"><span class="pvlb">🗓 Chốt tại ngày</span>'
+      + '<input type="date" class="pvd" id="pvChot" value="' + st.chotNgay
+      + '" min="' + NAMHOC_TU + '" max="' + NAMHOC_DEN + '">'
+      /* ★ In LẠI ngày theo lối Việt Nam ngay cạnh ô chọn. Ô <input type="date">
+         hiển thị theo locale của MÁY — ở máy tiếng Anh nó ra `12/28/2026`, và
+         một người đọc Việt Nam sẽ đọc thành «12 tháng 28» hoặc «12/28». Con số
+         ngày tháng trên một báo cáo mà đọc sai là sai cả bảng. */
+      + '<span class="pvthu">' + kThu(st.chotNgay) + ' · <b>' + k2s(st.chotNgay) + '</b></span>'
+      + '<span class="pvky">';
+    ['dau_nam', 'giua_ky_1', 'cuoi_ky_1', 'cuoi_nam'].forEach(k => {
+      h += '<button class="pvk' + (st.chotNgay === KY[k].chot ? ' on' : '') + '" data-pvky="' + k + '">' + esc(KY[k].ten) + '</button>';
+    });
+    h += '<button class="pvk' + (laHomNay() ? ' on' : '') + '" data-pvky="_homnay">Hôm nay</button></span></div>';
+    return h;
+  }
+
+  /* ── DẢI CẢNH BÁO — ra khỏi ngày mặc định thì hiện, KHÔNG TẮT ĐƯỢC ──
+     Vì sao gắt: một bảng số chụp ở 30/9 trông giống hệt một bảng số của
+     hôm nay. Người in nó ra rồi mang đi họp thì không còn dòng nào trên
+     giấy nói cho người đọc biết đó là số của ba tháng trước.              */
+  function daiCanhBao() {
+    if (st.chotNgay > HOMNAY) {
+      return '<div class="canh r">⏭ <b>Ngày chốt ở tương lai</b> — bảng dừng ở ' + k2s(HOMNAY)
+        + '; phần sau đó <b>chưa xảy ra</b>, không phải bằng 0.</div>';
+    }
+    if (laHomNay()) return '';
+    return '<div class="canh w">🕐 <b>Số liệu chốt tại ' + k2s(st.chotNgay) + ', không phải hôm nay</b> ('
+      + k2s(HOMNAY) + ' — lệch ' + soNgay(st.chotNgay, HOMNAY) + ' ngày). '
+      + '<button class="btn xs" data-pvky="_homnay">↩ Về hôm nay</button></div>';
+  }
+
+  /* ══════════════ ② TỪ → ĐẾN — cho số PHÁT SINH ═══════════════════════ */
+  function khoang() {
+    let h = '<div class="pvbar"><span class="pvlb">📆 Từ → đến</span>'
+      + '<input type="date" class="pvd" id="pvTu" value="' + st.tuNgay + '" min="' + NAMHOC_TU + '" max="' + NAMHOC_DEN + '">'
+      + '<span class="pvsep">→</span>'
+      + '<input type="date" class="pvd" id="pvDen" value="' + st.denNgay + '" min="' + NAMHOC_TU + '" max="' + NAMHOC_DEN + '">'
+      + '<span class="pvthu"><b>' + k2s(st.tuNgay) + ' → ' + k2s(st.denNgay) + '</b> · '
+      + (soNgay(st.tuNgay, st.denNgay) + 1) + ' ngày</span><span class="pvky">';
+    ['thang_nay', 'giua_ky_1', 'cuoi_ky_1', 'tu_dau_nam'].forEach(k => {
+      h += '<button class="pvk' + (st.tuNgay === KY[k].tu && st.denNgay === KY[k].den ? ' on' : '')
+        + '" data-pvkh="' + k + '">' + esc(KY[k].ten) + '</button>';
+    });
+    h += '</span></div>';
+    if (st.tuNgay > st.denNgay) h += '<div class="canh r">⚠ <b>Ngày bắt đầu sau ngày kết thúc</b> — khoảng rỗng, mọi ô sẽ trống.</div>';
+    return h;
+  }
+
+  /* ══════════════ ③ DẢI PHẠM VI ════════════════════════════════════════
+     `268 tài sản · phạm vi Điểm trường A · toàn trường 412`.
+     🛑 CHỈ hiện khi phạm vi THỰC SỰ cắt bớt. Dán một dòng «phạm vi: toàn
+     trường» lên mọi màn hình là thêm chữ mà không thêm thông tin — và
+     `nh9` §9.1 đếm nó vào 20% chữ giải thích.                            */
+  function daiPhamVi(n, donVi, tongToanTruong, tenPhamVi) {
+    if (tongToanTruong == null || n === tongToanTruong) return '';
+    return '<div class="pvcut"><b>' + vn(n) + ' ' + esc(donVi) + '</b>'
+      + ' · phạm vi <b>' + esc(tenPhamVi || 'đang lọc') + '</b>'
+      + ' · toàn trường <b>' + vn(tongToanTruong) + '</b>'
+      + ' <i>— ' + vn(tongToanTruong - n) + ' ' + esc(donVi) + ' ngoài phạm vi không có trong kết quả trả về</i></div>';
+  }
+
+  /* ══════════════ ④ MẪU BÁO CÁO ĐỊNH KỲ — một BỘ THAM SỐ ══════════════ */
+  function daiMau() {
+    return '<div class="pvmau"><span class="pvlb">Mẫu định kỳ</span>'
+      + Object.keys(MAU).map(k => '<button class="pvm' + (st.mauDangDung === k ? ' on' : '')
+        + '" data-pvmau="' + k + '" title="' + esc(MAU[k].mo || '') + '">' + esc(MAU[k].ten) + '</button>').join('')
+      + (st.mauDangDung ? '<button class="pvm x" data-pvmau="_bo">✕ Bỏ mẫu</button>' : '')
+      /* ★ lời giải thích «mẫu là bộ tham số» nằm ở TITLE của từng nút, không
+         dán thành một câu trên màn hình: `nh9` §9.1 đếm nó vào 20% chữ. */
+      + '</div>';
+  }
+
+  function napMau(ma) {
+    if (ma === '_bo') { st.mauDangDung = null; return }
+    const m = MAU[ma]; if (!m) return;
+    const k = KY[m.ky] || {};
+    if (m.cheDo === 'chot' || m.cheDo === 'ca_hai') st.chotNgay = m.chotNgay || k.chot || HOMNAY;
+    if (m.cheDo === 'khoang' || m.cheDo === 'ca_hai') { st.tuNgay = m.tu || k.tu; st.denNgay = m.den || k.den; }
+    if (m.phanTo !== undefined) st.phanTo = m.phanTo;
+    if (m.tab && typeof PV.doiTab === 'function') PV.doiTab(m.tab);
+    st.mauDangDung = ma;
+  }
+
+  /* ══════════════ BỘ CHỌN CHIỀU PHÂN TỔ ════════════════════════════════
+     🛑 CHẶN NGAY chiều không hợp lệ — không bày ra rồi mới báo lỗi.
+     Chiều bị chặn vẫn hiện, mờ đi, kèm lý do: người dùng cần biết vì sao
+     không cắt được, chứ không cần một danh sách ngắn hơn.                 */
+  function chonChieu(ma, dsChieu) {
+    const hopLe = CT.chieuCua(ma);
+    let h = '<div class="pvbar"><span class="pvlb">✂ Phân tổ theo</span>'
+      + '<button class="pvk' + (!st.phanTo ? ' on' : '') + '" data-pvct="">Không cắt</button>';
+    (dsChieu || hopLe).forEach(c => {
+      const ok = hopLe.indexOf(c) >= 0;
+      h += '<button class="pvk' + (st.phanTo === c ? ' on' : '') + (ok ? '' : ' cam') + '"'
+        + (ok ? ' data-pvct="' + c + '"' : ' disabled title="' + esc(CT.ten(ma)) + ' không cắt được theo chiều này — từ điển chỉ tiêu không khai nó là chiều hợp lệ"')
+        + '>' + esc(CT.CHIEU[c] || c) + (ok ? '' : ' 🚫') + '</button>';
+    });
+    return h + '</div>';
+  }
+
+  /* ─────────────────────────── gắn sự kiện ──────────────────────────── */
+  function gan() {
+    if (gan._da) return; gan._da = true;
+    document.addEventListener('change', e => {
+      if (e.target.id === 'pvChot') { st.chotNgay = e.target.value || HOMNAY; st.mauDangDung = null; veLai() }
+      if (e.target.id === 'pvTu') { st.tuNgay = e.target.value; st.mauDangDung = null; veLai() }
+      if (e.target.id === 'pvDen') { st.denNgay = e.target.value; st.mauDangDung = null; veLai() }
+    });
+    document.addEventListener('click', e => {
+      const k = e.target.closest('[data-pvky]');
+      if (k) {
+        const v = k.getAttribute('data-pvky');
+        st.chotNgay = v === '_homnay' ? HOMNAY : KY[v].chot;
+        st.mauDangDung = null; veLai(); return;
+      }
+      const h = e.target.closest('[data-pvkh]');
+      if (h) { const v = h.getAttribute('data-pvkh'); st.tuNgay = KY[v].tu; st.denNgay = KY[v].den; st.mauDangDung = null; st.tuTay = true; veLai(); return }
+      const m = e.target.closest('[data-pvmau]');
+      if (m) { napMau(m.getAttribute('data-pvmau')); veLai(); return }
+      const c = e.target.closest('[data-pvct]');
+      if (c) { st.phanTo = c.getAttribute('data-pvct') || null; veLai(); return }
+    });
+  }
+
+  return {
+    st, KY, MAU, themMau, napMau, gan, noiVeLai, khoangMacDinh,
+    chotNgay, khoang, daiCanhBao, daiPhamVi, daiMau, chonChieu,
+    thamSo, thamSoPS, moTaChot, moTaKhoang, laHomNay
+  };
+})();
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TỆP NỀN 4/4 CỦA NHÓM 📊 BÁO CÁO — `app.13-xuat-hai-muc.js`  →  xuất ra `XU`
+   Hợp đồng 🔒 HDBC · phiên `BCM9-0A` (20/9/2026)
+   🔄 HDBC v2 · phiên `BCM9-V24` (21/9/2026) — CHỈ THÊM, chữ ký hàm giữ nguyên:
+      · việc 1 — mọi lượt xuất (CẢ HAI MỨC) sinh một dòng đúng KHUÔN của tab ③
+        Báo cáo tuân thủ `M10.7` (`KT-2`) và ghi vào SỔ CHUNG của trình duyệt
+        (`XU.KHOA_SO`) — `M10.7` đọc sổ ấy. `XU.AUDIT` giữ đủ trường cũ.
+      · việc 3 — câu mức 1 sửa lại cho đúng; đứng trên lưới có họ tên (`K4`)
+        thì nút mức 1 ĐI CỔNG MỨC 2. Bối cảnh `coHoTen: true | false` ép tay.
+
+   🛑 CHÉP NGUYÊN BYTE sang mọi demo M9.x. Lệch một byte = DỪNG, báo người dùng.
+
+   ── Vì sao phải là nền chung ─────────────────────────────────────────────
+   Xuất dữ liệu cá nhân sai chế độ là RỦI RO PHÁP LÝ, không phải lỗi giao diện.
+   Để mỗi phiên tự dựng nút xuất thì sớm muộn có một demo cho tải thẳng một
+   danh sách có họ tên mà không hỏi mục đích — và cái đó không sửa lại được
+   sau khi tệp đã rời khỏi máy.
+
+   ── Hai mức, hai chế độ pháp lý — KHÔNG ĐƯỢC GỘP ─────────────────────────
+   │ Mức 1 · Bảng tổng hợp   │ chỉ có SỐ         │ số liệu thống kê │ tự do   │
+   │ Mức 2 · Danh sách chi tiết │ có HỌ TÊN      │ dữ liệu cá nhân  │ Luật    │
+   │                          │                   │                  │ 91/2025 │
+   Hai nút **khác chữ, khác màu, khác popup** — người dùng phải THẤY được
+   mình đang làm cái nào, không phải đọc tài liệu mới biết.
+
+   ── Đầu trang và cuối trang mọi tệp xuất (sổ §3) ─────────────────────────
+   Đầu trang BỐN dòng: tên trường · tên báo cáo · Chốt tại ngày hoặc Từ → đến
+   · phạm vi (và tổng toàn trường nếu phạm vi bị cắt).
+   Cuối trang: quy tắc đếm bằng tiếng Việt · người xuất · thời điểm · mã audit.
+   Thiếu một dòng là tệp đó ra khỏi trường mà không ai biết nó nói về cái gì.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+const XU = (function () {
+
+  /* bối cảnh do `app.20` nối vào: tên trường · người đang xem · tên báo cáo */
+  let boiCanh = () => ({
+    truong: 'Trường học', baoCao: 'Báo cáo', menu: 'M9.x',
+    nguoi: 'Người dùng', chucDanh: '', ky: '', phamVi: '', toanTruong: null,
+    quyTac: [], banGhiCaNhan: false, truong_du_lieu: []
+  });
+  const noiBoiCanh = fn => { boiCanh = fn };
+
+  /* ───────────────────── SỔ AUDIT — mọi lượt xuất ─────────────────────
+     Ở MVP sổ nằm trong bộ nhớ trang; bản thật ghi vào `M10.7` Nhật ký hệ
+     thống. Mã audit in vào CHÍNH TỆP XUẤT — tệp in ra giấy rồi vẫn tra
+     ngược được ai xuất, lúc nào, với mục đích gì.                        */
+  const AUDIT = [];
+  let seqA = 0;
+
+  /* ── v2 · việc 1 — SỔ CHUNG: bản mô phỏng của «ghi vào `M10.7`» ─────────
+     Mười tám demo là mười tám tệp riêng, cùng một nguồn gốc trình duyệt, nên
+     sổ chung nằm ở `localStorage` dưới một khóa. Đọc/ghi hỏng (chế độ ẩn danh,
+     trình duyệt chặn) thì vẫn xuất được — sổ trong trang `AUDIT` còn nguyên;
+     chỉ mất phần chuyển sang `M10.7`, và đó là giới hạn của bản demo. */
+  const KHOA_SO = 'dschool.bcm9.soAuditXU';
+  function docSoChung() {
+    try { const s = JSON.parse(localStorage.getItem(KHOA_SO) || '[]'); return Array.isArray(s) ? s : [] }
+    catch (e) { return [] }
+  }
+  function ghiSoChung(dong) {
+    try { const s = docSoChung(); s.push(dong); localStorage.setItem(KHOA_SO, JSON.stringify(s)) } catch (e) { }
+  }
+  /* mã audit duy nhất trên CẢ sổ chung — hai demo cùng ngày không cấp trùng số */
+  const maAudit = () => {
+    const dau = 'XU-' + HOMNAY.replace(/-/g, '') + '-';
+    const daCo = docSoChung().filter(a => String(a.id || '').indexOf(dau) === 0).length;
+    seqA = Math.max(seqA, daCo) + 1;
+    return dau + p2(seqA);
+  };
+  const gioNay = () => { const d = new Date(); return p2(d.getHours()) + ':' + p2(d.getMinutes()) };
+
+  /* ── KHUÔN DÒNG của tab ③ `M10.7` (`KT-2`) — TÁM thứ, không thiếu thứ nào:
+     ai · chức danh LÚC THAO TÁC · lúc nào · bao nhiêu bản ghi · trường nào ·
+     mục đích · menu/tab nguồn · mã audit. Tên trường trùng tên cột của sổ
+     `TCDL` ở `M10.7` (`id ngay gio nguoi cd mn ob hv bg tr md dau`) để một
+     dòng mới và một dòng đã gieo đọc bằng cùng một hàm; thêm `muc` · `trTen`
+     · `mdTen` · `tab` cho những gì sổ cũ không có. */
+  function dongAudit(a, bc) {
+    return {
+      id: a.ma, ngay: a.luc, gio: a.gio, nguoi: a.nguoi, cd: a.chucDanh || '',
+      mn: a.menu || '', tab: a.tab || '', ob: a.baoCao || '', hv: 'xuat', muc: a.muc,
+      bg: a.soBanGhi == null ? null : a.soBanGhi,
+      tr: (a.truong || []).slice(), trTen: (a.truongTen || []).slice(),
+      md: a.mucDichMa || null, mdTen: a.mucDich || null, dau: 1
+    };
+  }
+  function ghiAudit(a, bc) {
+    AUDIT.push(a);
+    ghiSoChung(dongAudit(a, bc));
+  }
+
+  /* ─────────── MỤC ĐÍCH XUẤT — Luật BVDLCN 91/2025 ────────────────────
+     Danh sách đóng, không có ô «khác» tự do: một ô tự do thì trong ba
+     tháng mọi lượt xuất đều ghi «công việc», và sổ audit thành vô dụng. */
+  const MUC_DICH = [
+    ['bao_cao_cap_tren', 'Lập báo cáo gửi cơ quan quản lý cấp trên'],
+    ['doi_chieu_noi_bo', 'Đối chiếu số liệu nội bộ giữa các bộ phận'],
+    ['ho_so_luu', 'Lập hồ sơ lưu trữ theo quy định'],
+    ['kiem_tra_thanh_tra', 'Phục vụ đoàn kiểm tra · thanh tra'],
+    ['xu_ly_su_vu', 'Xử lý một sự vụ cụ thể đang phát sinh']
+  ];
+
+  /* ═════════════════════ HAI NÚT — khác chữ, khác màu ═════════════════ */
+  function veNut(opt) {
+    opt = opt || {};
+    let h = '<span class="xunut">'
+      + '<button class="btn xu1" data-xu="tong">⬇ Xuất bảng số liệu</button>';
+    if (opt.coChiTiet !== false)
+      h += '<button class="btn xu2" data-xu="chitiet">⬇ Xuất danh sách chi tiết <i>(có dữ liệu cá nhân)</i></button>';
+    return h + '</span>';
+  }
+
+  /* ═════════════════════ ĐẦU TRANG — bốn dòng ═════════════════════════ */
+  function dauTrang(bc) {
+    let h = '<div class="xdau">'
+      + '<div class="xd1">' + esc(bc.truong) + '</div>'
+      + '<div class="xd2">' + esc(bc.baoCao) + '</div>'
+      + '<div class="xd3">' + esc(bc.ky) + '</div>'
+      + '<div class="xd4">Phạm vi: <b>' + esc(bc.phamVi) + '</b>';
+    if (bc.toanTruong != null && bc.tongPhamVi != null && bc.tongPhamVi !== bc.toanTruong)
+      h += ' — <b>' + vn(bc.tongPhamVi) + '</b> ' + esc(bc.donVi || '') + ' trong phạm vi, toàn trường <b>' + vn(bc.toanTruong) + '</b>';
+    return h + '</div></div>';
+  }
+
+  /* ═════════════════════ CUỐI TRANG ═══════════════════════════════════ */
+  function cuoiTrang(bc, ma, mucDich) {
+    let h = '<div class="xcuoi"><div class="xqt"><b>Quy tắc đếm</b><ul>';
+    (bc.quyTac || []).forEach(q => h += '<li>' + esc(q) + '</li>');
+    if (!(bc.quyTac || []).length) h += '<li>—</li>';
+    h += '</ul></div><div class="xvet">Người xuất: <b>' + esc(bc.nguoi) + '</b>'
+      + (bc.chucDanh ? ' <i>(' + esc(bc.chucDanh) + ')</i>' : '')
+      + ' · Thời điểm: <b>' + k2s(HOMNAY) + '</b>'
+      + (mucDich ? ' · Mục đích: <b>' + esc(mucDich) + '</b>' : '')
+      + ' · Mã audit: <b>' + esc(ma) + '</b></div></div>';
+    return h;
+  }
+
+  /* ═════════════ MỨC 1 · BẢNG TỔNG HỢP — xuất thẳng ═══════════════════
+     Chỉ có số ⇒ không phải dữ liệu cá nhân ⇒ không có cổng. Vẫn ghi audit
+     đơn giản, vì «ai lấy con số nào đi đâu» là câu hỏi sẽ được hỏi lại.  */
+  /* v2 · việc 3 — màn hình đang bày một lưới CÓ HỌ TÊN (`K4`) không?
+     Đọc dải `data-kbk4` mà `KB.K4` gắn, và chỉ tính dải ĐANG HIỆN (tab ẩn
+     thì không). Bối cảnh `coHoTen` ép tay được: `true` — bảng có tên dù
+     không dựng bằng `K4`; `false` — tệp mức 1 của tab là bản GỘP đã bỏ cột
+     họ tên, để nút mức 1 xuất tự do như v1. */
+  function dangCoHoTen(bc) {
+    if (bc.coHoTen === true || bc.coHoTen === false) return bc.coHoTen;
+    return $$('[data-kbk4]').some(n => n.offsetParent !== null);
+  }
+
+  function tongHop(themVaoBoiCanh) {
+    const bc = Object.assign({}, boiCanh(), themVaoBoiCanh || {});
+    /* 🛑 lưới người × ngày có họ tên: «chỉ có số» là câu SAI — mỗi ô là số của
+       MỘT NGƯỜI có tên. Không cho đi đường tự do; chuyển sang cổng mức 2. */
+    if (dangCoHoTen(bc)) { chiTiet(themVaoBoiCanh, { tuMuc1: true }); return; }
+    const ma = maAudit();
+    ghiAudit({
+      ma, muc: 1, luc: HOMNAY, nguoi: bc.nguoi, baoCao: bc.baoCao, mucDich: null, truong: null,
+      gio: gioNay(), chucDanh: bc.chucDanh || '', menu: bc.menu || '', tab: bc.tab || '',
+      soBanGhi: bc.soDongTongHop == null ? null : bc.soDongTongHop, truongTen: [], mucDichMa: null
+    }, bc);
+    hopThoai('⬇ Xuất bảng số liệu — <span class="xtag t1">Mức 1 · chỉ có số</span>',
+      '<div class="xok">Tệp <b>.xlsx</b> đã tạo. Tệp mức 1 <b>chỉ mang số tổng hợp</b>, không mang cột họ tên — '
+      + 'là <b>số liệu thống kê</b>, xuất tự do. Lượt xuất vẫn ghi một dòng vào nhật ký hệ thống <b>(M10.7)</b>, nhãn «mức 1».</div>'
+      + '<div class="xfile">' + dauTrang(bc) + '<div class="xbody">' + (bc.xemTruoc || '<i>(nội dung bảng đang xem)</i>') + '</div>'
+      + cuoiTrang(bc, ma, null) + '</div>',
+      '<button class="btn p" data-xdong="1">Đã hiểu</button>');
+  }
+
+  /* ═════════════ MỨC 2 · DANH SÁCH CHI TIẾT — có cổng ═════════════════
+     Bốn việc bắt buộc, không bỏ việc nào:
+       ① chọn MỤC ĐÍCH  ② chọn TRƯỜNG xuất  ③ ĐÓNG DẤU tệp  ④ ghi AUDIT đủ */
+  function chiTiet(themVaoBoiCanh, opt) {
+    const bc = Object.assign({}, boiCanh(), themVaoBoiCanh || {});
+    const truongDL = bc.truong_du_lieu || [];
+    let h = '';
+    if (opt && opt.tuMuc1)
+      h += '<div class="xcanh">↪ Anh/chị bấm <b>Xuất bảng số liệu</b>, nhưng bảng đang xem là <b>lưới có họ tên</b> — '
+        + 'mỗi ô là số của <b>một người có tên</b>, nên tệp là <b>dữ liệu cá nhân</b> dù chỉ có số. Lượt này đi cổng mức 2.</div>';
+    h += '<div class="xcanh">⚖ <b>Danh sách này có dữ liệu cá nhân.</b> Theo <b>Luật Bảo vệ dữ liệu cá nhân 91/2025</b>, '
+      + 'mỗi lượt xuất phải <b>nêu mục đích</b>, <b>chỉ lấy trường cần dùng</b>, và <b>để lại vết</b>. '
+      + 'Tệp tải về sẽ mang dấu của lượt xuất này.</div>';
+    h += '<div class="xm"><b>① Mục đích xuất</b> <i>— bắt buộc chọn một</i><div class="xmd">'
+      + MUC_DICH.map((m, i) => '<label class="xr"><input type="radio" name="xmd" value="' + m[0]
+        + '"' + (i === 0 ? '' : '') + '> ' + esc(m[1]) + '</label>').join('') + '</div></div>';
+    h += '<div class="xm"><b>② Trường dữ liệu đưa vào tệp</b> <i>— bỏ chọn trường không cần dùng</i><div class="xtr">'
+      + (truongDL.length
+        ? truongDL.map(t => '<label class="xc"><input type="checkbox" class="xtrc" value="' + esc(t.khoa) + '"'
+          + (t.macDinh === false ? '' : ' checked') + (t.batBuoc ? ' disabled' : '') + '> ' + esc(t.ten)
+          + (t.batBuoc ? ' <i>(bắt buộc)</i>' : '') + (t.nhay ? ' <b class="xnhay">nhạy cảm</b>' : '') + '</label>').join('')
+        : '<i>(demo chưa khai danh sách trường — `app.20` truyền `truong_du_lieu`)</i>')
+      + '</div></div>';
+    h += '<div class="xm"><b>③ Tệp sẽ mang dấu</b><div class="xdau2">Tên người xuất · chức danh · thời điểm · mục đích · mã audit — '
+      + 'in ở cuối mọi trang, không gỡ được khỏi tệp.</div></div>';
+    hopThoai('⬇ Xuất danh sách chi tiết — <span class="xtag t2">Mức 2 · có dữ liệu cá nhân</span>', h,
+      '<button class="btn" data-xdong="1">Hủy</button>'
+      + '<button class="btn d" id="xuGo" disabled>⬇ Tôi xác nhận mục đích trên và tải tệp</button>');
+    const ktra = () => {
+      const r = document.querySelector('input[name="xmd"]:checked');
+      const n = $$('.xtrc').filter(x => x.checked).length;
+      const b = $('#xuGo'); if (!b) return;
+      b.disabled = !(r && (n > 0 || !truongDL.length));
+      b.textContent = r ? '⬇ Tôi xác nhận mục đích trên và tải tệp (' + n + ' trường)'
+        : '⬇ Chọn mục đích trước';
+    };
+    $$('#xuMask input').forEach(i => i.addEventListener('change', ktra));
+    ktra();
+    $('#xuGo').addEventListener('click', () => {
+      const r = document.querySelector('input[name="xmd"]:checked');
+      const md = (MUC_DICH.find(m => m[0] === r.value) || [, ''])[1];
+      const tr = $$('.xtrc').filter(x => x.checked).map(x => x.value);
+      const ma = maAudit();
+      ghiAudit({
+        ma, muc: 2, luc: HOMNAY, nguoi: bc.nguoi, baoCao: bc.baoCao, mucDich: md, truong: tr,
+        gio: gioNay(), chucDanh: bc.chucDanh || '', menu: bc.menu || '', tab: bc.tab || '',
+        soBanGhi: bc.soDong == null ? null : bc.soDong,
+        truongTen: tr.map(k => ((truongDL.find(t => t.khoa === k) || {}).ten) || k),
+        mucDichMa: r.value
+      }, bc);
+      hopThoai('✅ Đã tạo tệp — <span class="xtag t2">Mức 2</span>',
+        '<div class="xok">Tệp <b>.xlsx</b> đã tạo và <b>đã đóng dấu</b>. Một dòng audit đã ghi vào nhật ký hệ thống '
+        + '<b>(M10.7)</b> — mã <b>' + esc(ma) + '</b>.</div>'
+        + '<div class="xfile">' + dauTrang(bc)
+        + '<div class="xbody"><i>' + tr.length + ' trường dữ liệu · ' + (bc.soDong || '—') + ' dòng có họ tên</i></div>'
+        + cuoiTrang(bc, ma, md) + '</div>',
+        '<button class="btn p" data-xdong="1">Đóng</button>');
+    });
+  }
+
+  /* ─────────────── hộp thoại riêng của tệp nền (tự tạo DOM) ─────────── */
+  function nodeMask() {
+    let m = $('#xuMask');
+    if (m) return m;
+    m = document.createElement('div');
+    m.id = 'xuMask'; m.className = 'xumask';
+    m.innerHTML = '<div class="xumodal"><div class="xuh" id="xuH"></div><div class="xub" id="xuB"></div>'
+      + '<div class="xuf" id="xuF"></div></div>';
+    document.body.appendChild(m);
+    m.addEventListener('click', e => {
+      if (e.target === m || e.target.closest('[data-xdong]')) dong();
+    });
+    return m;
+  }
+  function hopThoai(tieuDe, than, chan) {
+    nodeMask();
+    $('#xuH').innerHTML = tieuDe; $('#xuB').innerHTML = than; $('#xuF').innerHTML = chan || '';
+    $('#xuMask').classList.add('on');
+  }
+  const dong = () => { const m = $('#xuMask'); if (m) m.classList.remove('on') };
+
+  /* sổ audit — bày ra được khi cần chứng minh «đã ghi vết» */
+  function soAudit() {
+    if (!AUDIT.length) return '<div class="empty">Chưa có lượt xuất nào trong phiên này.</div>';
+    return '<div class="tbx"><table class="bgt"><thead><tr><th>Mã</th><th>Mức</th><th>Người xuất</th>'
+      + '<th>Báo cáo</th><th>Mục đích</th></tr></thead><tbody>'
+      + AUDIT.slice().reverse().map(a => '<tr><td>' + esc(a.ma) + '</td><td>'
+        + (a.muc === 1 ? '<span class="xtag t1">1</span>' : '<span class="xtag t2">2</span>') + '</td><td>'
+        + esc(a.nguoi) + '</td><td>' + esc(a.baoCao) + '</td><td>' + esc(a.mucDich || '—') + '</td></tr>').join('')
+      + '</tbody></table></div>';
+  }
+
+  function gan() {
+    if (gan._da) return; gan._da = true;
+    document.addEventListener('click', e => {
+      const b = e.target.closest('[data-xu]');
+      if (!b) return;
+      if (b.getAttribute('data-xu') === 'tong') tongHop(XU.themBoiCanh ? XU.themBoiCanh() : null);
+      else chiTiet(XU.themBoiCanh ? XU.themBoiCanh() : null);
+    });
+  }
+
+  return {
+    veNut, tongHop, chiTiet, dauTrang, cuoiTrang, soAudit, gan, noiBoiCanh, dong, MUC_DICH, AUDIT,
+    /* v2 */ KHOA_SO, docSoChung, dongAudit
+  };
+})();
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ĐÓNG KHUNG — `BCM9-3C` (20/9/2026). Cặp với `app.10-mo-khung-bao-cao.js`.
+
+   Đưa bốn cổng của hợp đồng 🔒 HDBC ra ngoài khung dưới một cái tên duy nhất,
+   `BCN`. Tab báo cáo gọi `BCN.CT` `BCN.KB` `BCN.PV` `BCN.XU` — ⛔ không gọi
+   thẳng `CT` `KB` `PV` `XU`, vì bên ngoài khung bốn tên ấy không tồn tại.
+
+   Kèm theo là các tiện ích của nền mà tab báo cáo cần và menu chủ có thể đang
+   hiểu khác: `HOMNAY` của nền là **28/12/2026** — mốc chung của cả nhóm 📊,
+   ⛔ không phải "hôm nay" mô phỏng của menu chủ (`M6.12` 23/10 · `M8.1` và
+   `M8.4` 20/11). Tab báo cáo dùng mốc của NỀN để 16 bản báo cáo cùng một mốc,
+   và NÓI RA mốc ấy trên màn hình thay vì để người đọc tự đoán.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+  BCN = {
+    CT: CT, KB: KB, PV: PV, XU: XU,
+    CHIEU: CHIEU,
+    HOMNAY: HOMNAY, NAMHOC: NAMHOC, NAMHOC_TU: NAMHOC_TU, NAMHOC_DEN: NAMHOC_DEN,
+    esc: esc, vn: vn, vnd: vnd, trieu: trieu, tile: tile, kd: kd,
+    d2k: d2k, k2d: k2d, d2s: d2s, k2s: k2s, kThu: kThu, p2: p2,
+    themNgay: themNgay, soNgay: soNgay, thangCua: thangCua, tenThang: tenThang
+  };
+
+})();
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PHẦN DÙNG CHUNG CỦA BỐN TAB BÁO CÁO TẠI MENU CHỦ — `BCM9-3C` (20/9/2026)
+   Chép nguyên vào cả bốn demo `M6.9` · `M6.12` · `M8.1` · `M8.4`.
+
+   ⚠ Tệp này KHÔNG thuộc hợp đồng 🔒 HDBC (hợp đồng chỉ có bốn tệp nền).
+     Nó là phần dùng chung của riêng phiên `3C`; băm ghi ở mục G của phiếu để
+     phiên sau biết bốn bản phải giống nhau.
+
+   Bốn tab đều phải mang đúng những thứ này, nên chúng ở một chỗ:
+     · `BC.batKhung()`  — bật/tắt lớp `bc9` (xem `style.30-bao-cao.css`)
+     · `BC.daiLuat()`   — dải nói tab này chịu luật nhóm 📊 (`3C` §5)
+     · `BC.daiRanh()`   — dải RANH GIỚI với tab tác nghiệp bên cạnh (`N7`)
+     · `BC.daiMoc()`    — dải nói mốc "hôm nay" của nhóm 📊
+     · `BC.daiNgoaiLe()`— dải nói vai đang đọc số qua ngoại lệ quyền khai tay
+     · `BC.ghiChu()` · `BC.nutGhiChu()` — lý do thiết kế, ẩn sau nút 💡
+     · `BC.nutXuat()`   — hai nút xuất, chỉ với vai có `XD` trên chính tab này
+     · `BC.ganChung()`  — bắt nút deep-link, nối `KB` `PV` `XU`
+   ══════════════════════════════════════════════════════════════════════════ */
+
+var BC = (function () {
+
+  /* ── lớp khung CSS ──────────────────────────────────────────────────────
+     Chỉ bật khi tab báo cáo đang mở. Rời tab là tắt, và đóng luôn panel còn
+     mở — panel sống ngoài `#content` nên nó không tự biến mất theo lần vẽ. */
+  function batKhung(dangMo) {
+    document.body.classList.toggle('bc9', !!dangMo);
+    if (!dangMo && BCN) { BCN.KB.dong(); BCN.XU.dong(); }
+  }
+
+  /* ── dải LUẬT (`3C` §5) ─────────────────────────────────────────────────
+     Bốn tab này nằm trong menu nghiệp vụ nhưng chịu luật của nhóm 📊. Viết ra
+     để phiên sau không "dọn cho giống tab cũ" — thêm một nút `Tạo` vào đây là
+     phá `N4`, không phải làm cho tiện. */
+  function daiLuat() {
+    return '<div class="ro">📊 <b>Tab báo cáo</b> — chỉ <code>X</code> <code>XD</code>, '
+      + 'không nút ghi nào. Mọi ô số bấm được.</div>';
+  }
+
+  /* ── dải RANH GIỚI (`N7`) — 🛑 bắt buộc, không để trống ──────────────────
+     Không nêu thì chắc chắn có người hỏi «sao hai chỗ ra hai số khác nhau» —
+     và cả hai đều đúng, vì khác khoảng thời gian. */
+  function daiRanh(tenTabCu, hoiCu, hoiMoi) {
+    return '<div class="canh b">🧭 <b>' + BCN.esc(tenTabCu) + '</b>: <i>«' + BCN.esc(hoiCu)
+      + '»</i> · <b>tab này</b>: <i>«' + BCN.esc(hoiMoi) + '»</i>.</div>';
+  }
+
+  /* ── dải MỐC — vì sao ngày chốt mặc định không phải "hôm nay" của menu chủ */
+  function daiMoc(homNayMenu) {
+    if (!homNayMenu || homNayMenu === BCN.k2s(BCN.HOMNAY)) return '';
+    return '<div class="ro">🗓 Mốc chung của nhóm 📊: <b>' + BCN.k2s(BCN.HOMNAY)
+      + '</b> — menu này mô phỏng hôm nay <b>' + BCN.esc(homNayMenu) + '</b>.</div>';
+  }
+
+  /* ── nối dây một lần ────────────────────────────────────────────────────
+     `veLai` là hàm vẽ lại của MENU CHỦ: đổi ngày chốt, đổi khoảng, đổi phân tổ
+     đều phải đi qua đúng một đường vẽ, không dựng đường thứ hai. */
+  function ganChung(o) {
+    if (ganChung._da) return; ganChung._da = true;
+    BCN.KB.datMenu(o.menu);
+    BCN.KB.noiQuyen(o.coXD, o.moTaNguon);
+    BCN.PV.noiVeLai(o.veLai);
+    BCN.XU.noiBoiCanh(o.boiCanh);
+    BCN.KB.gan(); BCN.PV.gan(); BCN.XU.gan();
+
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('[data-bcnote]')) { NOTE = !NOTE; o.veLai(); return }
+      var dl = e.target.closest('[data-dl]');
+      if (!dl) return;
+      var m = dl.getAttribute('data-dl'), q = dl.getAttribute('data-dlq') || '';
+      /* ── deep-link VỀ CHÍNH MENU NÀY thì nhảy thật ──────────────────────
+         Bốn tab của `3C` nằm ngay trong menu chủ, nên phần lớn ô số dẫn về
+         một tab bên cạnh — cách một cú bấm, không cách một trang. Bày ra
+         đường dẫn rồi bắt người dùng tự đi là bỏ phí đúng cái lợi thế mà
+         `N11` đổi lấy khi đặt báo cáo tại menu chủ.                        */
+      if (m === o.menu && typeof o.nhay === 'function') {
+        BCN.KB.dong();
+        o.nhay(q);
+        return;
+      }
+      /* deep-link sang menu khác: demo là tệp rời, nên nói ra đường dẫn thật
+         thay vì nhảy trang — nhảy sang một demo không đọc tham số thì người
+         rà tưởng deep-link hỏng. */
+      toast('↗ Deep-link sang <b>' + BCN.esc(m) + '</b> — <code>?' + BCN.esc(q) + '</code><br>'
+        + '<i>Demo một tệp: không mở được menu khác, nhưng đường dẫn là đường dẫn thật.</i>');
+    });
+  }
+
+  /* ── dải NGOẠI LỆ QUYỀN — `N5` nói «ẩn thì phải nói»; mở cũng phải nói ──
+     Cổng `N5` đọc cột `XD` của bảng chuẩn. Có menu chủ **không có một ô `XD`
+     nào** (`M6.9`), có chức danh chưa từng có mặt trong bảng của menu ấy
+     (`TTVP`). Prompt `3C` §6 vẫn cấp `X XD` cho họ trên tab báo cáo — đó là
+     ngoại lệ KHAI TAY mà sổ điều phối §5 cho phép, với điều kiện nêu lý do.
+     Nêu ở phiếu thôi thì người đang đọc bảng không thấy; nên nêu luôn ở đây. */
+  function daiNgoaiLe(ds) {
+    if (!ds || !ds.length) return '';
+    return '<div class="canh w">🔑 Bảng chuẩn quyền <b>chưa có ô <code>XD</code></b> ở '
+      + ds.map(function (x) { return '<b>' + BCN.esc(x) + '</b>' }).join(' · ')
+      + ' — đang đọc qua <b>ngoại lệ khai tay</b> <i>(phiếu 3C mục H)</i>.</div>';
+  }
+
+  /* ── GHI CHÚ THIẾT KẾ — ẩn mặc định ────────────────────────────────────
+     Sổ điều phối §2: *«lý do thiết kế nằm sau nút `💡 Ghi chú thiết kế` ẩn
+     mặc định»*. Ngưỡng mật độ chữ ≤ 20% không đòi bỏ lời giải thích — nó đòi
+     lời giải thích **đừng chiếm màn hình mặc định**. Bốn menu chủ đều có sẵn
+     công tắc ấy và đều dùng lớp `nn` trên `<body>` để tắt, nên hàm này chỉ
+     hỏi đúng công tắc của menu chủ thay vì dựng một công tắc thứ hai. */
+  var NOTE = false;
+  var coCongTacChu = function () { return !!document.getElementById('btnNote') };
+
+  function ghiChu(html) {
+    /* menu chủ có công tắc riêng (`M6.9` · `M6.12` dùng lớp `nn`) thì nghe nó,
+       ⛔ đừng dựng công tắc thứ hai cạnh một công tắc đã có. */
+    if (coCongTacChu()) {
+      if (document.body.classList.contains('nn')) return '';
+    } else if (!NOTE) return '';
+    return '<div class="dnote">💡 <b>Ghi chú thiết kế.</b> ' + html + '</div>';
+  }
+
+  /* ── HAI NÚT XUẤT chỉ hiện với vai có `XD` TRÊN CHÍNH TAB BÁO CÁO ──────
+     Cổng `N5` quyết định **ô nào đọc được số**; còn **mang số ra khỏi màn
+     hình** là việc của `XD` trên chính tab này — hai chuyện khác nhau, và
+     prompt `3C` §6 cấp `X` cho vài vai mà không cấp `XD`.
+     Vai không có `XD` thì ⛔ không thấy nút nào, và **được nói cho biết vì
+     sao** — `N5` đòi «ẩn thì phải nói», kể cả khi thứ bị ẩn là một cái nút. */
+  function nutXuat(coXD) {
+    if (coXD) return BCN.XU.veNut();
+    return '<span class="noacc" title="Tab này cấp cho vai của bạn quyền Xem (X), '
+      + 'không cấp quyền Xuất dữ liệu (XD)">🔒 không có quyền Xuất</span>';
+  }
+
+  /* `M8.1` và `M8.4` KHÔNG có công tắc ghi chú — tab báo cáo tự mang một cái,
+     và chỉ mang khi menu chủ chưa có. */
+  function nutGhiChu() {
+    if (coCongTacChu()) return '';
+    return '<button class="btn xs" data-bcnote="1">💡 Ghi chú thiết kế: '
+      + (NOTE ? 'BẬT' : 'TẮT') + '</button>';
+  }
+
+  /* ── đo mật độ chữ giải thích (`nh9` §9.1 — ngưỡng ≤ 20%) ───────────────
+     Gọi `doMatDoChuBC()` trong console khi tab báo cáo đang mở. */
+  function doMatDo() {
+    /* BCM9-Z 21/9/2026 · V18 (chốt Đ8): bỏ .noaccbox khỏi chữ giải thích — dòng «đã trừ N — thiếu quyền» là THÔNG TIN VẬN HÀNH (sổ §2), sửa MỘT LƯỢT cả 16 demo. */
+    var giai = '.canh,.ro,.dnote,.bvdl,.k3sep,.pvmc,.tongtru,.chieuro,.kyro,.pvcach,.pvcut';
+    var goc = document.querySelector('#content');
+    var tong = (goc.innerText || '').replace(/\s+/g, ' ').trim().length;
+    var chu = 0;
+    goc.querySelectorAll(giai).forEach(function (n) {
+      chu += (n.innerText || '').replace(/\s+/g, ' ').trim().length;
+    });
+    var r = { tong: tong, chuGiaiThich: chu, tiLe: Math.round(chu * 1000 / tong) / 10 + '%' };
+    console.log('Mật độ chữ giải thích —', r);
+    return r;
+  }
+
+  return {
+    batKhung: batKhung, daiLuat: daiLuat, daiRanh: daiRanh, daiMoc: daiMoc,
+    daiNgoaiLe: daiNgoaiLe, ghiChu: ghiChu, nutGhiChu: nutGhiChu, nutXuat: nutXuat,
+    ganChung: ganChung, doMatDo: doMatDo
+  };
+})();
+function doMatDoChuBC() { return BC.doMatDo() }
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   `M6.9` — TAB 7 · 📊 BÁO CÁO VĂN THƯ · Feature `m6.9.bao_cao_van_thu`
+   Phiên `BCM9-3C` (20/9/2026) · báo cáo `BC-VH-09` **vế công văn** · loại B
+   Khuôn `K1` (ba khối số) + `K5` (hai cuốn sổ đăng ký)
+
+   🛑 KHÔNG MỘT NÚT GHI NÀO — nhóm 📊 chỉ `X` và `XD` (`N4`). Cấp số, chỉ định
+      người xử lý, ký: tất cả ở sáu tab cũ, tab này chỉ dẫn sang.
+
+   ── Vì sao báo cáo này nằm ở `M6.9` chứ không ở một menu `M9.x` ──────────
+   Nhóm 🗂 Văn thư & lưu trữ chỉ có **2 báo cáo**, dưới sàn 3 Feature của `N11`.
+   Dựng hẳn một menu báo cáo cho hai tab là dựng một menu gần như trống. Đặt
+   cạnh hai cuốn sổ thì văn thư đọc con số **quá hạn** ở đúng nơi xử lý nó —
+   thấy 4 văn bản quá hạn, bấm một cái là sang đúng dòng trong sổ Đến.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Trạng thái riêng của tab. `var` — phải đọc được cả khi `app.js` gọi
+   `render()` ở dòng cuối của nó, tức trước khi tệp này chạy. */
+var BCVT = { so: 'den' };
+
+/* Chiều phân tổ riêng của nhóm 🗂 — khai tên hiển thị vào từ điển chiều lúc
+   chạy, vì tệp nền 🔒 chép nguyên byte nên KHÔNG thêm được vào đó.
+   `Z` gom bốn chiều này vào `nh9` §3 (mục C · E của phiếu `3C`). */
+function bcVTChieu() {
+  var C = BCN.CHIEU;
+  C.so_van_ban = 'Sổ (Đến · Đi)';
+  C.loai_van_ban = 'Loại văn bản';
+  C.muc_khan = 'Mức khẩn';
+  C.co_quan_doi_tac = 'Cơ quan gửi · nơi nhận';
+  C.don_vi_soan = 'Đơn vị soạn';
+  C.trang_thai_xu_ly = 'Trạng thái xử lý';
+}
+
+/* ══════════════ MÃ CHỈ TIÊU ══════════════════════════════════════════════
+   `VH.05` (Số công văn đến / đi · PS · nguồn M6.9 — `nh9` §2.8) nay KHAI Ở
+   TỆP NỀN `app.10` — HDBC v2, phiên `BCM9-V24` (21/9/2026) gỡ khai báo ở đây
+   trong cùng lượt, vì `CT.khai` ném lỗi khi khai trùng. Phần TÍNH của nó vẫn
+   nối ở `bcVTNoiNguon()` bên dưới. `VH.08` `VH.09` là mã MỚI (mục C của phiếu).
+   ⚠ Không lấy `VH.06` `VH.07` — danh mục 18/9 đã giữ chỗ cho `BC-VH-11`
+     (sự kiện · lịch họp · kết luận giao việc).                             */
+function bcVTKhaiMa() {
+  var CT = BCN.CT;
+  if (CT.co('VH.08')) return;
+
+  CT.khai({
+    ma: 'VH.08', ten: 'Công văn Đến quá hạn xử lý', donVi: 'văn bản', loaiSo: 'TON',
+    nguon: ['M6.9'], moc: '2026-09-01',
+    chieuHopLe: ['trang_thai_xu_ly', 'muc_khan', 'loai_van_ban'],
+    canCu: 'TT 01/2019/TT-BNV — theo dõi tiến độ giải quyết văn bản đến',
+    quyTacDem: {
+      tinhVao: [
+        'Công văn Đến còn ĐANG MỞ (Mới nhận · Đã chỉ định · Đang xử lý) tại NGÀY CHỐT…',
+        '…và có hạn xử lý, và hạn đó đã qua trước ngày chốt.'
+      ],
+      khongTinh: [
+        'Công văn đã có kết quả xử lý (Đã xử lý · Đã lưu trữ) — dù trước đó từng trễ hạn.',
+        'Công văn KHÔNG có hạn xử lý: chưa chỉ định thì chưa có hạn, không thể trễ một hạn chưa tồn tại.',
+        'Công văn đã hủy đăng ký.',
+        '⚠ Trạng thái lấy theo HIỆN TẠI: demo chưa lưu vết trạng thái theo từng ngày, nên lùi ngày chốt chỉ lùi phép so hạn, không dựng lại trạng thái của ngày đó.'
+      ]
+    }
+  });
+
+  CT.khai({
+    ma: 'VH.09', ten: 'Lượt ký văn bản Đi theo thẩm quyền · theo ủy quyền', donVi: 'lượt ký', loaiSo: 'PS',
+    nguon: ['M6.9'], moc: '2026-09-01',
+    chieuHopLe: ['thang', 'loai_van_ban'],
+    canCu: 'NĐ 30/2020/NĐ-CP Đ.13 — ký thay theo ủy quyền; M6.9 §2.9 ủy quyền có phạm vi loại văn bản và thời hạn',
+    quyTacDem: {
+      tinhVao: [
+        'Một văn bản Đi đã ký trong khoảng đang xem = một lượt ký, xếp vào người đã ký.',
+        'Ký thay được nhận ra bằng quyết định ủy quyền CÒN HIỆU LỰC tại ngày ký và ĐÚNG loại văn bản.'
+      ],
+      khongTinh: [
+        'Văn bản chưa ký.',
+        'Văn bản ký ngoài khoảng đang xem.',
+        '⚠ Một quyết định ủy quyền không có lượt ký nào vẫn hiện thành dòng — số 0 ở đây là một câu trả lời (ủy quyền chưa dùng tới), không phải chỗ trống.'
+      ]
+    }
+  });
+}
+
+/* ══════════════ NỐI NGUỒN — phần TÍNH ═══════════════════════════════════ */
+function bcVTNoiNguon() {
+  var CT = BCN.CT;
+
+  /* ĐẾN được đếm khi không hủy; ĐI được đếm khi đã có số hiệu (tức đã ký) */
+  function denThat() { return denTrongPhamVi().filter(function (x) { return x.tt !== 'huy' }) }
+  function diDaKy() { return diTrongPhamVi().filter(function (x) { return x.ngayKy }) }
+
+  CT.nguonSo('VH.05', function (tham) {
+    var tu = tham.tuNgay, den = tham.denNgay, loc = tham.loc || function () { return true };
+    var ds = [];
+    denThat().forEach(function (x) {
+      if (x.ngayNhan >= tu && x.ngayNhan <= den && loc({ so: 'den', x: x }))
+        ds.push({ id: maDen(x), ten: docDuocMat(x) ? x.trich : trichAn, phu: 'Đến · ' + x.cq + ' · ' + BCN.k2s(x.ngayNhan) });
+    });
+    diDaKy().forEach(function (x) {
+      if (x.ngayKy >= tu && x.ngayKy <= den && loc({ so: 'di', x: x }))
+        ds.push({ id: soHieuCua(x) || x.id, ten: x.trich, phu: 'Đi · ' + DONVI[x.dv] + ' · ký ' + BCN.k2s(x.ngayKy) });
+    });
+    return { giaTri: ds.length, banGhiGoc: ds };
+  });
+
+  CT.nguonSo('VH.08', function (tham) {
+    var chot = tham.chotNgay, loc = tham.loc || function () { return true };
+    var ds = denTrongPhamVi().filter(function (x) {
+      return denMo(x) && x.han && x.han < chot && loc(x);
+    }).map(function (x) {
+      return {
+        id: maDen(x), ten: docDuocMat(x) ? x.trich : trichAn,
+        phu: 'hạn ' + BCN.k2s(x.han) + ' · trễ ' + BCN.soNgay(x.han, chot) + ' ngày · '
+          + (x.giao ? 'giao ' + tenNS(x.giao) : 'chưa chỉ định')
+      };
+    });
+    return { giaTri: ds.length, banGhiGoc: ds };
+  });
+
+  CT.nguonSo('VH.09', function (tham) {
+    var tu = tham.tuNgay, den = tham.denNgay, loc = tham.loc || function () { return true };
+    var ds = diTrongPhamVi().filter(function (x) {
+      return x.ngayKy && x.ngayKy >= tu && x.ngayKy <= den && loc(x);
+    }).map(function (x) {
+      return {
+        id: soHieuCua(x) || x.id, ten: x.trich,
+        phu: BCN.k2s(x.ngayKy) + ' · ' + tenNS(x.nguoiKy) + ' · ' + LOAIVB[x.loai].ten
+      };
+    });
+    return { giaTri: ds.length, banGhiGoc: ds };
+  });
+}
+
+/* ══════════════ CỔNG `N5` — ai đọc được số của nguồn nào ═════════════════
+   ✅ **Anh Ninh chốt 21/9/2026 — cổng đọc `X` ở feature nguồn, ⛔ không đọc
+      `XD`** *(sổ điều phối §4b `CG-3` · kiến trúc §5.5)*.
+
+   Vì sao đổi: `M6.9` **không có một ô `XD` nào** trên cả sáu Feature — đo
+   bảng chuẩn ngày 20/9/2026. Áp nguyên văn `N5` cũ thì MỌI ô của tab này ra
+   `🔒 ẩn` với MỌI vai, kể cả Hiệu trưởng.
+
+   Hai quyền trả lời hai câu khác nhau, và chúng nằm ở hai chỗ khác nhau:
+     · `X` ở feature NGUỒN      → ô có hiện số không        (bảng dưới đây)
+     · `XD` trên CHÍNH tab này  → hai nút xuất có hiện không (`bcVTCoXuat`)
+
+   🛑 Bảng dưới chép từ `ma-tran-quyen-chuan-hoa.csv`, ⛔ không bịa.           */
+var BCVT_NGUON = {
+  'm6.9.so_cong_van_den': { menu: 'M6.9', ten: 'Sổ công văn Đến' },
+  'm6.9.so_cong_van_di': { menu: 'M6.9', ten: 'Sổ công văn Đi' },
+  'm6.9.uy_quyen_ky': { menu: 'M6.9', ten: 'Ủy quyền ký' }
+};
+/* `X` ở feature nguồn — chép nguyên từ bảng chuẩn (đo 20/9/2026).
+   ⚠ `VT` KHÔNG có dòng ở `m6.9.uy_quyen_ky` — chỉ `HT` và `PHT_CM` có. Nên
+     khối C của Văn thư ra `🔒 ẩn`, và đó là `N5` chạy ĐÚNG: nhãn dòng của
+     khối C là nội dung quyết định ủy quyền (số hiệu, loại văn bản, thời hạn)
+     — dữ liệu của tab Ủy quyền ký, không phải của hai cuốn sổ. */
+var BCVT_X = {
+  FULL: ['m6.9.so_cong_van_den', 'm6.9.so_cong_van_di', 'm6.9.uy_quyen_ky'],
+  VT: ['m6.9.so_cong_van_den', 'm6.9.so_cong_van_di'],
+  HT: ['m6.9.so_cong_van_den', 'm6.9.so_cong_van_di', 'm6.9.uy_quyen_ky'],
+  PCM: ['m6.9.so_cong_van_den', 'm6.9.so_cong_van_di', 'm6.9.uy_quyen_ky'],
+  TCNS: ['m6.9.so_cong_van_den', 'm6.9.so_cong_van_di'],
+  KT: ['m6.9.so_cong_van_den', 'm6.9.so_cong_van_di'],
+  TTCM: ['m6.9.so_cong_van_den', 'm6.9.so_cong_van_di']
+};
+function bcVTCoXD(f) { return (BCVT_X[role] || []).indexOf(f) >= 0 }
+
+/* ── Ngoại lệ khai tay — sau `CG-3` thì ÍT ĐI HẲN, nhưng CHƯA HẾT ──────────
+   `CG-3` giải được vai **có mặt** trong bảng chuẩn của menu nguồn. Vai
+   **không có một dòng nào** ở menu ấy thì vẫn phải khai tay — và vẫn phải
+   nói ra trên màn hình, đúng vế «ẩn thì phải NÓI» của `N5`.
+
+   Ca thật đã đo ở `M6.9`: **`TTVP`** chỉ có `m6.9.viec_cua_toi` *(Own,
+   assigned)*, ⛔ không có dòng nào ở hai cuốn sổ; **`PHT_ĐT`** cũng vậy.
+   Hai chức danh ấy **không có trong demo này**, nên dải không hiện ở đây —
+   ⛔ nhưng đừng vì thế mà xóa hàm: bản thật có họ. Xem `PHIEU-BCM9-3C` H.1c. */
+var BCVT_KHAI_TAY = {
+  TTVP: ['Sổ công văn Đến', 'Sổ công văn Đi', 'Ủy quyền ký'],
+  PHT_DT: ['Sổ công văn Đến', 'Sổ công văn Đi']
+};
+function bcVTNgoaiLe() { return BCVT_KHAI_TAY[role] || [] }
+/* tab chỉ hiện với vai có `X` theo prompt §6 (demo không có TTVP · PHT_ĐT) */
+function bcVTCoTab() { return ['FULL', 'VT', 'HT'].indexOf(role) >= 0 }
+/* `XD` trên CHÍNH tab báo cáo — quyết định hai nút xuất, ⛔ không phải cổng N5.
+   ✅ Anh Ninh chốt 21/9 (`H.2`): Văn thư phạm vi **School**, ⛔ không phải Branch —
+   `M6.9` là sổ cấp trường và khóa bộ chọn điểm trường, nên `Branch` ở đây
+   không có gì để cắt. */
+function bcVTCoXuat() { return ['FULL', 'VT', 'HT'].indexOf(role) >= 0 }
+
+/* ══════════════ VẼ TAB ═══════════════════════════════════════════════════ */
+function veBaoCaoVanThu() {
+  if (!BCN) return '<div class="empty">Đang nạp nền báo cáo…</div>';
+  var PV = BCN.PV, KB = BCN.KB, CT = BCN.CT;
+  KB.moi();   /* dọn kho ô trước mỗi lần vẽ — không dọn thì kho phình theo số lần vẽ */
+  var h = BC.daiRanh('Sổ công văn Đến · Đi',
+    'văn bản số 125 đi đâu rồi, ai đang giữ',
+    'tháng này bao nhiêu văn bản, bao nhiêu quá hạn')
+    + BC.daiNgoaiLe(bcVTNgoaiLe())
+    + BC.ghiChu('Tab <b>chỉ đọc</b> của nhóm 📊 — chỉ <code>X</code> <code>XD</code>, '
+      + 'không nút ghi nào kể cả với vai Đủ quyền; mọi ô số bấm được về bản ghi gốc, '
+      + 'quy tắc đếm và chỗ sửa. Cấp số, chỉ định người xử lý, ký: ở sáu tab bên cạnh.')
+    + PV.daiMau() + PV.khoang() + PV.chotNgay() + PV.daiCanhBao();
+
+  /* ── KHỐI A · PHÁT SINH — số văn bản theo chiều đang chọn ─────────────── */
+  var chieu = PV.st.phanTo || 'thang';
+  h += PV.chonChieu('VH.05',
+    ['thang', 'so_van_ban', 'loai_van_ban', 'muc_khan', 'co_quan_doi_tac', 'don_vi_soan']);
+
+  h += KB.K1({
+    id: 'a', tieuDe: 'A · Văn bản phát sinh trong khoảng', ma: 'VH.05', chip: 'PS',
+    moTaKy: PV.moTaKhoang(), donVi: 'văn bản', nguon: 'm6.9.so_cong_van_den',
+    tenCotDau: BCN.CHIEU[chieu], chieu: chieu,
+    dong: bcVTDongA(chieu),
+    oSo: function (d) { return CT.doc('VH.05', PV.thamSoPS({ loc: d.loc, phanTo: chieu })) },
+    link: function (d) { return d.link },
+    duoiBang: '<div class="ro">⛔ Hai chiều 🚫 chỉ có ở <b>một</b> cuốn sổ — lọc trong từng sổ ở tab 2 · 3.</div>'
+  });
+
+  /* ── KHỐI B · TỒN — quá hạn xử lý tại ngày chốt ───────────────────────── */
+  h += KB.K1({
+    id: 'b', tieuDe: 'B · Công văn Đến quá hạn xử lý', ma: 'VH.08', chip: 'TON',
+    moTaKy: PV.moTaChot(), donVi: 'văn bản', nguon: 'm6.9.so_cong_van_den',
+    tenCotDau: 'Trạng thái xử lý', chieu: 'trang_thai_xu_ly',
+    dong: [
+      { id: 'moi', ten: TT_DEN.moi[0], loc: function (x) { return x.tt === 'moi' }, link: { menu: 'M6.9', ctx: 'tab=den&chip=quahan', nhan: 'Sổ công văn Đến — chip ⏰ Quá hạn' } },
+      { id: 'dachidinh', ten: TT_DEN.dachidinh[0], loc: function (x) { return x.tt === 'dachidinh' }, link: { menu: 'M6.9', ctx: 'tab=den&chip=quahan', nhan: 'Sổ công văn Đến — chip ⏰ Quá hạn' } },
+      { id: 'dangxuly', ten: TT_DEN.dangxuly[0], loc: function (x) { return x.tt === 'dangxuly' }, link: { menu: 'M6.9', ctx: 'tab=den&chip=quahan', nhan: 'Sổ công văn Đến — chip ⏰ Quá hạn' } }
+    ],
+    /* ⚠ `phanTo` khai ĐÍCH DANH cho từng khối: `PV.st.phanTo` là của bộ chọn
+       ở khối A, và `CT.doc` CHẶN chiều không hợp lệ — để nó chảy sang đây thì
+       cả khối B ra lỗi «không cắt được theo chiều Tháng». Chặn đúng, truyền sai. */
+    oSo: function (d) { return CT.doc('VH.08', PV.thamSo({ loc: d.loc, phanTo: 'trang_thai_xu_ly' })) },
+    link: function (d) { return d.link }
+  });
+
+  /* ── KHỐI C · PHÁT SINH — lượt ký, và lượt ký THAY ────────────────────── */
+  h += KB.K1({
+    id: 'c', tieuDe: 'C · Lượt ký văn bản Đi', ma: 'VH.09', chip: 'PS',
+    moTaKy: PV.moTaKhoang(), donVi: 'lượt ký', nguon: 'm6.9.uy_quyen_ky',
+    tenCotDau: 'Người ký', dong: bcVTDongC(),
+    oSo: function (d) { return CT.doc('VH.09', PV.thamSoPS({ loc: d.loc, phanTo: null })) },
+    link: { menu: 'M6.9', ctx: 'tab=uq', nhan: 'Ủy quyền ký' }
+  });
+
+  /* ── KHỐI D · K5 — hai cuốn sổ đăng ký ────────────────────────────────── */
+  h += bcVTSo();
+  return h;
+}
+
+/* dòng của khối A theo chiều đang chọn */
+function bcVTDongA(chieu) {
+  var lkDen = { menu: 'M6.9', ctx: 'tab=den&chip=all', nhan: 'Sổ công văn Đến' };
+  var lkDi = { menu: 'M6.9', ctx: 'tab=di&chip=all', nhan: 'Sổ công văn Đi' };
+  var lkTra = { menu: 'M6.9', ctx: 'tab=tra', nhan: 'Tra cứu — gộp hai sổ' };
+
+  if (chieu === 'so_van_ban') return [
+    { id: 'den', ten: 'Sổ công văn Đến', phu: 'số Đến là số nội bộ của trường', loc: function (r) { return r.so === 'den' }, link: lkDen },
+    { id: 'di', ten: 'Sổ công văn Đi', phu: 'số hiệu theo thể thức NĐ 30/2020', loc: function (r) { return r.so === 'di' }, link: lkDi }
+  ];
+  if (chieu === 'loai_van_ban') return Object.keys(LOAIVB).map(function (k) {
+    return {
+      id: k, ten: LOAIVB[k].ten, loc: function (r) { return r.x.loai === k }, link: lkTra
+    };
+  });
+  if (chieu === 'muc_khan') return Object.keys(KHAN).map(function (k) {
+    return {
+      id: k, ten: KHAN[k][0], phu: k === 'thuong' ? 'gồm cả văn bản Đi (sổ Đi không có mức khẩn)' : '',
+      loc: function (r) { return r.so === 'den' ? r.x.khan === k : k === 'thuong' }, link: lkTra
+    };
+  });
+  /* mặc định: tháng — dựng từ chính khoảng đang xem, không cứng 12 dòng */
+  var PV = BCN.PV, ds = [], t = BCN.thangCua(PV.st.tuNgay), het = BCN.thangCua(PV.st.denNgay);
+  var dem = 0;
+  while (t <= het && dem++ < 24) {
+    (function (thang) {
+      ds.push({
+        id: thang, ten: BCN.tenThang(thang),
+        loc: function (r) { return BCN.thangCua(r.so === 'den' ? r.x.ngayNhan : r.x.ngayKy) === thang },
+        link: lkTra
+      });
+    })(t);
+    var y = Number(t.slice(0, 4)), m = Number(t.slice(5, 7)) + 1;
+    if (m > 12) { m = 1; y++ }
+    t = y + '-' + BCN.p2(m);
+  }
+  return ds;
+}
+
+/* dòng của khối C — từng quyết định ủy quyền + người có thẩm quyền ký */
+function bcVTDongC() {
+  var ds = UYQUYEN.map(function (u) {
+    return {
+      id: u.id, ten: tenNS(u.cho) + ' — ký thay',
+      phu: u.id + ' · ' + u.loai.map(function (l) { return LOAIVB[l].ten }).join(', ')
+        + ' · ' + BCN.k2s(u.tu) + ' → ' + BCN.k2s(u.den),
+      loc: function (x) {
+        return x.nguoiKy === u.cho && x.ngayKy >= u.tu && x.ngayKy <= u.den && u.loai.indexOf(x.loai) >= 0;
+      }
+    };
+  });
+  var nguoiUQ = UYQUYEN.map(function (u) { return u.cho });
+  ds.push({
+    id: '_tq', ten: 'Người có thẩm quyền ký', phu: 'ký trực tiếp, không qua ủy quyền',
+    loc: function (x) { return nguoiUQ.indexOf(x.nguoiKy) < 0 }
+  });
+  return ds;
+}
+
+/* ── KHỐI D · hai cuốn sổ (`K5`) ──────────────────────────────────────────
+   Khuôn `K5` tự dò SỐ HIỆU ĐỨT QUÃNG và hiện dải đỏ. Đây đúng là phép kiểm
+   mà `M6.9` §2.3 dựng cả cơ chế hủy-giữ-chỗ để vượt qua: hủy đăng ký thì
+   dòng vẫn nằm đúng số của nó, nên sổ không có lỗ trống. Bảng này là chỗ
+   chứng minh điều đó bằng máy, không bằng lời hứa.                         */
+function bcVTSo() {
+  var PV = BCN.PV, KB = BCN.KB, esc = BCN.esc;
+  var laDen = BCVT.so === 'den';
+  var chon = '<div class="pvbar"><span class="pvlb">📚 Cuốn sổ</span>'
+    + '<button class="pvk' + (laDen ? ' on' : '') + '" data-bcso="den">Sổ công văn Đến</button>'
+    + '<button class="pvk' + (laDen ? '' : ' on') + '" data-bcso="di">Sổ công văn Đi</button></div>';
+
+  var ds, cot;
+  if (laDen) {
+    ds = denTrongPhamVi().filter(function (x) {
+      return x.ngayNhan >= PV.st.tuNgay && x.ngayNhan <= PV.st.denNgay;
+    }).sort(function (a, b) { return a.soDen - b.soDen }).map(function (x) {
+      return {
+        so: x.soDen, ma: maDen(x), ngay: BCN.k2s(x.ngayNhan), soGoc: x.soGoc,
+        cq: x.cq, trich: docDuocMat(x) ? x.trich : trichAn,
+        tt: TT_DEN[x.tt][0], huy: x.tt === 'huy'
+      };
+    });
+    cot = [
+      { khoa: 'ma', ten: 'Số Đến' }, { khoa: 'ngay', ten: 'Ngày nhận' },
+      { khoa: 'soGoc', ten: 'Số hiệu gốc' }, { khoa: 'cq', ten: 'Cơ quan gửi' },
+      {
+        khoa: 'trich', ten: 'Trích yếu',
+        ve: function (x) { return (x.huy ? '<span class="oro">' : '') + esc(x.trich) + (x.huy ? '</span>' : '') }
+      },
+      { khoa: 'tt', ten: 'Trạng thái' }
+    ];
+  } else {
+    ds = diTrongPhamVi().filter(function (x) {
+      return x.ngayKy && x.ngayKy >= PV.st.tuNgay && x.ngayKy <= PV.st.denNgay && x.so != null;
+    }).sort(function (a, b) { return a.so - b.so }).map(function (x) {
+      return {
+        so: x.so, ma: soHieuCua(x), ngay: BCN.k2s(x.ngayKy), loai: LOAIVB[x.loai].ten,
+        dv: DONVI[x.dv], trich: x.trich, nguoiKy: tenNS(x.nguoiKy), tt: TT_DI[x.tt][0]
+      };
+    });
+    cot = [
+      { khoa: 'ma', ten: 'Số hiệu' }, { khoa: 'ngay', ten: 'Ngày ký' },
+      { khoa: 'loai', ten: 'Loại' }, { khoa: 'dv', ten: 'Đơn vị soạn' },
+      { khoa: 'trich', ten: 'Trích yếu' }, { khoa: 'nguoiKy', ten: 'Người ký' },
+      { khoa: 'tt', ten: 'Trạng thái' }
+    ];
+  }
+
+  return chon + bcVTKiemSo(laDen) + KB.K5({
+    tieuDe: 'D · ' + (laDen ? 'Sổ đăng ký văn bản ĐẾN' : 'Sổ đăng ký văn bản ĐI'),
+    /* 🛑 `kiemSoHieu:false` — KHÔNG phải vì bỏ phép kiểm, mà vì đổi chỗ chạy nó.
+       `KB.K5` dò đứt số trên đúng mảng được truyền vào; mảng ở đây đã bị cắt
+       theo KHOẢNG NGÀY, mà số Đến cấp theo thứ tự ĐĂNG KÝ chứ không theo ngày
+       nhận — nên một khoảng hẹp bao giờ cũng "thiếu" vài số và khuôn sẽ báo
+       nhảy số OAN. Phép kiểm thật chạy trên TOÀN SỔ của năm, ở dải ngay trên. */
+    chip: 'PS', moTaKy: PV.moTaKhoang(), banGhi: ds, cot: cot, kiemSoHieu: false,
+    chuoiTrong: 'Không có văn bản nào vào sổ trong khoảng đang xem.',
+    duoiBang: '<div class="ro">' + (laDen
+      ? 'Dòng <b>đã hủy</b> vẫn nằm đúng số của nó, in mờ — bộ đếm <b>không lùi</b>.'
+      : 'Chỉ văn bản <b>đã cấp số</b>: số cấp sau khi ký <i>(NĐ 30/2020 Đ.15)</i>.')
+      + '</div>'
+  });
+}
+
+
+/* ── PHÉP KIỂM SỐ HIỆU LIÊN TỤC — chạy trên TOÀN SỔ CỦA NĂM ───────────────
+   `NĐ 30/2020` Đ.15: số và ký hiệu là **duy nhất trong một năm**. Câu hỏi mà
+   phép kiểm này trả lời là câu của cả cuốn sổ — «sổ năm 2026 có chỗ nào đứt
+   số không» — nên nó KHÔNG được chạy trên đoạn đang hiện trên màn hình.
+   Chạy trên đoạn thì mỗi lần đổi khoảng lại ra một kết luận khác về cùng một
+   cuốn sổ, và cả ba kết luận đều sai.                                      */
+function bcVTKiemSo(laDen) {
+  var so = laDen
+    ? denTrongPhamVi().map(function (x) { return x.soDen })
+    : diTrongPhamVi().filter(function (x) { return x.so != null }).map(function (x) { return x.so });
+  so = so.filter(function (n) { return typeof n === 'number' }).sort(function (a, b) { return a - b });
+  if (!so.length) return '';
+  var dut = [];
+  for (var i = 1; i < so.length; i++) if (so[i] - so[i - 1] > 1) dut.push(so[i - 1] + ' → ' + so[i]);
+  var ten = laDen ? 'Sổ Đến' : 'Sổ Đi';
+  var day = !can('xemAll')
+    ? ' <i>— vai của bạn chỉ thấy một phần sổ, nên phép kiểm này không kết luận được cho cả sổ.</i>'
+    : '';
+  if (!can('xemAll'))
+    return '<div class="ro">🔢 <b>' + ten + '</b> — không kiểm được số hiệu liên tục' + day + '</div>';
+  return dut.length
+    ? '<div class="canh r">⚠ <b>' + ten + ' năm ' + NAM + ' nhảy số</b> ở ' + dut.length + ' chỗ: '
+      + BCN.esc(dut.join(' · ')) + '. Sổ có số hiệu đứt quãng thì không dùng làm căn cứ được.</div>'
+    : '<div class="ro">🔢 <b>' + ten + ' năm ' + NAM + ': ' + so.length + ' số, liên tục '
+      + so[0] + '→' + so[so.length - 1] + ', không đứt.</b> <i>Phép kiểm chạy trên cả sổ, không trên khoảng đang xem.</i></div>';
+}
+
+/* ══════════════ BỐI CẢNH TỆP XUẤT ═══════════════════════════════════════ */
+function bcVTBoiCanh() {
+  var PV = BCN.PV;
+  var kb = BCN.CT.khaiBao('VH.05');
+  var denPV = denTrongPhamVi().length, diPV = diTrongPhamVi().length;
+  return {
+    truong: TRUONG.ten,
+    baoCao: 'Báo cáo văn thư (BC-VH-09 — vế công văn)',
+    menu: 'M6.9', nguoi: tenNS(R().ma), chucDanh: R().cd,
+    ky: PV.moTaChot() + ' · ' + PV.moTaKhoang(),
+    phamVi: can('xemAll') ? 'School — toàn trường, cả hai sổ' : 'Own — văn bản liên quan đến tôi',
+    toanTruong: DEN.length + DI.length, tongPhamVi: denPV + diPV, donVi: 'văn bản',
+    quyTac: kb.quyTacDem.tinhVao.concat(kb.quyTacDem.khongTinh.map(function (x) { return 'KHÔNG tính: ' + x })),
+    /* Mức 2 của tab này là DANH SÁCH VĂN BẢN — trường cá nhân là người xử lý,
+       người ký, người soạn. Một cuốn sổ công văn không có họ tên thì không
+       dùng để đối chiếu được, nên ba trường ấy có mặt nhưng mặc định TẮT. */
+    truong_du_lieu: [
+      { khoa: 'so', ten: 'Số Đến · số hiệu', batBuoc: true },
+      { khoa: 'ngay', ten: 'Ngày nhận · ngày ký', batBuoc: true },
+      { khoa: 'loai', ten: 'Loại văn bản · sổ' },
+      { khoa: 'doiTac', ten: 'Cơ quan gửi · nơi nhận' },
+      { khoa: 'trich', ten: 'Trích yếu' },
+      { khoa: 'han', ten: 'Hạn xử lý · số ngày trễ' },
+      { khoa: 'tt', ten: 'Trạng thái' },
+      { khoa: 'nguoiXuLy', ten: 'Người được giao xử lý (họ tên)', nhay: true, macDinh: false },
+      { khoa: 'nguoiKy', ten: 'Người ký (họ tên)', nhay: true, macDinh: false },
+      { khoa: 'nguoiSoan', ten: 'Người soạn (họ tên)', nhay: true, macDinh: false }
+    ],
+    soDong: denPV + diPV
+  };
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════
+   `M6.9` — KHỞI ĐỘNG TAB BÁO CÁO · `BCM9-3C` (20/9/2026)
+
+   Tệp này sắp CUỐI CÙNG (`app.95-…`) là có chủ ý: `app.js` của `M6.9` gọi
+   `render()` ở dòng cuối của nó, tức TRƯỚC khi khung nền chạy. Lần vẽ đầu ấy
+   không hỏng — `veBaoCaoVanThu()` thấy `BCN` còn rỗng thì trả về một dòng
+   «đang nạp» — nhưng nó cũng chưa vẽ được bảng. Vẽ lại ở đây là xong.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+(function bcVTKhoiDong() {
+  bcVTChieu();
+  bcVTKhaiMa();
+  bcVTNoiNguon();
+
+  /* KỲ CHUẨN của tab (`nh9` §4): `BC-VH-09` là báo cáo NĂM, nên mở bằng
+     «từ đầu năm học tới hôm nay», không phải «tháng này». Đặt MỘT LẦN lúc nạp —
+     đặt lại ở mỗi lần vẽ thì ngày người dùng tự gõ bị đè ngay sau khi gõ. */
+  BCN.PV.khoangMacDinh('tu_dau_nam');
+
+  BC.ganChung({
+    menu: 'M6.9',
+    veLai: render,
+    coXD: bcVTCoXD,
+    moTaNguon: function (f) { return BCVT_NGUON[f] || { menu: 'M6.9', ten: f } },
+    boiCanh: bcVTBoiCanh,
+    nhay: bcVTNhay
+  });
+
+  /* đổi cuốn sổ ở khối D */
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-bcso]');
+    if (!b) return;
+    BCVT.so = b.getAttribute('data-bcso');
+    render();
+  });
+
+  render();
+})();
+
+/* ── deep-link trong chính `M6.9`: mở đúng tab, đúng chip ─────────────────
+   Đây là phần lãi của `N11`: con số nằm ngay cạnh cuốn sổ sinh ra nó, nên
+   «4 văn bản quá hạn» đi tới danh sách bốn văn bản ấy bằng MỘT cú bấm. */
+function bcVTNhay(q) {
+  var p = {};
+  (q || '').split('&').forEach(function (kv) {
+    var i = kv.indexOf('='); if (i > 0) p[kv.slice(0, i)] = decodeURIComponent(kv.slice(i + 1));
+  });
+  if (p.tab) ST.tab = p.tab;
+  ST.cur = null; ST.curDi = null;
+  if (p.chip) { ST.chip = p.chip; ST.chipDi = p.chip }
+  render();
+  toast('↗ Đã mở <b>' + esc(CHIP_DEN[p.chip] || 'danh sách') + '</b> trong sổ — '
+    + 'cùng bộ lọc với ô số bạn vừa bấm.');
+}
 </script>
 </body>
 </html>

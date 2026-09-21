@@ -229,12 +229,25 @@ h1{font-size:18px;font-weight:700}
 .tb tbody tr.gone{opacity:.55}
 .tb tr.grp td{background:#f8fafc;font-weight:700;font-size:12px;padding:5px 10px}
 .tb.sm td,.tb.sm th{padding:4px 7px}
-.stage.open .tb .k,.stage.open .tb th.k{display:none}
-.stage.open .tb th[colspan]{display:none}
-.stage.open .tb td:nth-child(3),.stage.open .tb th:nth-child(3){display:none}
+.stage.open .listw .tb .k,.stage.open .listw .tb th.k{display:none}
+.stage.open .listw .tb th[colspan]{display:none}
+.stage.open .listw .tb td:nth-child(3),.stage.open .listw .tb th:nth-child(3){display:none}
 .stage.open .locrow2 .sub[title]{display:none}
 .locrow2 .qf{padding:2px 9px}
 .locrow2 .inp{padding:3px 9px}
+
+/* ===== CSDL-1A (19/9/2026) ===== */
+.hint{font-size:11.5px;color:var(--ink2);font-weight:400;margin-top:3px;line-height:1.45}
+.muted{color:var(--ink3);font-weight:400}
+.f .v .hint b{color:var(--ink)}
+
+/* --- cum GDDP (20/9/2026): bang phuong thuc trong panel tang 2 cua mot mon --- */
+.tb.sm.ptb{table-layout:fixed}
+.tb.sm.ptb th:nth-child(1),.tb.sm.ptb td:nth-child(1){width:32%}
+.tb.sm.ptb th:nth-child(2),.tb.sm.ptb td:nth-child(2){width:32%}
+.tb.sm.ptb th:nth-child(3),.tb.sm.ptb td:nth-child(3){width:19%}
+.tb.sm.ptb th:nth-child(4),.tb.sm.ptb td:nth-child(4){width:17%}
+.tb.sm.ptb td:nth-child(2) .chip{margin:1px 2px}
 </style>
 </head>
 <body>
@@ -344,11 +357,64 @@ const TRUONG={ten:'Trường THCS và THPT Nguyễn Tất Thành',viettat:'NTT',
  maCSDL:'79000123456789012345',loaiHinh:'Công lập',coQuan:'Sở Giáo dục và Đào tạo tỉnh',
  diaChi:'Số 12 Nguyễn Tất Thành, phường Tân An',sdt:'0292 3822 456',email:'c23ntt@edu.vn',web:'ntt.edu.vn',
  cts:'CTS tổ chức — Viettel-CA · số seri 54 01 0A 3F · hết hạn 14/03/2028',ca:'Viettel-CA · môi trường Production',
- chuyen:true};  /* co Truong chuyen — Master, khai tay (§4.2) */
+ chuyen:true,  /* co Truong chuyen — Master, khai tay (§4.2) */
+ /* ===== CSDL-1A (19/9/2026) — bon khoi moi. TAT CA deu Master, KHONG doi theo nam hoc ===== */
+ fax:'0292 3822 457',
+ maDDTC:'0301234567-001',        /* Ma dinh danh to chuc (ND 69) — R14: canh bao khi doi, KHONG kiem 20 chu so */
+ maDDDT:'VN-79-0000123456',      /* Ma dinh danh dien tu (QD 20) — R14 */
+ maSoThue:'0301234567',          /* MA SO THUE CUA TRUONG (R13: 10 hoac 13 chu so) — khac MST ca nhan cua HT */
+ loaiTruong:'nhieucap',          /* R15 — nhan bao cao, KHONG thay co Truong chuyen */
+ /* --- CA C3: dia chi CU chua chuan hoa (HDCS ① quy tac d) --- */
+ dc:{che_do:'tu_do',tinh_id:null,xa_id:null,chi_tiet:'',
+     chuoi_tu_do:'Số 12 Nguyễn Tất Thành, phường Tân An, TP. Cần Thơ'},
+ /* --- Dia ban: Khu vuc la DANH MUC, sau co con lai la co BA gia tri --- */
+ khuVuc:'KV2-NT',
+ cv:{csv:'k',x135:'k',bgioi:'k',hdao:'k',bnvb:'c',dtts:'?'},
+ /* --- Phap ly & kiem dinh --- */
+ pl:{namTL:1998,soQD:'1245/QĐ-UBND ngày 06/8/1998',
+     cqgMuc:'md1',cqgNam:2021,cqgDeNghi:'c',
+     tuDG:'c',tuDGNam:2020,
+     dkNgoaiNam:null,              /* CHU Y: de TRONG CO CHU Y — thay trang thai thieu */
+     ngoaiDat:'c',ngoaiNam:2021},
+ /* --- Quy mo dat dai (m2) --- */
+ dt:{dat:14800,xd:5260}};
+
+/* ===== DANH MUC dung chung cho bon khoi moi ===== */
+const LOAITRUONG={pt:'Phổ thông',chuyen:'Chuyên',dtnt:'PTDTNT',dtbt:'PTDTBT',nhieucap:'Phổ thông nhiều cấp học',khac:'Khác'};
+const KHUVUC={'KV1':'KV1','KV2':'KV2','KV2-NT':'KV2-NT','KV3':'KV3'};
+/* co BA gia tri (HDCS ③) — 'Chua khao sat' KHONG duoc anh xa thanh 'Khong' khi day */
+const CO3={c:['Có','o'],k:['Không','n'],'?':['Chưa khảo sát','w']};
+const co3=v=>'<span class="st2 '+CO3[v||'?'][1]+'">'+CO3[v||'?'][0]+'</span>';
+const CVTEN={csv:'Chính sách vùng',x135:'Xã 135',bgioi:'Biên giới',hdao:'Hải đảo',
+ bnvb:'Xã ĐBKK bãi ngang ven biển',dtts:'Vùng đồng bào DTTS và miền núi'};
+const CVCC={csv:'Theo quyết định phân định vùng đang hiệu lực',
+ x135:'Danh sách xã thuộc Chương trình 135 / Chương trình MTQG vùng đồng bào DTTS và miền núi',
+ bgioi:'Danh sách xã biên giới đang hiệu lực',hdao:'Danh sách xã đảo, huyện đảo đang hiệu lực',
+ bnvb:'Danh sách xã ĐBKK vùng bãi ngang, ven biển và hải đảo đang hiệu lực',
+ dtts:'Quyết định phân định vùng DTTS và miền núi theo trình độ phát triển'};
+const CQG={chuadat:'Chưa đạt',md1:'Mức độ 1',md2:'Mức độ 2'};
+const NAMNAY=HOMNAY.getFullYear();
+const soM2=n=>n==null?null:String(n).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+/* chuoi_hien_thi — DAN XUAT, khong co o nhap (HDCS ①) */
+function dcHien(a){
+ if(!a)return '';
+ if(a.che_do==='tu_do')return a.chuoi_tu_do||'';
+ const x=XA[a.xa_id],t=TINH[a.tinh_id];
+ return [a.chi_tiet,x?x.ten:null,t?t.ten:null].filter(Boolean).join(', ');
+}
+/* danh muc hanh chinh HAI CAP (TT 13/2025 · TT 26/2025) — KHONG co Quan/Huyen.
+   Nap san o day cho demo; that thi keo ve qua M10.8 (ban chot §1.2). */
+const TINH={'92':{ten:'Thành phố Cần Thơ'},'79':{ten:'Thành phố Hồ Chí Minh'},'01':{ten:'Thành phố Hà Nội'}};
+const XA={'92TA':{tinh:'92',ten:'Phường Tân An'},'92AK':{tinh:'92',ten:'Phường An Khánh'},
+ '92TN':{tinh:'92',ten:'Xã Thới Nhựt'},'79BN':{tinh:'79',ten:'Phường Bến Nghé'}};
+const xaCuaTinh=t=>Object.keys(XA).filter(k=>XA[k].tinh===t);
+/* R16 — nam lon hon nam hien tai */
+const namTuongLai=n=>n!=null&&n>NAMNAY;
 const LS_TRUONG=[
  {d:D(12,8,2023),ng:'Ngô Văn Kiên · IT Admin',t:'Thiết lập lần đầu',n:'Nhập định danh, liên hệ, mã CSDL ngành'},
  {d:D(9,9,2026),ng:'Nguyễn Thị Hạnh · Hiệu trưởng',t:'Bật cờ Trường chuyên',n:'Căn cứ QĐ thành lập hệ chuyên của UBND tỉnh'},
- {d:D(14,3,2025),ng:'Ngô Văn Kiên · IT Admin',t:'Gia hạn chứng thư số tổ chức',n:'Viettel-CA · hết hạn 14/03/2028'}];
+ {d:D(14,3,2025),ng:'Ngô Văn Kiên · IT Admin',t:'Gia hạn chứng thư số tổ chức',n:'Viettel-CA · hết hạn 14/03/2028'},
+ {d:D(2,9,2026),ng:'Ngô Văn Kiên · IT Admin',t:'Khai bổ sung theo CSDL ngành',n:'Địa bàn · Pháp lý & kiểm định · Quy mô đất đai — còn 2 ô chưa xong'}];
 
 /* ===== DANH MUC MON — Master cua M10.2 =====
    nhom theo cap: bb bat buoc · lc lua chon (THPT) · tc tu chon · nn ngoai ngu (o NN1/NN2) · ct cua truong
@@ -404,6 +470,40 @@ const NGUON={gdpt:['CT GDPT','o'],truong:['Của trường','w']};
 const NHOMTEN={bb:'Bắt buộc',lc:'Lựa chọn',tc:'Tự chọn',nn:'Ngoại ngữ',ct:'—'};
 const CAPK={TH:[1,2,3,4,5],THCS:[6,7,8,9],THPT:[10,11,12]};
 const capOf=k=>k<=5?'TH':k<=9?'THCS':'THPT';
+
+/* ===== PHUONG THUC TO CHUC KIEN THUC — HDPC ① ② (cum GDDP, phien 1B · 20/9/2026) =====
+   THUC THE RIENG gan khoa ngoai mon_id — KHONG phai thuoc tinh cua ban ghi mon.
+   Ly do: §5.2 khoa cung "ten · nhom · kieu DG · so tiet chuan cua MON CHUAN khong sua duoc,
+   ke ca Hieu truong". Ghi phuong thuc vao ban ghi mon la de truong sua thu ho khong duoc sua.
+   Moi mon co san PT0 — Toan mon, dung MOT phan ma TOAN_MON mang ten mon.
+   PT0 KHONG sua, KHONG xoa, KHONG ngung dung — ke ca Hieu truong (rang buoc 1).
+   🛑 PHAN KHONG GIU SO TIET — so tiet la cua M5.1 (Q7). */
+const PT={};                         /* PT[ma_mon] = [ {ma,ten,tt,gc,phan:[{ma,ten,thu_tu}]} ] */
+function ptThem(maMon,ma,ten,gc,phan){
+ (PT[maMon]=PT[maMon]||[]).push({ma:ma,ten:ten,tt:'dung',gc:gc||'',
+  phan:phan.map((x,i)=>({ma:x[0],ten:x[1],thu_tu:i+1})),ls:[]});
+}
+MON.forEach(m=>ptThem(m.ma,'PT0','Toàn môn','',[['TOAN_MON',m.ten]]));
+/* 🔬 Khoa hoc tu nhien — to hop ba phan mon (CV 5636/BGDDT-GDTrH 10/10/2023) */
+ptThem('KHTN','PT1','Ba phân môn Lí – Hóa – Sinh','CV 5636/BGDĐT-GDTrH ngày 10/10/2023',
+ [['P1','Vật lí'],['P2','Hóa học'],['P3','Sinh học']]);
+/* 🏞 Noi dung giao duc dia phuong — ba mach theo Quyet dinh 18 UBND tinh Phu Tho 26/01/2026 */
+ptThem('NDDP','PT1','Ba mạch nội dung','Quyết định 18 ngày 26/01/2026 — UBND tỉnh Phú Thọ',
+ [['P1','Văn hóa, lịch sử, truyền thống'],['P2','Địa lí, kinh tế, hướng nghiệp'],['P3','Chính trị – xã hội, môi trường']]);
+/* 📜 Lich su va Dia li — hai phan mon. Gieo theo E10 cua PHIEU-GDDP-1A:
+   demo M5.1 (ca PC5 — noi tiep theo hoc ky) da khai phuong thuc nay, hai demo phai doc duoc cua nhau. */
+ptThem('LSDL','PT1','Hai phân môn Lịch sử – Địa lí','CV 5636/BGDĐT-GDTrH ngày 10/10/2023',
+ [['P1','Lịch sử'],['P2','Địa lí']]);
+/* 🧭 Hoat dong trai nghiem, huong nghiep — ba hop phan (TT 32/2018) */
+ptThem('HDTN','PT1','Ba hợp phần','TT 32/2018/TT-BGDĐT — Chương trình tổng thể',
+ [['P1','Sinh hoạt dưới cờ'],['P2','Sinh hoạt lớp'],['P3','Hoạt động giáo dục theo chủ đề']]);
+const ptCua=ma=>PT[ma]||[];
+const ptM=(maMon,ptMa)=>ptCua(maMon).filter(p=>p.ma===ptMa)[0];
+const ptDung=ma=>ptCua(ma).filter(p=>p.tt==='dung');
+const phanM=(maMon,ptMa,phMa)=>{const p=ptM(maMon,ptMa);return p?p.phan.filter(x=>x.ma===phMa)[0]:null};
+/* chia phan = DAN XUAT: mon nao khai phuong thuc thu hai thi mon do chia phan (rang buoc 4 cua phien) */
+const coChiaPhan=ma=>ptCua(ma).length>1;
+
 /* so cot DGtx mac dinh — TT 22/2021 Dieu 6 (doc ban goc 14/9/2026) */
 function cotTx(m,khoi){
  if(capOf(khoi)==='TH')return null;
@@ -438,7 +538,14 @@ function namMoi(id,ten,tt,loc,dts){
   ml.push(NN1LOP[s[2]]||'ANH');if(NN2LOP[s[2]])ml.push(NN2LOP[s[2]]);
   if(cap==='THPT')(LC[s[2]]||['LY','HOA','SINH','TIN']).forEach(x=>ml.push(x));
   (CTLOP[s[2]]||[]).concat((CTNAM[ten]||{})[s[2]]||[]).forEach(x=>ml.push(x));
-  return {ten:s[2],khoi:s[1],dt:s[0],he:s[3],ml:ml,diem:true}});
+  /* HDPC ③ — MON_CUA_LOP.phuong_thuc_id, bat buoc, mac dinh PT0.
+     Chu truong cua truong: KHTN khoi 6, 7 mot giao vien day ca ba phan mon (PT0);
+     khoi 8, 9 moi phan mon mot giao vien (PT1). Mon khac: PT0. */
+  const pt={};ml.forEach(x=>{pt[x]='PT0'});
+  if(pt.KHTN&&s[1]>=8)pt.KHTN='PT1';
+  /* PC5 cua 1A — LSDL noi tiep theo hoc ky, gieo o KHOI 7 */
+  if(pt.LSDL&&s[1]===7)pt.LSDL='PT1';
+  return {ten:s[2],khoi:s[1],dt:s[0],he:s[3],ml:ml,pt:pt,diem:true}});
  return {id:id,ten:ten,tt:tt,dt:dts.map(d=>({ma:d,cap:d==='TH'?['THCS']:['THCS','THPT']})),lop:lop};
 }
 const NAM=[
@@ -453,7 +560,15 @@ const bacTruong=n=>['TH','THCS','THPT'].filter(c=>n.dt.some(d=>d.cap.indexOf(c)>
 const CAPTEN={TH:'Tiểu học',THCS:'THCS',THPT:'THPT'};
 /* mon dang dung o mot nam: lop hoc mon do + diem truong */
 const lopHoc=(n,ma)=>n.lop.filter(l=>l.ml.indexOf(ma)>=0);
+/* rang buoc 2 — lop dang dung MOT phuong thuc cu the (moi nam hoc, ke ca nam da khoa so) */
+const lopDungPT=(n,ma,ptMa)=>lopHoc(n,ma).filter(l=>(l.pt&&l.pt[ma]||'PT0')===ptMa);
 const heChuyenNam=n=>uniq(n.lop.map(l=>l.he)).filter(h=>HEM[h].mc);
+
+/* ===== BAN CHIEU 🔗 M4.3 Chuc danh & Diem cong tac — CHI DOC (dan xuat, HDCS ②) =====
+   Cap "Hieu truong · dien thoai Hieu truong" KHONG co o nhap o M10.2.
+   Khuyet (chua bo nhiem / giua hai nhiem ky) => nhan ⚠ Dang khuyet, khong chan. */
+const HT43={ho_ten:'Nguyễn Thị Hạnh',sdt:'0913 456 789',tu:D(1,8,2022)};
+const htCua=()=>HT43;   /* demo: mot nguoi cho moi nam; that thi doc theo ho so nam hoc dang chon */
 
 
 /* =================================================================================
@@ -523,6 +638,14 @@ function tabTruong(){
   F('Mã trường CSDL ngành','<code>'+TRUONG.maCSDL+'</code> <span class="pill">20 ký tự · TT 42/2021</span>'+
     (can('suaTruong')?'<button class="btn xs" data-x="mDoiMa">✎ Đổi mã</button>':''))+
   F('Loại hình',TRUONG.loaiHinh)+F('Cơ quan quản lý',esc(TRUONG.coQuan))+
+  /* ===== CSDL-1A — bon truong dinh danh moi (§4.1c) ===== */
+  F('Mã định danh tổ chức','<code>'+esc(TRUONG.maDDTC)+'</code> <span class="pill">NĐ 69</span>')+
+  F('Mã định danh điện tử','<code>'+esc(TRUONG.maDDDT)+'</code> <span class="pill">QĐ 20</span>')+
+  F('Mã số thuế','<code>'+esc(TRUONG.maSoThue)+'</code> <span class="pill">'+TRUONG.maSoThue.replace(/\D/g,'').length+' chữ số</span>'+
+    '<div class="hint">⚠ <b>Mã số thuế của trường</b> — không phải mã số thuế cá nhân của Hiệu trưởng (ô đó ở '+dlink('M4.1')+')</div>')+
+  F('Loại trường','<b>'+esc(LOAITRUONG[TRUONG.loaiTruong]||'—')+'</b> <span class="pill">nhãn báo cáo</span>'+
+    (canhBaoLoai()?'<div class="subwarn">⚠ '+canhBaoLoai()+'</div>':'')+
+    (ghiChu?'<div class="dnote">💡 <b>Loại trường KHÔNG thay cờ <i>Trường chuyên</i>.</b> Cờ bên dưới là <b>tư cách pháp lý</b> theo TT 05/2023 và kéo theo <b>bốn hành vi</b> (trần sĩ số 35, cột Môn chuyên của hệ, cảnh báo lớp không chuyên, hạng mục học bổng). Loại trường chỉ là <b>nhãn báo cáo</b> — không làm gì cả. Gộp hai thứ thì một lần sửa nhãn cho khớp mẫu biểu sẽ <b>đổi trần sĩ số của lớp chuyên mà không ai biết</b>.</div>':''))+
   F('Trường chuyên',
     '<label style="display:inline-flex;align-items:center;gap:6px;font-weight:600;cursor:'+(can('suaTruong')?'pointer':'default')+'">'+
     '<input type="checkbox" data-x="coChuyen"'+(TRUONG.chuyen?' checked':'')+(can('suaTruong')?'':' disabled')+'>'+
@@ -535,8 +658,13 @@ function tabTruong(){
    'lớp chuyên (chỉ có trong trường chuyên, do QĐ thành lập của UBND cấp tỉnh) với lớp chọn, lớp mũi nhọn, hệ chất lượng cao mà trường THPT thường nào cũng có. '+
    'Đây là <b>tư cách pháp lý của trường</b> — không suy được từ dữ liệu vận hành, và không đổi theo năm học.</div>':'')+'</div>'+
  '<div class="card"><h3>Liên hệ '+M+'</h3>'+
-  F('Địa chỉ trụ sở chính',esc(TRUONG.diaChi))+F('Điện thoại',TRUONG.sdt)+F('Email',TRUONG.email)+F('Website',TRUONG.web)+
-  F('Logo','<span class="logo"><span class="mark">DS</span></span> <span style="font-weight:400;color:var(--ink3);font-size:12px">PNG 512×512 · dùng ở App PH-HS và văn bản in</span>')+'</div></div>'+
+  F('Địa chỉ trụ sở chính','<span class="muted">→ đã dời vào khối <b>Địa bàn</b> bên dưới</span> <span class="pill">§4.1d · cụm sáu phần</span>')+
+  F('Điện thoại',TRUONG.sdt)+F('Fax',esc(TRUONG.fax||'—'))+F('Email',TRUONG.email)+F('Website',TRUONG.web)+
+  /* cap Hieu truong — DAN XUAT tu M4.3, khong co o nhap (HDCS ②) */
+  F('Hiệu trưởng <span class="pill">dẫn xuất</span>',htDong('ho_ten'))+
+  F('Điện thoại Hiệu trưởng <span class="pill">dẫn xuất</span>',htDong('sdt'))+
+  F('Logo','<span class="logo"><span class="mark">DS</span></span> <span style="font-weight:400;color:var(--ink3);font-size:12px">PNG 512×512 · dùng ở App PH-HS và văn bản in</span>')+'</div>'+
+  cardDiaBan()+'</div>'+
  '<div><div class="card"><h3>Bậc học của trường <span class="pill">dẫn xuất — không có ô nhập</span></h3>'+
   '<div style="font-size:15px;font-weight:700;margin-bottom:4px">'+bacTruong(n).map(c=>CAPTEN[c]).join(' · ')+'</div>'+
   '<div style="font-size:12px;color:var(--ink2)">← union cấp học của '+n.dt.length+' điểm trường ở <b>M10.1 ② — hồ sơ '+n.ten+'</b> '+lk101(2,'Mở M10.1 ②')+'</div>'+
@@ -547,6 +675,7 @@ function tabTruong(){
   F('Chứng thư số của trường',esc(TRUONG.cts))+
   F('Cấu hình tích hợp CA',esc(TRUONG.ca)+(can('suaTruong')?' <button class="btn xs" data-x="mCA">✎</button>':''))+
   '<div class="ro" style="margin-top:8px">Bản ghi chứng thư ở đây — <b>một bản duy nhất cho cả trường</b>. <b>Ai được dùng</b> chứng thư này để ký thì quản lý ở '+dlink('M4.11')+'.</div></div>'+
+ cardPhapLy()+cardDatDai()+
  '<div class="card"><h3>Lịch sử thao tác</h3><div class="logl">'+LS_TRUONG.slice().reverse().map(x=>'<div class="logi '+(x.c||'')+'"><b>'+esc(x.t)+'</b><span class="mm">'+d2s(x.d)+' · '+esc(x.ng)+'</span><div style="font-size:12px;color:var(--ink2)">'+esc(x.n)+'</div></div>').join('')+'</div></div></div></div>';
 }
 function logTruong(t,nd,c){LS_TRUONG.push({d:HOMNAY,ng:nguoiLog(),t:t,n:nd||'',c:c||''})}
@@ -557,13 +686,19 @@ ACT.mSuaTruong=function(){
   '<label class="lbl">Tên trường <b>*</b></label><input class="din" id="stTen" value="'+esc(TRUONG.ten)+'">'+
   '<div class="grid2"><div><label class="lbl">Điện thoại</label><input class="din" id="stSdt" value="'+esc(TRUONG.sdt)+'"></div>'+
   '<div><label class="lbl">Email</label><input class="din" id="stMail" value="'+esc(TRUONG.email)+'"></div></div>'+
-  '<label class="lbl">Địa chỉ trụ sở chính</label><input class="din" id="stDc" value="'+esc(TRUONG.diaChi)+'">',
+  formCSDL(),
   '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="luuTruong">Lưu</button>');
 };
 ACT.luuTruong=function(){
  const t=$('#stTen').value.trim();if(!t){toast('⛔ Tên trường không được trống');return}
- const cu=TRUONG.ten;TRUONG.ten=t;TRUONG.sdt=$('#stSdt').value;TRUONG.email=$('#stMail').value;TRUONG.diaChi=$('#stDc').value;
- logTruong('Sửa thông tin trường',cu!==t?'Tên: '+cu+' → '+t:'Liên hệ');closeModal();render();toast('Đã lưu · không cần ký số — chỉ Audit (§8)');
+ /* CSDL-1A — kiem + ghi bon khoi moi TRUOC khi dong modal; tra ve chuoi ⛔ thi khong luu gi ca */
+ const loi=luuCSDL();if(loi){toast(loi);return}
+ const cu=TRUONG.ten;TRUONG.ten=t;TRUONG.sdt=$('#stSdt').value;TRUONG.email=$('#stMail').value;
+ logTruong('Sửa thông tin trường',cu!==t?'Tên: '+cu+' → '+t:'Liên hệ · định danh · địa bàn · pháp lý · đất đai');
+ closeModal();render();
+ const cb=V.canhBao||[];V.canhBao=[];
+ toast(cb.length?'Đã lưu — <b>'+cb.length+' cảnh báo, không chặn</b>:<br>'+cb.join('<br>')
+   :'Đã lưu · không cần ký số — chỉ Audit (§8)');
 };
 ACT.mCA=function(){modal('✎ Cấu hình tích hợp CA','<div class="info">Cấu hình kỹ thuật — endpoint, khóa API, môi trường. Khóa API <b>không bao giờ hiện lại</b> sau khi lưu.</div>'+
  '<label class="lbl">Nhà cung cấp</label><select class="din"><option>Viettel-CA</option><option>VNPT SmartCA</option><option>FPT-CA</option></select>'+
@@ -604,6 +739,258 @@ ACT.doTatChuyen=function(){
  toast('Đã tắt cờ <b>Trường chuyên</b> · Audit ghi kèm lý do và danh sách lớp đổi trần sĩ số');
 };
 
+/* =================================================================================
+   CSDL-1A (19/9/2026) — BON KHOI MOI cua tab ① Thong tin truong
+   §4.1c Dinh danh bo sung · §4.1d Dia ban · §4.1e Phap ly & kiem dinh · §4.1f Quy mo dat dai
+   🛑 TAT CA deu MASTER — khong truong nao doi theo nam hoc (§3).
+      Bo chon nam hoc o header KHONG cat du lieu o day.
+   Rang buoc moi: R13 (MST 10/13 chu so) · R14 (doi ma dinh danh — canh bao, khong kiem 20 so)
+      R15 (Loai truong ⇄ co Truong chuyen — ⚠ khong chan) · R16 (nam > nam hien tai — ⚠)
+      R17 (dat DG ngoai ma chua dat tu DG — ⚠) · R18 (DTXD > DTD — ⚠) · R19 (dia chi tu do — nhan ⚠)
+   ================================================================================= */
+
+/* ----- R15: Loai truong vs co Truong chuyen — ⚠ canh bao, KHONG chan ----- */
+function canhBaoLoai(){
+ if(TRUONG.loaiTruong==='chuyen'&&!TRUONG.chuyen)
+  return '<b>Loại trường</b> = <i>Chuyên</i> nhưng cờ <b>Trường chuyên</b> đang <b>tắt</b> — cờ mới là tư cách pháp lý theo TT 05/2023. Kiểm tra lại quyết định thành lập. <b>Không chặn</b> (R15)';
+ if(TRUONG.chuyen&&TRUONG.loaiTruong!=='chuyen')
+  return 'Cờ <b>Trường chuyên</b> đang bật nhưng <b>Loại trường</b> = <i>'+esc(LOAITRUONG[TRUONG.loaiTruong])+'</i> — hợp lệ nếu mẫu biểu của Sở yêu cầu thế. <b>Không chặn</b> (R15)';
+ return '';
+}
+
+/* ----- cap Hieu truong — DAN XUAT tu M4.3, khong co o nhap ----- */
+function htDong(k){
+ const h=htCua();
+ if(!h||!h[k])return '<span class="st2 w">⚠ Đang khuyết</span> <span class="muted">— chưa bổ nhiệm ở M4.3</span> '+dlink('M4.3');
+ return esc(h[k])+' '+dlink('M4.3','M4.3');
+}
+
+/* ================= §4.1d — KHOI DIA BAN ================= */
+function cardDiaBan(){
+ const F=(k,v)=>'<div class="f"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>';
+ const a=TRUONG.dc,tuDo=a.che_do==='tu_do';
+ const soCK=Object.keys(TRUONG.cv).filter(k=>(TRUONG.cv[k]||'?')==='?').length;
+ return '<div class="card"><h3>Địa bàn <span class="mas">Master</span> <span class="pill">🆕 CSDL ngành</span></h3>'+
+ /* dai canh bao — bay o nay la CAN CU CUA TIEN. Dung dau khoi, khong giau trong tooltip */
+ '<div class="danger" style="margin:0 0 10px">🛑 <b>Khu vực và sáu cờ chính sách vùng là căn cứ của hai dòng tiền khác nhau:</b>'+
+  '<div class="blk"><div class="ic">①</div><div class="tx"><b>Chế độ chính sách cho học sinh</b> — miễn giảm học phí, hỗ trợ chi phí học tập, hỗ trợ tiền ăn – tiền ở, cấp gạo '+dlink('M1.2')+' '+dlink('M7.4')+'</div></div>'+
+  '<div class="blk"><div class="ic">②</div><div class="tx"><b>Phụ cấp khu vực, phụ cấp thu hút, phụ cấp lâu năm cho nhân sự</b> '+dlink('M7.6')+'</div></div>'+
+  '<div style="margin-top:6px">Khai sai thì <b>sai theo cả hai hướng</b> — và <b>không ai phát hiện ra</b>, vì hai đầu tiêu thụ đều tin ô này là đúng.</div></div>'+
+ /* --- dia chi: cum sau phan, hai che do (HDCS ①) --- */
+ F('Địa chỉ trụ sở chính <span class="pill">'+(tuDo?'Nhập tự do':'Chọn danh mục')+'</span>',
+   '<b>'+esc(dcHien(a))+'</b>'+
+   (tuDo?'<div class="subwarn">⚠ <b>Chưa chuẩn hóa</b> — chuỗi tự do là <b>chế độ hợp lệ</b>, không phải lỗi. Không chặn lưu, không sinh việc ở M0.2 (R19). '+
+     (can('suaTruong')?'<button class="btn xs" data-x="mChuanHoa">⇄ Chuẩn hóa</button>':'')+
+     '<br>Khi đẩy lên cổng: dòng này <b>nằm lại M10.8 tab ④ Việc chưa xong</b> — ⛔ máy không tự dò mã '+dlink('M10.8')+'</div>'
+    :'<div class="hint">Tỉnh · xã/phường theo <b>danh mục hành chính hai cấp</b> (TT 13/2025 · TT 26/2025) — ⛔ không có ô Quận/Huyện</div>'))+
+ /* --- Khu vuc: DANH MUC, khong phai co --- */
+ F('Khu vực <span class="pill">danh mục — không phải cờ</span>',
+   (TRUONG.khuVuc?'<b>'+esc(TRUONG.khuVuc)+'</b>':'<span class="st2 w">Chưa xác định</span>')+
+   (ghiChu?'<div class="dnote">💡 Bốn khu vực là <b>bốn giá trị loại trừ nhau</b>, không mang nghĩa <i>có / không / chưa khảo sát</i> ⇒ <b>không phải cờ ba giá trị</b>. Để trống được — và ⛔ <b>không mặc định KV3</b>: KV3 là khu vực <b>không được cộng điểm</b>, mặc định vào đó là <b>im lặng lấy mất điểm ưu tiên của học sinh</b>.</div>':''))+
+ /* --- sau co ba gia tri --- */
+ '<div class="sech">Sáu cờ chính sách vùng <span class="pill">ba giá trị · HDCS ③</span></div>'+
+ '<table class="tb sm"><thead><tr><th>Cờ</th><th style="width:132px">Giá trị</th><th>Căn cứ</th></tr></thead><tbody>'+
+ Object.keys(CVTEN).map(k=>'<tr><td><b>'+esc(CVTEN[k])+'</b></td><td>'+co3(TRUONG.cv[k])+'</td><td style="font-size:12px;color:var(--ink2)">'+esc(CVCC[k])+'</td></tr>').join('')+
+ '</tbody></table>'+
+ (soCK?'<div class="warn" style="margin-top:8px">⚠ <b>'+soCK+' cờ còn <i>Chưa khảo sát</i></b>. 🛑 Giá trị này <b>KHÔNG được ánh xạ thành <i>Không</i></b> khi đẩy (HDCS ③) — dòng nằm lại <b>M10.8 tab ④ Việc chưa xong</b> kèm lý do nêu đích danh '+dlink('M10.8')+'</div>':'')+
+ '</div>';
+}
+
+/* ================= §4.1e — PHAP LY & KIEM DINH ================= */
+function cardPhapLy(){
+ const p=TRUONG.pl,F=(k,v)=>'<div class="f"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>';
+ const nam=(v,nhan)=>v==null?'<span class="st2 w">— chưa khai</span>':
+   ('<b>'+v+'</b>'+(namTuongLai(v)?' <span class="st2 r">⚠ lớn hơn năm '+NAMNAY+' (R16)</span>':''));
+ /* R17 — dat danh gia ngoai ma chua dat tu danh gia */
+ const lechKD=p.ngoaiDat==='c'&&p.tuDG!=='c';
+ return '<div class="card"><h3>Pháp lý &amp; kiểm định <span class="mas">Master</span> <span class="pill">🆕 CSDL ngành</span></h3>'+
+  F('Năm thành lập',nam(p.namTL))+
+  F('Số quyết định thành lập',esc(p.soQD||'—'))+
+  '<div class="sech">Chuẩn quốc gia</div>'+
+  F('Mức độ','<b>'+esc(CQG[p.cqgMuc]||'—')+'</b>')+
+  F('Năm đánh giá',nam(p.cqgNam))+
+  F('Đề nghị công nhận chuẩn QG',co3(p.cqgDeNghi))+
+  '<div class="sech">Kiểm định chất lượng giáo dục</div>'+
+  F('Đạt KĐCL — tự đánh giá',co3(p.tuDG))+
+  F('Năm tự đánh giá',nam(p.tuDGNam))+
+  F('Năm đăng ký đánh giá ngoài',nam(p.dkNgoaiNam))+
+  F('Đạt KĐCL — đánh giá ngoài',co3(p.ngoaiDat))+
+  F('Năm đánh giá ngoài',nam(p.ngoaiNam))+
+  (lechKD?'<div class="subwarn">⚠ <b>Đạt đánh giá ngoài nhưng chưa đạt tự đánh giá.</b> Thứ tự theo quy định là <b>tự đánh giá trước, đánh giá ngoài sau</b> (TT 57/2026 Điều 8 → Điều 17) — nhiều khả năng ô tự đánh giá khai thiếu. <b>Không chặn</b> (R17)</div>':'')+
+  '<div class="sech">Tổ chức Đảng</div>'+
+  F('Có chi bộ Đảng',co3(p.coChiBo))+
+  '<div class="ro" style="margin-top:8px">Căn cứ: <b>TT 57/2026/TT-BGDĐT</b> — bảo đảm chất lượng giáo dục và công nhận cơ sở giáo dục đạt chuẩn quốc gia, hiệu lực <b>07/7/2026</b>. Đã bãi bỏ TT 17/2018 <i>(tiểu học)</i> · TT 18/2018 <i>(THCS · THPT · nhiều cấp)</i> · TT 19/2018 · TT 22/2024 · TT 42/2012 <i>(Điều 26)</i>. Mức độ chuẩn quốc gia giữ <b>Mức độ 1 · Mức độ 2</b> <i>(Điều 16 k2)</i>.</div>'+
+  '<div class="warn" style="margin-top:6px">🛑 <b>Bằng công nhận cấp trước 07/7/2026 vẫn còn giá trị đến hết thời hạn ghi trên bằng</b> <i>(Điều 27 k2)</i>. Số liệu khai theo bằng đang giữ là <b>dữ liệu hợp lệ</b> — ⛔ không gắn nhãn <i>“theo quy định cũ”</i>, không cảnh báo, không chặn khi đẩy lên cổng.</div>'+
+  '</div>';
+}
+
+/* ================= §4.1f — QUY MO DAT DAI ================= */
+function cardDatDai(){
+ const t=TRUONG.dt,F=(k,v)=>'<div class="f"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>';
+ const vuot=t.dat!=null&&t.xd!=null&&t.xd>t.dat;
+ return '<div class="card"><h3>Quy mô đất đai <span class="mas">Master</span> <span class="pill">🆕 CSDL ngành</span></h3>'+
+  F('Diện tích đất',t.dat==null?'<span class="st2 w">— chưa khai</span>':'<b>'+soM2(t.dat)+'</b> m²')+
+  F('Diện tích xây dựng',(t.xd==null?'<span class="st2 w">— chưa khai</span>':'<b>'+soM2(t.xd)+'</b> m²')+
+    '<div class="hint"><b>Diện tích chiếm đất của công trình</b> — phần mặt đất mà công trình đứng lên. <b>Không phải tổng diện tích sàn.</b></div>')+
+  (vuot?'<div class="subwarn">⚠ <b>Diện tích xây dựng vượt diện tích đất.</b> Thường là đã gõ nhầm <b>tổng diện tích sàn</b> của nhà nhiều tầng. <b>Không chặn</b> (R18) — nhưng con số này đi thẳng lên cổng</div>':'')+
+  (ghiChu?'<div class="dnote">💡 <b>Vì sao chỉ cảnh báo.</b> Chặn thì người khai không lưu được gì cả và sẽ <b>bịa một số nhỏ hơn cho qua</b> — đổi một ô sai thành một ô sai <b>mà không ai còn nghi ngờ nữa</b>. Cảnh báo kèm đúng câu định nghĩa thì họ biết ngay mình nhầm cái gì.</div>':'')+
+  '<div class="ro" style="margin-top:8px">Danh mục công trình, phòng học, hạng mục xuống cấp ở '+dlink('M6.4')+' — menu này chỉ giữ <b>quy mô đất đai của trường</b>. ⛔ Master không có chiều năm học</div>'+
+  '</div>';
+}
+
+/* ================= FORM SUA — bon khoi moi ================= */
+/* Chen them vao modal ✎ Sua thong tin truong (ACT.mSuaTruong o app.20) */
+function formCSDL(){
+ const a=TRUONG.dc,p=TRUONG.pl,t=TRUONG.dt;
+ const sel=(id,map,cur)=>'<select class="din" id="'+id+'">'+Object.keys(map).map(k=>'<option value="'+k+'"'+(cur===k?' selected':'')+'>'+esc(map[k].ten||map[k])+'</option>').join('')+'</select>';
+ const co=(id,cur)=>'<select class="din" id="'+id+'">'+Object.keys(CO3).map(k=>'<option value="'+k+'"'+((cur||'?')===k?' selected':'')+'>'+CO3[k][0]+'</option>').join('')+'</select>';
+ const num=(id,v)=>'<input class="din" id="'+id+'" value="'+(v==null?'':v)+'" inputmode="numeric">';
+ return '<div class="sech">Định danh — CSDL ngành</div>'+
+ '<div class="grid2"><div><label class="lbl">Mã định danh tổ chức <span class="pill">NĐ 69</span></label><input class="din" id="stDDTC" value="'+esc(TRUONG.maDDTC)+'"></div>'+
+ '<div><label class="lbl">Mã định danh điện tử <span class="pill">QĐ 20</span></label><input class="din" id="stDDDT" value="'+esc(TRUONG.maDDDT)+'"></div></div>'+
+ '<label class="lbl">Mã số thuế <b>của trường</b></label><input class="din" id="stMST" value="'+esc(TRUONG.maSoThue)+'" style="max-width:260px">'+
+ '<div class="hint">10 hoặc 13 chữ số (R13). ⚠ <b>Không phải mã số thuế cá nhân của Hiệu trưởng</b> — ô đó ở M4.1</div>'+
+ '<label class="lbl">Loại trường</label>'+sel('stLoai',LOAITRUONG,TRUONG.loaiTruong)+
+ '<div class="hint">Nhãn báo cáo — 🛑 <b>không thay cờ Trường chuyên</b>. Lệch nhau thì ⚠ cảnh báo, không chặn (R15)</div>'+
+ '<label class="lbl">Fax</label><input class="din" id="stFax" value="'+esc(TRUONG.fax||'')+'" style="max-width:260px">'+
+
+ '<div class="sech">Địa bàn — địa chỉ trụ sở chính</div>'+
+ '<div class="seg"><button class="sgb'+(a.che_do==='danh_muc'?' on':'')+'" data-x="dcChe" data-v="danh_muc">Chọn danh mục</button>'+
+  '<button class="sgb'+(a.che_do==='tu_do'?' on':'')+'" data-x="dcChe" data-v="tu_do">Nhập tự do</button></div>'+
+ (a.che_do==='danh_muc'
+  ?'<div class="grid2"><div><label class="lbl">Tỉnh / Thành phố</label>'+sel('stTinh',TINH,a.tinh_id)+'</div>'+
+   '<div><label class="lbl">Xã / Phường</label><select class="din" id="stXa">'+
+     xaCuaTinh(a.tinh_id||Object.keys(TINH)[0]).map(k=>'<option value="'+k+'"'+(a.xa_id===k?' selected':'')+'>'+esc(XA[k].ten)+'</option>').join('')+'</select></div></div>'+
+   '<label class="lbl">Chi tiết <span class="pill">tổ, thôn, xóm, số nhà</span></label><input class="din" id="stCT" value="'+esc(a.chi_tiet||'')+'">'+
+   '<div class="hint">⛔ Không có ô <b>Quận/Huyện</b> — mô hình chính quyền hai cấp (TT 13/2025 · TT 26/2025)</div>'
+  :'<label class="lbl">Địa chỉ đầy đủ</label><input class="din" id="stTD" value="'+esc(a.chuoi_tu_do||'')+'">'+
+   '<div class="hint">⚠ Chế độ <b>hợp lệ</b> — dòng mang nhãn <i>chưa chuẩn hóa</i>, <b>không bị chặn</b> (R19). Bốn ca danh mục không phục vụ được: ngoài tỉnh · ngoài nước · danh mục chưa cập nhật sau sáp nhập · đơn vị hành chính đã giải thể</div>')+
+
+ '<div class="sech">Địa bàn — khu vực và cờ chính sách vùng</div>'+
+ '<div class="danger">🛑 Bảy ô dưới đây là <b>căn cứ của chế độ chính sách cho học sinh</b> và <b>phụ cấp khu vực cho nhân sự</b>. Khai sai thì sai theo cả hai hướng và không ai phát hiện ra.</div>'+
+ '<label class="lbl">Khu vực <span class="pill">danh mục</span></label>'+
+ '<select class="din" id="stKV" style="max-width:200px"><option value=""'+(TRUONG.khuVuc?'':' selected')+'>— Chưa xác định</option>'+
+   Object.keys(KHUVUC).map(k=>'<option value="'+k+'"'+(TRUONG.khuVuc===k?' selected':'')+'>'+k+'</option>').join('')+'</select>'+
+ '<div class="grid2">'+Object.keys(CVTEN).map(k=>'<div><label class="lbl">'+esc(CVTEN[k])+'</label>'+co('stCV_'+k,TRUONG.cv[k])+'</div>').join('')+'</div>'+
+
+ '<div class="sech">Pháp lý &amp; kiểm định</div>'+
+ '<div class="grid2"><div><label class="lbl">Năm thành lập</label>'+num('stNamTL',p.namTL)+'</div>'+
+ '<div><label class="lbl">Số quyết định thành lập</label><input class="din" id="stSoQD" value="'+esc(p.soQD||'')+'"></div></div>'+
+ '<div class="grid2"><div><label class="lbl">Chuẩn quốc gia — mức độ</label>'+sel('stCQG',CQG,p.cqgMuc)+'</div>'+
+ '<div><label class="lbl">Năm đánh giá chuẩn QG</label>'+num('stCQGNam',p.cqgNam)+'</div></div>'+
+ '<label class="lbl">Đề nghị công nhận chuẩn quốc gia</label>'+co('stCQGDN',p.cqgDeNghi)+
+ '<div class="grid2"><div><label class="lbl">Đạt KĐCL — tự đánh giá</label>'+co('stTuDG',p.tuDG)+'</div>'+
+ '<div><label class="lbl">Năm tự đánh giá</label>'+num('stTuDGNam',p.tuDGNam)+'</div></div>'+
+ '<div class="grid2"><div><label class="lbl">Năm đăng ký đánh giá ngoài</label>'+num('stDKNgoai',p.dkNgoaiNam)+'</div>'+
+ '<div><label class="lbl">Năm đánh giá ngoài</label>'+num('stNgoaiNam',p.ngoaiNam)+'</div></div>'+
+ '<div class="grid2"><div><label class="lbl">Đạt KĐCL — đánh giá ngoài</label>'+co('stNgoaiDat',p.ngoaiDat)+'</div>'+
+ '<div><label class="lbl">Có chi bộ Đảng</label>'+co('stChiBo',p.coChiBo)+'</div></div>'+
+
+ '<div class="sech">Quy mô đất đai</div>'+
+ '<div class="grid2"><div><label class="lbl">Diện tích đất (m²)</label>'+num('stDatM2',t.dat)+'</div>'+
+ '<div><label class="lbl">Diện tích xây dựng (m²)</label>'+num('stXdM2',t.xd)+'</div></div>'+
+ '<div class="hint"><b>Diện tích chiếm đất của công trình</b>, ⛔ không phải tổng diện tích sàn. Vượt diện tích đất ⇒ ⚠, không chặn (R18)</div>';
+}
+
+/* doi che do nhap dia chi ngay trong form — giu nguyen thu da go o che do kia */
+ACT.dcChe=function(el){
+ const v=el.dataset.v;if(v===TRUONG.dc.che_do)return;
+ thuNhatForm();TRUONG.dc.che_do=v;ACT.mSuaTruong();
+ toast(v==='tu_do'?'Chế độ <b>Nhập tự do</b> — dòng sẽ mang nhãn ⚠ <i>chưa chuẩn hóa</i>, <b>không bị chặn</b> (R19)'
+   :'Chế độ <b>Chọn danh mục</b> — danh mục hành chính <b>hai cấp</b>, không có ô Quận/Huyện');
+};
+/* doc tam cac o dang mo (de doi che do khong mat du lieu) */
+function thuNhatForm(){
+ const g=id=>{const e=$('#'+id);return e?e.value:null};
+ const a=TRUONG.dc;
+ if(g('stCT')!=null)a.chi_tiet=g('stCT');
+ if(g('stTD')!=null)a.chuoi_tu_do=g('stTD');
+ if(g('stTinh')!=null)a.tinh_id=g('stTinh');
+ if(g('stXa')!=null)a.xa_id=g('stXa');
+}
+
+/* ----- luu bon khoi moi: goi tu ACT.luuTruong. Tra ve chuoi loi (⛔) hoac '' ----- */
+function luuCSDL(){
+ const g=id=>{const e=$('#'+id);return e?e.value.trim():null};
+ const n=id=>{const v=g(id);return v===''||v==null?null:(/^\d+$/.test(v)?parseInt(v,10):NaN)};
+ /* --- R13: ma so thue 10 hoac 13 chu so — CHAN --- */
+ const mst=g('stMST');
+ if(mst!=null){
+  const s=mst.replace(/[\s-]/g,'');
+  if(s&&!/^\d{10}(\d{3})?$/.test(s))return '⛔ <b>Mã số thuế</b> phải có <b>10 hoặc 13 chữ số</b> (R13) — đang có '+s.replace(/\D/g,'').length+' chữ số';
+  TRUONG.maSoThue=mst;
+ }
+ /* --- R14: doi ma dinh danh — canh bao, KHONG kiem 20 chu so --- */
+ const ddtc=g('stDDTC'),dddt=g('stDDDT'),doiMa=[];
+ if(ddtc!=null&&ddtc!==TRUONG.maDDTC){doiMa.push('mã định danh tổ chức: '+TRUONG.maDDTC+' → '+ddtc);TRUONG.maDDTC=ddtc}
+ if(dddt!=null&&dddt!==TRUONG.maDDDT){doiMa.push('mã định danh điện tử: '+TRUONG.maDDDT+' → '+dddt);TRUONG.maDDDT=dddt}
+ /* --- cac so nam: khong phai so => chan; lon hon nam nay => ⚠ (R16) --- */
+ const NAMF=[['stNamTL','namTL','Năm thành lập'],['stCQGNam','cqgNam','Năm đánh giá chuẩn QG'],
+  ['stTuDGNam','tuDGNam','Năm tự đánh giá'],['stDKNgoai','dkNgoaiNam','Năm đăng ký đánh giá ngoài'],
+  ['stNgoaiNam','ngoaiNam','Năm đánh giá ngoài']];
+ const canhBao=[];
+ for(const f of NAMF){
+  const v=n(f[0]);if(v!==null&&isNaN(v))return '⛔ <b>'+f[2]+'</b> phải là số năm';
+  TRUONG.pl[f[1]]=v;
+  if(namTuongLai(v))canhBao.push('⚠ <b>'+f[2]+' = '+v+'</b> lớn hơn năm hiện tại '+NAMNAY+' (R16)');
+ }
+ /* --- dien tich --- */
+ const dat=n('stDatM2'),xd=n('stXdM2');
+ if(dat!==null&&isNaN(dat))return '⛔ <b>Diện tích đất</b> phải là số';
+ if(xd!==null&&isNaN(xd))return '⛔ <b>Diện tích xây dựng</b> phải là số';
+ TRUONG.dt.dat=dat;TRUONG.dt.xd=xd;
+ if(dat!=null&&xd!=null&&xd>dat)canhBao.push('⚠ <b>Diện tích xây dựng vượt diện tích đất</b> — thường là đã gõ nhầm tổng diện tích sàn (R18)');
+ /* --- con lai --- */
+ if(g('stFax')!=null)TRUONG.fax=g('stFax');
+ if(g('stLoai')!=null)TRUONG.loaiTruong=g('stLoai');
+ if(g('stSoQD')!=null)TRUONG.pl.soQD=g('stSoQD');
+ if(g('stCQG')!=null)TRUONG.pl.cqgMuc=g('stCQG');
+ if(g('stKV')!=null)TRUONG.khuVuc=g('stKV');
+ ['cqgDeNghi','tuDG','ngoaiDat','coChiBo'].forEach((k,i)=>{
+  const id=['stCQGDN','stTuDG','stNgoaiDat','stChiBo'][i],v=g(id);if(v!=null)TRUONG.pl[k]=v});
+ Object.keys(CVTEN).forEach(k=>{const v=g('stCV_'+k);if(v!=null)TRUONG.cv[k]=v});
+ thuNhatForm();
+ /* --- R17 --- */
+ if(TRUONG.pl.ngoaiDat==='c'&&TRUONG.pl.tuDG!=='c')
+  canhBao.push('⚠ <b>Đạt đánh giá ngoài nhưng chưa đạt tự đánh giá</b> — thứ tự đúng là tự đánh giá trước, đánh giá ngoài sau (R17)');
+ /* --- R15 --- */
+ if(canhBaoLoai())canhBao.push('⚠ <b>Loại trường</b> và cờ <b>Trường chuyên</b> đang lệch nhau (R15)');
+ if(doiMa.length)logTruong('Đổi mã định danh',doiMa.join(' · '),'w');
+ if(canhBao.length)logTruong('Cảnh báo khi lưu',canhBao.length+' cảnh báo — không chặn','w');
+ V.canhBao=canhBao;
+ return '';
+}
+
+/* ----- ⇄ Chuan hoa: MAY GOI Y, NGUOI XAC NHAN. ⛔ May khong bao gio tu doi ----- */
+ACT.mChuanHoa=function(){
+ const a=TRUONG.dc,s=(a.chuoi_tu_do||'').toLowerCase();
+ const gTinh=Object.keys(TINH).filter(k=>s.indexOf(TINH[k].ten.toLowerCase().replace('thành phố ',''))>=0)[0]||null;
+ const gXa=Object.keys(XA).filter(k=>s.indexOf(XA[k].ten.toLowerCase().replace(/^(phường|xã)\s+/,''))>=0)[0]||null;
+ modal('⇄ Chuẩn hóa địa chỉ — máy gợi ý, người xác nhận',
+  '<div class="warn">🛑 <b>Máy KHÔNG tự đổi.</b> Dò sai thì <b>sai im lặng và không ai phát hiện ra</b> — nên mọi gợi ý dưới đây đều phải có người xác nhận (HDCS ① quy tắc c).</div>'+
+  '<label class="lbl">Chuỗi đang lưu</label><div class="ro">'+esc(a.chuoi_tu_do||'—')+'</div>'+
+  '<div class="sech">Máy dò ra</div>'+
+  '<label class="lbl">Tỉnh / Thành phố</label><select class="din" id="chTinh">'+
+   '<option value="">— không nhận ra, chọn tay</option>'+
+   Object.keys(TINH).map(k=>'<option value="'+k+'"'+(gTinh===k?' selected':'')+'>'+esc(TINH[k].ten)+(gTinh===k?'  ← máy gợi ý':'')+'</option>').join('')+'</select>'+
+  '<label class="lbl">Xã / Phường</label><select class="din" id="chXa">'+
+   '<option value="">— không nhận ra, chọn tay</option>'+
+   Object.keys(XA).map(k=>'<option value="'+k+'"'+(gXa===k?' selected':'')+'>'+esc(XA[k].ten)+' · '+esc(TINH[XA[k].tinh].ten)+(gXa===k?'  ← máy gợi ý':'')+'</option>').join('')+'</select>'+
+  '<label class="lbl">Chi tiết <span class="pill">tổ, thôn, xóm, số nhà</span></label><input class="din" id="chCT" value="'+esc((a.chuoi_tu_do||'').split(',')[0].trim())+'">'+
+  (gTinh&&gXa?'':'<div class="subwarn">⚠ Máy <b>không dò đủ</b> — chọn tay, hoặc bấm Hủy để <b>giữ nguyên chuỗi tự do</b>. Giữ nguyên là <b>lựa chọn hợp lệ</b>, không phải nợ kỹ thuật</div>'),
+  '<button class="btn" data-x="close">Hủy — giữ chuỗi tự do</button><button class="btn p" data-x="doChuanHoa">Tôi xác nhận — chuyển sang danh mục</button>');
+};
+ACT.doChuanHoa=function(){
+ const t=$('#chTinh').value,x=$('#chXa').value;
+ if(!t||!x){toast('⛔ Phải chọn <b>đủ tỉnh và xã</b> mới chuyển sang chế độ danh mục — hoặc Hủy để giữ chuỗi tự do');return}
+ if(XA[x].tinh!==t){toast('⛔ Xã <b>'+esc(XA[x].ten)+'</b> không thuộc <b>'+esc(TINH[t].ten)+'</b>');return}
+ const cu=TRUONG.dc.chuoi_tu_do;
+ TRUONG.dc={che_do:'danh_muc',tinh_id:t,xa_id:x,chi_tiet:$('#chCT').value.trim(),chuoi_tu_do:cu};
+ logTruong('Chuẩn hóa địa chỉ trụ sở chính','tự do → danh mục · '+cu+' ⇒ '+dcHien(TRUONG.dc)+' · người xác nhận: '+nguoiLog());
+ closeModal();render();
+ toast('Đã chuẩn hóa — <b>người xác nhận</b>, không phải máy tự đổi. Nhãn ⚠ <i>chưa chuẩn hóa</i> đã gỡ');
+};
+
 
 /* =================================================================================
    TAB ② DANH MUC MON — Master (§5). PHT_CM chu. Don vi dong: MOT MON trong danh muc.
@@ -628,7 +1015,7 @@ function tabMon(){
   '<span class="sub" style="margin-left:auto" title="Nguồn mặc định số cột ĐGtx — Q7. Số tiết thật ở KHGD M5.1">cột <b>6…12</b> = số tiết/năm chuẩn theo khối</span>'+
   '<input class="inp" id="qq" placeholder="Tìm môn, mã…" value="'+esc(V.q)+'" style="width:150px"></div>';
  const head='<tr><th>Môn</th><th>Nguồn chương trình</th><th>Cấp · nhóm chuẩn</th><th>Kiểu ĐG mặc định</th>'+
-  KHOI.map(k=>'<th class="c k" title="Số tiết/năm chuẩn — khối '+k+'">'+k+'</th>').join('')+'<th class="c">Cụm CĐ</th>'+
+  KHOI.map(k=>'<th class="c k" title="Số tiết/năm chuẩn — khối '+k+'">'+k+'</th>').join('')+'<th class="c">Cụm CĐ</th><th class="c" title="Số phương thức tổ chức kiến thức đang dùng của môn — bấm dòng để mở panel">Phương thức</th>'+
   '<th>Đang dùng · '+n.ten+' 🔗</th><th>Nguồn tạo</th></tr>';
  const row=m=>{
   const ng=nguonMon(m),lh=lopHoc(n,m.ma),dts=uniq(lh.map(l=>l.dt));
@@ -640,16 +1027,17 @@ function tabMon(){
    '<td><span class="st2 '+(m.kdg==='ds'?'b':'v')+'">'+(m.kdg==='ds'?'Điểm số':'Nhận xét')+'</span></td>'+
    KHOI.map(k=>m.tiet[k]?'<td class="c k" title="Mặc định '+cotTx(m,k)+' cột ĐGtx/HK (TT 22 Đ.6)">'+m.tiet[k]+'</td>':'<td class="c k dim">·</td>').join('')+
    '<td class="c">'+(m.cd?'✚':'')+'</td>'+
+   '<td class="c">'+(coChiaPhan(m.ma)?'<b title="'+esc(ptDung(m.ma).map(p=>p.ten).join(' · '))+'">'+ptDung(m.ma).length+'</b>':'<span class="sub" title="chỉ PT0 — Toàn môn">1</span>')+'</td>'+
    '<td>'+(lh.length?'<b>'+lh.length+'</b> lớp · '+dts.length+' ĐT':'<span class="sub">không dạy năm này</span>')+'</td>'+
    '<td class="sub">'+nguonTao(m)+'</td></tr>';
  };
  const q=V.q.trim();
  let body='';
- if(!ds.length)body='<tr><td colspan="14"><div class="empty"><b>Không có môn nào khớp bộ lọc</b>Bỏ bớt chip lọc hoặc xóa ô tìm.</div></td></tr>';
+ if(!ds.length)body='<tr><td colspan="15"><div class="empty"><b>Không có môn nào khớp bộ lọc</b>Bỏ bớt chip lọc hoặc xóa ô tìm.</div></td></tr>';
  else if(q)body=ds.map(row).join('');           /* dang tim thi phang hoa */
  else[['gdpt','<span class="st2 o">CT GDPT</span> danh mục chuẩn theo cấp — khuôn của Bộ <span class="pill">bản nạp sẵn — chưa đồng bộ CSDL ngành</span> <span class="sub">→ vào học bạ số, CSDL ngành, xếp loại</span>'],['truong','<span class="st2 w">Của trường</span> trường tự tạo <span class="sub">→ KHÔNG vào học bạ số, CSDL ngành, xếp loại</span>']].forEach(function(g){
   const a=ds.filter(m=>nguonMon(m)===g[0]);if(!a.length)return;
-  body+='<tr class="grp"><td colspan="14">'+g[1]+' <span class="sub">· '+a.length+' môn</span></td></tr>'+a.map(row).join('');
+  body+='<tr class="grp"><td colspan="15">'+g[1]+' <span class="sub">· '+a.length+' môn</span></td></tr>'+a.map(row).join('');
  });
  const list='<div class="tbw"><table class="tb">'+'<thead>'+head+'</thead><tbody>'+body+'</tbody></table></div>';
  const note='<div class="ro" style="margin-top:9px">Năm nay trường <b>dạy môn nào, ở điểm trường nào</b> và <b>lớp nào học môn gì</b> là thông tin của <b>hồ sơ năm học</b> — '+
@@ -684,6 +1072,7 @@ function panelMon(m){
   '<div class="f"><div class="k">Cụm chuyên đề học tập</div><div class="v">'+(m.cd?'✚ có — THPT, +1 cột ĐGtx khi lớp chọn cụm (TT 22 Đ.6 k3)':'không')+'</div></div>'+
   '<div class="sech">Số tiết/năm chuẩn theo khối → số cột ĐGtx mặc định'+(m.cua?' <span class="pill">số tiết dự kiến — trường khai</span>':' <button class="rolnk" data-x="canCuTiet">Căn cứ ▾</button>')+'</div>'+tiet+
   '<div class="ro" style="margin-top:6px">Chỉ để <b>mặc định số cột ĐGtx</b> ở '+lk101(6,'M10.1 ⑥')+'. Số tiết thật của lớp ở '+dlink('M5.1','KHGD M5.1')+' — nguồn duy nhất (Q7).</div>'+
+  khoiPT(m)+
   '<div class="sech">Đang dùng ở hồ sơ năm học 🔗 M10.1</div>'+
   (namDung.length?namDung.map(x=>'<div class="blk"><div class="ic">▸</div><div class="tx"><b>'+x.n.ten+'</b> '+stTT(x.n.tt)+' — '+x.l.length+' lớp: '+
    x.l.slice(0,8).map(l=>l.ten).join(' · ')+(x.l.length>8?' …':'')+'<br>'+
@@ -802,6 +1191,160 @@ ACT.mXuat=function(){modal('⬇ Xuất danh mục môn — M10.2',
  '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="doXuat">⬇ Xuất</button>')};
 ACT.mucdich=function(el){$$('[data-x="mucdich"]').forEach(b=>b.classList.remove('on'));el.classList.add('on')};
 ACT.doXuat=function(){closeModal();toast('⬇ Đã xuất. Audit Log ghi kèm <b>mục đích đã chọn</b>')};
+
+/* =================================================================================
+   KHOI «PHUONG THUC TO CHUC KIEN THUC» — trong PANEL TANG 2 cua mot mon (tab ② §5.11)
+   Cum GDDP · phien 1B · 20/9/2026 — HDPC ① ② ⑨(rang buoc 1, 2)
+
+   🛑 KHONG tab moi, KHONG Feature moi. Quyen ghi di theo bit T/S/XO cua
+      `m10.2.danh_muc_mon` — nang luc 'mon' cua vai (PHT_CM). 0 o quyen doi.
+   🛑 PHAN KHONG GIU SO TIET — man hinh phai NOI RA dieu do (so tiet o M5.1, Q7).
+   ================================================================================= */
+
+/* ----- khoi hien thi trong panel ----- */
+function khoiPT(m){
+ const ds=ptCua(m.ma),sua=can('mon'),nDung=ds.filter(p=>p.tt==='dung').length;
+ const cap=capsMon(m)[0];
+ const bang=ds.map(function(p){
+  const mac=p.ma==='PT0';
+  /* rang buoc 2 tinh tren MOI nam hoc — ke ca nam da khoa so va da ket thuc,
+     vi "ho so nam hoc cu con tro vao no". Khac R10 cua mon (chi tinh nam con ghi duoc). */
+  const dung=NAM.map(n=>({n:n,l:lopDungPT(n,m.ma,p.ma)})).filter(x=>x.l.length);
+  const nay=dung.filter(x=>x.n.id===V.nam)[0];
+  const nLop=dung.reduce((a,x)=>a+x.l.length,0);
+  const oLop=!nLop?'<span class="sub">chưa lớp nào dùng</span>'
+   :'<b>'+(nay?nay.l.length:0)+'</b> lớp <span class="sub">· '+esc(namBy(V.nam).ten)+'</span>'+
+    (dung.length>(nay?1:0)?'<div class="sub" title="'+esc(dung.map(x=>x.n.ten+': '+x.l.length+' lớp').join(' · '))+'">'+
+      '+ '+(dung.length-(nay?1:0))+' năm khác · '+nLop+' lớp cộng lại</div>':'');
+  return '<tr class="'+(p.tt==='ngung'?'gone':'')+'">'+
+   '<td><b>'+esc(p.ten)+'</b> <span class="sub">'+p.ma+'</span>'+
+    (mac?' <button class="rolnk" data-x="ptChan" title="Có sẵn cho mọi môn — không sửa, không xóa, không ngưng dùng (ràng buộc 1). Bấm để xem vì sao">🔒 mặc định</button>':'')+
+    (p.tt==='ngung'?' <span class="st2 n">⏸ Ngưng dùng</span>':'')+
+    (p.gc?'<div class="sub">căn cứ: '+esc(p.gc)+'</div>':'')+'</td>'+
+   '<td>'+p.phan.map(x=>'<span class="chip ro on" title="mã '+x.ma+' · thứ tự mặc định '+x.thu_tu+'">'+esc(x.ten)+'</span>').join(' ')+
+    ' <span class="sub">'+p.phan.length+' phần</span></td>'+
+   '<td style="white-space:nowrap">'+oLop+'</td>'+
+   '<td style="text-align:right;white-space:nowrap">'+
+    (mac?'<button class="btn xs" data-x="ptChan" title="ràng buộc 1">🔒 Vì sao không sửa được</button>':
+     sua?(p.tt==='dung'
+       ?'<button class="btn xs" data-x="ptSua" data-m="'+m.ma+'" data-p="'+p.ma+'">✎ Sửa</button> '+
+        '<button class="btn xs" data-x="ptNgung" data-m="'+m.ma+'" data-p="'+p.ma+'">⏸ Ngưng dùng</button>'
+       :'<button class="btn xs p" data-x="ptDungLai" data-m="'+m.ma+'" data-p="'+p.ma+'">▶ Dùng lại</button>')
+     :'<span class="sub">chỉ xem</span>')+'</td></tr>';
+ }).join('');
+ return '<div class="sech">Phương thức tổ chức kiến thức <span class="pill">'+nDung+' đang dùng</span>'+
+   (coChiaPhan(m.ma)?' <span class="st2 b" title="Dẫn xuất — môn nào khai phương thức thứ hai thì môn đó chia phần">chia phần</span>':'')+'</div>'+
+  '<div class="ro">Một môn có thể tổ chức theo <b>nhiều cách</b> — cùng môn Khoa học tự nhiên, trường cho khối 6, 7 <b>một giáo viên dạy cả ba phân môn</b> '+
+   'còn khối 8, 9 <b>mỗi phân môn một giáo viên</b>. Lớp nào theo cách nào là việc của '+lk101(6,'M10.1 ⑥')+'.</div>'+
+  '<table class="tb sm ptb"><thead><tr><th>Phương thức</th><th>Phần</th><th style="white-space:nowrap">Đang dùng ở lớp</th><th></th></tr></thead><tbody>'+bang+'</tbody></table>'+
+  '<div class="ro" style="margin-top:6px">🛑 <b>Phần KHÔNG giữ số tiết.</b> Số tiết của từng phần khai ở kế hoạch giáo dục '+dlink('M5.1','M5.1')+' — '+
+   'nguồn duy nhất của số tiết thật <i>(Q7)</i>.</div>'+
+  (sua?'<div style="margin-top:8px"><button class="btn p" data-x="ptThemMo" data-m="'+m.ma+'">＋ Thêm phương thức</button>'+
+    ' <span class="sub">môn '+esc(m.ten)+' · cấp '+esc(cap)+'</span></div>':'')+
+  (ghiChu?'<div class="dnote">💡 <b>Phương thức là thực thể RIÊNG gắn khóa ngoại <code>mon_id</code>, không phải thuộc tính của bản ghi môn.</b> '+
+   '§5.2 khóa cứng <i>tên · nhóm · kiểu đánh giá · số tiết chuẩn của môn chuẩn — không sửa được, kể cả Hiệu trưởng</i>. '+
+   'Ghi phương thức vào bản ghi môn là để trường ghi vào thứ họ không được sửa. Danh sách phương thức thì ngược lại: nó là <b>dữ liệu của trường</b>, '+
+   'vì <b>TT 41/2026</b> bắt rà soát tài liệu giáo dục địa phương ít nhất 5 năm/lần và <b>CV 5208/BGDĐT-GDPT 7/8/2026</b> giao Sở hướng dẫn — '+
+   'Bộ không ra khuôn phân công, nên phần mềm không được chọn hộ trường một mô hình.</div>':'');
+}
+
+/* ----- them phuong thuc ----- */
+ACT.ptThemMo=function(el){
+ const m=monM(el.dataset.m),ma='PT'+ptCua(m.ma).length;
+ modal('＋ Thêm phương thức tổ chức kiến thức — '+esc(m.ten),
+  '<div class="info">Mã <b>'+ma+'</b> sinh tự động trong phạm vi môn. Phần bên dưới cũng sinh mã tự động <code>P1 P2 P3…</code>. '+
+   '🛑 <b>Phần không có ô số tiết</b> — số tiết khai ở KHGD '+dlink('M5.1','M5.1')+' (Q7).</div>'+
+  '<div class="grid2"><div><label class="lbl">Tên phương thức <b>*</b></label><input class="din" id="ptTen" value="Ba phân môn"></div>'+
+  '<div><label class="lbl">Căn cứ <span class="sub">(số hiệu văn bản)</span></label><input class="din" id="ptGc" value=""></div></div>'+
+  '<label class="lbl">Các phần <b>*</b> <span class="sub">— mỗi dòng một phần, theo thứ tự mặc định</span></label>'+
+  '<textarea class="ta" id="ptPhan" rows="4">Vật lí\nHóa học\nSinh học</textarea>'+
+  '<div class="ro" style="margin-top:8px">Thêm phương thức thứ hai cho một môn nghĩa là <b>môn đó chia phần</b> — nhãn <i>chia phần</i> là <b>dẫn xuất</b>, '+
+   'không có cờ nào để bật.</div>',
+  '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="ptThemLuu" data-m="'+m.ma+'">＋ Thêm</button>');
+};
+ACT.ptThemLuu=function(el){
+ const m=monM(el.dataset.m),ten=$('#ptTen').value.trim(),gc=$('#ptGc').value.trim();
+ const ds=$('#ptPhan').value.split('\n').map(s=>s.trim()).filter(Boolean);
+ if(!ten){toast('⛔ Thiếu <b>tên phương thức</b>');return}
+ if(ds.length<2){toast('⛔ Phương thức phải có <b>ít nhất 2 phần</b> — một phần thì đã là <b>PT0 Toàn môn</b>');return}
+ if(ptCua(m.ma).some(p=>chuanHoa(p.ten)===chuanHoa(ten))){toast('⛔ Môn này đã có phương thức tên <b>'+esc(ten)+'</b>');return}
+ const ma='PT'+ptCua(m.ma).length;
+ ptThem(m.ma,ma,ten,gc,ds.map((t,i)=>['P'+(i+1),t]));
+ ptM(m.ma,ma).ls.push({d:HOMNAY,ng:nguoiLog(),t:'Tạo phương thức',n:ds.length+' phần: '+ds.join(' · ')+(gc?' · căn cứ '+gc:'')});
+ logMon(m,'Thêm phương thức tổ chức kiến thức',ma+' — '+ten+' ('+ds.length+' phần)');
+ closeModal();render();
+ toast('Đã thêm <b>'+esc(ten)+'</b> ('+ma+') cho môn <b>'+esc(m.ten)+'</b> — chọn cho từng lớp ở <b>M10.1 ⑥</b>');
+};
+
+/* ----- sua phuong thuc (khong phai PT0 — rang buoc 1) ----- */
+ACT.ptSua=function(el){
+ const m=monM(el.dataset.m),p=ptM(m.ma,el.dataset.p);
+ if(p.ma==='PT0'){ptChanPT0();return}
+ modal('✎ Sửa phương thức — '+esc(p.ten),
+  '<div class="grid2"><div><label class="lbl">Tên phương thức <b>*</b></label><input class="din" id="ptTen" value="'+esc(p.ten)+'"></div>'+
+  '<div><label class="lbl">Căn cứ</label><input class="din" id="ptGc" value="'+esc(p.gc)+'"></div></div>'+
+  '<label class="lbl">Các phần</label><div class="ro">'+p.phan.map(x=>'<b>'+esc(x.ten)+'</b> <span class="sub">'+x.ma+'</span>').join(' · ')+'</div>'+
+  '<div class="warn" style="margin-top:9px">⚠ Mã phần <b>giữ nguyên</b> — '+dlink('M4.4','M4.4')+' gắn năng lực giáo viên vào <b>mã phần</b>, '+
+   dlink('M4.5','M4.5')+' khóa phân công vào <b>mã phần</b>. Đổi tên thì mọi nơi đọc tên mới; xóa một phần là việc khác, '+
+   'chưa mở ở đợt này.</div>',
+  '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="ptSuaLuu" data-m="'+m.ma+'" data-p="'+p.ma+'">Lưu</button>');
+};
+ACT.ptSuaLuu=function(el){
+ const m=monM(el.dataset.m),p=ptM(m.ma,el.dataset.p),ten=$('#ptTen').value.trim(),gc=$('#ptGc').value.trim();
+ if(!ten){toast('⛔ Thiếu tên');return}
+ const nd=[];if(ten!==p.ten)nd.push('Tên: '+p.ten+' → '+ten);if(gc!==p.gc)nd.push('Căn cứ: '+(p.gc||'—')+' → '+(gc||'—'));
+ p.ten=ten;p.gc=gc;p.ls.push({d:HOMNAY,ng:nguoiLog(),t:'Sửa phương thức',n:nd.join(' · ')||'không đổi gì'});
+ logMon(m,'Sửa phương thức '+p.ma,nd.join(' · ')||'không đổi gì');
+ closeModal();render();toast('Đã lưu · Audit');
+};
+
+/* ----- RANG BUOC 1 — PT0 khong sua, khong xoa, khong ngung dung (ke ca Hieu truong) ----- */
+ACT.ptChan=function(){ptChanPT0()};
+function ptChanPT0(){
+ modal('⛔ Không thao tác được trên <b>PT0 — Toàn môn</b> — ràng buộc 1',
+  '<div class="danger"><b>PT0 — Toàn môn</b> có sẵn cho <b>mọi môn</b>, đúng <b>một phần</b> mã <code>TOAN_MON</code> mang tên môn. '+
+   '<b>Không sửa, không xóa, không ngưng dùng — kể cả Hiệu trưởng.</b></div>'+
+  '<div class="ro">Đây là thứ giữ cho <b>22 môn còn lại chạy y hệt hôm nay</b>: môn chưa khai phương thức thứ hai thì mọi lớp dùng PT0, '+
+   'bảng chia tiết ở '+dlink('M5.1','M5.1')+' <b>một dòng</b>, '+dlink('M4.4','M4.4')+' hiện <b>một ô tích</b>, '+
+   dlink('M4.5','M4.5')+' <b>một dòng phân công</b>, ô thời khóa biểu ở '+dlink('M4.6','M4.6')+' mang <b>một tên giáo viên</b>.</div>'+
+  '<div class="ro">Muốn môn này tổ chức khác đi thì <b>thêm một phương thức mới</b>, rồi chọn cho từng lớp ở '+lk101(6,'M10.1 ⑥')+' — '+
+   'không đụng vào PT0.</div>');
+}
+
+/* ----- RANG BUOC 2 — dang duoc MON_CUA_LOP dung thi khong ngung dung duoc ----- */
+ACT.ptNgung=function(el){
+ const m=monM(el.dataset.m),p=ptM(m.ma,el.dataset.p);
+ if(p.ma==='PT0'){ptChanPT0();return}
+ const vuong=NAM.map(n=>({n:n,l:lopDungPT(n,m.ma,p.ma)})).filter(x=>x.l.length);
+ if(vuong.length){
+  const nLop=vuong.reduce((a,x)=>a+x.l.length,0);
+  modal('⛔ Không ngưng được <b>'+esc(p.ten)+'</b> — ràng buộc 2',
+   '<div class="danger"><b>'+nLop+' lớp</b> đang dùng phương thức này ở '+vuong.length+' hồ sơ năm học. '+
+    'Ngưng lúc này thì các lớp đó trỏ vào một phương thức không còn dùng được.</div>'+
+   vuong.map(x=>'<div class="blk"><div class="ic">▸</div><div class="tx"><b>'+x.n.ten+'</b> '+stTT(x.n.tt)+' — '+x.l.length+' lớp: '+
+     x.l.map(l=>esc(l.ten)).join(' · ')+'<br>'+
+     dlink('M10.1','Đổi phương thức của lớp ở M10.1 ⑥','ctx='+x.n.id+'&muc=6&lop='+encodeURIComponent(x.l[0].ten))+'</div></div>').join('')+
+   '<div class="ro">Phương thức <b>không xóa</b> — chỉ <b>Ngưng dùng</b>, vì <b>hồ sơ năm học cũ còn trỏ vào nó</b>. '+
+    'Đó cũng là lý do ràng buộc này tính <b>cả năm đã khóa sổ và đã kết thúc</b>, khác với ràng buộc <b>R10</b> của môn.</div>');
+  return}
+ modal('⏸ Ngưng dùng phương thức — '+esc(p.ten),
+  '<div class="info">Bản ghi <b>không xóa</b> — chuyển trạng thái <b>Ngưng dùng</b>. Phương thức đã ngưng <b>không hiện</b> ở ô chọn của '+
+   lk101(6,'M10.1 ⑥')+'; lớp đã chọn từ trước vẫn giữ nguyên.</div>'+
+  '<label class="lbl">Lý do <b>*</b></label><textarea class="ta" id="ptLy"></textarea>',
+  '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="ptNgungLuu" data-m="'+m.ma+'" data-p="'+p.ma+'">⏸ Ngưng dùng</button>');
+};
+ACT.ptNgungLuu=function(el){
+ const m=monM(el.dataset.m),p=ptM(m.ma,el.dataset.p),ly=$('#ptLy').value.trim();
+ if(!ly){toast('⚠ <b>Bắt buộc ghi lý do</b>');return}
+ p.tt='ngung';p.ls.push({d:HOMNAY,ng:nguoiLog(),t:'Ngưng dùng',n:ly,c:'w'});
+ logMon(m,'Ngưng dùng phương thức '+p.ma,ly,'w');closeModal();render();
+ toast('Đã ngưng <b>'+esc(p.ten)+'</b> — vẫn hiện trong panel, không hiện ở ô chọn của M10.1 ⑥');
+};
+ACT.ptDungLai=function(el){
+ const m=monM(el.dataset.m),p=ptM(m.ma,el.dataset.p);
+ p.tt='dung';p.ls.push({d:HOMNAY,ng:nguoiLog(),t:'Dùng lại',n:''});
+ logMon(m,'Dùng lại phương thức '+p.ma,'');render();toast('Đã mở lại <b>'+esc(p.ten)+'</b> — chọn được ở M10.1 ⑥');
+};
 
 
 /* =================================================================================

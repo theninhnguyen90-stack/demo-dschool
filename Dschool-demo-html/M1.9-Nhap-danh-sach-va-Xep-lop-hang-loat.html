@@ -280,6 +280,8 @@ tr:last-child td{border-bottom:none}
 .lt.on{border-color:var(--brand);background:var(--brand-soft);box-shadow:0 0 0 2px #bfdbfe}
 .lt b{display:block;font-size:13px;font-weight:700;margin-bottom:2px}
 .lt span{font-size:11.5px;color:var(--ink2);line-height:1.5;display:block}
+/* MYC-4 (21/9/2026) — dòng trống mã định danh: ✓ hợp lệ kèm nhãn ② */
+.dcrow.g{background:#f0fdf4} .tag2{display:inline-block;background:#ede9fe;color:#4338ca;border-radius:6px;padding:1px 7px;font-size:11px;font-weight:700;margin-right:6px}
 </style>
 </head>
 <body><script>/* sidebar da chuyen ve index.html — node an giu cho JS cu khong vo */
@@ -399,7 +401,8 @@ const dtTen = c => 'Điểm trường ' + c;
 /* 13 cột của mẫu — §5.1 của tệp .md */
 const COT = [
   ['STT','–','—','Chỉ để đối chiếu. Báo lỗi theo <b>số dòng Excel</b>'],
-  ['Mã định danh CSDL ngành','⛔','2b','<b>Khoá đối khớp duy nhất.</b> Trống → chặn dòng'],
+  /* MYC-4 (21/9/2026): trống ⇒ CHO QUA, nhận mức ② nhánh nhà trường; trùng / sai định dạng ⇒ vẫn chặn */
+  ['Mã định danh CSDL ngành','–','2b','<b>Khoá đối khớp khi có giá trị.</b> <s>Trống → chặn dòng</s> 🔁 <b>Trống → cho qua</b>, nhãn <b>② Chờ mã định danh — nhà trường hoàn thiện</b>. <b>Vẫn chặn</b> khi trùng hoặc sai định dạng'],
   ['Họ và tên','⛔','1',''],
   ['Ngày sinh','⛔','1','<code>dd/mm/yyyy</code>, ô Excel định dạng Text'],
   ['Giới tính','⛔','1','Nam / Nữ'],
@@ -415,7 +418,8 @@ const COT = [
 
 /* Kết quả đối chiếu mô phỏng của tệp 1.297 dòng */
 const DCHAN = [
-  {d:44, ma:'', n:'Vũ Đức Toàn', why:'<b>Thiếu mã định danh CSDL ngành.</b> Ràng buộc 2 — mã là bắt buộc cứng.', fix:''},
+  {d:153,ma:'01315020733', n:'Mai Anh Tuấn', why:'<b>Mã trùng với dòng 118</b> trong cùng tệp — hai dòng một mã là hai hồ sơ cho một người. <i>(MYC-4: trùng mã vẫn chặn)</i>', fix:''},
+  {d:590,ma:'0131502150', n:'Tô Minh Đức', why:'<b>Mã định danh sai định dạng</b> — thiếu một chữ số. <i>(MYC-4: sai định dạng vẫn chặn)</i>', fix:''},
   {d:118,ma:'01315020733', n:'Hoàng Minh Khuê', why:'<b>Mã đã tồn tại ở năm học 2026-2027</b> — lớp 8A2. Nạp lại là tạo hồ sơ trùng trong cùng một năm.', fix:''},
   {d:207,ma:'01315021088', n:'Trần Gia Bảo', why:'<b>Lớp <code>9A2 </code> không có trong danh mục</b> — dư một dấu cách ở cuối.', fix:'<button class="btn xs p" data-x="sua-lop" data-d="207">✓ Sửa thành 9A2</button>'},
   {d:349,ma:'01315021204',n:'Nguyễn Hải Yến', why:'<b>Lớp <code>9A4</code> chưa được khai</b> trong danh mục lớp năm 2026-2027.', fix:'<button class="btn xs" data-x="di-m102">↗ M10.1 ③ — khai lớp khối 9</button>'},
@@ -424,14 +428,20 @@ const DCHAN = [
   {d:874,ma:'01315021690',n:'Phạm Anh Thư', why:'<b>Lớp 9A1 đã đủ sĩ số</b> 35/35 (kèm 1 chỗ giữ). Vượt sĩ số tối đa của lớp khai ở M10.1 ③.', fix:''},
 ];
 const DCANH = [
+  {d:45, ma:'', n:'Vũ Đức Anh', why:'<b>Trống mã định danh</b> và <b>trùng họ tên + ngày sinh</b> <code>02/05/2013</code> với hồ sơ <code>01315018840</code> — dòng trống mã mất khóa đối khớp nên phép nghi trùng là chốt chặn còn lại <i>(MYC-4)</i>.', fix:''},
   {d:96, ma:'01315019022', n:'Ngô Bảo Châu', why:'<b>Mã đã tồn tại ở năm học 2025-2026</b> — lớp 7A1. Đây là em đã học ở trường: <code>TT 42/2021</code> quy định mã <b>bất biến</b>, tạo hồ sơ thứ hai là cấp hai mã cho một người.', fix:'<button class="btn xs p" data-x="noi" data-d="96">↩ Nối vào hồ sơ này</button> <button class="btn xs" data-x="tachmoi" data-d="96">+ Tạo hồ sơ mới</button>'},
   {d:301,ma:'01315021150',n:'Lê Thu Hà', why:'<b>Nghi trùng người</b> — cùng họ tên và ngày sinh <code>27/11/2012</code> với hồ sơ <code>01315019477</code>, nhưng khác mã.', fix:''},
   {d:428,ma:'01315021265',n:'Bùi Phương Linh', why:'<b>SĐT <code>0918 007 335</code> trùng dòng 429</b> (Bùi Quốc Huy). Không phải lỗi — hai em dùng chung tài khoản phụ huynh, và sẽ sinh <b>đề xuất liên kết anh chị em</b>.', fix:''},
   {d:731,ma:'01315021520',n:'Sùng A Pao', why:'Cột SĐT ghi <code>KHÔNG CÓ</code> — hồ sơ vẫn tạo, <b>không sinh tài khoản App</b>, gắn cờ <code>Chưa có kênh liên lạc App</code>.', fix:''},
 ];
-const TONG = {dong:1297, chan:7, canh:16, ok:1274};
+const TONG = {dong:1297, chan:8, canh:17, ok:1272};
+/* MYC-4 — dòng trống mã định danh: ✓ HỢP LỆ kèm nhãn ② (⛔ không phải cảnh báo mềm — trống mã là trạng thái hợp lệ có hạn) */
+const DOK2 = [
+  {d:44, ma:'', n:'Vũ Đức Toàn', why:'<span class="tag2">② Chờ mã định danh — nhà trường hoàn thiện</span> Trước 21/9 dòng này <s>bị chặn</s>. Nay hồ sơ <b>tạo được</b>; mã do cơ quan cấp, văn thư điền sau ở <b>M1.1</b> — đồng hồ tính theo hạn của lô.', fix:''},
+  {d:1022, ma:'', n:'Lò Thị Hoa', why:'<span class="tag2">② Chờ mã định danh — nhà trường hoàn thiện</span> Em mới chuyển đến giữa hè, Sở chưa cấp mã.', fix:''},
+];
 const KETQUA = {
-  moi:1268, noi:6, colop:1236, chualop:38, tk:1198, khongtk:86, acem:612
+  moi:1266, noi:6, colop:1236, chualop:38, tk:1198, khongtk:86, acem:612
 };
 
 let w1 = 1;              /* bước wizard tab ① */
@@ -474,6 +484,15 @@ const NHOMBU = {
   dc:['Địa chỉ','Thường trú · nơi ở hiện tại','2a'],
   lh:['Liên hệ','Email phụ huynh · SĐT phụ','3'],
   gd:['Gia đình','Nghề nghiệp và nơi công tác cha, mẹ · hoàn cảnh gia đình','3'],
+  /* ==== cum CSDL 19/9/2026 — phien 1C. 28 truong moi cua M1.1 vao MAU ②, ⛔ khong vao mau ① ==== */
+  gt:['Giấy tờ tùy thân 🆕','Tên gọi khác · dân tộc trên giấy khai sinh · nơi khai sinh · quê quán · CCCD ngày/nơi cấp · hộ chiếu','2a + 3',
+      'Dân tộc trên giấy khai sinh <b>xuất sẵn giá trị của Dân tộc</b> — chỉ sửa những em thực sự lệch'],
+  kb:['Khai báo cho CSDL ngành 🆕','Khu vực · học tiếng dân tộc · chương trình của Bộ · cha/mẹ là người DTTS · hướng nghiệp · tư vấn hướng nghiệp · PH có máy tính / điện thoại thông minh','3',
+      '<b>Chỉ 9 cột thật.</b> ⛔ 11 mục <b>dẫn xuất</b> không có cột nào — đưa vào mẫu là mở đường ghi thứ hai, đúng thứ HDCS ② cấm'],
+  cc:['CCCD phụ huynh 🆕','CCCD cha · CCCD mẹ · CCCD, năm sinh, giới tính người giám hộ','3',
+      '⚠ Tệp xuất ra ở <b>dạng CHE</b> <code>034•••••821</code> — muốn đổi thì gõ số đầy đủ mới <i>(Luật BVDLCN 91/2025)</i>'],
+  ct:['Cư trú cũ 🆕','Từ · Đến · Địa chỉ — <b>một dòng Excel là một mốc cư trú</b>','3',
+      '🛑 Mẫu <b>nhiều dòng trên một học sinh</b> ⇒ là <b>một lô riêng</b>, ⛔ không tick cùng nhóm khác trong một lượt'],
 };
 /* môn: số tiết/năm quyết số cột ĐGtx theo TT 22/2021 Điều 6 */
 const MON = [
@@ -508,7 +527,7 @@ let LS = [
    hq:['9.042 ô điểm ghi vào cột ⌨ Nhập trực tiếp','M3.1 bật cờ “Kết quả lỗi thời — cần chạy tính lại” cho 11 lớp'], khoa:[]},
   {id:'LO-2027-0001', t:'07/01/2027 11:20', u:'Trần Văn Định · Hiệu trưởng', loai:'Nhập danh sách',
    pv:'Năm học 2026-2027 · Điểm trường B', ghi:0, bo:412, ht:0, tep:'DS-DiemTruongB-thu.xlsx',
-   hq:['Lô thử — toàn bộ 412 dòng thiếu mã định danh, không dòng nào ghi được'], khoa:[], huy:1},
+   hq:['Lô thử — toàn bộ 412 dòng thiếu mã định danh, không dòng nào ghi được (luật cũ — từ 21/9/2026 MYC-4 các dòng này ghi được, nhãn ②)'], khoa:[], huy:1},
 ];
 
 /* ═══════════════ KHUNG ═══════════════ */
@@ -597,7 +616,7 @@ function buoc2(){
 }
 
 function dcRow(r, cls){
-  return '<div class="dcrow ' + cls + '"><div>' + (cls === 'r' ? '⛔' : '⚠') + '</div><div><b>' + r.d + '</b></div>' +
+  return '<div class="dcrow ' + cls + '"><div>' + (cls === 'r' ? '⛔' : cls === 'g' ? '✓' : '⚠') + '</div><div><b>' + r.d + '</b></div>' +
     '<div><b>' + esc(r.n) + '</b><div style="font-size:11px;color:var(--ink3)">' + (r.ma ? esc(r.ma) : '<i>trống</i>') + '</div></div>' +
     '<div></div><div class="why">' + r.why + (r.fix ? '<div class="fix">' + r.fix + '</div>' : '') + '</div></div>';
 }
@@ -615,6 +634,10 @@ function buoc3(){
     '<div class="dcrow hd2"><div></div><div>Dòng</div><div>Học sinh</div><div></div><div>Lý do</div></div>' +
     DCANH.map(r => dcRow(r, 'w')).join('') +
     '<div class="lgd">Còn ' + (TONG.canh - DCANH.length) + ' dòng cảnh báo cùng loại — rút gọn trong demo</div></div>' +
+    '<div class="card"><div class="ch">✓ Hợp lệ kèm nhãn ② — ghi được, hồ sơ nhận mức ② nhánh nhà trường <span style="font-weight:400;color:var(--ink3)">(MYC-4 · 21/9/2026)</span></div>' +
+    '<div class="dcrow hd2"><div></div><div>Dòng</div><div>Học sinh</div><div></div><div>Ghi chú</div></div>' +
+    DOK2.map(r => dcRow(r, 'g')).join('') +
+    '<div class="lgd">Trống mã <b>không</b> chặn dòng; <b>trùng</b> mã hoặc <b>sai định dạng</b> vẫn chặn (bảng ⛔ trên).</div></div>' +
     '<div class="bar"><button class="btn" data-x="w1-2">← Quay lại</button><div class="spacer"></div>' +
     '<button class="btn" data-x="tai-kq">⬇ Tải bảng đối chiếu</button>' +
     '<button class="btn p" data-x="w1-4">Xác nhận ghi →</button></div>';
@@ -785,12 +808,20 @@ function buHoSo(){
       const g = NHOMBU[k];
       return '<label class="mso" style="padding:9px 13px;border-bottom:1px solid #f1f5f9">' +
         '<input type="checkbox" data-x="nhom" data-n="' + k + '"' + (nhomBu[k] ? ' checked' : '') + '>' +
-        '<span><b>' + g[0] + '</b> <span class="st2 n">Loại ' + g[2] + '</span><br><span style="color:var(--ink2);font-size:12px">' + g[1] + '</span></span></label>';
+        '<span><b>' + g[0] + '</b> <span class="st2 n">Loại ' + g[2] + '</span><br><span style="color:var(--ink2);font-size:12px">' + g[1] + '</span>' +
+        (g[3] ? '<br><span style="color:var(--ink3);font-size:11.5px">' + g[3] + '</span>' : '') + '</span></label>';
     }).join('') + '</div>' +
     '<div class="cact"><span style="font-size:12px;color:var(--ink2)">Đã chọn <b>' + n + '</b> nhóm · tệp sẽ có <b>' + (3 + n * 2) + '</b> cột · <b>1.274</b> dòng</span>' +
     '<div class="spacer" style="flex:1"></div>' + theAi('buhoso') +
     '<button class="btn sm p" data-x="xuat-bu"' + (n ? '' : ' disabled') + '>⬇ Xuất tệp để điền</button>' +
     '<button class="btn sm" data-x="nap-bu">⬆ Nạp tệp đã điền</button></div></div>' +
+    '<div class="ro">🏠 <b>Địa chỉ trong mẫu ② là BA cột, không phải một</b> <i>(HDCS ① · M1.1 §6.3.8 — cụm CSDL 19/9/2026)</i>: ' +
+    '<code>Tỉnh / Thành phố</code> · <code>Phường / Xã</code> · <code>Chi tiết / Địa chỉ đầy đủ</code>. ' +
+    'Hai cột đầu có giá trị và khớp danh mục ⇒ <b>chế độ danh mục</b>; hai cột đầu trống mà cột ba có giá trị ⇒ <b>chế độ tự do</b>, dòng mang nhãn <b>⚠ chưa chuẩn hóa</b>.<br>' +
+    '🛑 <b>Địa chỉ ở chế độ tự do là ✓ Hợp lệ</b> — ⛔ không phải ⚠ Cảnh báo mềm, ⛔ không phải ⛔ Chặn. ' +
+    'Chặn ở đây là bắt trường đi tra 1.284 mã hành chính <b>trước khi được phép lên hệ thống</b>, và đó là cách chắc nhất để họ không lên nữa.<br>' +
+    '📋 <b>Mẫu ưu tiên giống tệp xuất từ cổng CSDL ngành.</b> Cột của cổng mà hệ thống không dùng <i>(Quận/Huyện · Phân ban · Xếp loại học lực)</i> ⇒ ' +
+    '<b>bỏ qua và NÊU TÊN ở bước đối chiếu</b>, ⛔ không báo lỗi, ⛔ không chặn dòng. Nhưng ⛔ <b>im lặng bỏ qua cũng sai</b> — trường tưởng đã nạp cả cột đó rồi đi tìm nó trong hồ sơ.</div>' +
     '<div class="ro">📎 <b>Giấy tờ không đi qua Excel.</b> Giấy khai sinh, xác nhận cư trú, học bạ cấp trước… vào bằng ba đường đã có ở <code>M1.1</code>: ' +
     'phụ huynh tải qua App <i>(F2 Yêu cầu cập nhật)</i> · nhà trường tải hộ <i>(§6.6.3)</i> · duyệt nhanh bằng ô tích <code>Đã đối chiếu bản gốc</code>. ' +
     'Menu này chỉ thêm nhánh <b>data</b> — ba nhánh kia đã dựng xong từ trước.</div>';
@@ -1055,6 +1086,14 @@ document.addEventListener('click', e => {
       '<div class="mets"><div class="met g"><div class="k">✓ Ghi được</div><div class="v">1.109</div></div>' +
       '<div class="met w"><div class="k">⚠ Để trống</div><div class="v">158</div></div>' +
       '<div class="met r"><div class="k">⛔ Bỏ qua</div><div class="v">7</div></div></div>' +
+      '<div class="info">📋 <b>3 cột trong tệp không được hệ thống sử dụng:</b> <code>Quận/Huyện</code>, <code>Phân ban</code>, <code>Xếp loại học lực</code> — ' +
+      '<b>đã bỏ qua</b>, các cột còn lại nạp bình thường. ⛔ Không báo lỗi, ⛔ không chặn dòng — nhưng <b>phải nói rõ đã bỏ qua cột nào</b> ' +
+      '<i>(M1.9 §6.5 — cụm CSDL 19/9/2026)</i>.</div>' +
+      '<div class="ro">🏠 <b>216 dòng có địa chỉ ở chế độ tự do</b> <i>(hai cột Tỉnh và Phường/Xã trống)</i> — đếm vào <b>✓ Ghi được</b>, ' +
+      'mang nhãn <b>⚠ chưa chuẩn hóa</b>. ⛔ <b>Không chặn</b>, ⛔ không cảnh báo mềm: đây là ca ④ của HDCS ① — ' +
+      '<i>nhập nhanh lúc tiếp nhận hồ sơ, chuẩn hóa sau</i>. Văn thư làm dần bằng bộ lọc <b>⚠ Địa chỉ chưa chuẩn hóa</b> ở M1.1 F1.</div>' +
+      '<div class="warn">📅 <b>Nơi khai sinh là trường Loại 2a thêm mới</b> ⇒ đồng hồ hạn nộp của nó <b>đếm từ ngày chạy lô này</b>, ' +
+      'không từ ngày nhập học <i>(§6.3 · rb 16b)</i> — nếu không, 1.284 em sẽ quá hạn ngay hôm nhập.</div>' +
       '<div class="danger"><b>7 dòng bỏ qua vì mã định danh không khớp hồ sơ nào.</b> ' +
       'Lô bổ sung <b>không có khả năng tạo hồ sơ</b> — không âm thầm sinh hồ sơ thứ hai. ' +
       'Đây là ranh giới cứng khiến cơ chế này giao được cho Văn thư dùng hằng ngày mà không cần cấp quyền tạo hồ sơ.</div>',

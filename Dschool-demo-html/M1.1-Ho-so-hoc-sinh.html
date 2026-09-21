@@ -245,6 +245,29 @@ tr:last-child td{border-bottom:none}
 .toast.on{transform:translateX(-50%)}
 .empty{padding:38px;text-align:center;color:var(--ink3)}
 .lgd{display:flex;gap:14px;font-size:11.5px;color:var(--ink3);padding:9px 13px;border-top:1px solid var(--line);flex-wrap:wrap;align-items:center}
+
+/* ===== cum CSDL 19/9/2026 — dia chi hai che do · co ba gia tri · CCCD che ===== */
+.dcsw{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px}
+.dcm{font-size:10.5px;font-weight:700;border:1px solid var(--line2);background:#fff;color:var(--ink2);border-radius:999px;padding:2px 9px;cursor:pointer}
+.dcm.on{border-color:var(--brand);background:#eef2ff;color:var(--brand)}
+.dchint{font-size:10.5px;color:var(--ink3);font-weight:400}
+.dcgrid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.dcgrid .ed{grid-column:1/-1}
+.cchtag{display:inline-block;font-size:10px;font-weight:700;color:var(--amber);background:#fff;border:1px solid var(--amber);border-radius:999px;padding:1px 7px;margin-left:6px;white-space:nowrap}
+.cchbtn{font-size:11.5px;font-weight:600;border:1px solid var(--line2);background:#fff;color:var(--ink2);border-radius:8px;padding:5px 9px;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.cchbtn.on{border-color:var(--amber);background:var(--amber-soft);color:var(--amber)}
+.cchbtn .cnt2{font-size:10px;font-weight:700;background:var(--amber);color:#fff;border-radius:999px;min-width:16px;padding:0 4px;text-align:center}
+/* MYC-2C: đổi .mask → .cmask — trùng tên lớp nền mờ của hộp thoại (display:none) nên số CCCD dạng che trước đây KHÔNG hiện */ .cmask{font-family:ui-monospace,monospace;letter-spacing:.5px}
+.co3{font-size:11px;font-weight:700;border:1px solid var(--line2);background:#fff;color:var(--ink2);border-radius:999px;padding:2px 10px;cursor:pointer;margin-right:4px}
+.co3.on{border-color:var(--brand);background:#eef2ff;color:var(--brand)}
+.ckshint{font-size:11px;font-weight:400;color:var(--ink2);background:var(--amber-soft);border:1px solid var(--amber);border-radius:7px;padding:5px 8px;margin-top:5px;line-height:1.5}
+.nganhhd{font-size:11.5px;color:var(--ink2);background:#eef2ff;border-bottom:1px solid #c7d2fe;padding:7px 12px;line-height:1.5}
+.dxf{background:#fafafa}
+.dxwait{font-size:11.5px;font-weight:700;color:var(--amber)}
+/* MYC-2C (21/9/2026) — ô ② CSDL ngành còn trống: viền VÀNG, ⛔ không đỏ (§6.3.3) · ô ảnh 4×6 (§6.3.6b) */
+.ngtag{font-size:10.5px;font-weight:700;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:1px 6px;white-space:nowrap}
+.ngtag.cho{color:#475569;background:#f1f5f9;border-color:#cbd5e1}
+.anh46{width:48px;height:72px;flex:0 0 48px;border-radius:5px;border:1px dashed var(--line2);background:#f1f5f9;display:grid;place-items:center;text-align:center;font-size:10px;font-weight:700;color:var(--ink3);line-height:1.2}
 </style>
 </head>
 <body>
@@ -393,6 +416,8 @@ const HS=[
   tt_moi:'Số 9 Trần Hữu Dực, Nam Từ Liêm',tt_ho:'',
   cha:{n:'Đỗ Văn Sơn',ns:'',ngh:'',nc:'',sdt:'0913 447 220',mail:'',chinh:1},
   me:{n:'',ns:'',ngh:'',nc:'',sdt:'',mail:'',chinh:0},
+  /* MYC-2C (21/9/2026) — ca NGƯỜI GIÁM HỘ duy nhất của demo: đủ CCCD + năm sinh, THIẾU giới tính ⇒ mục ② «CCCD · năm sinh · giới tính người giám hộ» còn thiếu */
+  gh:{n:'Đỗ Thị Lan',ns:'1957',gt:'',cccd:'001157004392',ngh:'Hưu trí',nc:'',sdt:'0904 118 392',mail:'',chinh:0},
   hc:'',diung:'',suckhoe:'',uut:[],mg:[],pending:[],
   hoso:{l1:[],l2:['Số định danh cá nhân','Nơi sinh','Địa chỉ thường trú','Mã định danh CSDL ngành','Giấy khai sinh','Giấy xác nhận cư trú'],han:22,tam:1},
   ace:[[7,'Anh/chị ruột','Hệ thống gợi ý — trùng SĐT phụ huynh, chờ văn thư xác nhận']]},
@@ -425,6 +450,308 @@ const HS=[
   hc:'',diung:'Không',suckhoe:'Bình thường',uut:[],mg:[],pending:[],hoso:{l1:[],l2:[],han:0}},
 ];
 
+/* ============ CỤM CSDL — 19/9/2026 · phiên 1C ============
+   Hai nhom truong moi cua ho so hoc sinh + CCCD phu huynh + dia chi HAI CHE DO NHAP.
+   KHONG them Feature: ca hai nhom nam trong F3. Nguon: HDCS o M1.1 §0b.
+   ⛔ Truong `dan xuat` KHONG co o nhap — doc tu menu chu, co 🔗. */
+
+/* --- HDCS ① — cum dia chi SAU PHAN. che_do quyet dinh phan nao co gia tri --- */
+const dcDM=(tinh,xa,ct)=>({che_do:'danh_muc',tinh:tinh,xa:xa,chi_tiet:ct||'',chuoi_tu_do:''});
+const dcTD=s=>({che_do:'tu_do',tinh:'',xa:'',chi_tiet:'',chuoi_tu_do:s||''});
+/* chuoi_hien_thi la DAN XUAT — khong co o nhap */
+const dcHT=d=>!d?'':d.che_do==='danh_muc'
+  ?[d.chi_tiet,d.xa,d.tinh].filter(Boolean).join(' · ')
+  :(d.chuoi_tu_do||'');
+const dcTD_q=d=>!!d&&d.che_do==='tu_do'&&!!d.chuoi_tu_do;
+const DCK=[['tt_ho','Nơi thường trú'],['tt_tam','Tạm trú'],['hien_tai','Chỗ ở hiện tại'],
+           ['qq','Quê quán'],['nsinh','Nơi sinh'],['nksinh','Nơi khai sinh']];
+/* HS co it nhat MOT cum dia chi dang o che do tu do -> bo loc ⚠ o F1 */
+const coChuaCH=h=>DCK.some(k=>dcTD_q((h.dc||{})[k[0]]));
+const TINH=['Hà Nội','Nam Định','Cao Bằng','Phú Thọ','Nghệ An'];
+const XA={'Hà Nội':['Phường Cầu Giấy','Phường Nghĩa Đô','Phường Thanh Xuân','Phường Mỹ Đình'],
+ 'Nam Định':['Xã Mỹ Hà','Phường Nam Định'],'Cao Bằng':['Xã Trùng Khánh','Phường Thục Phán'],
+ 'Phú Thọ':['Phường Việt Trì'],'Nghệ An':['Xã Nghi Lộc']};
+
+/* --- HDCS ③ — co ba gia tri. `Chua khao sat` KHONG duoc thanh `Khong` khi day --- */
+const CO3={co:'Có',khong:'Không',cks:'Chưa khảo sát'};
+const KV=['KV1','KV2','KV2-NT','KV3'];
+
+/* --- nguon DAN XUAT: lat cat doc cua menu chu.
+   `mo` = menu chu DA mo duong doc. M6.15 · M6.3 · M3.3 chua mo -> viec cua phien 2C. */
+const DX={
+ mo:{'M10.1':1,'M6.1':1,'M10.8':1,'M6.15':0,'M6.3':0,'M3.3':0},
+ lop:{'9A2':{buoi:6,song:0},'9A1':{buoi:6,song:1},'8A1':{buoi:5,song:0},'':{buoi:0,song:0}},
+ bantru:{1:'co',3:'co',5:'co',6:'co'},           /* M6.1 */
+ bantruTN:{1:'co',5:'co'},                        /* M6.1 — tu nguyen, KHAC dien chinh sach NĐ 66 */
+ doivien:{1:'co',2:'co',3:'co',6:'co',7:'co',8:'co',10:'co'},  /* M6.15 */
+ doanvien:{4:'co',5:'co',9:'co'},                 /* M6.15 · M6.3 */
+ dangvien:{},                                     /* M6.3 — ca rat it */
+ luuban:{2:'co'},                                 /* M3.3 nam lien truoc */
+ dinhdanh:{1:'Đã xác thực · 05/09/2026',3:'Đã xác thực · 05/09/2026',
+           2:'Sai lệch thông tin — chờ xử lý · 05/09/2026'}  /* M10.8 ghi ve sau moi phien */
+};
+/* em hoc KHAC lop: nut ✎ Sua tay + ly do bat buoc; lop doi so buoi KHONG ghi de gia tri nay */
+const BUOI_TAY={6:{v:3,ly:'Em học hòa nhập, chỉ dự 3 buổi/tuần theo kết luận của hội đồng'}};
+
+/* --- gieo du lieu cum CSDL vao HS. Du lieu CU => che_do = tu_do (HDCS ① quy tac d) --- */
+(function seedCSDL(){
+ HS.forEach(h=>{
+  h.dc={tt_ho:h.tt_ho?dcTD(h.tt_ho):dcTD(''),tt_tam:dcTD(''),
+        hien_tai:h.tt_moi?dcTD(h.tt_moi):dcTD(''),
+        qq:dcTD(''),nsinh:h.nsinh?dcTD(h.nsinh):dcTD(''),nksinh:dcTD('')};
+  h.tgk=h.tgk||''; h.dan_ks=h.dan_ks!==undefined?h.dan_ks:h.dan;
+  h.cccd_nc=''; h.cccd_nn=''; h.qt='Việt Nam'; h.qt2=''; h.qt2_mo=false;   /* ✅ P-1 chot 19/9 */
+  h.hc_so=''; h.hc_nc=''; h.hc_nn=''; h.hc_mo=false;
+  h.ttlop=0; h.cutru=[];
+  h.nganh={kv:'',ttdt:'cks',ctb:'co',chaDt:'cks',meDt:'cks',hndn:'cks',tvhn:'cks',phMt:'cks',phSt:'cks'};
+  h.cha.cccd=''; h.me.cccd='';
+ });
+ const g=id=>HS.find(x=>x.id===id);
+
+ /* ===== CA C1 — hoc sinh CO DU moi truong moi ===== */
+ const c1=g(1);
+ c1.dc.tt_ho   = dcDM('Hà Nội','Phường Thanh Xuân','Số 8 Nguyễn Trãi');
+ c1.dc.tt_tam  = dcDM('Hà Nội','Phường Cầu Giấy','Số 12 ngõ 45 Trần Duy Hưng');
+ c1.dc.hien_tai= dcDM('Hà Nội','Phường Cầu Giấy','Số 12 ngõ 45 Trần Duy Hưng');
+ c1.dc.qq      = dcDM('Nam Định','Xã Mỹ Hà','Thôn Đông');
+ c1.dc.nsinh   = dcDM('Hà Nội','Phường Nghĩa Đô','Bệnh viện Phụ sản Hà Nội');
+ c1.dc.nksinh  = dcDM('Hà Nội','Phường Thanh Xuân','');
+ c1.tgk='Minh Anh'; c1.dan_ks='Kinh';
+ c1.cccd_nc='12/04/2023'; c1.cccd_nn='Cục Cảnh sát QLHC về TTXH';
+ /* ✅ P-1 — em HAI quoc tich: o thu nhat GIU 'Việt Nam' (em hoc theo che do HS Viet Nam),
+    o thu hai luu trong ho so cua truong, ⛔ KHONG day len cong */
+ c1.qt2='Australia'; c1.hc_so='PA1847221'; c1.hc_nc='08/03/2024'; c1.hc_nn='Cục Quản lý xuất nhập cảnh';
+ c1.ttlop=1; c1.nganh={kv:'KV3',ttdt:'khong',ctb:'co',chaDt:'khong',meDt:'khong',hndn:'khong',tvhn:'co',phMt:'co',phSt:'co'};
+ c1.cha.cccd='034083112455'; c1.me.cccd='001186004721';
+ c1.cutru=[['09/2018','08/2023',dcTD('Số 8 Nguyễn Trãi, Thanh Xuân, Hà Nội')],
+           ['09/2023','',dcDM('Hà Nội','Phường Cầu Giấy','Số 12 ngõ 45 Trần Duy Hưng')]];
+
+ /* ===== CA C2 — BA co `Chua khao sat` => roi vao M10.8 tab ④ ===== */
+ const c2=g(2);
+ c2.dc.tt_ho=dcDM('Nam Định','Xã Mỹ Hà','Thôn Trung');
+ c2.dc.hien_tai=dcDM('Hà Nội','Phường Cầu Giấy','Số 227 Nguyễn Khang');
+ c2.dc.nsinh=dcDM('Nam Định','Phường Nam Định','');
+ c2.dan_ks='Kinh'; c2.ttlop=2;
+ c2.nganh={kv:'KV2-NT',ttdt:'cks',ctb:'co',chaDt:'khong',meDt:'khong',hndn:'khong',tvhn:'khong',phMt:'cks',phSt:'cks'};
+ c2.cha.cccd='036081004118'; c2.me.cccd='';
+
+ /* ===== CA C3 — dia chi CU chua chuan hoa: nhan ⚠, KHONG bi chan ===== */
+ const c3=g(3);
+ c3.dc.tt_ho=dcTD('TT Trùng Khánh, huyện Trùng Khánh, tỉnh Cao Bằng');
+ c3.dc.hien_tai=dcTD('Số 5 ngách 12 Hoàng Quốc Việt, Cầu Giấy');
+ c3.dc.qq=dcTD('Xã Đàm Thủy, huyện Trùng Khánh, tỉnh Cao Bằng (đơn vị hành chính đã giải thể)');
+ c3.dc.nsinh=dcTD('Bệnh viện Đa khoa Cao Bằng');
+ c3.dan_ks='Tày'; c3.ttlop=6;
+ c3.nganh={kv:'KV1',ttdt:'co',ctb:'co',chaDt:'co',meDt:'co',hndn:'khong',tvhn:'co',phMt:'khong',phSt:'co'};
+ c3.cha.cccd='080084512038'; c3.me.cccd='080087447660';
+ c3.cutru=[['09/2017','08/2024',dcTD('TT Trùng Khánh, huyện Trùng Khánh, tỉnh Cao Bằng')],
+           ['09/2024','',dcTD('Số 5 ngách 12 Hoàng Quốc Việt, Cầu Giấy')]];
+
+ /* vai ca khac de bang khong trong ro */
+ const c4=g(4); c4.dc.tt_ho=dcDM('Hà Nội','Phường Cầu Giấy','Số 88 Trần Thái Tông');
+ c4.ttlop=3; c4.nganh.kv='KV3'; c4.nganh.ttdt='khong'; c4.nganh.chaDt='khong'; c4.nganh.meDt='khong';
+ c4.cha.cccd='001081004777';
+ const c6=g(6); c6.dc.tt_ho=dcDM('Hà Nội','Phường Mỹ Đình','Số 15 Mỹ Đình');
+ c6.ttlop=4; c6.nganh.kv='KV3'; c6.nganh.hndn='co';
+ const c8=g(8); c8.dc.tt_ho=dcTD('Số 21 Nguyễn Khang, Cầu Giấy, Hà Nội');
+})();
+
+/* ===== MYC-1A (21/9/2026) — mức ② «Khai báo CSDL ngành»: DÒNG ĐẾM RIÊNG, ⛔ không nằm trong «Đủ hồ sơ» =====
+   Đồng hồ tính từ NGÀY LÔ BỔ SUNG (mẫu ② M1.9) có em ấy; chưa có lô ⇒ «chưa tới hạn» — ⛔ không đỏ,
+   ⛔ không sinh việc, ⛔ không thông báo phụ huynh. `Chưa khảo sát` TÍNH LÀ CHƯA KHAI. Trường dẫn xuất ⛔ không đếm. */
+const LOBS={1:{ngay:'01/09/2026',han:'30/11/2026',lo:'LBS-2026-03'},   /* C1 — có lô, còn hạn */
+            2:{ngay:'10/06/2026',han:'08/09/2026',lo:'LBS-2026-01'}};  /* C2 — có lô, ĐÃ QUÁ HẠN */
+const pdN=s=>{const[a,b,c]=s.split('/').map(Number);return new Date(c,b-1,a)};
+const dmDu=d=>!!d&&(d.che_do==='danh_muc'?!!d.tinh:!!d.chuoi_tu_do);  /* tu_do có chuỗi = ĐÃ KHAI (chưa chuẩn hóa là ③) */
+const c3v=v=>v==='co'||v==='khong';
+function ngState(h){
+ const gd=[],nt=[], n=h.nganh||{};
+ if(!h.qt) gd.push('Quốc tịch');
+ if(!h.ton) gd.push('Tôn giáo');
+ if(!dmDu(h.dc&&h.dc.qq)) gd.push('Quê quán');
+ if(!dmDu(h.dc&&h.dc.hien_tai)) gd.push('Chỗ ở hiện tại');
+ if(!n.kv) nt.push('Khu vực');
+ if(!c3v(n.ttdt)) nt.push('Học tiếng dân tộc');
+ if(!c3v(n.ctb)) nt.push('Học chương trình của Bộ');
+ if(!c3v(n.hndn)) nt.push('Hướng nghiệp — dạy nghề');
+ if(!c3v(n.tvhn)) nt.push('Tư vấn hướng nghiệp');
+ if(!c3v(n.chaDt)) gd.push('Cha là người DTTS');
+ if(!c3v(n.meDt)) gd.push('Mẹ là người DTTS');
+ if(!c3v(n.phMt)) gd.push('PH có máy tính và Internet');
+ if(!c3v(n.phSt)) gd.push('PH có điện thoại thông minh');
+ if(h.cha&&h.cha.n&&!h.cha.cccd) gd.push('CCCD của cha');
+ if(h.me&&h.me.n&&!h.me.cccd) gd.push('CCCD của mẹ');
+ if(h.gh&&h.gh.n&&(!h.gh.cccd||!h.gh.ns||!h.gh.gt)) gd.push('CCCD · năm sinh · giới tính người giám hộ');   /* MYC-2C: đủ BA ô mới là đã khai */
+ if(h.anh===0) gd.push('Ảnh 4×6');   /* MYC-2C — tệp mục «Ảnh 4×6» của Kho giấy tờ; bộ demo em nào cũng đã có ảnh */
+ const lo=LOBS[h.id], all=gd.concat(nt);
+ let tt='du',con=null;
+ if(all.length){ if(!lo) tt='cho'; else {con=Math.round((pdN(lo.han)-pdN(HOMNAY))/86400000); tt=con<0?'qua':'con';} }
+ return {gd,nt,all,lo,tt,con};
+}
+const NGMAU={du:'full',cho:'tmp',con:'warn',qua:'late'};
+function ngChu(s){
+ if(s.tt==='du') return '📋 Khai báo CSDL ngành: đủ';
+ const h=s.tt==='cho'?'chưa tới hạn — chưa có lô bổ sung nào có em':s.tt==='qua'?'quá hạn '+(-s.con)+'n (lô '+s.lo.lo+')':'còn '+s.con+'n (lô '+s.lo.lo+')';
+ return '📋 CSDL ngành: thiếu '+s.all.length+' · '+h;
+}
+
+/* --- ai duoc bam 👁 Hien CCCD cua nguoi truong thanh: chi VT va HT (M4.1 §6.2.2) --- */
+const HIEN_CCCD=['DQ','VT','HT'];
+const cheCCCD=s=>!s?'':s.slice(0,3)+'•••••'+s.slice(-3);
+let moCCCD={};   /* key da bam 👁 Hien trong phien nay — ghi audit tung luot */
+
+/* ======== O DIA CHI — HAI CHE DO NHAP (HDCS ① · ✅ CS-4 chot 19/9/2026) ======== */
+function dcRow(h,key,label,gid){
+ const d=(h.dc||{})[key]||dcTD('');
+ const td=d.che_do==='tu_do';
+ const ed = !daRoi(h) && editGrp===gid && (R().edit===1||R().edit==='tang1');
+ const lo=LOAI[label]||3, t=TANG[label]||2;
+ const lack=h.hoso.l2.includes(label)||h.hoso.l1.includes(label);
+ let body;
+ if(ed){
+  body=`<div class="dcsw">
+   <button class="dcm ${td?'':'on'}" data-dcmode="${key}|danh_muc">● Chọn danh mục</button>
+   <button class="dcm ${td?'on':''}" data-dcmode="${key}|tu_do">○ Nhập tự do</button>
+   <span class="dchint">${td?'Ô chuỗi — dùng cho địa chỉ ngoài tỉnh, ngoài nước, danh mục chưa cập nhật, hoặc đơn vị hành chính đã giải thể':'Tỉnh → Phường/Xã + ô chi tiết'}</span></div>`;
+  body += td
+   ? `<input class="ed" value="${d.chuoi_tu_do||''}" placeholder="Địa chỉ đầy đủ">`
+   : `<div class="dcgrid">
+      <select class="fs"><option value="">— Tỉnh / Thành phố —</option>${TINH.map(t2=>`<option${d.tinh===t2?' selected':''}>${t2}</option>`).join('')}</select>
+      <select class="fs"><option value="">— Phường / Xã —</option>${(XA[d.tinh]||[]).map(x=>`<option${d.xa===x?' selected':''}>${x}</option>`).join('')}</select>
+      <input class="ed" value="${d.chi_tiet||''}" placeholder="Tổ, thôn, xóm, số nhà">
+     </div>`;
+ } else {
+  const v=dcHT(d);
+  body = v?`${v}`:'<span style="color:var(--ink3);font-weight:400">— chưa có —</span>';
+ }
+ return `<div class="f ${lack?'lack':'t'+t}">
+  <div class="k">${t===3?'🔒':t===2?'📝':''}${cham(label)}${label}</div>
+  <div class="v">${body}
+   ${td&&d.chuoi_tu_do&&!ed?`<span class="cchtag">⚠ chưa chuẩn hóa</span>
+     <span class="rolnk" data-chuanhoa="${key}">⇄ Chuẩn hóa</span>`:''}</div>
+  <div>${lack?'<span class="lacktag">Còn thiếu</span>':laNG(label)&&!dmDu(d)?ngTag(h):td&&d.chuoi_tu_do?'<span class="rotag">chế độ tự do</span>':d.che_do==='danh_muc'&&dcHT(d)?'<span class="rotag">danh mục</span>':''}</div></div>`}
+
+/* ======== O CCCD nguoi truong thanh — che mac dinh, 👁 Hien ghi audit ======== */
+function cccdRow(h,who,label){
+ const p = who==='cha'?h.cha:who==='me'?h.me:(h.gh||{});
+ const key=h.id+'|'+who, mo=!!moCCCD[key], co=!!p.cccd;
+ const duoc=HIEN_CCCD.includes(role);
+ return `<div class="f t2">
+  <div class="k">📝<span class="lo l2a" title="② nhánh gia đình · 📋 Khai báo CSDL ngành — chỉ khi người này có trong hồ sơ"></span>📋 ${label}</div>
+  <div class="v">${co?(mo?`<b>${p.cccd}</b> <span class="cchtag" style="border-color:#94a3b8;color:#475569">đã ghi audit lượt đọc</span>`
+      :`<span class="cmask">${cheCCCD(p.cccd)}</span>`)
+      :'<span style="color:var(--ink3);font-weight:400">— chưa có —</span> '+ngTag(h)}
+   ${co&&!mo&&duoc?`<span class="rolnk" data-hien="${key}">👁 Hiện</span>`:''}
+   ${co&&!duoc?`<span class="rotag" title="Luật BVDLCN 91/2025 — chỉ Văn thư và Hiệu trưởng mở được số đầy đủ">🔒 chỉ VT và HT mở được</span>`:''}</div>
+  <div><span class="rotag">dữ liệu người trưởng thành</span></div></div>`}
+
+/* ======== MYC-2C — ô ② CSDL ngành của NGƯỜI GIÁM HỘ (năm sinh · giới tính): chỉ vẽ khi hồ sơ có người giám hộ ======== */
+function ngRow(label,v,h){
+ return `<div class="f t2">
+  <div class="k">📝<span class="lo l2a" title="② nhánh gia đình · 📋 Khai báo CSDL ngành — chỉ khi hồ sơ có người giám hộ"></span>📋 ${label}</div>
+  <div class="v">${v||'<span style="color:var(--ink3);font-weight:400">— chưa có —</span> '+ngTag(h)}</div><div></div></div>`}
+/* ======== MYC-2C — Ô ẢNH 4×6 (M1.1 §6.3.6b): ⛔ không phải trường — chỉ HIỂN THỊ tệp mục «Ảnh 4×6» của Kho giấy tờ ======== */
+function anhRow(h){
+ const co=h.anh!==0, veF6=R().tabs.includes('e');
+ return `<div class="f t2">
+  <div class="k"><span class="lo l2a" title="② nhánh gia đình · 📋 Khai báo CSDL ngành"></span>📋 Ảnh 4×6</div>
+  <div class="v" style="display:flex;gap:10px;align-items:center">
+   <div class="anh46">${co?h.i:'Chưa có ảnh 4×6'}</div>
+   <span style="font-weight:400;font-size:11.5px;color:var(--ink2)">${co?'Tệp của mục <b>Ảnh 4×6</b> ở Kho giấy tờ':'Nộp ở Kho giấy tờ'} — ⛔ không tải ảnh ở đây, thay ảnh bằng <b>⟳ Thay thế</b> ở Kho giấy tờ
+   ${veF6?'<span class="rolnk" data-ptab="e">→ Kho giấy tờ</span>':''}</span></div>
+  <div>${co?'':ngTag(h)}</div></div>`}
+
+/* ======== NHOM MOI — 📋 KHAI BAO CHO CSDL NGANH ======== */
+function co3Row(label,val,key,gid,h,tang){
+ const ed = !daRoi(h) && editGrp===gid && (R().edit===1 || (R().edit==='tang1'&&tang===1));
+ const cks=val==='cks';
+ return `<div class="f t${tang}">
+  <div class="k">${tang===3?'🔒':tang===2?'📝':''}${cham(label)}${label}</div>
+  <div class="v">${ed?['co','khong','cks'].map(v=>`<button class="co3 ${val===v?'on':''}" data-co3="${key}|${v}">${CO3[v]}</button>`).join('')
+    :`<b>${CO3[val]||'—'}</b>`}
+   ${cks?'<div class="ckshint">⚠ Chưa khảo sát — dòng này <b>nằm lại M10.8 tab ④ Việc chưa xong</b> khi đẩy, kèm lý do nêu đích danh. ⛔ KHÔNG bị đổi thành <b>Không</b>.</div>':''}</div>
+  <div>${cks?'<span class="pending">Chưa khảo sát</span>':c3v(val)?'':ngTag(h)}</div></div>`}
+
+function dxRow(label,val,menu,h,extra){
+ const daMo=DX.mo[menu.split(' ')[0]]===1;
+ const coGo=daMo&&['DQ','VT','HT','PHT_DT','GVCN'].includes(role);
+ return `<div class="f dxf">
+  <div class="k">🔗${cham(label,'nguon')}${label}</div>
+  <div class="v">${daMo?`<b>${val}</b>`:`<span class="dxwait">⏳ chờ menu chủ mở đường đọc</span>`}
+   ${coGo?`<span class="rolnk" data-go="${menu}">→ ${menu}</span>`:''}
+   ${extra||''}</div>
+  <div><span class="rotag">dẫn xuất — không có ô nhập</span></div></div>`}
+
+function nganhGrp(h){
+ const n=h.nganh||{}, gid='gnganh';
+ const ed=editGrp===gid, canEdit=!daRoi(h)&&(R().edit===1||R().edit==='tang1');
+ const lop=DX.lop[h.lop]||{buoi:0,song:0};
+ const tay=BUOI_TAY[h.id];
+ const buoi = tay?`${tay.v} buổi/tuần <span class="cchtag" style="border-color:#6366f1;color:#4338ca">đã sửa tay</span>`
+                 :(lop.buoi?lop.buoi+' buổi/tuần':'—');
+ const dsach=(m,id)=>{const daMo=DX.mo[m]===1; if(!daMo)return '⏳';
+   return (m==='M6.15'?(DX.doivien[id]||DX.doanvien[id]):0)?'Có':'Không'};
+ const kvGoi = h.dc&&h.dc.tt_ho&&h.dc.tt_ho.che_do==='danh_muc';
+ const rows=[
+  /* --- 9 muc THAT --- */
+  `<div class="f t3"><div class="k">🔒${cham('Khu vực')}Khu vực</div>
+   <div class="v">${ed?`<select class="fs"><option value="">— chọn —</option>${KV.map(k=>`<option${n.kv===k?' selected':''}>${k}</option>`).join('')}</select>`
+     :(n.kv?`<b>${n.kv}</b>`:'<span style="color:var(--ink3);font-weight:400">— chưa có —</span>')}
+    ${kvGoi?`<span class="rolnk" data-kvgoi="1">💡 Gợi ý theo Nơi thường trú</span>`
+     :`<span class="rotag" title="Nơi thường trú đang ở chế độ tự do — máy không dò được">⚠ không gợi ý được: địa chỉ chưa chuẩn hóa</span>`}</div>
+   <div>${n.kv?'<span class="rotag">danh mục, không phải cờ</span>':ngTag(h)}</div></div>`,
+  co3Row('Học tiếng dân tộc',n.ttdt,'ttdt',gid,h,3),
+  co3Row('Học chương trình giáo dục của Bộ',n.ctb,'ctb',gid,h,3),
+  co3Row('Có cha là người dân tộc thiểu số',n.chaDt,'chaDt',gid,h,2),
+  co3Row('Có mẹ là người dân tộc thiểu số',n.meDt,'meDt',gid,h,2),
+  co3Row('Hướng nghiệp — dạy nghề',n.hndn,'hndn',gid,h,3),
+  co3Row('Tư vấn giáo dục hướng nghiệp',n.tvhn,'tvhn',gid,h,3),
+  co3Row('Phụ huynh có máy tính và Internet',n.phMt,'phMt',gid,h,1),
+  co3Row('Phụ huynh có điện thoại thông minh',n.phSt,'phSt',gid,h,1),
+  `<div class="qsep">9 mục dưới đây là <b>dẫn xuất</b> — ⛔ không có ô nhập, kể cả cho Hiệu trưởng <i>(HDCS ②)</i></div>`,
+  /* --- 9 muc DAN XUAT --- */
+  dxRow('Số buổi học / tuần',buoi,'M10.1',h,
+    (R().edit===1&&!daRoi(h))?`<span class="rolnk" data-suatay="1">✎ Sửa tay</span>${tay?`<div class="ckshint" style="border-color:#c7d2fe;background:#eef2ff">Lý do: ${tay.ly} · ⛔ lớp đổi số buổi <b>không ghi đè</b> giá trị này</div>`:''}`:''),
+  dxRow('Học song ngữ',lop.song?'Có':'Không','M10.1',h),
+  dxRow('Lưu ban năm trước',DX.luuban[h.id]?'Có':'Không','M3.3',h),
+  dxRow('Học sinh bán trú',DX.bantru[h.id]?'Có':'Không','M6.1',h),
+  dxRow('Bán trú tự nguyện',DX.bantruTN[h.id]?'Có':'Không','M6.1',h),
+  dxRow('Đội viên',dsach('M6.15',h.id),'M6.15',h),
+  dxRow('Đoàn viên',DX.doanvien[h.id]?'Có':'Không','M6.15',h),
+  dxRow('Đảng viên',DX.dangvien[h.id]?'Có':'Không','M6.3',h),
+  dxRow('Trạng thái định danh với CSDLQG Dân cư',DX.dinhdanh[h.id]||'Chưa gửi định danh','M10.8',h),
+ ].join('');
+ return `<div class="grp"><div class="gh">📋 Khai báo cho CSDL ngành<span class="sp"></span>
+   ${canEdit?(ed?`<button class="btn xs p" data-save="${gid}">Lưu nhóm</button> <button class="btn xs" data-cancel="1">Hủy</button>`
+             :`<button class="btn xs" data-eg="${gid}">✎ Sửa nhóm</button>`):''}</div>
+  <div class="nganhhd">Những mục dưới đây phục vụ <b>báo cáo lên CSDL ngành</b>. <b>Chưa khảo sát cũng là một câu trả lời hợp lệ.</b></div>
+  <div class="gb">${rows}</div>
+  <div style="padding:8px 12px;border-top:1px solid #f1f5f9;font-size:11.5px;color:var(--ink3)">
+   <b>18 mục — 9 thật, 9 dẫn xuất.</b> 9 mục thật là <b>mức ② — Khai báo CSDL ngành</b> <i>(📋 · §3.0.4)</i>: đếm ở <b>dòng riêng</b> «📋 Khai báo CSDL ngành», đồng hồ từ <b>ngày lô bổ sung</b>;
+   ⛔ không tính vào trạng thái «Đủ hồ sơ» <i>(§3.2b — thêm trường mới không được biến hồ sơ đang Đủ thành Thiếu)</i>. 9 mục dẫn xuất <b>theo nguồn</b> — ⛔ không chấm, ⛔ không đếm ở M1.1.<br>
+   🛑 <b>Chưa khảo sát ⛔ KHÔNG được ánh xạ thành Không khi đẩy</b> — <i>"trường chưa hỏi em này"</i> và <i>"em này không"</i> là hai câu khác nhau;
+   biến cái đầu thành cái sau là <b>bịa một số liệu rồi gửi lên Sở</b>.<br>
+   🛑 Em <b>không có trong danh sách</b> Đội · Đoàn · Đảng ⇒ giá trị <b>Không</b>, ⛔ <b>không phải Chưa khảo sát</b> — danh sách nằm sẵn trên hệ thống
+   thì câu trả lời đã biết chắc chắn.<br>
+   ⏳ <b>M6.15 · M6.3 · M3.3 chưa mở đường đọc</b> ⇒ bốn cờ hiện <b>⏳ chờ menu chủ mở đường đọc</b>, ⛔ <b>không hiện Không</b>. Việc của <b>phiên 2C</b>.</div></div>`}
+
+/* ======== BANG THONG TIN CU TRU CU — moi dong la MOT cum dia chi + khoang thoi gian ======== */
+function cutruGrp(h){
+ const l=h.cutru||[];
+ const rows=l.length?l.map((r,i)=>`<div class="f">
+   <div class="k">${r[0]} → ${r[1]||'<b>đang ở</b>'}</div>
+   <div class="v">${dcHT(r[2])}${dcTD_q(r[2])?' <span class="cchtag">⚠ chưa chuẩn hóa</span>':' <span class="rotag">danh mục</span>'}</div>
+   <div>${R().edit===1&&!daRoi(h)?'<span class="rolnk" data-ctsua="'+i+'">✎ Sửa</span>':''}</div></div>`).join('')
+  :'<div class="f"><div class="k">—</div><div class="v" style="font-weight:400;color:var(--ink3)">Chưa khai mốc cư trú nào</div><div></div></div>';
+ return `<div class="grp"><div class="gh">🗂 Thông tin cư trú cũ<span class="sp"></span>
+   ${R().edit===1&&!daRoi(h)?'<button class="btn xs" data-ctthem="1">＋ Thêm dòng</button>':''}</div>
+  <div class="gb">${rows}</div>
+  <div style="padding:8px 12px;border-top:1px solid #f1f5f9;font-size:11.5px;color:var(--ink3)">
+   🛑 <b>Một bảng lịch sử</b> — mỗi dòng là <b>một cụm địa chỉ + khoảng thời gian</b>, ⛔ <b>không phải một ô chuỗi</b>.
+   Đây là <b>căn cứ của diện chính sách theo vùng</b>: M1.2 phải trả lời được <i>"thời điểm xét, em cư trú ở xã đặc biệt khó khăn hay không"</i> —
+   một ô chuỗi <i>"trước ở Nam Định, sau về Hà Nội"</i> thì không máy nào đọc ra khoảng thời gian.<br>
+   ⛔ <b>Không tự sinh dòng</b> khi Nơi thường trú đổi · ⛔ <b>không xóa dòng</b>, chỉ sửa — xóa một mốc cư trú là xóa căn cứ của một diện đã từng được hưởng.</div></div>`}
+
 const NAV=[
  ['','🏠 Trung tâm điều hành',[['M0.1','Bảng điều khiển'],['M0.2','Việc cần làm','6'],['M0.3','Thông báo'],['M0.4','Trang cá nhân']]],
  ['hs','👥 Học sinh',[['M1.1','Hồ sơ học sinh'],['M1.2','Đối tượng ưu tiên'],['M1.3','Học bạ điện tử'],
@@ -452,6 +779,7 @@ const TABN={ab:'Cá nhân & Gia đình',c:'Đối tượng ưu tiên',d:'Quá tr
 let role='DQ',t1='ds',cur=null,tab='ab',editGrp=null,openG={};
 const fDT=new Set(),fKH=new Set(),fLOP=new Set();
 let fTT='Đang theo học',fHS='Tất cả';
+let fCCH=false;   /* bo loc ⚠ Dia chi chua chuan hoa — HDCS ① quy tac e */
 /* B4: ho so HS da roi truong giu vinh vien nhung KHOA sua */
 const ROIT={tn:'Đã tốt nghiệp',cd:'Đã chuyển đi',thh:'Đã thôi học'};
 const daRoi=h=>!!ROIT[h.tt];
@@ -499,10 +827,13 @@ function rows(){
  if(fTT==='Đã rời trường')r=r.filter(h=>daRoi(h));
  if(ROIT[fTT]!==undefined&&0)0;
  Object.keys(ROIT).forEach(k=>{if(fTT===ROIT[k])r=r.filter(h=>h.tt===k)});
- if(fHS==='Thiếu — gia đình phải nộp')r=r.filter(h=>hsState(h)[3]>0);
+ const NGF={'CSDL ngành — chưa tới hạn':'cho','CSDL ngành — thiếu còn hạn':'con','CSDL ngành — thiếu quá hạn':'qua','CSDL ngành — đủ khai báo':'du'};
+ if(NGF[fHS]) r=r.filter(h=>ngState(h).tt===NGF[fHS]);
+ else if(fHS==='Thiếu — gia đình phải nộp')r=r.filter(h=>hsState(h)[3]>0);
  else if(fHS==='Thiếu — nhà trường phải hoàn thiện')r=r.filter(h=>hsState(h)[4]>0);
  else if(fHS!=='Tất cả'){const m={'Đủ hồ sơ':'full','Thiếu còn hạn':'warn','Thiếu quá hạn':'late','Hồ sơ tạm':'tmp'};
   r=r.filter(h=>hsState(h)[0]===m[fHS])}
+ if(fCCH)r=r.filter(h=>coChuaCH(h));   /* HDCS ① quy tac e — de van thu lam dan */
  return r}
 
 function sidebar(){
@@ -546,7 +877,11 @@ function filters(){
     ${['Thiếu còn hạn','Thiếu quá hạn','Hồ sơ tạm'].map(o=>`<option${fHS===o?' selected':''}>${o}</option>`).join('')}</optgroup>
    <optgroup label="Theo ai phải làm">
     ${['Thiếu — gia đình phải nộp','Thiếu — nhà trường phải hoàn thiện'].map(o=>`<option${fHS===o?' selected':''}>${o}</option>`).join('')}</optgroup>
+   <optgroup label="Theo khai báo CSDL ngành (dòng riêng)">
+    ${['CSDL ngành — chưa tới hạn','CSDL ngành — thiếu còn hạn','CSDL ngành — thiếu quá hạn','CSDL ngành — đủ khai báo'].map(o=>`<option${fHS===o?' selected':''}>${o}</option>`).join('')}</optgroup>
   </select>
+  <button class="cchbtn ${fCCH?'on':''}" data-cch="1" title="Dòng ở chế độ Nhập tự do — việc làm dần của văn thư, KHÔNG phải hồ sơ sai">⚠ Địa chỉ chưa chuẩn hóa
+   <span class="cnt2">${b.filter(h=>coChuaCH(h)).length}</span></button>
   <div class="sum"><span>Tổng <b>${b.length}</b></span>
    <span>Đủ hồ sơ <b>${b.filter(h=>hsState(h)[0]==='full').length}</b></span>
    <span style="color:var(--amber)">Thiếu <b>${b.filter(h=>['warn','late','tmp'].includes(hsState(h)[0])).length}</b></span></div>
@@ -565,7 +900,8 @@ function hsRow(h,sub){
   <div class="who2"><div class="ava2">${h.i}</div><div class="i"><b>${hl(h.n)}</b>
    <span>${sub?h.ma:h.dt+' · '+(h.lop||'<b style="color:#4338ca">Chưa xếp lớp</b>')}</span>${fl.length?`<div class="flags">${fl.join('')}</div>`:''}</div></div>
   <div class="hcol">${h.ns}<br><span style="color:var(--ink3)">${h.gt}</span></div>
-  <div class="hcol keep"><span class="hs2 ${c}">${lb}</span>${n?`<br><span style="font-size:11px;color:var(--ink3)">thiếu ${n}: ${missTxt(na,nb)}</span>`:''}</div>
+  <div class="hcol keep"><span class="hs2 ${c}">${lb}</span>${n?`<br><span style="font-size:11px;color:var(--ink3)">thiếu ${n}: ${missTxt(na,nb)}</span>`:''}
+   ${(()=>{const s=ngState(h);return s.tt==='du'?'':`<br><span class="hs2 ${NGMAU[s.tt]}" style="font-size:10.5px;margin-top:3px" title="Gia đình: ${s.gd.join(' · ')||'—'}&#10;Nhà trường: ${s.nt.join(' · ')||'—'}">${ngChu(s)}</span>`})()}</div>
   <div class="hcol"><span class="stt ${h.tt}">${h.tt==='dh'?'Đang học':h.tt==='cxl'?'Chờ xếp lớp':ROIT[h.tt]||'Bảo lưu'}</span></div>
   <div class="hcol" style="font-size:11.5px">${lienhe}</div></div>`}
 
@@ -595,7 +931,7 @@ function listTab(){
        <span class="ct"><span>${rd.length} HS</span>${md?`<span class="miss">${md} thiếu hồ sơ</span>`:''}</span></div>
       ${op?inner:''}`}).join('');
  }
- return `${filters()}
+ return `${dlBang()}${filters()}
   <div class="stage ${cur?'open':''}">
    <div class="listw">
     ${flat&&q?`<div class="ro" style="margin:9px 13px">🔍 Đang tìm kiếm — danh sách <b>tự phẳng hóa</b>, mỗi dòng hiện Điểm trường · Lớp</div>`:''}
@@ -688,9 +1024,44 @@ function aceGrp(h){
    đánh dấu <b>Đã ra trường</b> và <b>loại khỏi thuật toán phân lớp</b> — xóa im lặng là mất một dữ liệu văn thư đã xác nhận bằng tay.</div></div>`}
 const LOAI={'Họ và tên':1,'Ngày sinh':1,'Giới tính':1,'Mã học sinh':1,
  'Số định danh cá nhân':'2a','Nơi sinh':'2a','Dân tộc':'2a','Địa chỉ thường trú':'2a',
+ /* cum CSDL 19/9/2026 — CHI hai truong vao Loai 2a, 26 truong con lai Loai 3 (§3.2b) */
+ 'Dân tộc trên giấy khai sinh':'2a','Nơi khai sinh':'2a',
+ 'Tên gọi khác':3,'Quê quán':3,'CCCD — Ngày cấp':3,'CCCD — Nơi cấp':3,'Quốc tịch':3,
+ 'Số hộ chiếu':3,'Hộ chiếu — Ngày cấp':3,'Hộ chiếu — Nơi cấp':3,'Thứ tự trong lớp':3,'Quốc tịch thứ hai':3,
+ 'Nơi thường trú':'2a','Tạm trú':3,'Chỗ ở hiện tại':3,
  'Điểm trường':'2b','Lớp':'2b','Hệ đào tạo':'2b','Mã định danh CSDL ngành':'2b',
  'Tôn giáo':3,'Địa chỉ liên hệ hiện tại':3,'Email':3,'Nghề nghiệp':3,'Nơi công tác':3,'Năm sinh':3,
- 'Số điện thoại':1,'Họ tên':1};
+ 'Số điện thoại':1,'Họ tên':1,
+ /* MYC-1A F.4 (21/9/2026 — anh Ninh chốt): Quan hệ vào Loại 1 / mức ① — đi liền với SĐT tạo tài khoản App */
+ 'Quan hệ với học sinh':1};
+/* ===== MYC-3B (21/9/2026) — CHẤM MÀU đọc theo MỨC (M1.1 §6.3.3 · bảng §3.0.4), ⛔ không đọc LOAI cũ =====
+   LOAI ở trên GIỮ NGUYÊN — nó còn đếm 2a/2b cho «Đủ hồ sơ» (hsState). MUC chỉ quyết định CHẤM:
+   l1 ① · l2a ② gia đình · l2b ② nhà trường · l3 ③ · n2a/n2b ② 📋 Khai báo CSDL ngành · null = «—» hoặc «theo nguồn» ⇒ ⛔ không chấm.
+   Nhãn nào không có ở MUC ⇒ rơi về LOAI cũ (không đoán). */
+const MUC={
+ /* ① */ 'Họ và tên':'l1','Ngày sinh':'l1','Giới tính':'l1','Họ tên':'l1','Số điện thoại':'l1','Quan hệ với học sinh':'l1',
+ /* ② hồ sơ nhập học */ 'Số định danh cá nhân':'l2a','Nơi sinh':'l2a','Dân tộc':'l2a','Dân tộc trên giấy khai sinh':'l2a','Nơi khai sinh':'l2a',
+   'Nơi thường trú':'l2a','Địa chỉ thường trú':'l2a','Điểm trường':'l2b','Lớp':'l2b','Mã định danh CSDL ngành':'l2b',
+ /* ② Khai báo CSDL ngành — nhánh gia đình */ 'Quốc tịch':'n2a','Tôn giáo':'n2a','Quê quán':'n2a','Chỗ ở hiện tại':'n2a',
+   'Có cha là người dân tộc thiểu số':'n2a','Có mẹ là người dân tộc thiểu số':'n2a','Phụ huynh có máy tính và Internet':'n2a','Phụ huynh có điện thoại thông minh':'n2a',
+ /* ② Khai báo CSDL ngành — nhánh nhà trường */ 'Khu vực':'n2b','Học tiếng dân tộc':'n2b','Học chương trình giáo dục của Bộ':'n2b',
+   'Hướng nghiệp — dạy nghề':'n2b','Tư vấn giáo dục hướng nghiệp':'n2b',
+ /* ③ */ 'Năm sinh':'l3','Nghề nghiệp':'l3','Nơi công tác':'l3','Email':'l3',
+ /* theo nguồn */ 'Mã học sinh':null,'Hệ đào tạo':null,'Trạng thái':null,'Tình trạng sức khỏe':null,'Dị ứng':null,
+ /* — chỉ có khi có sự việc */ 'Tên gọi khác':null,'CCCD — Ngày cấp':null,'CCCD — Nơi cấp':null,'Quốc tịch thứ hai':null,'Thứ tự trong lớp':null,
+   'Số hộ chiếu':null,'Hộ chiếu — Ngày cấp':null,'Hộ chiếu — Nơi cấp':null,'Tạm trú':null,'Mô tả':null};
+const MUC_TT={l1:'① Bắt buộc — thiếu thì không tạo được hồ sơ',l2a:'② Cần bổ sung sớm — nhánh gia đình · tính vào «Đủ hồ sơ»',
+ l2b:'② Cần bổ sung sớm — nhánh nhà trường · tính vào «Đủ hồ sơ»',l3:'③ Nên có — không tính thiếu, không nhắc',
+ n2a:'② nhánh gia đình · 📋 Khai báo CSDL ngành — dòng đếm riêng, ⛔ không ở «Đủ hồ sơ»',
+ n2b:'② nhánh nhà trường · 📋 Khai báo CSDL ngành — dòng đếm riêng, ⛔ không ở «Đủ hồ sơ»'};
+function cham(k,nguon){
+ const m=nguon?null:(k in MUC?MUC[k]:'l'+(LOAI[k]||3));
+ if(!m)return '';
+ return m[0]==='n'?`<span class="lo l${m.slice(1)}" title="${MUC_TT[m]}"></span>📋 `:`<span class="lo ${m}" title="${MUC_TT[m]}"></span>`}
+const laNG=k=>(MUC[k]||'')[0]==='n';
+/* ô ② CSDL ngành còn trống: vàng khi em đã có lô bổ sung · xám «chưa tới hạn» khi chưa có lô (§6.3.3 · §3.0.3) */
+const ngTag=h=>h&&LOBS[h.id]?'<span class="ngtag">Chưa khai — CSDL ngành</span>'
+ :'<span class="ngtag cho" title="Chưa có lô bổ sung nào có em — đồng hồ chưa chạy">Chưa khai — CSDL ngành · chưa tới hạn</span>';
 /* Truc thu ba: truong CHI DOC tai M1.1 — [Menu so huu, nghiep vu phai chay] */
 const RO={
  'Mã học sinh':['','Hệ thống cấp khi tạo hồ sơ — không ai đổi được, kể cả Hiệu trưởng'],
@@ -701,7 +1072,11 @@ const RO={
 const TANG={'Họ và tên':2,'Ngày sinh':2,'Giới tính':2,'Số định danh cá nhân':2,'Nơi sinh':2,'Dân tộc':2,
  'Tôn giáo':2,'Địa chỉ thường trú':2,'Địa chỉ liên hệ hiện tại':1,'Mã định danh CSDL ngành':3,
  'Điểm trường':3,'Lớp':3,'Hệ đào tạo':3,'Trạng thái':3,'Mã học sinh':3,'Số điện thoại':1,'Email':1,
- 'Họ tên':2,'Năm sinh':2,'Nghề nghiệp':2,'Nơi công tác':2,'Vai trò':3};
+ 'Họ tên':2,'Năm sinh':2,'Nghề nghiệp':2,'Nơi công tác':2,'Vai trò':3,
+ /* cum CSDL 19/9/2026 */
+ 'Tên gọi khác':2,'Dân tộc trên giấy khai sinh':2,'Nơi khai sinh':2,'Quê quán':2,'Quốc tịch':2,
+ 'CCCD — Ngày cấp':2,'CCCD — Nơi cấp':2,'Số hộ chiếu':2,'Hộ chiếu — Ngày cấp':2,'Hộ chiếu — Nơi cấp':2,
+ 'Thứ tự trong lớp':3,'Quốc tịch thứ hai':2,'Nơi thường trú':2,'Tạm trú':2,'Chỗ ở hiện tại':1};
 
 function fld(k,v,h,gid){
  const t=TANG[k]||3, lo=LOAI[k]||3;
@@ -714,9 +1089,9 @@ function fld(k,v,h,gid){
  /* vai tro khong co quyen o Menu chu thi khong hien deep-link */
  const canGo = ro && ro[0] && ['DQ','VT','HT','PHT_DT'].includes(role);
  return `<div class="f ${lack?'lack':'t'+t}">
-  <div class="k">${ro?'🔗':t===3?'🔒':t===2?'📝':''}<span class="lo l${lo}" title="Loại ${lo}"></span>${k}</div>
+  <div class="k">${ro?'🔗':t===3?'🔒':t===2?'📝':''}${cham(k)}${k}</div>
   <div class="v">${ed?`<input class="ed" value="${v||''}">`:(v||'<span style="color:var(--ink3);font-weight:400">— chưa có —</span>')}${canGo?` <span class="rolnk" data-ro="${k}">→ ${ro[0]}</span>`:''}</div>
-  <div>${pend?'<span class="pending">Chờ duyệt</span>':lack?'<span class="lacktag">Còn thiếu</span>':ro?`<span class="rotag" title="${ro[1]}">chỉ đọc</span>`:''}</div></div>`}
+  <div>${pend?'<span class="pending">Chờ duyệt</span>':lack?'<span class="lacktag">Còn thiếu</span>':laNG(k)&&!v?ngTag(h):ro?`<span class="rotag" title="${ro[1]}">chỉ đọc</span>`:''}</div></div>`}
 
 const GRP_RO={gsk:'M6.6'};   /* nhom la ban chieu chi doc tu Menu khac */
 function grp(title,gid,fields,h,note){
@@ -730,7 +1105,7 @@ function grp(title,gid,fields,h,note){
      locked?'<span class="pending">Nhóm khóa — có yêu cầu chờ duyệt</span>':
      canEdit?(ed?`<button class="btn xs p" data-save="${gid}">Lưu nhóm</button> <button class="btn xs" data-cancel="1">Hủy</button>`
                 :`<button class="btn xs" data-eg="${gid}">✎ Sửa nhóm</button>`):''}</div>
-  <div class="gb">${fields.map(f=>fld(f[0],f[1],h,gid)).join('')}</div>
+  <div class="gb">${fields.map(f=>f[0]==='@raw'?f[1]:fld(f[0],f[1],h,gid)).join('')}</div>
   ${note?`<div style="padding:8px 12px;border-top:1px solid #f1f5f9;font-size:11.5px;color:var(--ink3)">${note}</div>`:''}</div>`}
 
 function AB(h){
@@ -741,10 +1116,11 @@ function AB(h){
    <span class="rolnk" data-go="M1.3">→ M1.3</span></div></div>`);
  out.push(`<div class="ro">Mỗi trường có <b>hai nhãn</b>: nền vàng 📝 = tầng 2 (cần duyệt), nền xám 🔒 = tầng 3 (chỉ trường ghi).
   <b>🔗 = chỉ đọc tại Menu này</b>, phải sang Menu khác chạy đúng nghiệp vụ mới sửa được.<br>
-  Chấm màu = loại bắt buộc — <span class="lo l1" style="display:inline-block"></span> Loại 1 (tạo hồ sơ) ·
-  <span class="lo l2a" style="display:inline-block"></span> Loại 2a (<b>gia đình bổ sung</b>) ·
-  <span class="lo l2b" style="display:inline-block"></span> Loại 2b (<b>nhà trường hoàn thiện</b>) ·
-  <span class="lo l3" style="display:inline-block"></span> Loại 3. Trường viền đỏ = <b>còn thiếu</b>.</div>`);
+  Chấm màu = <b>mức yêu cầu</b> <i>(§3.0.5)</i> — <span class="lo l1" style="display:inline-block"></span> ① bắt buộc (tạo hồ sơ) ·
+  <span class="lo l2a" style="display:inline-block"></span> ② <b>gia đình bổ sung</b> ·
+  <span class="lo l2b" style="display:inline-block"></span> ② <b>nhà trường hoàn thiện</b> ·
+  <span class="lo l3" style="display:inline-block"></span> ③ nên có. <b>📋</b> cạnh chấm = trường ② đếm ở dòng <b>Khai báo CSDL ngành</b>, ⛔ không ở «Đủ hồ sơ».
+  Không chấm = trường <b>chỉ có khi có sự việc</b> hoặc <b>theo nguồn</b> (menu khác sinh). Trường viền đỏ = <b>còn thiếu</b>.</div>`);
  out.push(grp('🔒 Thông tin cơ bản','g0',[['Họ và tên',h.n],['Ngày sinh',h.ns],['Giới tính',h.gt]],h,
   'Mọi vai trò truy cập Menu đều thấy nhóm này.'));
  out.push(grp('🎓 Học tập','ght',
@@ -769,15 +1145,59 @@ function AB(h){
    [['Họ tên',p.n],['Số điện thoại',p.sdt]],h,
    'Lát cắt riêng — không hiển thị nghề nghiệp, nơi công tác, hoàn cảnh gia đình.'))}
  else{
-  out.push(grp('👤 Thông tin định danh','g1',[['Số định danh cá nhân',h.cccd],['Dân tộc',h.dan],
-   ['Tôn giáo',h.ton],['Nơi sinh',h.nsinh]],h));
-  out.push(grp('🏠 Địa chỉ','g2',[['Địa chỉ thường trú',h.tt_ho],['Địa chỉ liên hệ hiện tại',h.tt_moi]],h));
+  /* ===== nhom dinh danh: +8 truong cua cum CSDL (19/9/2026 — §6.3.6) ===== */
+  /* ✅ P-1: co Quoc tich thu hai thi khoi ho chieu TU MO */
+  const hcMo = h.qt!=='Việt Nam' || !!h.qt2 || h.hc_mo || !!h.hc_so;
+  const f1=[['@raw',anhRow(h)],['Số định danh cá nhân',h.cccd]];   /* MYC-2C — ô ảnh đầu nhóm (§6.3.6b) */
+  if(h.cccd){f1.push(['CCCD — Ngày cấp',h.cccd_nc],['CCCD — Nơi cấp',h.cccd_nn])}
+  f1.push(['Tên gọi khác',h.tgk],['Dân tộc',h.dan],['Dân tộc trên giấy khai sinh',h.dan_ks]);
+  if(h.dan_ks&&h.dan&&h.dan_ks!==h.dan)
+   f1.push(['@raw',`<div class="ckshint">⚠ <b>Dân tộc trên giấy khai sinh</b> lệch với <b>Dân tộc</b> đang ghi — đề nghị gia đình làm thủ tục đính chính theo giấy khai sinh. ⛔ <b>Không chặn lưu.</b></div>`]);
+  f1.push(['Tôn giáo',h.ton],['Quốc tịch',h.qt]);
+  /* ✅ P-1 chot 19/9/2026 — chi hien khi bam ＋ hoac da co gia tri */
+  if(h.qt2||h.qt2_mo){
+   f1.push(['Quốc tịch thứ hai',h.qt2]);
+   f1.push(['@raw',`<div class="ckshint" style="border-color:#c7d2fe;background:#eef2ff">🛑 <b>Khi đồng bộ lên CSDL ngành: mặc định đẩy <u>Quốc tịch</u> — ô thứ nhất</b> <i>(${h.qt})</i>.
+     ⛔ Không đẩy ô thứ hai, ⛔ không ghép hai giá trị vào một ô của cổng — ô của cổng <b>chỉ nhận một giá trị</b>.
+     Em vừa có quốc tịch Việt Nam vừa có quốc tịch khác ⇒ ô thứ nhất ghi <b>Việt Nam</b>: em học theo <b>chế độ học sinh Việt Nam</b>.
+     Ô thứ hai <b>nằm lại trong hồ sơ của trường</b> — hồ sơ giàu hơn ô nhận của cổng, ⛔ không cắt bớt cho khớp <i>(CS-S4)</i>.</div>`]);
+  } else f1.push(['@raw',`<div class="f"><div class="k">Quốc tịch thứ hai</div><div class="v" style="font-weight:400;color:var(--ink3)">Ẩn — ca rất ít, chỉ hiện khi bấm
+     <span class="rolnk" data-qt2mo="1">＋ Có quốc tịch thứ hai</span></div><div></div></div>`]);
+  f1.push(['@raw',dcRow(h,'nsinh','Nơi sinh','g1')]);
+  f1.push(['@raw',dcRow(h,'nksinh','Nơi khai sinh','g1')]);
+  f1.push(['@raw',dcRow(h,'qq','Quê quán','g1')]);
+  f1.push(['@raw',`<div class="ckshint" style="border-color:#fde68a;background:#fffbeb">⚠ <b>Quê quán là ca điển hình của chế độ tự do</b> — quê quán theo <b>đơn vị hành chính đã giải thể</b> thì để tự do, ⛔ <b>không ép chọn mã hiện hành</b>: mã hiện hành trỏ tới một xã khác, ghi nó vào hồ sơ là <b>ghi sai lịch sử của một người</b>.</div>`]);
+  f1.push(['Thứ tự trong lớp',h.ttlop?String(h.ttlop):'']);
+  if(hcMo){f1.push(['Số hộ chiếu',h.hc_so],['Hộ chiếu — Ngày cấp',h.hc_nc],['Hộ chiếu — Nơi cấp',h.hc_nn])}
+  else f1.push(['@raw',`<div class="f"><div class="k">Hộ chiếu</div><div class="v" style="font-weight:400;color:var(--ink3)">Ẩn — chỉ hiện khi <b>Quốc tịch ≠ Việt Nam</b> hoặc bấm <b>＋ Có hộ chiếu</b>
+     <span class="rolnk" data-hcmo="1">＋ Có hộ chiếu</span></div><div></div></div>`]);
+  out.push(grp('👤 Thông tin định danh','g1',f1,h,
+   'Tám trường thêm 19/9/2026 <i>(cụm CSDL · §6.3.6)</i>. <b>Thứ tự trong lớp</b> máy sinh theo alphabet khi xếp lớp, văn thư sửa tay được; trùng trong cùng lớp ⇒ ⚠, ⛔ không chặn. <b>Số CCCD giữ nguyên cách lưu</b> — hai ô Ngày cấp / Nơi cấp chỉ mở khi đã có số.'));
+
+  /* ===== nhom dia chi: cum sau phan, HAI che do nhap (§6.3.8 — ✅ CS-4) ===== */
+  out.push(grp('🏠 Địa chỉ','g2',[
+    ['@raw',dcRow(h,'tt_ho','Nơi thường trú','g2')],
+    ['@raw',dcRow(h,'tt_tam','Tạm trú','g2')],
+    ['@raw',dcRow(h,'hien_tai','Chỗ ở hiện tại','g2')]],h,
+   'Mỗi ô là <b>cụm sáu phần</b> của HDCS ① — chính quyền <b>hai cấp</b>, ⛔ không có cấp huyện <i>(TT 13/2025 · TT 26/2025)</i>.<br>'+
+   '🛑 Chế độ <b>Nhập tự do</b> là <b>chế độ nhập hợp lệ</b>, ⛔ <b>không phải lỗi</b>: ⛔ không chặn lưu, ⛔ không chặn tạo hồ sơ, ⛔ không sinh việc ở M0.2, ⛔ không vào trạng thái hoàn thiện hồ sơ.<br>'+
+   'Nút <b>⇄ Chuẩn hóa</b> chỉ <b>gợi ý</b>, <b>người xác nhận</b> — 🛑 ⛔ <b>máy không bao giờ tự đổi</b>, dò sai thì sai im lặng. Đổi <b>hai chiều bất cứ lúc nào, không cần lý do</b>.<br>'+
+   '⚠ Khi đẩy lên cổng: dòng ở chế độ tự do <b>nằm lại M10.8 tab ④ Việc chưa xong</b> — nhãn ⚠ không vô hại, nó là lý do dòng đó chưa lên được Sở.'));
+  out.push(cutruGrp(h));
+  out.push(nganhGrp(h));
   out.push(aceGrp(h));
-  const per=(p,lb,g)=>grp(lb,g,[['Họ tên',p.n],['Năm sinh',p.ns],['Nghề nghiệp',p.ngh],
+  const per=(p,lb,g,who)=>grp(lb,g,[['Họ tên',p.n],['Quan hệ với học sinh',who==='cha'?'Cha':who==='me'?'Mẹ':'Người giám hộ'],
+   ...(who==='gh'?[['@raw',ngRow('Năm sinh',p.ns,h)],['@raw',ngRow('Giới tính',p.gt,h)]]:[['Năm sinh',p.ns]]),   /* MYC-2C — cổng bắt khai cả ba ô của người giám hộ */
+   ['@raw',cccdRow(h,who,'CCCD')],['Nghề nghiệp',p.ngh],
    ['Nơi công tác',p.nc],['Số điện thoại',p.sdt],['Email',p.mail],
-   ['Vai trò',(p.chinh?'Liên hệ chính · ':'')+'Được phép đón HS']],h);
-  out.push(per(h.cha,'👨 Thông tin cha','g3'));
-  out.push(per(h.me,'👩 Thông tin mẹ','g4'));
+   ['Vai trò',(p.chinh?'Liên hệ chính · ':'')+'Được phép đón HS']],h,
+   'CCCD <b>che mặc định</b>, nút <b>👁 Hiện</b> chỉ <b>Văn thư và Hiệu trưởng</b>, <b>ghi audit từng lượt đọc</b> — cùng khuôn M4.1 §6.2.2.<br>'+
+   '<b>Căn cứ Luật BVDLCN 91/2025:</b> đây là <b>dữ liệu định danh của người trưởng thành</b>, ⛔ <b>không phải của học sinh</b> — cha mẹ là chủ thể dữ liệu độc lập. '+
+   '⛔ <b>XD Xuất dữ liệu không bao giờ xuất số đầy đủ</b>. ⛔ CCCD <b>không phải</b> khóa định danh tài khoản phụ huynh — khóa vẫn là <b>số điện thoại</b>.');
+  out.push(per(h.cha,'👨 Thông tin cha','g3','cha'));
+  out.push(per(h.me,'👩 Thông tin mẹ','g4','me'));
+  /* MYC-2C — khối người giám hộ CHỈ vẽ khi hồ sơ có người giám hộ (§6.3.1 «chỉ hiện khi có») */
+  if(h.gh&&h.gh.n) out.push(per(h.gh,'🧑 Người giám hộ','g6','gh'));
   if(r.ghichu&&h.hc)out.push(grp('🏡 Hoàn cảnh gia đình','g5',[['Mô tả',h.hc]],h));
  }
  return out.join('')}
@@ -962,15 +1382,20 @@ function E(h){
   ['Giấy xác nhận cư trú',2,h.hoso.l2.includes('Giấy xác nhận cư trú')?'r':'o','<b>VT nhập hộ</b> · 22/8/2023<br><span style="color:var(--ink3)">Qua GVCN · đã đối chiếu</span>'],
   ['Học bạ cấp Tiểu học',2,'o','<b>VT nhập hộ</b> · 22/8/2023<br><span style="color:var(--ink3)">Nộp trực tiếp · đã đối chiếu</span>'],
   ['Giấy chứng nhận hoàn thành CT Tiểu học',2,'o','<b>VT nhập hộ</b> · 22/8/2023<br><span style="color:var(--ink3)">Nộp trực tiếp · đã đối chiếu</span>'],
-  ['Ảnh 3x4',1,'o','PH tải qua App · 24/8/2026'],
+  ['Ảnh 4×6','ng','o','PH tải qua App · 24/8/2026'],   /* MYC-2C — một kích thước theo nh1.1 Phần A (§6.3.6b) */
   ['Giấy khám sức khỏe',3,h.hoso.l2.includes('Giấy khám sức khỏe')?'r':'o','PH tải qua App · 26/8/2026'],
   ['Giấy tờ đối tượng ưu tiên',3,h.uu?'o':'r','<b>VT nhập hộ</b> · 01/9/2024<br><span style="color:var(--ink3)">Nộp trực tiếp · đã đối chiếu</span>']];
  const r=R();
  const cnt=l=>{const g=D1.filter(d=>d[1]===l);return[g.filter(d=>d[2]==='o').length,g.length]};
- const [a1,b1]=cnt(1),[a2,b2]=cnt(2),[a3,b3]=cnt(3);
+ const [a2,b2]=cnt(2),[a3,b3]=cnt(3);
+ /* MYC-1A — mức ① = SÁU trường: 3 của em + họ tên · SĐT · QUAN HỆ của phụ huynh liên hệ chính (F.4 chốt 21/9) */
+ const phc=h.cha&&h.cha.chinh?h.cha:(h.me&&h.me.chinh?h.me:(h.cha&&h.cha.n?h.cha:h.me));
+ const qhc=phc===h.cha?'Cha':phc===h.me?'Mẹ':'Người giám hộ';
+ const M1=[['Họ và tên',h.n],['Ngày sinh',h.ns],['Giới tính',h.gt],['Họ tên phụ huynh',phc&&phc.n],['Số điện thoại phụ huynh',phc&&phc.sdt],['Quan hệ với học sinh',phc&&phc.n?qhc:'']];
+ const a1=M1.filter(x=>x[1]).length, b1=M1.length;
  const st=hsState(h);
  return `<div class="chk">
-   <div class="chkr"><span class="lo l1"></span><span class="lb"><b>Loại 1</b> — bắt buộc để tạo hồ sơ</span>
+   <div class="chkr"><span class="lo l1"></span><span class="lb" title="${M1.map(x=>(x[1]?'✓ ':'✕ ')+x[0]).join('&#10;')}"><b>① Loại 1</b> — bắt buộc để tạo hồ sơ · <span style="color:var(--ink3)">6 trường, 🆕 gồm <b>quan hệ</b> của phụ huynh (21/9)</span></span>
     <span class="pr" style="color:${a1===b1?'var(--green)':'var(--red)'}">${a1===b1?'✓':'✕'} ${a1}/${b1}</span></div>
    <div class="chkr"><span class="lo l2a"></span><span class="lb"><b>Loại 2a</b> — bắt buộc, <b>gia đình nộp</b>
      ${st[0]==='late'?'<span class="hs2 late" style="margin-left:6px">quá hạn</span>':st[0]==='warn'?`<span class="hs2 warn" style="margin-left:6px">${st[1]}</span>`:''}</span>
@@ -978,7 +1403,16 @@ function E(h){
    <div class="chkr"><span class="lo l2b"></span><span class="lb"><b>Loại 2b</b> — bắt buộc, <b>nhà trường hoàn thiện</b>
      ${st[4]?`<span class="hs2 warn" style="margin-left:6px">còn ${st[4]} mục</span>`:''}</span>
     <span class="pr" style="color:${st[4]?'#4338ca':'var(--green)'}">${st[4]?'⚠':'✓'} ${st[4]?'thiếu '+st[4]:'đủ'}</span></div>
-   <div class="chkr"><span class="lo l3"></span><span class="lb"><b>Loại 3</b> — tùy chọn, không tính vào trạng thái</span>
+   ${(()=>{const s=ngState(h);return `<div class="chkr" style="border-top:1px dashed var(--line);margin-top:4px;padding-top:6px"><span class="lo l2a"></span><span class="lb"><b>📋 ② Khai báo CSDL ngành</b> — <b>dòng đếm riêng</b>, ⛔ không nằm trong «Đủ hồ sơ»
+     <span class="hs2 ${NGMAU[s.tt]}" style="margin-left:6px">${s.tt==='du'?'đủ':s.tt==='cho'?'chưa tới hạn':s.tt==='qua'?'quá hạn '+(-s.con)+'n':'còn '+s.con+'n'}</span></span>
+    <span class="pr" style="color:${s.all.length?'var(--amber)':'var(--green)'}">${s.all.length?'⚠ thiếu '+s.all.length:'✓ đủ'}</span></div>
+    ${s.all.length?`<div style="font-size:11.5px;margin:2px 0 6px 18px;color:var(--ink2)">
+      ${s.gd.length?`<div><b>Gia đình:</b> ${s.gd.join(' · ')}</div>`:''}
+      ${s.nt.length?`<div style="color:#4338ca"><b>Nhà trường:</b> ${s.nt.join(' · ')} <span style="color:var(--ink3)">— ⛔ không bao giờ nhắc gia đình về mục này</span></div>`:''}
+      <div style="color:var(--ink3)">${s.lo?'Đồng hồ: lô bổ sung <b>'+s.lo.lo+'</b> ngày '+s.lo.ngay+' · hạn '+s.lo.han
+        :'Chưa có lô bổ sung nào có em ⇒ <b>chưa tới hạn</b> — ⛔ không đỏ, ⛔ không gửi thông báo phụ huynh (MYC-2)'}.
+        <b>Chưa khảo sát</b> tính là chưa khai.</div></div>`:''}`})()}
+   <div class="chkr"><span class="lo l3"></span><span class="lb"><b>③ Nên có</b> <span style="color:var(--ink3)">(phần còn lại của Loại 3 cũ)</span> — chấm xám, không tính vào trạng thái</span>
     <span class="pr" style="color:var(--ink3)">○ ${a3}/${b3}</span></div>
    ${h.hoso.l2.length?`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-size:12px">
      ${st[3]?`<div style="color:var(--red)"><b>Gia đình phải nộp:</b> ${h.hoso.l2.filter(k=>LOAI[k]!=='2b').join(' · ')}</div>`:''}
@@ -988,7 +1422,7 @@ function E(h){
   </div>
   <table><tr><th>Loại giấy tờ</th><th>Phân loại</th><th>Trạng thái</th><th>Nguồn nộp</th><th></th></tr>
   ${D1.map(d=>`<tr><td><b>${d[0]}</b></td>
-   <td><span class="lo l${d[1]}" style="display:inline-block"></span> Loại ${d[1]}</td>
+   <td><span class="lo l${d[1]==='ng'?'2a':d[1]}" style="display:inline-block"></span> ${d[1]==='ng'?'📋 ② CSDL ngành':'Loại '+d[1]}</td>
    <td><span class="st2 ${d[2]==='o'?'o':'r'}">${d[2]==='o'?'Đã xác nhận':'Chưa nộp'}</span></td>
    <td style="font-size:11.5px">${d[2]==='o'?(d[3]||'PH tải · 20/8/2023'):'<span style="color:var(--ink3)">—</span>'}</td>
    <td style="text-align:right;white-space:nowrap">${
@@ -1001,7 +1435,7 @@ function E(h){
         ? `<button class="btn xs p" data-x="nhapho">⬆ Tải lên thay PH</button>`
         : '')
    }</td></tr>`).join('')}</table>
-  <div class="info" style="margin-top:12px">📷 <b>Ảnh hiển thị trên hồ sơ lấy từ mục <u>Ảnh 3x4</u> ở bảng trên</b> —
+  <div class="info" style="margin-top:12px">📷 <b>Ảnh hiển thị trên hồ sơ lấy từ mục <u>Ảnh 4×6</u> ở bảng trên</b> —
    một nguồn duy nhất, thay tệp ở đó thì ảnh trong danh sách và trong hồ sơ đổi theo.
    Không có chỗ tải ảnh riêng, tránh hai bản ảnh khác nhau cho cùng một học sinh.</div>
   <div class="ro" style="margin-top:12px">
@@ -1104,6 +1538,68 @@ function soDuModal(h){
 
 document.body.addEventListener('click',e=>{
  if(e.target.closest('[data-x="sodu"]')){soDuModal(HS.find(x=>x.id===cur));return}
+ /* ---- cum CSDL 19/9/2026 ---- */
+ if(e.target.closest('[data-cch]')){fCCH=!fCCH;render();return}
+ const hi=e.target.closest('[data-hien]');
+ if(hi){moCCCD[hi.dataset.hien]=1;render();
+  toast('👁 Đã mở số đầy đủ · GHI AUDIT lượt đọc — ai mở, của ai, lúc nào · Luật BVDLCN 91/2025');return}
+ const dm=e.target.closest('[data-dcmode]');
+ if(dm){const [k,mode]=dm.dataset.dcmode.split('|'),h=HS.find(x=>x.id===cur);
+  const d=h.dc[k];
+  if(mode==='tu_do'){d.che_do='tu_do';if(!d.chuoi_tu_do)d.chuoi_tu_do=[d.chi_tiet,d.xa,d.tinh].filter(Boolean).join(', ')}
+  else {d.che_do='danh_muc'}
+  render();toast('Đổi chế độ nhập — hai chiều, bất cứ lúc nào, KHÔNG cần lý do');return}
+ const ch=e.target.closest('[data-chuanhoa]');
+ if(ch){const k=ch.dataset.chuanhoa,h=HS.find(x=>x.id===cur),d=h.dc[k];
+  const chuoi=(d.chuoi_tu_do||'');
+  const tGoi=TINH.find(t=>chuoi.toLowerCase().includes(t.toLowerCase()))||'';
+  const xGoi=(XA[tGoi]||[]).find(x=>chuoi.toLowerCase().includes(x.replace(/^(Xã|Phường) /,'').toLowerCase()))||'';
+  modal('⇄ Chuẩn hóa địa chỉ — máy GỢI Ý, người XÁC NHẬN',
+   `<div class="ro">Chuỗi đang có:<br><b>${chuoi||'—'}</b></div>
+    <div class="info">Máy dò được: <b>Tỉnh:</b> ${tGoi||'<i>không dò được</i>'} · <b>Phường/Xã:</b> ${xGoi||'<i>không dò được</i>'}</div>
+    <div class="danger">🛑 <b>Máy không bao giờ tự đổi.</b> Dò sai thì <b>sai im lặng</b> và không ai phát hiện ra —
+     nên bước xác nhận này là bắt buộc, kể cả khi máy dò ra đủ cả hai cấp.</div>
+    ${/giải thể/i.test(chuoi)?'<div class="warn">⚠ Chuỗi này nói tới <b>đơn vị hành chính đã giải thể</b>. ⛔ <b>Không ép chọn mã hiện hành</b> — giữ chế độ tự do là <b>đúng</b>.</div>':''}`,
+   [['Hủy — giữ chế độ tự do',0],
+    ['✓ Xác nhận và đổi sang danh mục',()=>{
+      if(tGoi){d.che_do='danh_muc';d.tinh=tGoi;d.xa=xGoi;d.chi_tiet=d.chi_tiet||'';render();
+       toast('Đã chuẩn hóa theo xác nhận của người dùng · ghi audit')}
+      else toast('⛔ Không dò được tỉnh — giữ nguyên chế độ tự do, không bịa giá trị')}]]);
+  return}
+ if(e.target.closest('[data-kvgoi]')){
+  const h=HS.find(x=>x.id===cur);
+  modal('💡 Gợi ý Khu vực theo Nơi thường trú',
+   `<div class="ro">Nơi thường trú: <b>${dcHT(h.dc.tt_ho)}</b></div>
+    <div class="info">Theo phường/xã đang ghi, đề nghị <b>${h.nganh.kv||'KV3'}</b>.</div>
+    <div class="danger">⛔ <b>Máy không tự điền.</b> Khu vực quyết định <b>điểm cộng khi xét tuyển</b> — máy dò sai thì sai im lặng.</div>`,
+   [['Đóng',0],['✓ Áp dụng gợi ý',()=>toast('Đã áp dụng theo xác nhận của người dùng')]]);return}
+ if(e.target.closest('[data-qt2mo]')){const h=HS.find(x=>x.id===cur);h.qt2_mo=true;render();
+  toast('✅ P-1 — mở ô Quốc tịch thứ hai · khối hộ chiếu mở theo · ⛔ khi đẩy vẫn lấy ô thứ nhất');return}
+ if(e.target.closest('[data-hcmo]')){const h=HS.find(x=>x.id===cur);h.hc_mo=true;render();
+  toast('Đã mở khối hộ chiếu — ba ô này ẩn với các em còn lại, không để khối trống trong mọi hồ sơ');return}
+ const c3=e.target.closest('[data-co3]');
+ if(c3){const [k,v]=c3.dataset.co3.split('|'),h=HS.find(x=>x.id===cur);
+  h.nganh[k]=v;render();
+  if(v==='cks')toast('Chưa khảo sát — dòng sẽ NẰM LẠI M10.8 tab ④ khi đẩy, ⛔ không bị đổi thành Không');
+  return}
+ if(e.target.closest('[data-suatay]')){
+  modal('✎ Sửa tay Số buổi học / tuần',
+   `<div class="ro">Trường này là <b>dẫn xuất</b> từ lớp của em <i>(M10.1 ③)</i>. Sửa tay chỉ dành cho ca <b>học sinh học khác lớp</b>.</div>
+    <div><b>Số buổi / tuần</b><input class="fldi" value="3"></div>
+    <div style="margin-top:8px"><b>Lý do</b> <span style="color:var(--red)">*bắt buộc</span><textarea class="fldi" style="min-height:56px"></textarea></div>
+    <div class="warn">⛔ Sau khi sửa tay, <b>lớp đổi số buổi thì KHÔNG ghi đè</b> giá trị này.</div>`,
+   [['Hủy',0],['Lưu + ghi lý do',()=>toast('Đã lưu · nhãn «đã sửa tay» + lý do · lớp không ghi đè')]]);return}
+ if(e.target.closest('[data-ctthem]')){
+  modal('＋ Thêm một mốc cư trú cũ',
+   `<div class="ro">Mỗi dòng là <b>một cụm địa chỉ + khoảng thời gian</b>, ⛔ không phải một ô chuỗi.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+     <div><b>Từ</b> <span style="color:var(--red)">*</span><input class="fldi" placeholder="mm/yyyy"></div>
+     <div><b>Đến</b><input class="fldi" placeholder="trống = đang ở"></div></div>
+    <div style="margin-top:8px"><b>Địa chỉ</b> — có đủ <b>hai chế độ nhập</b> như mọi địa chỉ khác<input class="fldi"></div>
+    <div class="warn">⛔ Không tự sinh dòng khi Nơi thường trú đổi · ⛔ không xóa dòng, chỉ sửa.</div>`,
+   [['Hủy',0],['Thêm dòng',()=>toast('Đã thêm mốc cư trú · ghi audit')]]);return}
+ const cts=e.target.closest('[data-ctsua]');
+ if(cts){toast('Sửa mốc cư trú — ⛔ không có nút Xóa: xóa một mốc là xóa căn cứ của một diện đã từng được hưởng');return}
  const t=e.target.closest('[data-t1]');
  if(t){t1=t.dataset.t1;cur=null;editGrp=null;
   document.querySelectorAll('.tab1').forEach(x=>x.classList.remove('on'));t.classList.add('on');render();return}
@@ -1319,6 +1815,31 @@ document.querySelectorAll('.rb').forEach(b=>b.onclick=()=>{
 $('#btnex').onclick=()=>{if(!R().xuat){toast('Vai trò này không có quyền xuất');return}
  toast(`Xuất ${rows().length} bản ghi · chỉ cột ${R().n} có quyền · kèm cột "Mục còn thiếu" · ghi audit`)};
 $('#mask').onclick=e=>{if(e.target.id==='mask')$('#mask').classList.remove('on')};
+
+/* ===== MYC-3B (21/9/2026) — deep-link ĐẾN từ M0.2, việc V3 «Khai báo CSDL ngành quá hạn — lớp …» (M0.2 §4.2.2e · M1.1 §6.1.2b)
+   ?lop={lop_id}&loc=csdl_thieu_qua_han&return=M0.2  → lọc đúng lớp + giá trị «Thiếu quá hạn» của nhóm lọc «Theo khai báo CSDL ngành» · dải ↩ về M0.2
+   Tên tham số lấy NGUYÊN VĂN từ M0.2 — ⛔ không đặt tên khác. Demo: lop_id = tên lớp (M0.2 demo gửi «9A2»).
+   Thiếu / sai tham số ⇒ mở chỗ gần nhất và NÓI ra — ⛔ không im lặng. */
+let dlVe=null,dlBao='';
+const DL_LOC={csdl_thieu_qua_han:'CSDL ngành — thiếu quá hạn'};
+function dlDoc(){
+ const q=new URLSearchParams(location.search), lop=q.get('lop'), loc=q.get('loc');
+ if(!lop&&!loc)return;
+ dlVe=q.get('return'); const bao=[];
+ if(loc&&DL_LOC[loc]){fHS=DL_LOC[loc];bao.push('bộ lọc Hồ sơ = <b>Khai báo CSDL ngành — thiếu quá hạn</b>')}
+ else if(loc)bao.push(`⚠ tham số <b>loc=${loc}</b> không nhận ra — ⛔ không lọc hồ sơ`);
+ if(lop){ if(HS.some(h=>h.lop===lop)){fLOP.clear();fKH.clear();fLOP.add(lop);bao.push(`lớp <b>${lop}</b>`)}
+  else bao.push(`⚠ lớp <b>${lop}</b> không có trong dữ liệu của M1.1 — ⛔ không lọc lớp`)}
+ fTT='Đang theo học';
+ dlBao=bao.join(' · ')}
+function dlBang(){
+ if(!dlBao)return '';
+ const n=rows().length;
+ return `<div class="ro" style="border-color:#fde68a;background:#fffbeb">↪ Mở từ <b>${dlVe||'liên kết'}</b>${dlVe==='M0.2'?' Việc cần làm':''} — ${dlBao} ⇒ <b>${n}</b> học sinh.
+  ${dlVe==='M0.2'?'<a class="btn xs" href="M0.2-Viec-can-lam.html" style="margin-left:6px;text-decoration:none">↩ Quay lại M0.2</a>':''}
+  <span class="rolnk" data-dlbo="1" style="margin-left:6px">✕ Bỏ lọc từ liên kết</span></div>`}
+document.body.addEventListener('click',e=>{if(e.target.closest('[data-dlbo]')){dlBao='';fLOP.clear();fHS='Tất cả';render()}});
+dlDoc();
 
 render();
 </script>

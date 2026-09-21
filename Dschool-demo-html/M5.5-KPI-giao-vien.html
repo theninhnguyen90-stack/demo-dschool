@@ -106,6 +106,8 @@ h1{font-size:19px;font-weight:700}
 .stage.open .gkq{grid-template-columns:1.5fr 1fr}
 .gky{grid-template-columns:1.1fr 1.3fr 1fr .9fr .9fr 1fr}
 .gtc2{grid-template-columns:2.3fr .6fr 1.1fr .9fr 1fr}
+/* GY18-H4 — bang GIA TRI CHOT cua mot ky (man hinh day du) */
+.gct{grid-template-columns:1.15fr 1.75fr .8fr 1.6fr 1.05fr}
 .wbar{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-left:4px solid var(--violet);border-radius:11px;padding:11px 14px;margin:12px 0;flex-wrap:wrap}
 .wbar.bad{border-left-color:var(--red);background:var(--red-soft)}
 .wbar.ok{border-left-color:var(--green);background:var(--green-soft)}
@@ -120,6 +122,12 @@ h1{font-size:19px;font-weight:700}
 .dnum{border:1px solid var(--line2);border-radius:7px;padding:5px 8px;font-size:13px;width:62px;text-align:center;background:#fff}
 .dnum:focus{border-color:var(--brand);outline:none}
 .dnum.w{border-color:var(--amber);background:var(--amber-soft)}
+.dnum.s{border-color:#a78bfa;background:var(--violet-soft);font-weight:700}
+.inp.ld{min-width:0;width:100%;font-size:11.5px;padding:5px 8px}
+/* dau o — CUNG CHU, CUNG DAU voi M4.12 §6.2: ✎ da sua · ⚠ so may da doi */
+.mk{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;white-space:nowrap;display:inline-block}
+.mk.sua{background:var(--violet-soft);color:#5b21b6;border:1px solid #ddd6fe}
+.mk.lech{background:var(--amber-soft);color:#92400e;border:1px solid #fcd34d}
 .spark{display:flex;gap:3px;align-items:flex-end;height:30px}
 .spark i{flex:1;background:var(--brand);border-radius:2px 2px 0 0;min-height:2px;display:block}
 .spark i.n{background:var(--line2)}
@@ -507,7 +515,9 @@ GV.forEach(function(g){MAY[g.id]={};
   const j=()=>Math.round((rnd()*14)-7);
   const cl=v=>Math.max(0,Math.min(100,v));
   MAY[g.id][k.ma]={
-   GA_DA_SOAN:{so:cl(base+j()+4),ct:'Đã soạn '+(20+Math.floor(rnd()*8))+'/'+(24+Math.floor(rnd()*4))+' bài'},
+   /* con so goc phai KHOP voi ti le — no la bang chung cua o «gia tri chot» (GY18-H4) */
+   GA_DA_SOAN:(function(){const p=cl(base+j()+4),tong=24+Math.floor(rnd()*4);
+    return {so:p,ct:'Đã soạn '+Math.round(tong*p/100)+'/'+tong+' bài'}})(),
    GA_DUNG_HAN:{so:cl(base+j()-6),ct:'Nộp đúng hạn '+(15+Math.floor(rnd()*8))+' giáo án'},
    TIET_THUC_DAY:{so:cl(96+Math.round(rnd()*4)),ct:'Thực dạy '+(60+Math.floor(rnd()*20))+' tiết'},
    SODAUBAI_DUNG_HAN:{so:cl(base+j()+2),ct:'Ghi trong ngày '+(55+Math.floor(rnd()*25))+' tiết'},
@@ -538,20 +548,64 @@ function diemMay(t,g,kyMa){
  else tl=Math.min(1,d.so/3);
  return {diem:Math.round(tl*t.ts*10)/10,so:d.so,dv:c.dv,ct:d.ct};
 }
+/* ===== GIA TRI CHOT tach khoi SO MAY — GY18-H4 =====
+   Muon NGUYEN khuon M4.12 §6.2 «MAY DEM — NGUOI KET LUAN»: o dien san theo so may,
+   kem con so goc va deep-link nguon; nguoi chot sua duoc, sua khac so may thi Ly do
+   la truong BAT BUOC, o mang dau ✎ da sua. Giu CA HAI con so de doi chieu ve sau.
+   o = {d: so may (dong bang luc chot ky), so/dv/ct: con so goc, chot: gia tri chot (null = dung so may), lyDo, ng, ngay} */
+const GTC=v=>v?(v.chot!=null?v.chot:v.d):0;        /* gia tri CO HIEU LUC cua mot o */
+const daSua=v=>!!(v&&v.chot!=null&&v.chot!==v.d);  /* o mang dau ✎ da sua */
+/* So may tinh LAI o thoi diem nay — de doi chieu voi so da dong bang luc chot ky (R17).
+   Nguon doi sau khi chot thi KHONG tu de, chi canh bao kem hai con so. */
+function lechNguon(b,g,t,kyMa,v){
+ if(!v||!t.nguon)return null;
+ const m=diemMay(t,g,kyMa);if(!m)return null;
+ return (m.diem!==v.d||m.so!==v.so)?m:null;
+}
 /* chot san Quy I va Quy II */
 function chotKy(b,kyMa,ng){
  CHOT[b.id]=CHOT[b.id]||{};
+ const cu=(CHOT[b.id][kyMa]||{}).soLieu||{};
  const sl={};
  GV.forEach(function(g){sl[g.id]={};
   dsTC(b).forEach(function(x){if(!x.t.nguon)return;if(!apDung(x.t,g))return;
-   const dm=diemMay(x.t,g,kyMa);if(dm)sl[g.id][x.t.id]={d:dm.diem,so:dm.so,dv:dm.dv,ct:dm.ct}})});
+   const dm=diemMay(x.t,g,kyMa);if(!dm)return;
+   const o={d:dm.diem,so:dm.so,dv:dm.dv,ct:dm.ct,chot:null,lyDo:'',ng:'',ngay:null};
+   /* R18 — chot lai ky chup lai SO MAY nhung KHONG xoa gia tri chot cua nguoi:
+      neu may de duoc len ket luan cua nguoi thi «nguoi ket luan» chi con la cai ten */
+   const c0=cu[g.id]&&cu[g.id][x.t.id];
+   if(c0&&c0.chot!=null){o.chot=c0.chot;o.lyDo=c0.lyDo;o.ng=c0.ng;o.ngay=c0.ngay}
+   sl[g.id][x.t.id]=o})});
  CHOT[b.id][kyMa]={ng:ng,d:HOMNAY,soLieu:sl};
+}
+function demChot(b,kyMa){
+ const dc=(CHOT[b.id]||{})[kyMa];const r={s:0,l:0};if(!dc)return r;
+ GV.forEach(function(g){dsTC(b).forEach(function(x){if(!x.t.nguon)return;
+  const v=dc.soLieu[g.id]&&dc.soLieu[g.id][x.t.id];if(!v)return;
+  if(daSua(v))r.s++;if(lechNguon(b,g,x.t,kyMa,v))r.l++})});
+ return r;
 }
 chotKy(B1,'Q1','Phó HT Chuyên môn');CHOT[B1.id].Q1.d=D(5,12,2026);
 chotKy(B1,'Q2','Phó HT Chuyên môn');CHOT[B1.id].Q2.d=D(5,3);
 B1.lichSu.unshift({act:'Chốt số liệu Quý I',ng:'Phó HT Chuyên môn',d:D(5,12,2026),note:'Máy tự thu 8 tiêu chí nguồn máy'});
 B1.lichSu.unshift({act:'Chốt số liệu Quý II',ng:'Phó HT Chuyên môn',d:D(5,3),note:'Máy tự thu 8 tiêu chí nguồn máy'});
 B1.lichSu.unshift({act:'Ban hành bộ KPI',ng:'Hiệu trưởng',d:D(5,9,2026),note:'Áp dụng từ năm học 2026-2027'});
+/* --- Hai o dung san de chay «gia tri chot» ngay khi mo demo (GY18-H4) --- */
+(function(){
+ const q1=CHOT[B1.id].Q1.soLieu,q2=CHOT[B1.id].Q2.soLieu;
+ const tGA=B1.nhom[0].tc[1].id;    /* Ti le giao an soan dung han — nguon M5.2 */
+ const tSD=B1.nhom[0].tc[3].id;    /* Ghi so dau bai dung han — nguon M2.2 */
+ const gT=gvTen('Đỗ Văn Trung'),gN=gvTen('Vũ Thị Ngọc');
+ /* (1) O DA CO GIA TRI CHOT khac so may — mang dau ✎ da sua, giu ca hai con so */
+ const a=q1[gT.id]&&q1[gT.id][tGA];
+ if(a){a.chot=Math.round((a.d+2.5)*10)/10;
+  a.lyDo='Hai giáo án nộp bù ngày 28/11 có biên bản của tổ — M5.2 ghi nhận sau khi kỳ đã khóa';
+  a.ng='Phó HT Chuyên môn';a.ngay=D(6,12,2026)}
+ /* (2) NGUON DOI SAU KHI CHOT — so may hien nay khac so da dong bang, KHONG tu de (R17) */
+ const b2=q2[gN.id]&&q2[gN.id][tSD];
+ if(b2){MAY[gN.id].Q2.SODAUBAI_DUNG_HAN.so=Math.min(100,b2.so+11);
+  MAY[gN.id].Q2.SODAUBAI_DUNG_HAN.ct='M2.2 ghi bù 6 tiết sau khi kỳ đã chốt — số nguồn đã đổi'}
+})();
 
 /* ===== DIEM NGUOI CHAM ===== */
 const NGUOI={};   /* NGUOI[gvId][tcId] = {d, ng, ngay, lyDo} */
@@ -578,10 +632,12 @@ function diemGV(b,g){
   mau+=t.ts;
   if(t.nguon){
    if(!ky.length){chiTiet.push({t:t,n:x.n,ap:true,d:null,cho:'Chưa chốt kỳ nào'});return}
-   let s=0;ky.forEach(function(k){const v=c[k.ma].soLieu[g.id][t.id];s+=v?v.d:0});
+   /* diem ky lay theo GIA TRI CHOT, khong phai so may (GY18-H4) */
+   let s=0;ky.forEach(function(k){const v=c[k.ma].soLieu[g.id][t.id];s+=v?GTC(v):0});
    const d=Math.round(s/ky.length*10)/10;dat+=d;
    chiTiet.push({t:t,n:x.n,ap:true,d:d,may:true,ky:ky.map(function(k){const v=c[k.ma].soLieu[g.id][t.id];
-    return {k:k,d:v?v.d:0,so:v?v.so:null,dv:v?v.dv:'',ct:v?v.ct:''}})});
+    return {k:k,d:v?GTC(v):0,may:v?v.d:null,so:v?v.so:null,dv:v?v.dv:'',ct:v?v.ct:'',
+     o:v||null,sua:daSua(v),lech:v?lechNguon(b,g,t,k.ma,v):null}})});
   } else {
    const v=NGUOI[g.id][t.id];
    if(v){dat+=v.d;chiTiet.push({t:t,n:x.n,ap:true,d:v.d,nguoi:v})}
@@ -590,8 +646,11 @@ function diemGV(b,g){
  });
  const chuaCham=chiTiet.filter(c2=>c2.ap&&c2.d==null).length;
  const mauCo=chiTiet.filter(c2=>c2.ap&&c2.d!=null).reduce((a,c2)=>a+c2.t.ts,0);
+ const coSua=chiTiet.some(c2=>c2.ky&&c2.ky.some(x=>x.sua));
+ const coLech=chiTiet.some(c2=>c2.ky&&c2.ky.some(x=>x.lech));
  return {diem:Math.round(dat*10)/10,mau:mau,mauCo:mauCo,
-  quyDoi:mauCo?Math.round(dat/mauCo*100*10)/10:null,chiTiet:chiTiet,chuaCham:chuaCham};
+  quyDoi:mauCo?Math.round(dat/mauCo*100*10)/10:null,chiTiet:chiTiet,chuaCham:chuaCham,
+  coSua:coSua,coLech:coLech};
 }
 
 /* ===== VAI TRO ===== */
@@ -627,7 +686,7 @@ function dsGV(){
 }
 const chamDuoc=g=>can('cham')&&(toToi()==='*'||g.to===toToi());
 
-let V={tab:'bo',pick:null,open:null,qf:'',to:'',q:''};
+let V={tab:'bo',pick:null,open:null,qf:'',to:'',q:'',ck:null,ctc:null};
 
 const NAV=[
  ['','🏠 Trung tâm điều hành',[['M0.1','Bảng điều khiển'],['M0.2','Việc cần làm','2'],['M0.3','Thông báo'],['M0.4','Trang cá nhân']]],
@@ -684,6 +743,7 @@ function scopeBar(){
 function render(){
  sidebar();$('#ava').textContent=R().ava;
  const n=viecCuaToi();$('#ndot').textContent=n||'';$('#ndot').style.display=n?'grid':'none';
+ if(V.ck){$('#content').innerHTML=manChot();return}
  if(V.open){$('#content').innerHTML=manSoan();return}
  const ts=tabsOn();if(!ts.some(t=>t[0]===V.tab))V.tab=ts[0][0];
  $('#content').innerHTML=
@@ -794,6 +854,8 @@ function rowKQ(g,k,b){
    '<div style="font-size:10.5px;color:var(--ink3)">'+k.diem+'/'+k.mauCo+' đã chấm</div></div>'+
   '<div class="kx">'+spark(g,b)+'</div>'+
   '<div>'+(k.chuaCham?'<span class="st2 w">'+k.chuaCham+' tiêu chí chưa chấm</span>':'<span class="st2 o">Đủ tiêu chí</span>')+
+   (k.coSua?'<div style="margin-top:2px"><span class="mk sua" title="Có ô giá trị chốt khác số máy — xem panel bên phải">Điểm bị sửa khác số máy</span></div>':'')+
+   (k.coLech?'<div style="margin-top:2px"><span class="mk lech" title="Số nguồn đã đổi sau khi kỳ được chốt — không tự đè (R17)">⚠ số máy đã đổi sau khi chốt</span></div>':'')+
    (NGHI[g.ten]?'<div style="margin-top:2px"><span class="st2 n" title="'+esc(NGHI[g.ten])+'">có kỳ nghỉ dài</span></div>':'')+'</div></div>';
 }
 function spark(g,b){
@@ -801,7 +863,7 @@ function spark(g,b){
  return '<div class="spark">'+dsKy(b).map(function(k){
   if(!c[k.ma])return '<i class="n" style="height:6px" title="'+k.t+': chưa chốt"></i>';
   const sl=c[k.ma].soLieu[g.id];let s=0,m=0;
-  dsTC(b).forEach(function(x){if(!x.t.nguon||!apDung(x.t,g))return;m+=x.t.ts;s+=sl[x.t.id]?sl[x.t.id].d:0});
+  dsTC(b).forEach(function(x){if(!x.t.nguon||!apDung(x.t,g))return;m+=x.t.ts;s+=sl[x.t.id]?GTC(sl[x.t.id]):0});
   const p=m?Math.round(s/m*100):0;
   return '<i style="height:'+Math.max(4,Math.round(p*0.3))+'px" title="'+k.t+': '+p+'"></i>'}).join('')+'</div>';
 }
@@ -829,9 +891,21 @@ function panelKQ(){
    s+='<div class="dd"><div><b>'+esc(t.ten)+'</b> <span class="pill">'+t.ts+'</span>'+
     '<div style="margin-top:3px">'+(cs?'<span class="src may">🖥 '+cs.m+'</span> '+dlink(cs.m,cs.m,g.id):'<span class="src nguoi">✍ Người chấm</span>')+'</div></div>';
    if(c.may){
-    s+='<div><b style="font-size:15px">'+c.d+'</b>/'+t.ts+'</div><div style="font-size:11px;color:var(--ink3)">'+
-     c.ky.map(x=>x.k.t+': <b>'+x.so+(x.dv==='%'?'%':' '+x.dv)+'</b>').join(' · ')+
-     '<div>'+esc(c.ky[0]?c.ky[0].ct:'')+'</div></div>';
+    const cs2=c.ky.filter(x=>x.sua),cl2=c.ky.filter(x=>x.lech);
+    s+='<div><b style="font-size:15px">'+c.d+'</b>/'+t.ts+
+     (cs2.length?'<div style="margin-top:3px"><span class="mk sua">✎ đã sửa</span></div>':'')+
+     (cl2.length?'<div style="margin-top:3px"><span class="mk lech">⚠ số máy đã đổi</span></div>':'')+
+     '</div><div style="font-size:11px;color:var(--ink3)">'+
+     c.ky.map(function(x){
+      let u=x.k.t+': <b>'+x.so+(x.dv==='%'?'%':' '+x.dv)+'</b>';
+      if(x.sua)u+=' · máy <b>'+x.may+'</b> → chốt <b>'+x.d+'</b> <span class="mk sua">✎</span>';
+      if(x.lech)u+=' <span class="mk lech">⚠ máy nay '+x.lech.so+(x.dv==='%'?'%':'')+'</span>';
+      return u}).join(' · ')+
+     '<div>'+esc(c.ky[0]?c.ky[0].ct:'')+'</div>'+
+     (cs2.length?'<div style="color:var(--amber)">Lý do: '+esc((cs2[0].o||{}).lyDo||'')+' — '+esc((cs2[0].o||{}).ng||'')+'</div>':'')+
+     (cl2.length?'<div style="color:var(--amber)">Số nguồn đổi sau khi chốt — <b>không tự đè</b> (R17), người chốt kỳ quyết</div>':'')+
+     (can('chotky')?'<div style="margin-top:3px"><button class="rolnk" data-x="diChot" data-k="'+(c.ky[0]?c.ky[0].k.ma:'')+'" data-t="'+t.id+'">↗ Sửa giá trị chốt</button></div>':'')+
+     '</div>';
    } else if(c.nguoi){
     s+='<div>'+(chamDuoc(g)?'<input class="dnum" type="number" min="0" max="'+t.ts+'" step="0.5" data-cham="'+t.id+'" value="'+c.nguoi.d+'">':'<b style="font-size:15px">'+c.nguoi.d+'</b>')+'/'+t.ts+'</div>'+
      '<div style="font-size:11px;color:var(--ink3)">'+esc(c.nguoi.ng)+' · '+d2s(c.nguoi.ngay)+(c.nguoi.lyDo?'<div style="color:var(--amber)">Lý do: '+esc(c.nguoi.lyDo)+'</div>':'')+'</div>';
@@ -869,15 +943,88 @@ function tabKy(){
    '<div style="font-size:12px">'+d2s(k.tu)+' → '+d2s(k.den)+'</div>'+
    '<div><span class="st2 '+(TTKY[tt]||'n')+'">'+tt+'</span></div>'+
    '<div class="kx">'+(dc?'<b>'+soMay+'</b>':'—')+'</div>'+
-   '<div class="kx">'+(dc?'<b>'+nGV+'</b>/'+GV.length:'—')+'</div>'+
+   '<div class="kx">'+(dc?'<b>'+nGV+'</b>/'+GV.length+
+     (function(){const dm=demChot(b,k.ma);return (dm.s?'<div><span class="mk sua">'+dm.s+' ô đã sửa</span></div>':'')+
+      (dm.l?'<div style="margin-top:2px"><span class="mk lech">'+dm.l+' ô ⚠ nguồn đổi</span></div>':'')})()
+    :'—')+'</div>'+
    '<div class="kx" style="display:flex;gap:4px;flex-wrap:wrap">'+
     (dc?'<span style="font-size:10.5px;color:var(--ink3)">'+esc(dc.ng)+' · '+d2s(dc.d)+'</span>'+
+      '<button class="btn xs '+(can('chotky')?'p':'')+'" data-x="moChot" data-k="'+k.ma+'">'+(can('chotky')?'✎ Giá trị chốt':'Xem giá trị chốt')+'</button>'+
       (can('chotky')?'<button class="btn xs" data-x="chotLai" data-k="'+k.ma+'">Chốt lại</button>':'')
      :(can('chotky')&&ttKy(k)!=='Chưa tới'?'<button class="btn xs p" data-x="chotKyBtn" data-k="'+k.ma+'">🔒 Chốt số liệu</button>'
        :'<span style="font-size:11px;color:var(--ink3)">'+(ttKy(k)==='Chưa tới'?'chưa tới kỳ':'chờ chốt')+'</span>'))+
    '</div></div>'}).join('')+'</div>'+
  '<div class="ro" style="margin-top:11px">🔒 <b>Chốt kỳ = chụp lại số liệu máy tại thời điểm đó.</b> Chốt rồi thì số liệu kỳ đó <b>đóng băng</b> (R5) — '+
-  'nếu để số chạy tiếp thì điểm Quý I sẽ đổi khi sang Quý II, và mọi so sánh giữa các kỳ thành vô nghĩa.</div>';
+  'nếu để số chạy tiếp thì điểm Quý I sẽ đổi khi sang Quý II, và mọi so sánh giữa các kỳ thành vô nghĩa. '+
+  '<b>Chốt lại KHÔNG xóa giá trị chốt của người</b> (R18) — máy chụp lại số của mình, kết luận của người ở lại.</div>'+
+ '<div class="okbx" style="margin-top:11px">🧮 <b>MÁY ĐẾM — NGƯỜI KẾT LUẬN.</b> Ô điểm từng kỳ <b>điền sẵn theo số máy tính được</b>, kèm <b>con số gốc</b> '+
+  'và <b>deep-link về menu nguồn</b>; người chốt kỳ <b>sửa được mọi ô</b>, nhưng <b>sửa khác số máy thì <span style="color:var(--red)">Lý do</span> là trường bắt buộc</b> (R4), '+
+  'và ô đó mang dấu <span class="mk sua">✎ đã sửa</span>. Hệ thống <b>giữ cả hai con số</b> để đối chiếu về sau. '+
+  'Khuôn này <b>mượn nguyên của <b>M4.12</b> §6.2</b> — cùng chữ, cùng dấu, cùng luật, để người dùng không phải học hai lần.</div>';
+}
+
+/* ===== MAN HINH GIA TRI CHOT CUA MOT KY (day du + breadcrumb) =====
+   Tang 2 la ca mot KHONG GIAN LAM VIEC (26 GV x 9 tieu chi nguon may) chu khong phai
+   chi tiet mot ban ghi => man hinh day du, dung quy uoc bo cuc. */
+function manChot(){
+ const b=boHienHanh();
+ if(!b||role==='GVBM'){V.ck=null;return ''}
+ const ky=dsKy(b).filter(x=>x.ma===V.ck)[0],dc=(CHOT[b.id]||{})[V.ck];
+ if(!ky||!dc){V.ck=null;return ''}
+ const may=dsTC(b).filter(x=>x.t.nguon);
+ if(!V.ctc||!may.some(x=>x.t.id===V.ctc))V.ctc=may[0].t.id;
+ const x0=may.filter(x=>x.t.id===V.ctc)[0],t=x0.t,cs=CHISO[t.nguon];
+ const sua=can('chotky');
+ const r=dsGV();
+ let nSua=0,nLech=0;
+ r.forEach(function(g){const v=dc.soLieu[g.id]&&dc.soLieu[g.id][t.id];
+  if(daSua(v))nSua++;if(v&&lechNguon(b,g,t,V.ck,v))nLech++});
+ let s='<div class="bc"><button data-x="backK">Theo dõi theo kỳ</button> › <span class="cur">Giá trị chốt — '+ky.t+'</span>'+
+  '<div class="spacer" style="flex:1"></div><span class="st2 o">Đã chốt '+d2s(dc.d)+' · '+esc(dc.ng)+'</span></div>'+
+ '<div class="tophd"><h1>Giá trị chốt — '+ky.t+'</h1><span class="pill">'+d2s(ky.tu)+' → '+d2s(ky.den)+'</span>'+
+  '<div class="spacer"></div>'+
+  (sua?'<button class="btn p" data-x="luuChot">💾 Lưu giá trị chốt</button>':'')+
+  '<button class="btn" data-x="backK">← Quay lại</button></div>'+
+ '<div class="okbx">🧮 <b>MÁY ĐẾM — NGƯỜI KẾT LUẬN.</b> Ô điểm <b>điền sẵn theo số máy tính được</b>, kèm <b>con số gốc</b> và '+
+  '<b>deep-link về menu nguồn</b>. '+(sua?'Bạn <b>sửa được mọi ô</b>, nhưng <b>sửa khác số máy thì <span style="color:var(--red)">Lý do</span> là trường bắt buộc</b> (R4) '+
+   'và ô mang dấu <span class="mk sua">✎ đã sửa</span>.':'Vai <b>'+role+'</b> <b>chỉ xem</b> — sửa giá trị chốt là thao tác của người <b>chốt kỳ</b> (PHT_CM).')+
+  ' Hệ thống <b>giữ cả hai con số</b> (số máy · số chốt) để đối chiếu về sau. Khuôn mượn nguyên của <b>M4.12 §6.2</b>.</div>'+
+ (sua?'':'<div class="ro">👁 Màn hình này mở với mọi vai thấy tab <b>Theo dõi theo kỳ</b> để ai cũng kiểm chứng được con số — '+
+   'nhưng <b>chỉ người chốt kỳ mới sửa</b>. Tổ trưởng chấm <b>tiêu chí nguồn người</b> ở tab <b>Kết quả giáo viên</b>.</div>')+
+ '<div class="bar" style="flex-wrap:wrap">'+
+  '<span class="lb" style="align-self:center">Tiêu chí nguồn máy</span>'+
+  may.map(function(x){return '<button class="qf '+(V.ctc===x.t.id?'on':'')+'" data-x="ctc" data-k="'+x.t.id+'">'+esc(x.t.ten)+'</button>'}).join('')+
+  '</div>'+
+ '<div class="scope am">🖥 <b>'+esc(t.ten)+'</b> · trọng số <b>'+t.ts+'</b> · chỉ số <b>'+cs.t+'</b> · nguồn '+dlink(cs.m,cs.m,'ky='+V.ck)+
+  '<span class="sp"></span><span>'+esc(cs.mo)+'</span></div>'+
+ (nSua||nLech?'<div class="warn">'+(nSua?'<span class="mk sua">✎ '+nSua+' ô đã sửa khác số máy</span> ':'')+
+   (nLech?'<span class="mk lech">⚠ '+nLech+' ô có số nguồn đổi sau khi chốt</span> — <b>không tự đè</b> (R17), hai con số hiện ngay trên ô để người chốt quyết.':'')+'</div>':'');
+ const head='<div class="hdrow gct"><div>Giáo viên</div><div>Số máy tính được</div><div>Giá trị chốt</div><div>Lý do (bắt buộc khi khác số máy)</div><div>Dấu</div></div>';
+ s+='<div class="listw">'+head+r.map(function(g){
+  const v=dc.soLieu[g.id]&&dc.soLieu[g.id][t.id];
+  if(!v)return '<div class="hrow gct" style="cursor:default;opacity:.55"><div><b>'+esc(g.ten)+'</b></div>'+
+   '<div><span class="st2 n">không áp dụng</span></div><div>—</div>'+
+   '<div style="font-size:11px">Tiêu chí chỉ dành cho <b>'+APDUNG[t.ap]+'</b> — không tính vào mẫu số (R6)</div><div>—</div></div>';
+  const lech=lechNguon(b,g,t,V.ck,v),ds=daSua(v);
+  return '<div class="hrow gct" style="cursor:default"><div><b>'+esc(g.ten)+'</b>'+
+   '<div style="font-size:10.5px;color:var(--ink3)">'+esc(g.to)+'</div></div>'+
+   '<div><b style="font-size:14px">'+v.d+'</b>/'+t.ts+
+    '<div style="font-size:10.5px;color:var(--ink3)">gốc <b>'+v.so+(v.dv==='%'?'%':' '+v.dv)+'</b> · '+esc(v.ct)+'</div>'+
+    '<div style="margin-top:2px">'+dlink(cs.m,cs.m,g.id)+'</div></div>'+
+   '<div>'+(sua?'<input class="dnum'+(ds?' s':'')+'" type="number" min="0" max="'+t.ts+'" step="0.1" data-ct="'+g.id+'" value="'+GTC(v)+'">'
+     :'<b style="font-size:14px">'+GTC(v)+'</b>')+'</div>'+
+   '<div>'+(sua?'<input class="inp ld" data-ld="'+g.id+'" value="'+esc(v.lyDo||'')+'" placeholder="'+(ds?'':'chỉ cần khi sửa khác số máy')+'">'
+     :(v.lyDo?'<span style="font-size:11.5px;color:var(--amber)">'+esc(v.lyDo)+'</span>':'—'))+
+    (ds&&v.ng?'<div style="font-size:10.5px;color:var(--ink3)">'+esc(v.ng)+' · '+(v.ngay?d2s(v.ngay):'')+'</div>':'')+'</div>'+
+   '<div>'+(ds?'<span class="mk sua" title="Giá trị chốt khác số máy">✎ đã sửa</span>':'<span class="st2 n">theo số máy</span>')+
+    (lech?'<div style="margin-top:3px"><span class="mk lech" title="Số máy hiện nay khác số đã đóng băng lúc chốt kỳ">⚠ nguồn đổi</span>'+
+      '<div style="font-size:10.5px;color:#92400e">chốt <b>'+v.so+'</b> → nay <b>'+lech.so+'</b></div></div>':'')+
+    (sua&&ds?'<div style="margin-top:3px"><button class="btn xs" data-x="traMay" data-i="'+g.id+'">↺ Trả về số máy</button></div>':'')+'</div></div>'}).join('')+'</div>'+
+ '<div class="ro" style="margin-top:11px">🔎 Mỗi lần lưu giá trị chốt đều ghi <b>Audit Log</b>: ai sửa, ô nào, từ số nào sang số nào, lý do gì. '+
+  '<b>Số máy không bị xóa</b> — hai con số ở lại cạnh nhau để năm sau còn đối chiếu được.</div>'+
+ (sua?'<div class="bar" style="margin-top:9px"><button class="btn xs" data-x="moPhong">🧪 Mô phỏng: nguồn '+cs.m+' cập nhật sau khi chốt</button>'+
+   '<span class="sum"><span style="font-size:11.5px;color:var(--ink3)">nút mô phỏng chỉ có trong demo — ngoài đời số nguồn tự đổi khi menu gốc được sửa</span></span></div>':'');
+ return s;
 }
 
 /* ===== MAN HINH SOAN BO KPI (day du + breadcrumb) ===== */
@@ -1061,7 +1208,7 @@ document.addEventListener('click',function(e){
  const rb=e.target.closest('.rb');
  if(rb&&rb.dataset.r){role=rb.dataset.r;
   Array.prototype.forEach.call(document.querySelectorAll('.rb'),b=>b.classList.toggle('on',b===rb));
-  V={tab:'bo',pick:null,open:null,qf:'',to:'',q:''};closeModal();render();return}
+  V={tab:'bo',pick:null,open:null,qf:'',to:'',q:'',ck:null,ctc:null};closeModal();render();return}
  const el=e.target.closest('[data-x]');if(!el)return;
  const a=el.dataset.x,id=el.dataset.i,k=el.dataset.k;
  switch(a){
@@ -1071,6 +1218,10 @@ document.addEventListener('click',function(e){
   case 'pick':V.pick=(V.pick===id?null:id);render();break;
   case 'closepick':V.pick=null;render();break;
   case 'backS':V.open=null;render();break;
+  case 'backK':V.ck=null;V.ctc=null;render();break;
+  case 'moChot':V.ck=k;V.ctc=null;V.pick=null;render();break;
+  case 'ctc':V.ctc=k;render();break;
+  case 'diChot':V.tab='ky';V.ck=k;V.ctc=el.dataset.t;V.pick=null;render();break;
   case 'moSoan':V.open=id;V.pick=null;render();break;
   case 'dl':toast('↗ Mở <b>'+el.dataset.m+'</b> · ctx=<b>'+esc(el.dataset.c)+'</b> · return=M5.5 — người dùng <b>kiểm chứng được con số</b> từ menu gốc');break;
 
@@ -1184,6 +1335,50 @@ document.addEventListener('click',function(e){
     if(!cu||cu.d!==v){NGUOI[g.id][tid]={d:v,ng:me(),ngay:HOMNAY,lyDo:''};n++}});
    if(!n){toast('Không có thay đổi nào để lưu');break}
    toast('✅ Đã lưu <b>'+n+'</b> tiêu chí cho <b>'+esc(g.ten)+'</b> — điểm KPI cập nhật ngay');render();break}
+
+  /* --- gia tri chot cua mot o (GY18-H4) --- */
+  case 'luuChot':{
+   const b=boHienHanh(),dc=CHOT[b.id][V.ck],tid=V.ctc;
+   const t=dsTC(b).filter(x=>x.t.id===tid)[0].t;
+   const thieu=[],doi=[];
+   Array.prototype.forEach.call(document.querySelectorAll('[data-ct]'),function(inp){
+    const gid=inp.dataset.ct,v=dc.soLieu[gid]&&dc.soLieu[gid][tid];if(!v)return;
+    const ldEl=document.querySelector('[data-ld="'+gid+'"]');
+    const ld=ldEl?ldEl.value.trim():'';
+    let val=inp.value===''?v.d:Math.max(0,Math.min(+inp.max,Math.round(+inp.value*10)/10));
+    const nay=GTC(v);
+    /* R4 — sua khac so may thi Ly do la truong BAT BUOC */
+    if(val!==v.d&&!ld)thieu.push(gvBy(gid).ten);
+    if(val!==nay||ld!==(v.lyDo||''))doi.push({gid:gid,val:val,ld:ld,v:v});
+   });
+   if(thieu.length){toast('⛔ <b>Lý do là trường bắt buộc</b> khi giá trị chốt khác số máy (R4) — còn trống ở: <b>'+
+    thieu.slice(0,4).map(esc).join(' · ')+(thieu.length>4?' và '+(thieu.length-4)+' người nữa':'')+'</b>');break}
+   if(!doi.length){toast('Không có thay đổi nào để lưu');break}
+   let nS=0,nT=0;
+   doi.forEach(function(x){
+    if(x.val===x.v.d){x.v.chot=null;x.v.lyDo='';x.v.ng='';x.v.ngay=null;nT++}
+    else {x.v.chot=x.val;x.v.lyDo=x.ld;x.v.ng=me();x.v.ngay=HOMNAY;nS++}});
+   b.lichSu.unshift({act:'Sửa giá trị chốt — '+dsKy(b).filter(x=>x.ma===V.ck)[0].t,ng:me(),d:HOMNAY,
+    note:esc(t.ten)+' · '+nS+' ô khác số máy'+(nT?' · '+nT+' ô trả về số máy':'')});
+   toast('✅ Đã lưu <b>'+(nS+nT)+'</b> ô — <b>'+nS+'</b> ô mang dấu <b>✎ đã sửa</b>'+(nT?', <b>'+nT+'</b> ô trả về số máy':'')+
+    '. Điểm KPI tính lại theo <b>số chốt</b>, số máy vẫn giữ để đối chiếu');
+   render();break}
+  case 'traMay':{
+   const b=boHienHanh(),v=CHOT[b.id][V.ck].soLieu[id][V.ctc];
+   if(v){v.chot=null;v.lyDo='';v.ng='';v.ngay=null}
+   toast('↺ Ô của <b>'+esc(gvBy(id).ten)+'</b> trả về <b>số máy</b> — bỏ dấu ✎ đã sửa');render();break}
+  case 'moPhong':{
+   const b=boHienHanh(),dc=CHOT[b.id][V.ck],tid=V.ctc;
+   const t=dsTC(b).filter(x=>x.t.id===tid)[0].t,cs=CHISO[t.nguon];
+   let n=0;
+   dsGV().slice(0,3).forEach(function(g){
+    const v=dc.soLieu[g.id]&&dc.soLieu[g.id][tid];if(!v)return;
+    const m=MAY[g.id][V.ck][t.nguon];
+    m.so=cs.dv==='%'?Math.min(100,v.so+7):v.so+1;
+    m.ct=cs.m+' cập nhật số sau khi kỳ đã chốt (mô phỏng)';n++});
+   toast('🧪 <b>'+cs.m+'</b> vừa đổi số của <b>'+n+'</b> giáo viên. Kỳ đã chốt nên hệ thống <b>KHÔNG tự đè</b> (R17) — '+
+    'ô hiện <b>⚠</b> kèm hai con số, người chốt kỳ quyết định giữ hay lấy số mới');
+   render();break}
 
   /* --- chot ky --- */
   case 'chotKyBtn':{const b=boHienHanh(),ky=dsKy(b).filter(x=>x.ma===k)[0];

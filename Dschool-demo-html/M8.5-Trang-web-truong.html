@@ -435,18 +435,21 @@ const NG={
  sys:{ten:'Hệ thống',cd:'tự động'}
 };
 
-/* ── Ma trận quyền (bản demo của §14 · phiếu mục Q). Mảng năng lực, kiểm bằng .includes() ── */
+/* ── Ma trận quyền (bản demo của §15 · phiếu mục Q). Mảng năng lực, kiểm bằng .includes() ──
+   m81 · m68 · m86 = vai có quyền TẠO ở menu đích của deep-link (M8.1 · M6.8 · M8.6) — quy ước D3:
+   không có quyền ở menu chủ thì KHÔNG hiện đường mở. m86 = T ở m8.6.bai_cua_toi, đọc từ M10.4 của M8.6;
+   M8.5 không tự cấp gì — cầu sao chép KHÔNG thêm ô quyền nào (§13 · §15). KT cố ý KHÔNG có m86 để thử D3. ── */
 const ROLES={
- FULL:  {cd:'🔓 Đủ quyền (demo)',me:'hang',sc:'School',m81:1,m68:1},
- HT:    {cd:'HT — Hiệu trưởng',me:'duc',sc:'School',m81:1,m68:1,
+ FULL:  {cd:'🔓 Đủ quyền (demo)',me:'hang',sc:'School',m81:1,m68:1,m86:1},
+ HT:    {cd:'HT — Hiệu trưởng',me:'duc',sc:'School',m81:1,m68:1,m86:1,
          q:{cho:['X','D'],cua:['X','T','S','XO'],web:['X','S','XO','XD'],ck:['X','T','D','XD'],ch:['X','T','S','XO']}},
- PHT_CM:{cd:'PHT_CM',me:'lan',sc:'School',m81:1,m68:1,
+ PHT_CM:{cd:'PHT_CM',me:'lan',sc:'School',m81:1,m68:1,m86:1,
          q:{cho:['X','D'],cua:['X','T','S','XO'],web:['X','S','XO','XD'],ck:['X','T','XD'],ch:['X']}},
- PHT_DT:{cd:'PHT_DT (điểm B)',me:'binh',sc:'Branch',dt:'B',m81:1,m68:1,
+ PHT_DT:{cd:'PHT_DT (điểm B)',me:'binh',sc:'Branch',dt:'B',m81:1,m68:1,m86:1,
          q:{cho:[],cua:['X','T','S','XO'],web:['X'],ck:['X'],ch:[]}},
- VT:    {cd:'VT (điểm A)',me:'hang',sc:'Branch',dt:'A',m81:1,m68:1,
+ VT:    {cd:'VT (điểm A)',me:'hang',sc:'Branch',dt:'A',m81:1,m68:1,m86:1,
          q:{cho:[],cua:['X','T','S','XO'],web:['X','XD'],ck:['X','T'],ch:[]}},
- TPT:   {cd:'TPT Đội',me:'huy',sc:'School',m81:1,
+ TPT:   {cd:'TPT Đội',me:'huy',sc:'School',m81:1,m86:1,
          q:{cho:[],cua:['X','T','S','XO'],web:['X'],ck:[],ch:[]}},
  KT:    {cd:'KT — Kế toán',me:'nga',sc:'School',
          q:{cho:[],cua:['X','T','S','XO'],web:['X'],ck:['X','T'],ch:[]}},
@@ -478,7 +481,8 @@ const CM=[
 const NGUON_PA=['M8.4 — phản ánh qua App','Điện thoại','Email','Trực tiếp tại trường','Nhà trường tự phát hiện'];
 
 /* ── Bộ nối (§0.2) ── */
-const BN={dich:'dschool',ham:1,lan:'2026-09-14 07:00',tran:3,
+/* Mặc định nay là ② website có sẵn của trường qua API (chốt ① — 19/9/2026); ① là phương án phụ. */
+const BN={dich:'cms',ham:1,lan:'2026-09-14 07:00',tran:3,
  url:{dschool:'nguyentatthanh.truong.dschool.vn',cms:'thcsthptnguyentatthanh.hanoi.edu.vn',goi:'thcsthptnguyentatthanh.hanoi.edu.vn'}};
 
 /* ── Danh mục bắt buộc công khai — TT 09/2024 (trường THCS & THPT) ──
@@ -516,6 +520,24 @@ const DIEU={'Đ4':'Điều 4 — Thông tin chung','Đ5':'Điều 5 — Thu, chi
 
 /* ── Ảnh: bo = người soạn bỏ khỏi bài (giữ nội bộ) · an = ẨN KHỎI WEB THEO PHẢN ÁNH (ai, lúc, nguồn, lý do) ── */
 function A(mo,ic,bg,x){return Object.assign({mo:mo,ic:ic,bg:bg,bo:0,an:null},x||{})}
+
+/* ── CẦU SAO CHÉP SANG M8.6 BẢNG TIN ĐỜI SỐNG TRƯỜNG (§13 — chốt ⑤ ngày 19/9/2026) ──
+   lk = lien_ket_kenh = {kenh, ma, ngay, lech, mien}
+     ma    mã bài bên M8.6 (BT-####)
+     lech  ngày một bên sửa sau lúc sao — cờ «⚠ Bản kia đã đổi ngày …», nằm TRÊN DÒNG ở danh sách (W7)
+     mien  {ngay, ai, ly} — «✓ Đánh dấu không cần đồng bộ», bắt buộc lý do (C14); không có nút này thì
+           cờ không bao giờ tắt được một cách chính đáng và sau ba tháng mọi bài đều mang cờ.
+   🛑 Hai bản ĐỘC LẬP. Ngoại lệ duy nhất: ẩn/gỡ vì LỘ DỮ LIỆU CÁ NHÂN thì hỏi xuyên hai kênh, mặc định CÓ.
+   ⛔ Bản App KHÔNG tính cho nghĩa vụ công khai TT 09/2024 Đ14 k1 (gắn với cổng TTĐT). ── */
+function LK(ma,ngay,lech){return {kenh:'m8.6',ma:ma,ngay:ngay,lech:lech||null,mien:null}}
+
+/* Bài bên M8.6 dùng cho chiều NGƯỢC (App → web) — mô phỏng deep-link /M8.5?action=tao&nguon=m8.6&ctx=BT-0047.
+   Cố ý có tên học sinh + một số điện thoại: chiều này phải chạy LẠI toàn bộ §8 rồi duyệt bốn mắt. */
+const BAI_APP={ma:'BT-0051',ngay:'2026-09-12',loai:'phong_trao',
+ ten:'Chúc mừng đội tuyển Toán và Tiếng Anh của trường',
+ tomtat:'Bảng tin gửi tới phụ huynh: các em vừa mang về 14 giải cấp thành phố.',
+ nd:'Kính gửi quý phụ huynh,\n\nĐội tuyển của trường vừa đạt 14 giải cấp thành phố. Chúc mừng các em: Phạm Quang Minh (9A1), Bùi Bảo Ngọc (12A1), Đặng Thảo Vy (9A2), Hoàng Khánh Linh (11A1), Vũ Đức Duy (10A2).\n\nPhụ huynh cần thêm thông tin xin liên hệ cô Lan — 0912345678.',
+ anh:[['Đội tuyển chụp ảnh lưu niệm tại Sở GDĐT','🏆','#fde68a'],['Giờ ôn luyện của đội tuyển Toán','📐','#bae6fd']]};
 
 let BAI=[
  {k:'WEB-0147/1',id:'WEB-0147',v:1,ten:'Lễ khai giảng năm học 2026-2027 — «Vững bước tương lai»',cm:'tin',tt:'nhap',tacgia:'hang',
@@ -573,7 +595,7 @@ let BAI=[
   anh:[],tep:[{ten:'KHGD-2026-2027-da-duyet.pdf',kb:1840}],
   ls:[['2026-09-07 08:00','lan','Tạo từ mục công khai «Kế hoạch giáo dục»'],['2026-09-09 16:00','duc','Duyệt — hẹn 10/9 07:00'],['2026-09-10 07:00','sys','Trang công khai xác nhận đã đăng']]},
 
- {k:'WEB-0142/1',id:'WEB-0142',v:1,ten:'Lịch họp cha mẹ học sinh đầu năm học 2026-2027',cm:'tb',tt:'dang',tacgia:'hang',
+ {k:'WEB-0142/1',id:'WEB-0142',v:1,ten:'Lịch họp cha mẹ học sinh đầu năm học 2026-2027',cm:'tb',tt:'dang',tacgia:'hang',lk:LK('BT-0039','2026-09-08'),
   tao:'2026-09-07 09:00',gui:'2026-09-07 10:00',duyet:{ai:'lan',luc:'2026-09-07 16:30'},dang:'2026-09-08 07:30',dt:['*'],lich:'2026-09-08 07:30',ghim:{den:'2026-09-20'},dd:-1,dagui:1,
   tomtat:'Họp cha mẹ học sinh toàn trường vào sáng Chủ nhật 20/9/2026, từ 8h00 tại các lớp học.',
   nd:'Nhà trường tổ chức họp cha mẹ học sinh đầu năm vào 8h00 Chủ nhật 20/9/2026 tại phòng học của từng lớp. Nội dung: phổ biến kế hoạch năm học, nội dung công khai theo quy định, bầu ban đại diện cha mẹ học sinh lớp.',
@@ -587,7 +609,7 @@ let BAI=[
   anh:[],tep:[{ten:'KH-HKPD-2026.pdf',kb:356}],
   ls:[['2026-09-11 08:00','lan','Tạo bài'],['2026-09-12 10:00','duc','Duyệt — hẹn 15/9 07:00']]},
 
- {k:'WEB-0139/1',id:'WEB-0139',v:1,ten:'CLB Robotics tổng kết hoạt động hè 2026',cm:'tin',tt:'dang',tacgia:'huy',
+ {k:'WEB-0139/1',id:'WEB-0139',v:1,ten:'CLB Robotics tổng kết hoạt động hè 2026',cm:'tin',tt:'dang',tacgia:'huy',lk:LK('BT-0028','2026-08-28'),
   tao:'2026-08-27 10:00',gui:'2026-08-27 11:00',duyet:{ai:'lan',luc:'2026-08-28 15:30'},dang:'2026-08-28 16:00',dt:['A'],lich:null,ghim:null,dd:1,dagui:1,
   tomtat:'Sau 8 tuần sinh hoạt hè, CLB Robotics hoàn thành 3 mô hình robot phân loại rác.',
   nd:'CLB Robotics khép lại chương trình hè với ngày hội trưng bày 3 mô hình robot phân loại rác do các nhóm học sinh khối 9 thiết kế.',
@@ -613,7 +635,7 @@ let BAI=[
   tomtat:'Thư viện điểm trường B tổ chức Ngày hội đọc sách với chủ đề «Sách — người bạn đồng hành».',nd:'Thư viện điểm trường B tổ chức Ngày hội đọc sách, trao 30 phần quà cho học sinh có bài giới thiệu sách hay.',
   anh:[A('Góc đọc sách ngoài trời','📚','#fde68a')],tep:[],ls:[['2026-08-19 10:00','lan','Duyệt'],['2026-08-19 10:10','sys','Trang công khai xác nhận đã đăng']]},
 
- {k:'WEB-0133/1',id:'WEB-0133',v:1,ten:'Chào mừng 81 năm Cách mạng tháng Tám và Quốc khánh 2/9',cm:'tin',tt:'dang',tacgia:'huy',
+ {k:'WEB-0133/1',id:'WEB-0133',v:1,ten:'Chào mừng 81 năm Cách mạng tháng Tám và Quốc khánh 2/9',cm:'tin',tt:'dang',tacgia:'huy',lk:LK('BT-0021','2026-08-31','2026-09-11'),
   tao:'2026-08-29 08:00',gui:'2026-08-29 09:00',duyet:{ai:'duc',luc:'2026-08-29 14:00'},dang:'2026-08-31 07:00',dt:['*'],lich:'2026-08-31 07:00',ghim:null,dd:0,dagui:1,
   tomtat:'Toàn trường treo cờ, sinh hoạt chủ đề chào mừng Quốc khánh.',nd:'Liên đội tổ chức sinh hoạt dưới cờ chủ đề «Tự hào Việt Nam» chào mừng 81 năm Cách mạng tháng Tám và Quốc khánh 2/9.',
   anh:[A('Sân trường rợp cờ đỏ sao vàng','🇻🇳','#fecaca')],tep:[],ls:[['2026-08-29 14:00','duc','Duyệt — hẹn 31/8 07:00'],['2026-08-31 07:00','sys','Trang công khai xác nhận đã đăng']]},
@@ -734,7 +756,9 @@ function tabHien(k){if(k==='cho')return coQ('cho','D')&&hangDoi().length>0;retur
 function rolebar(){
  $('#rolebar').innerHTML='<b>Vai trò:</b>'+Object.keys(ROLES).map(k=>'<button class="rb'+(k===role?' on':'')+'" data-r="'+k+'">'+esc(ROLES[k].cd)+'</button>').join('')
   +'<span class="simw">Hôm nay (mô phỏng): <b style="color:#e2e8f0">Thứ Hai '+d2s(NOW)+'</b></span>'
-  +'<button class="ntg'+(document.body.classList.contains('nn')?'':' on')+'" id="btnNote">💡 Ghi chú thiết kế: '+(document.body.classList.contains('nn')?'TẮT':'BẬT')+'</button>';
+  +'<button class="ntg'+(document.body.classList.contains('nn')?'':' on')+'" id="btnNote">💡 Ghi chú thiết kế: '+(document.body.classList.contains('nn')?'TẮT':'BẬT')+'</button>'
+  /* M8.6 có thể chưa có demo lúc chạy — dùng hộp mô phỏng deep-link, tiền lệ M8.1 (§13.1 chiều App → web) */
+  +'<button class="ntg" id="btnM86" title="Demo: giả lập /M8.5?action=tao&nguon=m8.6&ctx=BT-0051&return=M8.6">📥 Mô phỏng deep-link từ M8.6</button>';
 }
 function header(){
  const n=ME();$('#ava').textContent=n.ten.split(' ').slice(-2).map(x=>x[0]).join('');
@@ -773,6 +797,7 @@ document.addEventListener('click',e=>{
  if(t===$('#mask')){closeM();return}
  const rb=t.closest('.rb');if(rb){role=rb.dataset.r;ST.cur=null;ST.ed=null;ST.sel=[];ST.tab=null;render();return}
  if(t.id==='btnNote'){document.body.classList.toggle('nn');render();return}
+ if(t.closest('#btnM86')){ACT.tuM86();return}
  const tb=t.closest('#tabs [data-t]');if(tb){ST.tab=tb.dataset.t;ST.cur=null;ST.ed=null;ST.q='';ST.sel=[];render();return}
  const a=t.closest('[data-a]');if(a&&!a.disabled){const fn=ACT[a.dataset.a];if(fn){fn(a.dataset.v,a,e);return}}
 });
@@ -839,7 +864,9 @@ function coAnhAn(b){return b.anh.some(a=>a.an)}
 function dayRa(b,luc){
  if(BN.dich==='goi'){b.tt='xacnhan';ghiLS(b,'Đến giờ đăng — đã dựng gói bài, chờ người dán lên website của trường','sys');return}
  if(!BN.ham){b.tt='dayq';ghiLS(b,'Đến giờ đăng — đường hầm không phản hồi, bài vào hàng đợi chờ đẩy','sys');return}
- b.tt='dang';b.dang=luc||NOW;ghiLS(b,'Trang công khai xác nhận đã đăng','sys');
+ b.tt='dang';b.dang=luc||NOW;ghiLS(b,BN.dich==='cms'?'Website của trường trả lời đã tạo bài':'Trang công khai xác nhận đã đăng','sys');
+ /* Sửa một bên thì bên kia mang cờ lệch — §13.3 điểm 1 (W7) */
+ if(b.lk&&b.v>1){b.lk.lech=HOMNAY;b.lk.mien=null;ghiLS(b,'⚠ Bản trên Bảng tin App '+b.lk.ma+' nay lệch với bản web này','sys')}
  BAI.filter(x=>x.id===b.id&&x.v<b.v&&x.tt==='dang').forEach(x=>{x.tt='thay';x.thayBoi=b.v;ghiLS(x,'Đã thay bằng phiên bản '+b.v+(x.cm==='ck'?' — bản này vào Lưu trữ công khai (Đ15 k2)':''),'sys')});
 }
 function duyetBai(b){
@@ -854,6 +881,10 @@ function coBai(b){
  if(b.muc){const s=ttMuc(muc(b.muc));f.push('<span class="tg '+(s.k==='qh'?'r':'a')+'">📋 '+esc(muc(b.muc).can)+(s.k==='qh'?' · quá hạn':s.k==='cn'?' · hạn '+d2(s.han):'')+'</span>')}
  if(b.ghim&&b.tt==='dang')f.push('<span class="tg a">📌 ghim</span>');
  if(coAnhAn(b)&&b.tt==='dang')f.push('<span class="tg b">🙈 ảnh đã ẩn</span>');
+ /* Cờ lệch nằm TRÊN DÒNG, không chỉ trong panel (§13.3 điểm 1 — W7) */
+ if(b.lk){f.push('<span class="tg c">⧉ App '+esc(b.lk.ma)+'</span>');
+  if(b.lk.lech&&!b.lk.mien)f.push('<span class="tg r">⚠ Bản kia đã đổi '+d2(b.lk.lech)+'</span>');
+  if(b.lk.mien)f.push('<span class="tg a">✓ không cần đồng bộ</span>')}
  const bm=banMoi(b);if(bm&&b.tt==='dang')f.push('<span class="tg b">v'+bm.v+' '+ttBai(bm)[0].toLowerCase()+'</span>');
  if(b.v>1&&b.tt!=='dang')f.push('<span class="tg c">phiên bản '+b.v+'</span>');
  if(b.nguon)f.push('<span class="tg c">🔗 '+b.nguon.menu+'</span>');
@@ -945,6 +976,17 @@ function panelBai(b){
  if(b.go)h+='<div class="alert r">⤓<span class="sp"><b>Đã gỡ khỏi web</b> — '+esc(ten(b.go.ai))+', '+d2s(b.go.luc)+' · lý do <b>'+esc(b.go.ly)+'</b>'+(b.go.ct?': «'+esc(b.go.ct)+'»':'')+'. Bản ghi giữ nguyên ở máy trường; đích đã nhận lệnh xóa.</span></div>';
  if(b.tt==='thay')h+='<div class="ro">Bản này đã được thay bằng <b>phiên bản '+b.thayBoi+'</b>'+(b.cm==='ck'?' — vẫn xem được trên web ở <b>Lưu trữ công khai</b> (Đ15 k2: lưu tối thiểu 5 năm).':'.')+'</div>';
  b.anh.forEach((a,i)=>{if(a.an)h+='<div class="alert w">🙈<span class="sp"><b>Ảnh '+(i+1)+' đã ẩn khỏi web theo phản ánh</b> — '+esc(ten(a.an.ai))+', '+d2s(a.an.luc)+' · nguồn <b>'+esc(a.an.ng)+'</b>'+(a.an.ma?' '+esc(a.an.ma):'')+' · «'+esc(a.an.ly)+'». Muốn thay ảnh khác: <b>✎ Sửa → phiên bản mới</b>.</span></div>'});
+ /* ── CẦU SAO CHÉP: bản kia + cờ lệch (§13.3) ── */
+ if(b.lk){
+  const lech=b.lk.lech&&!b.lk.mien;
+  h+='<div class="alert '+(lech?'r':'b')+'">⧉<span class="sp"><b>Bài này có một bản trên Bảng tin App</b> — '+esc(b.lk.ma)+', sao ngày '+d2s(b.lk.ngay)+'. '
+   +'Hai bản <b>độc lập</b>: hai vòng đời, hai menu chủ — sao chép không đồng bộ chữ nào.'
+   +(lech?' <b>⚠ Bản kia đã đổi ngày '+d2s(b.lk.lech)+'</b> — đọc lại rồi quyết, đừng bấm cho hết cờ.':'')
+   +(b.lk.mien?' <span class="mu">✓ Đã đánh dấu không cần đồng bộ — '+esc(ten(b.lk.mien.ai))+', '+d2s(b.lk.mien.ngay)+': «'+esc(b.lk.mien.ly)+'»</span>':'')
+   +'</span>'+(R().m86?'<button class="btn xs" data-a="mobtapp" data-v="'+b.k+'">↗ Mở bản trên App</button>':'')
+   +(lech&&coQ('web','S')?'<button class="btn xs" data-a="mien" data-v="'+b.k+'">✓ Đánh dấu không cần đồng bộ</button>':'')+'</div>';
+  if(b.cm==='ck')h+='<div class="ro">⛔ <b>Bản trên App KHÔNG tính cho nghĩa vụ công khai.</b> TT 09/2024 <b>Đ14 k1</b> gắn nghĩa vụ với <b>cổng thông tin điện tử</b>, và Đ15 k2 đòi giữ ở đó tối thiểu 5 năm — bài trên App sống vài tuần và không phải cổng TTĐT. Trạng thái mục công khai vẫn chỉ đọc bài <b>đang hiển thị trên web</b>.</div>';
+ }
  const bm=banMoi(b);
  if(bm&&b.tt==='dang')h+='<div class="alert b">🗘<span class="sp"><b>Phiên bản '+bm.v+'</b> đang ở trạng thái «'+ttBai(bm)[0]+'». Bản này <b>vẫn hiển thị</b> tới khi bản mới được duyệt và đích xác nhận.</span><button class="btn xs" data-a="mo" data-v="'+bm.k+'">Mở v'+bm.v+'</button></div>';
  if(b.v>1&&['nhap','cho'].includes(b.tt)&&banDangHien(b.id))h+='<div class="alert b">🗘<span class="sp">Phiên bản <b>'+b.v+'</b> của một bài <b>đang hiển thị</b> — bản '+banDangHien(b.id).v+' vẫn trên web tới khi bản này được duyệt.</span><button class="btn xs" data-a="mo" data-v="'+banDangHien(b.id).k+'">Mở bản đang hiển thị</button></div>';
@@ -966,6 +1008,9 @@ function panelBai(b){
   if((toi&&coQ('cua','S'))||coQ('web','S'))act.push('<button class="btn sm" data-a="phienban" data-v="'+b.k+'">✎ Sửa → phiên bản mới</button>');
   if(coQ('web','XO'))act.push('<button class="btn sm d" data-a="go" data-v="'+b.k+'">⤓ Gỡ khỏi web</button>');
   if(R().m81)act.push('<button class="btn sm" data-a="baoph" data-v="'+b.k+'">↗ Báo phụ huynh qua App (M8.1)</button>');
+  /* ⧉ Cầu sao chép web → App (§13.1). D3: chỉ hiện với vai có T ở m8.6.bai_cua_toi */
+  if(R().m86)act.push('<button class="btn sm" data-a="saoapp" data-v="'+b.k+'">⧉ Sao sang Bảng tin App (M8.6)</button>');
+  else act.push('<span class="mu" style="align-self:center">🔒 <b>Sao sang Bảng tin App</b> — vai '+esc(R().cd)+' không có quyền Tạo bài ở <b>M8.6</b> nên không hiện đường mở (D3)</span>');
  }
  h+='<div class="cact top">'+act.join('')+'</div>';
 
@@ -1026,13 +1071,19 @@ ACT.anpa=v=>{const [k,i]=v.split('|'),a=lay(k).anh[+i];
   +'<p class="mu" style="margin-top:8px">Ẩn <b>ngay</b>, không cần duyệt — bớt một ảnh chỉ làm giảm phơi nhiễm. Ảnh <b>không bị xóa</b>; bài vẫn hiển thị. Muốn thay ảnh khác thì mở phiên bản mới (qua duyệt).</p>'
   +'<label class="lbl">Nguồn phản ánh (bắt buộc)</label><select class="fldi" id="pang"><option value="">— chọn —</option>'+NGUON_PA.map(x=>'<option>'+x+'</option>').join('')+'</select>'
   +'<label class="lbl">Mã phản ánh / người phản ánh</label><input class="fldi" id="pama" placeholder="vd PA-2026-0121 ở M8.4">'
-  +'<label class="lbl">Lý do (bắt buộc)</label><textarea class="fldi" id="paly" rows="2"></textarea>',
+  +'<label class="lbl">Lý do (bắt buộc)</label><textarea class="fldi" id="paly" rows="2"></textarea>'
+  /* 🛑 Ngoại lệ DUY NHẤT xuyên hai kênh (§13.4): phơi nhiễm dữ liệu cá nhân không phân biệt kênh.
+     Để người xử lý phải nhớ mà đi bấm ở menu thứ hai là đặt cược vào trí nhớ của người đang vội,
+     trong khi Luật BVDLCN 91/2025 · NĐ 356/2025 đếm 72 giờ (M8.4 §9.1). Nên mặc định CÓ. */
+  +(lay(k).lk?'<div class="alert w" style="margin-top:10px">⧉<span class="sp"><b>Bài này có một bản trên Bảng tin App</b> ('+esc(lay(k).lk.ma)+', đăng '+d2s(lay(k).lk.ngay)+').<label class="kchk"><input type="checkbox" id="paxk" checked> <b>Ẩn luôn ảnh đó bên App</b> — phơi nhiễm dữ liệu cá nhân không phân biệt kênh</label></span></div>':''),
   '<button class="btn" data-mb="close">Hủy</button><button class="btn d" data-mb="anok" data-v="'+v+'">🙈 Ẩn ảnh</button>')};
 mfns.banok=el=>{const [k,i]=el.dataset.v.split('|'),b=lay(k),a=b.anh[+i],ng=$('#pang').value,ly=$('#paly').value.trim();
  if(!ng||!ly){toast('⛔ C13 — thiếu '+(!ng?'<b>nguồn phản ánh</b>':'')+(!ng&&!ly?' và ':'')+(!ly?'<b>lý do</b>':''));return}
  a.an={luc:NOW,ai:meId(),ng:ng,ma:$('#pama').value.trim(),ly:ly};
  ghiLS(b,'🙈 Ẩn ảnh '+(+i+1)+' theo phản ánh ('+ng+(a.an.ma?' · '+a.an.ma:'')+') — '+ly);
- closeM();toast('🙈 Đã ẩn ảnh '+(+i+1)+' khỏi web — đích nhận lệnh gỡ ảnh');render()};
+ const xk=b.lk&&$('#paxk')&&$('#paxk').checked;
+ if(xk)ghiLS(b,'⧉ Ẩn luôn ảnh tương ứng trên Bảng tin App '+b.lk.ma+' — lệnh xuyên kênh, ghi ở M8.6');
+ closeM();toast('🙈 Đã ẩn ảnh '+(+i+1)+' khỏi web — đích nhận lệnh gỡ ảnh'+(xk?' · <b>và ảnh bên App '+b.lk.ma+'</b>':''));render()};
 ACT.hienlai=v=>{const [k,i]=v.split('|');openM('↺ Hiện lại ảnh '+(+i+1),'<p>Chỉ hiện lại khi phản ánh đã được giải quyết <i>(vd phụ huynh rút đề nghị)</i>.</p><label class="lbl">Lý do (bắt buộc)</label><textarea class="fldi" id="hly" rows="2"></textarea>',
  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="hienok" data-v="'+v+'">↺ Hiện lại</button>')};
 mfns.bhienok=el=>{const [k,i]=el.dataset.v.split('|'),b=lay(k),l=$('#hly').value.trim();if(!l){toast('⛔ Lý do là bắt buộc');return}
@@ -1070,19 +1121,30 @@ ACT.ghim=k=>{const b=lay(k);
  if(dg.length>=BN.tran){openM('⛔ C10 — trang chủ chỉ ghim tối đa '+BN.tran+' bài','<p>Bỏ ghim một bài để ghim «'+esc(b.ten)+'»:</p><table>'+dg.map(x=>'<tr><td>📌 '+esc(x.ten)+'</td><td class="mu">đến '+d2s(x.ghim.den)+'</td><td><button class="btn xs" data-mb="boghim" data-k="'+x.k+'" data-n="'+b.k+'">Bỏ ghim bài này</button></td></tr>').join('')+'</table>');return}
  b.ghim={den:'2026-09-30'};ghiLS(b,'Ghim lên trang chủ đến 30/9/2026');render()};
 mfns.bboghim=el=>{const x=lay(el.dataset.k),b=lay(el.dataset.n);x.ghim=null;ghiLS(x,'Bỏ ghim');b.ghim={den:'2026-09-30'};ghiLS(b,'Ghim lên trang chủ đến 30/9/2026');closeM();render()};
-ACT.go=k=>{const b=lay(k);
+let GOB=null;
+ACT.go=k=>{const b=lay(k);GOB=b;
  openM('⤓ Gỡ bài khỏi web','<p><b>'+esc(b.ten)+'</b> — gỡ là <b>trạng thái</b>: bản ghi, ảnh, vết duyệt ở lại máy trường; đích nhận lệnh xóa thật.</p>'
   +'<label class="lbl">Lý do (bắt buộc)</label><select class="fldi" id="gly"><option value="">— chọn —</option><option>Nội dung sai / lỗi thời</option><option>Trùng bài</option><option>Lộ dữ liệu cá nhân / thiếu đồng ý</option><option>Yêu cầu của cơ quan quản lý</option><option>Khác</option></select>'
-  +'<label class="lbl">Ghi rõ</label><textarea class="fldi" id="gct" rows="2"></textarea><div id="gchan"></div>',
-  '<button class="btn" data-mb="close">Hủy</button><button class="btn d" data-mb="gook" data-k="'+k+'">⤓ Gỡ</button>')};
+  +'<label class="lbl">Ghi rõ</label><textarea class="fldi" id="gct" rows="2"></textarea><div id="gxk"></div><div id="gchan"></div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn d" data-mb="gook" data-k="'+k+'">⤓ Gỡ</button>');
+ oXuyenKenh(b)};
+document.addEventListener('change',e=>{if(e.target.id==='gly'&&GOB)oXuyenKenh(GOB)});
+/* Hộp hỏi xuyên kênh CHỈ hiện với lý do «Lộ dữ liệu cá nhân» (§13.4). Mọi lý do khác: hai bên độc lập. */
+function oXuyenKenh(b){const e=$('#gxk');if(!e)return;
+ const lo=$('#gly').value==='Lộ dữ liệu cá nhân / thiếu đồng ý';
+ e.innerHTML=(b.lk&&lo)?'<div class="alert w" style="margin-top:10px">⧉<span class="sp"><b>Bài này có một bản trên Bảng tin App</b> ('+esc(b.lk.ma)+', đăng '+d2s(b.lk.ngay)+').<label class="kchk"><input type="checkbox" id="goxk" checked> <b>Ẩn luôn bản đó bên App</b> — mặc định CÓ: phơi nhiễm dữ liệu cá nhân không phân biệt kênh</label></span></div>'
+  :(b.lk?'<div class="ro" style="margin-top:10px">Bài có bản trên App ('+esc(b.lk.ma)+'), nhưng với lý do này <b>hai bên độc lập</b> — gỡ ở đây không đụng bản App.</div>':'')}
 mfns.bgook=el=>{const b=lay(el.dataset.k),ly=$('#gly').value,ct=$('#gct').value.trim();
  if(!ly){toast('⛔ Chọn lý do');return}
  const han=themNam(b.dang,5);
  if(b.cm==='ck'&&han>NOW&&ly!=='Lộ dữ liệu cá nhân / thiếu đồng ý'){
   $('#gchan').innerHTML='<div class="alert r" style="margin-top:10px">⛔<span class="sp"><b>C9 — không gỡ được.</b> Bài công khai đăng '+d2s(b.dang).split(' ')[0]+'; theo <b>Đ15 k2 TT 09/2024</b> phải giữ trên web tối thiểu 5 năm — tới <b>'+d2s(han)+'</b>. Nội dung cần sửa thì đăng <b>phiên bản cập nhật</b> (bản cũ vào Lưu trữ công khai). Ngoại lệ duy nhất: lộ dữ liệu cá nhân / thiếu đồng ý.</span><button class="btn xs" data-mb="gopb" data-k="'+b.k+'">✎ Đăng phiên bản cập nhật</button></div>';return}
  b.tt='go';b.ghim=null;b.go={ai:meId(),luc:NOW,ly:ly,ct:ct};ghiLS(b,'Gỡ — '+ly+(ct?': '+ct:''));
- if(b.cm==='ck'&&b.muc){const m=muc(b.muc);m.doi={luc:HOMNAY,ai:meId(),ghi:NOW,nd:'Gỡ bài '+b.id+' ('+ly.toLowerCase()+') — phải đăng bản đã sửa'};toast('⤓ Đã gỡ '+b.id+' · mục «'+esc(m.ten)+'» chuyển <b>Cần cập nhật</b>, hạn '+d2s(congNLV(HOMNAY,10)))}
- else toast('⤓ Đã gỡ '+b.id);
+ const gxk=b.lk&&$('#goxk')&&$('#goxk').checked;
+ if(gxk)ghiLS(b,'⧉ Ẩn luôn bản trên Bảng tin App '+b.lk.ma+' — lệnh xuyên kênh vì lộ dữ liệu cá nhân, ghi ở M8.6');
+ const tk=gxk?' · <b>và bản App '+b.lk.ma+'</b>':'';
+ if(b.cm==='ck'&&b.muc){const m=muc(b.muc);m.doi={luc:HOMNAY,ai:meId(),ghi:NOW,nd:'Gỡ bài '+b.id+' ('+ly.toLowerCase()+') — phải đăng bản đã sửa'};toast('⤓ Đã gỡ '+b.id+tk+' · mục «'+esc(m.ten)+'» chuyển <b>Cần cập nhật</b>, hạn '+d2s(congNLV(HOMNAY,10)))}
+ else toast('⤓ Đã gỡ '+b.id+tk);
  closeM();render()};
 mfns.bgopb=el=>{closeM();ACT.phienban(el.dataset.k)};
 function soMoi(){const n=Math.max.apply(null,BAI.map(b=>+b.id.slice(4)))+1;return 'WEB-'+String(n).padStart(4,'0')}
@@ -1092,6 +1154,55 @@ ACT.phienban=k=>{const b=lay(k),bm=banMoi(b);
   anh:c.anh.filter(a=>!a.an),ls:[[NOW,meId(),'Mở phiên bản '+(b.v+1)+' từ bài đang hiển thị (bản '+b.v+' vẫn trên web)']]});
  if(c.dd>=c.anh.length)c.dd=-1;
  BAI.push(c);moSoan(c)};
+
+
+/* ══════ CẦU SAO CHÉP M8.5 ⇄ M8.6 (§13 — chốt ⑤ ngày 19/9/2026) ══════
+   BẤT ĐỐI XỨNG CÓ CHỦ Ý: web → App đi thẳng; App → web chỉ tạo NHÁP, chạy lại §8, duyệt bốn mắt.
+   Lý do: App là kênh ĐÓNG nên bài App được nêu tên học sinh; web ra Internet thì không.
+   Sao chép đối xứng là một lỗ rò — một bài App có danh sách 32 em, bấm một nút là trôi ra Internet. */
+function maBT(){const n=Math.max.apply(null,BAI.filter(b=>b.lk).map(b=>+b.lk.ma.slice(3)).concat([46]))+1;return 'BT-'+String(n).padStart(4,'0')}
+
+ACT.mobtapp=k=>{const b=lay(k);dl('/M8.6?ctx='+b.lk.ma+'&return=M8.5 — mở bài '+b.lk.ma+' trên Bảng tin Đời sống trường')};
+
+ACT.saoapp=k=>{const b=lay(k);
+ if(b.lk){openM('⛔ C15 — bài này đã có một bản trên Bảng tin App',
+  '<div class="alert r">⛔<span class="sp">Bài <b>'+b.id+'</b> đã sao sang <b>'+esc(b.lk.ma)+'</b> ngày <b>'+d2s(b.lk.ngay)+'</b>. Sao lần nữa sẽ đẻ ra bài thứ hai trên cùng một khối 📸 — đúng thứ cụm BTDS dựng M8.6 để dẹp.</span></div>'
+  +'<p class="mu">Muốn làm một bài App <b>khác</b> thì soạn thẳng ở M8.6.</p>',
+  '<button class="btn" data-mb="close">Đóng</button><button class="btn p" data-mb="mobt" data-k="'+k+'">↗ Mở bản trên Bảng tin App</button>');return}
+ const nAnh=b.anh.filter(anhLenWeb).length;
+ openM('⧉ Sao «'+esc(b.ten)+'» sang Bảng tin App',
+  '<p>Tạo một bài <b>Nháp</b> ở <b>M8.6 Bảng tin Đời sống trường</b>, bơm sẵn tiêu đề, tóm tắt, nội dung và '+nAnh+' ảnh. Loại bài <b>tin_thuong</b>, nguồn <b>M8.5 · '+b.id+'</b>.</p>'
+  +'<div class="alert w">🖼<span class="sp"><b>Ảnh phải chạy lại cổng kiểm ảnh của M8.6</b> — từ lỏng sang chặt. Ở đó mỗi ảnh phải khai <b>có phải toàn cảnh không</b>; ảnh không toàn cảnh phải <b>gắn đích danh em nào</b> và máy đọc <b>sổ đồng ý hai vế ở M1.1</b>. Thiếu vế nào thì ảnh ở lại nội bộ. <b>Không tắt được.</b></span></div>'
+  +(b.cm==='ck'?'<div class="alert b">⛔<span class="sp"><b>Bản trên App KHÔNG tính cho nghĩa vụ công khai.</b> TT 09/2024 Đ14 k1 gắn nghĩa vụ với <b>cổng thông tin điện tử</b>; Đ15 k2 đòi giữ ở đó tối thiểu <b>5 năm</b>. Mục «'+esc(muc(b.muc).ten)+'» <b>giữ nguyên trạng thái</b> sau khi sao.</span></div>':'')
+  +'<div class="ro" style="margin-bottom:0">Deep-link D3: <b>/M8.6?action=tao&nguon=m8.5&ctx='+b.id+'&return=M8.5</b></div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="saook" data-k="'+k+'">⧉ Sao sang App</button>')};
+mfns.bmobt=el=>{closeM();ACT.mobtapp(el.dataset.k)};
+mfns.bsaook=el=>{const b=lay(el.dataset.k),ma=maBT();
+ b.lk={kenh:'m8.6',ma:ma,ngay:HOMNAY,lech:null,mien:null};
+ ghiLS(b,'⧉ Sao sang Bảng tin App — tạo bài '+ma+' ở M8.6 (Nháp), ảnh chạy lại cổng kiểm ảnh của M8.6');
+ closeM();toast('⧉ Đã tạo <b>'+ma+'</b> ở M8.6 · trạng thái <b>Nháp</b> — deep-link /M8.6?action=tao&nguon=m8.5&ctx='+b.id+'&return=M8.5');render()};
+
+/* ✓ Đánh dấu không cần đồng bộ — BẮT BUỘC lý do (C14). Không có nút này thì cờ lệch không bao giờ
+   tắt được một cách chính đáng, và sau ba tháng mọi bài đều mang cờ — lúc đó cờ không còn nói gì nữa. */
+ACT.mien=k=>openM('✓ Đánh dấu không cần đồng bộ',
+ '<p>Nhiều lần sửa là chính đáng <b>một bên</b> — web thêm đoạn căn cứ pháp lý, App rút gọn cho dễ đọc trên điện thoại. Đánh dấu để <b>tắt cờ lệch</b>, không sửa bản nào cả.</p>'
+ +'<label class="lbl">Lý do (bắt buộc — C13/C14)</label><textarea class="fldi" id="mly" rows="2" placeholder="vd: bản App cố tình viết ngắn cho phụ huynh đọc trên điện thoại"></textarea>',
+ '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="mienok" data-k="'+k+'">✓ Đánh dấu</button>');
+mfns.bmienok=el=>{const b=lay(el.dataset.k),l=$('#mly').value.trim();
+ if(!l){toast('⛔ C14 — <b>lý do</b> là bắt buộc');return}
+ b.lk.mien={ngay:HOMNAY,ai:meId(),ly:l};ghiLS(b,'✓ Đánh dấu không cần đồng bộ với '+b.lk.ma+' — '+l);
+ closeM();toast('✓ Đã tắt cờ lệch của '+b.id);render()};
+
+/* 📥 Chiều NGƯỢC: App → web. Mô phỏng deep-link /M8.5?action=tao&nguon=m8.6&ctx=BT-0047&return=M8.6.
+   CHỈ tạo NHÁP: bài App được nêu tên học sinh, bài web thì không ⇒ phải chạy lại §8 rồi duyệt bốn mắt. */
+ACT.tuM86=()=>{const id=soMoi();
+ const c=Object.assign(JSON.parse(JSON.stringify(TRONG)),{k:id+'/1',id:id,v:1,tacgia:meId(),tao:NOW,cm:'tt',
+  ten:BAI_APP.ten,tomtat:BAI_APP.tomtat,nd:BAI_APP.nd,
+  anh:BAI_APP.anh.map(a=>A(a[0],a[1],a[2])),dd:0,
+  nguon:{menu:'M8.6',ma:BAI_APP.ma,ten:BAI_APP.ten},lk:{kenh:'m8.6',ma:BAI_APP.ma,ngay:HOMNAY,lech:null,mien:null},
+  ls:[[NOW,meId(),'Tạo NHÁP từ bài Bảng tin App '+BAI_APP.ma+' (⧉ Sao sang Trang web ở M8.6) — phải chạy lại kiểm dữ liệu cá nhân và duyệt bốn mắt']]});
+ BAI.push(c);moSoan(c);
+ toast('📥 Mở từ <b>M8.6 · '+BAI_APP.ma+'</b> — chỉ tạo <b>Nháp</b>: bài App được nêu tên học sinh, bài web thì không');};
 
 
 /* ══════════════ MÀN HÌNH SOẠN BÀI — màn hình đầy đủ, khung xem trước sống ══════════════ */
@@ -1106,7 +1217,9 @@ function viewSoan(){
  let h='<div class="crumb"><a data-a="edthoat">Bài của tôi</a> › <b>'+(ST.ed.k?'Sửa '+b.id+(b.v>1?' · phiên bản '+b.v:''):'Soạn bài mới')+'</b></div>';
  if(b.tra)h+='<div class="alert r">↩<span class="sp"><b>Người duyệt trả lại</b> — '+esc(ten(b.tra.ai))+', '+d2s(b.tra.luc)+': «'+esc(b.tra.gc)+'»</span></div>';
  if(b.v>1&&banDangHien(b.id))h+='<div class="alert b">🗘<span class="sp">Bạn đang soạn <b>phiên bản '+b.v+'</b> của bài đang hiển thị. Bản '+banDangHien(b.id).v+' <b>vẫn trên web</b> tới khi bản này được duyệt'+(b.cm==='ck'?'; sau đó bản cũ vào <b>Lưu trữ công khai</b> (Đ15 k2)':'')+'.</span></div>';
- if(b.nguon)h+='<div class="ro">🔗 Tạo từ <b>'+b.nguon.menu+'</b> · '+esc(b.nguon.ma)+' «'+esc(b.nguon.ten)+'»'+' — viết lại cho người đọc ngoài trường.</div>';
+ /* Chiều App → web (§13.1): CHỈ tạo nháp, chạy lại §8, duyệt bốn mắt — bài App được nêu tên em, bài web thì không */
+ if(b.nguon&&b.nguon.menu==='M8.6')h+='<div class="alert b">⧉<span class="sp"><b>Mở từ Bảng tin App · '+esc(b.nguon.ma)+'</b> — sao sang web <b>chỉ tạo NHÁP</b>. Bài trên App <b>được</b> nêu tên học sinh vì App là kênh đóng trong trường; trang web ra Internet cho người lạ đọc thì <b>không</b>. Nháp này phải <b>chạy lại kiểm dữ liệu cá nhân</b> (khung bên phải) và <b>duyệt bốn mắt</b> như mọi bài web — không có đường tắt.</span></div>';
+ else if(b.nguon)h+='<div class="ro">🔗 Tạo từ <b>'+b.nguon.menu+'</b> · '+esc(b.nguon.ma)+' «'+esc(b.nguon.ten)+'»'+' — viết lại cho người đọc ngoài trường.</div>';
  if(m)h+='<div class="ro">📋 Bài công khai cho mục <b>«'+esc(m.ten)+'»</b> ('+esc(m.can)+'). Nội dung do <b>người soạn viết và chịu trách nhiệm</b> — máy chỉ gợi khung theo yêu cầu của thông tư, không tự đăng mục công khai.</div>';
  h+='<div class="edgrid"><div>';
  /* biểu mẫu */
@@ -1294,20 +1407,22 @@ ACT.soanck=v=>{const m=muc(v),id=soMoi();
 
 
 /* ══════════════ ⚙ CHUYÊN MỤC & NƠI ĐĂNG ══════════════ */
+/* Thứ tự bày = thứ tự đọc: ② trước (mặc định — chốt ① ngày 19/9/2026), rồi ① (phương án phụ) và ③.
+   Ba bộ nối là BA TÌNH TRẠNG CỦA TRƯỜNG, không phải ba gói dịch vụ (§0.1). */
 const DICH={
- dschool:['① Trang công khai Dschool','Mặc định — hạ tầng công ty. Máy trường đẩy RA qua đường hầm; trang công khai trả lời đã nhận.'],
- cms:['② Website có sẵn của trường — qua API','Cổng TTĐT do Sở / nhà mạng cấp, CMS có API ghi bài. CMS trả lời đã tạo bài kèm đường dẫn.'],
- goi:['③ Xuất gói bài để dán tay','Website có sẵn nhưng không có API. Người dán bài lên rồi xác nhận kèm đường dẫn — máy không tự biết.']
+ cms:['② Website có sẵn của trường — qua API','Cổng TTĐT do Sở / nhà mạng cấp, CMS có API ghi bài. CMS trả lời đã tạo bài kèm đường dẫn.','mặc định'],
+ dschool:['① Trang công khai Dschool','Dùng khi trường CHƯA CÓ website, hoặc muốn bỏ website cũ — một tên miền con cho mỗi trường. Cơ chế và nghĩa vụ không đổi: phụ lục hợp đồng G2, trang công khai xóa thật kể cả bộ nhớ đệm khi nhận lệnh gỡ.','phương án phụ'],
+ goi:['③ Xuất gói bài để dán tay','Website có sẵn nhưng không có API — phần lớn cổng TTĐT của trường công là sản phẩm đóng gói, quản trị bằng tay, không cho phần mềm bên thứ ba ghi bài vào. Bỏ ③ thì với đa số trường, bài duyệt xong tắc ở bước cuối. Người dán bài lên rồi xác nhận kèm đường dẫn — máy không tự biết.','luôn dùng được']
 };
 function viewCh(){
  if(!coQ('ch','X'))return scopeBar('ch')+khongQuyen('ch','Cấu hình chuyên mục và nơi đăng');
  const sua=coQ('ch','S'),suaCM=coQ('ch','T');
  let h=scopeBar('ch','Cấu hình dùng chung toàn trường — không chịu bộ chọn ở header.');
- h+=dnote('Bộ nối là <b>một cấu hình</b>, không phải một hạ tầng (§0.2). Đổi đích thì <b>menu không đổi</b>. Ngày đăng luôn là ngày <b>đích xác nhận</b>. Không có ô «chọn người duyệt» ở đây — ai duyệt lấy từ quyền D ở M10.4 (§6).');
+ h+=dnote('Bộ nối là <b>một cấu hình</b>, không phải một hạ tầng (§0.2) — và là <b>ba tình trạng của trường</b>, không phải ba gói dịch vụ: on-premise nói về nơi đặt <b>dữ liệu nghiệp vụ</b>, không nói về nơi đặt <b>trang công khai</b> (§0.1). Đổi đích thì <b>menu không đổi</b>. Ngày đăng luôn là ngày <b>đích xác nhận</b>. Không có ô «chọn người duyệt» ở đây — ai duyệt lấy từ quyền D ở M10.4 (§6).');
  const cho=BAI.filter(b=>b.tt==='dayq').length;
  h+='<div class="card"><div class="ch">① Nơi đăng — bộ nối<span class="sp"></span>'
   +(BN.dich==='goi'?'<span class="st2 n">thủ công</span>':BN.ham?'<span class="st2 o">đường hầm: đang nối</span>':'<span class="st2 r">đường hầm: không phản hồi</span>')+'</div><div class="cb" style="padding:10px 12px">'
-  +Object.keys(DICH).map(k=>'<label class="dich'+(BN.dich===k?' on':'')+'"><input type="radio" name="dich" data-a="dich" data-v="'+k+'"'+(BN.dich===k?' checked':'')+(sua?'':' disabled')+'><div><b>'+DICH[k][0]+'</b><div class="mu">'+DICH[k][1]+'</div><div class="mu">Đích: <b>'+esc(BN.url[k])+'</b></div></div></label>').join('')
+  +Object.keys(DICH).map(k=>'<label class="dich'+(BN.dich===k?' on':'')+'"><input type="radio" name="dich" data-a="dich" data-v="'+k+'"'+(BN.dich===k?' checked':'')+(sua?'':' disabled')+'><div><b>'+DICH[k][0]+'</b> <span class="tg '+(k==='cms'?'a':'c')+'">'+DICH[k][2]+'</span><div class="mu">'+DICH[k][1]+'</div><div class="mu">Đích: <b>'+esc(BN.url[k])+'</b></div></div></label>').join('')
   +'<div class="frow" style="margin-top:10px"><div class="ro" style="margin:0">Lần đẩy gần nhất: <b>'+d2s(BN.lan)+'</b> · hàng đợi chờ đẩy: <b>'+cho+'</b> bài</div></div>'
   +(BN.dich!=='goi'?'<label class="kchk" style="margin-top:10px"><input type="checkbox" data-a="ham"'+(BN.ham?'':' checked')+(sua?'':' disabled')+'> <b>Mô phỏng: đường hầm đứt</b> <span class="mu">(demo — bài duyệt xong sẽ vào hàng đợi «Chờ đẩy»; tắt đi thì hàng đợi tự đẩy)</span></label>':'')
   +'<div class="mu" style="margin-top:8px">Không bao giờ rời máy trường: bản nháp · bài chờ duyệt / trả lại / từ chối · ảnh ✂ bỏ ra · ảnh đã ẩn theo phản ánh · vết duyệt · lý do gỡ, lý do ẩn.</div>'

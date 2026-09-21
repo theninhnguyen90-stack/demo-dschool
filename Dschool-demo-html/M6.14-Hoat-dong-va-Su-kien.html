@@ -452,7 +452,11 @@ function lopTrongPhamVi(){
    các dòng tự thêm đó còn để nguyên — gán lại cùng giá trị, vô hại) */
 const FILE_MENU={'M6.3':'M6.3-Hoat-dong-Doan-Doi.html','M6.13':'M6.13-Theo-doi-thi-dua.html',
  'M6.14':'M6.14-Hoat-dong-va-Su-kien.html','M6.15':'M6.15-To-chuc-va-Ban-chap-hanh.html','M6.16':'M6.16-Quan-ly-CLB.html',
- 'M6.17':'M6.17-Quy-hoat-dong.html','M4.3':'M4.3-Chuc-danh-va-Diem-cong-tac.html','M7.5':'M7.5-Thu-chi-va-Bao-cao-tai-chinh.html'};
+ 'M6.17':'M6.17-Quy-hoat-dong.html','M4.3':'M4.3-Chuc-danh-va-Diem-cong-tac.html','M7.5':'M7.5-Thu-chi-va-Bao-cao-tai-chinh.html',
+ /* 🆕 BTDS-3Z 20/9/2026 — M8.6 Bảng tin Đời sống trường (cụm BTDS, YK-07): nay là menu chủ DUY NHẤT của khối 📸 trên App.
+    Có dòng này thì linkM86() của app.20 đổi sang linkMenu('M8.6',…) và hai nút mô phỏng thành <a href> thật.
+    ⛔ KHÔNG đổi hình dạng URL của HDBT §3.7. */
+ 'M8.6':'M8.6-Bang-tin-Doi-song-truong.html'};
 function linkMenu(ma,q){return FILE_MENU[ma]+'?'+q+'&vai='+role}
 
 /* ========== KHUNG MÀN HÌNH ========== */
@@ -530,14 +534,18 @@ $('#hdt').onchange=e=>{ST.dt=e.target.value;render()};
    Cơ chế đồng ý hình ảnh hai vế (NĐ 56/2017 · Luật BVDLCN 91/2025) GIỮ NGUYÊN — chỉ đổi chỗ. */
 
 const QUYEN={
- FULL:['xem','phongtrao','congboPT'],
- TPT :['xem','phongtrao','congboPT'],
- BTD :['xem','phongtrao','congboPT'],
- HT  :['xem','congboPT'],
- PHT :['xem','congboPT'],
+ FULL:['xem','phongtrao','goiM86'],
+ TPT :['xem','phongtrao','goiM86'],
+ BTD :['xem','phongtrao','goiM86'],
+ HT  :['xem','goiM86'],
+ PHT :['xem','goiM86'],
  GVCN:[],
  VT  :['xem']   /* sổ đồng ý về M1.1 (điểm K, 14/9) — VT thu và nhập phiếu ở đó, ở đây chỉ xem */
 };
+/* ★ BTDS-1D (19/9/2026) — năng lực «congboPT» ĐỔI TÊN thành «goiM86»: M6.14 không còn công bố gì lên App,
+   nó chỉ MỞ ĐƯỜNG sang M8.6. Theo HDBT §3.7 cửa thật của nút là «vai có T ở m8.6.bai_cua_toi» — bảng tích chéo
+   vai × loai_bai do phiên BTDS-1A dựng ở mục Q của nó. Demo giữ NGUYÊN tập vai đang có (không tự nới, không tự siết);
+   ⚠ BTDS-3Z đối chiếu lại tập này với mục Q của 1A — riêng PHT_DT chưa được HDBT gọi tên. */
 Object.keys(ROLES).forEach(k=>ROLES[k].q=QUYEN[k]||[]);
 /* vai có quyền Xem ở M6.3 · Xét duyệt & Kết nạp — chỉ vai này mới thấy deep-link sang đợt kết nạp (D3) */
 const XEM_M63_KETNAP=['FULL','TPT','BTD','HT','PHT','VT'];
@@ -573,10 +581,12 @@ function thieuDongY(hsId){
 
 /* ══════════════ SỰ KIỆN PHONG TRÀO ══════════════
    Lưu lại sự kiện đã tổ chức — KHÔNG đánh giá từng đoàn viên, đội viên tham gia (việc đó ở tab «Tổ chức hoạt động», P4D). */
-const TT_PT={nhap:['Bản nháp','n'],noibo:['Đã lưu — nội bộ','b'],congbo:['Đã công bố cho phụ huynh','o']};
+/* 🆕 BTDS-1D — CÒN HAI trạng thái. «Đã công bố cho phụ huynh» là trạng thái của BÀI, mà bài là bản ghi của M8.6
+   (Nháp · Đã lên lịch · Đang hiển thị · Đã ẩn — HDBT §3.2). Giữ ở cả hai nơi là giữ hai sự thật về cùng một việc. */
+const TT_PT={nhap:['Bản nháp','n'],noibo:['Đã lưu — nội bộ','b']};
 const PHONGTRAO=[
  {id:'PT-01',ten:'Lễ khai giảng và kết nạp Đội năm học 2026–2027',tc:'chung',
-  tu:'2026-09-05',den:'2026-09-05',dt:'A',tt:'congbo',dotKN:'KN-03',
+  tu:'2026-09-05',den:'2026-09-05',dt:'A',tt:'noibo',dotKN:'KN-03',
   tp:'Toàn trường — 11 lớp, 321 học sinh',
   kq:'Kết nạp 29 đội viên mới (đợt KN-03). Liên đội được Hội đồng Đội quận tặng Giấy khen.',
   mota:'Khai giảng kết hợp lễ kết nạp đội viên mới tại sân trường Điểm trường A.',
@@ -584,7 +594,9 @@ const PHONGTRAO=[
   anh:[{id:'A1',ten:'khai-giang-toan-canh.jpg',hs:[],mota:'Toàn cảnh sân trường — không nhận diện cá nhân'},
        {id:'A2',ten:'ket-nap-doi-vien.jpg',hs:['6A1-6','6A2-3','6A3-5'],mota:'Nghi thức kết nạp — ba em trong đợt KN-03'},
        {id:'A3',ten:'doi-hinh-nghi-thuc.jpg',hs:['7A1-3','7A1-9'],mota:'Đội nghi thức'}],
-  congbo:{ngay:'2026-09-06',boi:'Lý Thanh Bình'}},
+  /* 🆕 BTDS-1D — sự kiện ĐÃ CÓ BÀI trên Bảng tin; trạng thái của bài do M8.6 giữ, ở đây chỉ chiếu 🔗.
+     Sự kiện «Lễ khai giảng năm học 2026-2027» của M6.8 cùng ngày TRỎ CHUNG bài này ⇒ phụ huynh thấy MỘT lần (điểm Y). */
+  bai:{ma:'BT-0002',ngay:'2026-09-06',boi:'Lý Thanh Bình',tt:'Đang hiển thị',chungVoiM68:'SK-01 · Lễ khai giảng năm học 2026-2027 (M6.8)'}},
  {id:'PT-02',ten:'Hội thi Nghi thức Đội cấp trường',tc:'doi',
   tu:'2026-10-12',den:'2026-10-14',dt:'A',tt:'noibo',
   tp:'Khối 6, 7, 8 — mỗi lớp một đội hình 15 em',
@@ -592,15 +604,19 @@ const PHONGTRAO=[
   mota:'Thi nghi thức Đội, hát Quốc ca và Đội ca, thực hành các động tác cơ bản.',
   boi:'Đỗ Thị Bích Ngọc',luc:'2026-10-14',
   anh:[{id:'B1',ten:'thi-nghi-thuc-7A1.jpg',hs:['7A1-1','7A1-4','7A1-7','7A1-12'],mota:'Đội hình 7A1'},
-       {id:'B2',ten:'trao-giai.jpg',hs:['7A1-1','6A2-3','8A1-2'],mota:'Trao giải ba đội đầu bảng'}]},
+       {id:'B2',ten:'trao-giai.jpg',hs:['7A1-1','6A2-3','8A1-2'],mota:'Trao giải ba đội đầu bảng'}],
+  /* 🆕 BTDS-3Z 20/9: khớp M8.6 — BT-0004 mang nguon {menu:'M6.14',ctx:'PT-02'} */
+  bai:{ma:'BT-0004',ngay:'2026-10-15',boi:'Đỗ Thị Bích Ngọc',tt:'Đang hiển thị'}},
  {id:'PT-03',ten:'Ngày hội "Thiếu nhi vui khỏe" điểm trường B',tc:'doi',
-  tu:'2026-10-18',den:'2026-10-18',dt:'B',tt:'congbo',
+  tu:'2026-10-18',den:'2026-10-18',dt:'B',tt:'noibo',
   tp:'Toàn bộ học sinh Điểm trường B',
   kq:'76 lượt tham gia 6 trò chơi dân gian.',
   mota:'Ngày hội trò chơi dân gian và thể thao nhẹ tại Điểm trường B.',
   boi:'Vũ Đình Trung',luc:'2026-10-18',
   anh:[{id:'C1',ten:'tro-choi-dan-gian.jpg',hs:['6B1-2','6B1-8'],mota:'Kéo co'}],
-  congbo:{ngay:'2026-10-19',boi:'Trịnh Văn Khánh'}},
+  /* 🆕 BTDS-3Z 20/9: PT-03 KHÔNG có bài — bộ chuẩn của M8.6 chỉ gắn bài cho PT-02 (BT-0004) và PT-05 (BT-0008).
+     Trước đây ô này giữ 'BT-0002', trùng mã với bài «Lễ khai giảng» sau khi áp chốt ④. */
+  },
  {id:'PT-04',ten:'Diễn đàn "Tuổi trẻ học tập và làm theo lời Bác"',tc:'doan',
   tu:'2026-11-05',den:'2026-11-05',dt:'A',tt:'nhap',
   tp:'Chi đoàn giáo viên và học sinh khối 9',
@@ -609,9 +625,9 @@ const PHONGTRAO=[
 ];
 const ptById=id=>PHONGTRAO.find(p=>p.id===id);
 /* ★ Dữ liệu mẫu có chủ đích — không để may rủi của bộ sinh ngẫu nhiên quyết định:
-   sự kiện ĐÃ công bố thì mọi em trong ảnh đã đủ hai vế (được rà lúc công bố); PT-02 giữ HAI ca vướng, mỗi ca thiếu một vế. */
+   sự kiện ĐÃ CÓ BÀI thì mọi em trong ảnh đã đủ hai vế (ảnh đã qua cổng của M8.6); PT-02 giữ HAI ca vướng, mỗi ca thiếu một vế. */
 (function datDongYMau(){
- PHONGTRAO.filter(p=>p.tt==='congbo').forEach(p=>p.anh.forEach(a=>a.hs.forEach(id=>{
+ PHONGTRAO.filter(p=>p.bai).forEach(p=>p.anh.forEach(a=>a.hs.forEach(id=>{
   DONGY[id]={ph:true,hs:true,ngay:'2026-09-08',nguon:'Phiếu đồng ý đầu năm học'}})));
  ptById('PT-02').anh.forEach(a=>a.hs.forEach(id=>{DONGY[id]={ph:true,hs:true,ngay:'2026-09-08',nguon:'Phiếu đồng ý đầu năm học'}}));
  DONGY['7A1-4']={ph:false,hs:true,ngay:'2026-09-08',nguon:'Phiếu đầu năm — phụ huynh chưa ký'};
@@ -625,10 +641,20 @@ function ptVuong(p){return anhCuaPT(p).filter(a=>!anhCongBoDuoc(a))}
 const ptTrongPhamVi=()=>{const d=dtHieuLuc();
  return PHONGTRAO.filter(p=>(p.tc==='chung'||coTC(p.tc))&&(d==='ALL'||p.dt===d))};
 
-/* ══════════════ ĐĂNG THẲNG LÊN APP — chốt 14/9/2026, BỎ G29 ══════════════
-   Sự kiện phong trào lên khối «📸 Đời sống trường» của App PH-HS trực tiếp từ M6.14 — không qua M6.8.
-   Khối đó nay có HAI nguồn; M6.14 không sinh thông báo đẩy (như sự kiện M6.8 — G26). */
-/* phạm vi hiển thị mặc định — suy từ tổ chức và điểm trường của sự kiện; người đăng đổi được */
+/* ══════════════ 🆕 BTDS-1D (19/9/2026) — NÚT GỌI SANG «M8.6 BẢNG TIN ĐỜI SỐNG TRƯỜNG» ══════════════
+   ĐẢO chốt 14/9 («bỏ G29, đăng thẳng»). Ba chặng: G29 5/9 (chỉ lên App qua M6.8) → bỏ G29 14/9 (đăng thẳng)
+   → nay 19/9: CẢ M6.8 LẪN M6.14 bỏ đường đăng thẳng, chỉ còn nút gọi sang M8.6 — menu TRUNG LẬP, không ai mượn
+   cửa ai (đúng điều G29 phản đối), nên mục tiêu của chốt 14/9 giữ nguyên, chỉ đổi cách đạt.
+   ⇒ M6.14 KHÔNG công bố, KHÔNG thu hồi, KHÔNG có ô «Hiện cho», KHÔNG cảnh báo trùng M6.8 (hết trùng — một cửa).
+   Cổng đồng ý ảnh GIỮ NGUYÊN khuôn hai vế nhưng THI HÀNH Ở M8.6 (HDBT §3.4); ở đây chỉ BÁO TRƯỚC ảnh nào sẽ vướng. */
+/* 🆕 BTDS-3Z 20/9/2026 — FILE_MENU của nền chung nay CÓ 'M8.6' ⇒ đi qua linkMenu() như mọi menu khác.
+   ⛔ Hình dạng URL của HDBT §3.7 KHÔNG đổi — linkMenu chỉ thêm &vai= để giữ vai khi sang menu kia. */
+const FILE_M86=FILE_MENU['M8.6'];
+const linkM86=p=>'/M8.6?action=tao&nguon=m6.14&ctx='+p.id+'&return=M6.14';   /* HDBT §3.7 — ⛔ không tự đổi hình dạng (dùng để HIỂN THỊ) */
+const hrefM86Tao=p=>linkMenu('M8.6','action=tao&nguon=m6.14&ctx='+p.id+'&return=M6.14');   /* đường đi THẬT */
+const hrefM86Bai=ma=>linkMenu('M8.6','ctx='+ma+'&return=M6.14');
+/* gợi ý pham_vi_hien_thi bơm sang bài — suy từ tổ chức và điểm trường; người soạn đổi được Ở M8.6.
+   ★ Bài M8.6 CÓ mức «khoi» (HDBT §3.3) nên gợi ý này khớp THẲNG, không phải nới rộng ra cả điểm trường như trước 19/9. */
 function phamViMacDinh(p){
  if(p.tc==='chung') return 'dt:'+p.dt;
  return 'khoi:'+TOCHUC[p.tc].khoi.join(',')+'|dt:'+p.dt;
@@ -638,10 +664,9 @@ function tenPhamVi(pv){
  const khoi=(pv.match(/khoi:([\d,]+)/)||[])[1], dt=(pv.match(/dt:(\w)/)||[])[1];
  return 'Phụ huynh '+(khoi?'khối '+khoi.replace(/,/g,', ')+' — ':'')+(dt?DT[dt]:'toàn trường');
 }
-/* ★ Sự kiện M6.8 ĐÃ lên App — bản chiếu tối thiểu để cảnh báo đăng trùng (khớp demo M6.8: lễ khai giảng 05/09) */
-const SK_M68_DA_DANG=[{ten:'Lễ khai giảng năm học 2026-2027',ngay:'2026-09-05',dt:'ALL'}];
-const trungM68=p=>SK_M68_DA_DANG.filter(s=>s.ngay>=p.tu&&s.ngay<=p.den&&(s.dt==='ALL'||s.dt===p.dt));
-PHONGTRAO.forEach(p=>{if(p.congbo) p.congbo.pv=phamViMacDinh(p)});
+/* ★ ĐIỂM Y ĐÓNG (19/9/2026): trước đây M6.8 và M6.14 cùng đăng buổi khai giảng 05/09 ⇒ phụ huynh thấy HAI lần,
+   nên phải có cảnh báo trùng. Nay một cửa duy nhất: hai bản ghi sự kiện ở hai menu chủ TRỎ CHUNG MỘT BÀI (BT-0001)
+   ⇒ hết trùng, bỏ hẳn SK_M68_DA_DANG và trungM68. */
 
 /* ══════════════ 🆕 YKDD-2C (17/9/2026) — Ô «ĐƠN VỊ TỔ CHỨC: CLB …» Ở TAB 1 ══════════════
    Bản chốt YK05-B-CLB dòng M6.14 · HDDD ③ (sổ PROMPT-YKDD-00-SO-DIEU-PHOI.md §3). Ô TÙY CHỌN — lưu clb_id, không lưu tên:
@@ -682,6 +707,8 @@ function doanTamDung(c,ngay){return (c.tamDung||[]).find(d=>ngay>=d.tu&&(!d.den|
 PHONGTRAO.push({id:'PT-05',ten:'Giải cờ vua nội bộ Điểm trường B',tc:'doi',tu:'2026-09-26',den:'2026-09-26',dt:'B',tt:'noibo',
  tp:'Đội viên khối 6, 7 — 18 kỳ thủ',kq:'Nhất: 7B1 · Nhì: 6B1 · Ba: 7B1.',mota:'Giải đấu nội bộ cuối cùng trước khi CLB tạm dừng (GV phụ trách rời trường).',
  boi:'Đỗ Thị Bích Ngọc',luc:'2026-10-02',anh:[],clb:'CLB-05',lsDV:[{luc:'2026-10-02',boi:'Đỗ Thị Bích Ngọc',cu:null,moi:'CLB-05'}]});
+/* 🆕 BTDS-3Z 20/9: khớp M8.6 — BT-0008 mang nguon {menu:'M6.14',ctx:'PT-05'} */
+ptById('PT-05').bai={ma:'BT-0008',ngay:'2026-10-03',boi:'Đỗ Thị Bích Ngọc',tt:'Đang hiển thị'};
 /* PT-04 ↔ CLB-06 — cặp demo M6.16 đã giả định (SK_M614) */
 ptById('PT-04').clb='CLB-06';
 ptById('PT-04').lsDV=[{luc:'2026-10-20',boi:'Vũ Đình Trung',cu:null,moi:'CLB-06'}];
@@ -695,13 +722,14 @@ const ST={tab:'phongtrao',dt:'A',curPT:null,ret:null};
 function vePhongTrao(){
  if(ST.curPT) return veManHinhPT();
  const ds=ptTrongPhamVi();
- const vuong=ds.filter(p=>p.tt!=='congbo'&&ptVuong(p).length);
+ /* 🆕 BTDS-1D — «vướng» nay là DỰ BÁO: ảnh sẽ vướng ở cổng của M8.6 khi bấm nút gọi sang. Sự kiện đã có bài thì ảnh đã qua cổng. */
+ const vuong=ds.filter(p=>!p.bai&&ptVuong(p).length);
  let h=scopeBar();
  h+='<div class="bar">'
   +'<span class="chip">Sự kiện <b>'+ds.length+'</b></span>'
-  +'<span class="chip">Đã công bố <b>'+ds.filter(p=>p.tt==='congbo').length+'</b></span>'
+  +'<span class="chip">📸 Đã có bài trên Bảng tin <b>'+ds.filter(p=>p.bai).length+'</b></span>'
   +(vuong.length?'<span class="chip" style="border-color:var(--red);color:var(--red);font-weight:700">'
-    +'⚠ Vướng đồng ý hình ảnh <b>'+vuong.length+'</b></span>':'')
+    +'⚠ Ảnh sẽ vướng ở cổng M8.6 <b>'+vuong.length+'</b></span>':'')
   +'<div class="spacer"></div>'
   +(can('phongtrao')?'<button class="btn p" id="taoPT">➕ Ghi sự kiện phong trào</button>':'')
   +(can('xem')?'<button class="btn" id="soDongY">🔗 Tình trạng đồng ý hình ảnh</button>':'')+'</div>';
@@ -714,9 +742,15 @@ function vePhongTrao(){
  h+=dnote('Tab này <b>lưu lại</b> sự kiện đã tổ chức — tên, thời gian, thành phần, ảnh — và <b>không đánh giá</b> từng đoàn viên, '
   +'đội viên tham gia (góp ý Đợt 1 mục 10). Việc tạo đợt, điểm danh, nhận xét từng em là tab <b>2 · Tổ chức hoạt động</b>; '
   +'một sự kiện ở đây có thể <b>gắn với một đợt</b> (dòng «Gắn với đợt hoạt động») — hai bản ghi, hai việc, không chép nhau.<br>'
-  +'<b>Đăng thẳng lên App</b> (chốt 14/9/2026, <b>bỏ G29</b>): sự kiện vào khối «📸 Đời sống trường» của App PH-HS, '
-  +'không đi qua M6.8. Khối đó nay có <b>hai nguồn</b> — nên hộp công bố <b>cảnh báo khi M6.8 đã đăng sự kiện cùng ngày</b> '
-  +'(cảnh báo, không chặn: máy không biết hai bản ghi có phải cùng một buổi hay không).');
+  +'🆕 <b>Bỏ đường đăng thẳng lên App</b> (chốt 19/9/2026 — cụm BTDS, đảo chốt 14/9 «bỏ G29»): menu này <b>không đăng gì lên App nữa</b>. '
+  +'Muốn phụ huynh thấy thì bấm <b>«📸 Đăng lên Bảng tin App»</b> ở cuối màn hình một sự kiện — deep-link tạo một <b>bài nháp</b> ở '
+  +'<b>M8.6 Bảng tin Đời sống trường</b>, là <b>cửa duy nhất</b> ra khối «📸 Đời sống trường» của App.<br>'
+  +'<b>Vì sao đảo:</b> G29 (5/9) phản đối việc bắt Đoàn – Đội <b>mượn cửa của mảng nghiệp vụ khác</b> (phải nhờ M6.8 đăng hộ); '
+  +'nay cả hai menu cùng đi qua M8.6 — menu <b>trung lập</b>, không ai mượn cửa ai. Mục tiêu của chốt 14/9 <b>giữ nguyên</b>, chỉ đổi cách đạt.<br>'
+  +'<b>Theo đó bỏ:</b> ô «Hiện cho» (sang pham_vi_hien_thi của bài) · cảnh báo trùng M6.8 (<b>hết trùng</b> — một cửa) · '
+  +'«↩️ Thu hồi công bố» (ẩn bài là việc của M8.6) · trạng thái «Đã công bố cho phụ huynh» (còn <b>hai</b> trạng thái).<br>'
+  +'<b>Cổng đồng ý ảnh giữ nguyên khuôn hai vế</b> — nhưng <b>thi hành ở M8.6</b>, nơi nó là chuẩn cho <b>mọi</b> ảnh lên App. '
+  +'Ở đây ảnh là <b>tư liệu nội bộ</b> của sự kiện; menu chỉ <b>báo trước</b> ảnh nào sẽ vướng.');
  h+='<div class="tbw"><div class="tbx"><table style="min-width:1000px"><tr><th>Sự kiện</th><th>Tổ chức</th>'
   +'<th>Thời gian</th><th>Thành phần</th><th class="num">Ảnh</th><th>Trạng thái</th><th></th></tr>';
  if(!ds.length) h+='<tr><td colspan="7"><div class="empty">Chưa có sự kiện nào trong phạm vi của bạn.</div></td></tr>';
@@ -731,10 +765,12 @@ function vePhongTrao(){
    +'<td class="num">'+anhCuaPT(p).length+(v.length?'<div style="font-size:10.5px;color:var(--red)">'
      +v.length+' vướng</div>':'')+'</td>'
    +'<td><span class="st2 '+tc+'">'+tn+'</span>'
-   +(p.congbo?'<div style="font-size:10.5px;color:var(--ink3)">'+k2s(p.congbo.ngay)+'</div>':'')+'</td>'
+   +(p.bai?'<div style="font-size:10.5px;color:var(--brand);font-weight:600">📸 '+p.bai.ma+'</div>'
+      +'<div style="font-size:10.5px;color:var(--ink3)">'+k2s(p.bai.ngay)+' · M8.6</div>':'')+'</td>'
    +'<td><button class="btn xs" data-pt="'+p.id+'">Mở ▸</button></td></tr>';
  });
- h+='</table></div><div class="lgd"><span class="chip">Sự kiện <b>không xóa</b> — nháp, nội bộ, đã công bố đều là trạng thái</span>'
+ h+='</table></div><div class="lgd"><span class="chip">Sự kiện <b>không xóa</b> — nháp và nội bộ đều là trạng thái</span>'
+  +'<span class="chip">🆕 Trạng thái của <b>bài</b> trên Bảng tin do <b>M8.6</b> giữ — ở đây chỉ chiếu 🔗 mã bài</span>'
   +'</div></div>';
  return h;
 }
@@ -764,7 +800,7 @@ function veManHinhPT(){
   +'</div></div>';
  h+='<div class="tbw" style="margin-top:12px"><div class="ch">Hình ảnh ('+anhCuaPT(p).length
   +((p.boRa||[]).length?' · '+p.boRa.length+' giữ nội bộ':'')+')'
-  +'<span class="sp"></span>'+(can('phongtrao')&&p.tt!=='congbo'?'<button class="btn xs" id="themAnh">➕ Thêm ảnh</button>':'')+'</div>';
+  +'<span class="sp"></span>'+(can('phongtrao')?'<button class="btn xs" id="themAnh">➕ Thêm ảnh</button>':'')+'</div>';
  if(!anhCuaPT(p).length&&!(p.boRa||[]).length) h+='<div class="empty">Chưa có ảnh nào.</div>';
  else{
   h+='<div class="tbx"><table style="min-width:820px"><tr><th>Tệp ảnh</th><th>Mô tả</th>'
@@ -789,27 +825,42 @@ function veManHinhPT(){
  }
  h+='<div class="lgd"><span class="chip">Ảnh <b>toàn cảnh không nhận diện cá nhân</b> không cần gắn em nào</span>'
   +'<span class="chip">Mọi lượt <b>xem và tải ảnh</b> đều ghi audit — Luật BVDLCN 91/2025</span></div></div>';
- if(p.tt!=='congbo'){
-  h+='<div class="'+(v.length?'danger':'okbox')+'" style="margin-top:12px">'
-   +(v.length?'⛔ <b>Chưa công bố được.</b> Có <b>'+v.length+' ảnh</b> còn thiếu đồng ý hình ảnh. '
-     +'Hai lối xử: <b>bỏ ảnh đó ra</b>, hoặc <b>thu đồng ý</b> ở hồ sơ học sinh <b>M1.1</b> rồi quay lại.'
-    :'✅ <b>Mọi ảnh đã đủ đồng ý</b> — công bố được.')
-   +(can('congboPT')?'<div style="margin-top:8px"><button class="btn '+(v.length?'':'p')+'" id="congboPT"'+(v.length?' disabled':'')+'>'
-     +'📣 Công bố cho phụ huynh</button>'
-     +(v.length?' <button class="btn" id="boAnhVuong">✂️ Bỏ '+v.length+' ảnh vướng rồi công bố</button>':'')
-     +'</div>':'')+'</div>';
- } else {
-  const tr=trungM68(p);
-  h+=(tr.length?'<div class="warn" style="margin-top:12px">⚠️ <b>M6.8 cũng đã đăng lên App</b> sự kiện cùng thời gian: '
-    +tr.map(s=>'«'+esc(s.ten)+'» '+k2s(s.ngay)).join(' · ')+'. Nếu đây là <b>cùng một buổi</b> thì phụ huynh đang thấy nó <b>hai lần</b> '
-    +'trong khối «📸 Đời sống trường» — thu hồi một bản.</div>':'')
-   +'<div class="okbox" style="margin-top:12px">📣 <b>Đã công bố</b> ngày '+k2s(p.congbo.ngay)+' bởi <b>'
-   +esc(p.congbo.boi)+'</b> — lên khối <b>«📸 Đời sống trường»</b> của App, hiện cho <b>'+esc(tenPhamVi(p.congbo.pv||phamViMacDinh(p)))+'</b>.'
-   +(can('congboPT')?'<div style="margin-top:8px"><button class="btn d" id="thuHoiPT">↩️ Thu hồi công bố</button></div>':'')
-   +'<div style="font-size:11.5px;margin-top:6px">Thu hồi là <b>gỡ khỏi App</b>, không xóa sự kiện. '
-   +'Đồng ý bị rút lại thì đây là nút phải bấm.</div></div>';
- }
+ h+=veKhoiBangTin(p,v);
  return h;
+}
+/* ══ 🆕 BTDS-1D (19/9/2026) — KHỐI «ĐƯA LÊN BẢNG TIN APP», thay khối công bố cũ ══
+   Cổng đồng ý ảnh KHÔNG còn ở đây (nó ở M8.6 — HDBT §3.4) nên khối này KHÔNG CHẶN GÌ: nó báo trước và mở đường.
+   Vì sao cảnh báo mà không chặn: cổng phải đứng đúng một chỗ — chặn ở cả hai nơi thì cùng một ảnh gặp hai hộp thoại
+   khác nhau, và khuôn đổi thì phải sửa hai chỗ. Nhưng để người phụ trách bấm sang M8.6 rồi mới biết ảnh vướng là
+   bắt họ đi hai vòng, nên M6.14 báo trước bằng đúng dữ liệu nó đã đọc cho cột «đồng ý hình ảnh». */
+function veKhoiBangTin(p,v){
+ const co=can('goiM86');
+ if(p.bai) return '<div class="okbox" style="margin-top:12px">📸 <b>Đã có bài trên Bảng tin App</b> — '
+   +'<b>'+p.bai.ma+'</b>, tạo ngày '+k2s(p.bai.ngay)+' bởi <b>'+esc(p.bai.boi)+'</b>; bài đang ở trạng thái <b>'+esc(p.bai.tt)+'</b>.'
+   +'<div style="font-size:11.5px;margin-top:6px">Trạng thái của bài, việc <b>sửa</b>, <b>⤓ Ẩn bài</b> và '
+   +'<b>🙈 Ẩn một ảnh theo phản ánh</b> đều do <b>M8.6</b> giữ — menu này <b>không có nút gỡ thứ hai</b>. '
+   +'Một sự kiện <b>nhiều nhất một bài</b>: không có nút tạo bài nữa.</div>'
+   +(p.bai.chungVoiM68?'<div class="ro" style="margin-top:8px">🔗 <b>Điểm Y đã đóng.</b> Sự kiện <b>'+esc(p.bai.chungVoiM68)
+     +'</b> cùng buổi <b>trỏ chung bài này</b> — trước 19/9 hai menu đăng hai bản và phụ huynh thấy <b>hai lần</b>; '
+     +'nay một cửa duy nhất nên chỉ còn <b>một bài</b>.</div>':'')
+   +(co?'<div style="margin-top:8px"><a class="btn" href="'+hrefM86Bai(p.bai.ma)+'">↗ Mở bài '+p.bai.ma+' ở M8.6</a></div>':'')
+   +'</div>';
+ const dai=v.length
+  ?'<div class="warn" style="margin-top:12px">⚠️ <b>'+v.length+' ảnh sẽ vướng ở cổng của M8.6</b> — cổng đồng ý hai vế '
+    +'(khuôn §2 của menu này, nay là <b>chuẩn cho mọi ảnh lên App</b>) chạy <b>ở đó</b>, trên <b>bài</b>:'
+    +'<div style="margin-top:6px">'+v.map(a=>'<div style="font-size:12px">• <b>'+esc(a.ten)+'</b> — '
+      +anhVuong(a).map(id=>esc(hsById(id).ten)+' ('+thieuDongY(id)+')').join('; ')+'</div>').join('')+'</div>'
+    +'<div style="font-size:11.5px;margin-top:6px">Hai lối xử: <b>thu đồng ý</b> ở hồ sơ học sinh <b>M1.1</b> rồi quay lại, '
+    +'hoặc <b>✂ Bỏ ảnh vướng rồi đăng</b> <b>ngay tại cổng M8.6</b>. Ở đây <b>không chặn</b> — ảnh còn ở M6.14 là '
+    +'<b>tư liệu nội bộ</b> của sự kiện, chưa rời hệ thống.</div></div>'
+  :'<div class="okbox" style="margin-top:12px">✅ <b>Đưa lên Bảng tin được ngay</b> — mọi ảnh đã đủ đồng ý hai vế.</div>';
+ return dai+'<div class="ro" style="margin-top:8px">'
+  +(co?'<button class="btn p" id="dangBangTin">📸 Đăng lên Bảng tin App</button>'
+     +'<div style="font-size:11.5px;margin-top:6px">Tạo một <b>bài nháp</b> ở <b>M8.6</b> và mở thẳng màn soạn bài — '
+     +'<b>chưa lên App</b>; đăng là một cú bấm ở đó.</div>'
+   :'<div style="font-size:11.5px">🔒 <b>Vai của bạn không đăng bài lên Bảng tin.</b> Việc đó thuộc <b>M8.6 Bảng tin Đời sống trường</b> — '
+     +'nút chỉ hiện với vai có quyền <b>Thêm</b> ở tab «Bài của tôi» của menu đó.</div>')
+  +'</div>';
 }
 /* ══ 🆕 YKDD-2C — «Đơn vị tổ chức: CLB …» (tùy chọn) ══
    Không ghi = đơn vị tổ chức là chính Liên đội / Đoàn trường / nhà trường (tổ chức ở cột «Tổ chức»).
@@ -889,35 +940,43 @@ function soDongY(){
   (GHI_DONGY_M11.includes(role)?'<a class="btn" href="M1.1-Ho-so-hoc-sinh.html?tab=dongy_hinh_anh&return=M6.14">↗ Thu / cập nhật đồng ý ở M1.1</a>':'')
   +'<button class="btn p" data-mb="close">Đóng</button>');
 }
-function congboPT(boVuong){
- const p=ptById(ST.curPT), v=ptVuong(p);
- const pvMD=phamViMacDinh(p), tr=trungM68(p);
- const pvs=[...new Set([pvMD,'dt:'+p.dt,'all'])];
- mfns.bCPT=()=>{
-  const pv=$('#cbPV').value;
-  if(boVuong){p.boRa=(p.boRa||[]).concat(v); p.anh=anhCuaPT(p).filter(a=>anhCongBoDuoc(a))}
-  p.tt='congbo'; p.congbo={ngay:HOMNAY,boi:R().n,pv}; closeM();
-  toast('📣 Đã đăng <b>'+esc(p.ten)+'</b> lên App — '+esc(tenPhamVi(pv))
-   +(boVuong?'. <b>Đã bỏ '+v.length+' ảnh</b> chưa đủ đồng ý (vẫn còn trong hồ sơ nội bộ).':'.')); render();
+/* ══ 🆕 BTDS-1D — HỘP MÔ PHỎNG DEEP-LINK sang M8.6 ══
+   M8.6 do phiên BTDS-1A dựng và có thể chưa có demo trên đĩa, nên ở đây mô phỏng cú nhảy: hiện ĐÚNG URL của HDBT §3.7
+   và bảng «bơm sang bài». Khi demo M8.6 có mặt thì đổi nút cuối thành <a href> thật, KHÔNG đổi hình dạng URL. */
+function dangLenBangTin(){
+ const p=ptById(ST.curPT), v=ptVuong(p), an=anhCuaPT(p);
+ const pv=phamViMacDinh(p), c=p.clb&&clbById(p.clb);
+ const dvtc=(p.tc==='chung'?'⚪ Chung toàn trường':TOCHUC[p.tc].ten)+(c?' · 🎯 '+c.ten:'');
+ mfns.bM86=()=>{
+  p.bai={ma:'BT-'+String(PHONGTRAO.filter(x=>x.bai).length+1).padStart(4,'0'),ngay:HOMNAY,boi:R().n,tt:'Nháp'};
+  closeM();
+  toast('📸 Đã tạo bài <b>'+p.bai.ma+'</b> ở <b>M8.6</b> — trạng thái <b>Nháp</b>, <b>chưa lên App</b>. '
+   +(v.length?'<b>'+v.length+' ảnh</b> sẽ gặp cổng đồng ý ở đó.':'Mọi ảnh đã đủ đồng ý.')); render();
  };
- modal((boVuong?'✂️ Bỏ ảnh vướng rồi công bố':'📣 Công bố cho phụ huynh')+' — '+esc(p.ten),
-  (boVuong?'<div class="warn">Sẽ <b>bỏ '+v.length+' ảnh</b> khỏi bản công bố vì chưa đủ đồng ý hình ảnh:'
-   +'<div style="margin-top:6px">'+v.map(a=>'<div style="font-size:12px">• <b>'+esc(a.ten)+'</b> — '
-     +anhVuong(a).map(id=>esc(hsById(id).ten)+' ('+thieuDongY(id)+')').join('; ')+'</div>').join('')+'</div>'
-   +'<div style="font-size:11.5px;margin-top:6px">Ảnh bị bỏ <b>không xóa khỏi hệ thống</b> — vẫn còn trong hồ sơ nội bộ '
-   +'của sự kiện, chỉ là không đưa lên App.</div></div>'
-   :'<div class="okbox">✅ Mọi ảnh đã đủ đồng ý hai vế.</div>')
-  +(tr.length?'<div class="warn">⚠️ <b>M6.8 đã đăng lên App</b> sự kiện cùng thời gian: '
-    +tr.map(s=>'«'+esc(s.ten)+'» '+k2s(s.ngay)).join(' · ')+'. Nếu là <b>cùng một buổi</b> thì phụ huynh sẽ thấy nó <b>hai lần</b>. '
-    +'Máy không biết hai bản ghi có phải một buổi hay không — <b>bạn quyết</b>.</div>':'')
-  +'<label class="lbl">Hiện cho</label><select class="fldi" id="cbPV">'
-  +pvs.map(x=>'<option value="'+x+'"'+(x===pvMD?' selected':'')+'>'+esc(tenPhamVi(x))+(x===pvMD?' — mặc định theo tổ chức':'')+'</option>').join('')
-  +'</select>'
-  +'<div class="info" style="margin-top:9px">Đăng là tin và ảnh <b>lên thẳng khối «📸 Đời sống trường» của App</b> — không qua M6.8 '
-  +'(chốt 14/9/2026, bỏ G29). <b>Không gửi thông báo đẩy</b>; muốn báo tin thì soạn ở M8.1. '
-  +'Mọi lượt xem và tải ảnh đều <b>ghi audit</b> — Luật BVDLCN 91/2025.</div>',
-  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="CPT">'
-  +(boVuong?'Bỏ ảnh và công bố':'Công bố')+'</button>');
+ const dong=(k,val)=>'<div class="f"><div class="k">'+k+'</div><div class="v" style="font-weight:400">'+val+'</div></div>';
+ modal('📸 Đăng lên Bảng tin App — '+esc(p.ten),
+  '<div class="info">Nút này <b>không đăng gì</b>. Nó mở <b>M8.6 Bảng tin Đời sống trường</b> ở màn soạn bài mới, '
+  +'bơm sẵn nội dung của sự kiện, và tạo bài ở trạng thái <b>Nháp</b>. Đăng là một cú bấm <b>ở M8.6</b>.</div>'
+  +'<label class="lbl">Deep-link (HDBT §3.7)</label>'
+  +'<div class="ro" style="font-family:ui-monospace,monospace;font-size:12px;word-break:break-all">'+esc(linkM86(p))+'</div>'
+  +'<div style="margin-top:8px"><a class="btn" href="'+hrefM86Tao(p)+'">↗ Sang M8.6 soạn bài</a></div>'
+  +'<label class="lbl">Bơm sang bài</label><div class="card"><div class="cb">'
+  +dong('tieu_de',esc(p.ten)+' <span style="color:var(--ink3)">('+p.ten.length+'/120 ký tự)</span>')
+  +dong('ngày',k2s(p.tu)+(p.den!==p.tu?' → '+k2s(p.den):''))
+  +dong('đơn vị tổ chức',esc(dvtc)+' <span style="color:var(--ink3)">— vào nội dung bài; clb_id đi kèm làm <b>nhãn</b>, không thành quyền</span>')
+  +dong('noi_dung','mô tả + kết quả / thành tích của sự kiện')
+  +dong('anh[]','<b>'+an.length+' ảnh</b>'+(v.length?' — <b style="color:var(--red)">'+v.length+' ảnh sẽ vướng</b> ở cổng của M8.6':' — đủ đồng ý hai vế'))
+  +dong('pham_vi_hien_thi','<b>'+esc(tenPhamVi(pv))+'</b>')
+  +dong('loai_bai · nguon','<code>phong_trao</code> · <code>{menu:\'M6.14\', ctx:\''+p.id+'\'}</code>')
+  +'</div></div>'
+  +'<div class="ro" style="margin-top:8px">🆕 <b>Mức «khoi» khớp THẲNG.</b> Bài của M8.6 có mức <code>khoi</code> (HDBT §3.3), '
+  +'giao với điểm trường — nên gợi ý suy từ tổ chức sang <b>đúng nguyên hình dạng</b>, <b>không phải nới rộng</b> ra cả điểm trường như trước 19/9. '
+  +'Ở App nó là <b>bộ lọc bật sẵn</b>, phụ huynh mở rộng ra xem được. Đổi phạm vi làm <b>ở M8.6</b>, trên bài.</div>'
+  +(v.length?'<div class="warn" style="margin-top:8px">⚠️ Ở M8.6, '+v.length+' ảnh này <b>bị giữ lại</b> cho tới khi '
+    +'<b>thu đồng ý ở M1.1</b> hoặc bấm <b>✂ Bỏ ảnh vướng rồi đăng</b> <b>tại đó</b>. Quy tắc <b>không tắt được</b>.</div>':'')
+  +'<div class="ro" style="margin-top:8px">🛑 <b>Không gửi thông báo đẩy</b> (giữ G26) — muốn báo tin thì soạn ở <b>M8.1</b>. '
+  +'Một sự kiện <b>nhiều nhất một bài</b>: sau bước này nút đổi thành lối mở bài.</div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="M86">Mở M8.6 và tạo bài nháp</button>');
 }
 
 
@@ -928,7 +987,7 @@ function congboPT(boVuong){
      Chốt là thao tác có người bấm; chốt thì khóa, mở lại bắt buộc lý do.
    ★ KHÔNG đi vào điểm danh chính khóa M2.9/T2 · KHÔNG tự sinh khen thưởng (deep-link M2.7) · KHÔNG có tiền
      (YKDD-2C 17/9/2026: đợt của Đội → sổ quỹ Liên đội M6.17 · đợt của Đoàn → nhà trường chi thẳng ở M7.5 — Đoàn trường không có quỹ riêng)
-   ★ KHÔNG đăng gì lên App — cửa ra App duy nhất của menu là tab 1, qua cổng đồng ý hai vế §2.
+   ★ KHÔNG đăng gì lên App — cửa ra App duy nhất của menu là tab 1, nay là nút «📸 Đăng lên Bảng tin App» sang M8.6 (BTDS-1D).
    ★ Không có tổ chức «Chung»: danh sách là thành viên của MỘT tổ chức, mà tổ chức là trục phạm vi. */
 
 /* ── năng lực ở tab 2 — cộng vào mảng q của app.20 ── */
@@ -1413,7 +1472,7 @@ function veBCHD(d){
  }
  h+='<div class="lgd"><span class="chip">Cùng quy tắc đồng ý hai vế với tab 1, đọc sổ ở <b>M1.1</b> — ảnh thiếu đồng ý <b>không rời hệ thống</b>: không vào bản xuất, không lên App</span>'
   +(v.length&&GHI_DONGY_M11.includes(role)?'<a class="rolnk" href="M1.1-Ho-so-hoc-sinh.html?tab=dongy_hinh_anh&return=M6.14">↗ Thu / cập nhật đồng ý ở M1.1</a>':'')
-  +'<span class="chip">Tab này <b>không đăng lên App</b> — muốn phụ huynh thấy thì ghi thành sự kiện phong trào ở tab 1</span></div></div>';
+  +'<span class="chip">Tab này <b>không đăng lên App</b> — muốn phụ huynh thấy thì ghi thành sự kiện phong trào ở tab 1, rồi ở đó bấm <b>📸 Đăng lên Bảng tin App</b> (M8.6)</span></div></div>';
  h+='<div class="bar">'+(can('xuatHD')?'<button class="btn" id="xuatBC">📤 Xuất báo cáo đợt</button>':'')
   +(d.ptLink?'<a class="lnk" data-gopt="'+d.ptLink+'">🔗 Sự kiện phong trào '+d.ptLink+' ↗ tab 1</a>'
    :can('taoHD')?(d.chot?'<button class="btn" id="ghiPT">📸 Ghi thành sự kiện phong trào</button>'
@@ -1639,11 +1698,12 @@ function ghiPT(){
   PHONGTRAO.push({id,ten:d.ten,tc:d.tc,tu:bs[0],den:bs[bs.length-1],dt:d.dt,tt:'nhap',tp:tvCon(d).length+' '+tenTV(d.tc)+' — danh sách ở đợt '+d.id,
    kq:d.bc.kq,mota:d.bc.nd,boi:R().n,luc:HOMNAY,anh:(d.bc.anh||[]).slice(),dotHD:d.id});
   d.ptLink=id; ghiLS(d,'📸 Ghi thành sự kiện phong trào '+id); closeM();
-  toast('📸 Đã tạo <b>'+id+'</b> (bản nháp) ở tab 1 — công bố lên App qua cổng đồng ý hai vế ở đó.'); render()};
+  toast('📸 Đã tạo <b>'+id+'</b> (bản nháp) ở tab 1 — ở đó bấm <b>📸 Đăng lên Bảng tin App</b>; cổng đồng ý hai vế chạy tại <b>M8.6</b>.'); render()};
  modal('📸 Ghi thành sự kiện phong trào — '+esc(d.ten),
   '<div class="info">Tạo một sự kiện <b>bản nháp</b> ở tab 1, gắn với đợt '+d.id+': tên, thời gian, kết quả lấy từ báo cáo; ảnh là <b>cùng tệp</b>, không tải lại. '
-  +'Đợt vẫn là nơi giữ danh sách và nhận xét — sự kiện chỉ là <b>bản lưu lại</b> để công bố cho phụ huynh.</div>'
-  +'<div class="ro">Tab này <b>không tự đăng lên App</b>. Công bố làm ở tab 1, qua đúng cổng đồng ý hai vế — ảnh thiếu đồng ý bị giữ lại ở đó.</div>',
+  +'Đợt vẫn là nơi giữ danh sách và nhận xét — sự kiện chỉ là <b>bản lưu lại</b> để đưa cho phụ huynh xem.</div>'
+  +'<div class="ro">Tab này <b>không tự đăng lên App</b>. Ở tab 1 bấm <b>📸 Đăng lên Bảng tin App</b> — cổng đồng ý hai vế chạy tại <b>M8.6</b>, ảnh thiếu đồng ý bị giữ lại ở đó. '
+  +'Khối «📸 Đời sống trường» nay chỉ còn <b>một nguồn</b> là M8.6 — tab 2 không được thành nguồn thứ hai, và cũng không gọi thẳng sang M8.6.</div>',
   '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="GPT">Tạo sự kiện nháp</button>');
 }
 
@@ -1685,9 +1745,10 @@ document.addEventListener('input',e=>{const t=e.target; if(t.dataset.ddly!=null&
 
 
 /* ══════════════ M6.14 — TAB · RENDER · SỰ KIỆN ══════════════ */
+/* 🆕 BTDS-1D (19/9/2026) — badge KHÔNG còn đếm «sự kiện đủ đồng ý mà chưa công bố»: M6.14 không công bố nữa,
+   việc đăng bài là việc của M8.6 và nhắc ở đó. Ở đây chỉ còn việc của tab 2 (đợt hết buổi mà chưa chốt). */
 function viecCanLam(){
- const pt=can('congboPT')?ptTrongPhamVi().filter(p=>p.tt==='noibo'&&!ptVuong(p).length).length:0;   /* đủ đồng ý nhưng chưa công bố */
- return pt+hdCanXuLy();                                                                          /* đợt đã qua buổi cuối, chưa chốt */
+ return hdCanXuLy();                                                                             /* đợt đã qua buổi cuối, chưa chốt */
 }
 /* Hai tab — P4D thêm «2 · Tổ chức hoạt động» (14/9/2026). GVCN không có quyền ở menu này. */
 function tabsOK(){
@@ -1717,14 +1778,17 @@ function suKien(t){
  const pt=t.closest('[data-pt]'); if(pt){ST.curPT=pt.dataset.pt;render();return}
  const bk=t.closest('[data-back]'); if(bk){ST.curPT=null;render();return}
  const id=t.id;
- if(id==='congboPT'){congboPT(false);return}
- if(id==='boAnhVuong'){congboPT(true);return}
- if(id==='thuHoiPT'){const p=ptById(ST.curPT);p.tt='noibo';p.congbo=null;
-  toast('↩️ Đã thu hồi công bố. Tin và ảnh đã <b>gỡ khỏi App</b>; sự kiện <b>vẫn còn</b> ở trạng thái nội bộ.');render();return}
+ /* 🆕 BTDS-1D — congboPT · boAnhVuong · thuHoiPT BỎ HẲN. Lối duy nhất ra App là nút gọi sang M8.6. */
+ if(id==='dangBangTin'){dangLenBangTin();return}
+ if(id==='moBaiM86'){const p=ptById(ST.curPT);
+  toast('↗ Mở bài <b>'+p.bai.ma+'</b> ở <b>M8.6</b> — <code>'+esc(FILE_M86)+'?ctx='+p.bai.ma+'&return=M6.14</code>. '
+   +'Sửa bài, ⤓ Ẩn bài và 🙈 Ẩn ảnh theo phản ánh đều làm ở đó.');return}
  if(id==='soDongY'){soDongY();return}
  if(id==='suaDVTC'){suaDonViToChuc();return}
  if(id==='taoPT'){toast('➕ Ghi sự kiện phong trào — bản nháp chỉ nhìn thấy trong trường cho tới khi công bố.');return}
- if(id==='themAnh'){toast('➕ Thêm ảnh — mỗi ảnh phải <b>gắn học sinh nhận diện được</b>, hoặc đánh dấu <b>không nhận diện cá nhân</b>.');return}
+ if(id==='themAnh'){const p=ptById(ST.curPT);
+  toast('➕ Thêm ảnh — mỗi ảnh phải <b>gắn học sinh nhận diện được</b>, hoặc đánh dấu <b>không nhận diện cá nhân</b>.'
+   +(p.bai?' Sự kiện đã có bài <b>'+p.bai.ma+'</b>: ảnh mới muốn lên App thì <b>thêm vào bài ở M8.6</b> và <b>chạy lại cổng</b> ở đó (HDBT §3.4 điểm 7).':''));return}
 }
 (function moTuLienKet(){
  const cx=QS.get('ctx');

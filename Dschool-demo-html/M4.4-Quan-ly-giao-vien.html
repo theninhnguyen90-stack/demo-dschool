@@ -198,6 +198,13 @@ tr.grp td{background:#f8fafc;font-weight:700;font-size:11.5px}
 .numi{width:64px;text-align:right;border:1px solid var(--line2);border-radius:7px;padding:5px 8px;font-variant-numeric:tabular-nums}
 .numi:disabled{background:#f1f5f9;color:var(--ink2)}
 .src{font-size:10.5px;color:var(--ink3)}
+
+/* --- cum GDDP (20/9/2026): cay «phuong thuc -> phan» + o n/N o ma tran --- */
+.chkb{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;cursor:pointer;
+ border:1px solid var(--line);border-radius:999px;padding:5px 12px;background:#fff;color:var(--ink2);user-select:none}
+.chkb:hover{border-color:var(--brand);color:var(--brand)}
+.chkb.on{background:var(--brand-soft);border-color:#bfdbfe;color:var(--brand)}
+td.c .src{font-size:9.5px;opacity:.7;display:inline}
 </style>
 </head>
 <body>
@@ -273,7 +280,7 @@ const ROLE={
    viec:['mon','xuat'],dexuat:1,mchu:['M4.5','M10.2','M10.1']},
  HT:{n:'Trần Văn Hùng — Hiệu trưởng',menu:'all',ava:'TH',pv:'school',
    viec:['dinhmuc','template','duyetNgoaiLe','kyBanHanh','xuat'],mchu:['M4.3','M4.5','M4.1','M4.2','M10.2','M10.1']},
- TCNS:{n:'Nguyễn Thị Tuyết Nhung — Tổ chức nhân sự',menu:'all',ava:'TN',pv:'school',
+ TCNS:{n:'Ngô Thị Hạnh — Tổ chức nhân sự',menu:'all',ava:'TH',pv:'school',
    viec:['xuat'],mchu:['M4.1','M4.2','M4.3']},
  GV:{n:'Trịnh Thu Hà — Giáo viên Tiếng Anh',menu:['','lh','ns'],ava:'TH',pv:'own',gvid:8,
    viec:[],mchu:['M4.5']},
@@ -297,6 +304,9 @@ const MON={
  'Hóa học':{to:'T4',cap:['THPT']},
  'Công nghệ':{to:'T5',cap:['THCS']},
  'Nghệ thuật':{to:'T5',cap:['THCS']},
+ /* 🆕 cum GDDP (20/9/2026) — hai mon "nhieu giao vien cung day" cua chinh gop y GY-L5ML */
+ 'Nội dung giáo dục địa phương':{to:'T2',cap:['THCS','THPT']},
+ 'Hoạt động trải nghiệm, hướng nghiệp':{to:'T5',cap:['THCS','THPT']},
 };
 const MONS=Object.keys(MON);
 const TO={T1:'Tổ Toán — Tin',T2:'Tổ Ngữ văn — Sử — Địa — GDCD',T3:'Tổ Ngoại ngữ',
@@ -306,6 +316,26 @@ const ALLKHOI=[6,7,8,9,10,11];
 const capKhoi=k=>k<=9?'THCS':'THPT';
 /* Tổ trưởng đương nhiệm — nguồn M4.3, dùng để chặn gỡ môn cuối của tổ */
 const TT={T1:1,T2:3,T3:7,T4:9};
+
+/* ===== PHƯƠNG THỨC TỔ CHỨC KIẾN THỨC — bản chiếu 🔗 M10.2 tab ② (HDPC ① ②) =====
+   CHỈ ĐỌC ở menu này. Mọi môn có sẵn PT0 — Toàn môn, đúng một phần mã TOAN_MON mang tên môn.
+   Môn nào khai phương thức thứ hai thì môn đó CHIA PHẦN — dẫn xuất, không có cờ nào. */
+const PT={};
+function ptKhai(m,ma,ten,phan){(PT[m]=PT[m]||[]).push({ma,ten,phan:phan.map((x,i)=>({ma:x[0],ten:x[1],tt:i+1}))})}
+MONS.forEach(m=>ptKhai(m,'PT0','Toàn môn',[['TOAN_MON',m]]));
+ptKhai('KHTN','PT1','Ba phân môn Lí – Hóa – Sinh',[['P1','Vật lí'],['P2','Hóa học'],['P3','Sinh học']]);
+ptKhai('Nội dung giáo dục địa phương','PT1','Ba mạch nội dung',
+ [['P1','Văn hóa, lịch sử, truyền thống'],['P2','Địa lí, kinh tế, hướng nghiệp'],['P3','Chính trị – xã hội, môi trường']]);
+ptKhai('Lịch sử & Địa lí','PT1','Hai phân môn Lịch sử – Địa lí',[['P1','Lịch sử'],['P2','Địa lí']]);
+ptKhai('Hoạt động trải nghiệm, hướng nghiệp','PT1','Ba hợp phần',
+ [['P1','Sinh hoạt dưới cờ'],['P2','Sinh hoạt lớp'],['P3','Hoạt động giáo dục theo chủ đề']]);
+const ptCua=m=>PT[m]||[];
+const ptM=(m,pt)=>ptCua(m).find(x=>x.ma===pt);
+const phanM=(m,pt,ph)=>{const z=ptM(m,pt);return z?z.phan.find(x=>x.ma===ph):null};
+const coChiaPhan=m=>ptCua(m).length>1;
+const soPhan=m=>ptCua(m).reduce((n,z)=>n+z.phan.length,0);   /* tổng phần của MỌI phương thức */
+const tenPhan=(m,pt,ph)=>{const z=phanM(m,pt,ph);return z?z.ten:ph};
+const nhanPhan=(m,pt,ph)=>ptM(m,pt).ten+' · '+tenPhan(m,pt,ph);
 
 /* ================= NHÂN SỰ =================
  mon: {tên môn: 1 chuyên môn chính | 2 dạy kiêm nhiệm}
@@ -353,6 +383,39 @@ let NS=[
 ];
 const ns=id=>NS.find(x=>x.id===id);
 
+/* ===== DI TRÚ ⑧ — `Môn được phép dạy` đổi đơn vị MÔN → PHẦN (cụm GDDP, 20/9/2026) =====
+   Bản ghi năng lực nay là (giao_vien_id, mon_id, phuong_thuc_id, phan_ma).
+   MỌI bản ghi cũ (gv, môn) → (gv, môn, PT0, TOAN_MON). 🛑 KHÔNG ai mất năng lực.
+   `p.mon[m]` giữ nguyên nghĩa cũ — MỨC ĐỘ của môn (1 chuyên môn chính · 2 dạy kiêm nhiệm);
+   `p.ph[m]`  là tập phần người đó dạy được. Bất biến: p.mon[m] tồn tại ⟺ p.ph[m] khác rỗng. */
+NS.forEach(p=>{p.ph={};Object.keys(p.mon).forEach(m=>{p.ph[m]=[{pt:'PT0',ph:'TOAN_MON'}]})});
+const nlCo=(p,m,pt,ph)=>(p.ph[m]||[]).some(x=>x.pt===pt&&x.ph===ph);
+function nlThem(p,m,pt,ph,muc){
+ if(!p.mon[m]){p.mon[m]=muc||1;p.khoi[m]=p.khoi[m]||[]}
+ if(!nlCo(p,m,pt,ph))(p.ph[m]=p.ph[m]||[]).push({pt:pt,ph:ph});
+}
+function nlBo(p,m,pt,ph){
+ p.ph[m]=(p.ph[m]||[]).filter(x=>!(x.pt===pt&&x.ph===ph));
+ if(!p.ph[m].length){delete p.ph[m];delete p.mon[m];delete p.khoi[m];return true}
+ return false;
+}
+/* --- gieo: chủ trương của trường với Khoa học tự nhiên --- */
+/* PC8b — thầy Đặng Văn Long tích HAI ô trong cùng môn: PT0·Toàn môn (khối 6, 7)
+   và PT1·Vật lí (khối 8, 9) ⇒ «đã chọn 2/4 phần» */
+nlThem(ns(9),'KHTN','PT1','P1');
+/* PC8 — cô Cao Thị Nhung dạy Hóa: PT0·Toàn môn + PT1·Hóa học. KHÔNG có PT1·Vật lí
+   ⇒ ô chọn giáo viên cho phần Vật lí ở M4.5 KHÔNG liệt kê cô */
+nlThem(ns(10),'KHTN','PT1','P2');
+/* --- gieo: Nội dung giáo dục địa phương — đúng ca góp ý GY-L5ML của cô Thanh Thủy --- */
+nlThem(ns(5),'Nội dung giáo dục địa phương','PT1','P1',2);
+nlThem(ns(5),'Nội dung giáo dục địa phương','PT1','P2',2);
+nlThem(ns(6),'Nội dung giáo dục địa phương','PT1','P3',2);
+/* --- gieo: Lịch sử và Địa lí — thầy Hoàng Văn Sơn giữ CẢ HAI phân môn (E10 PHIEU-GDDP-1A) --- */
+nlThem(ns(5),'Lịch sử & Địa lí','PT1','P1');
+nlThem(ns(5),'Lịch sử & Địa lí','PT1','P2');
+/* --- gieo: Hoạt động trải nghiệm — một giáo viên dạy TOÀN MÔN, phương thức PT0 --- */
+nlThem(ns(11),'Hoạt động trải nghiệm, hướng nghiệp','PT0','TOAN_MON',2);
+
 /* Phân công đang áp dụng — chiếu từ M4.5, chỉ đọc. {gv: {môn:[lớp...]}} */
 const PC={
  1:{'Toán':['7A1','7A2','8A1','9A1','9A2'],'Tin học':['6A1','6A2','7A1','7A2','8A1','9A1']},
@@ -363,14 +426,34 @@ const PC={
  6:{'GDCD':['6A1','6A2','7A1','7A2','9A1','9A2'],'Lịch sử':['10B2']},
  7:{'Tiếng Anh':['6A1','6A2','7A1','7A2','8A1','9A1','9A2']},
  8:{'Tiếng Anh':['10B1','10B2','11B1']},
- 9:{'KHTN':['6A1','6A2','7A1'],'Vật lí':['10B1','10B2','11B1']},
- 10:{'KHTN':['7A2','8A1','9A1','9A2'],'Hóa học':['10B1','10B2','11B1']},
- 11:{'Công nghệ':['6A1','6A2','7A1','7A2','9A1','9A2']},
+ 9:{'KHTN':['6A1','6A2','7A1',{l:'8A1',pt:'PT1',ph:'P1',tn:45},{l:'9A1',pt:'PT1',ph:'P1',tn:45},{l:'9A2',pt:'PT1',ph:'P1',tn:45}],
+    'Vật lí':['10B1','10B2','11B1']},
+ 10:{'KHTN':['7A2',{l:'8A1',pt:'PT1',ph:'P2',tn:45},{l:'9A1',pt:'PT1',ph:'P2',tn:45},{l:'9A2',pt:'PT1',ph:'P2',tn:45}],
+     'Hóa học':['10B1','10B2','11B1']},
+ 11:{'Công nghệ':['6A1','6A2','7A1','7A2','9A1','9A2'],
+     'Hoạt động trải nghiệm, hướng nghiệp':['6A1','6A2']},
  12:{'Lịch sử':['10B1']},13:{'Ngữ văn':['11B1']},14:{'Tin học':['10B1','11B1']},
+ 5:{'Lịch sử & Địa lí':['6A1','6A2','7A1','7A2','8A1','9A1','9A2'],
+    'Nội dung giáo dục địa phương':[{l:'6A1',pt:'PT1',ph:'P1',tn:12},{l:'6A2',pt:'PT1',ph:'P1',tn:12},
+      {l:'6A1',pt:'PT1',ph:'P2',tn:12},{l:'6A2',pt:'PT1',ph:'P2',tn:12}]},
+ 6:{'GDCD':['6A1','6A2','7A1','7A2','9A1','9A2'],'Lịch sử':['10B2'],
+    'Nội dung giáo dục địa phương':[{l:'6A1',pt:'PT1',ph:'P3',tn:11},{l:'6A2',pt:'PT1',ph:'P3',tn:11}]},
 };
+/* mot DONG phan cong: 'lop'  (toàn môn — y hệt hôm nay)  |  {l,pt,ph,tn}  (Lớp × Môn × Phần).
+   HDPC ⑥ — số tiết của một dòng = so_tiet của phần đó ở bảng ④ của KHGD mà lớp đang dùng (M5.1),
+   M4.5 chỉ chuyển tiếp. M4.4 KHÔNG còn cộng số tiết từ M10.2. */
+const dongLop=d=>typeof d==='string'?d:d.l;
+const dongPhan=d=>typeof d==='string'?null:d;
+const TUAN_THUC_HOC=35;                                    /* TT 05/2025 Điều 13 */
+const dongTietTuan=(m,d,cap)=>{const o=dongPhan(d);
+ return o&&o.tn!=null?o.tn/TUAN_THUC_HOC:((TIET[cap]||{})[m]||0)};
+const dongNhan=(m,d)=>{const o=dongPhan(d);
+ return o?dongLop(d)+' · '+tenPhan(m,o.pt,o.ph):dongLop(d)};
 /* số tiết/tuần theo Môn × Cấp — nguồn M10.2 §4.2 */
-const TIET={THCS:{'Toán':4,'Ngữ văn':4,'Tiếng Anh':3,'KHTN':4,'Lịch sử & Địa lí':3,'GDCD':1,'Tin học':1,'Công nghệ':1,'Nghệ thuật':2},
-            THPT:{'Toán':3,'Ngữ văn':3,'Tiếng Anh':3,'Vật lí':2,'Hóa học':2,'Lịch sử':2,'Tin học':2}};
+const TIET={THCS:{'Toán':4,'Ngữ văn':4,'Tiếng Anh':3,'KHTN':4,'Lịch sử & Địa lí':3,'GDCD':1,'Tin học':1,'Công nghệ':1,'Nghệ thuật':2,
+                  'Nội dung giáo dục địa phương':1,'Hoạt động trải nghiệm, hướng nghiệp':3},
+            THPT:{'Toán':3,'Ngữ văn':3,'Tiếng Anh':3,'Vật lí':2,'Hóa học':2,'Lịch sử':2,'Tin học':2,
+                  'Nội dung giáo dục địa phương':1,'Hoạt động trải nghiệm, hướng nghiệp':3}};
 const capLop=l=>parseInt(l)>=10?'THPT':'THCS';
 
 /* ========= R-cap — CẤP HỌC TRƯỜNG THỰC SỰ CÓ (GY18-F · TĐ-04) =========
@@ -416,6 +499,19 @@ const monCua=p=>Object.keys(p.mon);
 const toCua=p=>[...new Set(monCua(p).map(m=>MON[m].to))];          /* DẪN XUẤT, không nhập tay */
 const chuaGanMon=()=>NS.filter(p=>!p.bgh&&!monCua(p).length);
 const monKhongAiDay=()=>MONS.filter(m=>!NS.some(p=>p.mon[m]));
+/* F4 đổi đơn vị theo ⑧: môn chia phần thì đếm ở mức PHẦN. Hai lần lọc để dải không kêu oan:
+   ① môn một phương thức — «phần TOAN_MON không ai dạy» trùng nghĩa «môn không ai dạy», bỏ để khỏi đếm hai lần;
+   ② phương thức mà trường CHƯA dùng (không một phần nào đã gán người) thì không phải lỗ thủng — chỉ là chưa dùng.
+      Trường dùng PT1 cho Nội dung giáo dục địa phương thì PT0 của môn ấy trống là ĐÚNG, không phải thiếu người. */
+const ptDaDung=(m,pt)=>ptM(m,pt).phan.some(x=>NS.some(p=>nlCo(p,m,pt,x.ma)));
+const phanKhongAiDay=()=>{const r=[];
+ MONS.filter(coChiaPhan).forEach(m=>ptCua(m).forEach(z=>{
+  if(!ptDaDung(m,z.ma))return;
+  z.phan.forEach(x=>{if(!NS.some(p=>nlCo(p,m,z.ma,x.ma)))r.push({m:m,pt:z.ma,ph:x.ma,ten:nhanPhan(m,z.ma,x.ma)})})}));
+ return r};
+const aiDayDuoc=(m,pt,ph)=>NS.filter(p=>nlCo(p,m,pt,ph));
+/* «đã chọn n/N phần» — N là tổng phần của MỌI phương thức của môn */
+const soPhanCua=(p,m)=>(p.ph[m]||[]).length;
 const lechMonChinh=()=>NS.filter(p=>monCua(p).length&&p.monChinh&&!p.mon[p.monChinh]);
 const dangDay=(id,m)=>(PC[id]&&PC[id][m])||[];
 
@@ -427,13 +523,17 @@ function capGV(p){
  if(p.bgh) return {cap:'—',src:'Theo chức vụ Ban giám hiệu',tie:0};
  if(p.capTay) return {cap:p.capTay,src:'Khai báo tay',tie:0,tay:1};
  const s={};
- Object.entries(PC[p.id]||{}).forEach(([m,ls])=>ls.forEach(l=>{
-   const c=capLop(l);s[c]=(s[c]||0)+(TIET[c][m]||0)}));
+ /* HDPC ⑧ — nguồn số tiết đổi: đọc «số tiết của DÒNG phân công Lớp × Môn × Phần»
+    (M5.1 ④ → M4.5 dòng phân công → M4.4 định mức → M4.9 thù lao vượt giờ),
+    KHÔNG còn cộng số tiết của MÔN từ M10.2. Dòng toàn môn cho đúng con số cũ ⇒ PC1 không đổi. */
+ Object.entries(PC[p.id]||{}).forEach(([m,ls])=>ls.forEach(d=>{
+   const c=capLop(dongLop(d));s[c]=(s[c]||0)+dongTietTuan(m,d,c)}));
  const ks=Object.keys(s);
  if(ks.length){
   ks.sort((a,b)=>s[b]-s[a]);
   const tie=ks.length>1&&s[ks[0]]===s[ks[1]];
-  return {cap:ks[0],src:'Suy từ phân công — '+ks.map(k=>k+' '+s[k]+' tiết').join(' · '),tie,chi:s};
+  const r1=v=>Math.round(v*10)/10;
+  return {cap:ks[0],src:'Suy từ phân công — '+ks.map(k=>k+' '+r1(s[k])+' tiết').join(' · '),tie,chi:s};
  }
  return {cap:null,src:'Chưa có phân công ở M4.5 — phải khai báo tay',tie:0};
 }
@@ -546,6 +646,11 @@ function alertsMon(){
  if(mk.length) a.push(`<div class="alert r">⛔<span class="sp"><b>${mk.length} môn không có giáo viên nào dạy được</b> — ${
    mk.map(m=>`${m} (${MON[m].cap.join(', ')})`).join(' · ')}. Mọi lớp có môn này sẽ <b>thiếu giáo viên vĩnh viễn</b> ở M4.5 — đầu vào kế hoạch tuyển dụng ${dlink('M4.2','M4.2')}</span>
    <button class="btn xs" data-x="mo-monkhuyet">Xem</button></div>`);
+ const pk=phanKhongAiDay();
+ if(pk.length) a.push(`<div class="alert r">⛔<span class="sp"><b>${pk.length} phần không có giáo viên nào dạy được</b> — ${
+   pk.map(x=>`${x.m} · ${x.ten}`).join(' · ')}. Môn thì có người, nhưng <b>phần ấy thì không</b> —
+   M4.5 sẽ để trống dòng <code>Lớp × Môn × Phần</code> đó, và ${dlink('M4.5','M4.5')} chặn ký công bố phân công khi còn phần chưa có người</span>
+   <button class="btn xs" data-x="mo-phankhuyet">Xem</button></div>`);
  if(lc.length) a.push(`<div class="alert w">⚠<span class="sp"><b>${lc.length} người có <code>Môn dạy chính</code> lệch với tập môn được phép dạy</b> — ${
    lc.map(p=>`${p.n} (${p.monChinh})`).join(', ')}. Đồng bộ CSDL ngành sẽ đẩy môn sai ${dlink('M4.1','M4.1')}</span>
    <button class="btn xs" data-x="mo-lech">Xem</button></div>`);
@@ -566,6 +671,7 @@ function monTab(){
     <option value="chuaMon" ${fTT==='chuaMon'?'selected':''}>Chưa gán môn</option>
 </select>
   <button class="btn ${mtx?'act':''}" data-x="tog-mtx">🔲 Chế độ ma trận</button>
+  <button class="btn" data-x="mo-ungvien" title="Ô chọn giáo viên ở M4.5 lọc theo PHẦN — xem thử nó liệt kê ai">🔍 Ai dạy được phần…</button>
   ${co('import')?`<button class="btn" data-x="import">📥 Import Excel</button>`:''}
   <div class="sum"><span><b>${rows.length}</b> giáo viên</span>
    <span><b>${MONS.length}</b> môn áp dụng</span></div></div>`;
@@ -599,13 +705,18 @@ function maTran(){
  const body=rows.map(p=>{
   const z=!monCua(p).length;
   return `<tr class="${z?'zero':''}"><td class="nm">${p.n}${z?' ⛔':''}<div class="src">${p.ma}</div></td>`
-   +cols.map(m=>{const v=p.mon[m]||0,lock=!co('mon');
+   +cols.map(m=>{const v=p.mon[m]||0,lock=!co('mon'),chia=coChiaPhan(m);
+     if(chia){const n=soPhanCua(p,m),N=soPhan(m);
+      return `<td class="c g${v} ${lock?'lock':''}" ${lock?'':`data-tree="${p.id}|${m}"`}
+       title="${p.n} — ${m}: đã chọn ${n}/${N} phần${n?' — '+(p.ph[m]||[]).map(z=>nhanPhan(m,z.pt,z.ph)).join(' · '):''}. Bấm để mở cây phương thức → phần">${
+        n?`<b>${n}</b><span class="src">/${N}</span>`:'·'}</td>`}
      return `<td class="c g${v} ${lock?'lock':''}" ${lock?'':`data-cell="${p.id}|${m}"`}
        title="${p.n} — ${m}${dangDay(p.id,m).length?' · đang dạy '+dangDay(p.id,m).length+' lớp':''}">${v===1?'●':v===2?'○':'·'}</td>`}).join('')
    +`<td class="num" style="font-weight:700">${monCua(p).length}</td></tr>`}).join('');
  const foot=cols.map(m=>{const c=NS.filter(p=>p.mon[m]).length;
    return `<td class="c" style="font-weight:800;color:${c?'var(--ink2)':'var(--red)'}">${c}</td>`}).join('');
  return `<div class="ro">Bấm vào ô để đổi: <b>·</b> không dạy → <b>●</b> chuyên môn chính → <b>○</b> dạy kiêm nhiệm → <b>·</b>.
+   Môn <b>chia phần</b> (có từ hai phương thức trở lên) hiện <b>n/N phần</b> — bấm mở <b>cây phương thức → phần</b>.
    Dòng cuối đếm số giáo viên dạy được từng môn — <b>số 0 màu đỏ</b> là môn không ai dạy được.
    ${co('mon')?'':'<b>Vai trò hiện tại chỉ xem.</b>'}</div>
   <div class="listw mtx"><table>
@@ -629,14 +740,22 @@ function panelGV(p){
     <b>không xuất hiện trong bất kỳ ô chọn nào ở M4.5</b> — có chức danh mà không làm được việc.</div>`:''}
   <div class="card"><div class="ch">Môn được phép dạy <span class="sp"></span>
     <span class="tg c">Master — không theo năm học</span></div>
-   ${ms.length?`<table><thead><tr><th>Môn</th><th>Mức độ</th><th>Tổ</th><th>Đang dạy</th><th></th></tr></thead><tbody>
-    ${ms.map(m=>{const dd=dangDay(p.id,m),cap=MON[m].cap,ks=[...new Set(cap.flatMap(x=>KHOI[x]))];
+   ${ms.length?`<table><thead><tr><th>Môn</th><th>Mức độ</th><th>Phần được phép dạy</th><th>Tổ</th><th>Đang dạy</th><th></th></tr></thead><tbody>
+    ${ms.map(m=>{const dd=dangDay(p.id,m),chia=coChiaPhan(m);
       return `<tr><td><b>${m}</b>${p.monChinh===m?'<div class="src">Môn dạy chính (M4.1)</div>':''}</td>
       <td><span class="tg ${p.mon[m]===1?'a':'b'}">${p.mon[m]===1?'Chuyên môn chính':'Dạy kiêm nhiệm'}</span></td>
+      <td>${chia?`${(p.ph[m]||[]).map(z=>`<span class="mon">${nhanPhan(m,z.pt,z.ph)}</span>`).join(' ')}
+        <div class="src">đã chọn <b>${soPhanCua(p,m)}/${soPhan(m)}</b> phần${co('mon')?
+         ` · <button class="btn xs" data-x="tree" data-gv="${p.id}" data-mon="${m}">✎ Sửa phần</button>`:''}</div>`
+        :`<span class="mini">Toàn môn</span><div class="src">môn một phương thức — một ô tích như hôm nay</div>`}</td>
       <td style="font-size:11.5px">${TO[MON[m].to]}</td>
-      <td>${dd.length?`${dd.length} lớp: ${dd.join(', ')} ${dlink('M4.5','M4.5')}`:'<span class="mini">chưa phân công</span>'}</td>
+      <td>${dd.length?`${dd.length} dòng: ${dd.map(d=>dongNhan(m,d)).join(', ')} ${dlink('M4.5','M4.5')}`:'<span class="mini">chưa phân công</span>'}</td>
       <td style="text-align:right">${co('mon')?`<button class="btn xs" data-x="go-mon" data-gv="${p.id}" data-mon="${m}">🗑 Gỡ</button>`:''}</td></tr>`}).join('')}
-    </tbody></table>`:'<div class="empty">Chưa gán môn nào</div>'}
+    </tbody></table>
+    <div class="src" style="padding:7px 11px">Bản ghi năng lực là <b>(giáo viên, môn, phương thức, phần)</b> — HDPC ⑧.
+     Mọi bản ghi cũ <i>(gv, môn)</i> đã di trú thành <i>(gv, môn, PT0, TOAN_MON)</i>: <b>không ai mất năng lực</b>.
+     Danh mục phương thức là của ${dlink('M10.2','M10.2 tab ② Danh mục môn')} — menu này chỉ <b>tích ô</b>.</div>`
+    :'<div class="empty">Chưa gán môn nào</div>'}
    ${co('mon')?`<div class="cact"><button class="btn sm p" data-x="them-mon" data-gv="${p.id}">+ Gán môn</button>
      ${R().dexuat?'<span class="src">Thao tác của Tổ trưởng là <b>đề xuất</b> — Phó HT Chuyên môn chốt.</span>':''}</div>`:''}</div>
 
@@ -808,7 +927,7 @@ function thuGoMon(id,m,force){
  }
  if(dd.length&&!force){
   modal('⚠ Người này đang được phân công dạy môn đó',
-   `<div class="warn"><b>${p.n}</b> đang dạy <b>${m}</b> ở <b>${dd.length} lớp</b>: ${dd.join(', ')}.<br><br>
+   `<div class="warn"><b>${p.n}</b> đang dạy <b>${m}</b> ở <b>${dd.length} dòng phân công</b>: ${dd.map(d=>dongNhan(m,d)).join(', ')}.<br><br>
      Gỡ môn thì các phân công đó <b>vẫn còn</b> nhưng người dạy không còn được phép dạy môn ấy —
      M4.5 sẽ hiện cảnh báo trên từng lớp.</div>
     <div class="ro">Cùng nguyên tắc với M4.3 §6.2.3: <b>cảnh báo có xác nhận</b>, không chặn cứng.
@@ -817,9 +936,28 @@ function thuGoMon(id,m,force){
     <button class="btn d" data-x="go-mon" data-gv="${id}" data-mon="${m}" data-force="1">⚠ Vẫn gỡ</button>`);
   return;
  }
- delete p.mon[m];delete p.khoi[m];closeModal();render();
- toast(`Đã gỡ môn <b>${m}</b> khỏi ${p.n}${dd.length?` · ${dd.length} phân công ở M4.5 nay mang cảnh báo`:''}${
+ const np=soPhanCua(p,m);
+ delete p.mon[m];delete p.khoi[m];delete p.ph[m];closeModal();render();
+ toast(`Đã gỡ môn <b>${m}</b> khỏi ${p.n}${np>1?` · gỡ cả ${np} phần`:''}${dd.length?` · ${dd.length} dòng phân công ở M4.5 nay mang cảnh báo`:''}${
    toCua(p).includes(t)?'':` · rời ${TO[t]}`}`);
+}
+/* ===== CÂY «phương thức → phần» — chỉ mở cho môn có ≥ 2 phương thức (⑧) =====
+   🛑 Môn một phương thức vẫn là MỘT Ô TÍCH như hôm nay — không thêm một cú bấm nào. */
+function moCay(id,m){
+ const p=ns(id),N=soPhan(m),n=soPhanCua(p,m);
+ modal(`Phần được phép dạy — ${p.n} · ${m}`,
+  `<div class="info">Môn <b>${m}</b> có <b>${ptCua(m).length} phương thức tổ chức kiến thức</b>, cộng lại <b>${N} phần</b>.
+    Một giáo viên gắn được <b>nhiều phần</b>, kể cả <b>của nhiều phương thức khác nhau trong cùng một môn</b> —
+    ví dụ dạy <i>Toàn môn</i> cho khối 6, 7 và <i>Vật lí</i> cho khối 8, 9.</div>
+   ${ptCua(m).map(z=>`<div class="card"><div class="ch">${z.ten} <span class="tg c">${z.ma}</span><span class="sp"></span>
+     <span class="src">${z.phan.length} phần</span></div><div class="cb" style="flex-wrap:wrap;gap:7px;padding:9px 11px">
+     ${z.phan.map(x=>{const on=nlCo(p,m,z.ma,x.ma);
+       return `<label class="chkb ${on?'on':''}" data-x="cay-tick" data-gv="${id}" data-mon="${m}" data-pt="${z.ma}" data-ph="${x.ma}">
+         ${on?'☑':'☐'} ${x.ten}</label>`}).join('')}</div></div>`).join('')}
+   <div class="ro" id="cayDem">Đã chọn <b>${n}/${N}</b> phần.</div>
+   <div class="ro">🛑 Không đổi đơn vị này thì gán người cho <b>phần Vật lí</b> mà ô chọn ở M4.5 vẫn liệt kê <b>cả giáo viên Hóa</b> —
+    đúng loại lỗi M4.5 v1.1 đã mắc <i>(lọc theo tổ chuyên môn nên giáo viên Toán hiện ra cho môn Tin học)</i> và đã sửa.</div>`,
+  `<button class="btn p" data-x="close">Xong</button>`);
 }
 function moThemMon(id){
  const p=ns(id),con=MONS.filter(m=>!p.mon[m]);
@@ -831,7 +969,9 @@ function moThemMon(id){
    <label class="lbl">Căn cứ</label><select class="fldi" id="nmCC">
      <option>Bằng cấp chuyên ngành</option><option>Chứng chỉ bồi dưỡng</option><option>Quyết định phân công của trường</option></select>
    <div class="info" style="margin-top:11px">Chỉ hiện môn <b>thuộc danh mục môn áp dụng</b> của cấp học trường đang có — nguồn M10.2.
-     Gán xong, người này <b>tự động thuộc tổ phụ trách môn đó</b>.</div>`,
+     Gán xong, người này <b>tự động thuộc tổ phụ trách môn đó</b>.</div>
+   <div class="ro">Môn <b>một phương thức</b> ⇒ gán xong là dạy được <b>Toàn môn</b>, y như hôm nay.
+    Môn <b>chia phần</b> ⇒ gán xong màn hình mở tiếp <b>cây phương thức → phần</b> để tích từng phần.</div>`,
   `<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="ok-mon" data-gv="${id}">Gán môn</button>`);
 }
 function moCapTay(id){
@@ -868,6 +1008,41 @@ function moGhiDe(id){
    <button class="btn p" data-x="ok-ghide" data-gv="${id}">Lưu ngoại lệ</button>`);
 }
 
+/* ===== TRA ỨNG VIÊN THEO PHẦN — bằng chứng của ca PC8 =====
+   M4.5 §4.2 ràng buộc 2 lọc ô chọn giáo viên theo `Môn được phép dạy`. Sau ⑧, đơn vị lọc là PHẦN:
+   gán người cho phần Vật lí thì ô chọn CHỈ liệt kê người có (gv, KHTN, PT1, P1). */
+let UV={m:'KHTN',pt:'PT1',ph:'P1'};
+function veUV(){
+ const m=UV.m,z=ptM(m,UV.pt)||ptCua(m)[0];
+ if(!z||!z.phan.some(x=>x.ma===UV.ph)){UV.pt=z?z.ma:'PT0';UV.ph=z?z.phan[0].ma:'TOAN_MON'}
+ const co_=aiDayDuoc(m,UV.pt,UV.ph),khong=NS.filter(p=>!p.bgh&&p.mon[m]&&!nlCo(p,m,UV.pt,UV.ph));
+ const cuMon=NS.filter(p=>p.mon[m]);
+ return `<label class="lbl">Môn</label><select class="fldi" id="uvM">${
+   MONS.map(x=>`<option ${x===m?'selected':''}>${x}</option>`).join('')}</select>
+  <label class="lbl">Phương thức tổ chức kiến thức <span class="src">— danh mục ở M10.2 tab ②</span></label>
+  <select class="fldi" id="uvPt">${ptCua(m).map(x=>`<option value="${x.ma}" ${x.ma===UV.pt?'selected':''}>${x.ten} (${x.phan.length} phần)</option>`).join('')}</select>
+  <label class="lbl">Phần</label><select class="fldi" id="uvPh">${
+   (ptM(m,UV.pt)||{phan:[]}).phan.map(x=>`<option value="${x.ma}" ${x.ma===UV.ph?'selected':''}>${x.ten}</option>`).join('')}</select>
+  <div class="card" style="margin-top:12px"><div class="ch">Ô chọn ở M4.5 sẽ liệt kê <span class="sp"></span>
+    <span class="tg ${co_.length?'a':'r'}">${co_.length} người</span></div><div class="cb" style="flex-direction:column;align-items:stretch;gap:6px">
+   ${co_.length?co_.map(x=>`<div><b>${x.n}</b> <span class="src">${x.ma}${x.cv?' · '+x.cv:''}</span></div>`).join('')
+    :`<div class="danger" style="margin:0">⛔ <b>Không giáo viên nào dạy được phần này.</b> Dòng <code>Lớp × Môn × Phần</code> đó
+      sẽ để trống ở M4.5, và ${dlink('M4.5','M4.5')} chặn ký công bố phân công khi còn phần chưa có người.
+      Đây là đầu vào kế hoạch tuyển dụng ${dlink('M4.2','M4.2')}.</div>`}</div></div>
+  ${coChiaPhan(m)?`<div class="card"><div class="ch">Có môn <b>${m}</b> nhưng <b>KHÔNG</b> có phần này <span class="sp"></span>
+    <span class="tg b">${khong.length} người</span></div><div class="cb" style="flex-direction:column;align-items:stretch;gap:6px">
+   ${khong.length?khong.map(x=>`<div><b>${x.n}</b> — giữ ${(x.ph[m]||[]).map(y=>nhanPhan(m,y.pt,y.ph)).join(' · ')}
+     <div class="src">⛔ ô chọn ở M4.5 <b>không liệt kê</b> người này cho phần <b>${tenPhan(m,UV.pt,UV.ph)}</b></div></div>`).join('')
+    :'<div class="src">Không ai.</div>'}</div></div>
+   <div class="ro">Trước ⑧, bộ lọc chỉ hỏi <i>«có môn ${m} không»</i> ⇒ cả <b>${cuMon.length} người</b> trên đều hiện ra cho phần
+    <b>${tenPhan(m,UV.pt,UV.ph)}</b>. Đó là <b>đúng loại lỗi M4.5 v1.1 đã mắc</b> — lọc theo tổ chuyên môn nên giáo viên Toán
+    hiện ra cho môn Tin học — và phiên này không được tái tạo nó ở tầng phần.</div>`
+   :`<div class="ro">Môn <b>${m}</b> chỉ có <b>PT0 — Toàn môn</b>, nên bộ lọc hỏi đúng một câu như hôm nay:
+     <i>«có môn ${m} trong Môn được phép dạy không»</i>. <b>Không có gì đổi</b> — ca PC1.</div>`}`;
+}
+function moUV(){modal('🔍 Ai dạy được phần này — ô chọn ứng viên của M4.5',veUV(),
+ `<button class="btn p" data-x="close">Đóng</button>`)}
+
 /* ================= SỰ KIỆN ================= */
 document.addEventListener('click',e=>{
  if(e.target.matches('input,select,textarea'))return;
@@ -887,16 +1062,53 @@ document.addEventListener('click',e=>{
  /* --- ma trận: đổi mức độ --- */
  if(t.dataset.cell){
   const [id,m]=t.dataset.cell.split('|'),p=ns(+id),v=p.mon[m]||0;
-  if(v===0){p.mon[m]=1;p.khoi[m]=[];render();toast(`✓ ${p.n} — <b>${m}</b> chuyên môn chính · tự thuộc ${TO[MON[m].to]}`)}
+  if(v===0){p.mon[m]=1;p.khoi[m]=[];p.ph[m]=[{pt:'PT0',ph:'TOAN_MON'}];render();
+   toast(`✓ ${p.n} — <b>${m}</b> chuyên môn chính · tự thuộc ${TO[MON[m].to]}`)}
   else if(v===1){p.mon[m]=2;render();toast(`${p.n} — <b>${m}</b> chuyển sang <b>dạy kiêm nhiệm</b>`)}
   else thuGoMon(+id,m);
   return}
 
+ /* --- cây phương thức → phần (⑧) --- */
+ if(t.dataset.tree){const [id,m]=t.dataset.tree.split('|');moCay(+id,m);return}
+ if(x==='tree'){moCay(+t.dataset.gv,t.dataset.mon);return}
+ if(x==='cay-tick'){
+  const p=ns(+t.dataset.gv),m=t.dataset.mon,pt=t.dataset.pt,ph=t.dataset.ph;
+  if(nlCo(p,m,pt,ph)){
+   /* Gỡ phần CUỐI = gỡ luôn môn ⇒ phải đi qua đúng hai ràng buộc cũ (§5.2):
+      chặn cứng Tổ trưởng mất môn cuối của tổ · cảnh báo có xác nhận khi đang có phân công.
+      Một đường code, không có cửa sau. */
+   if(soPhanCua(p,m)===1){thuGoMon(+t.dataset.gv,m);return}
+   nlBo(p,m,pt,ph);
+   toast(`Đã gỡ <b>${nhanPhan(m,pt,ph)}</b> khỏi ${p.n} — còn <b>${soPhanCua(p,m)}/${soPhan(m)}</b> phần`);
+  }else{
+   nlThem(p,m,pt,ph);
+   toast(`✓ ${p.n} dạy được <b>${nhanPhan(m,pt,ph)}</b> — đã chọn <b>${soPhanCua(p,m)}/${soPhan(m)}</b> phần · nay có trong ô chọn của M4.5 cho đúng phần này`);
+  }
+  moCay(+t.dataset.gv,m);render();return}
+ if(x==='mo-ungvien'){moUV();return}
+ if(x==='mo-phankhuyet'){
+  const pk=phanKhongAiDay();
+  modal('Phần không có giáo viên nào dạy được',
+   `<div class="danger">Môn thì có người dạy, nhưng <b>phần ấy thì không</b>. Sau khi đổi khóa phân công thành
+     <code>Lớp × Môn × Phần</code>, một môn "đủ người" ở mức môn vẫn có thể <b>thủng ở mức phần</b> —
+     đây là lớp kiểm soát mà bản cũ không có.</div>
+    <table><thead><tr><th>Môn</th><th>Phương thức</th><th>Phần</th><th>Ai đang giữ các phần khác</th></tr></thead><tbody>
+    ${pk.map(x=>`<tr class="badrow"><td><b>${x.m}</b></td><td>${ptM(x.m,x.pt).ten}</td><td><b>${tenPhan(x.m,x.pt,x.ph)}</b></td>
+      <td style="font-size:11.5px">${NS.filter(z=>z.mon[x.m]).map(z=>z.n).join(', ')||'—'}</td></tr>`).join('')}
+    </tbody></table>
+    <div class="ro" style="margin-top:11px">Hai hướng: <b>tích thêm phần</b> cho giáo viên hiện có (cây phương thức → phần ở tab này),
+     hoặc <b>tuyển bổ sung</b>.</div>`,
+   `<button class="btn" data-x="close">Đóng</button>${dlink('M4.2','Kế hoạch tuyển dụng M4.2','tuyendung')}`);return}
  if(x==='them-mon'){moThemMon(+t.dataset.gv);return}
  if(x==='ok-mon'){
   const p=ns(+t.dataset.gv),m=$('#nmMon').value,mu=+$('#nmMuc').value;
-  p.mon[m]=mu;p.khoi[m]=[];closeModal();render();
-  toast(`✓ Gán <b>${m}</b> cho ${p.n} · tự thuộc ${TO[MON[m].to]} · nay xuất hiện trong ô chọn ứng viên ở M4.5`);return}
+  /* mặc định gán PT0 · Toàn môn — đúng bản cũ. Môn chia phần thì mở tiếp cây để tích từng phần (⑧) */
+  p.mon[m]=mu;p.khoi[m]=[];p.ph[m]=[{pt:'PT0',ph:'TOAN_MON'}];
+  closeModal();render();
+  if(coChiaPhan(m)){moCay(+t.dataset.gv,m);
+   toast(`✓ Gán <b>${m}</b> cho ${p.n} · mặc định <b>PT0 · Toàn môn</b> — môn này chia phần, tích tiếp từng phần`)}
+  else toast(`✓ Gán <b>${m}</b> cho ${p.n} · tự thuộc ${TO[MON[m].to]} · nay xuất hiện trong ô chọn ứng viên ở M4.5`);
+  return}
  if(x==='go-mon'){thuGoMon(+t.dataset.gv,t.dataset.mon,t.dataset.force);return}
 
  if(x==='cap-tay'){moCapTay(+t.dataset.gv);return}
@@ -1007,6 +1219,11 @@ document.addEventListener('click',e=>{
 });
 document.addEventListener('change',e=>{
  const el=e.target;
+ /* chốt chặn: giá trị rỗng không tới được qua màn hình, nhưng trình duyệt KHÔI PHỤC giá trị form
+    khi tải lại trang có sẵn modal ⇒ change bắn với value='' ⇒ ptCua('')[0] ném TypeError. Rẻ hơn là chặn. */
+ if(el.id==='uvM'){const z=ptCua(el.value)[0];if(!z)return;UV.m=el.value;UV.pt=z.ma;UV.ph=z.phan[0].ma;$('#mb').innerHTML=veUV();return}
+ if(el.id==='uvPt'){const z=ptM(UV.m,el.value);if(!z)return;UV.pt=el.value;UV.ph=z.phan[0].ma;$('#mb').innerHTML=veUV();return}
+ if(el.id==='uvPh'){UV.ph=el.value;$('#mb').innerHTML=veUV();return}
  if(el.id==='fto'){fTo=el.value;render();return}
  if(el.id==='fmon'){fMon=el.value;render();return}
  if(el.id==='ftt'){fTT=el.value;render();return}
