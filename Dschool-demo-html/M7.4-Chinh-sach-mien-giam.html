@@ -445,7 +445,7 @@ table.cs tr.bo td{background:#fafafa;color:var(--ink3)}
 <header class="hdr">
   <div class="logo"><span class="mark">DS</span> Dschool</div>
   <div class="school">TH, THCS &amp; THPT Nguyễn Tất Thành</div>
-  <select class="sel" id="nam"><option>2026-2027</option><option>2025-2026</option></select>
+  <select class="sel" id="nam"><option>2026-2027</option><option>2027-2028</option><option>2025-2026</option></select>
   <select class="sel" id="dtsel"></select>
   <div class="spacer"></div>
   <button class="icobtn">🔔<span class="dot" id="bell">4</span></button>
@@ -491,7 +491,7 @@ const ROLE={
  KT:{n:'Phạm Thị Lan — Kế toán',av:'PL',q:['cauhinh','dexuat','thamdinh','xuat','baocao'],
   sco:'Bạn là <b>Kế toán</b>, phạm vi <b>toàn trường</b>. Bạn <b>khai chính sách, chọn đối tượng được hưởng, áp dụng</b> và <b>duyệt đề nghị</b> từ giáo viên / văn thư. Kết quả giảm trừ chạy thẳng vào số phải đóng ở M7.2.'},
  VT:{n:'Đỗ Thị Hạnh — Văn thư ĐT B',av:'DH',dt:'B',q:['dexuat','xuat'],
-  sco:'Bạn là <b>Văn thư Điểm trường B</b>. Chỉ thấy tab <b>Học sinh đang hưởng chính sách</b>, phạm vi <b>Điểm trường B</b>, bộ chọn đã khóa. Bạn <b>đề nghị</b> thêm học sinh vào một chính sách — không khai chính sách, không tự thêm.'},
+  sco:'Bạn là <b>Văn thư Điểm trường B</b>. Chỉ thấy tab <b>Học sinh được trường giảm</b>, phạm vi <b>Điểm trường B</b>, bộ chọn đã khóa. Bạn <b>đề nghị</b> thêm học sinh vào một chính sách — không khai chính sách, không tự thêm.'},
  GVCN:{n:'Trần Thị Hòa — GVCN 9A2',av:'TH',dt:'A',lop:'9A2',q:['dexuat'],
   sco:'Bạn là <b>GVCN lớp 9A2</b>. Chỉ thấy học sinh lớp mình, ở dạng <b>rút gọn</b> — thấy em <b>đang được hỗ trợ ở khoản thu nào</b>, không thấy diện ưu tiên, không thấy tên chính sách, không thấy số tiền.'},
  PHT:{n:'Nguyễn Đức Thắng — PHT phụ trách ĐT B',av:'NT',dt:'B',q:['thamdinh','xuat','baocao'],
@@ -511,8 +511,13 @@ const LOP={
 };
 const KHOI=['1','2','3','4','5','6','7','8','9','10','11','12'];
 const khoiCo=()=>KHOI.filter(k=>Object.keys(LOP).some(l=>LOP[l].khoi===k));   /* khối thật sự có lớp */
-const THANGS=['Tháng 9/2026','Tháng 10/2026'];
-const NGAYHOC={'Tháng 9/2026':22,'Tháng 10/2026':21};
+/* kỳ tính theo NĂM HỌC đang chọn ở header (KTDT-1B) */
+const KY_NAM={
+ '2026-2027':{'Tháng 9/2026':22,'Tháng 10/2026':21},
+ '2027-2028':{'Tháng 9/2027':21,'Tháng 10/2027':21},
+};
+let NGAYHOC=KY_NAM['2026-2027'];
+let THANGS=Object.keys(NGAYHOC);
 let KYCUR='Tháng 9/2026';
 
 /* ==================== DIỆN ƯU TIÊN (chiếu chỉ đọc từ M1.2) ==================== */
@@ -527,23 +532,48 @@ const DIEN={
  VUNG_KK     :{t:'Học sinh vùng khó khăn'},
 };
 
-/* ==================== KHOẢN THU (chiếu chỉ đọc từ M7.1) ==================== */
-const KDEF={
- 'BHYT' :{ten:'Bảo hiểm y tế học sinh',sl:0},
- 'DP'   :{ten:'Đồng phục, phù hiệu',    sl:0},
- 'NUOC' :{ten:'Tiền nước uống',         sl:0},
- 'VS'   :{ten:'Tiền phục vụ vệ sinh',   sl:0},
- 'AN-BT':{ten:'Tiền ăn bán trú',        sl:1},
- 'PV-BT':{ten:'Tiền phục vụ bán trú',   sl:0},
- 'KNS'  :{ten:'Giáo dục kỹ năng sống, STEM',sl:0},
+/* ==================== KHOẢN THU — HAI LỚP (chiếu chỉ đọc từ M7.1 · cụm KTDT, 24/9/2026) ====================
+   DANH_TINH — MASTER của M7.1 (tab «Danh mục khoản thu»). Khóa = MÃ danh tính TOÀN TRƯỜNG, BẤT BIẾN (KT-1 · KT-2):
+               không năm, không điểm trường. sl = cách tính theo buổi (trường 8 — thuộc DANH TÍNH, KT-3).
+   KHOAN_NAM — YEARLY của M7.1 (tab «Khoản thu năm học»). Khóa = (năm học × điểm trường × danh tính) → đơn giá của NĂM ĐÓ.
+               id bản ghi mang NĂM; mã in = mã danh tính + '-' + điểm trường (vd AN-BT-A) — chỉ để in, ⛔ không phải khóa.
+   Chính sách (LOAI[].khoan) trỏ vào DANH TÍNH ⇒ sang năm mới tự áp cho khoản năm CÙNG danh tính, ⛔ không phải rà lại.
+   Danh tính KHÔNG có khoản năm ở năm đang chọn ⇒ dải «năm này trường không thu khoản X — chính sách không phát sinh», ⛔ không lỗi. */
+const DANH_TINH={
+ 'BHYT' :{ten:'Bảo hiểm y tế học sinh',sl:0,tt:'dang_dung'},
+ 'DP'   :{ten:'Đồng phục, phù hiệu (2 bộ)',sl:0,tt:'dang_dung'},   /* KTDT-Z 24/9/2026: tên theo NGUỒN M7.1 (danh tính DP) — trước ghi «Đồng phục, phù hiệu» (1A P-4); chỉ nhãn, ⛔ đổi số */
+ 'NUOC' :{ten:'Tiền nước uống',         sl:0,tt:'dang_dung'},
+ 'VS'   :{ten:'Tiền phục vụ vệ sinh',   sl:0,tt:'dang_dung'},
+ 'AN-BT':{ten:'Tiền ăn bán trú',        sl:1,tt:'dang_dung'},
+ 'PV-BT':{ten:'Tiền phục vụ bán trú',   sl:0,tt:'dang_dung'},
+ 'KNS'  :{ten:'Giáo dục kỹ năng sống, STEM',sl:0,tt:'dang_dung'},
 };
-const GIA={A:{'BHYT':884520,'DP':480000,'NUOC':30000,'VS':20000,'AN-BT':42000,'PV-BT':180000,'KNS':150000},
-           B:{'BHYT':884520,'DP':460000,'NUOC':30000,'VS':20000,'AN-BT':42000,'PV-BT':180000,'KNS':150000},
-           C:{'BHYT':884520,'DP':440000,'NUOC':30000,'VS':20000,'AN-BT':38000,'PV-BT':150000,'KNS':150000}};
-/* số phải đóng GỐC của một khoản trong kỳ (chưa trừ chính sách) */
+/* Đơn giá theo năm × điểm trường × danh tính — bản chiếu các khoản thu CỦA NĂM ở M7.1.
+   2026-2027: năm đang chạy, đã công bố — con số GIỮ NGUYÊN từng đồng so với trước cụm (luật KD-1).
+   2027-2028: F13 Clone từ năm trước ra trạng thái Nháp (KT-4) rồi kế toán sửa giá; trường THÔI thu KNS. */
+const NAM_KHOAN={
+ '2026-2027':{tt:'cong_bo',
+  A:{'BHYT':884520,'DP':480000,'NUOC':30000,'VS':20000,'AN-BT':42000,'PV-BT':180000,'KNS':150000},
+  B:{'BHYT':884520,'DP':460000,'NUOC':30000,'VS':20000,'AN-BT':42000,'PV-BT':180000,'KNS':150000},
+  C:{'BHYT':884520,'DP':440000,'NUOC':30000,'VS':20000,'AN-BT':38000,'PV-BT':150000,'KNS':150000}},
+ '2027-2028':{tt:'nhap',
+  A:{'BHYT':884520,'DP':480000,'NUOC':30000,'VS':20000,'AN-BT':44000,'PV-BT':180000},
+  B:{'BHYT':884520,'DP':460000,'NUOC':30000,'VS':20000,'AN-BT':44000,'PV-BT':180000},
+  C:{'BHYT':884520,'DP':440000,'NUOC':30000,'VS':20000,'AN-BT':40000,'PV-BT':150000}},
+};
+const TTKN={cong_bo:'Công bố áp dụng',nhap:'Nháp'};
+const KHOAN_NAM=[];
+Object.keys(NAM_KHOAN).forEach(n=>['A','B','C'].forEach(d=>Object.keys(NAM_KHOAN[n][d]).forEach(id=>
+ KHOAN_NAM.push({id:'KN-'+n+'-'+d+'-'+id,nam_hoc:n,diem_truong:d,danh_tinh_id:id,don_gia:NAM_KHOAN[n][d][id],tt:NAM_KHOAN[n].tt,ma_in:id+'-'+d}))));
+const NAMS=Object.keys(NAM_KHOAN);
+let NAMCUR=NAM;
+/* khoản thu của năm đang chọn, cho một danh tính ở một điểm trường — null = năm đó trường không thu */
+const khoanNam=(n,d,id)=>KHOAN_NAM.find(k=>k.nam_hoc===n&&k.diem_truong===d&&k.danh_tinh_id===id)||null;
+const coKhoanNam=(n,id)=>['A','B','C'].filter(d=>khoanNam(n,d,id));
+/* số phải đóng GỐC của một khoản trong kỳ (chưa trừ chính sách) — đọc đơn giá của NĂM ĐANG CHỌN */
 function gocKhoan(h,ma,ky){
- const dg=GIA[h.dt][ma];
- return KDEF[ma].sl ? dg*NGAYHOC[ky] : dg;
+ const k=khoanNam(NAMCUR,h.dt,ma); if(!k) return 0;
+ return DANH_TINH[ma].sl ? k.don_gia*NGAYHOC[ky] : k.don_gia;
 }
 
 /* ==================== ĐỐI TƯỢNG & HÌNH THỨC GIẢM ==================== */
@@ -606,6 +636,8 @@ const dienCua=(h,ma)=>h.d.find(d=>d[0]===ma);
 /* ==================== DANH MỤC CHÍNH SÁCH MIỄN GIẢM ====================
    Một chính sách chỉ có SÁU thông tin:
      ten · pv{dt[],khoi[]} · dt (all|dien|tay) [+dien[] hoặc hs[]] · khoan[] · ht (pt|gt) · muc
+   khoan[] = danh_tinh_id[] (KTDT-1B) — id là MÃ danh tính toàn trường của M7.1 (KT-1), ⛔ không phải id khoản thu của một năm,
+             ⛔ không phải mã in (AN-BT-A). Không năm ⇒ chính sách không «già» đi khi sang năm học mới.
    Trạng thái ap | nhap | het KHÔNG phải trường khai — nó là vòng đời của bản ghi.        */
 let LOAI=[
  {ma:'MG-BT-CS',ten:'Hỗ trợ tiền ăn bán trú — học sinh diện chính sách',tt:'ap',
@@ -689,7 +721,25 @@ function chonCoLoi(h,ma,ky){
  ung.sort((a,b)=>b.so-a.so);
  return {chon:ung[0],bo:ung.slice(1)};
 }
-const khoanCua=h=>Object.keys(KDEF).filter(ma=>!((ma==='AN-BT'||ma==='PV-BT')&&!h.bt));
+/* khoản em phải đóng trong NĂM ĐANG CHỌN = danh tính có khoản năm ở điểm trường của em (+ bán trú mới có AN-BT, PV-BT) */
+const khoanCua=h=>Object.keys(DANH_TINH).filter(ma=>khoanNam(NAMCUR,h.dt,ma)&&!((ma==='AN-BT'||ma==='PV-BT')&&!h.bt));
+/* danh tính mà chính sách trỏ tới nhưng năm đang chọn trường KHÔNG thu (ở điểm trường của em / ở mọi điểm trường trong phạm vi) */
+const khongThu=(lo,dts)=>(lo.khoan||[]).filter(id=>(dts||lo.pv.dt||[]).every(d=>!khoanNam(NAMCUR,d,id)));
+/* năm đang chọn có khoản năm chưa công bố ⇒ số là DỰ KIẾN (M7.2 chỉ trừ trên khoản đã công bố) */
+function daiNam(){
+ if(NAMCUR===NAM) return '';
+ return '<div class="kybar"><span>🗓</span><div>Đang xem năm học <b>'+NAMCUR+'</b>. Khoản thu của năm này ở M7.1 đang <b>'+TTKN[NAM_KHOAN[NAMCUR].tt]+'</b> '+
+  '<i>(Clone từ năm trước theo danh tính)</i> — số dưới đây là <b>dự kiến</b> theo đơn giá đang khai; M7.2 chỉ trừ khi khoản được <b>công bố áp dụng</b>. '+
+  '<b>Không chính sách nào phải sửa</b>: chính sách trỏ vào danh tính khoản thu, nên tự áp cho khoản năm mới cùng danh tính.'+
+  '<div class="hq2">Bản demo dùng lại danh sách học sinh 2026-2027 <i>(chưa kết chuyển lên lớp)</i> để so hai năm trên cùng một em.</div></div></div>';
+}
+function daiKhongThu(los,dts){
+ const g={};los.forEach(lo=>khongThu(lo,dts).forEach(id=>(g[id]=g[id]||[]).push(lo)));
+ const ks=Object.keys(g); if(!ks.length) return '';
+ return '<div class="info">📭 '+ks.map(id=>'Năm <b>'+NAMCUR+'</b> trường <b>không thu khoản '+esc(DANH_TINH[id].ten)+'</b> <span class="ct2">'+id+'</span> — '+
+   'chính sách '+g[id].map(lo=>'<b>'+esc(lo.ten)+'</b>').join(', ')+' <b>không phát sinh</b> cho khoản này.').join('<br>')+
+  '<div class="hq2">Không phải lỗi: chính sách trỏ vào <b>danh tính</b> khoản thu, không trỏ vào khoản của một năm. Năm nào M7.1 có lại khoản cùng danh tính thì chính sách <b>tự áp</b>, không phải sửa.</div></div>';
+}
 /* mọi khoản có giảm trừ của một em trong kỳ */
 function csGiam(h,ky){
  const r=[];
@@ -749,7 +799,7 @@ const dtOK=()=>R().dt?[R().dt]:(DTCUR==='ALL'?['A','B','C']:[DTCUR]);
 function hsPV(){const r=R();return HS.filter(h=>r.lop?h.lop===r.lop:dtOK().indexOf(h.dt)>=0);}
 
 const TABDEF=[
- {k:'hs', t:'Học sinh đang hưởng chính sách', r:['FULL','KT','VT','GVCN','PHT']},
+ {k:'hs', t:'Học sinh được trường giảm', r:['FULL','KT','VT','GVCN','PHT']},
  {k:'dm', t:'⚙ Danh mục chính sách miễn giảm', r:['FULL','KT','HT']},
  {k:'bc', t:'Báo cáo',                        r:['FULL','KT','PHT','HT']},
 ];
@@ -841,9 +891,11 @@ function vHS(){
   h+='<div style="margin-top:6px"><span class="rolnk" data-x="dl" data-t="M1.2 Đối tượng ưu tiên">🔗 Gia hạn diện / tải tệp tại M1.2</span></div></div>';
  }
 
- /* đề nghị chờ duyệt */
+ if(!an) h+=daiNam()+daiKhongThu(loaiAp(),dtOK());
+
+ /* hang doi «Đề nghị thêm vào chính sách» */
  if(dn.length&&can('thamdinh')){
-  h+='<div class="khoi on"><div class="khh"><b>📥 Đề nghị chờ duyệt — '+dn.length+'</b>'+
+  h+='<div class="khoi on"><div class="khh"><b>📥 Đề nghị thêm vào chính sách — '+dn.length+'</b>'+
    '<span class="sub">giáo viên chủ nhiệm / văn thư đề nghị thêm em vào một chính sách <b>nhập thủ công</b></span></div><div class="khb" style="padding:0">';
   dn.forEach(x=>{const st=HSC(x.hs),lo=L(x.loai);
    h+='<div class="wq"><div class="ic">✍</div><div style="flex:1;min-width:0">'+
@@ -917,7 +969,7 @@ function rowHS(x,an,flat){
   (an?'':'<div class="rmeta" style="margin-top:5px">'+dienChips(x)+
     (thieuTep(x).length?' <span class="st2 r">⚠ thiếu tệp chứng minh</span>':'')+'</div>'+
    (x.tt==='chuyendi'?'<div class="mgline">Em <b>đã chuyển đi</b> — chính sách <b>dừng từ ngày chuyển</b>. Các kỳ đã phát hành trước đó giữ nguyên.</div>':'')+
-   (g.length?'<div class="mgline">Kỳ '+KYCUR+': '+g.map(z=>KDEF[z.ma].ten+' <b>−'+M(z.chon.so)+'</b>').join(' · ')+'</div>':''))+
+   (g.length?'<div class="mgline">Kỳ '+KYCUR+': '+g.map(z=>DANH_TINH[z.ma].ten+' <b>−'+M(z.chon.so)+'</b>').join(' · ')+'</div>':''))+
   '</div>';
 }
 
@@ -934,7 +986,7 @@ function panelHS(x,an){
   h+='<div class="ro">🔒 Vai <b>GVCN</b> chỉ thấy <b>em đang được hỗ trợ ở khoản nào</b>.</div>';
   if(!g.length) h+='<div class="empty" style="padding:16px">Em không đang hưởng chính sách miễn giảm nào.</div>';
   else h+='<div class="hdbox"><div class="t"><span class="hdtag giam">giảm trừ khoản thu</span> Em <b>được hỗ trợ một phần hoặc toàn bộ</b> các khoản sau</div>'+
-   '<div class="m">'+g.map(z=>'<span class="dienchip" style="background:#dbeafe;color:#1e40af">'+KDEF[z.ma].ten+'</span>').join('')+'</div>'+
+   '<div class="m">'+g.map(z=>'<span class="dienchip" style="background:#dbeafe;color:#1e40af">'+DANH_TINH[z.ma].ten+'</span>').join('')+'</div>'+
    '<div class="hdprev">Hóa đơn của gia đình <b>đã trừ sẵn</b> phần này. <b>Đừng nhắc gia đình đóng phần đã được hỗ trợ</b> — số phải đóng thật nằm ở <b>M7.2</b>.</div></div>';
   if(can('dexuat')) h+='<div style="margin-top:12px"><button class="btn" data-x="dnmoi" data-m="'+x.ma+'">✍ Đề nghị xét chính sách cho em này</button>'+
     '<div class="hint" style="margin-top:5px">GVCN gửi <b>đề nghị bằng lời</b> — kế toán mới là người tra diện và quyết.</div></div>';
@@ -943,6 +995,13 @@ function panelHS(x,an){
 
  h+='<div class="sech2">Diện ưu tiên <span class="rolnk" data-x="dl" data-t="M1.2 Đối tượng ưu tiên">🔗 chiếu chỉ đọc từ M1.2 — sửa tại đó</span></div>'+
   '<div style="margin-bottom:10px">'+dienChips(x)+'</div>';
+ /* CSDL-2C · CS-6: dong ranh gioi co dinh — bon che do ho tro o M1.2, KHONG o day */
+ h+='<div class="warn">🛑 <b>Bốn chế độ hỗ trợ của Nhà nước không nằm ở menu này</b> — '+
+  '<b>Hỗ trợ chi phí học tập</b> · <b>Hỗ trợ nhà ở</b> · <b>Cấp tiền hàng tháng</b> · <b>Cấp gạo</b> ở khối '+
+  '<b>Chế độ nhà nước cấp</b> của <b>M1.2</b>. '+
+  '<div class="hq2">Miễn giảm là khoản <b>trường giảm cho gia đình</b>; bốn chế độ kia là khoản <b>nhà nước cấp cho gia đình</b>. '+
+  'Chúng <b>không vào công nợ học phí</b> — số dư của em <b>không đổi</b> khi thêm một chế độ. Phát sinh tiền đi qua <b>M7.5</b> sổ thu chi, không qua M7.4. '+
+  '<span class="rolnk" data-x="dl" data-t="M1.2 Đối tượng ưu tiên — khối Chế độ nhà nước cấp">🔗 M1.2</span></div></div>';
  const sh=sapHet(x);
  if(sh.length) h+='<div class="canhbao">⏳ Diện <b>'+sh.map(d=>DIEN[d[0]].t).join(', ')+'</b> hết hiệu lực ngày <b>'+sh[0][1]+'</b>.'+
    '<div class="hq2">Sau ngày đó em <b>mất chính sách gắn với diện này</b> — số phải đóng tăng. Gia hạn tại M1.2 trước khi phát hành kỳ tiếp theo.</div></div>';
@@ -952,14 +1011,16 @@ function panelHS(x,an){
    '<b>Không chặn giảm trừ</b>, nhưng hồ sơ quyết toán sẽ bị hỏi. <span class="rolnk" data-x="dl" data-t="M1.2 Đối tượng ưu tiên">🔗 Tải tệp tại M1.2</span></div>';
 
  h+='<div class="sech2">Giảm trừ khoản thu — kỳ '+KYCUR+'</div>';
+ h+=daiKhongThu(loaiAp().filter(lo=>khop(x,lo)),[x.dt]);
  if(!g.length) h+='<div class="empty" style="padding:14px">Không có chính sách nào áp cho em ở kỳ này.</div>';
  else{
   h+='<div class="wrapx"><table class="cs" style="min-width:600px"><thead><tr><th style="text-align:left">Khoản thu</th>'+
    '<th style="text-align:right">Giá gốc kỳ</th><th style="text-align:left">Chính sách áp dụng</th>'+
    '<th style="text-align:right">Giảm</th><th style="text-align:right">Còn phải đóng</th></tr></thead><tbody>';
   g.forEach(z=>{
-   h+='<tr><td><b>'+KDEF[z.ma].ten+'</b><div class="ct2">'+z.ma+'</div></td>'+
-    '<td style="text-align:right">'+M(z.chon.goc)+(KDEF[z.ma].sl?'<div class="ct2">'+M(GIA[x.dt][z.ma])+'×'+NGAYHOC[KYCUR]+' buổi</div>':'')+'</td>'+
+   const kn=khoanNam(NAMCUR,x.dt,z.ma);
+   h+='<tr><td><b>'+DANH_TINH[z.ma].ten+'</b><div class="ct2" title="Mã danh tính (bất biến) · mã in của khoản năm '+NAMCUR+'">'+z.ma+' · in '+kn.ma_in+'</div></td>'+
+    '<td style="text-align:right">'+M(z.chon.goc)+(DANH_TINH[z.ma].sl?'<div class="ct2">'+M(kn.don_gia)+'×'+NGAYHOC[KYCUR]+' buổi</div>':'')+'</td>'+
     '<td>'+esc(z.chon.lo.ten)+'<div class="ct2" style="margin-top:3px">'+z.chon.lo.ma+' · '+mucChu(z.chon.lo)+'</div>'+
      (z.chon.tran?'<div class="mgline">Mức chính sách là <b>'+M(z.chon.tho)+'</b>, cao hơn số phải đóng — <b>kẹp trần</b> còn '+M(z.chon.so)+'. Giảm theo giá trị <b>không bao giờ vượt giá trị khoản thu</b>.</div>':'')+'</td>'+
     '<td style="text-align:right" class="money">−'+M(z.chon.so)+'</td>'+
@@ -1001,7 +1062,10 @@ function vDM(){
    '<span style="margin-left:auto;font-size:12px">'+(lo.tt==='ap'?'<b>'+n+'</b> học sinh đang hưởng':'')+'</span></div>'+
    '<div class="lcm">'+
     '<span>Giảm: <b>'+mucChu(lo)+'</b> · '+HTGIAM[lo.ht].t.toLowerCase()+'</span>'+
-    '<span>Khoản thu: <b>'+(lo.khoan||[]).map(k=>KDEF[k].ten).join(', ')+'</b></span>'+
+    '<span>Khoản thu: <b>'+(lo.khoan||[]).map(k=>DANH_TINH[k].ten).join(', ')+'</b></span>'+
+    '<span style="font-size:11.5px" title="Chính sách trỏ vào danh tính — năm nào có khoản năm cùng danh tính thì tự áp">🔗 Khoản của năm: '+
+     NAMS.map(n=>{const kh=(lo.khoan||[]).filter(k=>coKhoanNam(n,k).length);
+      return n+(NAM_KHOAN[n].tt==='nhap'?' (Nháp)':'')+' '+(kh.length===(lo.khoan||[]).length?'✓':(kh.length?'✓ '+kh.length+'/'+(lo.khoan||[]).length+' khoản':'— trường không thu'));}).join(' · ')+'</span>'+
     '<span>'+DOITUONG[lo.dt].ic+' '+dtChu(lo)+'</span>'+
     '<span>Phạm vi: '+pvChu(lo)+'</span>'+
     (lo.tt==='het'&&lo.ngung?'<span style="color:var(--red)">Ngừng '+lo.ngung.ngay+' · '+esc(lo.ngung.vi)+'</span>':'')+
@@ -1065,8 +1129,12 @@ function scrLoai(){
 
  /* 4. KHOẢN THU */
  h+='<div class="k">Khoản thu áp dụng</div><div>'+
-  Object.keys(KDEF).map(k=>ckbox('khoan',k,KDEF[k].ten,(f.khoan||[]).indexOf(k)>=0)).join('')+
-  '<div class="hint">Chiếu chỉ đọc từ <b>M7.1 Danh mục khoản thu</b> — thêm khoản mới thì khai ở đó. <span class="rolnk" data-x="dl" data-t="M7.1 Danh mục khoản thu">🔗 M7.1</span></div></div>';
+  Object.keys(DANH_TINH).filter(k=>DANH_TINH[k].tt==='dang_dung'||(f.khoan||[]).indexOf(k)>=0)
+   .map(k=>ckbox('khoan',k,DANH_TINH[k].ten+' <span class="ct2">'+k+'</span>',(f.khoan||[]).indexOf(k)>=0,!coKhoanNam(NAMCUR,k).length)).join('')+
+  '<div class="hint">Chọn <b>danh tính khoản thu</b> — chiếu chỉ đọc từ tab <b>Danh mục khoản thu</b> của <b>M7.1</b>, không phải khoản của một năm. '+
+   'Chính sách vì thế <b>tự áp sang năm học mới</b> cho khoản năm cùng danh tính; đơn giá lấy theo <b>năm đang chọn</b> ở header. '+
+   'Khoản làm mờ = năm '+NAMCUR+' trường không thu — vẫn chọn được. Thêm danh tính mới thì khai ở M7.1. '+
+   '<span class="rolnk" data-x="dl" data-t="M7.1 Danh mục khoản thu — tab Danh mục khoản thu">🔗 M7.1</span></div></div>';
 
  /* 5. HÌNH THỨC GIẢM */
  h+='<div class="k">Hình thức giảm</div><div>'+
@@ -1109,15 +1177,17 @@ function xemTruoc(f){
   lo.khoan.forEach(ma=>{
    if(khoanCua(h).indexOf(ma)<0) return;
    const m=mucGiam(h,lo,KYCUR,ma);
-   tien+=m.ap; if(m.tran) tran.push(h.ten+' ('+KDEF[ma].ten+'): '+M(m.tho)+' → '+M(m.ap));
+   tien+=m.ap; if(m.tran) tran.push(h.ten+' ('+DANH_TINH[ma].ten+'): '+M(m.tho)+' → '+M(m.ap));
    const c=chonCoLoi(h,ma,KYCUR);
-   if(c.chon&&c.chon.lo.ma!==S.sc.ma&&c.chon.so>=m.ap) doi.push(h.ten+' · '+KDEF[ma].ten+': đang hưởng “'+c.chon.lo.ten+'” '+M(c.chon.so)+' — <b>giữ mức cũ, chính sách này thấp hơn</b>');
+   if(c.chon&&c.chon.lo.ma!==S.sc.ma&&c.chon.so>=m.ap) doi.push(h.ten+' · '+DANH_TINH[ma].ten+': đang hưởng “'+c.chon.lo.ten+'” '+M(c.chon.so)+' — <b>giữ mức cũ, chính sách này thấp hơn</b>');
   });
  });
  let h='<div class="mophong"><h4>Xem trước — kỳ '+KYCUR+'</h4>';
  h+='<div class="r"><span>✅</span><div><b>'+es.length+' học sinh</b> sẽ được hưởng · tổng giảm trừ <b>'+M(tien)+'</b> mỗi kỳ</div></div>';
  if(tran.length) h+='<div class="r"><span>⚠</span><div><b>'+tran.length+' trường hợp bị kẹp trần</b> <i>(mức giảm cao hơn giá trị khoản thu)</i>: '+tran.slice(0,3).join(' · ')+(tran.length>3?' …':'')+'</div></div>';
  if(doi.length)  h+='<div class="r"><span>🔄</span><div><b>'+doi.length+' trường hợp đang hưởng chính sách khác cho cùng khoản</b>:<br>'+doi.slice(0,3).join('<br>')+(doi.length>3?'<br>…':'')+'</div></div>';
+ const kt=khongThu(lo);
+ if(kt.length)   h+='<div class="r"><span>📭</span><div>Năm <b>'+NAMCUR+'</b> trường <b>không thu</b> '+kt.map(id=>'<b>'+esc(DANH_TINH[id].ten)+'</b>').join(', ')+' — chính sách <b>không phát sinh</b> cho khoản này ở năm đó. Không phải lỗi.</div></div>';
  if(!es.length)  h+='<div class="r"><span>🚫</span><div>Không em nào khớp. Kiểm tra lại <b>phạm vi</b> và <b>đối tượng</b> — hoặc diện tương ứng chưa được khai ở M1.2.</div></div>';
  return h+'</div>';
 }
@@ -1136,6 +1206,7 @@ function vBC(){
  const ds=hsPV();
  let h='';
  h+='<div class="bar"><span style="font-size:12.5px;color:var(--ink2)">Kỳ tính:</span> '+kySel()+'</div>';
+ h+=daiNam()+daiKhongThu(loaiAp(),dtOK());
  h+='<div class="nh4">'+
   '<div class="nbox n2"><div class="l">Tổng giảm trừ — kỳ '+KYCUR+'</div><div class="v">'+M(ds.reduce((a,x)=>a+tongGiam(x,KYCUR),0))+'</div>'+
    '<div class="s">trừ thẳng khi M7.2 tính số phải đóng</div></div>'+
@@ -1159,7 +1230,7 @@ function vBC(){
    tong+=so;
    t+='<tr><td><b>'+esc(lo.ten)+'</b><div class="ct2">'+lo.ma+'</div></td>'+
     '<td style="font-size:11.5px">'+DOITUONG[lo.dt].ic+' '+esc(dtChu(lo))+'</td>'+
-    '<td style="font-size:11.5px">'+(lo.khoan||[]).map(k=>KDEF[k].ten).join('<br>')+'</td>'+
+    '<td style="font-size:11.5px">'+(lo.khoan||[]).map(k=>DANH_TINH[k].ten).join('<br>')+'</td>'+
     '<td style="text-align:right"><b>'+mucChu(lo)+'</b></td>'+
     '<td style="text-align:right"><b>'+es.length+'</b></td>'+
     '<td style="text-align:right">'+M(so)+'</td></tr>';});
@@ -1176,13 +1247,13 @@ function vBC(){
    '<th style="text-align:right">Tổng</th></tr></thead><tbody>';
   const dts=['A','B','C'].filter(d=>dtOK().indexOf(d)>=0);
   const cot={};dts.forEach(d=>cot[d]=0);let tt=0;
-  Object.keys(KDEF).forEach(ma=>{
+  Object.keys(DANH_TINH).forEach(ma=>{
    const o={};let r=0;
    dts.forEach(d=>{
     let s=0;ds.filter(x=>x.dt===d).forEach(x=>{const c=chonCoLoi(x,ma,KYCUR);if(c.chon&&khoanCua(x).indexOf(ma)>=0)s+=c.chon.so;});
     o[d]=s;r+=s;cot[d]+=s;});
    if(!r) return; tt+=r;
-   t+='<tr><td><b>'+KDEF[ma].ten+'</b> <span class="ct2">'+ma+'</span></td>'+
+   t+='<tr><td><b>'+DANH_TINH[ma].ten+'</b> <span class="ct2">'+ma+'</span></td>'+
     dts.map(d=>'<td style="text-align:right">'+(o[d]?M(o[d]):'—')+'</td>').join('')+
     '<td style="text-align:right"><b>'+M(r)+'</b></td></tr>';});
   t+='<tr><td><b>Tổng</b></td>'+dts.map(d=>'<td style="text-align:right"><b>'+M(cot[d])+'</b></td>').join('')+
@@ -1265,7 +1336,7 @@ document.addEventListener('click',e=>{
  dnmoi2:()=>{const v=($('#dnvi').value||'').trim();
    if(!v){toast('⛔ Phải ghi lý do đề nghị.');return;}
    DENGHI.push({id:DNSEQ++,hs:t.dataset.m,loai:$('#dnl').value,tt:'cho',by:R().n,luc:HOM+' '+gioNay(),vi:v});
-   closeM();toast('✔ Đã gửi đề nghị → hàng đợi <b>Đề nghị chờ duyệt</b> của Kế toán.');render();},
+   closeM();toast('✔ Đã gửi đề nghị → hàng đợi <b>Đề nghị thêm vào chính sách</b> của Kế toán.');render();},
 
  /* ---- danh mục ---- */
  lmoi:()=>{S.screen='loai';S.sc={f:{ten:'',pvdt:['A','B','C'],pvkhoi:khoiCo().slice(),dt:'dien',dien:[],hs:[],khoan:[],ht:'pt',muc:''}};render();},
@@ -1403,7 +1474,12 @@ document.addEventListener('change',e=>{
  const t=e.target;
  if(t.id==='dtsel'){DTCUR=t.value;S.sel=null;render();return;}
  if(t.id==='kysel'){KYCUR=t.value;render();return;}
- if(t.id==='nam'){toast('📅 Bản demo chỉ có dữ liệu năm học <b>2026-2027</b>.');t.value='2026-2027';return;}
+ if(t.id==='nam'){
+  /* KTDT-1B: năm đã kết thúc ⇒ số đã giảm đọc từ bản ghi M7.2 đã phát hành, ⛔ không tính lại từ chính sách hiện hành */
+  if(!KY_NAM[t.value]){toast('📅 Năm <b>'+t.value+'</b> đã kết thúc — số đã giảm của năm ấy nằm ở <b>bản ghi phải thu M7.2 đã phát hành</b>, '+
+   'không tính lại từ chính sách hiện hành (chính sách có thể đã sửa hoặc ngừng). Bản demo không dựng năm này.');t.value=NAMCUR;return;}
+  NAMCUR=t.value;NGAYHOC=KY_NAM[NAMCUR];THANGS=Object.keys(NGAYHOC);KYCUR=THANGS[0];S.sel=null;render();
+  toast('📅 Năm học <b>'+NAMCUR+'</b> — chính sách <b>giữ nguyên</b>, đơn giá đọc từ khoản thu của năm này ở M7.1.');return;}
  if(t.dataset.dt){doc();S.sc.f.dt=t.value;render();return;}
  if(t.dataset.ht){doc();S.sc.f.ht=t.value;render();return;}
  if(t.dataset.ck){doc();render();return;}

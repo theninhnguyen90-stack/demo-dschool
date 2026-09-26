@@ -212,6 +212,14 @@ tr:last-child td{border-bottom:none}
 .cmp .lb{font-size:10.5px;color:var(--ink3);display:block;font-weight:400}
 .tli.no::before{background:var(--red)}
 .pbody{max-height:calc(100vh - 250px)}
+
+/* ===== RSHS-1A (23/9/2026) — khối nhắc «Thiếu xác nhận» có lối đi, thay cho một dòng chữ mờ ===== */
+.xnnhac{display:flex;align-items:center;gap:11px;flex-wrap:wrap;background:var(--amber-soft);
+  border:1.5px solid #fcd34d;border-radius:10px;padding:9px 12px;margin-left:auto}
+.xnnhac-t{font-size:12.5px;color:#92400e;font-weight:600}
+.xnnhac-s{font-size:11.5px;color:#a16207}
+#khoiXN{scroll-margin-top:70px;transition:box-shadow .25s,border-color .25s}
+#khoiXN.nhay{border-color:var(--amber);box-shadow:0 0 0 4px #fde68a}
 </style>
 </head>
 <body>
@@ -329,7 +337,135 @@ const GTDEN=['Đơn xin chuyển trường (cha/mẹ/người giám hộ ký)',
  'Giấy khai sinh (bản sao)','Giấy xác nhận cư trú'];
 const LYDO_TAYTAY=['Học sinh Việt Nam từ nước ngoài về nước',
  'Trường cũ không có trên CSDL ngành (trường quốc tế / một số trường tư)',
+ 'Trường đi ở TỈNH KHÁC — nhận hồ sơ bản giấy',     /* 🆕 RSHS-2A — ca hop le THU TU */
  'Trường đi CHƯA thao tác chuyển đi trên CSDL ngành'];
+/* 🆕 RSHS-2A — ba ly do DAU la HOP LE (⛔ khong chan ky); ly do CUOI van CHAN KY. */
+const LY_CHAN_KY='CHƯA thao tác';
+
+/* ═══════ RSHS-2A — BA BẬC BẰNG CHỨNG cho «trường đến đã tiếp nhận» ═══════
+   🛑 Rao chan ⛔ KHONG bi go — no doi NGUON BANG CHUNG. Ly do goc giu nguyen:
+      «Tuyet doi khong dong ho so truoc khi ben kia nhan. Dong som thi hoc sinh roi
+       giua hai truong.» Ly do do ⛔ KHONG doi theo viec co API hay khong.
+   A  cong CSDL nganh xac nhan            → may
+   B  giay bao tiep nhan cua TRUONG DEN   → VT nhap → PHT_ĐT hoac HT xac nhan (HAI nguoi)
+   C  ⛔ khong co gi tu truong den         → HT KET LUAN sau N ngay ke tu ngay ban giao
+   🛑 Ban giao ho so ban cung cho GIA DINH ⛔ KHONG phai bang chung truong den da nhan:
+      no chung minh «truong di da lam xong phan minh», ⛔ khong chung minh «em da co cho».
+   N theo CAP HOC — 15 ngay TH·THCS (giao duc BAT BUOC, Luat GD 2019 Đ.14 sua boi
+   Luat 123/2025/QH15, phan THCS hieu luc 01/7/2026) · 30 ngay THPT. Dat o ⚙, ⛔ dung hardcode. */
+const NGAY_BAC_C={TH:15,THCS:15,THPT:30};
+const capCua=t=>{const k=parseInt(String(t.lop||'').match(/^\d+/)||[0],10);
+ return k>=10?'THPT':k>=6?'THCS':'TH'};
+const hanBacC=t=>NGAY_BAC_C[capCua(t)];
+/* Mo bac C khi: da ky · da ban giao ban cung co bien ban · CHUA co xac nhan tiep nhan
+   · va DA QUA N ngay ke tu ngay ban giao. 🛑 Truoc moc do NUT ⛔ KHONG HIEN —
+   moc la de nguoi ta THU THAT (goi truong den) truoc khi bo cuoc. */
+/* ═══════════ 🆕 RSHS-2C (23/9/2026) — «XÁC NHẬN ĐÃ RỜI LỚP» ═══════════
+   M1.5 đang gộp BA sự thật vào MỘT mốc (`db.nhan` — ngày trường đến tiếp nhận):
+     ① em còn LÀ HỌC SINH của trường  (pháp lý)  → học bạ · mã định danh · SĨ SỐ BÁO CÁO GỬI SỞ
+     ② em còn NGỒI TRONG LỚP          (vận hành) → điểm danh · sổ đầu bài · sĩ số lớp · suất ăn
+     ③ hồ sơ ĐÃ ĐÓNG chưa             (nội bộ)   → tài chính
+   🔑 Ngày 7/9/2026 menu đã tách ① khỏi ③ (chốt §3.4c). ② CHƯA BAO GIỜ được tách khỏi ①.
+      ⇒ Phiên này ÁP NỐT một nguyên tắc ĐÃ CHỐT, ⛔ không phải dựng một ngoại lệ mới.
+
+   Hậu quả của hiện trạng: GVCN phải điểm danh một em ⛔ không có mặt ⇒ mỗi ngày một dòng
+   VẮNG KHÔNG PHÉP GIẢ ⇒ M2.9/T2 sinh cảnh báo chuyên cần, và M1.6 đọc chính nguồn đó để
+   cảnh báo NGUY CƠ BỎ HỌC — hệ thống đang báo động về một em ĐÃ ĐI HỌC Ở TRƯỜNG KHÁC.
+
+   🛑 MỘT TRƯỜNG NGÀY, ⛔ KHÔNG thêm trạng thái học tập thứ tư: danh mục trạng thái đang
+      được hàng chục menu đọc; thêm một giá trị là mở một nhánh `if` ở mọi nơi đó, và nơi
+      nào quên thì em BIẾN MẤT khỏi màn hình đó mà ⛔ không ai biết. */
+const laRoiLop = t => !!(t.roiLop && t.roiLop.ngay);
+/* Hai LÁT CẮT dẫn xuất của trạng thái `Chờ chuyển đi` — ⛔ không phải trạng thái mới */
+const latCat = t => laRoiLop(t) ? 'đã rời lớp từ '+t.roiLop.ngay : 'còn học tại lớp';
+/* 🛑 Nút CHỈ mở sau khi HT đã ký. Trước đó em không đến lớp là NGHỈ HỌC — đi đường M2.4
+   và M2.9/T2; kéo dài thì cảnh báo nguy cơ bỏ học của M1.6 là ĐÚNG, ⛔ không phải phiền
+   nhiễu. Mở sớm hơn = cho phép một đứa trẻ thôi đến lớp mà nhà trường chưa quyết gì —
+   trong khi tiểu học VÀ THCS là GIÁO DỤC BẮT BUỘC (Luật GD 2019 Đ.14 sửa bởi Luật
+   123/2025/QH15, phần THCS hiệu lực 01/7/2026). */
+const roiLopMoDuoc = t => t.chieu==='di' && ['ngoai','dongho'].includes(t.tt) && !!t.ky;
+
+function bacCMo(t){
+ if(t.chieu!=='di'||t.db&&t.db.nhan) return null;
+ if(!(t.sau&&t.sau.bg&&t.sau.bgNgay)) return null;
+ const n=soNgay(t.sau.bgNgay), han=hanBacC(t);
+ return {ngay:n, han:han, mo:n>=han, con:Math.max(0,han-n)}}
+
+
+/* ===== RSHS-2A — KIEU DUNG CHUNG «truong ngoai he thong» (nen tang §B.11) =====
+   Cum BAY phan, dung khuon kieu «dia chi co cau truc» §B.10.
+   Chuoi chon: Tinh → Phuong/Xa → Truong (loc theo CAP HOC).
+   🛑 ⛔ KHONG co bac «So GD» — moi tinh chi co MOT So, nen don vi quan ly la DAN XUAT
+      tu truong da chon, ⛔ khong phai mot buoc nguoi dung chon.
+   🛑 ⛔ KHONG co cap huyen — chinh quyen HAI CAP (TT 13/2025 · TT 26/2025).
+   🛑 Ben GUI chi khai KHOI, ⛔ KHONG khai `Lop den` — truong di ⛔ khong biet em vao lop nao
+      ben kia; §3.3 da chot «chon lop la truong bat buoc cua chinh form ky» o chieu NHAN. */
+const trDM=(ma,ten,tinh,xa,cap)=>({che_do:'danh_muc',ma_truong:ma,ten_truong:ten,tinh_id:tinh,xa_id:xa,cap_hoc:cap,chuoi_tu_do:'',lien_he:''});
+const trTD=(ten,chuoi)=>({che_do:'tu_do',ma_truong:'',ten_truong:ten||'',tinh_id:'',xa_id:'',cap_hoc:'',chuoi_tu_do:chuoi||'',lien_he:''});
+const TINH_TR=['Hà Nội','Ninh Bình','Cao Bằng','Phú Thọ','Nghệ An','TP. Hồ Chí Minh','Hải Phòng','Đà Nẵng'];
+const XA_TR={'Hà Nội':['Phường Cầu Giấy','Phường Thanh Xuân','Phường Nghĩa Đô'],
+ 'Ninh Bình':['Phường Vị Hoàng','Xã Mỹ Hà'],'Cao Bằng':['Phường Thục Phán'],
+ 'Phú Thọ':['Phường Việt Trì'],'Nghệ An':['Xã Nghi Lộc'],
+ 'TP. Hồ Chí Minh':['Phường Bến Nghé'],'Hải Phòng':['Phường Lê Chân'],'Đà Nẵng':['Phường Hải Châu']};
+/* Danh muc truong — ban NAP SAN, keo ve qua M10.8 (⛔ khong phai cau hinh cua truong) */
+const DM_TRUONG=[
+ trDM('01315010077','THCS Lê Quý Đôn','Hà Nội','Phường Cầu Giấy','THCS'),
+ trDM('01315010081','THCS Nghĩa Tân','Hà Nội','Phường Nghĩa Đô','THCS'),
+ trDM('01315010099','THCS Cầu Giấy','Hà Nội','Phường Cầu Giấy','THCS'),
+ trDM('01315010112','THCS Thanh Xuân','Hà Nội','Phường Thanh Xuân','THCS'),
+ trDM('36315020014','THCS Trần Đăng Ninh','Ninh Bình','Phường Vị Hoàng','THCS'),
+ trDM('36315020021','THCS Mỹ Hà','Ninh Bình','Xã Mỹ Hà','THCS'),
+ trDM('04315030007','THCS Thục Phán','Cao Bằng','Phường Thục Phán','THCS'),
+ trDM('25315040003','THCS Việt Trì','Phú Thọ','Phường Việt Trì','THCS'),
+ trDM('40315050011','THCS Nghi Lộc','Nghệ An','Xã Nghi Lộc','THCS'),
+ trDM('79315060002','THCS Bến Nghé','TP. Hồ Chí Minh','Phường Bến Nghé','THCS'),
+ trDM('31315070005','THCS Lê Chân','Hải Phòng','Phường Lê Chân','THCS'),
+ trDM('48315080009','THCS Hải Châu','Đà Nẵng','Phường Hải Châu','THCS')];
+const TINH_MINH='Hà Nội';   /* tinh cua truong trong demo */
+/* 🛑 `Pham vi chuyen` la DAN XUAT — ⛔ khong co o chon, ⛔ khong ai khai */
+function phamViChuyen(den){
+ if(!den) return '';
+ if(den.che_do==='tu_do'||!den.ma_truong) return 'Ngoài CSDL ngành';
+ return den.tinh_id===TINH_MINH ? 'Trong tỉnh' : 'Khác tỉnh'}
+/* QD 1130/QĐ-BGDĐT (hieu luc 10/5/2026): HT noi den tra loi 5 ngay lam viec (cung tinh)
+   · 8 ngay lam viec (khac tinh). ⛔ Demo truoc day de MOT han cho moi ca. */
+const hanNgayLV = pv => pv==='Trong tỉnh' ? 5 : 8;
+
+/* --- o chon truong ba cap, dung o popup lap ho so chuyen di --- */
+let chonTr={tinh:'',xa:'',ma:'',tudo:0,ten:'',chuoi:''};
+function oChonTruong(){
+ const dsXa=XA_TR[chonTr.tinh]||[];
+ const dsTr=DM_TRUONG.filter(t=>t.tinh_id===chonTr.tinh&&(!chonTr.xa||t.xa_id===chonTr.xa));
+ const t0=DM_TRUONG.find(t=>t.ma_truong===chonTr.ma);
+ return '<div style="font-weight:700;font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;margin:13px 0 6px">2. Nơi đến</div>'+
+  '<div class="dcsw" style="margin-bottom:7px">'+
+   '<button class="dcm '+(chonTr.tudo?'':'on')+'" data-trmode="danh_muc">● Chọn từ danh mục</button>'+
+   '<button class="dcm '+(chonTr.tudo?'on':'')+'" data-trmode="tu_do">○ Trường chưa có trong danh sách</button>'+
+   '<span class="dchint">'+(chonTr.tudo
+     ?'Trường quốc tế, một số trường tư — ⛔ không có trên CSDL ngành. Hợp lệ, ⛔ không chặn lưu'
+     :'Tỉnh → Phường/Xã → Trường')+'</span></div>'+
+  (chonTr.tudo
+   ? '<div><b>Tên trường đến</b> <span style="color:var(--red)">*bắt buộc</span><input class="fldi" id="ftr-td" value="'+(chonTr.ten||'')+'" placeholder="Tên trường"></div>'+
+     '<div style="margin-top:7px"><b>Mô tả đầy đủ</b><input class="fldi" id="ftr-ch" value="'+(chonTr.chuoi||'')+'" placeholder="Địa chỉ / quốc gia / ghi chú"></div>'+
+     '<div class="warn" style="margin:8px 0 0">⚠ Ticket sẽ mang phạm vi <b>Ngoài CSDL ngành</b> — xác nhận tiếp nhận làm <b>thủ công</b>, có bằng chứng.</div>'
+   : '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
+      '<div><b>Tỉnh / Thành phố</b> <span style="color:var(--red)">*</span>'+
+       '<select class="fldi" id="ftinh"><option value="">— chọn —</option>'+
+        TINH_TR.map(t=>'<option'+(t===chonTr.tinh?' selected':'')+'>'+t+'</option>').join('')+'</select></div>'+
+      '<div><b>Phường / Xã</b>'+
+       '<select class="fldi" id="fxa"><option value="">— tất cả —</option>'+
+        dsXa.map(x=>'<option'+(x===chonTr.xa?' selected':'')+'>'+x+'</option>').join('')+'</select></div></div>'+
+     '<div style="margin-top:7px"><b>Trường đến</b> <span style="color:var(--red)">*bắt buộc</span>'+
+      '<select class="fldi" id="ftr"><option value="">'+(chonTr.tinh?'— chọn trường —':'— chọn tỉnh trước —')+'</option>'+
+       dsTr.map(t=>'<option value="'+t.ma_truong+'"'+(t.ma_truong===chonTr.ma?' selected':'')+'>'+t.ten_truong+' · '+t.cap_hoc+'</option>').join('')+'</select></div>'+
+     (t0?'<div class="info" style="margin:8px 0 0;font-size:11.5px">Mã trường <b>'+t0.ma_truong+'</b> · '+t0.xa_id+' · '+t0.tinh_id+
+        ' — phạm vi chuyển <b>'+phamViChuyen(t0)+'</b> <span class="rotag">dẫn xuất, ⛔ không ai khai</span></div>':''))+
+  '<div style="margin-top:9px"><b>Khối đến</b> <span class="rotag">🛑 chỉ KHỐI — ⛔ không khai Lớp đến</span>'+
+   '<select class="fldi" id="fkhoi"><option value="">— chọn khối —</option>'+[6,7,8,9].map(k=>'<option>Khối '+k+'</option>').join('')+'</select></div>'}
+
+function themNgayLV(d0,n){const d=new Date(d0);let k=0;
+ while(k<n){d.setDate(d.getDate()+1);const w=d.getDay();if(w!==0&&w!==6)k++}
+ return d.getDate()+'/'+(d.getMonth()+1)+'/'+d.getFullYear()}
 
 const lg=(ai,vc,y)=>[NGAY,ai,vc,y||''];
 
@@ -893,13 +1029,17 @@ function ghiChuDemo(){
 
 function chips(){
  const n=T.filter(t=>t.chieu===tab&&inScope(t)&&choToi(t)).length;
- const C=['Tất cả','Đang xử lý','Chờ tôi','Chờ đóng hồ sơ','Đã hoàn tất','Đã đóng (từ chối / hủy)'];
+ /* RSHS-1A — them bo loc «Thieu xac nhan»: nhom dang ket o dung buoc nguoi duyet phai xu */
+ const nx=T.filter(t=>t.chieu===tab&&inScope(t)&&t.tt==='ht'&&!duXN(t)).length;
+ const C=['Tất cả','Đang xử lý','Chờ tôi','Thiếu xác nhận','Chờ đóng hồ sơ','Đã hoàn tất','Đã đóng (từ chối / hủy)'];
  return C.map(c=>'<button class="chip'+(fTT===c?' on':'')+'" data-f="'+c+'">'+c+
-  (c==='Chờ tôi'&&n?'<span class="cb">'+n+'</span>':'')+'</button>').join('')}
+  (c==='Chờ tôi'&&n?'<span class="cb">'+n+'</span>':'')+
+  (c==='Thiếu xác nhận'&&nx?'<span class="cb">'+nx+'</span>':'')+'</button>').join('')}
 
 function locTT(L){
  if(fTT==='Đang xử lý')return L.filter(t=>!dong(t)&&t.tt!=='xong');
  if(fTT==='Chờ tôi')return L.filter(choToi);
+ if(fTT==='Thiếu xác nhận')return L.filter(t=>t.tt==='ht'&&!duXN(t));   /* RSHS-1A */
  if(fTT==='Chờ đóng hồ sơ')return L.filter(t=>t.tt==='dongho');
  if(fTT==='Đã hoàn tất')return L.filter(t=>t.tt==='xong');
  if(fTT==='Đã đóng (từ chối / hủy)')return L.filter(dong);
@@ -953,6 +1093,8 @@ function rowDi(t){
    (t.den.tinh?'<br><span style="color:var(--ink3)">'+t.den.tinh+'</span>':'')+'</td>'+
   '<td class="hcol">'+no+'</td><td class="hcol">'+hb+'</td>'+
   '<td><span class="st2 '+nc+'">'+nl+'</span>'+
+   /* RSHS-1A — chip o TANG 1: truoc day danh sach ⛔ khong noi gi, phai mo tung ticket moi biet */
+   (t.tt==='ht'&&!duXN(t)?'<div class="st2 w" style="margin-top:3px">⚠ Thiếu xác nhận ('+thieuXN(t).length+')</div>':'')+
    (t.tt==='ngoai'?'<div style="font-size:11px;color:var(--ink3);margin-top:3px">hạn '+t.db.han+'</div>':'')+'</td></tr>'}
 
 /* ================= TAB CHUYỂN ĐẾN ================= */
@@ -1008,7 +1150,7 @@ function panel(t){
    '<span class="st2 '+TTN(t)[1]+'">'+TTN(t)[0]+'</span></div></div>'+
   '<button class="btn sm" data-x="dong">✕ Đóng</button></div>'+
   thanhTT(t)+
-  '<div class="pbody">'+(t.chieu==='di'?bodyDi(t):bodyDen(t))+timeline(t)+'</div></div>'}
+  '<div class="pbody">'+daiRoiLop(t)+(t.chieu==='di'?bodyDi(t):bodyDen(t))+timeline(t)+'</div></div>'}   /* RSHS-2C — dải lát cắt đứng đầu */
 
 /* Thanh thao tác DÍNH ở đầu panel — không bắt người ký cuộn xuống cuối mới thấy nút */
 function thanhTT(t){
@@ -1017,7 +1159,14 @@ function thanhTT(t){
  if(!B.length&&!Q.length)return '';
  return '<div class="actbar">'+
   B.concat(Q).map(([c,l,a])=>'<button class="btn sm '+(c==='x'?'':c)+'" data-x="'+a+'" data-t="'+t.id+'"'+(c==='x'?' disabled title="Phải xác nhận đủ trước khi ký"':'')+'>'+l+theAi(a)+'</button>').join('')+
-  (B.some(x=>x[0]==='x')?'<span style="font-size:11.5px;color:var(--amber);font-weight:600">⚠ Thiếu xác nhận: '+thieuXN(t).join(' · ')+' — tích đủ ở khối <i>Xác nhận trước khi duyệt</i> thì nút ký mới sáng</span>':'')+
+  /* 🔁 RSHS-1A (23/9/2026) — truoc day day la MOT <span> chu amber 11.5px. No noi dung phai
+     lam gi nhung ⛔ KHONG phai mot LOI DI: nguoi doc phai tu cuon tim khoi «Xac nhan truoc
+     khi duyet» trong mot trang dai. Nay la KHOI canh bao co NUT chinh, bam la cuon toi
+     va nhay vien khoi do. */
+  (B.some(x=>x[0]==='x')?'<div class="xnnhac">'+
+     '<div class="xnnhac-t">⚠ Thiếu xác nhận: <b>'+thieuXN(t).join(' · ')+'</b></div>'+
+     '<div class="xnnhac-s">Tích đủ ở khối <i>Xác nhận trước khi duyệt</i> thì nút ký mới sáng.</div>'+
+     '<button class="btn sm p" data-toixn="1">→ Tới khối Xác nhận</button></div>':'')+
   (B.length||Q.length?'':'<span style="font-size:11.5px;color:var(--ink3)">Ở bước này bạn không có thao tác nào — nút chỉ hiện khi đúng vai trò và đúng bước</span>')+
   '</div>'}
 
@@ -1027,17 +1176,28 @@ function nutDi(t){
  if(t.tt==='nhap')B.push(['p','📨 Chuyển bước xác nhận và ký','guiduyet']);
  if(t.tt==='ht')B.push([duXN(t)?'p':'x','🔏 Duyệt và ký quyết định cho chuyển trường','kydi'],
    ['d','✕ Từ chối','tuchoi'],['','↩ Trả về văn thư','trave']);
- if(t.tt==='ngoai')B.push(['p','📤 Xuất học bạ / giấy xác nhận','xuathb'],
+ if(t.tt==='ngoai'){B.push(['p','📤 Xuất học bạ / giấy xác nhận','xuathb'],
    ['','✍️ Ghi nhận bàn giao','bangiao'],['','⟳ Kiểm tra CSDL ngành','ktcsdl']);
+  /* 🆕 RSHS-2A — BAC B luon mo: giay bao tiep nhan cua truong den la bang chung hop le
+     o moi pham vi, ⛔ khong rieng ca khac tinh. */
+  void 0;
+  B.push(['g','📄 Nhập giấy báo tiếp nhận của trường đến','bacB']);
+  /* 🆕 RSHS-2C */
+  B.push([laRoiLop(t)?'':'p', laRoiLop(t)?'↩ Hủy xác nhận rời lớp':'🚪 Xác nhận đã rời lớp', laRoiLop(t)?'huyroilop':'roilop']);
+  /* 🆕 BAC C — 🛑 nut ⛔ CHI HIEN khi da qua N ngay ke tu ngay ban giao ban cung */
+  const bc=bacCMo(t);
+  if(bc&&bc.mo)B.push(['d','⚖ Kết luận: đã bàn giao, chưa có xác nhận tiếp nhận','bacC']);
+ }
  if(t.tt==='tuchoiNgoai')B.push(['p','🔄 Đổi trường đến và ký lại','doitruong']);
  if(t.tt==='dongho')B.push([dhChan(t).length?'x':'p','🔒 Đóng hồ sơ chuyển đi','donghoso'],
-   ['','📤 Xuất học bạ / giấy xác nhận','xuathb'],['','✍️ Ghi nhận bàn giao','bangiao']);
+   ['','📤 Xuất học bạ / giấy xác nhận','xuathb'],['','✍️ Ghi nhận bàn giao','bangiao'],
+   [laRoiLop(t)?'':'p', laRoiLop(t)?'↩ Hủy xác nhận rời lớp':'🚪 Xác nhận đã rời lớp', laRoiLop(t)?'huyroilop':'roilop']);   /* RSHS-2C */
  return B}
 
 function nutDen(t){
  const r=R(), B=[];
  if(dong(t)||t.tt==='xong')return [];
- const chuaTT=t.nguon==='tay'&&t.nguonLy.includes('CHƯA thao tác');
+ const chuaTT=t.nguon==='tay'&&(t.nguonLy||'').includes(LY_CHAN_KY);   /* RSHS-2A — chi LY DO CUOI chan ky */
  if(t.tt==='nhap'){
   B.push(['','⬆ Nộp giấy tờ hộ gia đình','nopgt'],
    ['',t.lop?'🔄 Đổi lớp đề xuất':'🪑 Đề xuất lớp tiếp nhận','chonlop']);
@@ -1080,7 +1240,7 @@ function khoiHopNhat(t){
 
 /* ---- HƯỚNG B: khối hồ sơ chờ đồng bộ ---- */
 function khoiChoDB(t){
- const chuaTT=t.nguon==='tay'&&(t.nguonLy||'').includes('CHƯA thao tác');
+ const chuaTT=t.nguon==='tay'&&(t.nguonLy||'').includes(LY_CHAN_KY);   /* RSHS-2A */
  if(!chuaTT)return '';
  if(t.tt==='nhap')return '<div class="hb"><div class="lbh">🎒 Cho vào học trong lúc chờ CSDL ngành</div><div style="padding:11px 13px">'+
   '<div class="info" style="margin:0"><b>Em này đang đi học thật ở trường mình.</b> Nếu chờ tới khi trường đi thao tác xong mới tạo hồ sơ thì trong khoảng đó '+
@@ -1193,15 +1353,22 @@ function khoiSau(t){
 function dhDK(t){
  const g=sdGD(t), no=noConLai(t);
  return [
-  {ok:!!t.db.nhan, chan:1, l:'Trường đến đã xác nhận tiếp nhận trên CSDL ngành',
-   v:t.db.nhan?'✓ '+t.den.ten+' đã tiếp nhận — '+t.db.nhan
+  /* 🔁 RSHS-2A — nhan nay nay doc CA BA BAC; rao chan giu nguyen, chi doi NGUON bang chung */
+  {ok:!!t.db.nhan, chan:1, l:'Trường đến đã xác nhận tiếp nhận — '+(
+     t.db.nhan?({A:'cổng CSDL ngành',B:'giấy báo tiếp nhận',C:'kết luận hành chính của Hiệu trưởng'}[t.db.bac||'A']):'chưa có'),
+   v:t.db.nhan?'✓ '+t.den.ten+' — '+t.db.nhan+(t.db.bac==='B'?' · <b>Xác nhận tiếp nhận thủ công</b> · '+(t.db.bacAi||''):'')
+       +(t.db.bac==='C'?' · <b>Đã bàn giao hồ sơ — chưa có xác nhận tiếp nhận</b> · '+(t.db.bacAi||''):'')
      :'Đang chờ '+t.den.ten+' — hạn '+t.db.han,
    s:'Tuyệt đối không đóng hồ sơ trước khi bên kia nhận (D2-6). Đóng sớm thì học sinh rơi giữa hai trường.'},
-  {ok:g===0, chan:1, cung:1, l:'💠 Số dư tạm giữ = 0',
+  /* 🔁 RSHS-1A (23/9/2026) — NHAN la TEN DIEU KIEN, khong phai gia tri; nhung viet no thanh
+     mot MENH DE KHANG DINH («= 0») thi mat doc no nhu MOT SU THAT, roi dong `v` ngay duoi
+     noi nguoc lai. Khuon dung: NHAN = TEN TRUONG DU LIEU + GIA TRI THUC.
+     ⛔ Khong bao gio viet nhan thanh mot menh de khang dinh. */
+  {ok:g===0, chan:1, cung:1, l:'💠 Số dư tạm giữ — '+(g?'đang giữ '+vnd(g):'0 đ'),
    v:g?'⛔ Trường đang giữ '+vnd(g)+' của gia đình':'✓ 0đ — trường không giữ đồng nào của gia đình',
    s:'Tiền này <b>của gia đình</b>. Trường <b>không có thẩm quyền</b> quyết chuyện giữ nó, nên ở đây <b>không có ô tích, không có nút bỏ qua, không vai nào bypass — kể cả Hiệu trưởng</b>.',
    go:'M7.3'},
-  {ok:no===0||!!t.qdNo, chan:1, l:'Công nợ = 0, hoặc đã có quyết định của Hiệu trưởng',
+  {ok:no===0||!!t.qdNo, chan:1, l:'Công nợ — '+(no?'còn nợ '+vnd(no)+(t.qdNo?' · đã có '+t.qdNo.so:' · CHƯA có quyết định'):'0 đ'),   /* RSHS-1A — cùng khuôn nhãn */
    v:no===0?'✓ Không còn nợ'
      :t.qdNo?'⚠ Còn nợ '+vnd(no)+' — đã có '+t.qdNo.so+' ('+t.qdNo.ly+')'
      :'⛔ Còn nợ '+vnd(no)+' mà KHÔNG có quyết định nào — hồ sơ này đang đóng sai',
@@ -1298,7 +1465,7 @@ function bodyDi(t){
 function khoiXN(t){
  if(!['ht'].includes(t.tt))return '';
  const r=R(), X=xnOf(t), n=XN.filter(x=>X[x.k]&&X[x.k].ok).length;
- return '<div class="hb"><div class="lbh">☑ Xác nhận trước khi duyệt <span class="sp"></span>'+
+ return '<div class="hb" id="khoiXN"><div class="lbh">☑ Xác nhận trước khi duyệt <span class="sp"></span>'+
   '<span class="st2 '+(n===XN.length?'o':'w')+'">'+n+'/'+XN.length+' đã xác nhận</span></div><div style="padding:11px 13px">'+
   '<div class="ro"><b>Không đẩy ticket qua tay từng bộ phận.</b> Màn hình <b>bày sẵn thống kê</b> để người duyệt <b>gọi hỏi giáo viên chủ nhiệm và kế toán</b> rồi tích. Tích đủ thì nút <b>Duyệt và ký</b> mới sáng.<br>'+
   'Mỗi bước duyệt riêng là một lần ticket nằm chờ trong hàng đợi của người khác — ba bộ phận thì ba lần. Đổi lại thành <b>một người chịu trách nhiệm hỏi đủ rồi quyết</b>, trách nhiệm vẫn có địa chỉ vì audit ghi ai tích và hỏi ai.</div>'+
@@ -1529,6 +1696,12 @@ const soGGT=()=>'GGT-2026-0'+(50+Math.floor(Math.random()*40));
 document.body.addEventListener('click',e=>{
  const g=id=>e.target.closest('['+id+']');
  let x;
+ /* RSHS-1A — cuon toi khoi «Xac nhan truoc khi duyet» va nhay vien 1 giay */
+ if(x=g('data-toixn')){
+  const k=document.getElementById('khoiXN');
+  if(k){k.scrollIntoView({behavior:'smooth',block:'center'});
+   k.classList.add('nhay'); setTimeout(()=>k.classList.remove('nhay'),1100)}
+  return}
  if(x=g('data-r')){role=x.dataset.r;cur=null;tab='di';fTT='Tất cả';tuDongCho=1;render();return}
  if(x=g('data-tab')){tab=x.dataset.tab;cur=null;render();return}
  if(x=g('data-f')){fTT=x.dataset.f;cur=null;tuDongCho=0;render();return}
@@ -1756,7 +1929,7 @@ function act(a,d){
       t.log.push(lg('CSDL ngành',t.den.ten+' TỪ CHỐI tiếp nhận','Đã nêu lý do bằng văn bản'));
       toast('Trường đến từ chối · học sinh VẪN thuộc trường mình, hồ sơ giữ Chờ chuyển đi');render()},'d'],
     ['✓ Bên kia ĐÃ TIẾP NHẬN',()=>{
-      t.db.nhan=NGAY;t.tt='dongho';
+      t.db.nhan=NGAY;t.db.bac='A';t.tt='dongho';   /* RSHS-2A — BAC A: cong xac nhan */
       t.log.push(lg('CSDL ngành',t.den.ten+' ĐÃ TIẾP NHẬN — '+NGAY,'Hồ sơ HS chuyển Đã chuyển đi tại M1.1, khóa sửa, giữ vĩnh viễn'));
       t.log.push(lg('Hệ thống','Ticket vào bước Đóng hồ sơ — rà soát tài chính',
        'Học sinh đã đi; còn lại là sổ tài chính tại trường cũ'));
@@ -1764,7 +1937,11 @@ function act(a,d){
       toast(C.length?'Bên kia đã nhận · còn '+C.length+' điều kiện tài chính chưa đạt — hồ sơ CHƯA đóng':'Bên kia đã nhận · đủ điều kiện, bấm Đóng hồ sơ');
       render()},'g']]);return}
 
- /* ---------- F14: đóng hồ sơ chuyển đi ---------- */
+
+
+
+
+/* ---------- F14: đóng hồ sơ chuyển đi ---------- */
  if(a==='donghoso'){
   const C=dhChan(t), no=noConLai(t);
   if(C.length){
@@ -2017,27 +2194,66 @@ function act(a,d){
  if(a==='taotay'){
   $('#mdl').classList.add('sm');
   modal('+ Tạo thủ công — ngoại lệ',
-   '<div class="warn"><b>Đường đi chuẩn là đồng bộ từ CSDL ngành.</b> Tạo tay chỉ dùng cho ba trường hợp dưới đây, và <b>bắt buộc chọn lý do</b> — để về sau đếm được trường mình đang có bao nhiêu hồ sơ ngoài luồng.</div>'+
+   /* 🔁 RSHS-2A — BON ly do; ba ly do dau HOP LE (⛔ khong chan ky), ly do cuoi van chan */
+   '<div class="warn"><b>Đường đi chuẩn là đồng bộ từ CSDL ngành.</b> Tạo tay chỉ dùng cho <b>bốn</b> trường hợp dưới đây, và <b>bắt buộc chọn lý do</b> — để về sau đếm được trường mình đang có bao nhiêu hồ sơ ngoài luồng.</div>'+
    '<div><b>Lý do ngoại lệ</b> <span style="color:var(--red)">*bắt buộc</span>'+
    '<select class="fldi" id="fnl">'+LYDO_TAYTAY.map(x=>'<option>'+x+'</option>').join('')+'</select></div>'+
    '<div style="margin-top:11px"><b>Họ và tên</b><input class="fldi" id="ftn" placeholder="Họ và tên học sinh"></div>'+
    '<div style="margin-top:11px"><b>Khối đăng ký</b><select class="fldi" id="fk"><option>6</option><option>7</option><option>8</option><option>9</option></select></div>'+
    '<div style="margin-top:11px"><b>Trường cũ</b><input class="fldi" id="ftc" placeholder="Tên trường"></div>'+
-   '<div class="ro" style="margin:11px 0 0">Chọn <b>“Trường đi CHƯA thao tác”</b> thì ticket mang cảnh báo và <b>không ký được</b> cho tới khi bên đó đẩy hồ sơ lên CSDL ngành.</div>',
+   /* 🛑 RSHS-2A rang buoc mã định danh — o nay hien NGAY TREN BIEU MAU */
+   '<div style="margin-top:11px"><b>Mã định danh CSDL ngành của trường cũ</b> '+
+    '<span class="rotag">lấy từ học bạ hoặc giấy giới thiệu gia đình mang đến</span>'+
+    '<input class="fldi" id="fmd" maxlength="20" placeholder="20 ký tự — để trống vẫn tạo được"></div>'+
+   '<div class="danger" style="margin:9px 0 0">🛑 <b>Máy ⛔ TUYỆT ĐỐI không tự sinh mã định danh mới</b> cho em chuyển đến — sinh mã là việc của <b>cổng</b>. '+
+    'Sinh nhầm thì em có <b>hai mã</b> và <b>toàn bộ quá trình học ở trường cũ đứt khỏi em</b> <i>(TT 42/2021 — mã 20 ký tự, bất biến, ⛔ không xóa)</i>.<br>'+
+    'Để trống ⇒ <b>vẫn tạo được</b> <i>(gia đình có thể không mang đủ giấy)</i>, nhưng hồ sơ mang nhãn <b>② Chờ mã định danh</b> và <b>nằm lại M10.8 tab ④</b>.</div>'+
+   '<div class="ro" style="margin:11px 0 0">Ba lý do đầu là <b>ngoại lệ HỢP LỆ</b> — ⛔ <b>không chặn ký</b>. Riêng <b>“Trường đi CHƯA thao tác”</b> thì ticket mang cảnh báo và <b>không ký được</b> cho tới khi bên đó đẩy hồ sơ lên CSDL ngành.</div>',
    [['Hủy',0],['+ Tạo',()=>{
      const tn=$('#ftn').value.trim();if(!tn){toast('Phải nhập họ tên');return}
-     const id='CT-2026-0'+(30+Math.floor(Math.random()*60)), nl=$('#fnl').value;
+     const nl=$('#fnl').value, md=($('#fmd')||{}).value?.trim()||'';
+     /* 🛑 trung ma ⇒ CHAN, neu DICH DANH em dang trung */
+     if(md){const tr=T.find(x=>x.cs===md)||HSTRUONG.find(x=>x.cs===md);
+      if(tr){toast('⛔ Mã '+md+' đã có ở hồ sơ «'+(tr.n||'—')+'» — chặn, ⛔ không tạo trùng');return}}
+     const id='CT-2026-0'+(30+Math.floor(Math.random()*60));
      T.push({id:id,chieu:'den',n:tn,gt:'—',ns:'—',khoi:+$('#fk').value,dt:R().dt||'Điểm trường A',
-      cs:'',csTam:'PENDING-2026-00'+(50+Math.floor(Math.random()*40)),
+      cs:md, csTam:md?'':'PENDING-2026-00'+(50+Math.floor(Math.random()*40)),
+      choMa:!md,            /* RSHS-2A — nhan «② Cho ma dinh danh» */
       tt:'nhap',ngay:NGAY,lop:'',nguon:'tay',nguonLy:nl,ly:'—',dcTT:'—',
       ph:[{ten:'—',qh:'—',sdt:'',chinh:1}],
       cu:{ten:$('#ftc').value||'—',dc:'—',tinh:'—',lh:'—'},files:{},hbn:null,
-      log:[lg(R().n,'Tạo thủ công — NGOẠI LỆ',nl)]});
-     cur=id;tab='den';fTT='Tất cả';tuDongCho=0;toast('Đã tạo ticket ngoại lệ '+id);render()},'p']]);return}
+      log:[lg(R().n,'Tạo thủ công — NGOẠI LỆ',nl+(md?' · mã định danh trường cũ '+md:' · ⚠ CHƯA có mã định danh — nằm lại M10.8 tab ④'))]});
+     cur=id;tab='den';fTT='Tất cả';tuDongCho=0;
+     toast('Đã tạo ticket ngoại lệ '+id+(md?'':' · ② Chờ mã định danh'));render()},'p']]);return}
 
  /* ---------- lập hồ sơ chuyển đi ---------- */
+ if(a==='bacB'){popupBacB(t);return}   /* RSHS-2A */
+ if(a==='bacC'){popupBacC(t);return}
+ if(a==='roilop'){rlTam={ngay:'',ly:''};popupRoiLop(t);return}   /* RSHS-2C */
+ if(a==='huyroilop'){
+  /* Hoàn tác — em về lại lớp TỪ NGÀY HỦY. 🛑 ⛔ KHÔNG hồi tố những ngày đã nghỉ:
+     những ngày đó em THẬT SỰ không có mặt. */
+  modal('↩ Hủy xác nhận rời lớp',
+   '<div class="ro">Em <b>'+t.n+'</b> đang ghi <b>đã rời lớp từ '+t.roiLop.ngay+'</b>.</div>'+
+   '<div class="warn">Em về lại lớp <b>'+t.lop+'</b> <b>TỪ HÔM NAY</b> — 🛑 ⛔ <b>KHÔNG hồi tố</b> những ngày đã nghỉ: những ngày đó em <b>thật sự không có mặt</b>. '+
+    'Các lượt điểm danh mang nhãn <b>Không tính — đã rời lớp</b> <b>giữ nguyên nhãn</b>.</div>'+
+   '<div class="ro">Ca thường gặp: <b>trường đến từ chối tiếp nhận</b> <i>(§3.5 — học sinh vẫn là học sinh của trường mình)</i>. Chỗ ngồi vẫn được giữ nên em có chỗ quay về.</div>',
+   [['Hủy',0],['↩ Hủy xác nhận',()=>{
+     t.log.push(lg(R().n,'Hủy xác nhận rời lớp','Em về lại lớp '+t.lop+' từ '+NGAY+' · ⛔ không hồi tố ngày đã nghỉ'));
+     t.roiLop=null; toast('↩ Em về lại lớp từ hôm nay · ⛔ không hồi tố');render()}]]);
+  return}
  if(a==='taodi'){
-  hsChon=null;
+  hsChon=null; chonTr={tinh:'',xa:'',ma:'',tudo:0,ten:'',chuoi:''};   /* RSHS-2A */
+  lamLaiPopupDi(); locHS(''); return}
+ if(a==='pickhs'){hsChon=d.k;locHS($('#qhs')?$('#qhs').value:'');$('#hscard').innerHTML=theHS();return}
+ if(a==='trmode'){chonTr.tudo=d.k==='tu_do'?1:0;lamLaiPopupDi();return}
+
+ tiepTuc(a,d,t);
+}
+
+/* ===== RSHS-2A — popup «Lập hồ sơ chuyển đi», tách thành hàm để vẽ lại khi đổi chế độ ===== */
+const iso2dmyT=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||'');return m?(+m[3])+'/'+(+m[2])+'/'+m[1]:''};
+function lamLaiPopupDi(){
   $('#mdl').classList.remove('sm');
   modal('+ Lập hồ sơ chuyển đi',
    '<div class="ro"><b>Gia đình đến làm việc trực tiếp tại văn phòng</b> — phụ huynh không tạo yêu cầu nào trên App. Văn thư lập hồ sơ trên hệ thống.</div>'+
@@ -2046,31 +2262,50 @@ function act(a,d){
    '<div id="hsbox" class="hslist"></div>'+
    '<div id="hscard" style="margin:11px 0"></div>'+
    '<div style="font-weight:700;font-size:11px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;margin:13px 0 6px">2. Nơi đến</div>'+
-   '<div><b>Trường đến</b> <span style="color:var(--red)">*bắt buộc</span><input class="fldi" id="ftr" placeholder="Tên trường"></div>'+
-   '<div style="margin-top:9px"><b>Tỉnh / Thành phố</b><input class="fldi" id="ftinh" placeholder="VD: Hà Nội"></div>'+
-   '<div style="margin-top:9px"><b>Ngày dự kiến chuyển</b><input class="fldi" id="fng" placeholder="VD: 15/9/2026"></div>'+
+   /* 🔁 RSHS-2A — thay BA o chu bang kieu «truong ngoai he thong» (§B.11).
+      Truoc day chinh dong chu thich cuoi popup da to cao cho thieu: no ghi «phai chon
+      Tinh · Xa · Truong · Lop den» ngay duoi ba o chu. */
+   oChonTruong()+
+   '<div style="margin-top:9px"><b>Ngày dự kiến chuyển</b><input class="fldi" type="date" id="fng"></div>'+
    '<div style="margin-top:9px"><b>Lý do</b><textarea class="fldi" id="fly" rows="2"></textarea></div>'+
-   '<div class="ro" style="margin:11px 0 0">Trường đến bắt buộc vì thao tác chuyển đi trên CSDL ngành phải chọn <b>Tỉnh · Xã · Trường · Lớp đến</b>.</div>',
+   '<div class="ro" style="margin:11px 0 0">Chuỗi chọn <b>Tỉnh → Phường/Xã → Trường</b> — 🛑 ⛔ <b>không có bậc «Sở GD»</b> <i>(mỗi tỉnh chỉ có MỘT Sở, nên đơn vị quản lý là dẫn xuất từ trường đã chọn)</i> và ⛔ <b>không có cấp huyện</b> <i>(chính quyền hai cấp)</i>.<br>'+
+   '🛑 Trường đi chỉ khai <b>Khối</b>, ⛔ <b>không khai Lớp đến</b> — trường đi không biết em vào lớp nào bên kia; <b>trường đến</b> chọn lớp trong chính form ký của họ <i>(§3.3)</i>.</div>',
    [['Hủy',0],['💾 Lập hồ sơ',()=>{
      if(!hsChon){toast('Chưa chọn học sinh');return}
-     const h=HSTRUONG.find(x=>x.ma===hsChon), tr=$('#ftr').value.trim();
-     if(!tr){toast('Chưa nhập Trường đến');return}
+     const h=HSTRUONG.find(x=>x.ma===hsChon);
+     /* RSHS-2A — dung cum «truong ngoai he thong», ⛔ khong con o chu */
+     let den;
+     if(chonTr.tudo){
+      const ten=($('#ftr-td')||{}).value?.trim()||'';
+      if(!ten){toast('⛔ Chưa nhập Tên trường đến');return}
+      den=trTD(ten,($('#ftr-ch')||{}).value?.trim()||'');
+     } else {
+      const ma=($('#ftr')||{}).value||'';
+      if(!ma){toast('⛔ Chưa chọn Trường đến — chọn Tỉnh rồi chọn trường');return}
+      den=Object.assign({},DM_TRUONG.find(x=>x.ma_truong===ma));
+     }
+     den.khoi_den=($('#fkhoi')||{}).value||'';     /* 🛑 chi KHOI, ⛔ khong co Lop den */
+     den.ten=den.ten_truong; den.tinh=den.tinh_id||'—'; den.dc=den.xa_id||'—'; den.lh='—';
+     const pv=phamViChuyen(den);
      const id='CD-2026-0'+(30+Math.floor(Math.random()*60));
      T.push({id:id,chieu:'di',ma:h.ma,n:h.n,gt:h.gt,ns:h.ns,lop:h.lop,dt:h.dt,cs:h.cs,
-      tt:'nhap',ngay:$('#fng').value||'—',ly:$('#fly').value||'—',
+      tt:'nhap',ngay:iso2dmyT(($('#fng')||{}).value)||'—',ly:($('#fly')||{}).value||'—',
       ph:[{ten:h.ph.split(' — ')[0],qh:'Cha/Mẹ',sdt:h.ph.split(' — ')[1]||'',chinh:1}],
-      den:{ten:tr,dc:'—',tinh:$('#ftinh').value||'—',lh:'—'},
+      den:den, pv:pv,
       no:h.no,hoan:h.hoan,khoan:h.hoan?[['Khoản đã đóng chưa sử dụng',h.hoan]]:[],
       nono:h.no?[['Công nợ tồn tại M7.2',h.no,'Chờ kế toán đối soát']]:[],
       hb:{du:!h.hb.startsWith('Thiếu'),thieu:h.hb.startsWith('Thiếu')?[['2025-2026','Thiếu chữ ký tầng 3']]:[],giuaky:0,
           nam:['2025-2026','2026-2027']},
       lop_ok:0,
-      log:[lg(R().n,'Lập hồ sơ chuyển đi — gia đình đến làm việc trực tiếp tại văn phòng',$('#fly').value||'')]});
-     cur=id;tab='di';fTT='Tất cả';tuDongCho=0;toast('Đã lập hồ sơ '+id+' · tiếp theo gửi kế toán đối soát');render()},'p']]);
-  locHS('');return}
- if(a==='pickhs'){hsChon=d.k;locHS($('#qhs')?$('#qhs').value:'');$('#hscard').innerHTML=theHS();return}
-
- tiepTuc(a,d,t);
+      log:[lg(R().n,'Lập hồ sơ chuyển đi — gia đình đến làm việc trực tiếp tại văn phòng',
+            (($('#fly')||{}).value||'')+' · phạm vi chuyển: '+pv+' · hạn trả lời '+hanNgayLV(pv)+' ngày làm việc')]});
+     cur=id;tab='di';fTT='Tất cả';tuDongCho=0;
+     toast('Đã lập hồ sơ '+id+' · '+pv+' — hạn '+hanNgayLV(pv)+' ngày làm việc (QĐ 1130)');render()},'p']]);
+  /* noi lai bo chon ba cap: doi tinh thi loc lai xa va truong */
+  const bind=(id,fn)=>{const el=$('#'+id); if(el) el.onchange=()=>{fn(el.value); lamLaiPopupDi()}};
+  bind('ftinh',v=>{chonTr.tinh=v; chonTr.xa=''; chonTr.ma=''});
+  bind('fxa',  v=>{chonTr.xa=v;  chonTr.ma=''});
+  bind('ftr',  v=>{chonTr.ma=v});
 }
 
 /* ---------- hoàn tất việc ký ---------- */
@@ -2283,6 +2518,10 @@ function tiepTuc(a,d,t){
       t.log.push(lg(R().n,'Thu hồi quyết định '+t.ky.so,'Kèm theo hủy ticket · đồng bộ M4.11'));
       t.log.push(lg('Hệ thống','Hủy thao tác chuyển đi trên CSDL ngành',''));t.ky=null}
      t.tt='huy';t.huyLy='['+nh+'] '+v;
+     /* RSHS-2C ràng buộc c — hủy ticket ⇒ BẮT BUỘC hoàn tác `ngay_roi_lop`:
+        ⛔ không để một em vừa «đã rời lớp» vừa ⛔ không có hồ sơ chuyển đi nào đang mở */
+     if(laRoiLop(t)){t.log.push(lg('Hệ thống','Hoàn tác «đã rời lớp» vì ticket bị hủy',
+        'Em về lại lớp '+t.lop+' · ⛔ không để em rời lớp mà không có hồ sơ chuyển đi nào đang mở'));t.roiLop=null}
      t.log.push(lg(R().n,'Hủy ticket — '+nh,v));
      cur=null;toast('Đã hủy · ticket giữ trong bộ lọc Đã đóng');render()},'d']]);return}
 
@@ -2309,6 +2548,128 @@ function tiepTuc(a,d,t){
 
  toast('Thao tác demo');
 }
+
+/* ---------- RSHS-2A — BẬC B: giấy báo tiếp nhận của trường đến ---------- */
+/* ⚠ modal() dong hop thoai TRUOC khi chay callback, nen khi chan phai MO LAI —
+   neu khong thi bam nham mot cai la mat sach o da nhap. Giu lai gia tri da go. */
+let bbTam={ngay:'',dk:false,loai:''};
+function popupBacB(t,canhBao){
+ $('#mdl').classList.remove('sm');
+ const pv=t.pv||phamViChuyen(t.den);
+ modal('📄 Nhập giấy báo tiếp nhận — BẬC B',
+  '<div class="ro">Dùng khi <b>'+t.den.ten+'</b> đã nhận em nhưng <b>cổng CSDL ngành chưa ghi</b> — gia đình mang giấy về, hoặc trường đến gửi qua bưu điện / email.<br>'+
+   'Phạm vi chuyển: <b>'+pv+'</b>'+(pv!=='Trong tỉnh'?' — ca này hay rơi vào đường giấy':'')+'.</div>'+
+  (canhBao?'<div class="danger"><b>⛔ '+canhBao+'</b></div>':'')+
+  '<div class="danger"><b>🛑 Bàn giao hồ sơ bản cứng cho GIA ĐÌNH ⛔ KHÔNG phải bằng chứng ở đây.</b> Nó chứng minh <i>trường đi đã làm xong phần mình</i>; '+
+   'cái cần ở bước này là bằng chứng <i>em đã có chỗ ở trường mới</i> — rào chắn dựng ra để chặn đúng ca <b>học sinh rơi giữa hai trường</b>.</div>'+
+  '<div><b>Loại giấy</b><select class="fldi" id="bb-loai">'+
+   ['Giấy báo tiếp nhận của trường đến','Phiếu tiếp nhận học sinh','Văn bản trả lời của trường đến']
+    .map(x=>'<option>'+x+'</option>').join('')+'</select></div>'+
+  '<div style="margin-top:8px"><b>Ngày ghi trên giấy</b> <span style="color:var(--red)">*</span>'+
+   '<input class="fldi" type="date" id="bb-ngay" value="'+(bbTam.ngay||'')+'" max="'+new Date().toISOString().slice(0,10)+'"></div>'+
+  '<div style="margin-top:8px"><b>Đính kèm</b> <span style="color:var(--red)">*bắt buộc</span>'+
+   '<div style="border:1.5px dashed var(--line2);border-radius:9px;padding:14px;text-align:center;color:var(--ink3);font-size:12.5px;margin-top:4px">📎 Ảnh chụp / bản scan giấy báo tiếp nhận</div>'+
+   '<label style="display:flex;gap:7px;align-items:center;margin-top:6px;font-size:12.5px"><input type="checkbox" id="bb-dk" '+(bbTam.dk?'checked':'')+' style="width:15px;height:15px"> Đã đính kèm</label></div>'+
+  '<div class="warn" style="margin-top:9px">🛑 <b>Hai người, ⛔ không một người vừa nhập vừa xác nhận.</b> Văn thư nhập → <b>PHT Điểm trường hoặc Hiệu trưởng</b> xác nhận. '+
+   'Vai đang dùng: <b>'+R().n+'</b>.</div>',
+  [['Hủy',0],['✓ Xác nhận tiếp nhận (bậc B)',()=>{
+    const ng=($('#bb-ngay')||{}).value||'', dk=!!($('#bb-dk')||{}).checked;
+    bbTam={ngay:ng,dk:dk,loai:($('#bb-loai')||{}).value||''};   /* giữ lại ô đã gõ */
+    if(!ng){popupBacB(t,'Thiếu ngày ghi trên giấy');return}
+    if(!dk){popupBacB(t,'Chưa đính kèm — bậc B bắt buộc có bằng chứng');return}
+    if(!['PHT_A','PHT_B','HT','FULL'].includes(role)){
+     popupBacB(t,'Văn thư chỉ NHẬP — phải PHT Điểm trường hoặc Hiệu trưởng xác nhận. Đổi vai ở thanh đen rồi bấm lại — ⛔ không mất ô đã gõ.');return}
+    t.db.nhan=iso2dmyT(ng); t.db.bac='B'; t.db.bacAi=R().n+' xác nhận'; t.tt='dongho';
+    t.log.push(lg(R().n,'Xác nhận tiếp nhận THỦ CÔNG — bậc B · '+(($('#bb-loai')||{}).value||''),
+      'Ngày trên giấy '+t.db.nhan+' · có đính kèm · '+t.den.ten));
+    t.log.push(lg('Hệ thống','Ticket vào bước Đóng hồ sơ — rà soát tài chính','Nguồn xác nhận: giấy báo tiếp nhận, ⛔ không phải cổng'));
+    bbTam={ngay:'',dk:false,loai:''};
+    toast('✓ Bậc B · ticket mang chip «Xác nhận tiếp nhận thủ công»');render()},'g']])}
+
+/* ---------- RSHS-2A — BẬC C: Hiệu trưởng kết luận hành chính ---------- */
+let bcTam='';
+function popupBacC(t,canhBao){
+ const bc=bacCMo(t); if(!bc||!bc.mo){toast('⛔ Chưa tới mốc — còn '+(bc?bc.con:'?')+' ngày');return}
+ $('#mdl').classList.remove('sm');
+ modal('⚖ Kết luận hành chính — BẬC C',
+  '<div class="danger"><b>Đây ⛔ KHÔNG phải một nút bỏ qua.</b> Nó là <b>một kết luận có người ký tên</b>, có mốc thời gian, có bằng chứng, có nhãn vĩnh viễn và một hàng đợi theo đuổi.</div>'+
+  '<div class="ro">Đã <b>'+bc.ngay+' ngày</b> kể từ ngày bàn giao hồ sơ bản cứng ('+t.sau.bgNgay+') — quá mốc <b>'+bc.han+' ngày</b> của cấp <b>'+capCua(t)+'</b>.<br>'+
+   (capCua(t)!=='THPT'?'🛑 Cấp này là <b>giáo dục BẮT BUỘC</b> <i>(Luật Giáo dục 2019 Đ.14, sửa bởi Luật 123/2025/QH15 — phần THCS hiệu lực 01/7/2026)</i>, nên mốc ngắn hơn và phải báo Hiệu trưởng sớm hơn.':'')+'</div>'+
+  '<div class="info">Bằng chứng đang có: <b>biên bản bàn giao hồ sơ bản cứng có chữ ký người nhận</b> — '+(t.sau.bgAi||'—')+' · '+t.sau.bgNgay+'.</div>'+
+  '<div><b>Đã liên hệ trường đến thế nào</b> <span style="color:var(--red)">*bắt buộc</span>'+
+   '<textarea class="fldi" id="bc-ly" rows="3" placeholder="Gọi ngày nào, gặp ai, họ trả lời gì…">'+(bcTam||'')+'</textarea></div>'+
+  (canhBao?'<div class="danger" style="margin-top:8px"><b>⛔ '+canhBao+'</b></div>':'')+
+  '<div class="warn" style="margin-top:9px">Sau khi kết luận: học sinh chuyển <b>Đã chuyển đi</b> với <b>ngày rời trường = ngày bàn giao hồ sơ</b> ('+t.sau.bgNgay+'). '+
+   'Ticket mang <b>nhãn vĩnh viễn</b>; việc <b>Theo dõi học sinh chưa có xác nhận tiếp nhận</b> <b>ở lại M0.2</b>; <b>M9.8</b> có một ô đếm riêng. '+
+   '🛑 <b>Đóng ticket ⛔ KHÔNG đóng nghĩa vụ theo đuổi.</b></div>',
+  [['Hủy — tiếp tục liên hệ',0],['⚖ Hiệu trưởng kết luận',()=>{
+    const v=($('#bc-ly')||{}).value?.trim()||'';
+    bcTam=v;
+    if(!v){popupBacC(t,'Phải ghi đã liên hệ trường đến thế nào — vết liên hệ là bằng chứng trường mình đã làm việc đó');return}
+    if(!['HT','FULL'].includes(role)){popupBacC(t,'Chỉ Hiệu trưởng kết luận được. Đổi vai ở thanh đen rồi bấm lại — ⛔ không mất chữ đã gõ.');return}
+    t.db.nhan=t.sau.bgNgay; t.db.bac='C'; t.db.bacAi='HT kết luận '+NGAY; t.db.bacLy=v; t.tt='dongho';
+    t.log.push(lg(R().n,'KẾT LUẬN: đã bàn giao hồ sơ — chưa có xác nhận tiếp nhận',
+      v+' · ngày rời trường = ngày bàn giao '+t.sau.bgNgay+' · nhãn giữ vĩnh viễn'));
+    t.log.push(lg('Hệ thống','Sinh việc Theo dõi học sinh chưa có xác nhận tiếp nhận — M0.2',
+      'Ở lại cho tới khi có giấy, hoặc tới khi HT ghi kết luận cuối · M9.8 đếm riêng'));
+    bcTam='';
+    toast('⚖ Đã kết luận · nhãn vĩnh viễn · việc theo dõi VẪN ở M0.2');render()},'d']])}
+
+
+/* RSHS-2C — dải lát cắt trên panel ticket: nói ra HAI con số sĩ số lệch nhau */
+function daiRoiLop(t){
+ if(t.chieu!=='di'||!t.ky) return '';
+ if(!laRoiLop(t))
+  return '<div class="ro" style="margin:0 0 9px">🪑 <b>Chờ chuyển đi — còn học tại lớp '+t.lop+'.</b> '+
+   'Em vẫn điểm danh, vẫn có học bạ. Nếu gia đình báo em <b>đã thôi đến lớp</b> thì bấm <b>🚪 Xác nhận đã rời lớp</b> — '+
+   '⛔ đừng để GVCN phải điểm danh một em không có mặt.</div>';
+ return '<div class="warn" style="margin:0 0 9px">🚪 <b>Chờ chuyển đi — ĐÃ RỜI LỚP từ '+t.roiLop.ngay+'</b> · '+t.roiLop.boi+
+  '<div style="margin-top:6px;font-size:11.5px">'+
+  '<b>Sĩ số lớp '+t.lop+':</b> em ⛔ <b>không còn</b> trong danh sách điểm danh · nhóm chat xuống mục <i>Đã rời lớp — chờ chuyển đi</i> · bán trú và KTX đã dừng.<br>'+
+  '🛑 <b>Sĩ số BÁO CÁO GỬI SỞ: VẪN đếm em này</b> — em <b>chưa rời trường</b>, CSDL ngành vẫn ghi vậy. '+
+  '<b>Hai con số lệch nhau và CẢ HAI ĐỀU ĐÚNG</b> — M2.9 hiện dải, M10.2 hiện <b>(+1 giữ chỗ)</b>, M9.8 có ô đếm riêng.<br>'+
+  '🪑 <b>Chỗ ngồi vẫn được giữ</b> — trường đến có quyền từ chối, lúc đó em phải có chỗ quay về.</div></div>'}
+
+/* ═══════════ RSHS-2C — hộp thoại «Xác nhận đã rời lớp» ═══════════ */
+let rlTam={ngay:'',ly:''};
+function popupRoiLop(t,canhBao){
+ $('#mdl').classList.remove('sm');
+ const hn=new Date().toISOString().slice(0,10);
+ modal('🚪 Xác nhận đã rời lớp — '+t.n,
+  '<div class="ro">Ghi nhận <b>ngày em thật sự thôi đến lớp</b>. Ca thật: <i>«trường mới đã tiếp nhận, em đã ngồi học bên đó nhiều buổi rồi, nhưng thủ tục ở trường cũ vẫn đang hoàn tất»</i>.</div>'+
+  (canhBao?'<div class="danger"><b>⛔ '+canhBao+'</b></div>':'')+
+  '<div class="info"><b>M1.5 đang gộp BA sự thật vào một mốc.</b> Ngày 7/9/2026 menu đã tách <b>① pháp lý</b> khỏi <b>③ nội bộ</b> <i>(§3.4c)</i>. '+
+   'Ô này tách nốt <b>② VẬN HÀNH</b> — 🛑 <b>⛔ không thêm trạng thái học tập thứ tư</b>, trạng thái vẫn là <b>Chờ chuyển đi</b>, chỉ thêm một <b>lát cắt</b>.</div>'+
+  '<div><b>Ngày rời lớp</b> <span style="color:var(--red)">*</span>'+
+   '<input class="fldi" type="date" id="rl-ngay" value="'+(rlTam.ngay||'')+'">'+
+   '<span class="rotag">quá khứ và tương lai đều được — gia đình thường báo muộn; cũng có ca «cho em học hết tuần này»</span></div>'+
+  '<div style="margin-top:9px"><b>Ghi chú</b><textarea class="fldi" id="rl-ly" rows="2" placeholder="Gia đình báo ngày nào, ai báo…">'+(rlTam.ly||'')+'</textarea></div>'+
+  '<div class="warn" style="margin-top:9px"><b>Từ ngày đó sẽ TẮT:</b> điểm danh <i>(lượt đã có mang nhãn <b>Không tính — đã rời lớp</b>, 🛑 <b>giữ bản ghi, ⛔ không xóa</b>)</i> · sĩ số tiết · danh sách lớp và nhóm chat '+
+   '<i>(xuống nhóm «Đã rời lớp — chờ chuyển đi», lịch sử chat <b>vẫn xem được</b>)</i> · bán trú và KTX <i>(dừng đăng ký + sinh việc ở M7.2 — 🛑 ⛔ <b>không tự tính lại tiền</b>, đó là tiền của gia đình)</i> · cảnh báo bỏ học của M1.6 · thông báo vận hành trên App.</div>'+
+  '<div class="ok" style="margin-top:9px"><b>GIỮ NGUYÊN:</b> hồ sơ vẫn thuộc trường · <b>học bạ vẫn xuất được, vẫn ký được</b> · mã định danh · '+
+   'và 🛑 <b>SĨ SỐ BÁO CÁO GỬI SỞ VẪN ĐẾM EM NÀY</b>.</div>'+
+  '<div class="danger" style="margin-top:9px">🔴 <b>Sẽ có HAI con số sĩ số, và cả hai đều ĐÚNG.</b> Sĩ số lớp <b>giảm</b> <i>(vận hành — em ⛔ không còn ngồi đó)</i>; sĩ số báo cáo gửi Sở <b>giữ nguyên</b> <i>(pháp lý — em vẫn là học sinh của trường)</i>.<br>'+
+   'Vì sao ⛔ <b>KHÔNG</b> cho ô này cắt sĩ số báo cáo: rơi đúng lỗi §3.4c đã chốt để tránh — <b>một con số đối ngoại phụ thuộc một thao tác nội bộ mà chính trường tự quyết lúc nào bấm</b>. Trường nào muốn báo cáo đẹp chỉ cần bấm sớm.<br>'+
+   '🛑 Lệch mà im lặng thì người dùng tưởng hệ thống sai ⇒ <b>phải NÓI RA</b>: dải ở M2.9 · <b>(+1 giữ chỗ)</b> ở M10.2 · ô đếm riêng ở M9.8.</div>'+
+  '<div class="ro" style="margin-top:9px">🪑 <b>Chỗ ngồi VẪN được giữ</b> — trường đến <b>có quyền từ chối</b> <i>(§3.5: «học sinh vẫn là học sinh của trường mình, chưa đi đâu cả»)</i>, lúc đó em <b>phải có chỗ quay về</b>. Dùng lại đúng khuôn <b>(+1 giữ chỗ)</b> của học sinh bảo lưu.</div>',
+  [['Hủy',0],['🚪 Xác nhận đã rời lớp',()=>{
+    const ng=($('#rl-ngay')||{}).value||'', ly=($('#rl-ly')||{}).value?.trim()||'';
+    rlTam={ngay:ng,ly:ly};
+    if(!ng){popupRoiLop(t,'Thiếu ngày rời lớp');return}
+    if(!['VT','PHT_A','PHT_B','HT','FULL'].includes(role)){
+     popupRoiLop(t,'Chỉ Văn thư hoặc PHT Điểm trường bấm được. Đổi vai ở thanh đen rồi bấm lại — ⛔ không mất ô đã gõ.');return}
+    const dmy=iso2dmyT(ng);
+    /* ràng buộc a — lùi ngày qua mốc báo cáo tuần ĐÃ PHÁT HÀNH ⇒ cảnh báo,
+       và 🛑 báo cáo đã phát hành ⛔ KHÔNG bị sửa lại (⛔ không hồi tố) */
+    const lui=soNgay(dmy)>7;
+    t.roiLop={ngay:dmy, boi:R().n, luc:NGAY, ly:ly};
+    t.log.push(lg(R().n,'Xác nhận đã rời lớp — từ '+dmy,
+      (ly||'—')+' · 🛑 sĩ số BÁO CÁO GỬI SỞ ⛔ KHÔNG đổi'+(lui?' · ⚠ lùi qua mốc báo cáo tuần đã phát hành — báo cáo cũ ⛔ KHÔNG sửa lại':'')));
+    t.log.push(lg('Hệ thống','Thông báo GVCN '+gvcnCua(t.lop),'Người chịu hậu quả điểm danh — ⛔ không được biết sau'));
+    rlTam={ngay:'',ly:''};
+    toast('🚪 Đã ghi · em ra khỏi điểm danh từ '+dmy+' · 🛑 sĩ số gửi Sở GIỮ NGUYÊN'+(lui?' · ⚠ đã lùi qua mốc báo cáo tuần đã phát hành':''));
+    render()},'p']])}
+
 render();
 </script>
 </body>

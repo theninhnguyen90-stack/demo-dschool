@@ -1,0 +1,951 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M8.7 Quản lý nhóm chat — Dschool</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f1f5f9;--surface:#fff;--line:#e2e8f0;--line2:#cbd5e1;
+ --ink:#0f172a;--ink2:#475569;--ink3:#94a3b8;--brand:#1d4ed8;--brand-soft:#eff6ff;
+ --red:#dc2626;--red-soft:#fef2f2;--amber:#d97706;--amber-soft:#fffbeb;
+ --green:#059669;--green-soft:#ecfdf5;--violet:#7c3aed}
+body{font:14px/1.5 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font:inherit}
+
+.hdr{height:56px;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:13px;padding:0 15px;position:sticky;top:0;z-index:40}
+.logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px}
+.logo .mark{width:28px;height:28px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px}
+.school{color:var(--ink2);font-size:12.5px;border-left:1px solid var(--line);padding-left:13px;max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sel{border:1px solid var(--line2);border-radius:7px;padding:5px 9px;font-size:12.5px;background:#fff}
+.sel:disabled{background:#f1f5f9;color:var(--ink2);cursor:not-allowed}
+.spacer{flex:1}
+.icobtn{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;position:relative;font-size:15px}
+.icobtn:hover{background:var(--bg)}
+.dot{position:absolute;top:3px;right:3px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--violet);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700}
+.lockico{font-size:11px;color:var(--ink3)}
+
+.wrap{display:flex;min-height:calc(100vh - 56px)}
+.side{width:216px;flex:0 0 216px;background:var(--surface);border-right:1px solid var(--line);padding:10px 8px;position:sticky;top:56px;max-height:calc(100vh - 56px);overflow-y:auto}
+.sgrp{font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;padding:12px 10px 5px}
+.snav{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:var(--ink2);font-size:12.5px;margin-bottom:1px}
+.snav:hover{background:var(--bg)}
+.snav.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
+.snav .nb{margin-left:auto;flex:0 0 auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;min-width:18px;text-align:center;line-height:15px}
+.snav.off{opacity:.34;pointer-events:none}
+.main{flex:1;padding:14px 18px 44px;min-width:0}
+
+.tophd{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+h1{font-size:19px;font-weight:700}
+.btn{border:1px solid var(--line2);background:#fff;border-radius:8px;padding:7px 12px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--bg)}
+.btn.p{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn.p:hover{background:#1e40af}
+.btn.d{background:var(--red);color:#fff;border-color:var(--red)}
+.btn.g{background:var(--green);color:#fff;border-color:var(--green)}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn.xs{padding:3px 8px;font-size:11.5px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.act{background:var(--brand-soft);border-color:var(--brand);color:var(--brand);font-weight:600}
+
+.tabs{display:flex;gap:3px;border-bottom:2px solid var(--line);margin:12px 0 0;flex-wrap:wrap}
+.tab1{padding:9px 14px;font-size:13.5px;font-weight:600;color:var(--ink2);border-bottom:2px solid transparent;margin-bottom:-2px;display:flex;align-items:center;gap:7px}
+.tab1.on{color:var(--brand);border-bottom-color:var(--brand)}
+.tab1 .b{background:var(--bg);color:var(--ink2);font-size:11px;font-weight:700;padding:1px 7px;border-radius:9px}
+.tab1.on .b{background:var(--brand);color:#fff}
+.tab1 .b.r{background:var(--red);color:#fff}
+
+.scope{display:flex;align-items:center;gap:9px;background:#f8fafc;border:1px solid var(--line);border-left:3px solid var(--brand);
+ border-radius:9px;padding:8px 12px;font-size:12px;color:var(--ink2);margin:12px 0 0;flex-wrap:wrap}
+.scope b{color:var(--ink)}
+.scope .sp{flex:1}
+
+.bar{display:flex;gap:7px;align-items:center;flex-wrap:wrap;padding:11px 0}
+.inp{border:1px solid var(--line2);border-radius:8px;padding:7px 11px;font-size:13px;background:#fff;min-width:220px}
+.fs{border:1px solid var(--line2);border-radius:8px;padding:6px 9px;font-size:12.5px;background:#fff}
+.sum{display:flex;gap:13px;font-size:12px;color:var(--ink2);margin-left:auto;flex-wrap:wrap}
+.sum b{color:var(--ink)}
+
+.alert{display:flex;align-items:flex-start;gap:10px;padding:9px 13px;border-radius:10px;font-size:12.5px;font-weight:600;margin-bottom:10px;line-height:1.6}
+.alert .sp{flex:1;font-weight:400}
+.alert .sp b{font-weight:700}
+.alert.w{background:var(--amber-soft);border:1px solid #fde68a;color:#92400e}
+.alert.r{background:var(--red-soft);border:1px solid #fecaca;color:#991b1b}
+.alert.g{background:var(--green-soft);border:1px solid #a7f3d0;color:#065f46}
+.alert.b{background:var(--brand-soft);border:1px solid #bfdbfe;color:#1e40af}
+.info{background:var(--brand-soft);border:1px solid #bfdbfe;color:#1e40af;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.65;margin-bottom:11px}
+.warn{background:var(--amber-soft);border:1px solid #fde68a;color:#92400e;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.65;margin-bottom:11px}
+.danger{background:var(--red-soft);border:1px solid #fecaca;color:#991b1b;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.65;margin-bottom:11px}
+.okbox{background:var(--green-soft);border:1px solid #a7f3d0;color:#065f46;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.65;margin-bottom:11px}
+.ro{background:#f8fafc;border:1px solid var(--line);color:var(--ink2);padding:8px 11px;border-radius:9px;font-size:12px;margin-bottom:11px;line-height:1.6}
+
+.stage{display:flex;gap:13px;align-items:flex-start}
+.listw{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.panel{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:none}
+.stage.open .panel{display:block}
+@media(max-width:1320px){.stage.open .listw{display:none}}
+
+.grph{display:flex;align-items:center;gap:9px;padding:8px 13px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:11.5px;font-weight:700;color:var(--ink2);cursor:pointer}
+.grph .cnt{margin-left:auto;font-weight:600;color:var(--ink3);font-size:11px}
+.grph .arw{font-size:10px;color:var(--ink3)}
+
+.hdrow,.hrow{display:grid;gap:9px;padding:9px 13px;align-items:center;font-size:13px;grid-template-columns:1.25fr 1.5fr 1.75fr .8fr .75fr}
+.hdrow{background:#fbfdff;border-bottom:1px solid var(--line);font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em}
+.hrow{border-bottom:1px solid var(--line);cursor:pointer;border-left:3px solid transparent}
+.hrow:hover{background:var(--brand-soft)}
+.hrow.on{background:#eff6ff;border-left-color:var(--brand)}
+.hrow.bad{border-left-color:var(--red);background:#fffafa}
+.hrow.warnl{border-left-color:var(--amber)}
+.stage.open .hdrow,.stage.open .hrow{grid-template-columns:1.25fr 1.7fr}
+.stage.open .hcol{display:none}
+
+.st2{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;white-space:nowrap;display:inline-block}
+.st2.o{background:var(--green-soft);color:var(--green)}
+.st2.w{background:var(--amber-soft);color:var(--amber)}
+.st2.r{background:var(--red-soft);color:var(--red)}
+.st2.n{background:var(--bg);color:var(--ink2)}
+.st2.b{background:#e0e7ff;color:#3730a3}
+.tg{font-size:9.5px;font-weight:700;padding:1px 6px;border-radius:4px;white-space:nowrap;display:inline-block}
+.tg.a{background:#e0e7ff;color:#3730a3}
+.tg.b{background:#fef3c7;color:#92400e}
+.tg.c{background:var(--bg);color:var(--ink2)}
+.tg.g{background:var(--green-soft);color:var(--green)}
+.tg.r{background:var(--red-soft);color:var(--red)}
+
+.ph{padding:12px 15px;border-bottom:1px solid var(--line);display:flex;gap:13px;align-items:center;flex-wrap:wrap}
+.ph .n h2{font-size:16px;font-weight:700}
+.ph .n .m{font-size:12px;color:var(--ink2);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pill{font-size:10.5px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--ink2)}
+/* ★ KHÔNG neo chiều cao vào 100vh: trong khung nhúng hoặc màn hình thấp,
+   calc(100vh - 215px) ra 0 và THÂN PANEL BỊ NÉN SẠCH — nội dung vẫn nằm
+   trong DOM nhưng không ai nhìn thấy. Mốc cố định thì luôn đúng, và panel
+   vẫn tự cuộn bên trong thay vì kéo dài trang ra vài nghìn pixel. */
+.pbody{padding:13px 15px;max-height:760px;overflow-y:auto}
+.card{border:1px solid var(--line);border-radius:11px;margin-bottom:12px;overflow:hidden}
+.card.bad{border-color:#fecaca}
+.ch{display:flex;align-items:center;gap:9px;padding:10px 12px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:13px;font-weight:700;flex-wrap:wrap}
+.ch .sp{flex:1}
+.cb{padding:4px 0}
+.f{display:grid;grid-template-columns:180px 1fr;gap:11px;align-items:start;padding:7px 12px;font-size:13px}
+.f+.f{border-top:1px solid #f1f5f9}
+.f .k{color:var(--ink2);font-size:12.5px}
+.f .v{font-weight:600;min-width:0;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.cact{display:flex;gap:6px;padding:9px 12px;border-top:1px solid var(--line);background:#fcfdfe;flex-wrap:wrap;align-items:center}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:7px 9px;border-bottom:1px solid var(--line);background:#f8fafc;white-space:nowrap}
+td{padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr.warnrow{background:var(--amber-soft)}
+.ro2{background:#f8fafc}
+tr.rorow{background:#f8fafc}
+tr.okrow{background:var(--green-soft)}
+tr.totrow{background:#f1f5f9;font-weight:600}
+.cell{width:64px;border:1px solid var(--line2);border-radius:6px;padding:4px 6px;text-align:right;font:inherit;font-size:12.5px}
+.cell:focus{outline:2px solid var(--brand);border-color:var(--brand)}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.stp{flex:1;min-width:150px;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);font-size:12px;color:var(--ink3)}
+.stp.done{background:var(--green-soft);border-color:var(--green);color:var(--green);font-weight:600}
+.stp.now{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:700}
+.stp.off{opacity:.45}
+.spark{display:flex;gap:2px;align-items:flex-end;height:24px}
+.spark i{width:6px;border-radius:1px;display:block}
+.frow{display:flex;gap:9px;flex-wrap:wrap}
+.frow>div{flex:1;min-width:130px}
+.kchk{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;cursor:pointer}
+
+.lt{width:100%;border-collapse:collapse;font-size:11.5px}
+.lt th{background:var(--bg);text-align:left;padding:5px 8px;font-size:10.5px;color:var(--ink3);border:1px solid var(--line)}
+.lt td{padding:5px 8px;border:1px solid var(--line);vertical-align:top}
+.lt td.d{width:46px;font-weight:700;background:#fafbfc;text-align:center}
+.blk{display:inline-block;padding:2px 7px;border-radius:5px;margin:2px 3px 2px 0;font-weight:600;white-space:nowrap}
+.blk.ck{background:#e0e7ff;color:#3730a3}
+.blk.nk{background:var(--green-soft);color:var(--green)}
+.blk.moi{background:#f1f5f9;color:var(--ink2);border:1px dashed var(--ink3)}
+.blk.x{background:var(--red-soft);color:var(--red);box-shadow:0 0 0 1.5px var(--red) inset}
+.blk.s{background:var(--amber-soft);color:var(--amber);box-shadow:0 0 0 1.5px var(--amber) inset}
+.lichpick{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:5px}
+.lprow{display:flex;align-items:center;gap:8px;padding:7px 11px;border-bottom:1px solid #f1f5f9;font-size:12.5px}
+.lprow:last-child{border-bottom:none}
+.lprow.on{background:#f8fafc}
+.lpd{display:flex;align-items:center;gap:6px;width:96px;font-weight:600;cursor:pointer;flex:none}
+.lprow:not(.on) .lpd{color:var(--ink3);font-weight:400}
+.lpsep{color:var(--ink3)}
+.lpt:disabled{background:#f8fafc;color:#cbd5e1}
+.lpinfo{font-size:11px;margin-left:auto;text-align:right;line-height:1.4}
+.lpinfo.x{color:var(--red);font-weight:700}
+.lpinfo.s{color:var(--amber);font-weight:700}
+.lpinfo.o{color:var(--green)}
+.frow{display:flex;gap:9px;flex-wrap:wrap}
+.frow>div{flex:1;min-width:130px}
+.kchk{display:inline-flex;align-items:center;gap:5px;margin-right:12px;font-size:12.5px}
+tr.badrow{background:var(--red-soft)}
+tr.totrow td{background:#f8fafc;font-weight:700}
+.tbw{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.tbx{overflow-x:auto}
+
+.mask{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:60;display:none;place-items:center}
+.mask.on{display:grid}
+.modal{background:#fff;border-radius:13px;width:820px;max-width:94vw;max-height:88vh;display:flex;flex-direction:column}
+.mh{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700}
+.mb{padding:15px 18px;overflow-y:auto;font-size:13px;line-height:1.65}
+.mf{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;align-items:center}
+.fldi{width:100%;border:1px solid var(--line2);border-radius:8px;padding:8px 10px;margin-top:4px}
+.lbl{display:block;font-size:12px;color:var(--ink2);font-weight:600;margin-top:11px}
+
+.rolebar{background:#0f172a;color:#cbd5e1;padding:8px 15px;display:flex;align-items:center;gap:7px;font-size:12.5px;flex-wrap:wrap}
+.rolebar b{color:#fff}
+.rb{border:1px solid #334155;border-radius:999px;padding:3px 10px;font-size:12px;color:#cbd5e1}
+.rb:hover{background:#1e293b;color:#fff}
+.rb.on{background:#fff;color:#0f172a;border-color:#fff;font-weight:700}
+.ntg{border:1px solid #334155;border-radius:999px;padding:3px 10px;font-size:12px;color:#cbd5e1}
+.ntg:hover{background:#1e293b;color:#fff}
+.ntg.on{background:#fbbf24;color:#3b2a05;border-color:#fbbf24;font-weight:700}
+.simw{font-size:11.5px;color:#94a3b8;display:flex;align-items:center;gap:6px;margin-left:auto}
+.simw select{background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:6px;padding:2px 6px;font-size:11.5px}
+/* Ghi chu thiet ke: giai thich VI SAO, khong phai mot phan man hinh that. Mac dinh TAT. */
+body.nn .dnote{display:none!important}
+.dnote{background:#fffbeb;border:1px dashed #fbbf24;color:#78350f;padding:8px 11px;border-radius:9px;font-size:12px;line-height:1.6;margin-bottom:11px}
+.dnote b{color:#78350f}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(110px);background:#0f172a;color:#fff;padding:11px 17px;border-radius:9px;font-size:13px;z-index:80;transition:transform .22s;max-width:92vw}
+.toast.on{transform:translateX(-50%)}
+.empty{padding:38px;text-align:center;color:var(--ink3)}
+.lgd{display:flex;gap:14px;font-size:11.5px;color:var(--ink3);padding:9px 13px;border-top:1px solid var(--line);flex-wrap:wrap;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px 9px;color:var(--ink2)}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+.rolnk{font-size:10px;font-weight:700;color:var(--brand);background:#eef2ff;border:1px solid #c7d2fe;border-radius:999px;padding:1px 7px;white-space:nowrap}
+.rolnk:hover{background:#e0e7ff}
+.crumb{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink2);margin-bottom:9px;flex-wrap:wrap}
+.crumb a{color:var(--brand);cursor:pointer;font-weight:600}
+
+/* --- rieng M6.1 --- */
+.daybar{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:9px 13px;flex-wrap:wrap;margin-bottom:10px}
+.daybar .dt{font-weight:700;font-size:14px;min-width:190px}
+.pbar{display:flex;height:9px;border-radius:5px;overflow:hidden;background:var(--line);flex:1;min-width:180px}
+.pbar i{display:block}
+.pbar i.a{background:var(--green)}
+.pbar i.b{background:var(--amber)}
+.pbar i.c{background:var(--line2)}
+.pbar i.d{background:var(--red)}
+.pleg{display:flex;gap:12px;font-size:11px;color:var(--ink2);flex-wrap:wrap;align-items:center}
+.pleg s{width:9px;height:9px;border-radius:3px;display:inline-block;margin-right:4px}
+.hsrow{display:flex;align-items:center;gap:10px;padding:7px 11px;border-bottom:1px solid #f1f5f9;font-size:13px}
+.hsrow:last-child{border-bottom:none}
+.hsrow .av{width:30px;height:30px;border-radius:50%;background:#e0e7ff;color:#3730a3;display:grid;place-items:center;font-size:11px;font-weight:700;flex:0 0 30px}
+.hsrow .nm{min-width:0;flex:1}
+.hsrow .nm b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hsrow .nm span{font-size:10.5px;color:var(--ink3)}
+.hsrow.lk{background:#fafbfc}
+.tgl{display:flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden;flex:0 0 auto}
+.tgl button{padding:4px 11px;font-size:11.5px;font-weight:600;color:var(--ink2);background:#fff}
+.tgl button.on{background:var(--green);color:#fff}
+.tgl button.on.v{background:var(--red)}
+.tgl button:disabled{opacity:.45;cursor:not-allowed}
+.src{font-size:10.5px;color:var(--ink3);flex:0 0 auto;max-width:250px}
+.aller{color:var(--red);font-size:12px;cursor:help}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.stp{border:1px solid var(--line2);background:#fff;border-radius:9px;padding:7px 13px;font-size:12.5px;font-weight:600;color:var(--ink2);display:flex;align-items:center;gap:7px}
+.stp.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.stp.done{border-color:#a7f3d0;background:var(--green-soft);color:#065f46}
+.stp:disabled{opacity:.45;cursor:not-allowed}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:7px 12px;font-size:13px;border-bottom:1px solid #f1f5f9}
+.kv:last-child{border-bottom:none}
+.kv b{font-variant-numeric:tabular-nums}
+.kv.tot{background:#f8fafc;font-weight:700}
+.mini{width:74px;text-align:right;border:1px solid var(--line2);border-radius:7px;padding:4px 7px;font-variant-numeric:tabular-nums;font-size:12px}
+.qgrp{padding:9px 13px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:11.5px;font-weight:700;color:var(--ink2)}
+
+/* ══════════ riêng M8.7 — Quản lý nhóm chat ══════════ */
+.mu{color:var(--ink3);font-weight:400}
+.qwrap{display:inline-flex;align-items:center;gap:3px;font-size:11px}
+.qc{font-size:9.5px;font-weight:700;padding:1px 5px;border-radius:4px;background:#f1f5f9;color:#cbd5e1;border:1px solid var(--line)}
+.qc.on{background:#e0e7ff;color:#3730a3;border-color:#c7d2fe}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.chips .chip{cursor:pointer}
+.chip b{font-weight:700;opacity:.85}
+
+/* thẻ trạng thái gói */
+.goi{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 15px;margin:12px 0}
+.goi .t{flex:1;min-width:260px}
+.goi .t b{font-size:15px}
+.goi .t .m{font-size:12px;color:var(--ink2);margin-top:3px;line-height:1.6}
+.goi .n{display:flex;gap:16px}
+.goi .n div{text-align:center;font-size:11px;color:var(--ink2)}
+.goi .n div b{display:block;font-size:19px;color:var(--ink);font-variant-numeric:tabular-nums}
+.steps2{display:flex;gap:4px;align-items:center;font-size:11.5px;margin-top:6px;flex-wrap:wrap}
+.steps2 span{padding:2px 8px;border-radius:999px;background:var(--bg);color:var(--ink3);border:1px solid var(--line)}
+.steps2 span.done{background:var(--green-soft);color:var(--green);border-color:#a7f3d0}
+.steps2 span.now{background:var(--brand);color:#fff;border-color:var(--brand);font-weight:700}
+
+/* khối đi / không đi */
+.diko{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.diko>div{border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:12.5px;line-height:1.7;background:var(--surface)}
+.diko .di{border-left:3px solid var(--brand)}
+.diko .ko{border-left:3px solid var(--red)}
+.diko h4{font-size:12px;margin-bottom:3px}
+
+/* bảng gọn */
+.tb{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--surface)}
+.tb tr.cl{cursor:pointer}
+.tb tr.cl:hover td{background:var(--brand-soft)}
+.tb tr.on td{background:#eff6ff}
+.tb tr.chan td{background:#fffafa}
+.tb tr.chan td:first-child{box-shadow:inset 3px 0 0 var(--red)}
+.tb tr.canh td:first-child{box-shadow:inset 3px 0 0 var(--amber)}
+.tb td .sub{font-size:11px;color:var(--ink3)}
+.kma{font-size:10px;font-weight:800;padding:1px 6px;border-radius:5px;background:#fff;border:1px solid var(--line2);white-space:nowrap}
+.kma.r{color:var(--red);border-color:#fecaca}
+.kma.w{color:var(--amber);border-color:#fde68a}
+.kma.o{color:var(--green);border-color:#a7f3d0}
+.ma{font-family:Consolas,monospace;font-size:11.5px;background:#f1f5f9;border-radius:4px;padding:0 5px}
+
+/* bố cục có panel 1:1 */
+.duo{display:flex;gap:13px;align-items:flex-start}
+.duo>.l{flex:1;min-width:0}
+.duo>.r{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.duo>.r .pbody{max-height:none}
+.xam{display:inline-block;font-size:11px;color:var(--ink3);background:#f1f5f9;border:1px dashed var(--line2);border-radius:6px;padding:2px 8px}
+.gsec{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 15px;margin-top:12px}
+.gsec h3{font-size:14px;margin-bottom:8px}
+.frm{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12.5px;margin:6px 0}
+.frm input{width:70px;border:1px solid var(--line2);border-radius:7px;padding:5px 8px}
+.frm input.err{border-color:var(--red);background:var(--red-soft)}
+.nsel{display:inline-flex;align-items:center;gap:7px;background:#fff;border:2px solid var(--brand);border-radius:9px;padding:4px 9px;font-size:12.5px;font-weight:600}
+.nsel select{border:none;font-weight:700;font-size:12.5px;background:transparent}
+.vv{border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:9px;font-size:12.5px;line-height:1.65}
+.vv.cu{background:#f8fafc;color:var(--ink2)}
+.tin{background:#f1f5f9;border-radius:9px;padding:6px 10px;margin:5px 0;font-size:12px}
+.tin b{font-size:11px;color:var(--ink2)}
+</style>
+</head>
+<body class="nn">
+<script>/* sidebar da chuyen ve index.html — node an giu cho JS cu khong vo */
+(function(){var n=document.createElement("nav");n.id="side";n.style.display="none";document.documentElement.appendChild(n)})();</script>
+
+
+<div class="rolebar" id="rolebar"></div>
+
+<header class="hdr">
+  <div class="logo"><span class="mark">DS</span> Dschool</div>
+  <div class="school">THCS &amp; THPT Nguyễn Tất Thành</div>
+  <select class="sel" id="hnam"><option value="2026-2027">Năm học 2026-2027</option><option value="2025-2026">Năm học 2025-2026</option><option value="2024-2025">Năm học 2024-2025</option></select>
+  <select class="sel" id="hdt"></select>
+  <span class="lockico" id="dtlock"></span>
+  <div class="spacer"></div>
+  <button class="icobtn" id="bchuong">🔔<span class="dot" id="ndot">2</span></button>
+  <button class="icobtn">💬<span class="dot">1</span></button>
+  <div class="avatar" id="ava">VT</div>
+</header>
+
+<div class="wrap">
+  <main class="main">
+    <div id="crumb"></div>
+    <div class="tophd"><h1 id="h1">Quản lý nhóm chat</h1><span class="pill">M8.7</span><span class="pill">Dịch vụ nhắn tin của công ty</span><div class="spacer"></div><span id="topact"></span></div>
+    <div class="tabs" id="tabs"></div>
+    <div id="content"></div>
+  </main>
+</div>
+
+<div class="mask" id="mask"><div class="modal">
+  <div class="mh" id="mh"></div><div class="mb" id="mb"></div><div class="mf" id="mf"></div>
+</div></div>
+<div class="toast" id="toast"></div>
+<script>/* ══════════════ M8.7 QUẢN LÝ NHÓM CHAT — DỮ LIỆU MẪU ══════════════
+   Cụm TKCT (24/9/2026) — nhắn tin chạy trên DỊCH VỤ NHẮN TIN CỦA CÔNG TY.
+   Hợp đồng 🔒 HDKN (gói khởi tạo · yêu cầu lẻ · bảng kết quả · kết quả vi phạm) — bản 3, băm 6AB205E3379259FB…0E5C (TKPH 25/9/2026; bản 2 AAD8E285…83D8 hết hiệu lực)
+   Hợp đồng 🔒 HDGT (giấy thông hành)                                         — bản 3, băm DE979DF75CDF0568…9CAB (TKPH 25/9/2026; bản 2 D9716E57…45E5 hết hiệu lực)
+   ⚠ Dữ liệu viết TAY hoặc suy TẤT ĐỊNH theo chỉ số (không Math.random, không gieo theo tổng mã ký tự —
+     memory dschool-demo-hat-giong-trung-lop).
+   Hai tình huống trên thanh đen:
+     dau  — Thứ Bảy 05/9/2026 08:30, hai ngày trước khai giảng: gói 2026-2027 CHƯA gửi (mặc định)
+     giua — Thứ Sáu 20/11/2026 10:00: gói đã gửi 05/9, 9A1 đổi GVCN ở M4.5 ngày 18/11, 10A5 lập 20/10 */
+const NAM_HT='2026-2027';
+const MOC={dau:'2026-09-05 08:30',giua:'2026-11-20 10:00'};
+let TH='dau';
+let NOW=MOC.dau;
+
+const DT={A:'Điểm trường A — Trung tâm',B:'Điểm trường B — Phú Lãm',C:'Điểm trường C — Yên Nghĩa'};
+
+const NG={
+ tuan:{ten:'Vũ Minh Tuấn',cd:'Quản trị hệ thống'},
+ duc:{ten:'Trần Văn Đức',cd:'Hiệu trưởng'},
+ binh:{ten:'Nguyễn Văn Bình',cd:'Phó HT phụ trách điểm trường B'},
+ hang:{ten:'Phạm Thị Hằng',cd:'Văn thư — điểm trường A'},
+ he:{ten:'Hệ thống',cd:'tự động'}
+};
+
+/* ── Lớp đang hoạt động năm 2026-2027 (🔗 M1.7) + GVCN (🔗 M4.5) ──
+   Tên GVCN ghép tất định theo chỉ số. 8A3 CHƯA có GVCN (K1). 6A5 mới lập — 3 em (K3). */
+const HO=['Nguyễn','Trần','Lê','Phạm','Hoàng','Vũ','Đặng','Bùi','Đỗ','Hồ','Ngô','Dương','Lý','Mai','Trịnh','Đinh'];
+const DEM=['Thị Thu','Văn Hải','Thị Lan','Minh Đức','Thị Hoa','Quốc Tuấn','Thị Mai','Thanh Sơn','Thị Ngọc','Văn Long','Thị Hạnh','Đức Anh','Thị Yến','Văn Nam','Thị Hương','Hữu Phúc'];
+const tenGV=i=>HO[i%16]+' '+DEM[(i*5+3+Math.floor(i/16)*7)%16];
+const LOP=[];
+(function(){
+ let i=0;
+ [6,7,8,9].forEach(k=>{for(let s=1;s<=5;s++){LOP.push({ma:k+'A'+s,khoi:k,dt:s<=3?'A':'B',hs:38+((k*7+s*3)%8),gv:tenGV(i++)})}});
+ [10,11,12].forEach(k=>{for(let s=1;s<=4;s++){LOP.push({ma:k+'A'+s,khoi:k,dt:'C',hs:40+((k*5+s)%6),gv:tenGV(i++)})}});
+})();
+const lop=m=>LOP.find(l=>l.ma===m);
+/* ngoại lệ viết tay */
+lop('8A3').gv=null;                                        /* K1 — M4.5 chưa phân GVCN */
+lop('6A5').hs=3;                                           /* K3 — lớp mới lập hôm qua, mới nhập 3 em */
+lop('11A1').k4='Tài khoản Web của GVCN chưa đăng nhập lần nào';   /* K4 */
+/* em chưa có phụ huynh trong gói (TKPH 25/9 — HDKN bản 3 ② mục 2): [số em chưa có link liên kết nào, số em chỉ có link chưa đổi] */
+const THIEU={'6A2':[1,1],'7A1':[2,0],'9A5':[1,0],'11A2':[3,0],'12A4':[0,1],'10A3':[1,0]};
+const THIEU_TEN={'6A2':['Lương Gia Huy','Đinh Khánh An'],'7A1':['Tạ Minh Khôi','Hà Bảo Châu'],'9A5':['Kiều Thanh Tâm'],
+ '11A2':['Phan Nhật Linh','Âu Đức Minh','Trương Hà My'],'12A4':['Mạc Thùy Dung'],'10A3':['Lâm Quốc Bảo']};
+const soPH=l=>{const t=THIEU[l.ma]||[0,0];return l.hs-t[0]-t[1]};
+
+/* thành viên mẫu cho panel — tên hiển thị kiểu giấy thông hành («Mẹ em …») */
+const TEN_HS=['Minh Anh','Gia Bảo','Đức Duy','Thảo Vy','Quang Huy','Hà My','Bảo Ngọc','Gia Hân','Nhật Minh','Khánh Linh','Hoàng Long','Thùy Dương'];
+function tvMau(l){const o=[];for(let j=0;j<Math.min(8,soPH(l));j++)o.push({ten:(j%3===0?'Bố':'Mẹ')+' em '+HO[(j*3+l.khoi)%16]+' '+TEN_HS[(j+l.khoi)%12],vai:'phu_huynh'});return o}
+
+/* ── Gói khởi tạo từng năm học ── tt: nhap · cho (chờ HT xác nhận) · da_gui */
+const GOI={
+ '2024-2025':{tt:'da_gui',lap:'tuan',lapLuc:'2024-09-03 15:10',xn:'duc',xnLuc:'2024-09-04 08:05',so:29,ok:29,tc:0,ten:{}},
+ '2025-2026':{tt:'da_gui',lap:'tuan',lapLuc:'2025-09-03 16:20',xn:'duc',xnLuc:'2025-09-04 07:50',so:30,ok:30,tc:1,ten:{}},
+ '2026-2027':{tt:'nhap',lap:null,lapLuc:null,xn:null,xnLuc:null,traLai:null,ten:{},kq:null}
+};
+
+/* ── Nhóm tại dịch vụ theo năm học ── tt: dang · luu (đã lưu trữ) */
+const NHOM={
+ '2024-2025':LOP.slice(0,29).map((l,i)=>({lop:l.ma,ten:'',chu:tenGV(i+3),tv:36+(i%7),lech:0,tt:'luu',luuLuc:'2025-06-20'})),
+ '2025-2026':LOP.slice(0,30).map((l,i)=>({lop:l.ma,ten:'',chu:tenGV(i+1),tv:35+(i%8),lech:i%9===0?1:0,tt:'dang'})),
+ '2026-2027':[]
+};
+Object.keys(NHOM).forEach(n=>NHOM[n].forEach(g=>{g.ten='Lớp '+g.lop+' năm '+n}));
+/* năm học kết thúc (🔗 M10.1) — mốc mở nút «Đề nghị lưu trữ» */
+const KET_THUC={'2024-2025':'2025-05-31','2025-2026':'2026-05-31','2026-2027':'2027-05-31'};
+const LUU={'2025-2026':{tt:'chua'}};   /* chua · cho (IT đã đề nghị) · xong */
+
+/* ── Chính sách lưu giữ (E7) — trần hợp đồng là SỐ MẪU ── */
+const CS={tep:12,chu:5,tranTep:24,tranChu:10,capNhat:'2025-09-04 08:10'};
+
+/* ── Lịch sử gửi (HDKN ⑦) ── loai: goi · doi_chu · luu_tru · cs · thu_hoi · xem_lai */
+const LS=[
+ {id:'GS-2024-01',luc:'2024-09-04 08:05',loai:'goi',ai:'duc',ai2:'tuan',so:29,ok:29,tc:0,nd:'Gói khởi tạo năm học 2024-2025 — 29 nhóm lớp'},
+ {id:'GS-2025-01',luc:'2025-06-20 16:00',loai:'luu_tru',ai:'duc',ai2:'tuan',so:1,ok:1,tc:0,nd:'luu_tru_nam { nam_hoc: 2024-2025 }'},
+ {id:'GS-2025-02',luc:'2025-09-04 07:50',loai:'goi',ai:'duc',ai2:'tuan',so:31,ok:30,tc:1,nd:'Gói khởi tạo năm học 2025-2026 — 31 nhóm lớp',kq:[['9A4 (năm 2025-2026)','bi_tu_choi','thieu_chu_nhom']]},
+ {id:'GS-2025-03',luc:'2025-09-04 08:10',loai:'cs',ai:'duc',so:1,ok:1,tc:0,nd:'chinh_sach_luu_giu { tep_dinh_kem_thang: 12, phan_chu_nam_hoc: 5 }'},
+ {id:'GS-2026-01',luc:'2026-03-12 14:20',loai:'thu_hoi',ai:'M10.5 — khóa tài khoản',so:1,ok:1,tc:0,nd:'thu_hoi_giay { ly_do_ma: khoa }',ma:'khoa',ten:'Cô Hồ Thị Hạnh'},
+ {id:'GS-2026-02',luc:'2026-06-30 17:05',loai:'thu_hoi',ai:'M4.2 — nghỉ việc',so:1,ok:1,tc:0,nd:'thu_hoi_giay { ly_do_ma: nghi_viec }',ma:'nghi_viec',ten:'Thầy Đinh Văn Nam'},
+ {id:'GS-2026-03',luc:'2026-08-14 09:40',loai:'thu_hoi',ai:'M10.5 — ngắt liên kết phụ huynh',so:1,ok:1,tc:0,nd:'thu_hoi_giay { ly_do_ma: lien_ket }',ma:'lien_ket',che:1,ten:'Bố em Nguyễn Hải Đăng (6A2)'},
+ {id:'GS-2026-04',luc:'2026-10-02 07:55',loai:'thu_hoi',ai:'M0.4 — ngắt liên kết App',so:1,ok:1,tc:0,nd:'thu_hoi_giay { ly_do_ma: lien_ket }',ma:'lien_ket',ten:'Cô Mai Thị Yến'},
+ {id:'GS-2026-05',luc:'2026-11-18 16:30',loai:'thu_hoi',ai:'M10.5 — khóa tài khoản',so:1,ok:1,tc:0,nd:'thu_hoi_giay { ly_do_ma: khoa }',ma:'khoa',ten:'Thầy Lê Minh Đức'}
+];
+let LSSEQ=10;
+
+/* ── Kết quả xử lý vi phạm công ty báo về (HDKN ⑥) — ⛔ KHÔNG có trường người báo cáo ── */
+const VV=[
+ {id:'VV-2026-0071',ten:'Mẹ em Trần Bảo Nam',ai:'Phụ huynh em Trần Bảo Nam · 6A2 (2025-2026)',noi:'Cuộc riêng — lớp 6A2',
+  lan:[{bp:'khoa_gui_tam',tu:'2026-04-14',den:'2026-04-21',cc:'Điều 5 — v1.0',luc:'2026-04-14 10:20'}],
+  tin:[['Mẹ em Trần Bảo Nam','2026-04-13 22:30','Cô dạy kiểu gì mà con tôi điểm kém thế…'],['Mẹ em Trần Bảo Nam','2026-04-13 22:41','Loại giáo viên như cô thì dạy dỗ được ai.']],dn:null},
+ {id:'VV-2026-0093',ten:'Thầy Đặng Quốc Tuấn',ai:'Nhân sự · GVBM Tin học',noi:'Nhóm lớp 9A2',
+  lan:[{bp:'nhac_nho',tu:'2026-05-20',den:null,cc:'Điều 3 — v1.0',luc:'2026-05-20 15:05'}],
+  tin:[['Thầy Đặng Quốc Tuấn','2026-05-19 21:55','Mời các anh chị đăng ký khóa học thêm Tin học tại trung tâm của tôi, học phí ưu đãi…']],dn:null},
+ {id:'VV-2026-0102',ten:'Mẹ em Lý Hoàng Long',ai:'Phụ huynh em Lý Hoàng Long · 9A2',noi:'Nhóm lớp 9A2',
+  lan:[{bp:'khong_vi_pham',tu:'2026-08-30',den:null,cc:'Điều 3 — v2.0',luc:'2026-08-30 11:00'}],
+  tin:[['Mẹ em Lý Hoàng Long','2026-08-29 20:10','Nhà trường cho hỏi lịch tựu trường năm nay có đổi không ạ?']],dn:null},
+ {id:'VV-2026-0118',ten:'Bố em Hoàng Gia Hân',ai:'Phụ huynh em Hoàng Gia Hân · 6A1',noi:'Nhóm lớp 6A1',
+  lan:[{bp:'khoa_gui_tam',tu:'2026-11-20',den:'2026-11-26',cc:'Điều 5 — v2.0',luc:'2026-11-20 09:40'}],
+  tin:[['Bố em Hoàng Gia Hân','2026-11-19 23:02','Ai chưa đóng quỹ thì đừng cho con đi dã ngoại, nói thẳng tên ra luôn: …'],['Bố em Hoàng Gia Hân','2026-11-19 23:05','(tin thứ hai được đính kèm — nêu tên một học sinh)']],dn:null}
+];
+const BP={khong_vi_pham:['Không vi phạm','n'],nhac_nho:['Nhắc nhở','b'],khoa_gui_tam:['Khóa gửi tạm','r'],khoa_gui_vinh_vien:['Khóa gửi vĩnh viễn','r']};
+
+/* ── Ma trận quyền (bản demo của §8 · phiếu mục Q). ⛔ Không XO · ⛔ không ID. ── */
+const ROLES={
+ FULL:  {cd:'🔓 Đủ quyền (demo)',me:'tuan',sc:'School',q:{kt:['X','T','S','D','XD'],nc:['X','S','D','XD'],ls:['X','XD'],vp:['X','T','XD']},cs:1,dn:1},
+ IT:    {cd:'IT — Quản trị hệ thống',me:'tuan',sc:'School',q:{kt:['X','T','S','XD'],nc:['X','S','XD'],ls:['X','XD'],vp:[]},cs:0,dn:1},
+ HT:    {cd:'HT — Hiệu trưởng',me:'duc',sc:'School',q:{kt:['X','D','XD'],nc:['X','S','D','XD'],ls:['X','XD'],vp:['X','T','XD']},cs:1,dn:0},
+ PHT_DT:{cd:'PHT_DT (điểm B)',me:'binh',sc:'Branch',dt:'B',q:{kt:[],nc:[],ls:[],vp:[]},cs:0,dn:0},
+ VT:    {cd:'VT (điểm A)',me:'hang',sc:'Branch',dt:'A',q:{kt:[],nc:[],ls:[],vp:[]},cs:0,dn:0}
+};
+let role='FULL';
+
+/* ══════════════ M8.7 — KHUNG, TIỆN ÍCH, THANH VAI, TAB ══════════════ */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const R=()=>ROLES[role];
+const meId=()=>R().me;
+const ten=id=>(NG[id]||{ten:id}).ten;
+const laFull=()=>role==='FULL';
+function coQ(tab,q){return ((R().q||{})[tab]||[]).includes(q)}
+function d2s(s){if(!s)return '';const [d,t]=s.split(' ');const p=d.split('-');return (+p[2])+'/'+(+p[1])+'/'+p[0]+(t?' '+t:'')}
+function d2(s){if(!s)return '';const p=s.slice(0,10).split('-');return (+p[2])+'/'+(+p[1])}
+const n3=n=>String(n).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+function congPhut(s,m){const [d,t]=s.split(' ');const p=d.split('-'),h=t.split(':');const x=new Date(+p[0],+p[1]-1,+p[2],+h[0],+h[1]+m);
+ const z=n=>String(n).padStart(2,'0');return x.getFullYear()+'-'+z(x.getMonth()+1)+'-'+z(x.getDate())+' '+z(x.getHours())+':'+z(x.getMinutes())}
+
+let ST={tab:null,cur:null,chip:'all',namNc:NAM_HT,lsLoc:'all',ungVien:null};
+
+function toast(m){const t=$('#toast');t.innerHTML=m;t.classList.add('on');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('on'),4200)}
+const mfns={};
+function openM(h,b,f){$('#mh').innerHTML=h;$('#mb').innerHTML=b;$('#mf').innerHTML=f||'<button class="btn" data-mb="close">Đóng</button>';$('#mask').classList.add('on')}
+function closeM(){$('#mask').classList.remove('on')}
+function dnote(h){return '<div class="dnote">💡 <b>Ghi chú thiết kế.</b> '+h+'</div>'}
+const ACT={};
+
+/* ── Lịch sử gửi: ghi TRƯỚC khi gửi (ràng buộc 13) ── */
+function ghiLS(o){o.id='GS-2026-'+String(++LSSEQ).padStart(2,'0');o.luc=o.luc||NOW;LS.push(o);return o}
+const lsHien=()=>LS.filter(x=>x.luc<=NOW).sort((a,b)=>a.luc<b.luc?1:-1);
+
+/* ── Gửi gói khởi tạo (HDKN ②) — trả BẢNG KẾT QUẢ từng dòng (HDKN ⑤) ──
+   Kết quả mô phỏng: 7A4 bị từ chối mức NHÓM (lop_trung), một thành viên 6A2 bị từ chối (dinh_danh_trung).
+   8A3 bị chặn K1 nên KHÔNG đi. */
+function dongGoi(nam){return LOP.filter(l=>!l.lapLuc)}
+function chanK1(l){return !l.gv}
+function guiGoi(nam,xn,xnLuc){
+ const g=GOI[nam];
+ const di=dongGoi(nam).filter(l=>!chanK1(l));
+ const kq=[];
+ di.forEach(l=>{
+  if(l.ma==='7A4')kq.push({ref:'Nhóm '+l.ma,kq:'bi_tu_choi',ma:'lop_trung'});
+  else kq.push({ref:'Nhóm '+l.ma,kq:'thanh_cong'});
+  if(l.ma==='6A2')kq.push({ref:'Thành viên 6A2 · Mẹ em Lương Gia Huy',kq:'bi_tu_choi',ma:'dinh_danh_trung'});
+ });
+ g.tt='da_gui';g.xn=xn;g.xnLuc=xnLuc;g.kq=kq;
+ NHOM[nam]=di.filter(l=>l.ma!=='7A4').map(l=>({lop:l.ma,ten:g.ten[l.ma]||('Lớp '+l.ma+' năm '+nam),chu:l.gv,tv:soPH(l)+1-(l.ma==='6A2'?1:0),lech:0,tt:'dang'}));
+ const tc=kq.filter(x=>x.kq==='bi_tu_choi').length;
+ ghiLS({luc:xnLuc,loai:'goi',ai:xn,ai2:g.lap,so:kq.length,ok:kq.length-tc,tc:tc,nd:'Gói khởi tạo năm học '+nam+' — '+di.length+' nhóm lớp (8A3 bị chặn K1, không gửi)',kq:kq.filter(x=>x.kq==='bi_tu_choi').map(x=>[x.ref,x.kq,x.ma])});
+}
+
+/* ── Tình huống «giữa năm» — áp một chiều; quay về «trước khai giảng» là nạp lại trang ── */
+function sangGiuaNam(){
+ const g=GOI[NAM_HT];
+ if(g.tt!=='da_gui'){g.lap=g.lap||'tuan';g.lapLuc=g.lapLuc||'2026-09-03 16:40';guiGoi(NAM_HT,'duc','2026-09-05 09:12')}
+ TH='giua';NOW=MOC.giua;
+ const l=lop('9A1');if(!l.gvCu){l.gvCu=l.gv;l.gv='Phan Thị Bích';l.doiGV='18/11/2026'}
+ if(!lop('10A5'))LOP.push({ma:'10A5',khoi:10,dt:'C',hs:24,gv:'Kiều Văn Thắng',lapLuc:'2026-10-20'});
+ const n=NHOM[NAM_HT];const a=n.find(x=>x.lop==='6A1');if(a)a.lech=1;const b=n.find(x=>x.lop==='7A3');if(b)b.lech=2;
+}
+
+/* ── Thanh vai ── */
+const TABS=[['kt','① Khởi tạo năm học','m8.7.khoi_tao_nam_hoc'],['nc','② Nhóm chat và chủ nhóm','m8.7.nhom_chat'],['ls','③ Lịch sử gửi','m8.7.lich_su_gui'],['vp','④ Kết quả xử lý vi phạm','m8.7.ket_qua_vi_pham']];
+function rolebar(){
+ $('#rolebar').innerHTML='<b>Vai trò:</b>'+Object.keys(ROLES).map(k=>'<button class="rb'+(k===role?' on':'')+'" data-r="'+k+'">'+esc(ROLES[k].cd)+'</button>').join('')
+  +'<span class="simw">Tình huống:</span>'
+  +'<button class="ntg'+(TH==='dau'?' on':'')+'" data-a="thDau">📅 Trước khai giảng — Thứ Bảy 5/9/2026</button>'
+  +'<button class="ntg'+(TH==='giua'?' on':'')+'" data-a="thGiua">📅 Giữa năm — Thứ Sáu 20/11/2026</button>'
+  +'<button class="ntg'+(document.body.classList.contains('nn')?'':' on')+'" id="btnNote">💡 Ghi chú thiết kế: '+(document.body.classList.contains('nn')?'TẮT':'BẬT')+'</button>';
+}
+function header(){
+ const n=NG[meId()];$('#ava').textContent=n.ten.split(' ').slice(-2).map(x=>x[0]).join('');
+ const r=R();
+ if(r.sc==='Branch'){$('#hdt').innerHTML='<option value="'+r.dt+'">'+DT[r.dt]+'</option>';$('#hdt').disabled=true;$('#dtlock').textContent='🔒 khóa theo vai'}
+ else{const v=$('#hdt').value;$('#hdt').innerHTML='<option value="">Tất cả điểm trường</option>'+Object.keys(DT).map(k=>'<option value="'+k+'"'+(v===k?' selected':'')+'>'+DT[k]+'</option>').join('');$('#hdt').disabled=false;
+  $('#dtlock').textContent=ST.tab==='kt'?'năm học: áp cho tab ①':ST.tab==='nc'?'năm học: 🔒 không áp — tab ② có bộ chọn riêng':'năm học: 🔒 không áp'}
+}
+const namHdr=()=>$('#hnam').value;
+const dtLoc=()=>R().sc==='Branch'?R().dt:$('#hdt').value;
+const tabsCo=()=>TABS.filter(t=>coQ(t[0],'X'));
+function tabs(){
+ const ds=tabsCo();
+ if(!ds.some(t=>t[0]===ST.tab))ST.tab=ds.length?ds[0][0]:null;
+ $('#tabs').innerHTML=ds.map(([k,n])=>{
+  let bd='';
+  if(k==='kt'&&GOI[NAM_HT].tt==='cho')bd='<span class="b r">chờ xác nhận</span>';
+  if(k==='vp'){const c=VV.filter(v=>v.lan[0].luc<=NOW&&v.lan[0].luc.slice(0,10)>=cong30()).length;if(c)bd='<span class="b r">'+c+' mới</span>'}
+  return '<button class="tab1'+(k===ST.tab?' on':'')+'" data-t="'+k+'">'+n+bd+'</button>'}).join('');
+}
+function cong30(){const p=NOW.slice(0,10).split('-');const x=new Date(+p[0],+p[1]-1,+p[2]-30);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')}
+const QTEN={X:'Xem',T:'Tạo',S:'Sửa',XO:'Xóa',D:'Duyệt / xác nhận',ID:'Import',XD:'Export'};
+function chipQ(tab){return ['X','T','S','XO','D','ID','XD'].map(q=>'<span class="qc'+(coQ(tab,q)?' on':'')+'" title="'+QTEN[q]+'">'+q+'</span>').join('')}
+function scopeBar(tab,extra){
+ const r=R(),f=TABS.find(x=>x[0]===tab);
+ return '<div class="scope"><span>💬</span><span class="sp">Vai <b>'+esc(r.cd)+'</b> — '+esc(NG[r.me].ten)+'. Phạm vi: <b>School</b>. '
+  +'Nhóm chat nằm ở <b>dịch vụ nhắn tin của công ty</b> (máy chủ đặt tại Việt Nam) — menu này quản <b>nhóm và các lượt gửi</b>, <b>không đọc tin nhắn</b>.'+(extra?' '+extra:'')+'</span>'
+  +'<span class="qwrap" title="Quyền Feature '+f[2]+' — đề xuất phiếu TKCT-1B mục Q">Quyền: '+chipQ(tab)+'</span></div>';
+}
+function khongMenu(){
+ const pdt=role==='PHT_DT';
+ return '<div class="card"><div class="empty">🔒 Vai <b>'+esc(R().cd)+'</b> <b>không có menu này</b> trong sidebar.<br><span class="mu">'
+  +(pdt?'Ba ô cũ của PHT_DT ở M8.3 (nhận báo cáo · khóa chat · xem quy tắc) <b>rời trường cùng M8.3</b> — việc đó nay của công ty. Anh Ninh chốt 24/9/2026: tab ④ <b>Kết quả xử lý vi phạm</b> <b>chỉ Hiệu trưởng</b> — PHT_DT không xem (thông tin kỷ luật của một người, giữ một người biết).'
+   :'Văn thư không có việc với dịch vụ nhắn tin. Menu chỉ có Quản trị hệ thống và Hiệu trưởng (§8).')+'</span></div></div>';
+}
+/* ── Sự kiện chung ── */
+mfns.bclose=()=>closeM();
+document.addEventListener('click',e=>{
+ const t=e.target;
+ const m=t.closest('[data-mb]');if(m){const fn=mfns['b'+m.dataset.mb];fn?fn(m):closeM();return}
+ if(t===$('#mask')){closeM();return}
+ const rb=t.closest('.rb');if(rb){role=rb.dataset.r;ST.cur=null;ST.tab=null;render();return}
+ if(t.id==='btnNote'){document.body.classList.toggle('nn');render();return}
+ const tb=t.closest('#tabs [data-t]');if(tb){ST.tab=tb.dataset.t;ST.cur=null;ST.chip='all';render();return}
+ const a=t.closest('[data-a]');if(a&&!a.disabled){const fn=ACT[a.dataset.a];if(fn){fn(a.dataset.v,a,e);return}}
+});
+document.addEventListener('change',e=>{
+ if(e.target.id==='hdt'){ST.cur=null;render();return}
+ if(e.target.id==='hnam'){ST.cur=null;render();
+  if(ST.tab==='nc')toast('⚠ <b>Bộ chọn năm học ở header không áp cho màn này.</b> Danh sách nhóm vẫn là năm <b>'+ST.namNc+'</b> — đổi ở ô ngay trên bảng.');
+  else if(ST.tab!=='kt')toast('Tab này là dòng liên tục — năm học ở header không áp.');return}
+ if(e.target.id==='namNc'){ST.namNc=e.target.value;ST.cur=null;render();return}
+});
+ACT.thDau=()=>{if(TH==='dau')return;location.reload()};
+ACT.thGiua=()=>{if(TH==='giua')return;sangGiuaNam();ST.cur=null;render();toast('📅 Chuyển sang <b>20/11/2026</b> — gói 2026-2027 đã gửi 05/9 · 9A1 đổi GVCN ở M4.5 ngày 18/11 · 10A5 lập 20/10')};
+
+/* ══════════════ TAB ① KHỞI TẠO NĂM HỌC — F1 m8.7.khoi_tao_nam_hoc (HDKN ① ②) ══════════════ */
+function canhBao(l){
+ const o=[];
+ if(!l.gv)o.push({ma:'K1',lv:'r',m:'Lớp <b>chưa có GVCN</b> ở M4.5 — nhóm không có chủ; dòng này <b>không gửi</b>'});
+ const t=THIEU[l.ma];
+ if(t&&(t[0]+t[1]))o.push({ma:'K2',lv:'w',m:'<b>'+(t[0]+t[1])+' em</b> chưa có phụ huynh trong gói'+(t[0]?' — '+t[0]+' chưa có link liên kết':'')+(t[1]?' · '+t[1]+' có link chưa đổi':'')+' — văn thư xử lý ở ↗ M10.5 (lọc «Học sinh chưa có tài khoản liên kết»)'});
+ if(soPH(l)<5)o.push({ma:'K3',lv:'w',m:'Chỉ <b>'+soPH(l)+' phụ huynh</b> — lớp mới lập, nhắc rà danh sách ở M1.7'});
+ if(l.k4)o.push({ma:'K4',lv:'w',m:esc(l.k4)+' — nhóm tạo được nhưng chủ nhóm chưa mở được'});
+ return o;
+}
+const mucDong=l=>{const c=canhBao(l);return c.some(x=>x.lv==='r')?'chan':c.length?'canh':'sach'};
+const kmaHtml=c=>'<span class="kma '+c.lv+'" title="'+c.m.replace(/<[^>]+>/g,'').replace(/"/g,'')+'">'+c.ma+'</span>';
+const BUOC=[['nhap','Nháp — IT rà'],['cho','Chờ Hiệu trưởng xác nhận'],['da_gui','Đã gửi']];
+function stepsGoi(tt){const i=BUOC.findIndex(b=>b[0]===tt);return '<div class="steps2">'+BUOC.map((b,j)=>'<span class="'+(j<i?'done':j===i?'now':'')+'">'+(j<i?'✓ ':'')+b[1]+'</span>').join('<span style="border:none;background:none">›</span>')+'</div>'}
+const LY={lop_trung:'Dịch vụ đã có một nhóm cùng mã lớp này',thieu_chu_nhom:'Nhóm không có chủ nhóm hợp lệ',dinh_danh_trung:'Một người xuất hiện hai lần trong cùng nhóm',
+ chu_ky_sai:'Chữ ký của trường không kiểm được',het_han:'Gói quá hạn khi tới dịch vụ',nam_hoc_da_khoi_tao:'Năm học này đã có gói',loai_khong_ho_tro:'Loại nhóm dịch vụ chưa hỗ trợ',
+ vuot_tran_hop_dong:'Vượt trần hợp đồng',khong_phai_chu_nhom:'Người gửi không phải chủ nhóm'};
+const VIEC={lop_trung:'Báo nhà cung cấp — rồi gửi lại bằng tao_nhom ở tab ②',thieu_chu_nhom:'Phân GVCN ở M4.5 — rồi gửi lại bằng tao_nhom ở tab ②',nam_hoc_chua_khoi_tao:'Gửi gói ở tab ① trước',dinh_danh_trung:'Chủ nhóm thêm lại bằng ➕ Thêm (ứng viên của trường)'};
+
+function viewKt(){
+ const nam=namHdr(),g=GOI[nam];
+ let h=scopeBar('kt','Tab này <b>chịu năm học ở header</b> — gói của năm <b>'+nam+'</b>.');
+ if(nam!==NAM_HT){
+  h+='<div class="goi"><div class="t"><b>📦 Gói khởi tạo năm học '+nam+'</b><div class="m">Đã gửi '+d2s(g.xnLuc)+' — lập bởi <b>'+esc(ten(g.lap))+'</b>, Hiệu trưởng <b>'+esc(ten(g.xn))+'</b> xác nhận. <b>Mỗi năm học một gói</b> — tab chỉ đọc (K5).</div>'+stepsGoi('da_gui')+'</div>'
+   +'<div class="n"><div><b>'+g.so+'</b>nhóm gửi</div><div><b>'+g.ok+'</b>thành công</div><div><b style="color:var(--red)">'+g.tc+'</b>bị từ chối</div></div></div>'
+   +'<div class="ro">Bản sao nội dung đã gửi và bảng kết quả của gói này ở <b>tab ③ Lịch sử gửi</b>.</div>';
+  return h;
+ }
+ const ds=dongGoi(nam).filter(l=>!dtLoc()||l.dt===dtLoc());
+ const all=dongGoi(nam);
+ const chan=all.filter(l=>mucDong(l)==='chan'),canh=all.filter(l=>mucDong(l)==='canh');
+ const di=all.filter(l=>!chanK1(l));
+ const tv=di.reduce((s,l)=>s+soPH(l)+1,0);
+ const ttTxt={nhap:'Nháp — Quản trị hệ thống đang rà',cho:'Chờ Hiệu trưởng xác nhận gửi',da_gui:'Đã gửi '+d2s(g.xnLuc)}[g.tt];
+ h+='<div class="goi"><div class="t"><b>📦 Gói khởi tạo nhóm chat năm học '+nam+'</b><div class="m">'+ttTxt
+  +(g.lap?' · lập bởi <b>'+esc(ten(g.lap))+'</b> '+d2s(g.lapLuc):'')+(g.xn?' · xác nhận: <b>'+esc(ten(g.xn))+'</b>':'')+'. Máy dựng sẵn từ <b>M1.7</b> (lớp) · <b>M4.5</b> (GVCN) · <b>M10.5</b> (liên kết phụ huynh đang hiệu lực — HDLP) — không ai gõ tay một dòng nào.</div>'+stepsGoi(g.tt)+'</div>'
+  +'<div class="n"><div><b>'+di.length+'</b>nhóm sẽ gửi</div><div><b>'+n3(tv)+'</b>thành viên</div><div><b style="color:var(--red)">'+chan.length+'</b>lớp bị chặn</div><div><b style="color:var(--amber)">'+canh.length+'</b>cảnh báo</div></div>'
+  +'<div style="display:flex;gap:6px;flex-wrap:wrap">'+nutGoi(g)+'</div></div>';
+ if(g.traLai)h+='<div class="alert w">↩ <span class="sp">Hiệu trưởng <b>trả lại để rà</b> lúc '+d2s(g.traLai.luc)+': <i>«'+esc(g.traLai.ly)+'»</i></span></div>';
+ if(g.tt==='da_gui')h+=bangKetQua(g);
+ h+='<div class="diko"><div class="di"><h4>📤 Rời máy chủ trường khi gửi</h4>Lớp · tên nhóm · <b>chủ nhóm</b> · thành viên ban đầu: <b>mã ẩn danh · tên hiển thị · vai</b> (gvcn · phu_huynh) · trường <code>loai = lop</code>.</div>'
+  +'<div class="ko"><h4>⛔ Không có trong gói</h4>Quan hệ <b>GVBM ⇄ lớp</b> (giấy thông hành lo) · SĐT · ngày sinh · địa chỉ · mã học sinh · lý do học sinh vắng khỏi danh sách (NT5 · HDKN ② mục 1).</div></div>';
+ h+=dnote('Thành viên ban đầu = GVCN + <b>phụ huynh ĐÃ liên kết</b> App — liên kết phụ huynh <b>hieu_luc</b> (HDLP ②) với học sinh <b>đang ở trong lớp</b> (HDKN bản 3 ② mục 2). Em chỉ có link chưa đổi · liên kết chỉ đọc · đã ngắt ⇒ không vào gói. Ứng viên «➕ Thêm» của chủ nhóm cũng chỉ là phụ huynh đã liên kết (HDKN ③).');
+ const cnt={all:ds.length,chan:ds.filter(l=>mucDong(l)==='chan').length,canh:ds.filter(l=>mucDong(l)==='canh').length,sach:ds.filter(l=>mucDong(l)==='sach').length};
+ h+='<div class="chips">'+[['all','Tất cả'],['chan','🔴 Chặn'],['canh','🟡 Cảnh báo'],['sach','Sạch']].map(([k,n])=>'<span class="chip'+(ST.chip===k?' on':'')+'" data-a="chip" data-v="'+k+'">'+n+' <b>'+cnt[k]+'</b></span>').join('')+'</div>';
+ let rows=ds.filter(l=>ST.chip==='all'||mucDong(l)===ST.chip);
+ const w={chan:0,canh:1,sach:2};rows=rows.slice().sort((a,b)=>w[mucDong(a)]-w[mucDong(b)]);
+ const suaTen=coQ('kt','S')&&g.tt==='nhap';
+ let t='<div class="tbw"><div class="tbx"><table class="tb"><tr><th>Lớp</th><th>Tên nhóm</th><th>Chủ nhóm (GVCN · M4.5)</th><th class="num">Thành viên ban đầu</th><th>Chưa có PH trong gói</th><th>Kiểm tra</th></tr>';
+ rows.forEach(l=>{
+  const c=canhBao(l),t2=THIEU[l.ma];
+  t+='<tr class="cl '+mucDong(l)+(ST.cur===l.ma?' on':'')+'" data-a="moLop" data-v="'+l.ma+'"><td><b>'+l.ma+'</b> <span class="sub">· '+l.dt+'</span></td>'
+   +'<td>'+esc(g.ten[l.ma]||('Lớp '+l.ma+' năm '+nam))+(suaTen?' <button class="btn xs" data-a="suaTen" data-v="'+l.ma+'" title="Sửa tên nhóm">✏</button>':'')+'</td>'
+   +'<td>'+(l.gv?esc(l.gv):'<span class="st2 r">Chưa có GVCN</span>')+'</td>'
+   +'<td class="num">'+(chanK1(l)?'—':soPH(l)+' PH + GVCN')+'</td>'
+   +'<td>'+(t2&&(t2[0]+t2[1])?'<span class="st2 w">'+(t2[0]+t2[1])+' em</span>':'<span class="mu">—</span>')+'</td>'
+   +'<td>'+(c.length?c.map(kmaHtml).join(' '):'<span class="kma o">sạch</span>')+'</td></tr>';
+ });
+ t+='</table></div></div>';
+ if(ST.cur&&lop(ST.cur))return h+'<div class="duo"><div class="l">'+t+'</div><div class="r">'+panelLop(lop(ST.cur),nam)+'</div></div>';
+ return h+t;
+}
+function nutGoi(g){
+ let b='';
+ if(g.tt==='nhap'&&coQ('kt','T'))b+='<button class="btn sm" data-a="dungLai">↻ Dựng lại từ dữ liệu hiện tại</button>';
+ if(g.tt==='nhap'&&coQ('kt','S'))b+='<button class="btn p sm" data-a="chuyenHT">Chuyển Hiệu trưởng xác nhận ›</button>';
+ if(g.tt==='cho'&&coQ('kt','S')&&!coQ('kt','D'))b+='<button class="btn sm" data-a="rutLai">↶ Rút lại để sửa</button>';
+ if(g.tt==='cho'&&coQ('kt','D'))b+='<button class="btn sm" data-a="traLai">↩ Trả lại để rà</button><button class="btn g sm" data-a="xacNhan">✔ Xác nhận gửi gói năm học '+NAM_HT+'</button>';
+ if(g.tt==='cho'&&coQ('kt','S')&&coQ('kt','D'))b+='<button class="btn sm" data-a="rutLai">↶ Rút lại</button>';
+ if(g.tt==='nhap'&&!coQ('kt','S')&&coQ('kt','D'))b+='<span class="xam">Chờ Quản trị hệ thống rà xong và chuyển sang</span>';
+ return b;
+}
+function panelLop(l,nam){
+ const c=canhBao(l),tn=THIEU_TEN[l.ma]||[];
+ let p='<div class="ph"><div class="n"><h2>'+l.ma+' — '+esc(GOI[nam].ten[l.ma]||('Lớp '+l.ma+' năm '+nam))+'</h2><div class="m">'+DT[l.dt]+' · '+l.hs+' học sinh</div></div><div class="spacer"></div><button class="btn xs" data-a="dongP">✕</button></div><div class="pbody">';
+ c.forEach(x=>{p+='<div class="alert '+(x.lv==='r'?'r':'w')+'">'+x.ma+' <span class="sp">'+x.m+'</span></div>'});
+ if(!l.gv){p+='<div class="ro">Sang <b>M4.5</b> phân GVCN rồi quay lại bấm <b>↻ Dựng lại</b> — tên nhóm đã sửa tay được giữ. Không phân kịp thì Hiệu trưởng vẫn gửi được các lớp còn lại; lớp này <b>chưa có nhóm</b> và hiện ở khối «Lớp chưa có nhóm» của tab ② (⏳ P1).</div></div>';return p}
+ p+='<div class="lbl" style="margin-top:0">Chủ nhóm</div><div class="kv"><span>'+esc(l.gv)+'</span><b>gvcn</b></div>';
+ p+='<div class="lbl">Thành viên ban đầu — '+soPH(l)+' phụ huynh <span class="mu">(tên hiển thị như trên giấy thông hành; mẫu 8 người đầu)</span></div>';
+ tvMau(l).forEach(x=>{p+='<div class="kv"><span>'+esc(x.ten)+'</span><span class="mu">phu_huynh</span></div>'});
+ if(tn.length)p+='<div class="lbl">Học sinh chưa có phụ huynh trong gói</div>'+tn.map(x=>'<div class="kv"><span>'+x+'</span><span class="mu">vào sau qua ➕ Thêm của chủ nhóm</span></div>').join('')
+  +'<div class="ro" style="margin-top:8px">Chỉ hiện <b>tên em</b> — không hiện ghi chú của học sinh (chỉ Văn thư · Hiệu trưởng đọc ở M10.5 — HDLP ⑩). Văn thư tạo / cấp lại link ở <b>↗ M10.5</b> tab «Liên kết App phụ huynh»; phụ huynh liên kết xong thì vào nhóm qua ➕ Thêm của chủ nhóm.</div>';
+ return p+'</div>';
+}
+function bangKetQua(g){
+ const tc=g.kq.filter(x=>x.kq==='bi_tu_choi');
+ const ds=ST.kqAll?g.kq:tc;
+ return '<div class="card"><div class="ph"><div class="n"><h2>📋 Bảng kết quả dịch vụ trả</h2><div class="m">'+g.kq.length+' dòng · <b style="color:var(--green)">'+(g.kq.length-tc.length)+' thành công</b> · <b style="color:var(--red)">'+tc.length+' bị từ chối</b> — từng dòng một, một dòng hỏng không làm hỏng cả gói (HDKN ⑤)</div></div><div class="spacer"></div>'
+  +'<span class="chip'+(ST.kqAll?'':' on')+'" data-a="kqLoc" data-v="0" style="cursor:pointer">Bị từ chối</span><span class="chip'+(ST.kqAll?' on':'')+'" data-a="kqLoc" data-v="1" style="cursor:pointer">Tất cả</span></div>'
+  +'<table class="tb"><tr><th>Tham chiếu</th><th>Kết quả</th><th>Lý do</th><th>Việc nên làm</th></tr>'
+  +ds.map(x=>'<tr'+(x.kq==='bi_tu_choi'?' class="chan"':'')+'><td>'+esc(x.ref)+'</td><td>'+(x.kq==='thanh_cong'?'<span class="st2 o">✅ Thành công</span>':'<span class="st2 r">⛔ Bị từ chối</span>')+'</td>'
+   +'<td>'+(x.ma?'<span class="ma">'+x.ma+'</span> '+esc(LY[x.ma]||''):'')+'</td><td>'+(x.ma?esc(VIEC[x.ma]||''):'')+'</td></tr>').join('')
+  +'</table><div class="ro" style="margin:10px 12px">Nhóm bị từ chối ⇒ <b>chưa có nhóm đó</b> — hiện ở khối «Lớp chưa có nhóm» của tab ②. Gửi lại bằng <b>yêu cầu lẻ <code>tao_nhom</code></b> ở khối đó — Quản trị hệ thống đề nghị, <b>Hiệu trưởng xác nhận từng lần</b> (HDKN ④ mục 4).</div></div>';
+}
+ACT.chip=v=>{ST.chip=v;ST.cur=null;render()};
+ACT.kqLoc=v=>{ST.kqAll=v==='1';render()};
+ACT.moLop=(v,a,e)=>{if(e.target.closest('[data-a="suaTen"]'))return;ST.cur=ST.cur===v?null:v;render()};
+ACT.dongP=()=>{ST.cur=null;render()};
+ACT.dungLai=()=>{toast('↻ Đã dựng lại gói từ M1.7 · M4.5 · M1.1 — <b>tên nhóm sửa tay được giữ</b>. 8A3 vẫn chưa có GVCN.')};
+ACT.suaTen=v=>{
+ const g=GOI[NAM_HT];
+ openM('✏ Tên nhóm — lớp '+v,'<label class="lbl">Tên nhóm</label><input class="fldi" id="fTen" value="'+esc(g.ten[v]||('Lớp '+v+' năm '+NAM_HT))+'"><div class="ro" style="margin-top:9px">Sau khi gửi, GVCN (chủ nhóm) đổi tên ở M8.2.</div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="luuTen" data-v="'+v+'">Lưu</button>');
+};
+mfns.bluuTen=b=>{const x=$('#fTen').value.trim();if(!x){toast('⛔ Tên nhóm không được để trống');return}GOI[NAM_HT].ten[b.dataset.v]=x;closeM();render();toast('Đã sửa tên nhóm '+b.dataset.v)};
+ACT.chuyenHT=()=>{
+ const g=GOI[NAM_HT];g.tt='cho';g.lap=meId();g.lapLuc=NOW;g.traLai=null;render();
+ toast('Đã chuyển <b>Hiệu trưởng xác nhận</b> — bảng khóa sửa. Sinh việc cho HT ở M0.2 (phiếu mục E).');
+};
+ACT.rutLai=()=>{GOI[NAM_HT].tt='nhap';render();toast('↶ Đã rút gói về Nháp để sửa')};
+ACT.traLai=()=>openM('↩ Trả lại gói để rà','<label class="lbl">Lý do (bắt buộc)</label><textarea class="fldi" id="fLy" rows="3"></textarea>','<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="traLai">Trả lại</button>');
+mfns.btraLai=()=>{const x=$('#fLy').value.trim();if(!x){toast('⛔ Phải nêu lý do trả lại');return}const g=GOI[NAM_HT];g.tt='nhap';g.traLai={luc:NOW,ly:x};closeM();render();toast('Đã trả gói về Quản trị hệ thống')};
+ACT.xacNhan=()=>{
+ const g=GOI[NAM_HT];
+ if(!laFull()&&g.lap===meId()){toast('⛔ Người lập gói không tự xác nhận được — bước xác nhận phải do người khác (ràng buộc 4)');return}
+ const di=dongGoi(NAM_HT).filter(l=>!chanK1(l));
+ openM('✔ Xác nhận gửi gói khởi tạo năm học '+NAM_HT,
+  '<div class="kv"><span>Nhóm lớp sẽ tạo</span><b>'+di.length+'</b></div><div class="kv"><span>Thành viên ban đầu</span><b>'+n3(di.reduce((s,l)=>s+soPH(l)+1,0))+'</b></div>'
+  +'<div class="kv"><span>Lớp bị chặn — <b>không gửi</b></span><b style="color:var(--red)">'+dongGoi(NAM_HT).filter(chanK1).map(l=>l.ma).join(', ')+'</b></div>'
+  +'<div class="warn" style="margin-top:10px">• <b>Mỗi năm học một lần</b> — đã gửi thì <b>không rút lại</b>.<br>• Lớp bị chặn gửi bổ sung sau bằng <b>yêu cầu lẻ <code>tao_nhom</code></b> (một nhóm một lần, Hiệu trưởng xác nhận từng lần).<br>• Phụ huynh nhận thông báo vào nhóm ngay khi dịch vụ tạo xong.</div>'
+  +(laFull()?dnote('Vai demo «Đủ quyền» vừa lập vừa xác nhận chỉ để rà trọn luồng. Trên hệ thống thật, người lập gói không tự xác nhận được (ràng buộc 4).'):''),
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn g" data-mb="guiGoi">Gửi gói sang dịch vụ nhắn tin</button>');
+};
+mfns.bguiGoi=()=>{guiGoi(NAM_HT,laFull()?'duc':meId(),NOW);closeM();ST.kqAll=false;render();
+ toast('📦 Đã gửi — dịch vụ trả <b>bảng kết quả</b>: 2 dòng bị từ chối (7A4 · một thành viên 6A2). Ghi tab ③.')};
+
+/* ══════════════ TAB ② NHÓM CHAT VÀ CHỦ NHÓM — F2 m8.7.nhom_chat (HDKN ④) ══════════════
+   Bộ chọn năm học RIÊNG — header KHÔNG áp (chốt NT7 · §4.1). */
+function gvcnHienHanh(g){const l=lop(g.lop);return l?l.gv:null}
+function lopChuaCoNhom(nam){
+ if(nam!==NAM_HT||GOI[nam].tt!=='da_gui')return [];
+ const co=NHOM[nam].map(g=>g.lop);
+ return LOP.filter(l=>!co.includes(l.ma)).map(l=>{
+  if(l.lapLuc)return {l,nguon:'Lập sau ngày gửi gói — '+d2s(l.lapLuc)+' (M1.7)'};
+  if(chanK1(l))return {l,nguon:'Bị chặn trước khi gửi — K1 chưa có GVCN (không đi)'};
+  const k=(GOI[nam].kq||[]).find(x=>x.ref==='Nhóm '+l.ma);
+  return {l,nguon:'Bị từ chối trong gói — <span class="ma">'+(k?k.ma:'?')+'</span>'};
+ });
+}
+function viewNc(){
+ const nam=ST.namNc;
+ let h=scopeBar('nc');
+ h+='<div class="alert w">⚠ <span class="sp"><b>Bộ chọn năm học ở header không áp cho màn này.</b> Năm học của danh sách nhóm chọn ở ô ngay dưới — nhóm chat nằm ở dịch vụ của công ty và <b>sống qua nhiều năm học</b>; thao tác ở đây là <b>gửi ra ngoài, không hoàn tác</b>.</span></div>';
+ h+='<div class="bar"><span class="nsel">Năm học của danh sách: <select id="namNc">'+Object.keys(NHOM).slice().reverse().map(n=>'<option'+(n===nam?' selected':'')+'>'+n+'</option>').join('')+'</select></span>'
+  +'<div class="sum"><span>Header đang ở <b>'+namHdr()+'</b> — không áp</span></div></div>';
+ const ds=NHOM[nam].filter(g=>{const l=lop(g.lop);return !dtLoc()||!l||l.dt===dtLoc()});
+ if(nam===NAM_HT&&GOI[nam].tt!=='da_gui'){
+  h+='<div class="card"><div class="empty">📦 Gói khởi tạo năm học <b>'+nam+'</b> <b>chưa gửi</b> — dịch vụ chưa có nhóm nào của năm này.<br><span class="mu">Rà và gửi ở tab ① · hoặc chọn năm học trước ở ô trên.</span></div></div>';
+  return h+khoiCS();
+ }
+ const luu=ds.length&&ds.every(g=>g.tt==='luu');
+ let t='<div class="tbw"><div class="tbx"><table class="tb"><tr><th>Lớp · tên nhóm</th><th>Chủ nhóm (tại dịch vụ)</th><th>GVCN theo M4.5</th><th>Trạng thái</th></tr>';
+ ds.forEach(g=>{
+  const gv=nam===NAM_HT?gvcnHienHanh(g):g.chu,lech=nam===NAM_HT&&gv&&gv!==g.chu;
+  t+='<tr class="cl'+(lech?' canh':'')+(ST.cur===g.lop?' on':'')+'" data-a="moNhom" data-v="'+g.lop+'"><td><b>'+g.lop+'</b> <span class="sub">'+esc(g.ten)+'</span></td><td>'+esc(g.chu)+'</td>'
+   +'<td>'+(nam===NAM_HT?(lech?'<b>'+esc(gv)+'</b> <span class="st2 w">⚠ lệch</span>':'<span class="mu">= chủ nhóm</span>'):'<span class="mu">—</span>')+'</td>'
+   +'<td>'+(g.tt==='luu'?'<span class="st2 n">📁 Đã lưu trữ</span>':g.cho?'<span class="st2 b">⏳ Đổi chủ nhóm đang gửi</span>':'<span class="st2 o">Đang hoạt động</span>')+'</td></tr>';
+ });
+ t+='</table></div></div>';
+ t+='<div class="ro" style="margin-top:8px">Không có cột số thành viên, số dòng lệch (anh Ninh chốt 24/9/2026 — K10): dịch vụ <b>không báo ngược</b> trạng thái nhóm về trường; người lệch do <b>chủ nhóm</b> xử lý ở M8.2. Quy tắc chat (giờ im lặng mặc định · dung lượng tệp · gửi ảnh) là <b>quy định cứng của công ty</b> — trường không cấu hình (K9). <b>Không có</b> cột tin nhắn, số tin, lượt đọc: menu này không đọc tin.</div>';
+ const pn=ST.cur&&ds.find(g=>g.lop===ST.cur);
+ h+=pn?'<div class="duo"><div class="l">'+t+'</div><div class="r">'+panelNhom(pn,nam)+'</div></div>':t;
+ const cn=lopChuaCoNhom(nam);
+ if(cn.length){
+  h+='<div class="gsec"><h3>Lớp chưa có nhóm <span class="pill">'+cn.length+'</span></h3>'
+   +'<table class="tb"><tr><th>Lớp</th><th>Nguồn</th><th>Thao tác</th></tr>'
+   +cn.map(x=>'<tr><td><b>'+x.l.ma+'</b></td><td>'+x.nguon+'</td><td>'+oTao(x.l)+'</td></tr>').join('')+'</table>'
+   +'<div class="ro" style="margin-top:9px">🔄 Yêu cầu lẻ <b><code>tao_nhom</code></b> (HDKN ④ mục 4 — anh Ninh duyệt P1 ngày 24/9/2026): <b>một nhóm một lần</b>, Quản trị hệ thống đề nghị (bit S) — <b>Hiệu trưởng xác nhận từng lần</b> (bit D đã có). Máy dựng dòng nhóm đúng khuôn một phần tử của gói; gói đầu năm <b>vẫn một lần</b>. Không thêm cột, tab, ô quyền.</div></div>';
+ }
+ h+=khoiLuuTru(nam,luu);
+ return h+khoiCS();
+}
+function panelNhom(g,nam){
+ const gv=nam===NAM_HT?gvcnHienHanh(g):null,l=lop(g.lop);
+ let p='<div class="ph"><div class="n"><h2>'+g.lop+' — '+esc(g.ten)+'</h2><div class="m">'+nam+(l&&l.doiGV&&nam===NAM_HT?' · GVCN đổi ở M4.5 ngày '+l.doiGV:'')+'</div></div><div class="spacer"></div><button class="btn xs" data-a="dongP">✕</button></div><div class="pbody">';
+ p+='<div class="kv"><span>Chủ nhóm tại dịch vụ</span><b>'+esc(g.chu)+'</b></div>';
+ if(nam===NAM_HT)p+='<div class="kv"><span>GVCN theo M4.5</span><b>'+esc(gv||'—')+'</b></div>';
+ if(g.tt==='luu'){p+='<div class="ro" style="margin-top:9px">📁 Nhóm đã lưu trữ '+(g.luuLuc?d2s(g.luuLuc):'')+' — <b>chỉ đọc</b>. Không đổi chủ nhóm, không lưu trữ lại.</div></div>';return p}
+ if(nam===NAM_HT&&gv&&gv!==g.chu){
+  p+='<div class="alert w" style="margin-top:9px">⚠ <span class="sp"><b>Lệch.</b> Giấy thông hành của <b>'+esc(gv)+'</b> ghi <code>'+g.lop+': gvcn</code> ⇒ dịch vụ <b>tự chuyển chủ nhóm trong vòng 24 giờ</b>. Muốn ngay (GVCN cũ nghỉ đột xuất — 24 giờ không ai quản nhóm) thì gửi yêu cầu lẻ.</span></div>';
+ }
+ const coS=coQ('nc','S');
+ const same=!gv||gv===g.chu;
+ p+='<div style="margin-top:10px">'+(coS?'<button class="btn p sm" data-a="doiChu" data-v="'+g.lop+'"'+(same||g.cho?' disabled':'')+'>🔁 Đổi chủ nhóm'+(same?'':' ngay')+'</button>':'<span class="xam">Vai này không có bit S ở tab ②</span>')
+  +(same&&coS?' <span class="mu" style="font-size:12px">Chủ nhóm đang là GVCN hiện hành — không có gì để đổi.</span>':'')+'</div>';
+ p+=dnote('Hộp chọn chỉ có <b>một</b> ứng viên hợp lệ: GVCN hiện hành theo M4.5. Chọn ai khác thì giấy thông hành kế tiếp sẽ <b>tự chuyển ngược lại</b> (HDGT ⑤ mục 2) — nên không có ô chọn tự do.');
+ return p+'</div>';
+}
+function khoiLuuTru(nam,luu){
+ if(nam===NAM_HT)return '';
+ if(luu)return '<div class="gsec"><h3>📁 Lưu trữ năm học '+nam+'</h3><div class="okbox" style="margin:0">Đã lưu trữ — mọi nhóm <b>chỉ đọc</b>; phần chữ giữ <b>đến hết '+CS.chu+' năm học</b> kể từ mốc này (E7).</div></div>';
+ const s=LUU[nam]||{tt:'chua'},kt=KET_THUC[nam],xong=kt<=NOW.slice(0,10);
+ let b='';
+ if(s.tt==='chua')b=R().dn?'<button class="btn sm" data-a="deNghiLuu" data-v="'+nam+'"'+(xong?'':' disabled')+'>Đề nghị lưu trữ năm học '+nam+'</button>'+(xong?'':' <span class="mu">năm học kết thúc '+d2s(kt)+'</span>'):'<span class="xam">Chờ Quản trị hệ thống đề nghị</span>';
+ if(s.tt==='cho')b=coQ('nc','D')?'<button class="btn g sm" data-a="xnLuu" data-v="'+nam+'">✔ Xác nhận lưu trữ</button> <span class="mu">IT đề nghị '+d2s(s.luc)+'</span>':'<span class="st2 b">⏳ Chờ Hiệu trưởng xác nhận</span>';
+ return '<div class="gsec"><h3>📁 Lưu trữ năm học '+nam+' <span class="pill">yêu cầu lẻ luu_tru_nam</span></h3>'
+  +'<div style="font-size:12.5px;line-height:1.7;margin-bottom:8px">Năm học đã kết thúc ở M10.1 ngày <b>'+d2s(kt)+'</b>. Lưu trữ ⇒ mọi nhóm của năm <b>chỉ đọc</b> · <b>mốc tính thời hạn</b> phần chữ bắt đầu · <b>không hoàn tác</b>. Hai người: <b>IT đề nghị — HT xác nhận</b>.</div>'+b+'</div>';
+}
+function khoiCS(){
+ const sua=R().cs&&coQ('nc','S');
+ return '<div class="gsec"><h3>⚙ Chính sách lưu giữ <span class="pill">E7 · yêu cầu lẻ chinh_sach_luu_giu</span></h3>'
+  +'<div class="frm">Tệp đính kèm: <input id="csTep" type="number" value="'+CS.tep+'"'+(sua?'':' disabled')+'> tháng sau ngày tải lên <span class="mu">— trần hợp đồng <b>'+CS.tranTep+'</b> tháng</span></div>'
+  +'<div class="frm">Phần chữ: đến hết <input id="csChu" type="number" value="'+CS.chu+'"'+(sua?'':' disabled')+'> năm học sau khi nhóm được lưu trữ <span class="mu">— trần hợp đồng <b>'+CS.tranChu+'</b> năm học</span></div>'
+  +'<div id="csLoi" class="mu" style="font-size:12px;min-height:16px"></div>'
+  +(sua?'<button class="btn p sm" data-a="guiCS">Gửi sang dịch vụ</button>':'<span class="xam">Chỉ Hiệu trưởng sửa (E7)</span>')
+  +'<div class="ro" style="margin-top:9px">Đang hiệu lực tại dịch vụ từ '+d2s(CS.capNhat)+'. Trần do <b>hợp đồng dịch vụ</b> quy định — đổi trần là đổi hợp đồng, không làm ở đây (số trên là <b>số mẫu</b>). Dung lượng chat <b>không tính vào ổ chung của trường</b> — M10.11 lớp L54 chỉ chiếu 🔗 hai con số này.</div></div>';
+}
+ACT.moNhom=v=>{ST.cur=ST.cur===v?null:v;render()};
+/* ── Yêu cầu lẻ tao_nhom (HDKN ④ mục 4 — TKCT-Z 24/9/2026, anh Ninh duyệt P1 phiếu 0A) ── */
+const TAO={};
+function lyDoTao(l){if(l.lapLuc)return 'lop_lap_sau_goi';if(!(GOI[NAM_HT].kq||[]).some(x=>x.ref==='Nhóm '+l.ma))return 'bi_chan_khi_ra_goi';return 'bi_tu_choi_trong_goi'}
+function oTao(l){
+ const t=TAO[l.ma];
+ if(t&&t.tt==='cho'){
+  if(coQ('nc','D'))return (t.boi===meId()&&!laFull()?'<span class="xam">Bốn mắt — người đề nghị không tự xác nhận</span>':'<button class="btn g xs" data-a="xnTao" data-v="'+l.ma+'">✔ Xác nhận tạo nhóm</button> <button class="btn xs" data-a="traTao" data-v="'+l.ma+'">Trả lại</button>')+' <span class="mu">IT đề nghị '+d2s(t.luc)+'</span>';
+  return '<span class="st2 b">⏳ Chờ Hiệu trưởng xác nhận</span>'+(R().dn?' <button class="btn xs" data-a="rutTao" data-v="'+l.ma+'">Rút lại</button>':'');
+ }
+ const tc=t&&t.tt==='tc'?' <span class="st2 w">lần trước: <span class="ma">'+t.ma+'</span></span>':'';
+ if(!R().dn)return '<span class="xam">Chờ Quản trị hệ thống đề nghị</span>'+tc;
+ if(!l.gv)return '<button class="btn xs" disabled>➕ Đề nghị tạo nhóm</button> <span class="mu">Phân GVCN ở M4.5 trước</span>'+tc;
+ return '<button class="btn p xs" data-a="deNghiTao" data-v="'+l.ma+'">➕ Đề nghị tạo nhóm</button>'+tc;
+}
+ACT.deNghiTao=v=>{const l=lop(v);TAO[v]={tt:'cho',boi:meId(),luc:NOW,ly_do:lyDoTao(l)};render();toast('Đã đề nghị tạo nhóm lớp <b>'+v+'</b> (<code>'+TAO[v].ly_do+'</code>) — chờ Hiệu trưởng xác nhận (sinh việc M0.2)')};
+ACT.rutTao=v=>{delete TAO[v];render();toast('Đã rút đề nghị tạo nhóm '+v)};
+ACT.traTao=v=>{delete TAO[v];render();toast('Hiệu trưởng trả lại đề nghị tạo nhóm '+v+' — IT nhận thông báo')};
+ACT.xnTao=v=>{const l=lop(v);openM('✔ Xác nhận tạo nhóm '+v+' — yêu cầu lẻ tao_nhom',
+ '<div class="kv"><span>Nhóm</span><b>Lớp '+v+' năm '+NAM_HT+'</b></div><div class="kv"><span>Chủ nhóm</span><b>'+esc(l.gv)+' (GVCN)</b></div><div class="kv"><span>Thành viên ban đầu</span><b>'+soPH(l)+' phụ huynh + GVCN</b></div><div class="kv"><span>Lý do</span><b><code>'+TAO[v].ly_do+'</code></b></div>'
+ +'<div class="warn" style="margin-top:10px">• Gửi ra <b>dịch vụ nhắn tin của công ty</b> — <b>không hoàn tác</b>.<br>• Gói đầu năm <b>vẫn một lần</b> — đây là yêu cầu lẻ cho <b>một</b> nhóm.</div>',
+ '<button class="btn" data-mb="close">Hủy</button><button class="btn g" data-mb="xnTao" data-v="'+v+'">Xác nhận gửi</button>')};
+mfns.bxnTao=b=>{
+ const v=b.dataset.v,l=lop(v),t=TAO[v];closeM();
+ const nd='tao_nhom { nam_hoc: '+NAM_HT+', ly_do: '+t.ly_do+', nhom: { loai: lop, lop_id: '+v+', chu_nhom: '+l.gv+', thanh_vien: '+(soPH(l)+1)+' } }';
+ if(v==='7A4'){TAO[v]={tt:'tc',ma:'lop_trung'};ghiLS({loai:'tao_nhom',ai:laFull()?'duc':meId(),ai2:t.boi,so:1,ok:0,tc:1,nd:nd,kq:[['Nhóm '+v,'bi_tu_choi','lop_trung']]});render();toast('Dịch vụ trả <b>bị từ chối</b> — <code>lop_trung</code> (mô phỏng: dịch vụ vẫn giữ nhóm trùng mã). Ghi tab ③.');return}
+ NHOM[NAM_HT].push({lop:v,ten:'Lớp '+v+' năm '+NAM_HT,chu:l.gv,tv:soPH(l)+1,lech:0,tt:'dang'});delete TAO[v];
+ ghiLS({loai:'tao_nhom',ai:laFull()?'duc':meId(),ai2:t.boi,so:1,ok:1,tc:0,nd:nd});render();toast('➕ Dịch vụ trả <b>thành công</b> — nhóm lớp <b>'+v+'</b> đã có. Ghi tab ③.');
+};
+ACT.doiChu=v=>{
+ const g=NHOM[NAM_HT].find(x=>x.lop===v),gv=gvcnHienHanh(g);
+ openM('🔁 Đổi chủ nhóm '+v+' — yêu cầu lẻ doi_chu_nhom',
+  '<label class="lbl">Chủ nhóm mới</label><select class="fldi"><option>'+esc(gv)+' — GVCN hiện hành theo M4.5</option></select>'
+  +'<div class="ro" style="margin-top:9px">Có hiệu lực <b>ngay</b> (HDKN ④ mục 1). Chủ mới vào danh sách thành viên nếu chưa có; <b>'+esc(g.chu)+'</b> mất quyền chủ nhóm nhưng <b>không tự rời nhóm</b>.</div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="doiChu" data-v="'+v+'">Gửi yêu cầu</button>');
+};
+mfns.bdoiChu=b=>{
+ const v=b.dataset.v,g=NHOM[NAM_HT].find(x=>x.lop===v),gv=gvcnHienHanh(g),cu=g.chu;
+ g.chu=gv;closeM();
+ ghiLS({loai:'doi_chu',ai:meId(),so:1,ok:1,tc:0,nd:'doi_chu_nhom { nam_hoc: '+NAM_HT+', lop_id: '+v+', chu_nhom_moi: '+gv+' } — thay '+cu});
+ render();toast('🔁 Dịch vụ trả <b>thành công</b> — chủ nhóm '+v+' là <b>'+esc(gv)+'</b>. Ghi tab ③.');
+};
+ACT.deNghiLuu=v=>{LUU[v]={tt:'cho',luc:NOW,boi:meId()};render();toast('Đã đề nghị lưu trữ năm học '+v+' — chờ Hiệu trưởng xác nhận (sinh việc M0.2)')};
+ACT.xnLuu=v=>openM('✔ Xác nhận lưu trữ năm học '+v,
+ '<div class="warn">• Mọi nhóm của năm '+v+' ⇒ <b>chỉ đọc</b>.<br>• <b>Mốc tính thời hạn</b> phần chữ bắt đầu từ hôm nay — giữ đến hết <b>'+CS.chu+' năm học</b> (E7).<br>• <b>Không hoàn tác.</b></div>',
+ '<button class="btn" data-mb="close">Hủy</button><button class="btn g" data-mb="xnLuu" data-v="'+v+'">Xác nhận lưu trữ</button>');
+mfns.bxnLuu=b=>{const v=b.dataset.v;NHOM[v].forEach(g=>{g.tt='luu';g.luuLuc=NOW.slice(0,10)});LUU[v]={tt:'xong'};closeM();
+ ghiLS({loai:'luu_tru',ai:laFull()?'duc':meId(),ai2:'tuan',so:1,ok:1,tc:0,nd:'luu_tru_nam { nam_hoc: '+v+' }'});render();toast('📁 Đã lưu trữ '+NHOM[v].length+' nhóm năm '+v+'. Ghi tab ③.')};
+ACT.guiCS=()=>{
+ const tp=+$('#csTep').value,ch=+$('#csChu').value;let loi='';
+ $('#csTep').classList.toggle('err',!(tp>0&&tp<=CS.tranTep));$('#csChu').classList.toggle('err',!(ch>0&&ch<=CS.tranChu));
+ if(!(tp>0&&tp<=CS.tranTep))loi='⛔ Tệp: phải từ 1 đến '+CS.tranTep+' tháng — vượt trần hợp đồng thì dịch vụ từ chối (vuot_tran_hop_dong). ';
+ if(!(ch>0&&ch<=CS.tranChu))loi+='⛔ Phần chữ: phải từ 1 đến '+CS.tranChu+' năm học.';
+ if(loi){$('#csLoi').innerHTML='<span style="color:var(--red)">'+loi+'</span>';return}
+ const ha=tp<CS.tep||ch<CS.chu;
+ openM('⚙ Gửi chính sách lưu giữ','<div class="kv"><span>Tệp đính kèm</span><b>'+CS.tep+' → '+tp+' tháng</b></div><div class="kv"><span>Phần chữ</span><b>'+CS.chu+' → '+ch+' năm học</b></div>'
+  +(ha?'<div class="danger" style="margin-top:10px">⚠ <b>Hạ thấp hơn hiện hành</b> — tệp / tin cũ hơn mốc mới sẽ bị xóa ở lượt dọn kế tiếp của dịch vụ, <b>không lấy lại được</b>.</div>':''),
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="guiCS" data-v="'+tp+'|'+ch+'">Gửi</button>');
+};
+mfns.bguiCS=b=>{const [tp,ch]=b.dataset.v.split('|').map(Number);CS.tep=tp;CS.chu=ch;CS.capNhat=NOW;closeM();
+ ghiLS({loai:'cs',ai:laFull()?'duc':meId(),so:1,ok:1,tc:0,nd:'chinh_sach_luu_giu { tep_dinh_kem_thang: '+tp+', phan_chu_nam_hoc: '+ch+' }'});render();toast('⚙ Dịch vụ nhận chính sách mới — M10.11 lớp L54 chiếu lại con số.')};
+
+/* ══════════════ TAB ③ LỊCH SỬ GỬI — F3 m8.7.lich_su_gui (HDKN ⑦) ══════════════
+   Mọi lượt dữ liệu rời máy chủ trường sang dịch vụ nhắn tin. Nhật ký — không sửa, không xóa. */
+const LOAI_LS={goi:'📦 Gói khởi tạo',doi_chu:'🔁 Đổi chủ nhóm',luu_tru:'📁 Lưu trữ năm học',cs:'⚙ Chính sách lưu giữ',thu_hoi:'🚫 Thu hồi giấy thông hành',xem_lai:'↩ Đề nghị xem xét lại',tao_nhom:'➕ Tạo nhóm (tao_nhom)'};
+const MA_TH={khoa:'Tài khoản Web bị khóa',nghi_viec:'Chuyển «Đã nghỉ việc»',lien_ket:'Liên kết App rời hiệu lực · liên kết phụ huynh bị ngắt',thiet_bi:'Phụ huynh đổi máy — khóa liên kết phụ huynh bị thay'};
+const aiTxt=x=>NG[x]?ten(x):x;
+function tenThuHoi(x){return x.che&&!(role==='HT'||laFull())?'🔒 tên che (vai này không phải Hiệu trưởng)':esc(x.ten)}
+function viewLs(){
+ const all=lsHien();
+ let h=scopeBar('ls','Dòng thời gian liên tục — năm học ở header <b>không áp</b>.');
+ const cnt={all:all.length};Object.keys(LOAI_LS).forEach(k=>cnt[k]=all.filter(x=>x.loai===k).length);
+ h+='<div class="bar">'+[['all','Tất cả']].concat(Object.entries(LOAI_LS)).map(([k,n])=>'<span class="chip'+(ST.lsLoc===k?' on':'')+'" data-a="lsLoc" data-v="'+k+'" style="cursor:pointer">'+n+' <b>'+(cnt[k]||0)+'</b></span>').join('')
+  +'<div class="sum">'+(coQ('ls','XD')?'<button class="btn sm" data-a="xuatLs">⬇ Xuất bảng lịch sử</button>':'')+'</div></div>';
+ const ds=all.filter(x=>ST.lsLoc==='all'||x.loai===ST.lsLoc);
+ let t='<div class="tbw"><div class="tbx"><table class="tb"><tr><th>Lúc</th><th>Loại</th><th>Ai</th><th class="num">Số dòng</th><th>Kết quả</th></tr>'
+  +ds.map(x=>'<tr class="cl'+(ST.cur===x.id?' on':'')+'" data-a="moLs" data-v="'+x.id+'"><td>'+d2s(x.luc)+'</td><td>'+LOAI_LS[x.loai]+'</td><td>'+esc(aiTxt(x.ai))+(x.ai2?' <span class="sub">· lập: '+esc(aiTxt(x.ai2))+'</span>':'')+'</td>'
+   +'<td class="num">'+x.so+'</td><td>'+x.ok+' ✅'+(x.tc?' · <b style="color:var(--red)">'+x.tc+' ⛔</b>':'')+'</td></tr>').join('')
+  +(ds.length?'':'<tr><td colspan="5"><div class="empty">Chưa có lượt gửi nào</div></td></tr>')+'</table></div></div>';
+ const cur=ST.cur&&all.find(x=>x.id===ST.cur);
+ h+=cur?'<div class="duo"><div class="l">'+t+'</div><div class="r">'+panelLs(cur)+'</div></div>':t;
+ h+=dnote('Trường giữ <b>bản sao nội dung đã gửi</b> (không gồm tin nhắn) — để khi có tranh chấp «trường đã gửi gì, lúc nào» thì trường tự trả lời được, không phải hỏi công ty. Mọi lượt gửi được <b>ghi trước khi gửi</b> (ràng buộc 13).');
+ return h;
+}
+function panelLs(x){
+ let p='<div class="ph"><div class="n"><h2>'+LOAI_LS[x.loai]+'</h2><div class="m">'+x.id+' · '+d2s(x.luc)+'</div></div><div class="spacer"></div><button class="btn xs" data-a="dongP">✕</button></div><div class="pbody">';
+ p+='<div class="lbl" style="margin-top:0">Bản sao nội dung đã gửi</div><div class="tin"><code>'+esc(x.nd)+'</code></div>';
+ if(x.loai==='thu_hoi'){
+  p+='<div class="kv"><span>Người bị thu hồi giấy</span><b>'+tenThuHoi(x)+'</b></div><div class="kv"><span>Mã lý do gửi đi</span><b><span class="ma">'+x.ma+'</span></b></div><div class="kv"><span>Nghĩa (chỉ ở phía trường)</span><span>'+MA_TH[x.ma]+'</span></div>'
+   +'<div class="ro" style="margin-top:9px">Dịch vụ chỉ nhận <b>mã kỹ thuật</b> — không chữ, không căn cứ (HDGT ⑦ mục 2). Nguồn: <b>'+esc(x.ai)+'</b> — menu này không cấp, không thu hồi giấy bằng tay.</div>';
+ }
+ if(x.kq&&x.kq.length)p+='<div class="lbl">Dòng bị từ chối</div>'+x.kq.map(k=>'<div class="kv"><span>'+esc(k[0])+'</span><span><span class="ma">'+k[2]+'</span> '+esc(LY[k[2]]||'')+'</span></div>').join('');
+ else p+='<div class="okbox" style="margin-top:9px">Dịch vụ trả: mọi dòng <b>thành công</b>.</div>';
+ return p+'</div>';
+}
+ACT.lsLoc=v=>{ST.lsLoc=v;ST.cur=null;render()};
+ACT.moLs=v=>{ST.cur=ST.cur===v?null:v;render()};
+ACT.xuatLs=()=>toast('⬇ Xuất bảng lịch sử (không gồm bản sao nội dung) — để trả lời thanh tra về dữ liệu đã chuyển cho bên xử lý (E5)');
+
+/* ══════════════ TAB ④ KẾT QUẢ XỬ LÝ VI PHẠM — F4 m8.7.ket_qua_vi_pham (HDKN ⑥ · NT6) ══════════════
+   Chỉ Hiệu trưởng. ⛔ KHÔNG có trường người báo cáo. ⛔ Không nội dung tin ngoài tin đính kèm. */
+const vvHien=()=>VV.filter(v=>v.lan[0].luc<=NOW).sort((a,b)=>a.lan[0].luc<b.lan[0].luc?1:-1);
+const lanCuoi=v=>v.lan[v.lan.length-1];
+function viewVp(){
+ const ds=vvHien();
+ let h=scopeBar('vp','Công ty xử lý theo <b>điều khoản sử dụng của công ty</b> và báo về khi người bị xử lý là thành viên của trường.');
+ let t='<div class="tbw"><div class="tbx"><table class="tb"><tr><th>Vụ việc</th><th>Người bị xử lý</th><th>Nơi xảy ra</th><th>Biện pháp</th><th>Thời hạn</th><th>Căn cứ</th><th>Đề nghị xem xét lại</th></tr>'
+  +ds.map(v=>{const l=lanCuoi(v),b=BP[l.bp];
+   return '<tr class="cl'+(ST.cur===v.id?' on':'')+'" data-a="moVv" data-v="'+v.id+'"><td><b>'+v.id+'</b><div class="sub">lần '+v.lan.length+' · '+d2s(l.luc)+'</div></td><td>'+esc(v.ten)+'<div class="sub">'+esc(v.ai)+'</div></td><td>'+esc(v.noi)+'</td>'
+    +'<td><span class="st2 '+b[1]+'">'+b[0]+'</span></td><td>'+(l.den?d2(l.tu)+' → '+d2s(l.den):'—')+'</td><td>'+esc(l.cc)+'</td>'
+    +'<td>'+(v.dn&&!v.dn.traLoi?'<span class="st2 b">↩ Đã đề nghị '+d2(v.dn.luc)+'</span>':v.dn?'<span class="st2 o">Đã có kết quả mới</span>':'<span class="mu">—</span>')+'</td></tr>'}).join('')
+  +'</table></div></div>';
+ t+='<div class="ro" style="margin-top:8px"><b>Không có cột người báo cáo</b> — trường không được biết ai báo cáo, kể cả khi người bị xử lý là giáo viên của trường (HDKN ⑥ mục 2). Biện pháp khóa <b>chỉ chặn gửi</b>, không xóa tin. Kỷ luật nội bộ (nếu có) đi <b>M4.10</b> — tab này không sinh việc gì tự động.</div>';
+ const cur=ST.cur&&ds.find(v=>v.id===ST.cur);
+ return h+(cur?'<div class="duo"><div class="l">'+t+'</div><div class="r">'+panelVv(cur)+'</div></div>':t);
+}
+function panelVv(v){
+ let p='<div class="ph"><div class="n"><h2>'+v.id+'</h2><div class="m">'+esc(v.ten)+' · '+esc(v.noi)+'</div></div><div class="spacer"></div><button class="btn xs" data-a="dongP">✕</button></div><div class="pbody">';
+ v.lan.slice().reverse().forEach((l,i)=>{const b=BP[l.bp];
+  p+='<div class="vv'+(i?' cu':'')+'"><b>Lần '+(v.lan.length-i)+'</b> · '+d2s(l.luc)+' · <span class="st2 '+b[1]+'">'+b[0]+'</span>'+(l.den?' · '+d2s(l.tu)+' → '+d2s(l.den):'')
+   +'<br>Người ra lệnh: <b>Công ty, theo điều khoản sử dụng</b> — '+esc(l.cc)+(l.gc?'<br><span class="mu">'+esc(l.gc)+'</span>':'')+'</div>'});
+ p+='<div class="lbl">Tin đính kèm</div><div class="alert b" style="margin-top:4px">ℹ <span class="sp">Chỉ những tin <b>đã được đính kèm vào báo cáo</b>. Phần còn lại của cuộc trò chuyện không ai đọc.</span></div>'
+  +v.tin.map(x=>'<div class="tin"><b>'+esc(x[0])+' · '+d2s(x[1])+'</b><br>'+esc(x[2])+'</div>').join('');
+ if(coQ('vp','T')){
+  const cho=v.dn&&!v.dn.traLoi;
+  p+='<div style="margin-top:12px">'+(cho?'<button class="btn sm" disabled>Đã gửi đề nghị — chờ công ty trả lời</button> <button class="btn sm" data-a="moPhongTL" data-v="'+v.id+'">🧪 Mô phỏng công ty trả lời</button>'
+   :'<button class="btn p sm" data-a="xemLai" data-v="'+v.id+'">↩ Đề nghị xem xét lại</button>')+'</div>';
+ }
+ return p+'</div>';
+}
+ACT.moVv=v=>{ST.cur=ST.cur===v?null:v;render();toast('🛡 Đã ghi audit — mở vụ việc '+v+' (thông tin kỷ luật của một người — ràng buộc 14)')};
+ACT.xemLai=v=>openM('↩ Đề nghị xem xét lại — '+v,'<label class="lbl">Lý do (bắt buộc)</label><textarea class="fldi" id="fXl" rows="4" placeholder="Nhà trường đề nghị công ty xem xét lại vì…"></textarea>'
+ +'<div class="ro" style="margin-top:9px">Đây là <b>tiếng nói chính thức của nhà trường</b> với công ty. Công ty trả <b>kết quả mới cùng mã vụ việc</b>, lần xử lý tăng (HDKN ⑥ mục 5).</div>',
+ '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="xemLai" data-v="'+v+'">Gửi đề nghị</button>');
+mfns.bxemLai=b=>{const ly=$('#fXl').value.trim();if(!ly){toast('⛔ Phải nêu lý do đề nghị xem xét lại');return}
+ const v=VV.find(x=>x.id===b.dataset.v);v.dn={luc:NOW,ly:ly,traLoi:false};closeM();
+ ghiLS({loai:'xem_lai',ai:laFull()?'duc':meId(),so:1,ok:1,tc:0,nd:'de_nghi_xem_xet_lai { vu_viec_id: '+v.id+', ly_do: «'+ly+'» }'});render();toast('↩ Đã gửi đề nghị — ghi tab ③')};
+ACT.moPhongTL=id=>{const v=VV.find(x=>x.id===id),l=lanCuoi(v);
+ v.lan.push({bp:'nhac_nho',tu:NOW.slice(0,10),den:null,cc:l.cc,luc:congPhut(NOW,90),gc:'Xem xét lại theo đề nghị của nhà trường — hạ từ khóa gửi tạm xuống nhắc nhở; mở khóa ngay.'});
+ v.dn.traLoi=true;NOW=congPhut(NOW,90);render();toast('Công ty trả <b>lần xử lý '+v.lan.length+'</b> cho '+id+' — Nhắc nhở')};
+
+
+/* ══════════════ RENDER ══════════════ */
+function render(){
+ rolebar();
+ $('#crumb').innerHTML='<div class="crumb">💬 Giao tiếp › <b>Quản lý nhóm chat</b> <span class="mu">— thay M8.3 (đã gỡ, cụm TKCT 24/9/2026)</span></div>';
+ tabs();header();
+ if(!ST.tab){$('#content').innerHTML=khongMenu();return}
+ const v={kt:viewKt,nc:viewNc,ls:viewLs,vp:viewVp}[ST.tab];
+ $('#content').innerHTML=v();
+}
+render();
+</script>
+</body>
+</html>

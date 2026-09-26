@@ -427,40 +427,126 @@ const TUAN_DA_CHOT=['2026-10-12','2026-10-13','2026-10-14','2026-10-15','2026-10
 
 /* ---------- điểm trường · khu · phòng ---------- */
 const DT={A:'Điểm trường A — cơ sở chính',B:'Điểm trường B'};
+
+/* ══════════ PHKT (24/9/2026) — PHÒNG Ở NỘI TRÚ LÀ ĐỊA ĐIỂM CỦA M6.4 ══════════
+   M6.10 thôi giữ danh mục phòng riêng (PK-1…PK-6, hợp đồng PHKT ① ④):
+     · phòng = địa điểm M6.4 loại `noitru`; mã phòng đổi sang TIỀN TỐ KHU (`KA-101`, `KB-205`)
+       vì mã cũ `A-101…` trùng phòng học M6.4 mà M6.4 bắt mã duy nhất toàn trường (PK-1);
+     · khu tách hai nửa (PK-4): phần vật lý (tên, điểm trường) = DÃY NHÀ `day` của M6.4;
+       phần vận hành (giới tính mặc định, quản sinh theo khu × năm) ở lại M6.10;
+     · sức chứa = ô `succhua` của M6.4, đơn vị GIƯỜNG khi loại = noitru (PK-3);
+     · trạng thái = bộ bốn trạng thái của M6.4 (PK-2 — `Ngừng dùng` ≡ `Đóng cửa`);
+     · M6.10 chỉ GHI HỘ sức chứa và trạng thái vào bản ghi M6.4 (PK-5 — 0 ô quyền mới).
+   Demo chưa đọc được M6.4 thật nên chép phần dữ liệu cần dùng, gắn nhãn dưới đây.
+   ✅ PHKT-Z (24/9/2026) đã đối chiếu bằng máy từng dòng với demo M6.4: 22 phòng × {mã · mã cũ · dãy ·
+      tầng · giường · trạng thái · ghi chú · cấp công trình · tên} khớp; tên dãy và tên phòng chép lại
+      đúng chữ M6.4 (trước đây rút gọn) — màn hình KHÔNG đổi vì nhãn khu là nhãn ngắn dẫn xuất.      */
+
+// bản chép M6.4 — PHKT · dãy nhà (DAYNHA của app.18 M6.4) — chỉ hai dãy ký túc xá
+// PHKT-Z: tên chép ĐÚNG từng chữ của M6.4 (nguồn — D1); màn M6.10 hiện NHÃN NGẮN dẫn xuất (khuVanHanh bên dưới)
+const DAYNHA_M64={
+ 'KA':{ten:'Nhà A — khu nội trú',dt:'A'},
+ 'KB':{ten:'Nhà B — khu nội trú',dt:'A'}};
+// bản chép M6.4 — PHKT · bốn trạng thái địa điểm (TT_PHONG của M6.4 + `chua` của PK-2)
+const TT_DD_M64={dung:'Đang sử dụng',sua:'Đang sửa',chua:'Chưa đưa vào sử dụng',dong:'Đóng cửa'};
+// bản chép M6.4 — PHKT · địa điểm loại `noitru` (khuôn bản ghi PHONG của M6.4: id · ten · dt · tang · loai · succhua · tt · ghichu · capCT · day)
+const DIA_DIEM_M64=[
+ {id:'KA-101',ten:'Phòng ở 101 — Nhà A',dt:'A',tang:1,loai:'noitru',succhua:8,donViSucChua:'giường',tt:'dung',capCT:'kiencuo',day:'KA'},
+ {id:'KA-102',ten:'Phòng ở 102 — Nhà A',dt:'A',tang:1,loai:'noitru',succhua:8,donViSucChua:'giường',tt:'dung',capCT:'kiencuo',day:'KA'},
+ {id:'KA-103',ten:'Phòng ở 103 — Nhà A',dt:'A',tang:1,loai:'noitru',succhua:8,donViSucChua:'giường',tt:'dung',capCT:'kiencuo',day:'KA'},
+ {id:'KA-104',ten:'Phòng ở 104 — Nhà A',dt:'A',tang:1,loai:'noitru',succhua:7,donViSucChua:'giường',tt:'dung',capCT:'kiencuo',day:'KA'},
+ {id:'KA-105',ten:'Phòng ở 105 — Nhà A',dt:'A',tang:1,loai:'noitru',succhua:6,donViSucChua:'giường',tt:'dung',capCT:'kiencuo',day:'KA'},
+ {id:'KA-201',ten:'Phòng ở 201 — Nhà A',dt:'A',tang:2,loai:'noitru',succhua:8,donViSucChua:'giường',tt:'dung',capCT:'kiencuo',day:'KA'},
+ {id:'KA-202',ten:'Phòng ở 202 — Nhà A',dt:'A',tang:2,loai:'noitru',succhua:8,donViSucChua:'giường',tt:'dung',capCT:'kiencuo',day:'KA'},
+ {id:'KA-203',ten:'Phòng ở 203 — Nhà A',dt:'A',tang:2,loai:'noitru',succhua:8,donViSucChua:'giường',tt:'dung',capCT:'kiencuo',day:'KA'},
+ {id:'KA-204',ten:'Phòng ở 204 — Nhà A',dt:'A',tang:2,loai:'noitru',succhua:8,donViSucChua:'giường',tt:'dung',capCT:'kiencuo',day:'KA'},
+ {id:'KA-205',ten:'Phòng ở 205 — Nhà A',dt:'A',tang:2,loai:'noitru',succhua:8,donViSucChua:'giường',tt:'dung',capCT:'kiencuo',day:'KA'},
+ {id:'KA-301',ten:'Phòng ở 301 — Nhà A',dt:'A',tang:3,loai:'noitru',succhua:8,donViSucChua:'giường',tt:'sua', capCT:'kiencuo',day:'KA',
+  ghichu:'Thấm trần, dự kiến xong 30/10/2026'},
+ {id:'KA-302',ten:'Phòng ở 302 — Nhà A',dt:'A',tang:3,loai:'noitru',succhua:8,donViSucChua:'giường',tt:'chua',capCT:'kiencuo',day:'KA',
+  ghichu:'Mới xây, chưa nghiệm thu'},
+ {id:'KB-101',ten:'Phòng ở 101 — Nhà B',dt:'A',tang:1,loai:'noitru',succhua:8,donViSucChua:'giường',tt:'dung',capCT:'kiencuo',day:'KB'},
+ {id:'KB-102',ten:'Phòng ở 102 — Nhà B',dt:'A',tang:1,loai:'noitru',succhua:8,donViSucChua:'giường',tt:'dung',capCT:'kiencuo',day:'KB'},
+ {id:'KB-103',ten:'Phòng ở 103 — Nhà B',dt:'A',tang:1,loai:'noitru',succhua:8,donViSucChua:'giường',tt:'dung',capCT:'kiencuo',day:'KB'},
+ {id:'KB-104',ten:'Phòng ở 104 — Nhà B',dt:'A',tang:1,loai:'noitru',succhua:6,donViSucChua:'giường',tt:'dung',capCT:'kiencuo',day:'KB'},
+ {id:'KB-105',ten:'Phòng ở 105 — Nhà B',dt:'A',tang:1,loai:'noitru',succhua:6,donViSucChua:'giường',tt:'dung',capCT:'kiencuo',day:'KB'},
+ {id:'KB-201',ten:'Phòng ở 201 — Nhà B',dt:'A',tang:2,loai:'noitru',succhua:8,donViSucChua:'giường',tt:'dung',capCT:'kiencuo',day:'KB'},
+ {id:'KB-202',ten:'Phòng ở 202 — Nhà B',dt:'A',tang:2,loai:'noitru',succhua:8,donViSucChua:'giường',tt:'dung',capCT:'kiencuo',day:'KB'},
+ {id:'KB-203',ten:'Phòng ở 203 — Nhà B',dt:'A',tang:2,loai:'noitru',succhua:8,donViSucChua:'giường',tt:'dung',capCT:'kiencuo',day:'KB'},
+ {id:'KB-204',ten:'Phòng ở 204 — Nhà B',dt:'A',tang:2,loai:'noitru',succhua:6,donViSucChua:'giường',tt:'dung',capCT:'kiencuo',day:'KB'},
+ {id:'KB-205',ten:'Phòng ở 205 — Nhà B',dt:'A',tang:2,loai:'noitru',succhua:6,donViSucChua:'giường',tt:'dung',capCT:'kiencuo',day:'KB'}
+];
+// hết bản chép M6.4 — PHKT
+
+/* ---- phần VẬN HÀNH — M6.10 giữ (hợp đồng PHKT ③ ④) ----
+   Khu: chỉ còn giới tính mặc định + quản sinh phụ trách; tên và điểm trường ĐỌC từ dãy nhà M6.4. */
+/* PHKT-Z — NHÃN NGẮN của khu = phần tên dãy nhà M6.4 đứng TRƯỚC dấu « — » (không có dấu thì nguyên tên).
+   Nhãn hiển thị DẪN XUẤT lúc vẽ: ⛔ không lưu, ⛔ không sửa ở M6.10; M6.4 đổi tên dãy thì nhãn đổi theo.
+   `tenDay` = tên đầy đủ của M6.4 (nguồn). */
+const nhanNganDay=t=>String(t).split(' — ')[0];
+function khuVanHanh(id,day,gt,qs){
+ return {id,day,gt,qs,
+  get tenDay(){return (DAYNHA_M64[this.day]||{ten:'(dãy nhà không còn ở M6.4)'}).ten},
+  get ten(){return nhanNganDay(this.tenDay)},
+  get dt(){return (DAYNHA_M64[this.day]||{}).dt}};
+}
 const KHU=[
- {id:'KA',dt:'A',ten:'Nhà A',gt:'nam',qs:'Phan Văn Cường'},
- {id:'KB',dt:'A',ten:'Nhà B',gt:'nu', qs:'Lê Thị Bích Ngọc'}
+ khuVanHanh('KA','KA','nam','Phan Văn Cường'),
+ khuVanHanh('KB','KB','nu','Lê Thị Bích Ngọc')
 ];
 const khuById=id=>KHU.find(k=>k.id===id);
 const tenKhu=id=>{const k=khuById(id);return k.ten+' ('+(k.gt==='nam'?'nam':'nữ')+')'};
 
-/* o = số em đang ở (dữ liệu mẫu). tt: dung · sua · chua · ngung */
-const PHONG=[
- {id:'A-101',khu:'KA',tang:1,sc:8,o:8,tt:'dung',khoi:'10'},
- {id:'A-102',khu:'KA',tang:1,sc:8,o:8,tt:'dung',khoi:'10'},
- {id:'A-103',khu:'KA',tang:1,sc:8,o:8,tt:'dung',khoi:'10'},
- {id:'A-104',khu:'KA',tang:1,sc:7,o:6,tt:'dung',khoi:'11'},
- {id:'A-105',khu:'KA',tang:1,sc:6,o:6,tt:'dung',khoi:'11'},
- {id:'A-201',khu:'KA',tang:2,sc:8,o:8,tt:'dung',khoi:'11'},
- {id:'A-202',khu:'KA',tang:2,sc:8,o:8,tt:'dung',khoi:'11'},
- {id:'A-203',khu:'KA',tang:2,sc:8,o:7,tt:'dung',khoi:'12'},
- {id:'A-204',khu:'KA',tang:2,sc:8,o:8,tt:'dung',khoi:'11'},
- {id:'A-205',khu:'KA',tang:2,sc:8,o:6,tt:'dung',khoi:'12'},
- {id:'A-301',khu:'KA',tang:3,sc:8,o:0,tt:'sua', khoi:'12',ghi:'Thấm trần, dự kiến xong 30/10/2026'},
- {id:'A-302',khu:'KA',tang:3,sc:8,o:0,tt:'chua',khoi:'—', ghi:'Mới xây, chưa nghiệm thu'},
- {id:'B-101',khu:'KB',tang:1,sc:8,o:8,tt:'dung',khoi:'10'},
- {id:'B-102',khu:'KB',tang:1,sc:8,o:7,tt:'dung',khoi:'10'},
- {id:'B-103',khu:'KB',tang:1,sc:8,o:8,tt:'dung',khoi:'10'},
- {id:'B-104',khu:'KB',tang:1,sc:6,o:5,tt:'dung',khoi:'11'},
- {id:'B-105',khu:'KB',tang:1,sc:6,o:6,tt:'dung',khoi:'11'},
- {id:'B-201',khu:'KB',tang:2,sc:8,o:8,tt:'dung',khoi:'11'},
- {id:'B-202',khu:'KB',tang:2,sc:8,o:8,tt:'dung',khoi:'12'},
- {id:'B-203',khu:'KB',tang:2,sc:8,o:8,tt:'dung',khoi:'12'},
- {id:'B-204',khu:'KB',tang:2,sc:6,o:6,tt:'dung',khoi:'12'},
- {id:'B-205',khu:'KB',tang:2,sc:6,o:0,tt:'dung',khoi:'—', ghi:'Chưa xếp học sinh nào'}
-];
-const phongById=id=>PHONG.find(p=>p.id===id);
-const TT_PHONG={dung:'Đang dùng',sua:'Đang sửa chữa',chua:'Chưa đưa vào sử dụng',ngung:'Ngừng dùng'};
+/* Phòng — phần vận hành: khối ưu tiên · ghi chú vận hành · mã cũ (bảng tra PK-1).
+   o = số em đang ở của DỮ LIỆU MẪU (chỉ để sinh học sinh), không phải một ô. */
+const VAN_HANH_PHONG={
+ 'KA-101':{maCu:'A-101',khoi:'10',o:8}, 'KA-102':{maCu:'A-102',khoi:'10',o:8}, 'KA-103':{maCu:'A-103',khoi:'10',o:8},
+ 'KA-104':{maCu:'A-104',khoi:'11',o:6}, 'KA-105':{maCu:'A-105',khoi:'11',o:6},
+ 'KA-201':{maCu:'A-201',khoi:'11',o:8}, 'KA-202':{maCu:'A-202',khoi:'11',o:8}, 'KA-203':{maCu:'A-203',khoi:'12',o:7},
+ 'KA-204':{maCu:'A-204',khoi:'11',o:8}, 'KA-205':{maCu:'A-205',khoi:'12',o:6},
+ 'KA-301':{maCu:'A-301',khoi:'12',o:0}, 'KA-302':{maCu:'A-302',khoi:'—', o:0},
+ 'KB-101':{maCu:'B-101',khoi:'10',o:8}, 'KB-102':{maCu:'B-102',khoi:'10',o:7}, 'KB-103':{maCu:'B-103',khoi:'10',o:8},
+ 'KB-104':{maCu:'B-104',khoi:'11',o:5}, 'KB-105':{maCu:'B-105',khoi:'11',o:6},
+ 'KB-201':{maCu:'B-201',khoi:'11',o:8}, 'KB-202':{maCu:'B-202',khoi:'12',o:8}, 'KB-203':{maCu:'B-203',khoi:'12',o:8},
+ 'KB-204':{maCu:'B-204',khoi:'12',o:6}, 'KB-205':{maCu:'B-205',khoi:'—', o:0,ghi:'Chưa xếp học sinh nào'}
+};
+/* Bảng tra mã cũ → mới (PK-1) — dẫn xuất từ VAN_HANH_PHONG, ⛔ không khai lần hai. */
+const BANG_TRA_MA_PHONG=Object.keys(VAN_HANH_PHONG).map(ma=>[VAN_HANH_PHONG[ma].maCu,ma]);
+const maMoiCua=cu=>{const r=BANG_TRA_MA_PHONG.find(x=>x[0]===cu);return r?r[1]:null};
+/* Hạt giống dữ liệu mẫu tính theo MÃ CŨ — để tên em, lượt cửa, điểm danh các đêm trước,
+   bữa ăn sinh ra y hệt trước khi đổi mã (phép kiểm PH-1). Hệ thống thật không có hạt giống. */
+const hatGiong=s=>String(s).replace(/K([AB]-\d{3})/g,'$1');
+
+/* ---- ghi hộ M6.4 (PK-5) — khuôn M10.1 §7.0.3 ----
+   Bản ghi vẫn của M6.4; audit ghi CẢ HAI phía: ở M6.4 «ghi hộ từ M6.10», ở M6.10 nhật ký này. */
+const NK_GHI_HO=[];
+function ghiHoM64(dd,truong,moi,ly){
+ const cu=dd[truong]; dd[truong]=moi;
+ NK_GHI_HO.unshift({luc:k2s(HOMNAY)+' '+simGio,ma:dd.id,truong,cu,moi,ly:ly||'',
+  boi:R().n,nguon:'M6.10 — ghi hộ M6.4'});
+}
+
+/* phongKTX() — CỬA ĐỌC DUY NHẤT của danh sách phòng ở M6.10.
+   Đọc địa điểm M6.4 loại `noitru`, ghép phần vận hành của M6.10. Mỗi phòng một đối tượng
+   giữ nguyên qua các lần gọi; `sc` và `tt` là thuộc tính của M6.4 — gán vào là GHI HỘ. */
+const _PKTX={};
+function phongKTX(){
+ return DIA_DIEM_M64.filter(d=>d.loai==='noitru').map(d=>_PKTX[d.id]||(_PKTX[d.id]=gheoPhong(d)));
+}
+function gheoPhong(d){
+ const vh=VAN_HANH_PHONG[d.id]||(VAN_HANH_PHONG[d.id]={maCu:null,khoi:'—',o:0});
+ return {id:d.id,dd:d,o:vh.o||0,
+  get maCu(){return vh.maCu},
+  get khu(){const k=KHU.find(x=>x.day===d.day);return k?k.id:null},
+  get tang(){return d.tang},
+  get sc(){return d.succhua},  set sc(v){ghiHoM64(d,'succhua',v)},
+  get tt(){return d.tt},       set tt(v){ghiHoM64(d,'tt',v)},
+  get khoi(){return vh.khoi||'—'},
+  /* ghi chú: vận hành (M6.10) trước, ghi chú địa điểm (M6.4) sau */
+  get ghi(){return vh.ghi||d.ghichu||''}, set ghi(v){vh.ghi=v}};
+}
+const phongById=id=>phongKTX().find(p=>p.id===id);
+const TT_PHONG=TT_DD_M64;
 
 /* ---------- sinh học sinh nội trú (tất định) ---------- */
 const HO=['Nguyễn','Trần','Lê','Phạm','Hoàng','Đỗ','Vũ','Bùi','Đặng','Ngô','Dương','Lý','Phan','Trịnh','Cao'];
@@ -472,29 +558,29 @@ const LOP_N=['10 Toán','10 Lý','10 Tin','11 Toán','11 Hóa','11 Tin','12 Toá
 const LOP_U=['10 Văn','10 Anh','10 Sinh','11 Văn','11 Anh','11 Toán','12 Văn','12 Anh','12 Sinh'];
 function rng(seed){let s=seed;return()=>{s=(s*1103515245+12345)&0x7fffffff;return s/0x7fffffff}}
 
-/* Bốn em của A-204 khai đích danh — đây là ca demo lõi của menu */
+/* Bốn em của KA-204 khai đích danh — đây là ca demo lõi của menu */
 const HS_DAC={
- 'A-204#0':{ten:'Nguyễn Minh An',   lop:'11 Toán',ma:'HS-2026-1104'},
- 'A-204#1':{ten:'Trần Quốc Bảo',    lop:'11 Toán',ma:'HS-2026-1107'},
- 'A-204#2':{ten:'Vũ Hoàng Nam',     lop:'11 Tin', ma:'HS-2026-1131'},
- 'A-204#3':{ten:'Lê Minh Tuấn',     lop:'12 Tin', ma:'HS-2026-1218'},
- 'A-204#4':{ten:'Đỗ Gia Khánh',     lop:'11 Toán',ma:'HS-2026-1109'},
- 'A-204#5':{ten:'Phạm Quốc Việt',   lop:'11 Hóa', ma:'HS-2026-1122'},
- 'A-204#6':{ten:'Hoàng Nhật Minh',  lop:'11 Toán',ma:'HS-2026-1112'},
- 'A-204#7':{ten:'Bùi Đức Thắng',    lop:'11 Tin', ma:'HS-2026-1135'},
- 'A-201#2':{ten:'Ngô Minh Khôi',    lop:'11 Toán',ma:'HS-2026-1118'},
- 'A-202#4':{ten:'Dương Quốc Việt',  lop:'11 Toán',ma:'HS-2026-1126'},
- 'B-101#1':{ten:'Đặng Thị Hà My',   lop:'10 Văn', ma:'HS-2026-1041'},
- 'B-201#3':{ten:'Hoàng Thị Vân Anh',lop:'11 Anh', ma:'HS-2026-1152'},
- 'B-203#5':{ten:'Trịnh Thu Hà',     lop:'12 Văn', ma:'HS-2026-1233'}
+ 'KA-204#0':{ten:'Nguyễn Minh An',   lop:'11 Toán',ma:'HS-2026-1104'},
+ 'KA-204#1':{ten:'Trần Quốc Bảo',    lop:'11 Toán',ma:'HS-2026-1107'},
+ 'KA-204#2':{ten:'Vũ Hoàng Nam',     lop:'11 Tin', ma:'HS-2026-1131'},
+ 'KA-204#3':{ten:'Lê Minh Tuấn',     lop:'12 Tin', ma:'HS-2026-1218'},
+ 'KA-204#4':{ten:'Đỗ Gia Khánh',     lop:'11 Toán',ma:'HS-2026-1109'},
+ 'KA-204#5':{ten:'Phạm Quốc Việt',   lop:'11 Hóa', ma:'HS-2026-1122'},
+ 'KA-204#6':{ten:'Hoàng Nhật Minh',  lop:'11 Toán',ma:'HS-2026-1112'},
+ 'KA-204#7':{ten:'Bùi Đức Thắng',    lop:'11 Tin', ma:'HS-2026-1135'},
+ 'KA-201#2':{ten:'Ngô Minh Khôi',    lop:'11 Toán',ma:'HS-2026-1118'},
+ 'KA-202#4':{ten:'Dương Quốc Việt',  lop:'11 Toán',ma:'HS-2026-1126'},
+ 'KB-101#1':{ten:'Đặng Thị Hà My',   lop:'10 Văn', ma:'HS-2026-1041'},
+ 'KB-201#3':{ten:'Hoàng Thị Vân Anh',lop:'11 Anh', ma:'HS-2026-1152'},
+ 'KB-203#5':{ten:'Trịnh Thu Hà',     lop:'12 Văn', ma:'HS-2026-1233'}
 };
 /* Ba em thiếu số định danh — chặn hồ sơ tạm trú ở bước 1 */
-const THIEU_DINHDANH=['A-105#2','B-104#0','B-202#6'];
+const THIEU_DINHDANH=['KA-105#2','KB-104#0','KB-202#6'];
 
 const HS=[];
-PHONG.forEach(p=>{
+phongKTX().forEach(p=>{
  const k=khuById(p.khu), nam=k.gt==='nam';
- const r=rng(p.id.split('').reduce((a,c)=>a+c.charCodeAt(0),13)*131);
+ const r=rng(hatGiong(p.id).split('').reduce((a,c)=>a+c.charCodeAt(0),13)*131);
  for(let i=0;i<p.o;i++){
   const key=p.id+'#'+i, dac=HS_DAC[key];
   const ten=dac?dac.ten:(HO[Math.floor(r()*HO.length)]+' '+(nam?DEM_N:DEM_U)[Math.floor(r()*10)]+' '+(nam?TEN_N:TEN_U)[Math.floor(r()*20)]);
@@ -506,12 +592,12 @@ PHONG.forEach(p=>{
 });
 /* bản ghi ngoài trạng thái "đang ở" — chứng minh quy tắc không xóa, chỉ đổi trạng thái */
 HS.push(
- {id:'X#1',ten:'Vũ Thị Kim Ngân',gt:'nu',lop:'10 Anh',ma:'HS-2026-1058',phong:'B-103',khu:'KB',giuong:8,
+ {id:'X#1',ten:'Vũ Thị Kim Ngân',gt:'nu',lop:'10 Anh',ma:'HS-2026-1058',phong:'KB-103',khu:'KB',giuong:8,
   tt:'thoiO',tu:'2026-09-05',den:'2026-10-10',ly:'Gia đình chuyển về gần trường, ở nhà người thân',dd:true,nguon:'App PH-HS'},
- {id:'X#2',ten:'Trần Gia Bảo',gt:'nam',lop:'12 Lý',ma:'HS-2026-1225',phong:'A-203',khu:'KA',giuong:8,
-  tt:'dangO',tu:'2026-09-28',den:null,ly:'Chuyển từ A-105 · lý do: xếp cùng khối 12',dd:true,nguon:'App PH-HS',chuyenTu:'A-105'},
- {id:'X#3',ten:'Trần Gia Bảo',gt:'nam',lop:'12 Lý',ma:'HS-2026-1225',phong:'A-105',khu:'KA',giuong:6,
-  tt:'chuyenPhong',tu:'2026-09-05',den:'2026-09-27',ly:'Chuyển sang A-203 để xếp cùng khối 12',dd:true,nguon:'App PH-HS'},
+ {id:'X#2',ten:'Trần Gia Bảo',gt:'nam',lop:'12 Lý',ma:'HS-2026-1225',phong:'KA-203',khu:'KA',giuong:8,
+  tt:'dangO',tu:'2026-09-28',den:null,ly:'Chuyển từ KA-105 · lý do: xếp cùng khối 12',dd:true,nguon:'App PH-HS',chuyenTu:'KA-105'},
+ {id:'X#3',ten:'Trần Gia Bảo',gt:'nam',lop:'12 Lý',ma:'HS-2026-1225',phong:'KA-105',khu:'KA',giuong:6,
+  tt:'chuyenPhong',tu:'2026-09-05',den:'2026-09-27',ly:'Chuyển sang KA-203 để xếp cùng khối 12',dd:true,nguon:'App PH-HS'},
  {id:'X#4',ten:'Lý Minh Quân',gt:'nam',lop:'10 Lý',ma:'HS-2026-1071',phong:null,khu:'KA',giuong:0,
   tt:'choDuyet',tu:'2026-10-26',den:null,ly:'Gia đình chuyển công tác, xin vào ở từ 26/10',dd:true,nguon:'App PH-HS'},
  {id:'X#5',ten:'Cao Thị Diệp Anh',gt:'nu',lop:'10 Sinh',ma:'HS-2026-1063',phong:null,khu:'KB',giuong:0,
@@ -534,21 +620,21 @@ const LOAI_DON={
 };
 let SEQ=1048;
 const DON=[
- {id:'RN-1041',hs:'A-204#1',loai:'raNgoai',tu:'2026-10-23',den:'2026-10-23',roi:'18:30',hen:'21:00',
+ {id:'RN-1041',hs:'KA-204#1',loai:'raNgoai',tu:'2026-10-23',den:'2026-10-23',roi:'18:30',hen:'21:00',
   ly:'Đi khám răng theo hẹn phòng khám, gia đình đón',tt:'duyet',boi:'App PH-HS',guiLuc:'22/10 20:14',nguoiDuyet:'Phan Văn Cường',duyetLuc:'22/10 21:05'},
- {id:'RN-1042',hs:'A-204#3',loai:'veNha',tu:'2026-10-23',den:'2026-10-25',roi:'16:00',hen:'18:00 CN',
+ {id:'RN-1042',hs:'KA-204#3',loai:'veNha',tu:'2026-10-23',den:'2026-10-25',roi:'16:00',hen:'18:00 CN',
   ly:'Về nhà cuối tuần theo lịch hai tuần một lần',tt:'duyet',boi:'App PH-HS',guiLuc:'21/10 19:40',nguoiDuyet:'Phan Văn Cường',duyetLuc:'22/10 07:50'},
- {id:'RN-1043',hs:'B-101#1',loai:'veNha',tu:'2026-10-23',den:'2026-10-25',roi:'16:10',hen:'18:00 CN',
+ {id:'RN-1043',hs:'KB-101#1',loai:'veNha',tu:'2026-10-23',den:'2026-10-25',roi:'16:10',hen:'18:00 CN',
   ly:'Về nhà cuối tuần',tt:'duyet',boi:'App PH-HS',guiLuc:'21/10 20:02',nguoiDuyet:'Lê Thị Bích Ngọc',duyetLuc:'22/10 08:15'},
- {id:'RN-1044',hs:'A-201#2',loai:'raNgoai',tu:'2026-10-23',den:'2026-10-23',roi:'19:00',hen:'21:00',
+ {id:'RN-1044',hs:'KA-201#2',loai:'raNgoai',tu:'2026-10-23',den:'2026-10-23',roi:'19:00',hen:'21:00',
   ly:'Bố mẹ lên thăm, xin ra ngoài ăn tối cùng gia đình',tt:'cho',boi:'App PH-HS',guiLuc:'23/10 17:22'},
- {id:'RN-1045',hs:'B-203#5',loai:'daiNgay',tu:'2026-10-26',den:'2026-10-30',roi:'—',hen:'30/10 18:00',
+ {id:'RN-1045',hs:'KB-203#5',loai:'daiNgay',tu:'2026-10-26',den:'2026-10-30',roi:'—',hen:'30/10 18:00',
   ly:'Ông nội mất, gia đình xin cho cháu về 5 ngày',tt:'cho',boi:'App PH-HS',guiLuc:'23/10 16:40'},
- {id:'RN-1046',hs:'B-201#3',loai:'diVien',tu:'2026-10-22',den:null,roi:'14:20',hen:'—',
+ {id:'RN-1046',hs:'KB-201#3',loai:'diVien',tu:'2026-10-22',den:null,roi:'14:20',hen:'—',
   ly:'Sốt cao 39.5°C, y tế trường chuyển BV Đa khoa tỉnh',tt:'duyet',boi:'Quản sinh nhập hộ',guiLuc:'22/10 14:05',nguoiDuyet:'Lê Thị Bích Ngọc',duyetLuc:'22/10 14:12',lienM66:'YT-2026-0418'},
- {id:'RN-1039',hs:'A-202#4',loai:'raNgoai',tu:'2026-10-20',den:'2026-10-20',roi:'18:15',hen:'20:30',
+ {id:'RN-1039',hs:'KA-202#4',loai:'raNgoai',tu:'2026-10-20',den:'2026-10-20',roi:'18:15',hen:'20:30',
   ly:'Đi mua sách tham khảo đội tuyển',tt:'duyet',boi:'Quản sinh nhập hộ',guiLuc:'20/10 17:50',nguoiDuyet:'Phan Văn Cường',duyetLuc:'20/10 18:00'},
- {id:'RN-1036',hs:'B-102#2',loai:'veNha',tu:'2026-10-16',den:'2026-10-18',roi:'16:00',hen:'18:00 CN',
+ {id:'RN-1036',hs:'KB-102#2',loai:'veNha',tu:'2026-10-16',den:'2026-10-18',roi:'16:00',hen:'18:00 CN',
   ly:'Về nhà cuối tuần — tuần trước',tt:'duyet',boi:'App PH-HS',guiLuc:'15/10 19:10',nguoiDuyet:'Lê Thị Bích Ngọc',duyetLuc:'15/10 20:00'}
 ];
 const donCua=(hsId,k)=>DON.find(d=>d.hs===hsId&&d.tt==='duyet'&&k>=d.tu&&(!d.den||k<=d.den));
@@ -556,19 +642,19 @@ const donCua=(hsId,k)=>DON.find(d=>d.hs===hsId&&d.tt==='duyet'&&k>=d.tu&&(!d.den
 /* ---------- tầng ① · sự kiện cửa (MÔ PHỎNG — chưa nối thiết bị) ---------- */
 let THIETBI_MP=true;            /* công tắc mô phỏng thiết bị */
 const CUA_DAC={
- 'A-204#0':[['out','06:42'],['in','11:28'],['out','13:05'],['in','17:20']],
- 'A-204#1':[['out','06:40'],['in','11:30'],['out','18:42']],
- 'A-204#2':[],                                                     /* không bắt được lượt nào */
- 'A-204#3':[['out','06:45'],['in','11:20'],['out','16:05']],
- 'A-202#2':[],
- 'B-201#3':[['out','06:50'],['in','11:15'],['out','14:20']]
+ 'KA-204#0':[['out','06:42'],['in','11:28'],['out','13:05'],['in','17:20']],
+ 'KA-204#1':[['out','06:40'],['in','11:30'],['out','18:42']],
+ 'KA-204#2':[],                                                    /* không bắt được lượt nào */
+ 'KA-204#3':[['out','06:45'],['in','11:20'],['out','16:05']],
+ 'KA-202#2':[],
+ 'KB-201#3':[['out','06:50'],['in','11:15'],['out','14:20']]
 };
 function cuaCua(hsId,k){
  if(!THIETBI_MP) return [];
  if(k!==HOMNAY) return [];
  if(CUA_DAC[hsId]) return CUA_DAC[hsId].map(([t,g])=>({t,g}));
  const h=hsById(hsId); if(!h||h.tt!=='dangO') return [];
- const r=rng(hsId.split('').reduce((a,c)=>a+c.charCodeAt(0),5)*77);
+ const r=rng(hatGiong(hsId).split('').reduce((a,c)=>a+c.charCodeAt(0),5)*77);
  if(r()<0.06) return [];                                           /* vài em máy không bắt được */
  return [{t:'out',g:'06:'+p2(35+Math.floor(r()*20))},{t:'in',g:'11:'+p2(10+Math.floor(r()*25))},
          {t:'out',g:'13:'+p2(Math.floor(r()*15))},{t:'in',g:'17:'+p2(5+Math.floor(r()*50))}];
@@ -583,7 +669,7 @@ const TT_DD={
  nha :{k:'🏠',n:'Về nhà',          c:'nha'}
 };
 const DD={};                     /* `${hsId}|${ngay}` -> {tt,nguon,boi,luc} */
-const PHONG_DA_CHAM=['A-101','A-102','A-103','B-101','B-102','B-103'];
+const PHONG_DA_CHAM=['KA-101','KA-102','KA-103','KB-101','KB-102','KB-103'];
 function seedDD(){
  PHONG_DA_CHAM.forEach(pid=>hsCuaPhong(pid).forEach(h=>{
   const d=donCua(h.id,HOMNAY);
@@ -593,12 +679,12 @@ function seedDD(){
  /* các đêm trước — dựng bảng tuần */
  ['2026-10-19','2026-10-20','2026-10-21','2026-10-22'].forEach(k=>{
   dangO().forEach(h=>{
-   const r=rng((h.id+k).split('').reduce((a,c)=>a+c.charCodeAt(0),3)*17);
+   const r=rng(hatGiong(h.id+k).split('').reduce((a,c)=>a+c.charCodeAt(0),3)*17);
    const v=r();
    DD[h.id+'|'+k]={tt:v<0.955?'cm':(v<0.985?'nha':'vp'),nguon:'qs',boi:'Quản sinh trực',luc:'21:1'+Math.floor(v*9)};
   });
  });
- DD['B-201#3|2026-10-22']={tt:'vien',nguon:'m66',boi:'Y tế trường',luc:'14:12',ref:'YT-2026-0418'};
+ DD['KB-201#3|2026-10-22']={tt:'vien',nguon:'m66',boi:'Y tế trường',luc:'14:12',ref:'YT-2026-0418'};
 }
 const NGUON_DD={
  qs  :{n:'Quản sinh chấm',              lk:0},
@@ -634,20 +720,20 @@ function suyRa(hsId,k,nowMin){
 /* ---------- sổ sự kiện KTX ---------- */
 let SEQ_SK=214;
 const SUKIEN=[
- {id:'SK-0214',k:'2026-10-23',gio:'20:35',loai:'hong',phong:'B-104',hs:null,
-  nd:'Vòi nước lavabo phòng B-104 rò rỉ, nước chảy ra sàn. Đã khóa van tổng tầng 1.',boi:'Lê Thị Bích Ngọc',lien:'M6.11',ref:'BH-31'},
- {id:'SK-0213',k:'2026-10-23',gio:'19:10',loai:'khach',phong:'A-201',hs:'A-201#2',
+ {id:'SK-0214',k:'2026-10-23',gio:'20:35',loai:'hong',phong:'KB-104',hs:null,
+  nd:'Vòi nước lavabo phòng KB-104 rò rỉ, nước chảy ra sàn. Đã khóa van tổng tầng 1.',boi:'Lê Thị Bích Ngọc',lien:'M6.11',ref:'BH-31'},
+ {id:'SK-0213',k:'2026-10-23',gio:'19:10',loai:'khach',phong:'KA-201',hs:'KA-201#2',
   nd:'Phụ huynh em Ngô Minh Khôi lên thăm, đăng ký tại phòng thường trực. Đã hướng dẫn gia đình gửi đơn xin ra ngoài trên App.',boi:'Đỗ Văn Sơn'},
- {id:'SK-0212',k:'2026-10-22',gio:'14:05',loai:'om',phong:'B-201',hs:'B-201#3',
+ {id:'SK-0212',k:'2026-10-22',gio:'14:05',loai:'om',phong:'KB-201',hs:'KB-201#3',
   nd:'Em sốt 39.5°C, đau đầu. Y tế trường sơ cứu, chuyển BV Đa khoa tỉnh lúc 14:20. Đã báo gia đình 14:08.',boi:'Lê Thị Bích Ngọc',lien:'M6.6',ref:'YT-2026-0418'},
- {id:'SK-0211',k:'2026-10-22',gio:'22:40',loai:'noiquy',phong:'A-202',hs:null,
-  nd:'Ba em phòng A-202 còn dùng điện thoại sau giờ tắt đèn 22:30. Nhắc nhở tại chỗ, chưa lập biên bản.',boi:'Phan Văn Cường'},
- {id:'SK-0210',k:'2026-10-21',gio:'21:50',loai:'xoxat',phong:'A-103',hs:null,
-  nd:'Hai em phòng A-103 to tiếng về việc dọn phòng, có xô đẩy. Quản sinh tách hai em, ghi nhận sự việc, mời GVCN làm việc sáng 22/10.',boi:'Phan Văn Cường',lien:'M2.7',ref:'KL-2026-0092'},
+ {id:'SK-0211',k:'2026-10-22',gio:'22:40',loai:'noiquy',phong:'KA-202',hs:null,
+  nd:'Ba em phòng KA-202 còn dùng điện thoại sau giờ tắt đèn 22:30. Nhắc nhở tại chỗ, chưa lập biên bản.',boi:'Phan Văn Cường'},
+ {id:'SK-0210',k:'2026-10-21',gio:'21:50',loai:'xoxat',phong:'KA-103',hs:null,
+  nd:'Hai em phòng KA-103 to tiếng về việc dọn phòng, có xô đẩy. Quản sinh tách hai em, ghi nhận sự việc, mời GVCN làm việc sáng 22/10.',boi:'Phan Văn Cường',lien:'M2.7',ref:'KL-2026-0092'},
  {id:'SK-0209',k:'2026-10-21',gio:'06:15',loai:'chung',phong:null,hs:null,
-  nd:'Kiểm tra vệ sinh toàn khu định kỳ thứ Tư. Nhà A đạt, Nhà B nhắc phòng B-105 dọn hành lang.',boi:'Mai Thị Hạnh'},
- {id:'SK-0208',k:'2026-10-20',gio:'23:05',loai:'vang',phong:'A-205',hs:null,
-  nd:'Điểm danh 21:30 thiếu 1 em phòng A-205. Liên hệ gia đình 21:45, em đang trên đường về từ nhà người thân, về tới KTX 22:50.',boi:'Đỗ Văn Sơn'}
+  nd:'Kiểm tra vệ sinh toàn khu định kỳ thứ Tư. Nhà A đạt, Nhà B nhắc phòng KB-105 dọn hành lang.',boi:'Mai Thị Hạnh'},
+ {id:'SK-0208',k:'2026-10-20',gio:'23:05',loai:'vang',phong:'KA-205',hs:null,
+  nd:'Điểm danh 21:30 thiếu 1 em phòng KA-205. Liên hệ gia đình 21:45, em đang trên đường về từ nhà người thân, về tới KTX 22:50.',boi:'Đỗ Văn Sơn'}
 ];
 const LOAI_SK={
  om    :{n:'Ốm đau',            i:'🤒',c:'aa',to:'M6.6 Y tế học đường'},
@@ -677,7 +763,7 @@ const TT_DOT={chuaMo:['Chưa mở','n'],dangMo:['🟢 Đang mở','o'],daDong:['
 const dotDangMo=()=>DOT_DK.find(d=>d.tt==='dangMo')||null;
 function choTrongTheoGT(){
  const ra={nam:0,nu:0};
- PHONG.filter(p=>p.tt==='dung').forEach(p=>{
+ phongKTX().filter(p=>p.tt==='dung').forEach(p=>{
   ra[khuById(p.khu).gt]+=Math.max(0,p.sc-hsCuaPhong(p.id).length);
  });
  return ra;
@@ -694,23 +780,23 @@ const LOAI_YC={
  tra   :{n:'Xin trả phòng / thôi ở nội trú', i:'📤'}
 };
 const YCCP=[
- {id:'CO-0008',hs:'B-104#2',loai:'tra',tt:'cho',nguon:'App PH-HS',gui:'23/10 07:15',
+ {id:'CO-0008',hs:'KB-104#2',loai:'tra',tt:'cho',nguon:'App PH-HS',gui:'23/10 07:15',
   hieuLuc:'2026-11-01',
   ly:'Gia đình vừa thuê được nhà gần trường, xin cho con thôi ở nội trú từ đầu tháng 11.'},
- {id:'CP-0007',hs:'A-202#4',loai:'chuyen',mong:'',tt:'cho',nguon:'App PH-HS',gui:'21/10 19:32',
+ {id:'CP-0007',hs:'KA-202#4',loai:'chuyen',mong:'',tt:'cho',nguon:'App PH-HS',gui:'21/10 19:32',
   ly:'Con bị đau khớp gối sau chấn thương thể thao, leo cầu thang lên tầng 2 khó khăn. Gia đình xin cho con chuyển xuống một phòng ở tầng 1.'},
- {id:'CP-0006',hs:'B-202#3',loai:'chuyen',mong:'B-201',tt:'cho',nguon:'Quản sinh đề xuất',boi:'Lê Thị Bích Ngọc',gui:'22/10 21:50',
+ {id:'CP-0006',hs:'KB-202#3',loai:'chuyen',mong:'KB-201',tt:'cho',nguon:'Quản sinh đề xuất',boi:'Lê Thị Bích Ngọc',gui:'22/10 21:50',
   ly:'Hai em trong phòng nhiều lần to tiếng về giờ giấc sinh hoạt buổi tối. Đề nghị tách để tránh phát sinh thêm.'},
- {id:'CP-0005',hs:'A-205#3',loai:'chuyen',mong:'A-203',tt:'tuchoi',nguon:'App PH-HS',gui:'12/10 20:10',
+ {id:'CP-0005',hs:'KA-205#3',loai:'chuyen',mong:'KA-203',tt:'tuchoi',nguon:'App PH-HS',gui:'12/10 20:10',
   ly:'Xin ở cùng phòng với các bạn đội tuyển Toán để tiện học nhóm buổi tối.',
   nguoiXL:'Mai Thị Hạnh',xlLuc:'13/10 09:20',
-  lyXL:'Phòng A-203 đã đủ 8/8 giường. Nhà trường ghi nhận nguyện vọng và sẽ xem xét lại khi khu khối 12 có chỗ trống.'},
- {id:'CP-0003',hs:'A-103#5',loai:'chuyen',mong:'',tt:'thuhoi',nguon:'App PH-HS',gui:'08/10 21:05',
+  lyXL:'Phòng KA-203 đã đủ 8/8 giường. Nhà trường ghi nhận nguyện vọng và sẽ xem xét lại khi khu khối 12 có chỗ trống.'},
+ {id:'CP-0003',hs:'KA-103#5',loai:'chuyen',mong:'',tt:'thuhoi',nguon:'App PH-HS',gui:'08/10 21:05',
   ly:'Xin chuyển sang phòng ít người hơn để con dễ tập trung học buổi tối.',
   thuHoiLuc:'09/10 07:40'},
- {id:'CP-0004',hs:'X#2',loai:'chuyen',mong:'A-203',tt:'duyet',nguon:'App PH-HS',gui:'25/09 18:40',
+ {id:'CP-0004',hs:'X#2',loai:'chuyen',mong:'KA-203',tt:'duyet',nguon:'App PH-HS',gui:'25/09 18:40',
   ly:'Xin xếp cùng khối 12 để tiện sinh hoạt đội tuyển.',
-  nguoiXL:'Mai Thị Hạnh',xlLuc:'27/09 10:15',lyXL:'A-105 → A-203, hiệu lực 28/09/2026'}
+  nguoiXL:'Mai Thị Hạnh',xlLuc:'27/09 10:15',lyXL:'KA-105 → KA-203, hiệu lực 28/09/2026'}
 ];
 /* `thuhoi` — GIA ĐÌNH tự rút lại khi trường CHƯA duyệt (chốt #14). Đã duyệt
    hoặc đã từ chối thì không thu hồi được: bản ghi chỗ ở đã đổi theo.      */
@@ -727,7 +813,7 @@ function giuongTrong(pid){
 /* phòng NHẬN được một em: đúng giới tính · đang dùng · còn chỗ · khác phòng hiện tại */
 function phongNhanDuoc(hsId){
  const h=hsById(hsId);
- return PHONG.filter(p=>p.tt==='dung'&&khuById(p.khu).gt===h.gt
+ return phongKTX().filter(p=>p.tt==='dung'&&khuById(p.khu).gt===h.gt
    &&hsCuaPhong(p.id).length<p.sc&&p.id!==h.phong);
 }
 function vuongMac(pid,hsId){
@@ -763,8 +849,20 @@ const LICH_TRUC={
  '2026-10-25':'Đỗ Văn Sơn'
 };
 const trucCua=k=>LICH_TRUC[k]||'(chưa phân công)';
-const PHI={khoan:'Phí nội trú — học kỳ I 2026-2027',muc:'450.000 đ/tháng',nguon:'M7.1',
- mg:'Miễn 100% cho HS thuộc hộ nghèo và HS mồ côi — 4 em',mgNguon:'M7.4'};
+/* KTDT-1C (24/9/2026): «Phí nội trú» trỏ DANH TÍNH khoản thu NT-KTX của M7.1 (chốt KT-7), ⛔ gọi bằng tên.
+   Mức thu · chu kỳ ở KHOẢN THU CỦA NĂM (năm học × điểm trường × danh tính). Dữ liệu mẫu M7.1: NT-KTX CHƯA có
+   khoản năm nào (PHIEU-KTDT-1A P-2 — chạm tiền, còn treo) ⇒ khoanNam = null, ⛔ không bịa mức.
+   Bản ≤ v1.5 in «450.000 đ/tháng» mà không khoản M7.1 nào đỡ — đã gỡ. ten = bản chiếu tên hiện hành của danh tính. */
+const PHI={danhTinh:'NT-KTX',ten:'Phí nội trú',namHoc:'2026-2027',khoanNam:null,nguon:'M7.1',mgNguon:'M7.4'};
+const phiKhoan=()=>'<code>'+PHI.danhTinh+'</code> · '+esc(PHI.ten)
+ +' <span class="srcline">danh tính khoản thu — M7.1</span>';
+const phiMuc=()=>PHI.khoanNam?esc(PHI.khoanNam.muc)
+ :'<span class="tg a">chưa có khoản thu năm '+PHI.namHoc+'</span> <span class="srcline">M7.1 chưa tạo khoản thu năm của danh tính '
+ +PHI.danhTinh+' — ⛔ không lấy mức năm trước, ⛔ không tự đặt mức</span>';
+const phiTinhTrang=()=>PHI.khoanNam?'đọc từ bản ghi phải thu của M7.2'
+ :'chưa có bản ghi phải thu — không có khoản thu năm thì M7.2 không có gì để thu';
+const phiMG=()=>PHI.khoanNam?'Theo chính sách M7.4 trỏ danh tính '+PHI.danhTinh
+ :'Không phát sinh — năm '+PHI.namHoc+' chưa có khoản thu năm '+PHI.danhTinh+' (M7.4 §6b)';
 const LUUTRU=[
  ['Sự kiện cửa (tầng ①)','90 ngày','Luật BVDLCN 91/2025 — dữ liệu vị trí của trẻ em, chỉ lưu trong thời gian phù hợp mục đích'],
  ['Bản ghi điểm danh tối (tầng ③)','Hết năm học + 2 năm','Căn cứ giải trình với gia đình và cơ quan quản lý'],
@@ -778,7 +876,8 @@ const LUUTRU=[
 const QALL=['xem','cham','chambu','duyetRaNgoai','duyetVeNha','duyetDaiNgay','duyetDangKy','duyetSua','duyetChuyenPhong','moDot',
  'donTao','skTao','skSua','dkTao','dkSua','dkXoa','xepCho','phongSua','tamtru',
  'cauhinhKTX','cauhinhChung','lichtruc','nhap','xuat',
- 'chamAn','chotAn'];                /* v1.3 — tab 6 Theo dõi ăn */
+ 'chamAn','chotAn',                 /* v1.3 — tab 6 Theo dõi ăn */
+ 'm64Tao'];                         /* PHKT — mô phỏng quyền TẠO địa điểm ở M6.4 (QLCSVC), chỉ để hiện deep-link; ⛔ không phải ô của M6.10 */
 const ROLES={
  FULL :{n:'Trần Minh Đức',cd:'🔓 Đủ quyền (demo)',sc:'School',dt:null,khu:null,q:QALL},
  QSA  :{n:'Phan Văn Cường',cd:'Quản sinh — Nhà A (nam)',sc:'Group',dt:'A',khu:'KA',
@@ -821,7 +920,7 @@ function khuTrongPhamVi(){
 }
 function phongTrongPhamVi(){
  const ids=khuTrongPhamVi().map(k=>k.id);
- return PHONG.filter(p=>ids.includes(p.khu));
+ return phongKTX().filter(p=>ids.includes(p.khu));
 }
 function hsTrongPhamVi(){
  const r=R(), ids=khuTrongPhamVi().map(k=>k.id);
@@ -955,10 +1054,10 @@ function crumb(txt){$('#crumb').innerHTML=txt?'<div class="crumb">'+txt+'</div>'
 
 /* đề nghị sửa sau khi chốt tuần */
 const DENGHI=[
- {id:'DS-0042',hs:'A-205#1',ngay:'2026-10-16',cu:'kp',moi:'vp',tt:'cho',
+ {id:'DS-0042',hs:'KA-205#1',ngay:'2026-10-16',cu:'kp',moi:'vp',tt:'cho',
   ly:'Gia đình gửi giấy hẹn khám bệnh của bệnh viện sau khi đã chốt tuần — em nghỉ có lý do chính đáng',
   boi:'Phan Văn Cường',luc:'21/10 09:15'},
- {id:'DS-0041',hs:'B-204#2',ngay:'2026-10-14',cu:'cm',moi:'nha',tt:'duyet',
+ {id:'DS-0041',hs:'KB-204#2',ngay:'2026-10-14',cu:'cm',moi:'nha',tt:'duyet',
   ly:'Chấm nhầm — em đã về nhà từ chiều 14/10, có đơn RN-1031',
   boi:'Lê Thị Bích Ngọc',luc:'19/10 08:40',nguoiDuyet:'Lý Thanh Bình',duyetLuc:'19/10 14:20'}
 ];
@@ -1641,17 +1740,18 @@ const AN={};                                          /* `${hsId}|${ngay}|${bua}
 const CHUA=new Set([
  /* Tháng 9 còn HAI ô chưa ai điểm danh — chính vì thế tháng 9 CHƯA bàn giao
     được sang M7.2, dù đã sang ngày 23/10. Đây là ca phải rà: chặn chốt tháng. */
- 'A-105#1|2026-09-29|toi','B-102#4|2026-09-30|sang'
+ 'KA-105#1|2026-09-29|toi','KB-102#4|2026-09-30|sang'
 ]);
 /* Bữa tối hôm nay — ba phòng quản sinh chưa kịp ghi */
-const TOI_CHUA_PHONG=['A-204','A-205','B-104'];
+const TOI_CHUA_PHONG=['KA-204','KA-205','KB-104'];
 const GHI_CP=[
  ['Đội tuyển HSG tập huấn tại Sở, ăn trưa tại điểm tập huấn','Giay-trieu-tap-doi-tuyen.pdf'],
  ['Gia đình gọi điện báo đón đi khám răng, về sau bữa','' ],
  ['Thi đấu giải bóng đá cụm trường, ăn cùng đội tại sân','Danh-sach-doi-bong.jpg'],
  ['Tham gia hoạt động ngoại khóa của Đoàn trường','']
 ];
-function hashS(s){return s.split('').reduce((a,c)=>(a*31+c.charCodeAt(0))&0x7fffffff,7)}
+/* hạt giống theo MÃ CŨ (hatGiong — app.10, PHKT): bữa ăn mẫu sinh y hệt trước khi đổi mã phòng */
+function hashS(s){return hatGiong(s).split('').reduce((a,c)=>(a*31+c.charCodeAt(0))&0x7fffffff,7)}
 function seedAn(id,k,bua){
  /* Hai ngày gần nhất KHÔNG sinh ngẫu nhiên "không phép" — danh sách cảnh
     báo lên Bảng điều khiển phải là danh sách đã chọn, để rà được đích danh. */
@@ -1664,10 +1764,10 @@ function seedAn(id,k,bua){
 }
 /* đích danh — cảnh báo 2 ngày gần nhất */
 Object.assign(AN,{
- 'A-204#2|2026-10-22|toi' :{tt:'kp',nguon:'qs',boi:'Phan Văn Cường',luc:'18:05'},
- 'A-204#2|2026-10-23|sang':{tt:'kp',nguon:'qs',boi:'Phan Văn Cường',luc:'06:55'},
- 'B-104#1|2026-10-23|trua':{tt:'kp',nguon:'qs',boi:'Lê Thị Bích Ngọc',luc:'11:50'},
- 'A-101#3|2026-10-15|trua':{tt:'cp',nguon:'qs',boi:'Phan Văn Cường',luc:'11:40',
+ 'KA-204#2|2026-10-22|toi' :{tt:'kp',nguon:'qs',boi:'Phan Văn Cường',luc:'18:05'},
+ 'KA-204#2|2026-10-23|sang':{tt:'kp',nguon:'qs',boi:'Phan Văn Cường',luc:'06:55'},
+ 'KB-104#1|2026-10-23|trua':{tt:'kp',nguon:'qs',boi:'Lê Thị Bích Ngọc',luc:'11:50'},
+ 'KA-101#3|2026-10-15|trua':{tt:'cp',nguon:'qs',boi:'Phan Văn Cường',luc:'11:40',
    ghi:'Đội tuyển HSG Toán tập huấn tại Sở GD&ĐT, ăn trưa tại điểm tập huấn',tep:'Giay-trieu-tap-doi-tuyen.pdf'}
 });
 
@@ -2154,7 +2254,8 @@ function veDangKy(){
 
  let ds=hsTrongPhamVi();
  if(ST.chipDK!=='all') ds=ds.filter(x=>x.tt===ST.chipDK);
- if(ST.q){const q=kd(ST.q);ds=ds.filter(x=>kd(x.ten).includes(q)||kd(x.ma).includes(q)||kd(x.phong||'').includes(q))}
+ if(ST.q){const q=kd(ST.q);ds=ds.filter(x=>kd(x.ten).includes(q)||kd(x.ma).includes(q)||kd(x.phong||'').includes(q)
+   ||kd(((x.phong&&phongById(x.phong))||{}).maCu||'').includes(q))}   /* mã cũ — bảng tra PK-1 */
  if(!ds.length) return h+'<div class="empty">Không có bản ghi nào ở trạng thái <b>'
   +(CHIP.find(c=>c[0]===ST.chipDK)||['','Tất cả'])[1]+'</b>.<br><span style="font-size:12.5px">'
   +'Bản ghi đã đổi trạng thái vẫn còn — đổi chip ở góc phải để tìm ra chúng.</span></div>';
@@ -2200,13 +2301,13 @@ function panelHS(){
  /* khối tiền — BẢN CHIẾU CHỈ ĐỌC, không một nút thao tác nào (M6.1 §8.1) */
  b+='<div class="card" style="margin-top:12px"><div style="padding:8px 12px;font-weight:700;background:#f8fafc;border-bottom:1px solid var(--line)">'
   +'💰 Phí nội trú <span class="tg c">bản chiếu chỉ đọc</span></div>'
-  +'<div class="f"><span>Khoản thu</span><b>'+esc(PHI.khoan)+' <button class="btn xs" data-lnk="M7.1 Danh mục khoản thu">🔗 M7.1</button></b></div>'
-  +'<div class="f"><span>Mức thu</span><b>'+PHI.muc+'</b></div>'
+  +'<div class="f"><span>Khoản thu</span><b>'+phiKhoan()+' <button class="btn xs" data-lnk="M7.1 Danh mục khoản thu">🔗 M7.1</button></b></div>'
+  +'<div class="f"><span>Mức thu</span><b>'+phiMuc()+'</b></div>'
   +'<div class="f"><span>Số ngày ở trong kỳ</span><b>'+(x.tt==='dangO'?'48 ngày (05/09 → 23/10)':'35 ngày (05/09 → '+(x.den?k2s(x.den):'—')+')')
     +'</b> <span class="srcline">M6.10 sở hữu con số này</span></div>'
-  +'<div class="f"><span>Tình trạng thu</span><b>'+(x.tt==='dangO'?'Đã thu tháng 9 · tháng 10 đang thu':'Đã đối chiếu, chờ hoàn phần dư')
+  +'<div class="f"><span>Tình trạng thu</span><b>'+phiTinhTrang()
     +' <button class="btn xs" data-lnk="M7.2 Theo dõi thực hiện khoản thu">🔗 M7.2</button></b></div>'
-  +'<div class="f"><span>Miễn giảm</span><b>'+esc(PHI.mg)+' <button class="btn xs" data-lnk="M7.4 Chính sách miễn giảm">🔗 M7.4</button></b></div>'
+  +'<div class="f"><span>Miễn giảm</span><b>'+esc(phiMG())+' <button class="btn xs" data-lnk="M7.4 Chính sách miễn giảm">🔗 M7.4</button></b></div>'
   +'</div>';
  b+='<div class="ro"><b>M6.10 sở hữu SỐ NGÀY Ở. M7.x sở hữu TIỀN.</b> Khối trên <b>không có một nút thao tác nào</b> — '
   +'mọi hành động (nhắc nợ, hoàn tiền, điều chỉnh) là deep-link. Ranh giới dùng nguyên <code>M6.1 §8.1</code>.</div>';
@@ -2318,21 +2419,27 @@ function vePhong(){
 }
 
 function veDanhMucPhong(){
- const CHIP=[['dung','Đang dùng'],['sua','Đang sửa chữa'],['chua','Chưa đưa vào sử dụng'],['all','Tất cả']];
- let h='<div class="bar">'
-  +(can('phongSua')?'<button class="btn p sm" id="btnPhongMoi">➕ Thêm phòng</button>':'')
+ /* PHKT — danh sách ĐỌC địa điểm M6.4 loại «Phòng ở nội trú» qua phongKTX(); chip = bốn trạng thái của M6.4 */
+ const CHIP=Object.keys(TT_PHONG).map(k=>[k,TT_PHONG[k]]).concat([['all','Tất cả']]);
+ let h='<div class="dnote">🔗 <b>Danh sách phòng đọc từ M6.4 Danh mục &amp; Kiểm kê CSVC</b> — địa điểm loại <b>Phòng ở nội trú</b> '
+  +'(cụm PHKT). Thêm phòng, đổi tầng, đổi dãy nhà làm ở <b>M6.4</b>. Ở đây ghi được <b>hai ô ghi hộ</b> — '
+  +'<b>sức chứa</b> (giường) và <b>trạng thái</b> — chạy đúng ràng buộc của M6.4; khối ưu tiên và ghi chú vận hành là của M6.10.</div>'
+  +'<div class="bar">'
+  +(can('m64Tao')?'<button class="btn sm" data-m64="tao">↗ M6.4 · Thêm địa điểm «Phòng ở nội trú»</button>':'')
   +(can('xuat')?'<button class="btn sm" data-xuat="Danh mục phòng ở">📤 Xuất</button>':'')
   +'<div class="spacer"></div>'
   +CHIP.map(([k,n])=>'<span class="chip'+(ST.chipPhong===k?' on':'')+'" data-cphong="'+k+'">'+n+'</span>').join('')+'</div>';
  let ps=phongTrongPhamVi();
  if(ST.chipPhong!=='all') ps=ps.filter(p=>p.tt===ST.chipPhong);
  if(!ps.length) return h+'<div class="empty">Không có phòng nào ở trạng thái này.<br>'
-  +'<span style="font-size:12.5px">Phòng <b>không xóa</b>, chỉ đổi trạng thái — đổi chip để tìm lại.</span></div>';
- h+='<div class="tbw"><table><tr><th>Phòng</th><th>Khu · Tầng</th><th>Giới tính</th><th>Sức chứa</th>'
-  +'<th>Đang ở / trống</th><th>Khối ưu tiên</th><th>Trạng thái</th><th>Quản sinh phụ trách</th><th></th></tr>';
+  +'<span style="font-size:12.5px">Phòng <b>không xóa</b>, chỉ đổi trạng thái — đổi chip để tìm lại.</span></div>'+bangTraMaPhong();
+ h+='<div class="tbw"><table><tr><th>Phòng <span class="srcline">🔗 M6.4</span></th><th>Khu · Tầng</th><th>Giới tính</th>'
+  +'<th>Sức chứa <span class="srcline">giường · ghi hộ</span></th>'
+  +'<th>Đang ở / trống</th><th>Khối ưu tiên</th><th>Trạng thái <span class="srcline">ghi hộ</span></th><th>Quản sinh phụ trách</th><th></th></tr>';
  ps.forEach(p=>{
   const n=hsCuaPhong(p.id).length, k=khuById(p.khu);
-  h+='<tr'+(p.tt!=='dung'?' class="warnrow"':'')+'><td><b>'+p.id+'</b></td>'
+  h+='<tr'+(p.tt!=='dung'?' class="warnrow"':'')+'><td><b>'+p.id+'</b>'
+   +(p.maCu?'<div class="srcline">mã cũ '+esc(p.maCu)+'</div>':'')+'</td>'
    +'<td>'+esc(k.ten)+' · Tầng '+p.tang+'</td>'
    +'<td>'+(k.gt==='nam'?'Nam':'Nữ')+'</td>'
    +'<td class="num">'+p.sc+'</td>'
@@ -2341,12 +2448,32 @@ function veDanhMucPhong(){
    +'<td><span class="st2 '+(p.tt==='dung'?'o':p.tt==='sua'?'w':'n')+'">'+TT_PHONG[p.tt]+'</span>'
    +(p.ghi?'<div class="srcline">'+esc(p.ghi)+'</div>':'')+'</td>'
    +'<td>'+esc(k.qs)+'</td>'
-   +'<td>'+(can('phongSua')?'<button class="btn xs" data-sc="'+p.id+'">Sửa sức chứa</button>':'')+'</td></tr>';
+   +'<td>'+(can('phongSua')?'<button class="btn xs" data-sc="'+p.id+'">Sửa sức chứa</button> '
+     +'<button class="btn xs" data-ttp="'+p.id+'">Đổi trạng thái</button>':'')+'</td></tr>';
  });
  h+='</table></div>';
  h+='<div class="ro" style="margin-top:10px">Đổi sức chứa <b>bắt buộc lý do</b> và ghi audit — con số này là căn cứ '
-  +'của ràng buộc chặn cứng khi xếp chỗ, không phải một ô nhập tự do.</div>';
- return h;
+  +'của ràng buộc chặn cứng khi xếp chỗ, không phải một ô nhập tự do. Hai ô <b>ghi hộ M6.4</b>: bản ghi vẫn của M6.4, '
+  +'nhật ký ghi ở <b>cả hai</b> menu; sức chứa ⛔ nhỏ hơn số em đang ở.</div>';
+ if(NK_GHI_HO.length) h+='<div class="card" style="margin-top:10px"><div style="padding:8px 12px;font-weight:700">🧾 Nhật ký ghi hộ M6.4 — phiên này</div>'
+  +'<div class="tbw" style="border:none"><table><tr><th>Lúc</th><th>Phòng</th><th>Ô</th><th>Cũ → mới</th><th>Lý do</th><th>Người ghi</th></tr>'
+  +NK_GHI_HO.map(x=>'<tr><td>'+esc(x.luc)+'</td><td>'+esc(x.ma)+'</td><td>'+(x.truong==='succhua'?'Sức chứa':'Trạng thái')+'</td>'
+   +'<td>'+esc(x.truong==='tt'?TT_PHONG[x.cu]:x.cu)+' → <b>'+esc(x.truong==='tt'?TT_PHONG[x.moi]:x.moi)+'</b></td>'
+   +'<td>'+esc(x.ly)+'</td><td>'+esc(x.boi)+'</td></tr>').join('')+'</table></div></div>';
+ return h+bangTraMaPhong();
+}
+
+/* Bảng tra mã cũ → mới (PK-1) — mã phòng KTX đổi sang tiền tố khu khi về M6.4 */
+function bangTraMaPhong(){
+ return '<details class="card" style="margin-top:10px"><summary style="padding:8px 12px;font-weight:700;cursor:pointer">'
+  +'🔁 Bảng tra mã phòng cũ → mới ('+BANG_TRA_MA_PHONG.length+' phòng)</summary>'
+  +'<div class="ro" style="margin:8px 12px">Mã cũ <code>A-101…</code> · <code>B-101…</code> <b>trùng</b> mã phòng học của M6.4, '
+  +'mà M6.4 bắt mã <b>duy nhất toàn trường</b> — nên mã phòng ở nội trú đổi sang <b>tiền tố khu</b>. '
+  +'Bản ghi cũ (đơn, sự kiện, lịch sử chỗ ở) tra theo bảng này; tìm kiếm bằng mã cũ vẫn ra phòng mới.</div>'
+  +'<div class="tbw" style="border:none"><table><tr><th>Mã cũ</th><th>Mã mới</th><th>Khu</th></tr>'
+  +BANG_TRA_MA_PHONG.map(([cu,moi])=>{const p=phongById(moi);
+    return '<tr><td>'+esc(cu)+'</td><td><b>'+esc(moi)+'</b></td><td>'+(p?esc(tenKhu(p.khu)):'—')+'</td></tr>'}).join('')
+  +'</table></div></details>';
 }
 
 function veSoDo(){
@@ -2358,7 +2485,7 @@ function veSoDo(){
  if(chua.length) h+='<div class="alert b"><span>👥</span><span class="sp"><b>'+chua.length+' em chờ xếp chỗ</b>: '
   +chua.map(x=>esc(x.ten)+' ('+(x.gt==='nam'?'nam':'nữ')+')').join(' · ')+'</span></div>';
  khuTrongPhamVi().forEach(k=>{
-  const ps=PHONG.filter(p=>p.khu===k.id);
+  const ps=phongKTX().filter(p=>p.khu===k.id);
   h+='<div class="khu"><h3>🏠 '+esc(tenKhu(k.id))+' <span class="pill">'+ps.length+' phòng</span></h3><div class="rgrid">';
   ps.forEach(p=>{
    const ds=hsCuaPhong(p.id), dung=p.tt==='dung';
@@ -2565,7 +2692,7 @@ function duyetYC(id){
 /* chỗ trống của từng phòng nhận được, cùng giới tính, trừ chính nó */
 function chonhanCua(pid){
  const k=khuById(phongById(pid).khu);
- return PHONG.filter(p=>p.tt==='dung'&&p.khu!==null&&khuById(p.khu).gt===k.gt
+ return phongKTX().filter(p=>p.tt==='dung'&&p.khu!==null&&khuById(p.khu).gt===k.gt
    &&p.id!==pid&&hsCuaPhong(p.id).length<p.sc)
   .map(p=>({p,trong:p.sc-hsCuaPhong(p.id).length}));
 }
@@ -2632,7 +2759,8 @@ function hopChuyenCaPhong(pid){
    h.ly='Chuyển cả phòng từ '+cu+' — '+ly;
   });
   const dsua=$('#ccpsua')&&$('#ccpsua').checked;
-  if(dsua&&!bo.length){p.tt='sua';p.ghi=ly}
+  /* đổi trạng thái = GHI HỘ M6.4 (PHKT · PK-5); ghi chú vận hành ở lại M6.10 */
+  if(dsua&&!bo.length){ghiHoM64(p.dd,'tt','sua','Chuyển cả phòng — '+ly);p.ghi=ly}
   closeM();
   /* BẢNG KẾT QUẢ — quy ước dự án: thao tác hàng loạt không được chỉ có một dòng toast */
   modal('Kết quả chuyển cả phòng '+pid,
@@ -2645,9 +2773,9 @@ function hopChuyenCaPhong(pid){
      +bo.map(([h,r])=>'<tr class="badrow"><td>'+esc(h.ten)+'</td><td>'+esc(r)+'</td></tr>').join('')
      +'</table></div>'
      +'<div class="ro" style="margin-top:10px">Các em bị bỏ qua <b>vẫn ở phòng cũ</b>. '
-     +(dsua?'Phòng <b>'+pid+'</b> <b>KHÔNG</b> chuyển sang <i>Đang sửa chữa</i> vì còn người ở.':'')+'</div>'
+     +(dsua?'Phòng <b>'+pid+'</b> <b>KHÔNG</b> chuyển sang <i>'+TT_PHONG.sua+'</i> vì còn người ở.':'')+'</div>'
      :(dsua?'<div class="ro" style="margin-top:11px">🚧 Phòng <b>'+pid+'</b> đã chuyển sang '
-       +'<b>Đang sửa chữa</b> — không bố trí chỗ được, nhưng <b>vẫn hiện ở tab 1</b> kèm lời giải thích.</div>':''))
+       +'<b>'+TT_PHONG.sua+'</b> <span class="tg a">ghi hộ M6.4</span> — không bố trí chỗ được, nhưng <b>vẫn hiện ở tab 1</b> kèm lời giải thích.</div>':''))
    +'<div class="ro">Mỗi em sinh <b>hai bản ghi</b>: bản cũ đóng ở '+k2s(HOMNAY)+', bản mới mở từ '+k2s(HOMNAY)
    +'. Số ngày ở mỗi phòng là căn cứ khác nhau khi bàn giao sang <b>M7.2</b>.</div>',
    '<button class="btn p" data-mb="close">Đóng</button>');
@@ -2671,8 +2799,8 @@ function hopChuyenCaPhong(pid){
   +'<div class="danger" id="ccperr" style="display:none;margin-top:9px">⛔ <b>Chưa có lý do.</b> '
   +'Đây là thao tác đổi chỗ ở của '+ds.length+' đứa trẻ trong một cú bấm — bản ghi phải nói được vì sao.</div>'
   +'<label class="tick"><input type="checkbox" id="ccpsua">'
-  +'<span>Sau khi chuyển, đổi <b>'+pid+'</b> sang <b>Đang sửa chữa</b> <span class="srcline">'
-  +'(chỉ áp dụng nếu chuyển được hết — phòng còn người ở thì không đổi)</span></span></label>',
+  +'<span>Sau khi chuyển, đổi <b>'+pid+'</b> sang <b>'+TT_PHONG.sua+'</b> <span class="srcline">'
+  +'(chỉ áp dụng nếu chuyển được hết — phòng còn người ở thì không đổi · ghi hộ trạng thái địa điểm ở M6.4)</span></span></label>',
   '<button class="btn" data-mb="close">Hủy</button>'
   +'<button class="btn p" data-mb="CCP">Chuyển '+ds.length+' em</button>');
 }
@@ -2723,16 +2851,22 @@ function veCauHinh(){
 
  /* khối 1 */
  h+='<div class="card"><div style="padding:9px 13px;font-weight:700;background:#f8fafc;border-bottom:1px solid var(--line)">'
-  +'1 · Khu và quản sinh phụ trách <span class="tg c">theo điểm trường</span></div>'
-  +'<div class="tbw" style="border:none"><table><tr><th>Khu</th><th>Giới tính</th><th>Số phòng</th><th>Đang ở</th>'
+  +'1 · Khu — giới tính mặc định và quản sinh phụ trách <span class="tg c">theo điểm trường</span></div>'
+  +'<div class="tbw" style="border:none"><table><tr><th>Khu <span class="srcline">= dãy nhà 🔗 M6.4</span></th>'
+  +'<th>Điểm trường <span class="srcline">🔗 M6.4</span></th><th>Giới tính mặc định</th>'
+  +'<th>Số phòng <span class="srcline">🔗 M6.4 · loại nội trú</span></th><th>Đang ở</th>'
   +'<th>Quản sinh phụ trách <span class="tg a">= Người chấm chính</span></th></tr>';
  KHU.filter(k=>k.dt===dtHieuLuc()||dtHieuLuc()==='ALL').forEach(k=>{
-  const ps=PHONG.filter(p=>p.khu===k.id);
-  h+='<tr><td><b>'+esc(k.ten)+'</b></td><td>'+(k.gt==='nam'?'Nam':'Nữ')+'</td>'
+  const ps=phongKTX().filter(p=>p.khu===k.id);
+  h+='<tr><td><b>'+esc(k.ten)+'</b> <span class="srcline">🔗 dãy <code>'+esc(k.day)+'</code></span></td>'
+   +'<td>'+esc(DT[k.dt]||k.dt)+'</td><td>'+(k.gt==='nam'?'Nam':'Nữ')+'</td>'
    +'<td class="num">'+ps.length+'</td><td class="num">'+HS.filter(x=>x.khu===k.id&&x.tt==='dangO').length+'</td>'
    +'<td><b>'+esc(k.qs)+'</b>'+(can('cauhinhKTX')?' <button class="btn xs" data-qs="'+k.id+'">Đổi</button>':'')+'</td></tr>';
  });
  h+='</table></div></div>';
+ h+='<div class="ro">🔗 <b>Tên khu, điểm trường, danh sách phòng</b> là phần vật lý — thuộc <b>dãy nhà</b> của '
+  +'<b>M6.4 Danh mục &amp; Kiểm kê CSVC</b> (cụm PHKT). Khu ở đây chỉ giữ phần <b>vận hành</b>: giới tính mặc định '
+  +'(căn cứ của chặn cứng khi xếp chỗ) và quản sinh phụ trách theo năm học. Thêm phòng, đổi tên dãy → làm ở M6.4.</div>';
  h+='<div class="ro">Đổi phân công giữa năm <b>không hồi tố</b> — bản ghi các đêm trước vẫn ghi tên người cũ, '
   +'đó là căn cứ quy trách nhiệm.</div>';
 
@@ -2824,9 +2958,9 @@ function veCauHinh(){
  /* khối 5 — phí, chỉ đọc */
  h+='<div class="card"><div style="padding:9px 13px;font-weight:700;background:#f8fafc;border-bottom:1px solid var(--line)">'
   +'6 · Phí nội trú <span class="tg c">bản chiếu chỉ đọc</span></div>'
-  +'<div class="f"><span>Khoản thu</span><b>'+esc(PHI.khoan)+' <button class="btn xs" data-lnk="M7.1 Danh mục khoản thu">🔗 M7.1</button></b></div>'
-  +'<div class="f"><span>Mức thu</span><b>'+PHI.muc+'</b></div>'
-  +'<div class="f"><span>Miễn giảm</span><b>'+esc(PHI.mg)+' <button class="btn xs" data-lnk="M7.4 Chính sách miễn giảm">🔗 M7.4</button></b></div>'
+  +'<div class="f"><span>Khoản thu</span><b>'+phiKhoan()+' <button class="btn xs" data-lnk="M7.1 Danh mục khoản thu">🔗 M7.1</button></b></div>'
+  +'<div class="f"><span>Mức thu</span><b>'+phiMuc()+'</b></div>'
+  +'<div class="f"><span>Miễn giảm</span><b>'+esc(phiMG())+' <button class="btn xs" data-lnk="M7.4 Chính sách miễn giảm">🔗 M7.4</button></b></div>'
   +'</div>';
 
  /* khối 6 — lưu trữ */
@@ -2885,32 +3019,67 @@ function hopXepCho(pid,giuong){
  $('#xcHs').addEventListener('change',ve); ve();
 }
 
-/* sửa sức chứa — bắt buộc lý do */
+/* sửa sức chứa — Ô GHI HỘ M6.4 (PHKT · PK-3 · PK-5): bắt buộc lý do (rb 13 đi theo ô sang M6.4),
+   ⛔ nhỏ hơn số em đang ở; bản ghi vẫn của M6.4, audit ghi cả hai phía */
 function hopSucChua(pid){
  const p=phongById(pid);
  mfns.bSC=()=>{
   const ly=$('#scly').value.trim();
   if(!ly){$('#scerr').style.display='block';return}
-  const v=Math.max(1,Math.min(12,+$('#scv').value||p.sc));
-  const cu=p.sc; p.sc=v; closeM();
-  toast('⚙ Sức chứa <b>'+pid+'</b>: '+cu+' → <b>'+v+'</b> giường. Đã ghi audit kèm lý do và tên người sửa.');render();
+  const v=Math.max(1,Math.min(12,+$('#scv').value||p.sc)), dang=hsCuaPhong(pid).length;
+  if(v<dang){$('#scerr2').innerHTML='⛔ <b>Sức chứa '+v+' giường nhỏ hơn số em đang ở ('+dang+' em).</b> '
+   +'Ràng buộc của M6.4 cho phòng nội trú — chuyển bớt em sang phòng khác trước (🔀 ở Sơ đồ chỗ ở), rồi mới giảm giường.';
+   $('#scerr2').style.display='block';return}
+  const cu=p.sc; ghiHoM64(p.dd,'succhua',v,ly); closeM();
+  toast('⚙ Sức chứa <b>'+pid+'</b>: '+cu+' → <b>'+v+'</b> giường — <b>ghi hộ M6.4</b>. Nhật ký ghi ở cả M6.4 '
+   +'(«ghi hộ từ M6.10») và M6.10, kèm lý do và tên người sửa.');render();
  };
- modal('⚙ Sửa sức chứa — phòng '+pid,
+ modal('⚙ Sửa sức chứa — phòng '+pid+' <span class="tg a">ghi hộ M6.4</span>',
   '<div class="ro">Sức chứa là <b>căn cứ của ràng buộc chặn cứng khi xếp chỗ</b>. Sửa được, nhưng phải là hành động '
-  +'<b>cố ý và có người chịu trách nhiệm</b> — không phải một ô nhập tự do.</div>'
+  +'<b>cố ý và có người chịu trách nhiệm</b> — không phải một ô nhập tự do.<br>🔗 Con số này là ô <b>Sức chứa</b> của địa điểm '
+  +'ở <b>M6.4</b> (đơn vị <b>giường</b> với phòng ở nội trú). M6.10 <b>ghi hộ</b> — chạy đúng ràng buộc của M6.4, không nới.</div>'
   +'<div class="tbw"><div class="f"><span>Đang ở</span><b>'+hsCuaPhong(pid).length+' em</b></div>'
   +'<div class="f"><span>Sức chứa hiện tại</span><b>'+p.sc+' giường</b></div></div>'
   +'<label class="lbl">Sức chứa mới</label><input class="fldi" id="scv" type="number" min="1" max="12" value="'+p.sc+'">'
   +'<label class="lbl">Lý do <span style="color:var(--red)">*</span></label>'
   +'<textarea class="fldi" id="scly" rows="3" placeholder="Ví dụ: kê thêm 1 giường tầng theo phương án chống quá tải đầu năm, đã báo PHT"></textarea>'
   +'<div class="danger" id="scerr" style="display:none;margin-top:9px">⛔ <b>Chưa có lý do.</b> Đổi sức chứa mà không '
-  +'nêu lý do thì con số này <b>nói dối về điều kiện ở thật</b> của phòng.</div>',
+  +'nêu lý do thì con số này <b>nói dối về điều kiện ở thật</b> của phòng.</div>'
+  +'<div class="danger" id="scerr2" style="display:none;margin-top:9px"></div>',
   '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="SC">Lưu và ghi audit</button>');
+}
+
+/* đổi trạng thái vận hành — Ô GHI HỘ M6.4 (PHKT · PK-2 · PK-5): bốn trạng thái của M6.4,
+   bắt buộc lý do; rời `Đang sử dụng` khi còn em ở ⇒ CHẶN, nêu số em và đường ra */
+function hopTrangThai(pid){
+ const p=phongById(pid), dang=hsCuaPhong(pid).length;
+ mfns.bTTP=()=>{
+  const moi=$('#ttpv').value, ly=$('#ttply').value.trim(), e=$('#ttperr');
+  if(moi===p.tt){e.innerHTML='ℹ️ Phòng đang ở trạng thái này — không có gì để đổi.';e.style.display='block';return}
+  if(!ly){e.innerHTML='⛔ <b>Chưa có lý do.</b> Trạng thái phòng quyết định có xếp chỗ được hay không — phải nói được vì sao đổi.';
+   e.style.display='block';return}
+  if(moi!=='dung'&&dang){e.innerHTML='⛔ <b>Còn '+dang+' em đang ở phòng '+pid+'.</b> Phòng chỉ rời <i>'+TT_PHONG.dung
+   +'</i> khi không còn ai ở — dời các em trước bằng <b>🔀 Chuyển cả phòng</b> ở Sơ đồ chỗ ở (thao tác ấy có tùy chọn đổi luôn sang <i>'
+   +TT_PHONG.sua+'</i>).';e.style.display='block';return}
+  const cu=p.tt; ghiHoM64(p.dd,'tt',moi,ly); closeM();
+  toast('⚙ Trạng thái <b>'+pid+'</b>: '+TT_PHONG[cu]+' → <b>'+TT_PHONG[moi]+'</b> — <b>ghi hộ M6.4</b>, nhật ký ở cả hai menu.');render();
+ };
+ modal('⚙ Đổi trạng thái — phòng '+pid+' <span class="tg a">ghi hộ M6.4</span>',
+  '<div class="ro">🔗 Trạng thái là thuộc tính của <b>địa điểm ở M6.4</b> — một bộ bốn trạng thái dùng chung cho mọi công trình. '
+  +'M6.10 <b>ghi hộ</b> vì quản lý KTX là người biết phòng đang ở được hay không; bản ghi vẫn của M6.4.</div>'
+  +'<div class="tbw"><div class="f"><span>Trạng thái hiện tại</span><b>'+TT_PHONG[p.tt]+'</b></div>'
+  +'<div class="f"><span>Đang ở</span><b>'+dang+' em</b></div></div>'
+  +'<label class="lbl">Trạng thái mới</label><select class="fldi" id="ttpv">'
+  +Object.keys(TT_PHONG).map(k=>'<option value="'+k+'"'+(k===p.tt?' selected':'')+'>'+TT_PHONG[k]+'</option>').join('')+'</select>'
+  +'<label class="lbl">Lý do <span style="color:var(--red)">*</span></label>'
+  +'<textarea class="fldi" id="ttply" rows="2" placeholder="Ví dụ: nghiệm thu xong ngày 20/10, đưa vào sử dụng từ đợt bổ sung"></textarea>'
+  +'<div class="danger" id="ttperr" style="display:none;margin-top:9px"></div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="TTP">Lưu và ghi audit</button>');
 }
 
 /* chuyển phòng — tạo bản ghi mới, không sửa đè */
 function hopChuyenPhong(hsId){
- const x=hsById(hsId), ps=PHONG.filter(p=>p.tt==='dung'&&khuById(p.khu).gt===x.gt&&hsCuaPhong(p.id).length<p.sc);
+ const x=hsById(hsId), ps=phongKTX().filter(p=>p.tt==='dung'&&khuById(p.khu).gt===x.gt&&hsCuaPhong(p.id).length<p.sc);
  mfns.bCP=()=>{
   const ly=$('#cply').value.trim();
   if(!ly){$('#cperr').style.display='block';return}
@@ -2982,8 +3151,8 @@ function hopNhapExcel(){
   +'<div class="danger" style="margin-top:10px">⛔ <b>3 dòng bị chặn</b></div>'
   +'<div class="tbw"><table><tr><th>Dòng</th><th>Nội dung</th><th>Lý do chặn</th></tr>'
   +'<tr class="badrow"><td>9</td><td>HS-2026-9999</td><td>Mã học sinh không tồn tại</td></tr>'
-  +'<tr class="badrow"><td>41</td><td>HS-2026-1104 · phòng B-102</td><td><b>Lệch giới tính</b> — em nam, B-102 là phòng nữ</td></tr>'
-  +'<tr class="badrow"><td>88</td><td>HS-2026-1233 · phòng A-301</td><td>Phòng đang sửa chữa — không bố trí chỗ</td></tr></table></div>',
+  +'<tr class="badrow"><td>41</td><td>HS-2026-1104 · phòng KB-102</td><td><b>Lệch giới tính</b> — em nam, KB-102 là phòng nữ</td></tr>'
+  +'<tr class="badrow"><td>88</td><td>HS-2026-1233 · phòng KA-301</td><td>Phòng đang sửa — không bố trí chỗ</td></tr></table></div>',
   '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="close">Nhập 130 dòng hợp lệ</button>');
 }
 
@@ -3194,16 +3363,17 @@ document.addEventListener('click',e=>{
  const sc=t.closest('[data-sc]'); if(sc){hopSucChua(sc.dataset.sc);return}
  const ccp=t.closest('[data-ccp]'); if(ccp){hopChuyenCaPhong(ccp.dataset.ccp);return}
  const bd=t.closest('[data-bed]'); if(bd){const[p,g]=bd.dataset.bed.split('|');hopXepCho(p,+g);return}
- if(t.id==='btnPhongMoi'){modal('➕ Thêm phòng ở',
-   '<label class="lbl">Mã phòng</label><input class="fldi" placeholder="A-303">'
-   +'<label class="lbl">Khu</label><select class="fldi">'+KHU.map(k=>'<option>'+esc(tenKhu(k.id))+'</option>').join('')+'</select>'
-   +'<label class="lbl">Tầng</label><input class="fldi" type="number" value="3">'
-   +'<label class="lbl">Sức chứa (số giường)</label><input class="fldi" type="number" value="8">'
-   +'<label class="lbl">Khối ưu tiên <span class="srcline">(gợi ý, cảnh báo mềm)</span></label>'
-   +'<select class="fldi"><option>10</option><option>11</option><option>12</option><option>— không đặt —</option></select>'
-   +'<div class="ro" style="margin-top:11px">Giới tính phòng <b>lấy theo khu</b>, không khai riêng — nếu không thì sẽ có '
-   +'phòng nữ nằm trong khu nam và ràng buộc chặn cứng mất chỗ dựa.</div>',
-   '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="close">Thêm phòng</button>');return}
+ const ttp=t.closest('[data-ttp]'); if(ttp){hopTrangThai(ttp.dataset.ttp);return}
+ /* PHKT — M6.10 KHÔNG tạo phòng: phòng ở nội trú là địa điểm M6.4 (QLCSVC tạo — D1). Deep-link D3. */
+ if(t.closest('[data-m64]')){modal('↗ Mở M6.4 — Thêm địa điểm «Phòng ở nội trú»',
+   '<div class="ro">Phòng ở nội trú là <b>địa điểm của M6.4</b> — thêm phòng làm ở menu chủ, như mọi phòng khác của trường. '
+   +'Demo không mở được menu khác; hệ thống thật đi tới:</div>'
+   +'<div class="tbw"><div class="f"><span>Đường dẫn</span><b><code>/M6.4?action=tao&amp;loai=noitru&amp;return=M6.10</code></b></div>'
+   +'<div class="f"><span>M6.4 bắt</span><b>mã duy nhất toàn trường (tiền tố khu: <code>KA-303</code>) · dãy nhà (= khu) · tầng · '
+   +'sức chứa (giường) · cấp công trình</b></div></div>'
+   +'<div class="ro" style="margin-top:9px">Giới tính phòng <b>lấy theo khu</b> (phần vận hành ở ⚙ khối 1), không khai riêng — '
+   +'nếu không thì sẽ có phòng nữ nằm trong khu nam và ràng buộc chặn cứng mất chỗ dựa. Khối ưu tiên khai ở M6.10 sau khi phòng xuất hiện.</div>',
+   '<button class="btn p" data-mb="close">Đóng</button>');return}
 
  /* ---- tab 7 · Cấu hình (tab 6 cho tới v1.2) ---- */
  const cn=t.closest('[data-cn]'); if(cn){

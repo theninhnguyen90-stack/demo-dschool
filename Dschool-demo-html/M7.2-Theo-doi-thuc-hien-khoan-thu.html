@@ -1308,6 +1308,7 @@ function vThongKe(){
   c+='</div>';
  });
  c+=D('Điều kiện phát hành <b>tính tại thời điểm hiển thị</b>. Khoản <i>Thu sau</i> của tháng 9 nằm ở mốc tháng 10 và <b>chặn</b> cho tới khi M6.2 chốt số buổi thực tế — không có số thì không tính ra tiền.');
+ c+=('<div style="font-size:12px;line-height:1.6;margin:8px 0;padding:8px 11px;border:1px solid #fcd34d;background:#fffbeb;border-radius:9px">📱 Hóa đơn phát hành báo lên App cho <b>phụ huynh ĐÃ liên kết App</b> <i>(HDLP ② — TKPH 25/9/2026)</i>. Em <b>chưa có phụ huynh liên kết</b> thì ⛔ ai nhận trên App — báo bằng kênh khác · <button class="btn xs" data-x="dl" data-m="M10.5">↗ M10.5 — lọc «Học sinh chưa có tài khoản liên kết»</button></div>');
  h+=khoi('dot','🧮','Đợt phát hành theo mốc','điều kiện đầu vào và số hóa đơn đã phát hành',c);
 
  /* --- khối D: đối soát --- */
@@ -2166,6 +2167,155 @@ document.addEventListener('change',e=>{
  if(e.target.id==='nam'){toast('Demo chỉ có dữ liệu năm học 2026-2027.');e.target.value='2026-2027';return;}
 });
 $('#mask').addEventListener('click',e=>{if(e.target.id==='mask')closeM();});
+render();
+
+/* ==========================================================================
+   app.70-khoi-tao.js — M7.2 · MỐC «Ngày bắt đầu vận hành trên hệ thống»
+   Cụm KTLD · phiên KTLD-1I · 23/9/2026 — chốt H9 · H11 ①, tài liệu M7.2 §3.6
+
+   ⛔ Tệp này KHÔNG sửa một byte nào của app.js. Mở rộng bằng cách GÁN LẠI
+   chính tên hàm: scopeBar · kySel · vTheoDoi · vThongKe · vCtdt · khoi.
+   gen-demo nối app.js TRƯỚC app.*.js nên mọi hàm gốc đã tồn tại ở đây.
+
+   Mốc dưới đây là GIẢ LẬP CỦA DEMO — trong sản phẩm mốc đọc ở M10.1 §7.1b,
+   hồ sơ năm học ĐẦU TIÊN, ⛔ không phải năm đang chọn (§7.1b.2).
+   Hai tình huống để thấy CẢ HAI nửa của luật:
+     · 01/09/2026 — đợt Tháng 8 đã thu xong ở sổ cũ; kỳ Tháng 9 chạy đầy đủ
+                    TRÊN hệ thống và vẫn mang dải giải thích;
+     · 15/09/2026 — hai kỳ đầu năm ra ngoài hệ thống, kỳ đầu tiên là Tháng 10.
+   ========================================================================== */
+
+let KT_MOC = null;                       /* null = trường đang vận hành bình thường */
+const KT_CA = ['01/09/2026', '15/09/2026'];
+const ktBat = () => !!KT_MOC;
+
+/* Ranh giới do M7.1 §3.8 (TM-1) định nghĩa: đo bằng NGÀY CÔNG BỐ CỦA MỐC.
+   M7.2 ĐỌC kết quả, ⛔ không tự đo lại — hai chỗ cùng đo là hai chỗ sẽ lệch. */
+function ktTruocMoc(th) { return ktBat() && !!NGAYCB[th] && pd(NGAYCB[th]) < pd(KT_MOC); }
+function ktKyDau() { return THANGS.find(t => !ktTruocMoc(t)) || THANGS[THANGS.length - 1]; }
+function ktNgoai() { return THANGS.filter(ktTruocMoc); }
+
+/* ---------- Thanh tình huống + dải mốc ---------- */
+function ktThanh() {
+  let h = '<div class="ro" style="display:flex;gap:9px;align-items:center;flex-wrap:wrap">' +
+    '<b>🧪 Tình huống trường (demo):</b>' +
+    '<button class="btn xs' + (ktBat() ? '' : ' p') + '" data-ktx="tat">Đang vận hành bình thường</button>' +
+    KT_CA.map(m => '<button class="btn xs' + (KT_MOC === m ? ' p' : '') + '" data-ktx="bat" data-ktm="' + m + '">Vận hành từ ' + m + '</button>').join('') +
+    '<span style="color:var(--ink3)">Cụm <b>KTLD</b> · chốt <b>H11 ①</b> — công tắc chỉ có trong demo; sản phẩm đọc mốc ở <b>M10.1 §7.1b</b>.</span></div>';
+  if (ktBat()) {
+    const ng = ktNgoai();
+    h += '<div class="kybar"><span>🕘</span><div><b>Số liệu tính từ ' + KT_MOC + '</b> — khoản thu trước mốc thực hiện <b>ngoài hệ thống</b>. ' +
+      (ng.length
+        ? '<b>' + ng.length + '</b> kỳ <i>(' + ng.join(' · ') + ')</i> có mốc công bố trước ngày ấy, nên hệ thống <b>⛔ không sinh một bản ghi phải thu nào</b> cho chúng '
+        : '⛔ Không kỳ nào của năm học này nằm trước mốc ') +
+      '<i>(M7.2 §3.6 · luật TM-2)</i>. ⛔ Không phải bị lọc khỏi màn hình — <b>không tồn tại</b>. ' +
+      'Kỳ đầu tiên có dữ liệu: <b>' + ktKyDau() + '</b>.</div></div>';
+  }
+  return h;
+}
+
+/* ---------- Khối giải thích thay chỗ danh sách (M7.2 §3.6 — bốn thứ bắt buộc) ---------- */
+function ktKhoiGiaiThich(tenTab) {
+  const kd = ktKyDau();
+  return '<div class="bl" style="margin-top:4px"><div class="blh">' +
+    '<div class="t">🕘 Kỳ ' + esc(KYCUR) + ' — ngoài hệ thống</div>' +
+    '<div class="s">' + tenTab + ' · ⛔ không có dòng nào, vì ⛔ không có bản ghi nào</div></div>' +
+    '<div class="blb">' +
+    '<div class="ro" style="margin-bottom:0;line-height:1.75">' +
+      '① Hệ thống bắt đầu vận hành từ <b>' + KT_MOC + '</b> <i>(M10.1 · hồ sơ năm học đầu tiên)</i>.<br>' +
+      '② Mốc công bố của kỳ này là <b>' + (NGAYCB[KYCUR] || '—') + '</b> — <b>TRƯỚC</b> ngày ấy.<br>' +
+      '③ ⇒ Khoản thu của kỳ này nhà trường <b>thực hiện theo sổ cũ, ngoài hệ thống</b>.<br>' +
+      '④ ⛔ Đây <b>KHÔNG</b> phải dữ liệu bị mất, và cũng <b>KHÔNG</b> phải «đã thu đủ».' +
+    '</div>' +
+    '<div class="fgrid" style="margin-top:11px">' +
+      '<div class="k">② Phải đóng</div><div><b>không có</b> <span class="st2 n">⛔ không in số không</span></div>' +
+      '<div class="k">③ Đã thanh toán</div><div><b>không có</b></div>' +
+      '<div class="k">④ Chênh lệch quyết toán</div><div><b>không có</b></div>' +
+      '<div class="k">Tỉ lệ thu · còn nợ · số hóa đơn</div><div><b>không có</b> — số không là một <b>kết luận</b>, mà ở đây ⛔ không ai kết luận được</div>' +
+      '<div class="k">Kỳ đầu tiên có dữ liệu</div><div><b>' + esc(kd) + '</b> <i>(công bố ' + (NGAYCB[kd] || '—') + ')</i></div>' +
+    '</div>' +
+    '<div style="margin-top:11px;display:flex;gap:7px;flex-wrap:wrap">' +
+      '<button class="btn p" data-ktx="dikydau">↗ Xem kỳ ' + esc(kd) + '</button>' +
+      '<button class="btn" data-ktx="xemmoc">↗ M10.1 · xem Ngày bắt đầu vận hành</button>' +
+    '</div></div></div>' +
+    D('⛔ <b>KHÔNG nhập công nợ học phí đầu kỳ</b> — chốt <b>H9</b> ngày 23/9/2026. Không đường nạp Excel, không ô nhập tay, không tab mới. ' +
+      'Một dòng nợ nhập tay là con số <b>không có hóa đơn đứng sau</b>: không mốc công bố, không đơn giá, không số lượng, không chứng từ. ' +
+      'Nó vào sổ rồi thì nhắc nợ hàng loạt sẽ nhắc nó và App PH-HS sẽ hiện nó cho gia đình — lúc gia đình hỏi «khoản gì» thì hệ thống ⛔ không trả lời được.');
+}
+
+/* ---------- Bộ chọn kỳ: kỳ trước mốc mang nhãn, ⛔ KHÔNG bị xóa khỏi danh sách ---------- */
+kySel = function () {
+  return '<select class="fs" id="kysel">' + THANGS.map(t => '<option value="' + t + '"' + (t === KYCUR ? ' selected' : '') + '>' + t +
+    (ktTruocMoc(t) ? ' (ngoài hệ thống)' : (daPhatHanh(t) ? '' : ' (chưa phát hành)')) + '</option>').join('') + '</select>';
+};
+
+/* ---------- T1 · T2 · T3 ---------- */
+const _ktTheoDoi = vTheoDoi, _ktThongKe = vThongKe, _ktCtdt = vCtdt;
+vTheoDoi = function () {
+  if (!ktTruocMoc(KYCUR)) return _ktTheoDoi();
+  return '<div class="bar">' + kySel() + '</div>' + ktKhoiGiaiThich('T1 · Theo dõi &amp; Xác nhận đóng tiền');
+};
+vThongKe = function () {
+  if (!ktTruocMoc(KYCUR)) return _ktThongKe();
+  return '<div class="bar">' + kySel() + '</div>' + ktKhoiGiaiThich('T2 · Thống kê thực hiện khoản thu');
+};
+vCtdt = function () {
+  let h = '';
+  if (ktBat())
+    h = '<div class="kybar"><span>🧾</span><div>Sổ chứng từ <b>quét cả năm học</b> nhưng chỉ có chứng từ từ <b>' + KT_MOC + '</b> trở đi — ' +
+      'kỳ trước mốc ⛔ <b>không có hóa đơn nào trên hệ thống</b> nên ⛔ không có chứng từ nào để phát hành. ' +
+      'Biên lai của các kỳ ấy do nhà trường phát hành <b>ngoài hệ thống</b>.</div></div>';
+  return h + _ktCtdt();
+};
+
+/* ---------- Hai khối dễ đọc nhầm nhất — mỗi khối một dòng (M7.2 §3.6) ---------- */
+const _ktKhoi = khoi;
+khoi = function (id, ic, ten, phu, noi) {
+  if (ktBat() && (id === 'du' || id === 'roi')) {
+    const l = id === 'du'
+      ? '<b>Sổ số dư bắt đầu từ ' + KT_MOC + '.</b> Tiền thừa phát sinh trước mốc nằm ở <b>sổ cũ</b>, ⛔ không kéo vào hệ thống — ' +
+        'số dư là đại lượng <b>dẫn xuất từ bút toán</b>, ⛔ không có ô nhập ở bất kỳ menu nào. <i>(⏳ M7.2 §15 điểm 8 — chạm tiền, chờ chốt)</i>'
+      : '<b>Chỉ hiện nợ phát sinh từ ' + KT_MOC + '.</b> Nợ của kỳ trước mốc nằm ở <b>sổ cũ</b> — ⛔ <b>không phải đã xóa</b>. ' +
+        'Khối này rỗng ở năm đầu là <b>bình thường</b>, nhưng rỗng mà không giải thích thì nó nói đúng câu sai mà §7.4 dựng ra để chống: ' +
+        '<i>«nợ được giữ lại có chủ ý, rồi không ai đòi»</i>. <i>(⏳ M7.2 §15 điểm 9)</i>';
+    noi = '<div class="kybar"><span>🕘</span><div>' + l + '</div></div>' + noi;
+  }
+  return _ktKhoi(id, ic, ten, phu, noi);
+};
+
+/* ---------- Thanh tình huống nằm ngay dưới dải phạm vi ---------- */
+const _ktScopeBar = scopeBar;
+scopeBar = function () { return _ktScopeBar() + ktThanh(); };
+
+/* ---------- Thao tác ---------- */
+document.addEventListener('click', e => {
+  const el = e.target.closest ? e.target.closest('[data-ktx]') : null;
+  if (!el) return;
+  const x = el.dataset.ktx;
+  if (x === 'bat' || x === 'tat') {
+    KT_MOC = (x === 'bat') ? el.dataset.ktm : null;
+    S.sel = null; S.selhd = null;
+    render();
+    toast(ktBat()
+      ? '🧪 Trường vừa khởi tạo — <b>Ngày bắt đầu vận hành ' + KT_MOC + '</b>. Chọn kỳ <b>' + (ktNgoai()[0] || '—') + '</b> để xem màn hình giải thích.'
+      : '🧪 Trở lại trường đang vận hành bình thường — ⛔ không mốc, ⛔ không dải.');
+    return;
+  }
+  if (x === 'dikydau') { KYCUR = ktKyDau(); S.sel = null; render(); return; }
+  if (x === 'xemmoc') {
+    modal('M10.1 · Ngày bắt đầu vận hành trên hệ thống',
+      '<div class="ro" style="margin-top:0">Bản chiếu <b>chỉ đọc</b> 🔗 — menu chủ là <b>M10.1 Hồ sơ năm học</b> §7.1b.</div>' +
+      '<div class="fgrid">' +
+      '<div class="k">Giá trị</div><div><b>' + KT_MOC + '</b></div>' +
+      '<div class="k">Khai ở</div><div>Hồ sơ năm học <b>ĐẦU TIÊN</b> của trường — ⛔ không phải năm đang chọn <i>(§7.1b.2)</i></div>' +
+      '<div class="k">Một mốc, ba loại dữ liệu</div><div>lô điểm · lô chuyên cần <i>(M1.9 ④ ⑤)</i> · <b>khoản thu</b> <i>(M7.1 · M7.2)</i> — ⛔ không đẻ mốc thứ hai</div>' +
+      '<div class="k">Lùi về quá khứ</div><div>✅ được — Hiệu trưởng, audit mức ② + lý do bắt buộc. 🛑 Lùi mốc <b>chỉ mở cửa khai</b>, ⛔ <b>không tự kéo một khoản thu cũ nào vào hệ thống</b> <i>(§7.1b.1 luật ④)</i></div>' +
+      '</div>',
+      '<button class="btn" data-x="close">Đóng</button>');
+    return;
+  }
+});
+
 render();
 </script>
 </body>

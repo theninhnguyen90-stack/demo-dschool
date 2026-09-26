@@ -288,7 +288,7 @@ const TO=[{id:'T1',ten:'Tổ Toán — Tin'},{id:'T2',ten:'Tổ Ngữ văn'},{id
  {id:'T4',ten:'Tổ Khoa học tự nhiên'},{id:'T5',ten:'Tổ Khoa học xã hội'},{id:'T6',ten:'Tổ Thể dục — Nghệ thuật'}];
 const dtBy=i=>DT.filter(x=>x.id===i)[0];
 /* 15/9/2026 — tổ văn phòng: đơn vị gắn chức danh TTVP (TT 15/2026 — mỗi trường MỘT tổ văn phòng, tổ trưởng do HT bổ nhiệm).
-   ⏳ M10.1 ⑤ chưa khai tổ văn phòng — demo đặt cứng một đơn vị 'VP' (phiếu M10.4-chuc-danh mục E). */
+   ⏳ M10.2 tab ④ (Master tổ — CCTT) chưa khai tổ văn phòng — demo đặt cứng một đơn vị 'VP' (phiếu M10.4-chuc-danh mục E). */
 const VP={id:'VP',ten:'Tổ văn phòng'};
 const toBy=i=>i==='VP'?VP:TO.filter(x=>x.id===i)[0];
 const dvTen=i=>!i?'Toàn trường':(dtBy(i)?dtBy(i).ten:(toBy(i)?toBy(i).ten:i));
@@ -1160,6 +1160,145 @@ document.addEventListener('change',function(e){
  if(t.id==='fHL'&&$('#pvThay')){vThay($('[data-x=doThay]').dataset.c,$('[data-x=doThay]').dataset.d);return}
  if(t.id==='nsMoi'&&$('#pvThay')){vThay($('[data-x=doThay]').dataset.c,$('[data-x=doThay]').dataset.d);return}
 });
+render();
+
+/* ═══════════════════════════════════════════════════════════════
+   KTLD-1D — M4.3 trong LUỒNG KHỞI TẠO LẦN ĐẦU  ·  bước B05
+   Tài liệu: M4.3 §6.5 (hai đường nạp) · §7.4 (ca «Hiệu trưởng đầu tiên»)
+
+   🛑 KT-1: luồng M10.12 sở hữu THỨ TỰ và VẾT; menu này sở hữu DỮ LIỆU.
+   🛑 Tệp này ⛔ KHÔNG sửa một byte nào của app.js — chỉ bọc render().
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Tình huống của TRƯỜNG — demo cho người duyệt bật/tắt; thật thì máy đọc cờ. */
+let TT_TR = 'dang_khoi_tao';
+
+const _renderGoc43 = render;
+render = function(){ _renderGoc43.apply(null, arguments); veKhoiTao43(); };
+
+function veKhoiTao43(){
+  const c = document.querySelector('#content');
+  if(!c || !R().xem) return;
+  c.insertAdjacentHTML('afterbegin', daiBuoc43());
+}
+
+function daiBuoc43(){
+  /* 🛑 Đường nạp thuộc MENU, ⛔ không thuộc luồng (KT-1) — nên nó hiện ở CẢ HAI tình huống.
+     Chỉ DẢI BƯỚC mới là thứ của luồng. Lô B05 còn dùng sau khi trường đã vận hành. */
+  const nut = suaDuoc();
+  let h = '<div class="card" style="margin-bottom:12px">'+
+    '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'+
+    '<b>Tình huống của trường (demo):</b>'+
+    ['dang_khoi_tao','dang_van_hanh'].map(t=>'<button class="btn xs'+(TT_TR===t?' p':'')+
+      '" data-kt="tt" data-v="'+t+'">'+(t==='dang_khoi_tao'?'Đang khởi tạo':'Đang vận hành')+'</button>').join('')+
+    '</div>';
+  if(TT_TR==='dang_khoi_tao'){
+    h += '<div class="info" style="margin-top:10px;line-height:1.7">'+
+      '<b>Bước 5 của luồng khởi tạo lần đầu — <code>B05</code> Gán chức danh · điểm công tác.</b> '+
+      'Màn hình <b>nguyên vẹn</b>, ⛔ không có bản rút gọn riêng cho luồng <i>(HDKT ③)</i>.<br>'+
+      '<b>Xong khi</b> <i>(hạng <code>M</code> — máy kết luận)</i>: <b>HT</b> có người · mỗi điểm trường đang hoạt động có ≥ 1 người phạm vi <b>Branch</b> · '+
+      '<b>TCNS</b> · <b>KT</b> · <b>VT</b> có người. Phép đếm đọc thẳng <b>T3 Rà soát bộ máy</b> — ⛔ không dựng phép đếm thứ hai.<br>'+
+      '✅ 🔁 <b>Sửa thứ tự 23/9:</b> điều kiện «mỗi điểm trường đang hoạt động» <b>đọc mục ② của bước 8a «Khung năm học»</b>, mà bước 8a nay đứng <b>ngay sau bước 2</b> ⇒ vào bước 5 thì <b>danh sách điểm trường đã có</b>. <i>(Vết cũ: mục ② từng nằm ở bước 8 đứng sau, phải cắt bằng <b>chưa đủ điều kiện</b> và ⛔ không báo «thiếu người» — cơ chế ấy giữ lại cho ca trường xóa hết điểm trường.)</i>'+
+      ' <button class="rolnk" data-kt="ve">↗ Về M10.12 — bảng tiến độ</button></div>';
+  }
+  if(nut){
+    h += '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">'+
+      '<button class="btn p" data-kt="nap" data-m="cd">⬆ Nạp chức danh hàng loạt — MAU-B05-gan-chuc-danh-v1</button>'+
+      '<button class="btn" data-kt="nap" data-m="dt">⬆ Nạp điểm trường công tác — MAU-B05-diem-cong-tac-v1</button>'+
+      '</div>'+
+      '<div class="ro" style="margin-top:8px">🔑 Lô này <b>CẤP QUYỀN</b> — chức danh <i>là</i> phân quyền. Ba hàng rào: '+
+      'chỉ <b>HT · TCNS</b> có bit <code>ID</code> · dòng cấp chức danh nhóm ① cho chính người chạy lô gắn cờ <b>⚑ tự cấp</b> · '+
+      'bảng kết quả có <b>khối riêng</b> cho chức danh nhóm ① <i>(M4.3 §6.5.4)</i>.</div>';
+  }
+  return h + '</div>';
+}
+
+/* ───────── màn nạp: ba bước, giống khuôn Import của M4.1 ───────── */
+let bcNap = 0, loaiNap = 'cd';
+
+function mNap43(){
+  if(loaiNap==='dt') return mNapDT43();
+  if(bcNap===0){
+    modal('⬆ Nạp chức danh hàng loạt — Bước 1/3: Tải mẫu và tải lên',
+     '<div class="info">Mẫu <b>MAU-B05-gan-chuc-danh-v1</b> — ô <code>A1</code> khai số hiệu · hàng 2 tiêu đề · dữ liệu từ hàng 3 · '+
+     'ngày kiểu <code>Text</code> <code>dd/mm/yyyy</code> · sheet phụ <b>Danh mục tra cứu</b> xuất từ dữ liệu thật của trường.</div>'+
+     '<div class="ro" style="margin-top:10px">🔴 Cột <b>Điểm trường (phạm vi của chức danh)</b> — ⚠ <b>nghĩa khác</b> cột cùng tên ở mẫu nhân sự <code>B04</code>: '+
+     'ở đây nó là <b>phạm vi dữ liệu của chức danh</b>, không phải nơi người ấy làm việc.<br>'+
+     'Nhận người bằng <b>Mã nhân sự</b> <i>(bảng tra mã cũ → mới của B04)</i> <b>hoặc</b> <b>Số căn cước</b> — phải có ít nhất một; '+
+     'có cả hai mà trỏ hai người ⇒ ⛔ chặn dòng, ⛔ không tự chọn một cái để chạy tiếp.</div>'+
+     '<div style="margin-top:10px"><button class="btn sm" data-kt="taiMau">⬇ Tải mẫu Excel</button></div>'+
+     '<div class="drop has" style="margin-top:12px">📄 gan-chuc-danh-CSchinh-2026.xlsx — 7 dòng · đã đọc, <b>chưa ghi gì</b></div>',
+     '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-kt="napTiep">Đối chiếu →</button>');
+  } else if(bcNap===1){
+    modal('⬆ Nạp chức danh — Bước 2/3: Đối chiếu',
+     '<div class="danger">⛔ <b>3 dòng bị chặn</b> — ⛔ không ghi được, phải sửa tệp nguồn.</div>'+
+     '<div class="warn">⚠ <b>1 dòng cảnh báo mềm</b> · <b>1 dòng bỏ qua vì đã có</b>.</div>'+
+     '<table><thead><tr><th style="width:30px"></th><th style="width:40px">Dòng</th><th>Người</th><th>Chức danh</th><th>Vấn đề</th></tr></thead><tbody>'+
+     '<tr style="background:#fef2f2"><td>⛔</td><td>2</td><td>Lê Minh Châu</td><td><b>HT</b></td>'+
+      '<td><b>Chức danh đơn nhất đã có người</b> — Nguyễn Văn An giữ từ 01/08/2024. '+
+      'Thay người phải làm bằng <b>F5</b> <i>(thay người là MỘT thao tác — §3.3)</i></td></tr>'+
+     '<tr style="background:#fef2f2"><td>⛔</td><td>4</td><td>Trần Thị Hạnh</td><td><b>TTCM</b></td>'+
+      '<td><b>Hai dòng TRONG CÙNG LÔ tranh một chức danh đơn nhất</b> — dòng 4 và dòng 5 cùng nhận Tổ trưởng <b>Tổ Toán — Tin</b>. '+
+      '🛑 <b>Chặn CẢ HAI</b>, ⛔ không phải «dòng đầu thắng»</td></tr>'+
+     '<tr style="background:#fef2f2"><td>⛔</td><td>5</td><td>Phạm Văn Đức</td><td><b>TTCM</b></td><td>— như trên —</td></tr>'+
+     '<tr style="background:#fffbeb"><td>⚠</td><td>6</td><td>Hoàng Thị Lan</td><td><b>TPCM</b></td>'+
+      '<td>Ngày hiệu lực <b>01/03/2026</b> — lùi <b>181 ngày</b>, quá ngưỡng 90. '+
+      'Bắt buộc có <code>Ghi chú</code>: <i>«QĐ về chậm, nhận bàn giao tháng 3»</i> ⇒ giữ</td></tr>'+
+     '<tr style="background:#f1f5f9"><td>⊝</td><td>7</td><td>Đỗ Văn Nam</td><td>GVBM</td>'+
+      '<td><b>Bỏ qua</b> — đã có bản ghi hiệu lực từ 15/08/2026 <i>(chức danh chính nạp ở bước 4)</i>. '+
+      '⛔ Không tạo bản ghi thứ hai <i>(§6.5.1)</i></td></tr>'+
+     '<tr><td>✓</td><td>1</td><td>Nguyễn Thu Hà</td><td><b>PHT_DT</b> · ĐT Tân Hội</td><td>Hợp lệ</td></tr>'+
+     '<tr><td>✓</td><td>3</td><td>Vũ Quốc Bảo</td><td><b>TCNS</b></td><td>Hợp lệ</td></tr>'+
+     '</tbody></table>'+
+     '<div class="ro" style="margin-top:12px">🛑 Bước đối chiếu <b>soi cả TRONG LÔ</b>, ⛔ không chỉ so với dữ liệu đang có. '+
+     'Chỉ so với dữ liệu hiện có thì dòng đầu ghi lọt, dòng sau mới báo lỗi — và lúc ấy trường đã có một Hiệu trưởng '+
+     '<b>do thứ tự dòng trong Excel quyết định</b>.</div>',
+     '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-kt="napTiep">Ghi 3 dòng →</button>');
+  } else {
+    modal('⬆ Nạp chức danh — Bước 3/3: Kết quả',
+     '<div class="okbox">✅ <b>Đã ghi 3 bản ghi chức danh</b> · ⊝ bỏ qua 1 · ⛔ không ghi 3.</div>'+
+     '<table><thead><tr><th>Người</th><th>Kết quả</th></tr></thead><tbody>'+
+     '<tr><td>Nguyễn Thu Hà</td><td>PHT Đào tạo · phạm vi <b>ĐT Tân Hội</b> · từ 01/08/2026</td></tr>'+
+     '<tr><td>Vũ Quốc Bảo</td><td>Tổ chức nhân sự · toàn trường · từ 01/08/2026</td></tr>'+
+     '<tr><td>Hoàng Thị Lan</td><td>Tổ phó Tổ Ngữ văn · từ 01/03/2026 <i>(giữ dù lùi 181 ngày — có lý do)</i></td></tr>'+
+     '</tbody></table>'+
+     '<div class="warn" style="margin-top:12px">🔑 <b>Lô này đã cấp chức danh nhóm ① (quản trị) cho 2 người</b> — '+
+     'Nguyễn Thu Hà <i>(PHT Đào tạo)</i> · Vũ Quốc Bảo <i>(Tổ chức nhân sự)</i>. '+
+     'Khối này <b>đứng riêng</b>, ⛔ không trộn vào con số tổng — để người ký nhìn thấy mình vừa phát quyền cho ai.</div>'+
+     '<div class="ro" style="margin-top:10px">⛔ Ba dòng bị chặn <b>tải về được kèm lý do</b> để sửa tệp nguồn rồi nạp lại. '+
+     '⛔ Lô ⛔ không đụng một ô nào của ma trận quyền <i>(ràng buộc 18)</i> — nó chỉ gán chức danh <b>đã định nghĩa</b> ở M10.4.</div>',
+     '<button class="btn p" data-kt="napXong">Xong</button>');
+  }
+}
+
+function mNapDT43(){
+  modal('⬆ Nạp điểm trường công tác — MAU-B05-diem-cong-tac-v1',
+   '<div class="info">Mẫu <b>thứ hai</b> của bước <code>B05</code>, nạp vào <b>T2 Điểm trường công tác</b>.</div>'+
+   '<div class="ro" style="margin-top:10px">🔑 <b>Vì sao tách mẫu thay vì thêm cột vào mẫu chức danh:</b> T1 và T2 là '+
+   '<b>hai Feature, hai ô quyền</b>. Gộp một tệp thì một người chỉ có <code>ID</code> ở T1 vẫn ghi được dữ liệu của T2 — '+
+   '<b>cửa ghi đi vòng qua ô quyền</b>. <i>(B09 · B10 · B11 đều tách theo đúng ranh giới này.)</i></div>'+
+   '<table style="margin-top:10px"><thead><tr><th>STT</th><th>Mã nhân sự ◐</th><th>Số căn cước ◐</th><th>Họ và tên *</th>'+
+   '<th>Điểm trường công tác *</th><th>Từ ngày *</th><th>Ghi chú</th></tr></thead>'+
+   '<tbody><tr><td>1</td><td>NS-2026-0142</td><td>—</td><td>Phạm Thanh Sơn</td><td>ĐT Tân Hội</td><td>01/08/2026</td><td></td></tr>'+
+   '<tr><td>2</td><td>—</td><td>001089xxxxxx</td><td>Hồ Văn Trung</td><td>ĐT Phú Mỹ</td><td>01/08/2026</td><td></td></tr>'+
+   '</tbody></table>'+
+   '<div class="drop has" style="margin-top:12px">📄 diem-cong-tac-2026.xlsx — 58 dòng · đã đọc, <b>chưa ghi gì</b></div>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-kt="napTiep">Đối chiếu →</button>');
+}
+
+document.addEventListener('click', function(e){
+  const b = e.target.closest('[data-kt]'); if(!b) return;
+  const k = b.dataset.kt;
+  if(k==='tt'){ TT_TR = b.dataset.v; render(); return; }
+  if(k==='ve'){ toast('Deep-link <b>↗ M10.12?tab=luong&buoc=B05</b> — demo này ⛔ không rời menu'); return; }
+  if(k==='taiMau'){ toast('Đã tải <b>MAU-B05-gan-chuc-danh-v1</b> — ô A1 khai số hiệu, ⛔ đừng xoá dòng 1'); return; }
+  if(k==='nap'){ loaiNap = b.dataset.m; bcNap = 0; mNap43(); return; }
+  if(k==='napTiep'){ if(loaiNap==='dt'){ closeModal(); toast('Demo dừng ở bước đối chiếu của mẫu thứ hai'); return; }
+                     bcNap++; mNap43(); return; }
+  if(k==='napXong'){ closeModal(); bcNap = 0;
+    toast('Đã ghi 3 bản ghi chức danh · <b>2 người nhận chức danh nhóm ①</b> — audit đã ghi'); return; }
+});
+
 render();
 </script>
 </body>

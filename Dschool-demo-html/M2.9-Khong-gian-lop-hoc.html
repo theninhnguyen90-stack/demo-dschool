@@ -391,6 +391,8 @@ tr.dd-gy td{background:#f8fafc}
   <button class="rb" data-r="PHT_CM">PHT_CM</button>
   <button class="rb" data-r="HT">HT</button>
   <button class="rb" data-r="VT">Văn thư</button>
+  <button class="rb" data-r="TTCM">TTCM · Tổ Tự nhiên</button>
+  <button class="rb" data-r="TPCM">TPCM · Tổ Xã hội</button>
   <span class="note">Menu XEM theo lớp — GVCN ghi ở T2 · T6 · T7 · T9 + ban cán sự T1 · duyệt ở ✅ Nội dung chờ duyệt</span>
   <button class="ntg" id="btnNote">💡 Ghi chú thiết kế: TẮT</button>
 </div>
@@ -485,12 +487,43 @@ const capTen=c=>c==='TH'?'Tiểu học':c;
 const MON_THCS=['Toán','Ngữ văn','Tiếng Anh','Vật lí','Sinh học','Lịch sử'];
 const MON_TH=['Tiếng Việt','Toán','Ngoại ngữ 1','Lịch sử và Địa lí','Khoa học','Tin học và Công nghệ'];
 const monCua=l=>capHoc(l)==='TH'?MON_TH:MON_THCS;
+/* ===== TDHT-1D (23/9/2026) — PHAM VI MOI «lop co it nhat mot mon cua to» =====
+   Sinh ra de mo KGLH-P1 phuong an ①. Pham vi nay M2.9 CHUA CO: menu von cat theo
+   LOP (Class) hoac DIEM TRUONG (Branch), khong cat theo TO BO MON.
+   🛑 DO DUOC va PHAI DO: voi to day mon pho thong (Toan, Ngu van, Tieng Anh...),
+   mon cua to co mat o MOI lop => pham vi nay KHONG THU HEP GI, no bang toan truong.
+   Man hinh NOI RA con so ay thay vi de nguoi doc tuong «Group» la hep. */
+const TOMON={
+ TN:{ten:'Tổ Tự nhiên', mon:['Toán','Vật lí','Sinh học','Khoa học','Tin học và Công nghệ']},
+ XH:{ten:'Tổ Xã hội',   mon:['Ngữ văn','Lịch sử','Tiếng Việt','Lịch sử và Địa lí']},
+ NN:{ten:'Tổ Ngoại ngữ',mon:['Tiếng Anh','Ngoại ngữ 1']}};
+const lopCoMonCuaTo=(l,to)=>monCua(l).some(m=>TOMON[to].mon.indexOf(m)>=0);
 const GVMON={'Toán':'mai','Ngữ văn':'lan','Tiếng Anh':'ngan','Vật lí':'khoa','Sinh học':'tuan','Lịch sử':'son',
  'Tiếng Việt':'hoa','Ngoại ngữ 1':'ngan','Lịch sử và Địa lí':'tho','Khoa học':'tuan','Tin học và Công nghệ':'tuan'};
 /* Phan cong giang day — chieu tu M4.5. Don vi la cap LOP × MON (khung-menu §12), khong phai "GV day mon X".
    Mac dinh theo GVMON; ngoai le ghi rieng. Vu Anh Tuan day HAI mon o 4A1, 5A1 (Khoa hoc + Tin hoc va Cong nghe). */
-const PC_RIENG={'10A1|Ngữ văn':'nga'};
+/* SDBG-1E (22/9): Vat li 8A1 · 9A1 do thay Nguyen Van Hung day — khop du lieu mau M2.2, noi co hai tiet da dinh chinh. */
+const PC_RIENG={'10A1|Ngữ văn':'nga','8A1|Vật lí':'hung','9A1|Vật lí':'hung'};
 const pc=(l,m)=>PC_RIENG[l+'|'+m]||GVMON[m]||'mai';
+
+/* ===== KGLH-1A · NGUON CHIEU CUA TAB «Thông tin lớp học» (hop dong HDTTL — 5 khoi, chieu 100%) =====
+   Khoi ② phong hoc — chieu 🔗 M6.4. Chi PHONG CO DINH cua lop; mon co phong chuyen dung ghi o khoi ④. */
+const PHONG={'9A1':'P.201 — nhà A','9A2':'P.202 — nhà A','8A1':'P.105 — nhà A','8B1':'P.B12 — nhà B',
+ '5A1':'P.303 — nhà A','4A1':'P.302 — nhà A','10A1':'P.401 — nhà A','6B1':'P.B21 — nhà B','9A9':'—'};
+const PHONG_MON={'Vật lí':'P. Thực hành Lý','Sinh học':'P. Thực hành Sinh','Khoa học':'P. Thực hành Sinh',
+ 'Tin học và Công nghệ':'P. Máy tính 1'};
+/* Khoi ④ MON × GIAO VIEN — chieu 🔗 M4.5, doc theo don vi (lop, mon, PHAN) cua hop dong HDPC: MOT MON CO THE NHIEU GV.
+   Mon chi co PT0 — Toan mon thi mot dong. Demo: Ngu van 9A1 day HAI phan (Doc — Viet · Noi va nghe) do hai nguoi. */
+const PHAN_MON={'9A1|Ngữ văn':[['PT1','Đọc — Viết','lan'],['PT2','Nói và nghe','nga']],
+ '4A1|Tin học và Công nghệ':[['PT1','Tin học','tuan'],['PT2','Công nghệ','hoa']]};
+const phanCua=(l,m)=>PHAN_MON[l+'|'+m]||[['PT0','Toàn môn',pc(l,m)]];
+/* Khoi ⑤ mau tuan — chieu 🔗 M4.6 tab 1, goc nhin LOP, BO DANG AP DUNG. Mau tuan ≠ tiet that (day thay, doi tiet). */
+const mauTuan=(l,shift)=>{const ms=monCua(l);
+ return [0,1,2,3,4,5].map(i=>tietCua(l).map(t=>ms[((dauTuan(TUAN_NAY)+i)*5+t+(shift||0))%ms.length]))};
+/* KGLH-1A · be mat Web cua kenh BAO TRUOC doi TKB (chot S6). Ban ghi that do M4.6 sinh va M8.1 phat tan — phien 1G
+   dung; o day la BAN CHIEU cua chinh ban ghi do, KHONG phai hang doi rieng cua M2.9. */
+const TKB_MOI={bo:'TKB Học kỳ I — bản 2',ap:57,by:'dung',at:50,lop:['9A1','8A1']};
+const tkbDoi=l=>TKB_MOI.lop.indexOf(l)>=0&&TKB_MOI.ap>HOMNAY?TKB_MOI:null;
 
 /* ===== HOC SINH ===== */
 const HO=['Nguyễn','Trần','Lê','Phạm','Hoàng','Vũ','Đặng','Bùi','Đỗ','Hồ','Ngô','Dương','Lý','Đinh'];
@@ -511,7 +544,19 @@ Object.keys(LOP).forEach(l=>{
   HS[id]=o;
  }});
 const NHAN={};
-const dsL=l=>Object.keys(HS).filter(h=>HS[h].lop===l);
+/* ═══ 🆕 RSHS-2C (23/9/2026) — em «đã rời lớp» còn trong hồ sơ nhưng ⛔ KHÔNG còn ngồi lớp ═══
+   M1.5 tách BA sự thật: ① em còn LÀ HỌC SINH của trường (pháp lý) · ② em còn NGỒI TRONG LỚP
+   (vận hành) · ③ hồ sơ đã đóng chưa (nội bộ). Ô `roiLop` của M1.5 chỉ chạm ②.
+   🛑 Trước đó em «Chờ chuyển đi» VẪN nằm trong danh sách điểm danh ⇒ GVCN mỗi ngày ghi một
+      dòng VẮNG KHÔNG PHÉP GIẢ ⇒ T2 sinh cảnh báo chuyên cần và M1.6 cảnh báo NGUY CƠ BỎ HỌC —
+      hệ thống báo động về một em ĐÃ ĐI HỌC Ở TRƯỜNG KHÁC. */
+const ROI_LOP={'9A1-04':{ngay:'18/8/2026',boi:'Lê Thu Hằng (VT)'}};   /* 🔗 bản chiếu từ M1.5 — { maHS: {ngay, boi} } */
+const daRoiLop=h=>!!ROI_LOP[h];
+/* Danh sách ĐIỂM DANH / sĩ số VẬN HÀNH — ⛔ không gồm em đã rời lớp */
+const dsL=l=>Object.keys(HS).filter(h=>HS[h].lop===l&&!daRoiLop(h));
+/* Danh sách PHÁP LÝ — vẫn gồm em đã rời lớp. 🛑 Đây mới là con số BÁO CÁO GỬI SỞ dùng. */
+const dsLPhapLy=l=>Object.keys(HS).filter(h=>HS[h].lop===l);
+const dsRoiLop=l=>Object.keys(HS).filter(h=>HS[h].lop===l&&daRoiLop(h));
 NHAN[dsL('9A1')[2]]=[['uu','Hộ nghèo — miễn giảm học phí']];
 NHAN[dsL('9A1')[5]]=[['yt','Dị ứng hải sản'],['kl','Đang trong thời hiệu kỷ luật đến 15/11']];
 NHAN[dsL('9A1')[8]]=[['yt','Hen suyễn — có thuốc tại phòng y tế']];
@@ -521,7 +566,19 @@ const NHANM={uu:{t:'Ưu tiên',c:'b'},yt:{t:'Sức khỏe',c:'r'},kl:{t:'Kỷ lu
 const sapTen=(a,b)=>HS[a].ten.localeCompare(HS[b].ten,'vi')||HS[a].dem.localeCompare(HS[b].dem,'vi')
  ||HS[a].ho.localeCompare(HS[b].ho,'vi')||a.localeCompare(b);
 const hsLop=l=>dsL(l).sort(sapTen);
-const siSo=l=>dsL(l).length;
+const siSo=l=>dsL(l).length;                    /* VẬN HÀNH — ⛔ không gồm em đã rời lớp */
+const siSoPhapLy=l=>dsLPhapLy(l).length;        /* PHÁP LÝ — con số BÁO CÁO GỬI SỞ dùng */
+/* 🔴 RSHS-2C — HAI con số sĩ số, CẢ HAI ĐỀU ĐÚNG, và 🛑 PHẢI NÓI RA.
+   ⛔ KHÔNG cho `roiLop` cắt sĩ số báo cáo: rơi đúng lỗi M1.5 §3.4c đã chốt để tránh —
+   «một con số ĐỐI NGOẠI phụ thuộc một thao tác NỘI BỘ mà chính trường tự quyết lúc nào bấm».
+   Lệch mà im lặng thì người dùng tưởng hệ thống sai ⇒ dải này bắt buộc. */
+function daiSiSo(l){
+ const n=dsRoiLop(l).length; if(!n) return '';
+ const ten=dsRoiLop(l).map(h=>HS[h].n+' (từ '+ROI_LOP[h].ngay+')').join(' · ');
+ return '<div class="note n-w" style="margin:0 0 10px">🚪 <b>Sĩ số '+siSo(l)+'</b> · <b>+'+n+' em đã rời lớp, đang chờ trường đến tiếp nhận</b> — '+esc(ten)+
+  '<div style="margin-top:5px;font-size:11.5px">🛑 <b>Sĩ số BÁO CÁO GỬI SỞ vẫn là '+siSoPhapLy(l)+'</b> — em <b>chưa rời trường</b>, CSDL ngành vẫn ghi vậy. '+
+  '<b>Hai con số lệch nhau và CẢ HAI ĐỀU ĐÚNG</b>: '+siSo(l)+' là <b>vận hành</b> (ai còn ngồi trong lớp), '+siSoPhapLy(l)+' là <b>pháp lý</b> (ai còn là học sinh của trường).<br>'+
+  '🪑 <b>Chỗ ngồi vẫn được giữ</b> — trường đến có quyền từ chối, lúc đó em phải có chỗ quay về. M10.2 hiện <b>'+siSo(l)+' (+'+n+' giữ chỗ)</b>.</div></div>'}
 
 /* ===== DIEM DANH (T2 — M2.9 la chu so huu) ===== */
 const TTDD={
@@ -578,7 +635,12 @@ const YCDD=[
  {id:'YC-1',l:'9A1',d:HOMNAY-8,h:hsLop('9A1')[2],cu:'vkp',moi:'vcp',
   ly:'Gia đình nộp đơn muộn, có xác nhận của trạm y tế xã',by:'lan',at:HOMNAY-2,tt:'cho'},
  {id:'YC-2',l:'8A1',d:HOMNAY-9,h:hsLop('8A1')[0],cu:'vcr',moi:'cm',
-  ly:'Em có mặt, GVCN chấm nhầm dòng',by:'hung',at:HOMNAY-3,tt:'duyet',xl:'dung',xat:HOMNAY-2}];
+  ly:'Em có mặt, GVCN chấm nhầm dòng',by:'hung',at:HOMNAY-3,tt:'duyet',xl:'dung',xat:HOMNAY-2},
+ /* KGLH-1A: mot de nghi CUA CHINH GVCN 9A1 da bi TRA LAI kem ly do — de tab «Theo dõi yêu cầu» co du ba ket cuc
+    that (dang cho · da duyet · bi tra lai vi ly do gi). Them MOT dong du lieu mau, khong them o quyen nao. */
+ {id:'YC-3',l:'9A1',d:HOMNAY-15,h:hsLop('9A1')[4],cu:'vkp',moi:'vcp',
+  ly:'Phụ huynh báo em ốm qua điện thoại',by:'lan',at:HOMNAY-6,tt:'duyet',xl:'tuchoi',xat:HOMNAY-5,nd:'dung',
+  gc:'Báo qua điện thoại chưa đủ căn cứ — cần đơn có chữ ký phụ huynh hoặc giấy khám của cơ sở y tế. Gửi lại kèm tệp.'}];
 
 /* ===== GY18-H1 · BUOI HOC · TIET DAU CUA BUOI =====
    Khung tiet: 1-5 buoi sang, 6-8 buoi chieu. Lop hoc HAI BUOI thi lich (M4.7) co ca tiet buoi chieu —
@@ -590,7 +652,7 @@ const tietCua=l=>HAI_BUOI[l]?[1,2,3,4,5,6]:[1,2,3,4,5];
 
 /* ===== T3 · SO DAU BAI (chieu tu M2.2) =====
    Moi tiet mang DU noi dung GVBM da ghi — de bam vao mo duoc chi tiet, va de
-   T6 rut ra duoc "nhung lan bi phe binh / duoc khen ngoi trong so dau bai". */
+   T6 rut ra duoc "nhung lan bi nhac nho / duoc khen ngoi trong so dau bai". */
 const YTHUC={T:'Tốt',K:'Khá',TB:'Trung bình',Y:'Yếu'};
 const BAI=['Ôn tập chương I','Luyện tập','Bài mới — phần 1','Bài mới — phần 2','Kiểm tra 15 phút',
  'Thực hành','Chữa bài tập','Tổng kết chương'];
@@ -618,8 +680,38 @@ Object.keys(LOP).filter(l=>LOP[l].hd).forEach(l=>{
 /* Mot tiet Sinh hoc 8A1 hom qua GV quen ky — de badge viec ton cua vai GVBM co du lieu that */
 (function(){const d=HOMNAY-1; for(const t of tietCua('8A1')){const s=SDB[sdbk('8A1',d,t)];
  if(s&&s.mon==='Sinh học'){s.ky=0; s.kyAt=''; return}}})();
+/* SDBG-1E · Mot tiet Toan 9A1 TUAN TRUOC (T5 1/10, tiet 3) co Le Thi Mai quen ghi — de con so «tiet chua ghi»
+   o T3 quet CA NAM (M2.2 §8.1.2b), khong chi tuan dang xem: GVCN mo tuan nay van thay tiet quen tu tuan truoc. */
+(function(){const s=SDB[sdbk('9A1',45,3)]; if(s){s.ky=0; s.kyAt=''}})();
+
+/* ===== SDBG-1E · ĐÍNH CHÍNH CÓ VẾT — chieu tu M2.2 §8.6 (so dieu phoi SDBG §2b · chot S6 22/9/2026) =====
+   Sau 24 gio ke tu gio ket thuc tiet, CHI giao vien thuc day (gv_id) dinh chinh duoc — ly do bat buoc, BAN GOC GIU,
+   KHONG co nguoi duyet. M2.9 chi DOC: nhan ✎ o luoi, ban goc canh ban dinh chinh o popup.
+   s.dc = {ds:[[truong, cu, moi]], ly, by, luc, baoCN} — baoCN: dinh chinh them / bot dong NHAC NHO thi he thong
+   BAO GVCN lop do (thong bao, khong phai viec duyet). Hai tiet dau KHOP M2.2 (hai de nghi cu nay thanh da dinh chinh). */
+(function(){
+ const dat=(l,d,t,o,dc)=>{const s=SDB[sdbk(l,d,t)]; if(!s) return; Object.assign(s,o); s.dc=dc};
+ /* 8A1 · Vat li · T3 25/8 (tuan 2) tiet 5 — cong thuc luan mon da ra Vat li; ghi ro de khong phu thuoc hat giong */
+ dat('8A1',8,5,{mon:'Vật lí',gv:'hung',ky:1,kyAt:'sau tiết',
+   bai:'Bài 4 — Định luật về công. Thực hành mặt phẳng nghiêng (đổi do phòng thiếu bộ ròng rọc)'},
+  {ds:[['Tên bài dạy','Bài 4 — Định luật về công. Thực hành ròng rọc',
+        'Bài 4 — Định luật về công. Thực hành mặt phẳng nghiêng (đổi do phòng thiếu bộ ròng rọc)']],
+   ly:'Ghi nhầm tên bài thực hành. Thực tế làm mặt phẳng nghiêng vì bộ ròng rọc hỏng, đã báo quản lý CSVC.',
+   by:'hung',luc:'26/8 15:20'});
+ /* 9A1 · Vat li · T2 17/8 (tuan 1) tiet 1 — o nay hat giong ra Ngu van, DUNG LAI thanh tiet Vat li cua thay Hung */
+ dat('9A1',0,1,{mon:'Vật lí',gv:'hung',ky:1,kyAt:'sau tiết',bai:'Bài 1 — Chuyển động cơ học. Ví dụ 1.1 đến 1.5',
+   y:'K',pb:[],kn:[]},
+  {ds:[['Xếp loại ý thức lớp','Tốt','Khá']],
+   ly:'Chọn nhầm mức. Cuối tiết có 3 em làm việc riêng, đã nhắc — mức đúng là Khá.',by:'hung',luc:'21/8 16:20'});
+ /* 9A1 · Toan · T4 30/9 (tuan 7) tiet 2 — BOT mot dong nhac nho => GVCN nhan thong bao (SDBG §2b dong «nhac nho») */
+ const em=hsLop('9A1')[0];
+ dat('9A1',44,2,{mon:'Toán',gv:'mai',ky:1,kyAt:'sau tiết',pb:[]},
+  {ds:[['Dòng nhắc nhở học sinh','⚠ '+HS[em].n+' — Không làm bài tập về nhà','— bỏ dòng này —']],
+   ly:'Ghi nhầm: em đã nộp vở qua lớp trưởng trước giờ học, tôi kiểm lại sau tiết mới thấy.',by:'mai',luc:'2/10 16:10',
+   baoCN:{gv:'lan',luc:'2/10 16:10'}});
+})();
 const BAT_YTHUC={TH:0,THCS:1,THPT:1};
-/* Rut phe binh / khen ngoi cua mot HS trong khoang ngay */
+/* Rut nhac nho / khen ngoi cua mot HS trong khoang ngay */
 function sdbCuaHS(l,h,ds){
  const out=[];
  ds.forEach(d=>{for(const t of tietCua(l)){const s=SDB[sdbk(l,d,t)]; if(!s)continue;
@@ -903,11 +995,9 @@ const TKN=[
   cuoi:1,tong:1,duyet:['TTCM','PHT_CM'],sub:'Toán · ĐGtx cột 2 · 6,5 → 7,5',
   kv:[['Vùng','<b>C</b> — sau mốc chốt kỳ, điểm đã vào TB môn'],['Lý do','Cộng sót 1 điểm câu 3 khi chấm'],
    ['Minh chứng','Ảnh bài kiểm tra <button class="rolnk" data-a="dl" data-v="Xem tệp trong màn hình">👁 Xem</button>']]},
- {id:'SĐB-0217',src:'M2.2',ten:'Sổ đầu bài',ft:'m2.2.cho_toi_duyet',ic:'📓',loai:'Đề nghị sửa sổ đầu bài sau 24h',
-  l:'8A1',h:null,by:'ngan',at:HOMNAY-1,han:HOMNAY+2,nhanh:1,cuoi:1,tong:1,duyet:['PHT_CM'],
-  sub:'Tiết 3 · '+dfull(HOMNAY-2)+' · Tiếng Anh',
-  kv:[['Trường sửa','Tên bài dạy'],['Hiện tại → đề nghị','Unit 3 — Lesson 1 → <b>Unit 3 — Lesson 2</b>'],
-   ['Lý do','Chọn nhầm bài ở danh sách PPCT']]},
+ /* SDBG-1E (22/9): GO ticket SĐB-0217 «Đề nghị sửa sổ đầu bài sau 24h» — chot S6 bo buoc duyet sua so sau khi chot,
+    Feature m2.2.cho_toi_duyet bo. Sua sau 24 gio nay la ĐÍNH CHÍNH CÓ VẾT do chinh giao vien thuc day lam, khong
+    sinh ticket — nen khong con gi cho tab ✅ hien. Tiet da dinh chinh xem o T3 (nhan ✎). */
  {id:'CL-0045',src:'M1.7',ten:'Lớp học & Chuyển lớp',ft:'m1.7.yeu_cau_chuyen_lop',ic:'🔄',loai:'Yêu cầu chuyển lớp',
   l:'8B1',h:hsLop('8B1')[3],by:'son',at:HOMNAY-2,han:HOMNAY+3,nhanh:1,them:'đặt ngày có hiệu lực',cuoi:1,tong:1,duyet:['HT'],
   sub:'8B1 (điểm trường B) → 8A1 (điểm trường A)',
@@ -998,8 +1088,10 @@ const ROLE={
           q:['dd','sua','bc','tk','ky','xuat','xem'],dq:['m2.4.hs_xin_nghi_ngan_ngay_n']},
  GVCN2  :{n:'Đỗ Hồng Sơn',cd:'GVCN 8B1 + 6B1 · GV Lịch sử',gv:'son',sc:'Chủ nhiệm 8B1, 6B1 + lớp dạy Lịch sử',gvr:1,
           q:['dd','sua','bc','tk','ky','xuat','xem'],dq:['m2.4.hs_xin_nghi_ngan_ngay_n']},
- GVBM   :{n:'Vũ Anh Tuấn',cd:'GVBM Sinh học · Khoa học · Tin học',gv:'tuan',sc:'Lớp được phân công dạy',gvr:1,
-          q:['xem']},
+ /* KGLH-1A (23/9/2026 · chot S1): GVBM KHONG con o menu nay — 5 o x@Class#assigned chuyen sang M2.11 Lop toi giang day.
+    Vai giu tren thanh de THAY dieu do: mo ra man hinh noi ro menu nay khong con cua ho + bang anh xa sang M2.11. */
+ GVBM   :{n:'Vũ Anh Tuấn',cd:'GVBM Sinh học · Khoa học · Tin học',gv:'tuan',sc:'Không có lớp nào ở menu này',gvr:1,
+          q:['xem'],nomenu:1},
  GTHI   :{n:'Lý Văn Giám',cd:'Giám thị',gv:'gth',sc:'Điểm trường A',lop:null,dts:['A'],
           q:['xem','xuat']},
  PHT_DT :{n:'Ngô Tiến Dũng',cd:'PHT đào tạo',gv:'dung',sc:'Điểm trường A',lop:null,dts:['A'],
@@ -1007,35 +1099,54 @@ const ROLE={
           'm1.7.yeu_cau_chuyen_lop']},
  /* PHT_CM — cung la quyen cua "Quan ly chat luong dao tao" (gop y muc 22: khong tao chuc danh moi) */
  PHT_CM :{n:'Hoàng Văn Khoa',cd:'PHT chuyên môn',gv:'khoa',sc:'Toàn trường',lop:null,
-          q:['xem','xuat'],dq:['m2.9.cho_duyet','m2.5.bang_diem_mon','m2.2.cho_toi_duyet']},
+          q:['xem','xuat'],dq:['m2.9.cho_duyet','m2.5.bang_diem_mon']},   /* SDBG-1E: bo m2.2.cho_toi_duyet (S6) */
  HT     :{n:'Phan Thị Bích Hạnh',cd:'Hiệu trưởng',gv:'hanh',sc:'Toàn trường',lop:null,
           q:['xem','xuat'],dq:['m2.9.cho_duyet','m2.4.hs_xin_nghi_ngan_ngay_n','m2.4.hs_xin_nghi_dai_ngay_n',
           'm1.7.yeu_cau_chuyen_lop','m2.7.ky_luat','m2.7.khen_thuong']},
  VT     :{n:'Lý Thanh Vân',cd:'Văn thư',gv:'vth',sc:'Điểm trường A',lop:null,dts:['A'],
-          q:['xem'],chiT1:1}};
-let role='FULL', cur=null, tab='T1', tuan=TUAN_NAY-1, ngay=HOMNAY, kytk='hk1', mo={}, t1v='lop';
+          q:['xem'],chiT1:1},
+ /* TDHT-1D 23/9/2026 — KGLH-P1 phuong an ①, anh Ninh chot: TTCM va TPCM VAO M2.9 voi pham vi
+    «lop co it nhat mot mon cua to». 🔴 DAY LA DAO CHOT T11 cua cum KGL2 cung ngay
+    («TTCM khong vao M2.9») — anh Ninh quyet, ghi vet o tai lieu §11 va §13.
+    ⚠ KGLH-P1 chi tinh +7 o cho TTCM; anh Ninh mo them TPCM => +14 o.
+    BAY tab: TT · T1 · T2 · T3 · T4 · T5 · T8. ⛔ KHONG T6 T7 T9 YC ✅ ⚙ — viec cua GVCN / BGH.
+    Chi 'xem' va 'xuat': ⛔ khong mot bit ghi nao, ⛔ khong mot o D nao. */
+ TTCM   :{n:'Bùi Thị Ngọc Mai',cd:'Tổ trưởng chuyên môn — Tổ Tự nhiên',gv:'mai',sc:'Lớp có môn của Tổ Tự nhiên',
+          lop:null,to:'TN',q:['xem','xuat'],chiTo:1},
+ TPCM   :{n:'Đỗ Hồng Sơn',cd:'Tổ phó chuyên môn — Tổ Xã hội',gv:'son2',sc:'Lớp có môn của Tổ Xã hội',
+          lop:null,to:'XH',q:['xem','xuat'],chiTo:1}};
+/* KGLH-1A: tab mac dinh la TT — «Thông tin lớp học» dung DAU danh sach tab (chot S5) */
+let role='FULL', cur=null, tab='TT', tuan=TUAN_NAY-1, ngay=HOMNAY, kytk='hk1', mo={}, t1v='lop';
+/* SDBG-1E: T3 co tuan RIENG, mac dinh TUAN NAY — so dau bai la viec dang chay (GVCN don doc tiet chua ghi);
+   T6 giu mac dinh «tuan vua ket thuc» (khung-menu §11). Dung chung mot bien thi mo T3 lai rot ve tuan truoc. */
+let tuan3=TUAN_NAY, lkRet='', lkTiet=null, lkLoi='';
 const R=()=>ROLE[role];
 const co=k=>R().q.indexOf(k)>=0;
 const toiLa=()=>R().gv;
 const laGVCN=l=>LOP[l]&&LOP[l].gvcn===toiLa();
 /* Mon cua TOI o lop l — theo phan cong Lop × Mon. GV day hai mon mot lop thi tra ve ca hai. */
 const monToi=l=>monCua(l).filter(m=>pc(l,m)===toiLa());
-/* Lang kinh cua vai tren MOT lop: full · cn (chu nhiem — thay du) · bm (chi mon minh day) · ql (BGH, giam thi, VT) */
+/* Lang kinh cua vai tren MOT lop: full · cn (chu nhiem — thay du) · ql (BGH, giam thi, VT).
+   KGLH-1A: lang kinh 'bm' DA GO — GVBM doc lop minh day o M2.11 (chot S1). */
 function lens(l){
  if(role==='FULL') return 'full';
  if(laGVCN(l)) return 'cn';
- if(R().gvr&&monToi(l).length) return 'bm';
  return 'ql';
 }
-const laBM=()=>cur&&lens(cur)==='bm';
-const msXem=l=>lens(l)==='bm'?monToi(l):monCua(l);
+/* Giu ham, LUON false: cac nhanh «lang kinh GVBM» ben duoi thanh khong bao gio chay — la vet doi chieu voi M2.11
+   (phien 1B dung 6 tab tu dung 5 o nay). Xoa han thi mat dau ve cua bang anh xa KG-2. */
+const laBM=()=>false;
+const msXem=l=>monCua(l);
 /* Ghi ban can su: GVCN tren lop minh (va vai Du quyen). BGH chi xem. */
 const ghiBCS=l=>role==='FULL'||laGVCN(l);
-/* Lop trong pham vi cua vai — DUNG scope, khong dung du lieu */
+/* Lop trong pham vi cua vai — DUNG scope, khong dung du lieu.
+   KGLH-1A: vai giao vien chi con lop MINH CHU NHIEM. Lop chi DAY khong con o day — o M2.11 (S1). */
 function lopTrongScope(){
  const r=R();
+ if(r.nomenu) return [];
  let ls=Object.keys(LOP);
- if(r.gvr) ls=ls.filter(l=>LOP[l].gvcn===r.gv||monToi(l).length);
+ if(r.gvr) ls=ls.filter(l=>LOP[l].gvcn===r.gv);
+ else if(r.to) ls=ls.filter(l=>lopCoMonCuaTo(l,r.to));   /* TDHT-1D — pham vi moi */
  else if(r.dts) ls=ls.filter(l=>r.dts.indexOf(LOP[l].dt)>=0);
  return ls;
 }
@@ -1048,11 +1159,43 @@ function lopCN(){
  if(role==='FULL') return [LOP_MAU];
  return Object.keys(LOP).filter(l=>LOP[l].hd&&LOP[l].gvcn===toiLa());
 }
-/* P7B-3 chot: KHONG co loi tat thu muoi cho tab ✅ — GVCN vao tab do tu Danh sach lop hoc (badge tang 1) */
-(function(){const t=QS.get('tab'); if(/^T[1-9]$/.test(t||'')) tab=t;})();
+/* P7B-3 chot: tab ✅ KHONG co loi tat — GVCN vao tab do tu Danh sach lop hoc (badge tang 1).
+   KGLH-1A: loi tat thu MUOI la ?cn=1&tab=thong_tin_lop (chot S7). Tham so tab nhan CA HAI cach viet:
+   ma cu T1…T9 (9 loi tat da co, khong sua sidebar cu) va ten Feature moi thong_tin_lop · theo_doi_yeu_cau. */
+const TAB_ALIAS={thong_tin_lop:'TT',theo_doi_yeu_cau:'YC',cho_duyet:'CD'};
+const docTab=t=>TAB_ALIAS[t]||(/^T[1-9]$/.test(t||'')?t:null);
+(function(){const t=docTab(QS.get('tab')); if(t&&t!=='CD') tab=t;})();
+/* ===== SDBG-1E · DEEP-LINK NHẬN theo LỚP — /M2.9?ctx={lop}&tab=Tn[&tuan={n}][&tiet={tiet_id}]&return={menu} =====
+   KHAC ?cn=1: cn = «lop TOI chu nhiem» (an thanh tab, loi tat sidebar); ctx = MOT LOP CU THE do menu khac chi dinh
+   (M2.2 · M5.9 · M0.3 …), mo tang 2 du thanh tab trong pham vi cua vai. Tham so tab DUNG LAI y nghia cu (T1…T9).
+   Co ca hai thi ctx thang — lien ket da neu dich danh lop. Lop ngoai pham vi -> render() tu ve tang 1 (rang buoc du lieu).
+   tiet_id: tren he thong that la ma instance tiet cua M4.7; demo ma hoa TIET-{lop}-{ddmm}-{tiet} de doc duoc. */
+const tietId=(l,d,t)=>{const x=dt(d); return 'TIET-'+l+'-'+String(x.getDate()).padStart(2,'0')+String(x.getMonth()+1).padStart(2,'0')+'-'+t};
+function docTietId(id){
+ const m=String(id||'').match(/^TIET-([0-9A-Za-z]+)-(\d{2})(\d{2})-(\d+)$/); if(!m) return null;
+ for(let d=0;d<=HOMNAY;d++){const x=dt(d); if(x.getDate()===+m[2]&&x.getMonth()+1===+m[3]) return {l:m[1],d:d,t:+m[4]}}
+ return null;
+}
+(function(){
+ const l=QS.get('ctx'); if(!l) return;
+ if(!LOP[l]){lkLoi=l; return}
+ cn=false; cur=l; kytk=kyMac(l); lkRet=QS.get('return')||'';
+ const tb=docTab(QS.get('tab')); if(tb) tab=tb;
+ const w=+QS.get('tuan'); if(w>=1&&w<=TUAN_NAY){tuan3=w; tuan=w}
+ /* KGLH-3Z 23/9/2026 — F-9 cua PHIEU-KGLH-1A (treo tu SDBG-1E E5): M5.9 phat /M2.9?ctx={lop}&tab=T2&ngay={dd/mm}.
+    Truoc day demo doc ctx + tab ma BO QUA ngay, nen lien ket mo dung lop dung tab nhung sai NGAY. */
+ (function(){const q=QS.get('ngay'); if(!q) return;
+  const m=String(q).match(/^(\d{1,2})[\/-](\d{1,2})$/); if(!m) return;
+  for(let d=0;d<=HOMNAY;d++){const x=dt(d); if(x.getDate()===+m[1]&&x.getMonth()+1===+m[2]){ngay=d; tuan=tuanCua(d); mo.t2='ngay'; break}}
+ })();
+ const ti=docTietId(QS.get('tiet'));
+ if(ti&&ti.l===l){tab='T3'; tuan3=tuanCua(ti.d); lkTiet=ti}
+})();
 
 /* ===== TAB ===== */
 const TABS=[
+ /* KGLH-1A · tab MOI, dung DAU — mat tien cua mot lop (hop dong HDTTL). Chieu 100%, khong sinh ban ghi nao (KG-4). */
+ ['TT','🏫 Thông tin lớp học','M10.2 · M6.4 · M4.5 · M4.6'],
  ['T1','👥 Học sinh của lớp','M1.1'],
  ['T2','📋 Điểm danh','M2.9'],
  ['T3','📓 Sổ đầu bài','M2.2'],
@@ -1062,20 +1205,23 @@ const TABS=[
  ['T7','⚖ Tổng kết & Ký học bạ','M2.9'],
  ['T8','🏅 Khen thưởng & Kỷ luật','M2.10 · M2.7'],
  ['T9','👪 Họp phụ huynh','M2.9'],
+ /* KGLH-1A · tab MOI cho GVCN: yeu cau CUA LOP MINH dang o dau. CUNG ticket M0.2 voi tab ✅ — khong dung hang doi thu hai.
+    Dat canh ✅ vi hai tab doc CUNG MOT hang doi, khac goc nhin: ✅ = «toi duyet gi», YC = «lop toi cho ai». */
+ ['YC','📌 Theo dõi yêu cầu','M2.9'],
  ['CD','✅ Nội dung chờ duyệt','M2.9']];   /* Feature m2.9.cho_duyet — chi hien khi vai co viec o lop nay (R-c) */
-const OWNED=['T2','T6','T7','T9','CD'];
+const OWNED=['T2','T6','T7','T9','YC','CD'];
 /* T1 chieu MOT PHAN (danh sach, nhan — M1.1) va SO HUU MOT PHAN (ban can su, chia to — M2.9) */
 const NUA=['T1'];
-const CHU={T1:'M1.1 Hồ sơ học sinh',T3:'M2.2 Sổ đầu bài',T4:'M2.3 Bài tập về nhà',
+const CHU={TT:'M10.2 · M6.4 · M4.5 · M4.6',T1:'M1.1 Hồ sơ học sinh',T3:'M2.2 Sổ đầu bài',T4:'M2.3 Bài tập về nhà',
  T5:'M2.5 Bảng điểm môn học',T8:'M2.10 Khen thưởng · M2.7 Kỷ luật'};
-/* GVBM chi co 5 tab dau — T6…T9 la viec cua GVCN / BGH (rang buoc du lieu, khong phai an nut) */
-const TAB_BM=['T1','T2','T3','T4','T5'];
 const tenTab=k=>(TABS.find(t=>t[0]===k)||['','?'])[1].replace(/^\S+\s/,'');
 
-/* ===== SHELL ===== */
+/* ===== SHELL =====
+   KGLH-1A · chot S3: menu CHUYEN CA SANG nhom 📖 Chuyên môn, dung NGAY SAU M5.9 — hai menu theo doi dung canh nhau
+   de ranh gioi S4 nhin thay duoc (M5.9 truc GIAO VIEN · tiet; M2.9 truc LOP · hoc sinh). Ma va 11 Feature GIU NGUYEN. */
 function sidebar(){
- const N=[['📚 Giảng dạy hằng ngày',[['Điểm danh · Sổ đầu bài',0],['Bài tập về nhà',0],
-  ['Bảng điểm môn học',0],['Kỳ thi định kỳ',0],['Danh sách lớp học',1]]]];
+ const N=[['📖 Chuyên môn',[['Kế hoạch giáo dục',0],['Sinh hoạt tổ chuyên môn',0],
+  ['Theo dõi hoạt động giảng dạy',0],['Danh sách lớp học',1],['⚙ Cấu hình chuyên môn',0]]]];
  $('#side').innerHTML=N.map(([g,it])=>'<div class="sgrp">'+g+'</div>'+it.map(([t,on])=>
   '<a class="snav'+(on?' on':'')+'">'+(on?'🏫':'▫')+' '+t+'</a>').join('')).join('');
 }
@@ -1089,19 +1235,36 @@ function header(){
  $('#hdt').value=kh&&!r.gvr?DT.A:'Tất cả điểm trường'; $('#hdt').disabled=kh;
  $('#lk').textContent=kh?'🔒':'';
 }
+/* TDHT-1D — do bang may, khong doan: so lop ma pham vi nay thuc su cat duoc.
+   🔄 1D-E1 ✅ CHOT 23/9/2026 — anh Ninh GIU «Group» sau khi doc con so nay.
+   ⇒ Doi giong: day KHONG con la mot canh bao cho giai, ma la mot SU THAT DA CHOT.
+   Nhung con so thi VAN PHAI IN (rb 74) — nguoi doc phai biet «Group» o day rong den dau,
+   nhat la khi chinh cai nhan «Group» goi y rang no hep. */
+function canhBaoTo(r){
+ const n=lopTrongScope().length, tong=Object.keys(LOP).length;
+ if(n<tong) return ' <b>Tổ '+esc(TOMON[r.to].ten.replace('Tổ ',''))+'</b> có môn ở <b>'+n+'/'+tong+'</b> lớp.';
+ return '<br><span style="color:var(--ink2)">📐 <b>Phạm vi này rộng bằng toàn trường — đã biết và đã chốt</b> '
+  +'(<code>1D-E1</code>, 23/9/2026): '+esc(TOMON[r.to].ten)+' có môn ở <b>cả '+tong+'/'+tong+' lớp</b>, '
+  +'bằng đúng phạm vi của Hiệu trưởng. Với tổ dạy môn phổ thông (Toán · Ngữ văn · Tiếng Anh…), '
+  +'<code>Group</code> ở đây <b>là tên gọi theo chức danh, không phải một hàng rào</b>; nó chỉ thu hẹp '
+  +'với tổ dạy môn không có ở mọi lớp. ⛔ Đừng đọc chữ <code>Group</code> thành «hẹp».</span>';
+}
 function scopeNote(){
  const r=R();
  if(cn) return '<div class="scopebar"><span>🧑‍🏫</span><span><b>Chế độ lớp chủ nhiệm</b> — lối tắt tới <code>M2.9/'+tab
   +'</code>. Quyền là quyền của Feature <b>'+esc(tenTab(tab))+'</b>, không có Feature riêng. '
   +(role==='FULL'?'Vai <b>Đủ quyền</b> không chủ nhiệm lớp nào — demo mở <b>lớp mẫu '+LOP_MAU+'</b>; vai thật mở đúng lớp mình chủ nhiệm.'
    :'Vai <b>'+esc(r.cd)+'</b> — '+esc(r.n)+'.')+'</span></div>';
- const bm=laBM();
  return '<div class="scopebar"><span>🏫</span><span>Vai <b>'+esc(r.cd)+'</b> — '+esc(r.n)
   +'. Phạm vi dữ liệu: <code>'+esc(r.sc)+'</code> · <b>'+lopTrongScope().length+' lớp</b>. '
-  +(r.chiT1?'Vai này <b>chỉ vào được tab Học sinh của lớp</b>.'
-   :bm?'Ở lớp này bạn là <b>GVBM</b> — chỉ thấy dữ liệu <b>môn '+esc(monToi(cur).join(' · '))
-     +'</b> <i>(phân công M4.5)</i>. Dữ liệu môn khác <b>không trả về</b>, không phải bị ẩn.'
-   :'Phạm vi là <b>ràng buộc dữ liệu</b>, không phải ẩn nút.')+'</span></div>';
+  +(r.chiT1?'Vai này <b>chỉ vào được hai tab</b>: Thông tin lớp học · Học sinh của lớp.'
+   :r.chiTo?'Vai này <b>chỉ vào được bảy tab</b> — ⛔ không Báo cáo tuần · Tổng kết · Họp PH · Theo dõi yêu cầu · Chờ duyệt · Cấu hình (việc của GVCN / BGH).'
+   :'Phạm vi là <b>ràng buộc dữ liệu</b>, không phải ẩn nút.')
+  /* TDHT-1D — 🛑 NÓI RA sự thật đo được: pham vi «lop co mon cua to» KHONG thu hep gi
+     voi to day mon pho thong. De nguoi doc tuong «Group» la hep thi ho se ky nham. */
+  +(r.chiTo?canhBaoTo(r):'')
+  +(r.gvr?' Vai giáo viên ở menu này = <b>lớp mình chủ nhiệm</b>; lớp chỉ dạy đọc ở '
+    +'<button class="rolnk" data-a="dl" data-v="M2.11 Lớp tôi giảng dạy">↗ M2.11</button>.':'')+'</span></div>';
 }
 
 /* ===== VIEC CAN LAM CUA MOT LOP ===== */
@@ -1123,31 +1286,63 @@ function viecLop(l){
   const kh=bcsKhuyet(l);
   if(kh.length) v.push({k:'bcs',t:bcsDang(l).length?'Ban cán sự khuyết':'Chưa ghi ban cán sự lớp',
    n:bcsDang(l).length?kh.join(', '):'',tab:'T1'});
+  /* KGLH-1A · S6: thong tin, KHONG phai viec ton — bam mo tab Thong tin lop hoc, khoi ⑤ */
+  const tk=tkbDoi(l);
+  if(tk) v.push({k:'tkb',t:'Thời khóa biểu đổi từ '+dstr(tk.ap),n:tk.bo,tab:'TT'});
+  /* HPH · §7b.6 — dai «chua len lich hop» chi hien khi CO MOT DOT DANG MO. Khong co dot thi khong ai no ai buoi hop nao. */
+  if(DOT_HOP.mo&&HOMNAY<=DOT_HOP.den&&!LM.some(x=>x.l===l&&x.dot===DOT_HOP.ten&&x.tt!=='huy'))
+   v.push({k:'hop',t:'Chưa lên lịch họp — đợt "'+DOT_HOP.ten+'"',n:'',tab:'T9'});
  }
  return v;
 }
-/* Viec ton cua GVBM tren mot lop — CHI dem viec cua mon minh (tiet chua GHI so tuan nay, nguon M2.2).
-   YK-01: so dau bai khong con 'ky'; truong du lieu s.ky giu ten cu = 'da ghi xong'. KHONG chieu cham cong vao day (YK01-Z1-1). */
-function viecBM(l){
- const v=[]; if(!LOP[l].hd) return v;
- const ms=monToi(l); let n=0;
- ngayHoc(TUAN_NAY).filter(d=>d<=HOMNAY).forEach(d=>{for(const t of tietCua(l)){const s=SDB[sdbk(l,d,t)];
-  if(s&&!s.ky&&ms.indexOf(s.mon)>=0)n++}});
- if(n) v.push({k:'ky',t:'Tiết '+ms.join(' · ')+' chưa ghi sổ',n:n+' tiết',tab:'T3'});
- return v;
-}
-const viecCua=l=>lens(l)==='bm'?viecBM(l):viecLop(l);
+/* KGLH-1A: viecBM() DA GO — badge «tiết môn mình chưa ghi sổ» theo GVBM sang M2.11 (phien 1B), cung 5 o quyen. */
+const viecCua=l=>viecLop(l);
 
 /* ===== RENDER ===== */
 function render(){
  sidebar(); header();
+ if(R().nomenu) return renderKhongCon();
  if(cn) return renderCN();
  if(cur&&lopTrongScope().indexOf(cur)<0) cur=null;
- if(R().chiT1) tab='T1';
+ if(R().chiT1&&['TT','T1'].indexOf(tab)<0) tab='TT';
+ if(R().chiTo&&['TT','T1','T2','T3','T4','T5','T8'].indexOf(tab)<0) tab='TT';
  $('#tophd').innerHTML=cur?crumb():'<h1>Danh sách lớp học</h1><span class="pill">M2.9</span>'
   +'<span class="hint" style="margin:0 0 0 6px">tên cũ: Không gian lớp học</span>';
  $('#tabs').innerHTML=cur?tabsHTML():tabs1HTML();
- $('#content').innerHTML=scopeNote()+(cur?viewLop():t1v==='ch'?viewCH():viewDS());
+ $('#content').innerHTML=scopeNote()+(cur?lkBand()+viewLop():t1v==='ch'?viewCH():viewDS());
+}
+/* KGLH-1A · man hinh cua vai KHONG con o menu nay (GVBM — chot S1). Khong de trong: noi ro di dau, va bang anh xa
+   5 o quyen cu -> tab nao cua M2.11 (KG-2, «khong mot nghiep vu nao mat tren duong chuyen»). */
+const ANHXA_BM=[['👥 Học sinh của lớp','m2.9.hs_cua_lop','m2.11.hs_cua_lop','lát cắt GVBM giữ nguyên: họ tên · tổ · ban cán sự · nhãn Sức khỏe'],
+ ['📋 Điểm danh','m2.9.diem_danh','m2.11.diem_danh','chỉ màn hình con «Biến động theo tiết» của môn mình'],
+ ['📓 Sổ đầu bài','m2.9.so_dau_bai','m2.11.so_dau_bai','mọi tiết môn mình được phân công, kể cả tiết người khác dạy thay'],
+ ['📚 Bài tập về nhà','m2.9.bai_tap_ve_nha','m2.11.bai_tap_ve_nha','chỉ cột môn mình'],
+ ['🔢 Bảng điểm lớp','m2.9.bang_diem_lop','m2.11.bang_diem_lop','chỉ cột môn mình']];
+function renderKhongCon(){
+ $('#tophd').innerHTML='<h1>Danh sách lớp học</h1><span class="pill">M2.9</span>'
+  +'<span class="pill">📖 Chuyên môn</span>';
+ $('#tabs').innerHTML='';
+ $('#content').innerHTML='<div class="scopebar"><span>🏫</span><span>Vai <b>'+esc(R().cd)+'</b> — '+esc(R().n)
+  +'. Phạm vi ở menu này: <code>0 lớp</code>.</span></div>'
+  +'<div class="listw"><div class="empty" style="padding:34px 20px;text-align:left">'
+  +'<b>Menu này không còn là menu của giáo viên bộ môn.</b>'
+  +'<div class="hint" style="margin:9px 0 0">Danh sách lớp học nay là menu của <b>nhóm quản lý</b> — giáo viên chủ nhiệm, '
+  +'Ban giám hiệu, Giám thị, Văn thư <i>(chốt <b>S1</b>, 23/9/2026)</i>. Lớp bạn <b>được phân công dạy</b> đọc ở '
+  +'<button class="rolnk" data-a="dl" data-v="M2.11 Lớp tôi giảng dạy">↗ M2.11 Lớp tôi giảng dạy</button> — '
+  +'cùng lát cắt dữ liệu, <b>chỉ đọc 100%</b>, thao tác vẫn ở M2.2 · M2.3 · M2.5.</div>'
+  +'<table class="tb" style="margin-top:14px"><tr><th>Tab cũ ở đây</th><th>Ô quyền cũ</th><th>Sang</th><th>Lát cắt</th></tr>'
+  +ANHXA_BM.map(([t,a,b,g])=>'<tr><td><b>'+t+'</b></td><td><code>'+a+'</code><div class="hint">x@Class#assigned</div></td>'
+    +'<td><code>'+b+'</code></td><td class="hint">'+g+'</td></tr>').join('')+'</table>'
+  +'<div class="hint" style="margin-top:10px">Giáo viên <b>kiêm chủ nhiệm</b> vẫn vào menu này — nhưng chỉ với '
+  +'<b>lớp mình chủ nhiệm</b>, và thấy đủ mọi tab. Thử bằng vai <b>GVCN 9A1</b> hoặc <b>GVCN 2 lớp</b>.</div>'
+  +'</div></div>';
+}
+/* SDBG-1E · dai lien ket: toi tu menu nao, quay ve dau (D3) */
+function lkBand(){
+ if(!lkRet) return '';
+ return '<div class="info">↩ Bạn tới từ <b>'+esc(lkRet)+'</b> qua liên kết <code>/M2.9?ctx='+esc(cur)+'&amp;tab='+esc(tab)
+  +'…&amp;return='+esc(lkRet)+'</code> — mở sẵn lớp <b>'+esc(cur)+'</b>. '
+  +'<button class="rolnk" data-a="lkVe">↩ Quay về '+esc(lkRet)+'</button></div>';
 }
 /* Che do lop chu nhiem: mo thang tang 2, AN bo chon lop va thanh tab, breadcrumb rieng */
 function renderCN(){
@@ -1168,7 +1363,7 @@ function renderCN(){
  $('#tophd').innerHTML='<div class="crumb">🧑‍🏫 Lớp tôi chủ nhiệm › <b>'+esc(tenTab(tab))+'</b> · Lớp '+esc(cur)+'</div>'
   +'<span class="pill">'+capTen(capHoc(cur))+'</span><span class="pill">'+siSo(cur)+' học sinh</span>'
   +(OWNED.indexOf(tab)>=0?'':'<span class="pill">'+(NUA.indexOf(tab)>=0?'chiếu M1.1 + ban cán sự 🔒'
-    :'chiếu '+esc(CHU[tab].split(' ')[0]))+'</span>')
+    :tab==='TT'?'chiếu 5 nguồn':'chiếu '+esc(CHU[tab].split(' ')[0]))+'</span>')
   +'<button class="btn xs" style="margin-left:auto" data-a="thoatCN" title="Mở lớp này ở Danh sách lớp học, đủ các tab">'
   +'Xem đủ các tab ở Danh sách lớp học →</button>'
   +(ds.length>1?'<div class="navbar" style="width:100%;margin:6px 0 0"><span class="num">Bạn chủ nhiệm <b>'+ds.length
@@ -1187,9 +1382,13 @@ function crumb(){
   +(LOP[cur].hd?'':'<span class="st2 r">Lớp không hoạt động</span>');
 }
 function tabsCho(){
- if(R().chiT1) return ['T1'];
- if(laBM()) return TAB_BM;
- const t=TABS.map(x=>x[0]).filter(k=>k!=='CD');
+ /* Van thu co o o hs_cua_lop, va tab Thong tin lop hoc chep dung hang do => co ca hai tab */
+ if(R().chiT1) return ['TT','T1'];
+ /* TDHT-1D — TTCM · TPCM: BAY tab doc. ⛔ khong T6 T7 T9 (viec cua GVCN),
+    ⛔ khong YC ✅ ⚙ (hang doi va cau hinh cua GVCN / BGH). */
+ if(R().chiTo) return ['TT','T1','T2','T3','T4','T5','T8'];
+ /* KGLH-1A: tab «Theo dõi yêu cầu» chi cap cho GVCN (x@Class) — BGH doc hang doi o M0.2 va duyet o tab ✅ */
+ const t=TABS.map(x=>x[0]).filter(k=>k!=='CD'&&(k!=='YC'||role==='FULL'||laGVCN(cur)));
  /* Tab cho duyet chi co mat khi vai CO VIEC o lop nay; dang dung o tab thi giu toi khi roi lop (het viec khong mat tab duoi tay) */
  if(role==='FULL'||tkLop(cur,'cho').length||mo.cdGiu===cur) t.push('CD');
  return t;
@@ -1201,12 +1400,15 @@ function tabsHTML(){
   if(k==='CD'){const n=tkLop(cur,'cho').length;
    return '<button class="tab1'+(tab===k?' on':'')+'" data-a="tab" data-v="CD">'+t+'<span class="tsub">🔒 · ticket M0.2</span>'
     +(n?'<span class="b r">'+n+'</span>':'')+'</button>'}
-  const v=viecCua(cur).filter(x=>x.tab===k).length;
+  if(k==='YC'){const n=ycLop(cur,'cho').length;
+   return '<button class="tab1'+(tab===k?' on':'')+'" data-a="tab" data-v="YC">'+t+'<span class="tsub">🔒 · ticket M0.2</span>'
+    +(n?'<span class="b w">'+n+'</span>':'')+'</button>'}
+  /* «Sắp đổi TKB» la THONG TIN, khong phai viec ton — khong dem vao cham do tren thanh tab */
+  const v=viecCua(cur).filter(x=>x.tab===k&&x.k!=='tkb').length;
   return '<button class="tab1'+(tab===k?' on':'')+'" data-a="tab" data-v="'+k+'">'+t
    +(OWNED.indexOf(k)>=0?'<span class="tsub">🔒</span>':NUA.indexOf(k)>=0?'<span class="tsub">'+own+' + 🔒</span>'
      :'<span class="tsub">'+own+'</span>')
-   +(v?'<span class="b r">'+v+'</span>':'')+'</button>'}).join('')
-  +(laBM()?'<span class="hint" style="align-self:center;margin:0 0 0 8px">GVBM: 5 tab — T6…T9 là việc của GVCN / BGH</span>':'');
+   +(v?'<span class="b r">'+v+'</span>':'')+'</button>'}).join('');
 }
 /* Tang 1 co hai tab: danh sach lop · ⚙ Cau hinh (Master cap truong — danh muc chuc danh tu quan) */
 function tabs1HTML(){
@@ -1245,7 +1447,9 @@ function viewDS(){
      +'<div class="rt">'+(LOP[l].hd
        ?(v.length?v.map(x=>x.k==='cd'?'<span class="st2 b" style="cursor:pointer" data-a="moCD" data-v="'+l+'" '
            +'title="Mở thẳng tab Nội dung chờ duyệt của lớp này">'+x.t+' — '+x.n+'</span>'
-         :'<span class="st2 '+(x.k==='dd'?'r':'w')+'">'+x.t+(x.n?' — '+x.n:'')+'</span>').join('')
+         :'<span class="st2 '+(x.k==='dd'?'r':x.k==='tkb'?'b':'w')+'"'
+           +(x.k==='tkb'?' style="cursor:pointer" data-a="moTab" data-v="'+l+'|TT" title="Mở tab Thông tin lớp học, khối ⑤"':'')
+           +'>'+x.t+(x.n?' — '+x.n:'')+'</span>').join('')
          :'<span class="st2 o">✓ không có việc tồn'+(ln==='bm'?' của môn bạn dạy':'')+'</span>')
        :'<span class="st2 n">Không hoạt động</span>')+'</div></div>'}).join('')).join('')
   +'<div class="lgd dnote">Danh sách dựng từ <b>phạm vi của vai</b>, không dựng từ dữ liệu — '
@@ -1256,18 +1460,137 @@ function viewDS(){
 
 /* ---------- TIER 2 ---------- */
 function viewLop(){
- return {T1:t1,T2:t2,T3:t3,T4:t4,T5:t5,T6:t6,T7:t7,T8:t8,T9:t9,CD:tCD}[tab]();
+ return ({TT:tTT,T1:t1,T2:t2,T3:t3,T4:t4,T5:t5,T6:t6,T7:t7,T8:t8,T9:t9,YC:tYC,CD:tCD}[tab]||tTT)();
 }
 /* Bang bao cho biet tab nay do MENU NAO so huu — nguoi dung phai biet minh dang
    doc ban chieu hay dang o cho ghi that. */
 function bandChu(k){
  if(OWNED.indexOf(k)>=0) return '';
+ /* KGLH-1A · KG-4: tab Thong tin lop hoc chieu 100% tu NAM nguon, KHONG sinh mot ban ghi nao — khong nut Luu, khong ⚙ */
+ if(k==='TT') return '<div class="ro">🔗 Tab này là <b>bản chiếu 100%</b> — mặt tiền của lớp, gom từ '
+  +'<b>M10.2</b> <i>(danh mục lớp)</i> · <b>M6.4</b> <i>(phòng)</i> · <b>M4.5</b> <i>(phân công)</i> · '
+  +'<b>M4.6</b> <i>(thời khóa biểu)</i> · <b>tab Học sinh của lớp</b> <i>(ban cán sự)</i>. '
+  +'<b>Không sinh bản ghi nào</b>: không nút Lưu, không ⚙ — sai số liệu thì sửa ở menu chủ theo lối ↗ bên dưới.</div>';
  if(k==='T1') return '<div class="ro">Tab này <b>chiếu một phần, sở hữu một phần</b>: danh sách học sinh và nhãn '
   +'🔗 chiếu từ <b>M1.1 Hồ sơ học sinh</b> <i>(chỉ đọc)</i> · <b>ban cán sự lớp và chia tổ</b> 🔒 do <b>menu này</b> '
   +'sở hữu <i>(TT 15/2026 Điều 16)</i>. <button class="rolnk" data-a="dl" data-v="M1.1 Hồ sơ học sinh">↗ Mở M1.1</button></div>';
  return '<div class="ro">🔗 Tab này là <b>bản chiếu chỉ đọc</b> từ <b>'+esc(CHU[k])+'</b>. '
   +'Ghi và sửa đều làm ở menu chủ — ở đây gộp lại theo lớp để giáo viên chủ nhiệm nhìn một chỗ. '
-  +'<button class="rolnk" data-a="dl" data-v="'+esc(CHU[k])+'">↗ Mở '+esc(CHU[k].split(' ')[0])+'</button></div>';
+  +'<button class="rolnk" data-a="dl" data-v="'+esc(CHU[k])+'">'+nutChu(k)+'</button></div>';
+}
+/* DTHN-3B · 2B-P2 (chot 24/9/2026, ban CHOT DTHN §8.2): nut dau tab T4 NOI RO DICH — tu DT-E a, M2.3 chi hien
+   luot cua MON NGUOI DUNG DAY (ke ca GVCN); chu cu «↗ Mo M2.3» de GVCN tuong sang do thay toan lop. Bon tab chieu
+   con lai (T3 · T5 · T8) GIU chu «↗ Mo <ma menu chu>». Chi doi CHU hien thi — data-v, hanh vi, quyen giu nguyen. */
+function nutChu(k){
+ if(k==='T4') return '↗ M2.3 — bài của môn tôi dạy';
+ return '↗ Mở '+esc(CHU[k].split(' ')[0]);
+}
+
+/* ===== KGLH-1A · TT · THONG TIN LOP HOC — hop dong HDTTL, ban chieu 100% (chot S5 · luat KG-4) =====
+   Nam khoi theo DUNG thu tu: ① ho so lop · ② phong hoc chinh · ③ ban can su · ④ mon × giao vien · ⑤ TKB tuan + dai «Sap doi».
+   Lang kinh o day la ve «GVCN · quan ly» cua hop dong; ve GVBM nam o M2.11 (phien 1B) — CUNG mot hop dong, hai cot. */
+function tTT(){
+ const l=cur, ms=monCua(l), tk=tkbDoi(l), dang=bcsDang(l), dd=DOANDOI[l]||null;
+ const kv=(k,v)=>'<tr><th style="width:150px;text-align:left">'+k+'</th><td>'+v+'</td></tr>';
+ /* ① Ho so lop — ten lop LUON kem nhan diem truong (ten lop trung nhau giua cac diem truong) */
+ let h=bandChu('TT')
+  +'<div class="card"><div class="ch">① Hồ sơ lớp<span class="sp"></span>'
+  +'<button class="btn xs" data-a="dl" data-v="M10.2 Thông tin trường — danh mục lớp">↗ M10.2</button></div><div class="cb p">'
+  +'<table class="tb">'
+  +kv('Tên lớp','<b>Lớp '+esc(l)+'</b> <span class="st2 n">'+esc(DT[LOP[l].dt])+'</span>')
+  +kv('Khối',khoi(l)+' · '+capTen(capHoc(l)))
+  +kv('Sĩ số hiện tại','<b>'+siSo(l)+'</b> học sinh <span class="hint">(số hiện tại, chiếu M1.7 — không phải sĩ số đầu năm)</span>')
+  +kv('Trạng thái',LOP[l].hd?'<span class="st2 o">Đang hoạt động</span>':'<span class="st2 r">Không hoạt động</span>')
+  +kv('Giáo viên chủ nhiệm','<b>'+esc(gvn(LOP[l].gvcn))+'</b> <span class="hint">(phân công M4.5)</span>')
+  +'</table></div></div>'
+ /* ② Phong hoc chinh — chi phong CO DINH; mon co phong chuyen dung ghi o khoi ④ */
+  +'<div class="card"><div class="ch">② Phòng học chính<span class="sp"></span>'
+  +'<button class="btn xs" data-a="dl" data-v="M6.4 Phòng học & Công trình">↗ M6.4</button></div><div class="cb p">'
+  +'<b>'+esc(PHONG[l]||'—')+'</b>'
+  +'<div class="hint" style="margin-top:6px">Chỉ <b>phòng cố định</b> của lớp. Môn học ở phòng chuyên dụng ghi tại khối ④ — '
+  +'lớp không "ở" hai phòng cùng lúc.</div></div></div>'
+ /* ③ Ban can su — CHI DOC ke ca o day; sua van o tab Hoc sinh cua lop */
+  +'<div class="card"><div class="ch">③ Ban cán sự lớp<span class="sp"></span>'
+  +'<span class="st2 n">chỉ đọc</span>'
+  +'<button class="btn xs" data-a="tab" data-v="T1">↗ Sửa ở tab Học sinh của lớp</button></div><div class="cb p">'
+  +(dang.length?'<div style="display:flex;gap:6px;flex-wrap:wrap">'+dang.map(x=>'<span class="st2 b">🎖 '+esc(tenCV(x))
+     +' — <b>'+esc(HS[x.h].n)+'</b></span>').join('')+'</div>'
+   :'<div class="hint">Lớp <b>chưa ghi ban cán sự</b> — ghi ở tab Học sinh của lớp.</div>')
+  +(dd&&dd.h?'<div class="hint" style="margin-top:8px">🔗 '+esc(dd.cv)+' <b>'+esc(HS[dd.h].n)+'</b> — chiếu '
+    +'<b>M6.15</b>, không sửa ở menu này.</div>':'')
+  +'</div></div>'
+ /* ④ Mon × giao vien — doc theo don vi (lop, mon, PHAN) cua HDPC: MOT MON CO THE NHIEU GIAO VIEN */
+  +'<div class="card"><div class="ch">④ Môn học × giáo viên<span class="sp"></span>'
+  +'<button class="btn xs" data-a="dl" data-v="M4.5 Phân công giảng dạy">↗ M4.5</button></div><div class="cb p">'
+  +'<table class="bd"><tr><th>Môn học</th><th>Phần</th><th>Giáo viên</th><th>Phòng chuyên dụng</th></tr>'
+  +ms.map(m=>{const ps=phanCua(l,m);
+    return ps.map((p,i)=>'<tr>'+(i?'':'<td rowspan="'+ps.length+'"><b>'+esc(m)+'</b></td>')
+     +'<td>'+(p[0]==='PT0'?'<span class="hint">Toàn môn</span>':'<span class="st2 v">'+p[0]+'</span> '+esc(p[1]))+'</td>'
+     +'<td>'+esc(gvn(p[2]))+'</td>'
+     +(i?'':'<td rowspan="'+ps.length+'">'+(PHONG_MON[m]?esc(PHONG_MON[m]):'<span class="hint">phòng lớp</span>')+'</td>')
+     +'</tr>').join('')}).join('')
+  +'</table>'
+  +'<div class="hint" style="margin-top:7px">Đọc theo đơn vị <code>(lớp, môn, phần)</code> — <b>một môn có thể nhiều giáo viên</b> '
+  +'<i>(hợp đồng phân công)</i>. Môn chỉ có <code>PT0 — Toàn môn</code> hiện một dòng.</div></div></div>'
+ /* ⑤ TKB tuan + dai «Sap doi tu dd/mm» — be mat Web cua kenh bao truoc (S6) */
+  +'<div class="card"><div class="ch">⑤ Thời khóa biểu tuần<span class="sp"></span>'
+  +'<button class="btn xs" data-a="dl" data-v="M4.6 Thời khóa biểu">↗ M4.6</button></div><div class="cb p">'
+  +'<div class="warn">📅 <b>Đây là mẫu tuần</b> — ngày có dạy thay, đổi tiết thì <b>tiết thật khác</b>. '
+  +'Lịch thực của lớp đọc ở <button class="rolnk" data-a="dl" data-v="M4.7 Lịch giảng dạy">↗ M4.7</button>, '
+  +'nội dung tiết đã dạy ở <button class="rolnk" data-a="tab" data-v="T3">tab Sổ đầu bài</button>.</div>'
+  +(tk?'<div class="info" style="cursor:pointer" data-a="ttSo">⏳ <b>Sắp đổi từ '+dstr(tk.ap)+'</b> — bộ <b>'+esc(tk.bo)
+    +'</b> đã được '+esc(gvn(tk.by))+' duyệt ngày '+dstr(tk.at)+', hẹn áp dụng từ <b>'+dfull(tk.ap)+'</b>. '
+    +'<button class="rolnk" data-a="ttSo">So sánh mẫu tuần cũ ⇄ mới →</button></div>':'')
+  +bangTKB(l,0)
+  +'<div class="hint" style="margin-top:7px">Nguồn: <b>M4.6</b> tab 1, <b>bộ đang áp dụng</b>, góc nhìn LỚP. '
+  +'Dải <b>Sắp đổi</b> chỉ hiện khi có bộ <b>đã duyệt và hẹn ngày</b> — bộ còn là nháp thì không báo cho ai.</div>'
+  +'</div></div>'
+  +'<div class="lgd dnote" style="display:block">Tab này <b>không sinh một bản ghi nào</b> — mọi ô là bản chiếu. '
+  +'Cửa ra: <b>↗ M4.6</b> cả bộ thời khóa biểu · <b>↗ M4.5</b> phân công · <b>tab Học sinh của lớp</b> sửa ban cán sự · '
+  +'<b>↗ M6.4</b> phòng. Đây là chỗ trả lời hai câu mà tab Sổ đầu bài không trả lời được: '
+  +'<i>“mẫu tuần chuẩn của lớp là gì”</i> và <i>“tuần sau có đổi không”</i>.</div>';
+ return h;
+}
+function bangTKB(l,shift){
+ const g=mauTuan(l,shift), ts=tietCua(l);
+ return '<table class="bd"><tr><th class="stt">Tiết</th>'+[0,1,2,3,4,5].map(i=>'<th>'+DOWN[(i+1)%7]+'</th>').join('')+'</tr>'
+  +ts.map((t,ti)=>'<tr><td class="stt">'+t+'</td>'+[0,1,2,3,4,5].map(i=>'<td class="oc">'+esc(g[i][ti])+'</td>').join('')
+   +'</tr>').join('')+'</table>';
+}
+/* ===== KGLH-1A · YC · THEO DOI YEU CAU — Feature m2.9.theo_doi_yeu_cau, cho GVCN (x@Class) =====
+   CUNG ticket M0.2 voi tab ✅ — KHONG dung hang doi thu hai. Khac goc nhin: ✅ = «viec toi duyet duoc»,
+   YC = «yeu cau CUA LOP MINH dang cho ai, da duyet chua, bi tra lai vi ly do gi». KHONG o D nao — khong nut duyet. */
+const ycLop=(l,f)=>tkAll().filter(t=>t.l===l&&(f==null||(f==='cho')===(t.tt==='cho')));
+function tYC(){
+ mo.ycF=mo.ycF||'cho';
+ const cho=ycLop(cur,'cho'), xong=ycLop(cur,'xong'), ds=mo.ycF==='cho'?cho:xong;
+ let h='<div class="navbar"><div class="seg">'+[['cho','Đang chờ ('+cho.length+')'],['xong','Đã có kết quả ('+xong.length+')']]
+   .map(([k,t])=>'<button class="'+(mo.ycF===k?'on':'')+'" data-a="ycF" data-v="'+k+'">'+t+'</button>').join('')+'</div>'
+  +'<div class="gsep"></div><button class="btn sm" data-a="dl" data-v="M0.2 Việc cần làm">↗ M0.2 — hàng đợi đầy đủ</button></div>'
+  +'<div class="ro">📌 Mọi yêu cầu <b>liên quan lớp '+esc(cur)+'</b> — của bạn gửi đi và của người khác gửi về lớp này: '
+  +'<b>đang chờ ai</b>, <b>đã được duyệt chưa</b>, <b>bị trả lại vì lý do gì</b>. '
+  +'Đọc <b>cùng ticket</b> với tab <b>✅ Nội dung chờ duyệt</b> và với <b>M0.2</b> — không phải hàng đợi thứ hai. '
+  +'<b>Không có nút duyệt ở đây</b>: tab này <b>chỉ đọc</b>, quyền duyệt nằm ở menu chủ.</div>';
+ if(!ds.length) return h+'<div class="listw"><div class="empty" style="padding:34px 20px">'
+  +(mo.ycF==='cho'?'<b>✓ Lớp '+esc(cur)+' không có yêu cầu nào đang chờ.</b>'
+    :'Chưa có yêu cầu nào có kết quả ở lớp này.')+'</div></div>';
+ return h+'<div class="listw">'+ds.map(t=>{const cho1=t.tt==='cho';
+  return '<div class="brow"><div class="bd"><b>'+t.ic+' '+esc(t.loai)+'</b>'
+   +'<div class="sub">'+(t.h?'<b>'+esc(HS[t.h].n)+'</b> · ':'')+esc(t.sub||'')+'</div>'
+   +'<div class="sub">Người gửi <b>'+esc(t.byn||gvn(t.by))+'</b> · '+dstr(t.at)
+   +(cho1?' · đang chờ <b>'+t.duyet.map(d=>VAI_TEN[d]||d).join(' hoặc ')+'</b>'
+     +(t.duyet.length>1?' <i>(ai duyệt trước có hiệu lực)</i>':'')
+     +(HOMNAY-t.at>2?' · <b style="color:var(--red)">chờ '+(HOMNAY-t.at)+' ngày</b>':'')
+    :' · '+(t.nd?'người xử lý <b>'+esc(gvn(t.nd))+'</b>':'')+(t.xat!=null?' · '+dstr(t.xat):''))
+   +'</div>'
+   +(!cho1&&t.gc?'<div class="sub"><span class="st2 r">Lý do</span> “'+esc(t.gc)+'”</div>':'')
+   +'</div><div class="rt"><span class="st2 n">'+t.src+'</span>'+(t.ks?'<span class="st2 v">🔏 ký số</span>':'')
+   +(cho1?'<span class="st2 w">⏳ đang chờ</span>':'<span class="st2 '+ttTK[t.tt][0]+'">'+ttTK[t.tt][1]+'</span>')
+   +'<button class="btn xs" data-a="ycDL" data-v="'+t.id+'">↗ '+t.src+'</button></div></div>'}).join('')
+  +'<div class="lgd dnote" style="display:block">Vì sao không gộp vào tab <b>✅</b>: tab ✅ dựng từ <b>quyền của người xem</b> '
+  +'<i>(chỉ việc họ duyệt được thật)</i> — GVCN mở ra thường trống. Tab này dựng từ <b>lớp</b>: giáo viên chủ nhiệm cần biết '
+  +'đơn của em mình, đề nghị của mình đang nằm ở đâu, kể cả khi người duyệt là Ban giám hiệu. '
+  +'Cùng một hàng đợi, khác câu hỏi.</div></div>';
 }
 
 /* ===== T1 · HOC SINH CUA LOP (chieu tu M1.1) ===== */
@@ -1298,6 +1621,18 @@ function t1(){
    +(bm?'':'<td>'+(ng>45?'<span class="st2 r">nghỉ '+ng+' buổi</span>':ng>35?'<span class="st2 w">nghỉ '+ng+'</span>'
      :'<span class="hint">nghỉ '+ng+'</span>')+'</td>')
    +'<td><button class="btn xs" data-a="dl" data-v="M1.1 Hồ sơ học sinh">↗ Hồ sơ</button></td></tr>'}).join('')
+  /* 🆕 RSHS-2C — nhóm «Đã rời lớp — chờ chuyển đi»: em VẪN trong hồ sơ trường,
+     ⛔ không còn trong sĩ số vận hành. 🛑 ⛔ KHÔNG ẩn em đi — ẩn là mất dấu. */
+  +(dsRoiLop(cur).length
+    ? '<tr><td colspan="9" style="background:#fffbeb;font-weight:700;color:#92400e">🚪 Đã rời lớp — chờ trường đến tiếp nhận '
+      +'<span class="hint" style="font-weight:400">· vẫn là học sinh của trường, vẫn tính vào sĩ số BÁO CÁO GỬI SỞ · chỗ ngồi được giữ</span></td></tr>'
+      +dsRoiLop(cur).map(h=>'<tr style="opacity:.72"><td class="stt">–</td><td class="tenhs">'+esc(HS[h].n)
+        +'<div class="hint" style="margin:1px 0 0">🚪 rời lớp từ <b>'+ROI_LOP[h].ngay+'</b> · '+esc(ROI_LOP[h].boi)+'</div></td>'
+        +'<td class="oc">–</td>'+(bm?'':'<td class="gc"><b>'+esc(HS[h].ph)+'</b><div class="hint">'+esc(HS[h].sdt)+'</div></td>')
+        +'<td class="gc"><span class="hint">⛔ không điểm danh · nhóm chat đã chuyển</span></td>'
+        +(bm?'':'<td><span class="hint">—</span></td>')
+        +'<td><button class="btn xs" data-a="dl" data-v="M1.5 Chuyển trường">↗ M1.5</button></td></tr>').join('')
+    :'')
   +'</table>'
   +(bm?'<div class="lgd"><span class="st2 r">Sức khỏe</span> dị ứng, bệnh nền cần biết khi có sự cố trong tiết'
      +'<span class="dnote" style="margin-left:auto">Chỉ nhãn sức khỏe lên lát cắt GVBM: nó <b>đổi cách xử lý ngay trong tiết</b> '
@@ -1461,6 +1796,7 @@ function t2Ngay(){
  else if(chotTuan(tuanCua(d))) h+='<div class="warn">🔒 Tuần '+tuanCua(d)+' <b>đã chốt</b>. '
   +'Sửa điểm danh của ngày này phải <b>gửi đề nghị</b> cho PHT đào tạo duyệt — xem tab '
   +'<b>Đề nghị sửa</b>.</div>';
+ h+=daiSiSo(cur);            /* RSHS-2C — nói ra HAI con số sĩ số */
  h+=daiGY(cur,d,sd);
  const GY=goiY(cur,d);
  const dem={}; Object.keys(TTDD).forEach(k=>dem[k]=0);
@@ -1577,44 +1913,132 @@ function t2YC(){
    +'</table>':'<div class="empty">Chưa có đề nghị nào.</div>')+'</div>';
 }
 
-/* ===== T3 · SO DAU BAI (chieu tu M2.2) — bam vao mot tiet de mo chi tiet ===== */
+/* ===== T3 · SO DAU BAI (chieu tu M2.2) — bam vao mot tiet de mo chi tiet =====
+   SDBG-1E (22/9/2026): T3 nhan PHAN NE NEP CUA GVCN tu tab «Theo doi ne nep lop» cu cua M2.2 (chot S4) — chi BU phan
+   thieu: (1) tuan rieng, mac dinh tuan nay, lui duoc toi tuan 1 · (2) «tiet chua ghi» QUET CA NAM (M2.2 §8.1.2b) ·
+   (3) Y thuc tuan: phan bo 4 muc + muc chung · (4) nut ↗ M2.7 (va ↗ M2.10) trong popup — CHI GVCN cua lop do ·
+   (5) nhan ✎ Da dinh chinh o luoi + ban goc canh ban dinh chinh o popup. KHONG co nut 🔔 Bao GVBM (chot S5). */
+/* Tiet cua NGAY DA QUA ma chua ghi — quet tu dau nam hoc, moi mon trong pham vi cua vai (GVBM: chi mon minh).
+   Tiet hom nay chua tinh: demo khong co dong ho tiet; ban that tinh theo GIO KET THUC tiet (M2.2 §8.6.1). */
+function chuaGhiCaNam(l){
+ const ms=msXem(l), out=[];
+ for(let d=0;d<HOMNAY;d++){ if(laCN(d)) continue;
+  for(const t of tietCua(l)){const s=SDB[sdbk(l,d,t)]; if(s&&!s.ky&&ms.indexOf(s.mon)>=0) out.push({d:d,t:t,s:s})}}
+ return out;
+}
+/* Muc y thuc chung cua mot tap tiet — CUNG cong thuc voi T6 §6.3 (mot cho tinh, hai noi doc) */
+function yThucTB(ys){
+ if(!ys.length) return '—';
+ return ys.filter(y=>y==='T').length/ys.length>0.7?'Tốt':ys.filter(y=>y==='TB').length>2?'Trung bình':'Khá';
+}
+function navTuan3(){
+ return '<div class="navbar">'
+  +'<button class="btn sm" data-a="tuan3" data-v="'+(tuan3-1)+'" '+(tuan3<=1?'disabled':'')+'>← '
+   +(tuan3>1?'Tuần '+(tuan3-1):'')+'</button>'
+  +'<b style="font-size:14px">Tuần '+tuan3+' · '+dstr(dauTuan(tuan3))+' – '+dstr(dauTuan(tuan3)+5)
+   +(tuan3===TUAN_NAY?' · tuần này':'')+'</b>'
+  +'<button class="btn sm" data-a="tuan3" data-v="'+(tuan3+1)+'" '+(tuan3>=TUAN_NAY?'disabled':'')+'>'
+   +(tuan3<TUAN_NAY?'Tuần '+(tuan3+1):'')+' →</button>'
+  +(tuan3!==TUAN_NAY?'<button class="btn sm" data-a="tuan3" data-v="'+TUAN_NAY+'">Về tuần này</button>':'')
+  +'<div class="gsep"></div><span class="num">lùi được tới <b>tuần 1</b> — sổ đầu bài là dữ liệu cả năm học</span></div>';
+}
 function t3(){
- const ds=ngayHoc(tuan), batY=BAT_YTHUC[capHoc(cur)], ms=msXem(cur), bm=laBM();
- let h=bandChu('T3')+navTuan();
- let chuaKy=0;
- h+='<div class="listw"><div class="grow">📓 Sổ đầu bài tuần '+tuan
-  +(bm?' — tiết môn '+esc(ms.join(' · ')):'')
+ const ds=ngayHoc(tuan3), batY=BAT_YTHUC[capHoc(cur)], ms=msXem(cur), bm=laBM();
+ const qua=chuaGhiCaNam(cur), quaKhac=qua.filter(x=>tuanCua(x.d)!==tuan3);
+ let h=bandChu('T3')+navTuan3();
+ if(qua.length) h+='<div class="danger">⛔ <b>'+qua.length+' tiết '+(bm?'của bạn ':'')+'đã qua mà chưa ghi sổ</b>'
+  +(quaKhac.length?', trong đó <b>'+quaKhac.length+' tiết ở tuần khác</b> tuần đang xem':'')
+  +' <span style="font-weight:400">— con số này <b>quét cả năm học</b>, không cắt theo tuần đang xem: tiết quên ghi tuần trước '
+  +'vẫn nằm đây tới khi giáo viên ghi.</span>'
+  +'<div style="margin-top:6px;font-weight:400">'+(bm?'Ghi ở <button class="rolnk" data-a="dl" data-v="M2.2 Sổ đầu bài">↗ M2.2</button>.'
+    :'Sổ đầu bài là ghi chép của <b>người đứng lớp tiết đó</b> — GVCN <b>không ghi hộ</b>. Thấy tiết quên ghi thì nhắc giáo viên '
+    +'qua kênh thường ngày; menu <b>không có nút «Báo giáo viên bộ môn»</b> và hệ thống <b>không đẩy thông báo</b> cho quản lý '
+    +'<i>(giáo viên đã nhận nhắc ngay khi quá giờ — M2.2 Q10)</i>.')+'</div>'
+  +'<div style="margin-top:7px">'+qua.slice(0,8).map(x=>'<button class="btn xs" style="margin:0 5px 5px 0" data-a="sdbGo" '
+    +'data-v="'+x.d+'|'+x.t+'">→ '+esc(x.s.mon)+' · '+esc(gvn(x.s.gv))+' · '+dfull(x.d)+' tiết '+x.t
+    +(tuanCua(x.d)!==tuan3?' <span class="st2 w">tuần '+tuanCua(x.d)+'</span>':'')+'</button>').join('')
+  +(qua.length>8?'<span class="hint" style="display:inline">…và '+(qua.length-8)+' tiết nữa</span>':'')+'</div></div>';
+ let chuaKy=0, dcN=0; const ys=[];
+ h+='<div class="listw"><div class="grow">📓 Sổ đầu bài tuần '+tuan3
+  +(bm?' — tiết môn '+esc(ms.join(' · ')):' — mọi môn của lớp')
   +'<span class="ct">bấm vào một tiết để xem nội dung giáo viên đã ghi</span></div>'
   +'<table class="bd"><tr><th class="stt">Tiết</th>'+ds.map(d=>'<th>'+dow(d)+'<span>'+dstr(d)+'</span></th>').join('')+'</tr>'
   +tietCua(cur).map(t=>'<tr><td class="stt">'+t+(BUOI(t)==='chieu'?' <span class="hint" style="display:inline">chiều</span>':'')+'</td>'
    +ds.map(d=>{const s=SDB[sdbk(cur,d,t)];
     if(!s||d>HOMNAY) return '<td class="oc trong">–</td>';
     if(ms.indexOf(s.mon)<0) return '<td class="oc trong" style="background:#f8fafc" title="Tiết môn khác — ngoài phân công của bạn, dữ liệu không trả về">·</td>';
-    if(!s.ky) chuaKy++;
+    if(!s.ky) chuaKy++; else ys.push(s.y);
+    if(s.dc) dcN++;
     return '<td class="oc" style="font-size:11px;line-height:1.35;cursor:pointer" '
      +'data-a="sdb" data-d="'+d+'" data-v="'+t+'">'+esc(s.mon)
      +'<div class="hint" style="margin:0">'+esc(gvn(s.gv).split(' ').slice(-2).join(' '))+'</div>'
      +(s.ky?'<span class="st2 o">đã ghi</span>':'<span class="st2 r">chưa ghi</span>')
+     +(s.dc?' <span class="st2 v" title="Đã đính chính sau khi chốt — bản gốc giữ nguyên, bấm để xem">✎ Đã đính chính</span>':'')
      +(batY?' <span class="st2 '+(s.y==='T'?'o':s.y==='K'?'b':'w')+'">'+YTHUC[s.y]+'</span>':'')
-     +(s.pb.length?' <span class="st2 r" title="có phê bình">⚠'+s.pb.length+'</span>':'')
+     +(s.pb.length?' <span class="st2 r" title="có nhắc nhở">⚠'+s.pb.length+'</span>':'')
      +(s.kn.length?' <span class="st2 o" title="có khen ngợi">🏅'+s.kn.length+'</span>':'')
      +'</td>'}).join('')
-   +'</tr>').join('')+'</table>'
-  +'<div class="lgd">'+(chuaKy?'<b style="color:var(--red)">'+chuaKy+' tiết '+(bm?'của bạn ':'')+'chưa được giáo viên ghi sổ</b>'
+   +'</tr>').join('')+'</table>';
+ /* Y thuc tuan — dong tong hop cua tab ne nep cu (M2.2 §8.5.1). An han khi cap hoc tat xep loai y thuc. */
+ if(batY){
+  const col={T:'var(--green)',K:'var(--brand)',TB:'var(--amber)',Y:'var(--red)'}, n=ys.length||1;
+  h+='<div class="lgd" style="align-items:center"><b>Ý thức tuần '+tuan3+'</b>'+(bm?' <span class="hint" style="display:inline">(các tiết môn bạn)</span>':'')
+   +' — mức chung <span class="st2 '+({Tốt:'o',Khá:'b','Trung bình':'w'}[yThucTB(ys)]||'n')+'">'+yThucTB(ys)+'</span>'
+   +'<span style="display:inline-flex;width:160px;height:9px;border-radius:3px;overflow:hidden;background:var(--bg);margin:0 6px">'
+   +['T','K','TB','Y'].map(k=>'<i style="width:'+(ys.filter(y=>y===k).length/n*100)+'%;background:'+col[k]+'"></i>').join('')+'</span>'
+   +['T','K','TB','Y'].map(k=>YTHUC[k]+' '+ys.filter(y=>y===k).length).join(' · ')
+   +'<span class="dnote" style="margin-left:auto">Xếp loại ý thức là <b>của lớp</b>, mỗi tiết một mức; mức chung tuần '
+   +'<b>cùng cách tính</b> với mục «Ý thức lớp» của báo cáo tuần (T6). Không so với lớp khác.</span></div>';
+ }
+ h+='<div class="lgd">'+(chuaKy?'<b style="color:var(--red)">'+chuaKy+' tiết '+(bm?'của bạn ':'')+'trong tuần này chưa được giáo viên ghi sổ</b>'
     :'✓ Mọi tiết '+(bm?'của bạn ':'')+'trong tuần đã ghi sổ')
+  +(dcN?'<span><span class="st2 v">✎</span> '+dcN+' tiết đã đính chính sau khi chốt — bấm để xem bản gốc</span>':'')
   +(bm?'<span>· ô xám: tiết môn khác — <b>không trả về</b> cho vai GVBM</span>':'')
-  +'<span>⚠ có phê bình học sinh</span><span>🏅 có khen ngợi học sinh</span>'
+  +'<span>⚠ có nhắc nhở học sinh</span><span>🏅 có khen ngợi học sinh</span>'
   +(batY?'':'<span class="dnote">Cấp <b>'+capTen(capHoc(cur))+'</b> đang <b>tắt xếp loại ý thức tiết</b> — '
-    +'mục này không có căn cứ pháp lý, cấu hình tại M2.2. Tắt thì <b>ẩn hẳn</b>.</span>')
+    +'mục này không có căn cứ pháp lý, cấu hình tại <button class="rolnk" data-a="dl" data-v="M5.10 ⚙ Cấu hình chuyên môn">↗ M5.10 ⚙ Cấu hình chuyên môn</button>'
+    +' <i>(bản chiếu 🔗 — M2.9 chỉ đọc)</i>. Tắt thì <b>ẩn hẳn</b>.</span>')
   +'</div></div>';
  return h;
+}
+/* Khoi ban goc ⇄ ban dinh chinh — M2.9 CHI DOC. Khong nut duyet: sau 24 gio chi giao vien thuc day dinh chinh (S6). */
+function khoiDC(s){
+ const c=s.dc;
+ return '<div class="card" style="margin-top:11px;border-color:#c4b5fd"><div class="ch">✎ Đã đính chính sau khi chốt'
+  +' <span class="st2 v">bản gốc giữ nguyên</span></div><div class="cb p">'
+  +'<table class="tb"><tr><th>Trường</th><th>Bản gốc</th><th>Bản đính chính — đang hiệu lực</th></tr>'
+  +c.ds.map(([tr,cu,moi])=>'<tr><td><b>'+esc(tr)+'</b></td><td style="color:var(--ink2);text-decoration:line-through">'+esc(cu)+'</td>'
+   +'<td>'+esc(moi)+'</td></tr>').join('')+'</table>'
+  +'<div class="hint" style="margin-top:7px">Lý do: <b>'+esc(c.ly)+'</b><br>Người đính chính: <b>'+esc(gvn(c.by))
+  +'</b> <i>(giáo viên thực dạy tiết này)</i> · lúc '+esc(c.luc)+' · lịch sử giữ ở M2.2</div>'
+  +(c.baoCN?'<div class="roblk" style="margin-top:8px">🔔 Đính chính này đổi <b>dòng nhắc nhở học sinh</b>, nên hệ thống '
+    +'<b>đã báo GVCN '+esc(gvn(c.baoCN.gv))+'</b> lúc '+esc(c.baoCN.luc)+' — ở chuông <b>M0.3 Thông báo của tôi</b>, liên kết mở '
+    +'thẳng tiết này. Đây là <b>thông báo, không phải việc duyệt</b>: không có nút xử lý. Dòng nhắc nhở là căn cứ rèn luyện '
+    +'của một em cụ thể nên GVCN cần biết; <b>M6.13 giữ số nền nếp đã chốt</b> của tuần đó.</div>':'')
+  +'<div class="hint" style="margin-top:7px">Không có người duyệt: trong 24 giờ sau tiết giáo viên sửa tự do; sau đó '
+  +'chỉ <b>giáo viên thực dạy</b> đính chính được, <b>lý do bắt buộc</b>, bản gốc giữ nguyên.</div></div></div>';
+}
+/* Han cuoi dinh chinh — ⏳ mac dinh cua so SDBG §2b: toi khi GVCN ky chot ren luyen KY do o T7 (diem P cua SDBG-1A) */
+function hanDC(s){
+ if(!s.ky) return '';
+ const k=capHoc(cur)==='TH'?'chk1':'hk1', ky=(KYTK[cur+'|'+k]||{}).ky;
+ if(!ky) return '';
+ return '<div class="hint" style="margin-top:8px">🔒 GVCN đã ký chốt rèn luyện <b>'+esc(KY[k])+'</b> ngày '+dstr(ky.at)
+  +' — từ đó dòng sổ của kỳ này <b>không đính chính được nữa</b>, vì khen, nhắc nhở trong tiết là căn cứ của kết quả đã ký '
+  +'<i>(✅ luật cứng — chốt 22/9/2026, cụm sổ đầu bài)</i>.</div>';
 }
 function popSDB(d,t){
  const s=SDB[sdbk(cur,d,t)]; if(!s||msXem(cur).indexOf(s.mon)<0) return;
  const bds=bdCua(cur,d).filter(x=>x.tiet===t);
- modal('Sổ đầu bài — Tiết '+t+' · '+dfull(d)+' · lớp '+esc(cur),
-  '<div class="ro">Nội dung dưới đây do <b>giáo viên bộ môn ghi tại M2.2 Sổ đầu bài</b>. '
-  +'M2.9 chỉ đọc — sửa thì sang menu chủ.</div>'
+ /* Nut lap quyet dinh: CHI GVCN cua lop dang xem (va vai Du quyen) — TT 19/2025 Đ.17: GVCN lap, HT duyet.
+    GVBM xem lop minh day, BGH, giam thi: khong. HT theo doi va lap tu M5.9 (tab ne nep — SDBG-1C). */
+ const chuNhiem=role==='FULL'||laGVCN(cur);
+ /* ↗ M2.2 chi voi GIAO VIEN THUC DAY tiet nay: M2.2 v3.0 chi con phan cua nguoi dung lop (SDBG-1A) */
+ const laToi=role==='FULL'||s.gv===toiLa();
+ const id=tietId(cur,d,t);
+ modal('Sổ đầu bài — Tiết '+t+' · '+dfull(d)+' · lớp '+esc(cur)+(s.dc?' <span class="st2 v">✎ Đã đính chính</span>':''),
+  '<div class="ro">Nội dung dưới đây do <b>giáo viên thực dạy ghi tại M2.2 Sổ đầu bài</b>. M2.9 chỉ đọc. '
+  +'Sửa trong 24 giờ sau tiết, hoặc <b>đính chính</b> sau đó, chỉ <b>giáo viên thực dạy</b> làm — ở M2.2.</div>'
   +'<div class="f"><div class="k">Môn · giáo viên</div><div class="v">'+esc(s.mon)+' — '+esc(gvn(s.gv))+'</div></div>'
   +'<div class="f"><div class="k">Tên bài dạy</div><div class="v">'+esc(s.bai)+'</div></div>'
   +'<div class="f"><div class="k">Nhận xét tiết học</div><div class="v" style="font-weight:400">'+esc(s.nd)+'</div></div>'
@@ -1622,8 +2046,10 @@ function popSDB(d,t){
     +'<span class="st2 '+(s.y==='T'?'o':s.y==='K'?'b':'w')+'">'+YTHUC[s.y]+'</span></div></div>':'')
   +'<div class="f"><div class="k">Trạng thái ghi sổ</div><div class="v">'
    +(s.ky?'<span class="st2 o">✓ đã ghi</span> <span class="hint" style="display:inline">'+esc(s.kyAt)+'</span>'
+     +(s.dc?' <span class="st2 v">✎ Đã đính chính</span>':'')
      :'<span class="st2 r">chưa ghi</span> <span class="hint" style="display:inline">'
       +'sổ chưa ghi thì tiết chưa được ghi nhận là thực dạy</span>')+'</div></div>'
+  +(s.dc?khoiDC(s):'')
   +'<div class="card" style="margin-top:11px"><div class="ch">Ghi nhận về học sinh trong tiết</div><div class="cb p">'
   +(s.pb.length||s.kn.length
     ?s.kn.map(x=>'<div class="roblk" style="margin-bottom:6px">🏅 <b>'+esc(HS[x.h].n)+'</b> — '+esc(x.ly)+'</div>').join('')
@@ -1632,26 +2058,50 @@ function popSDB(d,t){
     :'<div class="hint">Không có ghi nhận riêng về học sinh nào.</div>')
   +'<div class="hint" style="margin-top:8px">Những dòng này <b>chảy vào báo cáo học tập tuần</b> (T6) và vào '
   +'<b>bảng căn cứ đánh giá rèn luyện học kỳ</b> (T7) — nên chúng là ghi nhận có hệ quả, không phải ghi chú rời.</div>'
+  +(s.pb.length&&!chuNhiem?'<div class="roblk" style="margin-top:8px">Nút lập quyết định kỷ luật <b>chỉ hiện với GVCN lớp '
+    +esc(cur)+'</b> <i>(TT 19/2025 Đ.17 — GVCN lập, Hiệu trưởng duyệt ở M2.7)</i>.</div>':'')
   +'</div></div>'
   +'<div class="card"><div class="ch">Biến động điểm danh trong tiết</div><div class="cb p">'
   +(bds.length?bds.map(b=>'<div class="roblk" style="margin-bottom:6px"><b>'+esc(HS[b.h].n)+'</b> — '+esc(b.ly)
     +' <span class="hint" style="display:inline">('+esc(gvn(b.gv))+' ghi)</span></div>').join('')
    :'<div class="hint">Không có học sinh nào vắng phát sinh trong tiết này.</div>')
-  +'</div></div>',
-  [['Đóng','',closeM],['↗ Mở M2.2 Sổ đầu bài','',()=>{closeM();
-    toast('🔗 Deep-link sang <b>M2.2 Sổ đầu bài</b> — tiết '+t+' ngày '+dstr(d)+'.')}]]);
+  +'</div></div>'
+  +hanDC(s)
+  +(laToi?'':'<div class="hint" style="margin-top:8px">Không có nút mở M2.2: đó là màn hình của <b>người đứng lớp</b>, '
+    +'tiết này của '+esc(gvn(s.gv))+'.</div>'),
+  [['Đóng','',closeM]]
+  .concat(chuNhiem&&s.kn.length?[['↗ Lập tuyên dương · M2.10','',()=>{closeM();
+    toast('🔗 Deep-link <code>/M2.10?action=tao&amp;ctx='+id+'&amp;return=M2.9</code> — mang sẵn học sinh, lý do, tiết học.')}]]:[])
+  .concat(chuNhiem&&s.pb.length?[['↗ Lập quyết định kỷ luật · M2.7','',()=>{closeM();
+    toast('🔗 Deep-link <code>/M2.7?action=tao&amp;ctx='+id+'&amp;return=M2.9</code> — mang sẵn học sinh, lý do, tiết học. '
+     +'Dòng nhắc nhở trong sổ <b>đã là</b> biện pháp Nhắc nhở (TT 19/2025 Đ.13); M2.7 nhận phê bình · tự kiểm điểm · xin lỗi.')}]]:[])
+  .concat(laToi?[['↗ Mở M2.2 Sổ đầu bài','',()=>{closeM();
+    toast('🔗 Deep-link <code>/M2.2?ctx='+id+'&amp;action=ghi&amp;return=M2.9</code> — tiết '+t+' ngày '+dstr(d)+'.')}]]:[]));
 }
 
 /* ===== T4 · BAI TAP VE NHA (chieu tu M2.3) =====
    Don vi hien thi la HS × MON trong mot KHUNG THOI GIAN, khong phai tung luot giao:
    nhin theo tung luot thi khong thay em nao truot nhieu mon cung luc. */
+/* KGLH-1A luot bo sung (23/9/2026 · dieu kien di kem chot S12): SAP XEP THEO SO BAI CHUA NOP.
+   Vi sao co: 3Z go o GVCN khoi m2.3.theo_doi_nop_bai o M5.9; thu DUY NHAT GVCN mat khi do la cach xep hoc sinh
+   theo so bai no. Moi thu khac ho da co o chinh tab nay. Bu truoc khi go — khong de khoang trong giua hai luot.
+   Ap cho MOI VAI doc duoc tab, khong rieng GVCN. Van la ban chieu chi doc: sap xep khong ghi gi. */
+const noBTVN=(l,h,k,ms)=>{const r=btvnHS(l,h,k,ms); return r.tong-r.nop};
+/* Xep giam dan theo so bai no; bang no thi theo TEN (sapTen) — thu tu on dinh, mo lai van nhu cu */
+const hsTheoNo=(l,k,ms)=>hsLop(l).slice().sort((a,b)=>noBTVN(l,b,k,ms)-noBTVN(l,a,k,ms)||sapTen(a,b));
+const SAP4={ten:'Theo tên',no:'Theo số bài chưa nộp'};
 function t4(){
- mo.k4=mo.k4||'w4';
- const hs=hsLop(cur), ms=msXem(cur), bs=btvnKhung(cur,mo.k4).filter(b=>ms.indexOf(b.mon)>=0), ts=tuanTrongKhung(mo.k4);
+ mo.k4=mo.k4||'w4'; mo.s4=mo.s4||'ten';
+ const ms=msXem(cur), bs=btvnKhung(cur,mo.k4).filter(b=>ms.indexOf(b.mon)>=0), ts=tuanTrongKhung(mo.k4);
+ const theoNo=mo.s4==='no';
+ const hs=theoNo?hsTheoNo(cur,mo.k4,ms):hsLop(cur);
  let h=bandChu('T4')
   +'<div class="navbar"><b style="font-size:13px">Khung thống kê:</b><div class="seg">'
   +Object.keys(KHUNG).map(k=>'<button class="'+(mo.k4===k?'on':'')+'" data-a="k4" data-v="'+k+'">'
     +KHUNG[k].t+'</button>').join('')+'</div>'
+  +'<div class="gsep"></div><b style="font-size:13px">Sắp xếp:</b><div class="seg">'
+  +Object.keys(SAP4).map(k=>'<button class="'+(mo.s4===k?'on':'')+'" data-a="s4" data-v="'+k+'">'
+    +SAP4[k]+(k==='no'?' ↓':'')+'</button>').join('')+'</div>'
   +'<div class="gsep"></div><span class="num">Tuần <b>'+ts[0]+'</b> – <b>'+ts[ts.length-1]+'</b> · '
   +'<b>'+bs.length+'</b> lượt giao</span></div>';
  if(!bs.length) return h+'<div class="listw"><div class="empty">Không có lượt giao bài nào trong khung này.'
@@ -1673,7 +2123,9 @@ function t4(){
        +(thieu>=2?' style="color:var(--red);font-weight:700"'
        :thieu===1?' style="color:var(--amber)"':'')+'>'+r.nop+'/'+r.tong+'</td>'}).join('')
    +'<td class="tb'+(tg.tong?' oc':'')+'"'+(tg.tong?' data-a="bt" data-h="'+x+'" title="Bấm để xem mọi môn"':'')
-     +((tg.tong-tg.nop)>=3?' style="color:var(--red)"':'')+'>'+tg.nop+'/'+tg.tong+'</td></tr>'}).join('')
+     +((tg.tong-tg.nop)>=3?' style="color:var(--red)"':'')+'>'+tg.nop+'/'+tg.tong
+     /* Chi hien khi dang sap theo so bai no — dang xep theo cai gi thi bay con so do ra, khong bat nguoi doc tru nham */
+     +(theoNo?'<div class="hint" style="margin:0">nợ <b>'+(tg.tong-tg.nop)+'</b></div>':'')+'</td></tr>'}).join('')
   +'<tr><td class="stt"></td><td class="tenhs"><b>Tỷ lệ nộp của lớp</b></td>'
   +ms.map(m=>{const bm=bs.filter(b=>b.mon===m);
     if(!bm.length) return '<td class="oc trong">–</td>';
@@ -1686,11 +2138,51 @@ function t4(){
   +'</table></div>'
   +'<div class="lgd"><span><b>Bấm vào một ô</b> để xem từng lượt bài của em đó</span>'
   +'<span>Ô <b>–</b>: môn này <b>không giao bài</b> trong khung — khác với nộp 0/N</span>'
+  +(theoNo?'<span>Đang xếp <b>theo số bài chưa nộp</b>, giảm dần — em nợ nhiều nhất lên đầu; bằng nhau thì theo tên. '
+    +'Số nợ đếm trên <b>'+KHUNG[mo.k4].t.toLowerCase()+'</b>, đổi khung thì thứ tự đổi theo.</span>'
+   :'<span>Đang xếp <b>theo tên</b> — đổi sang <b>Theo số bài chưa nộp</b> để tìm nhanh em cần nhắc.</span>')
   +'<span class="dnote" style="margin-left:auto">Đổi khung thống kê để thấy <b>xu hướng</b>: một em '
   +'2 tuần gần nhất tệ hơn hẳn cả kỳ là tín hiệu cần gọi gia đình, mà nhìn số cả kỳ thì bị pha loãng.</span></div></div>';
  return h;
 }
 
+/* ══════════ DTHN-2B (24/9/2026) — CHOT §7.2 `DT-E` b: popup «Bài tập về nhà — <tên HS>» XEM CHI TIẾT NỘP BÀI TẠI CHỖ ══════════
+   Trước: popup chỉ có trạng thái nộp + nút «↗ Mở M2.3 Bài tập về nhà». Từ `DT-E` a, M2.3 chỉ hiện lượt của MÔN NGƯỜI DÙNG DẠY
+   (kể cả GVCN) ⇒ GVCN bấm sang M2.3 xem bài môn khác thì M2.3 KHÔNG có lượt đó — lối dẫn vào chỗ trống.
+   Nay: chi tiết nộp bài của em (đề · hạn · trạng thái nộp · thời điểm nộp · kết quả chấm / nhận xét) hiện NGAY TRONG POPUP,
+   CHỈ XEM — ⛔ không nút sửa, ⛔ không nút thao tác, ⛔ không lối sang M2.3 (nút duy nhất: Đóng).
+   Phạm vi = khung thống kê ĐANG CHỌN ở T4 (mo.k4) — cùng tập lượt với ô vừa bấm.
+   Nguồn chi tiết: BẢN CHÉP RIÊNG của M2.9 — hàm dẫn xuất TẤT ĐỊNH từ (lớp · môn · tuần · mã HS), ⛔ không gọi rnd()
+   (không xê chuỗi ngẫu nhiên — luật DH-4: BTVN · HS · mọi mảng cũ giống hệt), ⛔ không đọc chéo demo M2.3.
+   Trường theo hợp đồng bài nộp M2.3 §8f (lát cắt phụ huynh vốn thấy); BỎ các dấu NỘI BỘ: người xác nhận · lúc bấm ·
+   dấu «chấm hàng loạt» · nhãn «nộp sau khi công bố đáp án» — sổ điều hành của giáo viên chủ lượt, không phải việc của GVCN. */
+const bam=s=>{let x=2166136261; for(let i=0;i<s.length;i++){x^=s.charCodeAt(i); x=Math.imul(x,16777619)>>>0} return x};
+const bamF=s=>bam(s)/4294967296;
+const NX_TOT=['Trình bày sạch, lập luận rõ.','Làm đủ, có tự sửa lỗi sau khi đối chiếu.','Tiến bộ so với bài trước.'];
+const NX_THAP=['Chưa làm câu 3; em làm lại và nộp bổ sung.','Bài làm sơ sài, thiếu các bước giải.','Nhầm yêu cầu đề — xem lại phần chữa trên lớp.'];
+function chiTietNop(b,h){
+ const k=b.l+'|'+b.mon+'|'+b.tuan, kh=k+'|'+h, th=capHoc(b.l)==='TH';
+ const tu=1+bam(k+'|b')%4, trang=20+b.tuan*6+bam(k+'|p')%5;
+ const o={de:'Làm bài '+tu+' – '+(tu+2+bam(k+'|c')%3)+' trang '+trang+' SGK '+b.mon+'; nộp ảnh bài làm hoặc nộp vở trên lớp.',
+  cham:bamF(k+'|cm')<0.85};                 /* ~15% lượt «Không chấm» — chỉ ghi nhận nộp (M2.3 §8f: chế độ chấm) */
+ if(!b.nop[h]) return o;
+ const span=b.han-b.giao;
+ let ngay=Math.min(b.giao+(span>0?1+bam(kh+'|n')%span:0),HOMNAY), tre=0;
+ if(bamF(kh+'|t')<0.08&&b.han<HOMNAY){tre=Math.min(1+bam(kh+'|tt')%2,HOMNAY-b.han); ngay=b.han+tre}
+ o.giay=bamF(kh+'|g')<0.12;                 /* nộp giấy — giáo viên giao bài xác nhận; chỉ có NGÀY (M2.3 §8f) */
+ if(o.giay&&laCN(ngay)){ngay--; if(tre)tre--}
+ o.ngay=ngay; o.tre=tre;
+ if(!o.giay){const p=18*60+bam(kh+'|h')%300; o.gio=String((p/60)|0).padStart(2,'0')+':'+String(p%60).padStart(2,'0')}
+ if(o.cham&&ngay<=HOMNAY-2&&bamF(kh+'|dc')<0.85){
+  const r=bamF(kh+'|m');
+  o.muc=th?(r<0.35?'Hoàn thành tốt':r<0.9?'Hoàn thành':'Chưa hoàn thành'):(r<0.9?'Đạt':'Chưa đạt');
+  const thap=o.muc==='Chưa hoàn thành'||o.muc==='Chưa đạt';
+  o.thap=thap;
+  if(thap) o.nx=NX_THAP[bam(kh+'|x')%NX_THAP.length];              /* mức thấp nhất bắt buộc nhận xét (M2.3 §8.4.2) */
+  else if(bamF(kh+'|xx')<0.35) o.nx=NX_TOT[bam(kh+'|x')%NX_TOT.length];
+ }
+ return o;
+}
 /* Chi tiet tung luot BTVN cua mot hoc sinh — mot mon hoac moi mon.
    O trong bang chi noi "3/5"; cau hoi tiep theo cua GVCN luon la "thieu bai nao". */
 function popBT(h,m){
@@ -1698,29 +2190,40 @@ function popBT(h,m){
  const bs=btvnKhung(cur,mo.k4).filter(b=>m==null?ms.indexOf(b.mon)>=0:b.mon===m).sort((a,b)=>b.giao-a.giao);
  const nop=bs.filter(b=>b.nop[h]).length;
  const ts=tuanTrongKhung(mo.k4);
+ const ct=bs.map(b=>chiTietNop(b,h));
+ const daCham=ct.filter(c=>c.muc).length;
  modal('Bài tập về nhà — '+esc(HS[h].n)+(m?' · môn '+esc(m):' · tất cả các môn'),
-  '<div class="ro">Khung thống kê: <b>'+KHUNG[mo.k4].t+'</b> (tuần '+ts[0]+' – '+ts[ts.length-1]+'). '
-  +'Dữ liệu chủ sở hữu là <b>M2.3 Bài tập về nhà</b> — ở đây chỉ đọc, nhắc nhở và chấm bài làm ở menu chủ.</div>'
+  '<div class="ro">👁 <b>Chỉ xem</b> — chi tiết nộp bài của em trong khung đang chọn ở T4: <b>'+KHUNG[mo.k4].t+'</b> '
+  +'(tuần '+ts[0]+' – '+ts[ts.length-1]+'). Không sửa, không thao tác, không chuyển sang menu khác: chấm, nhắc học sinh, '
+  +'xác nhận bài nộp giấy là việc của <b>giáo viên giao bài</b> ở menu chủ <b>M2.3</b>.</div>'
   +'<div class="sumbar"><div class="it g"><b>'+nop+'</b>Đã nộp</div>'
   +'<div class="it'+(bs.length-nop?' r':'')+'"><b>'+(bs.length-nop)+'</b>Chưa nộp</div>'
   +'<div class="it"><b>'+bs.length+'</b>Tổng lượt giao</div>'
-  +'<div class="it"><b>'+(bs.length?Math.round(nop/bs.length*100):0)+'%</b>Tỷ lệ nộp</div></div>'
-  +(bs.length?'<table class="tb"><tr><th>Tên bài tập</th>'+(m?'':'<th style="width:110px">Môn</th>')
-    +'<th style="width:110px">Ngày giao</th><th style="width:110px">Hạn nộp</th>'
-    +'<th style="width:130px">Trạng thái nộp</th></tr>'
-   +bs.map(b=>{const ok=b.nop[h], qua=!ok&&b.han<HOMNAY;
-     return '<tr><td><b>'+esc(b.ten)+'</b><div class="hint">'+esc(gvn(b.gv))+' giao · tuần '+b.tuan+'</div></td>'
+  +'<div class="it"><b>'+(bs.length?Math.round(nop/bs.length*100):0)+'%</b>Tỷ lệ nộp</div>'
+  +'<div class="it"><b>'+daCham+'</b>Đã chấm</div></div>'
+  +(bs.length?'<table class="tb ctnop"><tr><th>Bài tập</th>'+(m?'':'<th style="width:92px">Môn</th>')
+    +'<th style="width:84px">Giao · Hạn</th><th style="width:150px">Nộp bài</th><th style="width:170px">Kết quả chấm</th></tr>'
+   +bs.map((b,i)=>{const c=ct[i], ok=b.nop[h], qua=!ok&&b.han<HOMNAY;
+     return '<tr><td><b>'+esc(b.ten)+'</b><div class="hint">'+esc(c.de)+'</div>'
+      +'<div class="hint">'+esc(gvn(b.gv))+' giao · tuần '+b.tuan+'</div></td>'
       +(m?'':'<td>'+esc(b.mon)+'</td>')
-      +'<td>'+dfull(b.giao)+'</td><td>'+dfull(b.han)+'</td>'
+      +'<td>'+dfull(b.giao)+'<div class="hint">hạn '+dfull(b.han)+'</div></td>'
       +'<td>'+(ok?'<span class="st2 o">✓ Đã nộp</span>'
+         +(c.tre?' <span class="st2 w">trễ '+c.tre+' ngày</span>':'')
+         +'<div class="hint">'+(c.giay?'Nộp giấy · ngày '+dfull(c.ngay):'Qua App · '+c.gio+' '+dfull(c.ngay))+'</div>'
         :qua?'<span class="st2 r">✕ Chưa nộp — đã quá hạn</span>'
-        :'<span class="st2 w">Chưa nộp — còn hạn</span>')+'</td></tr>'}).join('')
+        :'<span class="st2 w">Chưa nộp — còn hạn</span>')+'</td>'
+      +'<td>'+(!c.cham?'<span class="st2 n">Lượt không chấm</span><div class="hint">chỉ ghi nhận đã nộp</div>'
+        :!ok?'<span class="hint">—</span>'
+        :c.muc?'<span class="st2 '+(c.thap?'r':'o')+'">'+esc(c.muc)+'</span>'
+          +(c.nx?'<div class="hint"><i>«'+esc(c.nx)+'»</i></div>':'')
+        :'<span class="st2 n">Chưa chấm</span>')+'</td></tr>'}).join('')
    +'</table>'
    :'<div class="empty">Không có lượt giao bài nào trong khung này.</div>')
   +'<div class="hint" style="margin-top:9px">Trạng thái <b>Chưa nộp — còn hạn</b> khác hẳn '
-  +'<b>Chưa nộp — đã quá hạn</b>: gộp làm một thì giáo viên chủ nhiệm nhắc nhầm em còn đang trong hạn nộp.</div>',
-  [['Đóng','',closeM],['↗ Mở M2.3 Bài tập về nhà','',()=>{closeM();
-    toast('🔗 Deep-link sang <b>M2.3 Bài tập về nhà</b>'+(m?' — môn '+esc(m):'')+', lớp '+esc(cur)+'.')}]]);
+  +'<b>Chưa nộp — đã quá hạn</b>: gộp làm một thì giáo viên chủ nhiệm nhắc nhầm em còn đang trong hạn nộp. '
+  +'BTVN <b>không có điểm số</b> — mức đánh giá theo cấp học, không chảy vào học bạ.</div>',
+  [['Đóng','',closeM]]);
 }
 
 /* ===== T5 · BANG DIEM LOP — moi diem la MOT THE ===== */
@@ -1835,7 +2338,7 @@ function t6(){
   if(r&&r.tt!=='cm'&&r.tt!=='dm'){vang++; hsv.add(x); if(r.tt==='vkp')vkp++}}));
  const batY=BAT_YTHUC[capHoc(cur)];
  const ys=[]; ds.forEach(d=>[1,2,3,4,5].forEach(t=>{const sx=SDB[sdbk(cur,d,t)]; if(sx)ys.push(sx.y)}));
- const yTB=ys.length?(ys.filter(y=>y==='T').length/ys.length>0.7?'Tốt':ys.filter(y=>y==='TB').length>2?'Trung bình':'Khá'):'—';
+ const yTB=yThucTB(ys);   /* SDBG-1E: mot ham chung voi dong «Y thuc tuan» cua T3 */
  const ktklT=ktklLop(cur).filter(x=>x.ngay>=ds[0]&&x.ngay<=ds[ds.length-1]);
  const btT=BTVN.filter(x=>x.l===cur&&x.tuan===tuan);
  const sd=SAODO[cur+'|'+tuan]||{d:0,h:0};
@@ -1848,7 +2351,7 @@ function t6(){
   +'<tr><td><b>Chuyên cần</b></td><td>M2.9/T2</td><td><b>'+hsv.size+'</b> học sinh vắng · <b>'+vang
    +'</b> lượt vắng, trong đó <b style="color:var(--red)">'+vkp+' lượt không phép</b></td></tr>'
   +(batY?'<tr><td><b>Ý thức lớp</b></td><td>M2.2</td><td>Trung bình các tiết trong tuần: <b>'+yTB+'</b> · '
-   +'<b>'+knT+'</b> lượt khen ngợi, <b>'+pbT+'</b> lượt phê bình trong sổ đầu bài</td></tr>':'')
+   +'<b>'+knT+'</b> lượt khen ngợi, <b>'+pbT+'</b> lượt nhắc nhở trong sổ đầu bài</td></tr>':'')
   +'<tr><td><b>Khen thưởng · Kỷ luật</b></td><td>M2.10 · M2.7</td><td>'+(ktklT.length
    ?ktklT.map(x=>(x.loai==='kt'?'🏅 ':'⚠ ')+esc(HS[x.h].n)+' — '+esc(x.hinh)).join('<br>')
    :'<span class="hint">không có</span>')+'</td></tr>'
@@ -1881,7 +2384,7 @@ function t6(){
    return '<tr'+(mo.hs===x?' style="background:#eff6ff;box-shadow:inset 3px 0 0 var(--brand)"':'')+'>'
    +'<td><button class="rolnk" style="font-size:12.5px" data-a="hsw" data-v="'+x+'">'+esc(HS[x].n)+'</button>'
    +'<div class="hint">'+(ng.tong?'<b style="color:var(--amber)">vắng '+ng.tong+'</b> · ':'')
-    +(sk.filter(y=>y.loai==='pb').length?'<b style="color:var(--red)">phê bình '
+    +(sk.filter(y=>y.loai==='pb').length?'<b style="color:var(--red)">nhắc nhở '
       +sk.filter(y=>y.loai==='pb').length+'</b> · ':'')
     +(sk.filter(y=>y.loai==='kn').length?'<b style="color:var(--green)">khen '
       +sk.filter(y=>y.loai==='kn').length+'</b>':'')
@@ -1896,7 +2399,7 @@ function t6(){
      :(b.nxhs[x]?esc(b.nxhs[x]):'<span class="hint">—</span>'))+'</td></tr>'}).join('')
   +'</table><div class="lgd"><span><b>Không bắt buộc nhập cho tất cả</b> — chỉ nhập cho em cần chú ý</span>'
   +(BAT_RL_TUAN?'<span>🔒 cột ghi chú rèn luyện <b>không hiện cho phụ huynh</b></span>':'')
-  +'<span class="dnote" style="margin-left:auto">Dòng phụ dưới tên tóm tắt <b>vắng · phê bình · khen</b> '
+  +'<span class="dnote" style="margin-left:auto">Dòng phụ dưới tên tóm tắt <b>vắng · nhắc nhở · khen</b> '
   +'để biết nên viết cho em nào.</span></div></div>'
   +(mo.hs?panelHS(mo.hs,ds,b):'<div class="panel"></div>')
   +'</div>';
@@ -1974,7 +2477,7 @@ function panelHS(x,ds,b){
     +(y.loai==='pb'?';border-color:#fecaca':'')+'">'+(y.loai==='kn'?'🏅':'⚠')+' <b>'+dfull(y.d)
     +' tiết '+y.t+' · '+esc(y.mon)+'</b><br>'+esc(y.ly)
     +'<div class="hint">'+esc(gvn(y.gv))+' ghi</div></div>').join('')
-   :'<div class="hint">Không có phê bình hay khen ngợi nào trong tuần.</div>')
+   :'<div class="hint">Không có nhắc nhở hay khen ngợi nào trong tuần.</div>')
   +'</div></div>'
 
   +'<div class="card"><div class="ch">🏅 Khen thưởng · Kỷ luật cấp trường</div><div class="cb p">'
@@ -2005,7 +2508,7 @@ function panelHS(x,ds,b){
   +'<tr><td>Nhận xét riêng của <b>bạn khác</b></td><td>⛔ <b>Không bao giờ</b></td></tr>'
   +'<tr><td>Xếp hạng của con trong lớp</td><td>⛔ <b>Không có</b></td></tr>'
   +'</table>'
-  +'<div class="hint" style="margin-top:8px">Lời phê bình trong sổ đầu bài <b>không đẩy nguyên văn sang phụ huynh</b>: '
+  +'<div class="hint" style="margin-top:8px">Lời nhắc nhở trong sổ đầu bài <b>không đẩy nguyên văn sang phụ huynh</b>: '
   +'đó là ghi chép quản lý lớp của giáo viên bộ môn, đọc rời khỏi ngữ cảnh tiết học thì dễ thành lời buộc tội. '
   +'Muốn nói với gia đình thì GVCN <b>viết lại trong nhận xét riêng</b>.</div>'
   +'</div></div>'
@@ -2122,7 +2625,7 @@ function t7THCS(hs,sua){
     +esc(HS[x].n)+'</button></td>'
    +'<td class="gc"><span class="hint" style="margin:0">Nghỉ <b'+(ngN>45?' style="color:var(--red)"':'')+'>'+ngN
      +' buổi/năm</b> <i>(kỳ này '+ngK.tong+', không phép '+ngK.vkp+')</i> · BTVN <b>'+bt.nop+'/'+bt.tong+'</b>'
-     +(sk.filter(s=>s.loai==='pb').length?' · <b style="color:var(--red)">phê bình '
+     +(sk.filter(s=>s.loai==='pb').length?' · <b style="color:var(--red)">nhắc nhở '
        +sk.filter(s=>s.loai==='pb').length+'</b>':'')
      +(kls.length?' · '+kls.map(k=>(k.loai==='kt'?'🏅':'⚠')+' '+esc(k.hinh)).join(', '):'')+'</span></td>'
    +'<td>'+(namView
@@ -2205,7 +2708,7 @@ function panelKy(x){
   +'<div class="it'+(tv?' v':'')+'"><b>'+tv+'</b>Tiết vắng</div>'
   +'<div class="it'+(bt.tong&&bt.nop/bt.tong<0.7?' r':bt.tong&&bt.nop/bt.tong<0.85?' w':' g')+'"><b>'
    +(bt.tong?Math.round(bt.nop/bt.tong*100)+'%':'–')+'</b>Nộp BTVN</div>'
-  +'<div class="it'+(pb.length?' r':'')+'"><b>'+pb.length+'</b>Bị phê bình</div>'
+  +'<div class="it'+(pb.length?' r':'')+'"><b>'+pb.length+'</b>Bị nhắc nhở</div>'
   +'<div class="it'+(kn.length?' g':'')+'"><b>'+kn.length+'</b>Được khen trong tiết</div></div>'
   +'<div class="wgrid">'
   +'<div class="card"><div class="ch">📚 Nộp bài theo môn — cả học kỳ</div><div class="cb p">'
@@ -2370,15 +2873,267 @@ function panelCD(t){
   +'<div class="cact" style="padding-left:0;margin-top:10px">'+act+'</div></div></div>';
 }
 
+/* ═══ T9 · HOP PHU HUYNH — M2.9 SO HUU (nghiep vu nguon nh4.10 · giao dien M2.9 §7b) ═══
+   Dung 23/9/2026, cum HPH — sau khi nam diem H1…H5 cua nh4.10 §9 duoc chot tron.
+   Truoc do tab nay CO NHAN nhung RONG, de loi tat T9 khong gay duong dan (§11 #13).
+   Don vi MOT DONG = MOT LUOT MOI. ⛔ Khong phai mot cuoc hop, ⛔ khong phai mot thong bao. */
+const DOT_HOP={ten:'Họp PHHS giữa học kỳ I 2026-2027',tu:59,den:61,mo:1};
+/* H2 — «Đợt» CHI LA NHAN CHU, khong phai ban ghi ai quan ly. Khong man hinh Dot, khong vong doi Dot.
+   Dung Dot thanh thuc the khi va chi khi cham mot trong BON dau hieu nh4.10 §5.4. */
+const TL={du:{t:'Sẽ dự',c:'o'},khong:{t:'Không dự được',c:'w'},chua:{t:'Chưa trả lời',c:'n'}};
+const PV={lop:'Cả lớp',chon:'Chọn học sinh',mot:'Một học sinh'};
+const TTLM={nhap:['n','Nháp'],gui:['b','Đã gửi'],qua:['o','Đã diễn ra'],huy:['r','Đã hủy']};
+let LMSEQ=0;
+const LM=[];
+function lmAdd(o){
+ const x=Object.assign({id:'LM-'+String(++LMSEQ).padStart(2,'0'),dot:'',pv:'lop',hs:[],gio:'07:30 – 09:30',
+  phong:null,nd:'',tt:'gui',at:HOMNAY-2,by:null,nhac:null,huy:null,sua:null,ph:{},cm:{}},o);
+ x.phong=x.phong||PHONG[x.l]; x.by=x.by||LOP[x.l].gvcn; LM.push(x); return x;
+}
+/* Nguoi duoc moi — rang buoc 3: danh sach NO RA LUC GUI. Luot «Cả lớp» doc si so VAN HANH (bo em da roi lop). */
+const lmMoi=x=>x.pv==='lop'?hsLop(x.l):x.hs.filter(h=>HS[h]);
+const lmDs=l=>LM.filter(x=>x.l===l);
+/* «Đã diễn ra» la trang thai DAN XUAT tu ngay hop — ⛔ khong co nut «kết thúc» (nh4.10 §3, cung khuon M6.8) */
+const lmTrang=x=>x.tt==='nhap'?'nhap':x.tt==='huy'?'huy':x.d<HOMNAY?'qua':'gui';
+const lmSapToi=x=>lmTrang(x)==='gui'||lmTrang(x)==='nhap';
+/* BA SO TACH RIENG — ⛔ khong bao gio gop «chưa trả lời» vao «không dự được» (nh4.10 §4) */
+function lmSo(x){
+ const ds=lmMoi(x); let du=0,kh=0;
+ ds.forEach(h=>{const r=x.ph[h]; if(r&&r.tl==='du')du++; else if(r&&r.tl==='khong')kh++});
+ return {du:du,kh:kh,chua:ds.length-du-kh,tong:ds.length};
+}
+const lmChuaTL=x=>lmMoi(x).filter(h=>!x.ph[h]);
+const baSo=s=>'<span class="st2 o">'+s.du+' sẽ dự</span> <span class="st2 w">'+s.kh+' không dự được</span> '
+ +'<span class="st2 n">'+s.chua+' chưa trả lời</span>';
+
+/* ── Du lieu mau. Gieo SAU moi seed khac nen khong doi mot con so nao cua cac tab cu. ── */
+(function(){
+ const l='9A1', ds=hsLop(l);
+ /* ① Dot dau nam — DA DIEN RA. Co ghi co mat mot phan: GVCN ghi 8/11 nha roi thoi, va do KHONG phai viec con ton. */
+ const a=lmAdd({l:l,ten:'Họp phụ huynh đầu năm học',dot:'Họp PHHS đầu năm 2026-2027',d:12,at:5,
+  nd:'Kính mời quý phụ huynh tới dự buổi họp đầu năm: phổ biến kế hoạch năm học, bầu Ban đại diện cha mẹ học sinh lớp.'});
+ ds.forEach((h,i)=>{ if(i%6!==4) a.ph[h]={tl:i%5===3?'khong':'du',at:6+(i%5),gc:i%5===3?'Nhà có việc đột xuất':'',thay:''}; });
+ ds.slice(0,8).forEach((h,i)=>{a.cm[h]=i%4!==2});
+ /* ② Dot giua ky — DANG MO, chua nhac lan nao. Day la luot de thu gan het cac luong. */
+ const b=lmAdd({l:l,ten:'Họp phụ huynh giữa học kỳ I',dot:DOT_HOP.ten,d:DOT_HOP.den,at:HOMNAY-3,
+  nd:'Kính mời quý phụ huynh tới dự buổi sơ kết giữa học kỳ I: kết quả học tập, nền nếp và kế hoạch ôn tập cuối kỳ.'});
+ ds.forEach((h,i)=>{ if(i%3===0) b.ph[h]={tl:'du',at:HOMNAY-2+(i%3),gc:'',thay:i===3?'Bà nội cháu — bà Nguyễn Thị Tâm':''};
+  else if(i%7===2) b.ph[h]={tl:'khong',at:HOMNAY-1,gc:'Cháu có em nhỏ, nhà không có người trông',thay:''}; });
+ b.ph[ds[6]]={tl:'du',at:HOMNAY-1,gc:'',thay:'Ông ngoại cháu đi thay'};
+ /* ③ Moi RIENG mot hoc sinh — chua tra loi. Kiem tra ba rang buoc §2.1: khong lo danh sach, khong danh muc ly do,
+    ⛔ khong phai buoc cua quy trinh ky luat. */
+ lmAdd({l:l,ten:'Mời phụ huynh trao đổi về tình hình học tập',pv:'mot',hs:[ds[5]],d:HOMNAY+2,gio:'16:00 – 16:45',
+  phong:'Phòng Hội đồng',at:HOMNAY-1,
+  nd:'Kính mời anh/chị sắp xếp thời gian tới trường để cô trao đổi về tình hình học tập của cháu trong tháng vừa qua.'});
+ /* ④ Nhap — chua gui thi ⛔ khong ai ngoai GVCN nhin thay, va xoa duoc */
+ lmAdd({l:l,ten:'Họp phụ huynh cuối học kỳ I',dot:'Họp PHHS cuối kỳ I 2026-2027',d:HOMNAY+30,tt:'nhap',at:HOMNAY,
+  nd:''});
+ /* ⑤ Luot moi NHOM o lop khac — «Chọn học sinh»: ⛔ chi thong bao ca nhan, khong dang nhom lop */
+ const c=lmAdd({l:'8A1',ten:'Trao đổi về nền nếp tổ 2',pv:'chon',hs:hsLop('8A1').slice(2,7),d:HOMNAY+4,
+  gio:'15:30 – 16:30',at:HOMNAY-1,nd:'Kính mời quý phụ huynh tới trường để cô trao đổi về nền nếp học tập của các cháu tổ 2.'});
+ c.ph[hsLop('8A1')[2]]={tl:'du',at:HOMNAY,gc:'',thay:''};
+ c.ph[hsLop('8A1')[4]]={tl:'khong',at:HOMNAY,gc:'Tôi đi công tác tới cuối tuần',thay:''};
+ /* ⑥ DA HUY — ly do bat buoc, va ban ghi VAN CON trong danh sach (nh4.10 §3) */
+ const e=lmAdd({l:'9A2',ten:'Họp phụ huynh giữa học kỳ I',dot:DOT_HOP.ten,d:HOMNAY-4,at:HOMNAY-9,tt:'huy',
+  huy:{ly:'Trường trưng dụng phòng học cho đợt khảo sát chất lượng — buổi họp dời sang tuần sau, cô sẽ báo lịch mới.',
+   at:HOMNAY-6,by:'chi'},nd:'Kính mời quý phụ huynh tới dự buổi sơ kết giữa học kỳ I.'});
+ hsLop('9A2').slice(0,4).forEach(h=>{e.ph[h]={tl:'du',at:HOMNAY-7,gc:'',thay:''}});
+})();
+
 function t9(){
- return '<div class="listw"><div class="empty" style="padding:34px 20px"><b>👪 Họp phụ huynh — đã đặc tả, demo chưa dựng</b>'
-  +'<div class="hint" style="margin-top:9px;max-width:640px;margin-left:auto;margin-right:auto;text-align:left">'
-  +'Tab này thuộc <b>M2.9</b> <i>(nghiệp vụ nguồn nh4.10)</i>. Mô tả giao diện ở tài liệu M2.9 <b>§7b</b>: một dòng = một '
-  +'<b>lượt mời</b> · ba phạm vi <i>cả lớp / chọn học sinh / một học sinh</i> · phản hồi <b>ba số tách riêng</b> · '
-  +'<b>nhắc đúng một lần</b> · hủy bắt buộc lý do · ghi có mặt không bắt buộc. '
-  +'<b>GVCN là vai duy nhất tạo lượt mời</b>; BGH chỉ xem.<br><br>'
-  +'⏳ Chưa dựng vì điểm chặn <b>H1</b> <i>(phụ huynh trả lời lượt mời = mở lại mức ✅ XÁC NHẬN trên App PH-HS)</i> chưa chốt — '
-  +'dựng trước thì phần theo dõi phản hồi là dữ liệu giả. Lối tắt <b>T9</b> mở đúng chỗ này để đường dẫn không gãy.</div></div></div>';
+ const l=cur, ln=lens(l), ghi=(role==='FULL'||ln==='cn');
+ mo.t9f=mo.t9f||'sap';
+ const all=lmDs(l).filter(x=>ghi||x.tt!=='nhap');     /* ⛔ Nháp: ngoai GVCN thi khong ton tai */
+ const sap=all.filter(lmSapToi), qua=all.filter(x=>!lmSapToi(x));
+ const ds=mo.t9f==='sap'?sap:qua;
+ if(mo.t9&&!ds.some(x=>x.id===mo.t9)) mo.t9=null;
+ if(mo.t9===undefined&&ds.length) mo.t9=ds[0].id;
+ let h='<div class="navbar"><div class="seg">'
+  +[['sap','Sắp tới ('+sap.length+')'],['qua','Đã qua ('+qua.length+')']]
+   .map(([k,t])=>'<button class="'+(mo.t9f===k?'on':'')+'" data-a="t9f" data-v="'+k+'">'+t+'</button>').join('')+'</div>'
+  +'<div class="gsep"></div>'
+  +(ghi?'<button class="btn p sm" data-a="t9Tao">＋ Tạo lượt mời</button>'
+    :'<span class="hint" style="margin:0">Vai <b>'+esc(R().cd)+'</b> chỉ <b>xem</b> — cuộc họp lớp thì <b>giáo viên chủ nhiệm tạo</b> '
+     +'<i>(nh4.10 §6 · chốt H5: không có cửa duyệt nào chen vào việc gặp phụ huynh)</i>.</span>')
+  +'</div>';
+ h+='<div class="ro">🔒 Tab này do <b>M2.9 sở hữu</b> — nghiệp vụ nguồn <b>nh4.10 Họp phụ huynh</b>. Một dòng = <b>một lượt mời</b>, '
+  +'⛔ không phải một thông báo <i>(M8.1)</i> và ⛔ không phải một sự kiện trường <i>(M6.8)</i>: chỉ ở đây mới có '
+  +'<b>thời điểm diễn ra · địa điểm · một câu trả lời cho mỗi người được mời · kết quả có mặt</b>. '
+  +'Bản ghi tạo ở đây, <b>việc phát tán do M8.1 làm</b> — '
+  +'<button class="rolnk" data-a="dl" data-v="M8.1 Thông báo chủ động">↗ M8.1</button></div>';
+ /* Dai dot dang mo — §7b.6. La THONG TIN cho BGH va GVCN, khong phai viec ton cua ai. */
+ if(DOT_HOP.mo&&HOMNAY<=DOT_HOP.den){
+  const co=lmDs(l).some(x=>x.dot===DOT_HOP.ten&&x.tt!=='huy');
+  h+='<div class="'+(co?'info':'warn')+'">'+(co?'✓':'🟠')+' Đợt <b>'+esc(DOT_HOP.ten)+'</b> đang mở — '
+   +dstr(DOT_HOP.tu)+' đến '+dstr(DOT_HOP.den)+'. '
+   +(co?'Lớp '+esc(l)+' <b>đã lên lịch</b>.':'Lớp '+esc(l)+' <b>chưa lên lịch họp</b>.')
+   +' <span class="hint" style="display:inline">«Đợt» ở đây chỉ là <b>nhãn chữ</b> trên lượt mời — ⛔ không có màn hình quản lý đợt, '
+   +'⛔ không có hồ sơ đợt <i>(chốt <b>H2</b>: họp toàn trường không phải một cuộc họp, nó là N cuộc họp cùng một buổi; '
+   +'BGH điều phối bằng M8.1 và theo dõi bằng dải này)</i>.</span></div>';
+ }
+ if(!ds.length) return h+'<div class="listw"><div class="empty" style="padding:34px 20px">'
+  +'<b>'+(mo.t9f==='sap'?'Lớp '+esc(l)+' chưa có lượt mời nào sắp tới.':'Chưa có lượt mời nào đã qua.')+'</b>'
+  +(ghi&&mo.t9f==='sap'?'<div class="hint" style="margin-top:8px">Bấm <b>＋ Tạo lượt mời</b> — ba phạm vi mời: cả lớp · chọn học sinh · một học sinh.</div>':'')
+  +'</div></div>';
+ const cur1=ds.find(x=>x.id===mo.t9);
+ h+='<div class="stage'+(cur1?' open':'')+'"><div class="listw">'
+  +'<div class="grow">👪 Lượt mời của lớp '+esc(l)+'<span class="ct">'+ds.length+'</span></div>'
+  +ds.map(rowLM).join('')+'</div>'+(cur1?panelLM(cur1):'<div class="panel"></div>')+'</div>';
+ return h+'<div class="lgd dnote" style="display:block">🛑 <b>«Chưa trả lời» không bao giờ tự thành «Không dự được»</b> — '
+  +'và màn hình <b>không có ô «dự kiến vắng»</b>. Rất nhiều phụ huynh không bấm gì rồi vẫn đến họp: gộp hai con số lại thì '
+  +'giáo viên chủ nhiệm xếp 24 ghế cho 38 người tới <i>(nh4.10 §4)</i>. Bốn điều lượt mời không làm: ⛔ không chặn gì theo phản hồi · '
+  +'⛔ không sinh chỉ số đánh giá phụ huynh · ⛔ không hiện phản hồi của nhà này cho nhà khác · ⛔ không nhắc quá một lần.</div>';
+}
+function rowLM(x){
+ const s=lmSo(x), tr=lmTrang(x), t=TTLM[tr];
+ return '<div class="brow'+(mo.t9===x.id?' on':'')+(tr==='huy'?' huy':'')+'" data-a="t9Sel" data-v="'+x.id+'">'
+  +'<div class="bd"><b>👪 '+esc(x.ten)+'</b>'
+  +'<div class="sub">'+esc(PV[x.pv])+' ('+s.tong+')'+(x.pv==='mot'?' · <b>'+esc(HS[x.hs[0]].n)+'</b>':'')
+   +' · '+dfull(x.d)+' · '+esc(x.gio)+' · '+esc(x.phong)+'</div>'
+  +'<div class="sub">'+(x.dot?'🏷 '+esc(x.dot)+' · ':'')+gvn(x.by)+' · tạo '+dstr(x.at)
+   +(x.nhac?' · 🔔 đã nhắc '+dstr(x.nhac.at):'')+'</div></div>'
+  +'<div class="rt"><span class="st2 '+t[0]+'">'+t[1]+'</span>'
+  +(tr==='nhap'||tr==='huy'?'':'<div style="margin-top:4px">'+baSo(s)+'</div>')+'</div></div>';
+}
+function panelLM(x){
+ const l=x.l, ln=lens(l), ghi=(role==='FULL'||ln==='cn'), tr=lmTrang(x), s=lmSo(x), ds=lmMoi(x);
+ mo.t9c=mo.t9c||'';
+ const kv=[['Phạm vi mời','<b>'+esc(PV[x.pv])+'</b> — '+s.tong+' gia đình'
+   +(x.pv==='lop'?' <span class="hint" style="display:inline">(đăng nhóm lớp M8.2 + thông báo cá nhân)</span>'
+     :' <span class="hint" style="display:inline">🛑 <b>chỉ thông báo cá nhân</b> — ⛔ không đăng nhóm lớp</span>')],
+  ['Thời điểm','<b>'+dfull(x.d)+'</b> · '+esc(x.gio)+(x.sua?' <span class="st2 w">✎ đã đổi '+dstr(x.sua.at)+'</span>':'')],
+  ['Phòng',esc(x.phong)],
+  ['Đợt',x.dot?'🏷 '+esc(x.dot)+' <span class="hint" style="display:inline">— nhãn chữ, không phải bản ghi</span>':'<span class="hint">— không thuộc đợt nào</span>'],
+  ['Nội dung',x.nd?esc(x.nd):'<span class="hint">— chưa nhập</span>'],
+  ['Người tạo',esc(gvn(x.by))+' · '+dstr(x.at)]];
+ if(tr==='huy') kv.push(['Lý do hủy','<b>“'+esc(x.huy.ly)+'”</b><div class="hint">'+esc(gvn(x.huy.by))+' · '+dstr(x.huy.at)
+  +' — lý do <b>bắt buộc</b> và <b>viết cho người ngoài đọc</b>; thông báo đã gửi thì không thu hồi được.</div>']);
+ let b='<div class="panel"><div class="phhead"><div class="ava">👪</div><div class="n"><b>'+esc(x.ten)+'</b>'
+  +'<span>'+x.id+' · M2.9 · T9 Họp phụ huynh · lớp '+esc(l)+'</span></div>'
+  +'<button class="xbtn" data-a="t9Sel" data-v="">✕</button></div><div class="pbody">'
+  +'<table class="tb">'+kv.map(([k,v])=>'<tr><th style="width:120px;text-align:left">'+k+'</th><td>'+v+'</td></tr>').join('')+'</table>';
+ if(x.pv!=='lop') b+='<div class="hint" style="margin-top:8px">🛑 Lượt mời riêng: phụ huynh được mời '
+  +'<b>không thấy có ai khác được mời</b> <i>(nh4.10 §2.1)</i>. Ô nội dung là <b>văn bản tự do</b> — ⛔ không có danh mục lý do '
+  +'dựng sẵn, vì một danh mục biến lời mời thành <b>bản án gửi trước buổi gặp</b>. Và đây ⛔ <b>không phải bước của quy trình '
+  +'kỷ luật</b>: không có nút «chuyển thành đề nghị kỷ luật» — việc đó có luồng riêng ở '
+  +'<button class="rolnk" data-a="dl" data-v="M2.7 Kỷ luật học sinh">↗ M2.7</button>.</div>';
+ if(tr==='nhap'){
+  b+='<div class="warn" style="margin-top:9px">Lượt mời còn <b>Nháp</b> — ⛔ <b>chưa ai ngoài bạn nhìn thấy</b>, '
+   +'và App phụ huynh cũng không có gì. Nháp thì <b>xóa được</b>; đã gửi thì chỉ hủy, và bản ghi ở lại.</div>';
+  b+='<div class="cact" style="padding-left:0;margin-top:10px">'
+   +(ghi?'<button class="btn g" data-a="t9Gui" data-v="'+x.id+'">📨 Gửi lời mời</button>'
+     +'<button class="btn d" data-a="t9Xoa" data-v="'+x.id+'">🗑 Xóa nháp</button>':'')+'</div></div></div>';
+  return b;
+ }
+ /* Ba so + bang phan hoi */
+ b+='<div class="sumbar" style="margin-top:10px"><div class="it g"><b>'+s.du+'</b>Sẽ dự</div>'
+  +'<div class="it"><b>'+s.kh+'</b>Không dự được</div><div class="it'+(s.chua?' r':'')+'"><b>'+s.chua+'</b>Chưa trả lời</div></div>';
+ const loc=mo.t9c==='chua';
+ b+='<div class="chips" style="margin-top:8px"><button class="chip'+(loc?' on':'')+'" data-a="t9Loc">'
+  +(loc?'✓ ':'')+'Chỉ nhà chưa trả lời ('+s.chua+')</button></div>';
+ const rows=(loc?lmChuaTL(x):ds);
+ const coMat=tr==='qua';
+ b+='<table class="tb" style="margin-top:8px"><tr><th>Học sinh</th><th>Phụ huynh</th><th>Phản hồi</th>'
+  +'<th>Ghi chú của gia đình</th><th>Người đi thay</th>'+(coMat?'<th style="width:92px">Có mặt</th>':'')+'</tr>'
+  +(rows.length?rows.map(hh=>{
+    const r=x.ph[hh], k=r?r.tl:'chua';
+    return '<tr><td><b>'+esc(HS[hh].n)+'</b></td><td>'+esc(HS[hh].ph)+'</td>'
+     +'<td><span class="st2 '+TL[k].c+'">'+TL[k].t+'</span>'+(r?'<div class="hint">'+dstr(r.at)+'</div>':'')+'</td>'
+     +'<td class="hint">'+(r&&r.gc?'“'+esc(r.gc)+'”':'—')+'</td>'
+     +'<td>'+(r&&r.thay?'<b>'+esc(r.thay)+'</b>':'<span class="hint">—</span>')+'</td>'
+     +(coMat?'<td>'+(ghi?'<label style="display:flex;gap:6px;align-items:center;font-size:12.5px">'
+       +'<input type="checkbox" data-a="t9CM" data-v="'+x.id+'|'+hh+'"'+(x.cm[hh]?' checked':'')+'> ghi</label>'
+       :(x.cm[hh]===undefined?'<span class="hint">—</span>':x.cm[hh]?'<span class="st2 o">đã dự</span>':'<span class="st2 w">không dự</span>'))+'</td>':'')
+     +'</tr>'}).join('')
+   :'<tr><td colspan="'+(coMat?6:5)+'" class="hint">✓ Không còn nhà nào chưa trả lời.</td></tr>')
+  +'</table>';
+ b+='<div class="hint" style="margin-top:8px">Bảng này là <b>Học sinh × Phụ huynh × Phản hồi</b>. ⛔ Phụ huynh '
+  +'<b>không thấy dòng của nhà khác</b> và ⛔ không thấy ba con số trên — ba số là của bạn, <b>để xếp ghế</b>. '
+  +'Ô <b>Người đi thay</b> do gia đình nhập trên App <i>(chốt H4 — ông bà, người giám hộ; để bạn đón đúng người)</i>. '
+  +'Mọi lượt xem bảng này <b>ghi audit</b> kèm họ tên và chức danh tại thời điểm xem <i>(Luật BVDLCN 91/2025 — '
+  +'phản hồi của phụ huynh là dữ liệu cá nhân)</i>.</div>';
+ if(coMat) b+='<div class="hint">⚠ Ghi có mặt <b>không bắt buộc</b> — để trống thì lượt mời vẫn đóng lại ở <b>Đã diễn ra</b>, '
+  +'và đó <b>không phải việc còn tồn</b>: ⛔ không badge, ⛔ không nhắc. Mục đích duy nhất của ô này là '
+  +'<b>biết phải gửi lại nội dung buổi họp cho nhà nào</b>.</div>';
+ /* Hanh dong theo trang thai va vai */
+ let act='';
+ if(!ghi) act='<div class="hint" style="width:100%">Vai <b>'+esc(R().cd)+'</b> có <code>X</code> — xem phản hồi, '
+  +'⛔ không tạo, ⛔ không nhắc, ⛔ không hủy. <b>Lượt mời riêng vẫn hiện với bạn</b> <i>(chốt H5: «không cần duyệt» '
+  +'khác «giấu đi» — BGH thấy, nhưng không có cửa duyệt nào chen vào)</i>.</div>';
+ else if(tr==='huy') act='<div class="hint" style="width:100%">Lượt mời đã hủy — bản ghi <b>ở lại danh sách</b>, '
+  +'⛔ không xóa được. Muốn họp lại thì tạo lượt mời mới.</div>';
+ else if(tr==='qua') act='<button class="btn p" data-a="t9ND" data-v="'+x.id+'">📨 Gửi nội dung họp cho '
+   +ds.filter(hh=>x.cm[hh]===false).length+' phụ huynh vắng mặt</button>';
+ else {
+  const chua=lmChuaTL(x).length;
+  act=(x.nhac?'<button class="btn" disabled>🔔 Đã nhắc '+dstr(x.nhac.at)+'</button>'
+    :'<button class="btn" data-a="t9Nhac" data-v="'+x.id+'"'+(chua?'':' disabled')+'>🔔 Nhắc '+chua+' nhà chưa trả lời</button>')
+   +'<button class="btn" data-a="t9Doi" data-v="'+x.id+'">✎ Đổi giờ / phòng</button>'
+   +'<button class="btn d" data-a="t9Huy" data-v="'+x.id+'">✕ Hủy lượt mời</button>'
+   +(x.nhac?'<div class="hint" style="width:100%">🛑 <b>Nhắc dùng đúng một lần</b> — nút đã khóa. '
+     +'Nhắc lặp là quấy rối <i>(nh4.10 §4 điều ④)</i>.</div>':'');
+ }
+ b+='<div class="cact" style="padding-left:0;margin-top:10px">'+act+'</div></div></div>';
+ return b;
+}
+/* Form tao luot moi — SAU o, va bo chon «Phạm vi mời» DOI LUON phan duoi cua panel (M2.9 §7b.3) */
+function formLM(pv,st){
+ const ds=hsLop(cur); st=st||{};
+ const ngay=[];
+ for(let d=HOMNAY-1;d<=HOMNAY+40;d++) if(!laCN(d)||d>HOMNAY) ngay.push(d);
+ return '<div class="ro"><b>Ba phạm vi mời, một thực thể</b> — cùng một bản ghi, khác nhau ở trường <b>Phạm vi mời</b>. '
+  +'Bản ghi tạo ở đây rồi <b>gọi M8.1 phát</b>; ⛔ menu này không tự dựng đường gửi riêng <i>(nh4.10 §1 D1)</i>.</div>'
+  +'<div class="fld"><label>Tiêu đề <span class="req">*</span></label>'
+  +'<input class="fldi" id="lmT" value="'+esc(st.ten||'')+'" placeholder="VD: Họp phụ huynh cuối học kỳ I"></div>'
+  +'<div class="fld"><label>Phạm vi mời</label><select class="fldi" id="lmPV" data-ch="lmPV" style="width:220px">'
+  +Object.keys(PV).map(k=>'<option value="'+k+'"'+(k===pv?' selected':'')+'>'+PV[k]+(k==='lop'?' ('+ds.length+')':'')+'</option>').join('')
+  +'</select></div>'
+  +(pv==='lop'?'<div class="hint">Cả <b>'+ds.length+'</b> gia đình của lớp '+esc(cur)+'. Đăng <b>nhóm lớp</b> + thông báo cá nhân. '
+    +'⚠ Danh sách người nhận <b>nở ra lúc GỬI</b>, không phải lúc soạn — em chuyển vào lớp giữa chừng vẫn nhận được lời mời.</div>'
+   :pv==='mot'?'<div class="fld"><label>Học sinh <span class="req">*</span></label><select class="fldi" id="lmH">'
+     +ds.map(h=>'<option value="'+h+'"'+((st.hs||[])[0]===h?' selected':'')+'>'+esc(HS[h].n)+'</option>').join('')+'</select>'
+     +'<div class="hint">🛑 Chỉ thông báo cá nhân. Gia đình <b>không thấy có ai khác được mời</b>.</div></div>'
+   :'<div class="fld"><label>Chọn học sinh <span class="req">*</span></label>'
+     +'<div style="max-height:168px;overflow:auto;border:1px solid var(--bd);border-radius:7px;padding:7px">'
+     +ds.map(h=>'<label style="display:flex;gap:7px;align-items:center;font-size:12.5px;padding:2px 0">'
+       +'<input type="checkbox" class="lmCk" value="'+h+'"'+((st.hs||[]).indexOf(h)>=0?' checked':'')+'> '+esc(HS[h].n)+'</label>').join('')+'</div>'
+     +'<div class="hint">🛑 Chỉ thông báo cá nhân — ⛔ không đăng nhóm lớp.</div></div>')
+  +'<div class="fld"><label>Ngày họp <span class="req">*</span></label><select class="fldi" id="lmD" style="width:230px">'
+  +ngay.map(d=>'<option value="'+d+'"'+(d===(st.d!=null?st.d:HOMNAY+7)?' selected':'')+'>'+dfull(d)
+    +(d<HOMNAY?' — (ngày đã qua, để thử luồng chặn)':'')+'</option>').join('')+'</select></div>'
+  +'<div class="fld"><label>Giờ</label><input class="fldi" id="lmG" value="'+esc(st.gio!=null?st.gio:'07:30 – 09:30')+'" style="width:180px"></div>'
+  +'<div class="fld"><label>Phòng</label><input class="fldi" id="lmP" value="'+esc(st.phong!=null?st.phong:(PHONG[cur]||''))+'"></div>'
+  +'<div class="fld"><label>Đợt <i>(chọn từ gợi ý, bỏ trống được)</i></label><select class="fldi" id="lmDot" style="width:300px">'
+  +'<option value="">— không thuộc đợt nào —</option><option value="'+esc(DOT_HOP.ten)+'"'+(st.dot===DOT_HOP.ten?' selected':'')+'>'+esc(DOT_HOP.ten)+'</option></select></div>'
+  +'<div class="fld"><label>Nội dung</label><textarea class="fldi" id="lmN" rows="3" '
+  +'placeholder="Viết cho phụ huynh đọc — ⛔ không có danh mục lý do dựng sẵn">'+esc(st.nd||'')+'</textarea></div>';
+}
+/* Doc lai nhung gi da go — bo chon «Phạm vi mời» ve lai phan duoi cua panel, ⛔ khong duoc xoa chu nguoi ta vua go */
+function docFormLM(){
+ if(!$('#lmT')) return {};
+ const hs=$('#lmH')?[$('#lmH').value]:$$('.lmCk').filter(c=>c.checked).map(c=>c.value);
+ return {ten:$('#lmT').value,d:+$('#lmD').value,gio:$('#lmG').value,phong:$('#lmP').value,
+  dot:$('#lmDot').value,nd:$('#lmN').value,hs:hs};
+}
+function moFormLM(pv,st){
+ modal('👪 Tạo lượt mời — lớp '+esc(cur),formLM(pv,st),
+  [['Huỷ','',closeM],['Lưu nháp','',()=>luuLM(0)],['📨 Gửi lời mời','p',()=>luuLM(1)]]);
+}
+function luuLM(gui){
+ const pv=$('#lmPV').value, ten=$('#lmT').value.trim(), d=+$('#lmD').value;
+ if(!ten){toast('⛔ <b>Tiêu đề</b> là bắt buộc — phụ huynh đọc dòng này đầu tiên trên điện thoại.'); return}
+ if(d<HOMNAY){toast('⛔ <b>Chặn cứng: ngày đã qua.</b> '+dfull(d)+' đã trôi qua — không mời người ta tới một buổi '
+  +'đã diễn ra. Ràng buộc này áp cả khi <b>dời lịch</b> <i>(nh4.10 §8 · giống M10.9)</i>.'); return}
+ let hs=[];
+ if(pv==='mot') hs=[$('#lmH').value];
+ else if(pv==='chon'){hs=$$('.lmCk').filter(c=>c.checked).map(c=>c.value);
+  if(!hs.length){toast('⛔ Phạm vi <b>Chọn học sinh</b> mà chưa chọn em nào.'); return}}
+ const x=lmAdd({l:cur,ten:ten,pv:pv,hs:hs,d:d,gio:$('#lmG').value.trim()||'—',phong:$('#lmP').value.trim()||PHONG[cur],
+  dot:$('#lmDot').value,nd:$('#lmN').value.trim(),tt:gui?'gui':'nhap',at:HOMNAY,by:toiLa()||LOP[cur].gvcn});
+ mo.t9=x.id; mo.t9f='sap'; closeM(); render();
+ toast(gui?'📨 Đã gửi <b>'+esc(ten)+'</b> tới <b>'+lmMoi(x).length+'</b> gia đình — M8.1 phát tán'
+   +(pv==='lop'?' (nhóm lớp + thông báo cá nhân)':' (<b>chỉ thông báo cá nhân</b>)')+'. Danh sách người nhận <b>đóng băng</b> từ lúc này.'
+  :'💾 Đã lưu <b>nháp</b> — chưa ai ngoài bạn nhìn thấy.');
 }
 
 /* ===== ⚙ CAU HINH (tang 1) — Master cap truong: danh muc chuc danh tu quan cua lop =====
@@ -2437,13 +3192,107 @@ function bangKQ(tieuDe,rows){
 }
 function act(a,v,el){
  switch(a){
-  case 'mo': cur=v; tab='T1'; mo={t2:'ngay',k4:'w4'}; ngay=HOMNAY; tuan=TUAN_NAY-1; kytk=kyMac(v); render(); return;
-  case 've': cur=null; mo.hs=null; render(); return;
+  case 'mo': cur=v; tab='TT'; mo={t2:'ngay',k4:'w4'}; ngay=HOMNAY; tuan=TUAN_NAY-1; tuan3=TUAN_NAY; kytk=kyMac(v); lkRet=''; render(); return;
+  case 've': cur=null; mo.hs=null; lkRet=''; render(); return;
+  case 'lkVe': toast('↩ Quay về <b>'+esc(lkRet)+'</b> — đúng chỗ bạn rời đi.'); return;
+  /* SDBG-1E · T3 */
+  case 'tuan3': tuan3=Math.max(1,Math.min(TUAN_NAY,+v)); render(); return;
+  case 'sdbGo': {const [d,t]=v.split('|').map(Number); tuan3=tuanCua(d); render(); popSDB(d,t); return}
   case 'tab': tab=v; mo.hs=null; if(v==='CD') mo.cd=undefined; render(); return;
+  /* --- KGLH-1A · TT · YC --- */
+  case 'ttSo': {const tk=tkbDoi(cur);
+    modal('⏳ So sánh mẫu tuần — lớp '+esc(cur)+' · áp dụng từ '+dfull(tk.ap),
+     '<div class="ro">Chỉ đọc. Bộ <b>'+esc(tk.bo)+'</b> đã được '+esc(gvn(tk.by))+' duyệt và <b>hẹn ngày</b> — '
+     +'đây là lý do dải báo trước xuất hiện. Bộ còn là <b>nháp</b> thì ⛔ không báo cho ai: nháp đổi liên tục, '
+     +'báo sớm là báo sai.</div>'
+     +'<div class="card"><div class="ch">Mẫu tuần <b>đang áp dụng</b></div><div class="cb p">'+bangTKB(cur,0)+'</div></div>'
+     +'<div class="card hl"><div class="ch">Mẫu tuần <b>từ '+dstr(tk.ap)+'</b></div><div class="cb p">'+bangTKB(cur,1)+'</div></div>'
+     +'<div class="hint">Cùng một bản ghi thông báo <b>M8.1</b> với dải trên App và với lịch cá nhân ở <b>M2.1</b> — '
+     +'không phải hàng đợi riêng của menu này. Bản ghi mang: bộ nào · ngày áp dụng · lớp và giáo viên bị ảnh hưởng · '
+     +'người duyệt · thời điểm.</div>',
+     [['Đóng','',closeM],['↗ Mở M4.6 xem cả bộ','p',()=>{closeM();
+       toast('🔗 Deep-link <code>/M4.6?bo='+esc(tk.bo)+'&amp;truc=lop&amp;ctx='+esc(cur)+'&amp;return=M2.9</code>')}]]); return}
+  case 'moTab': {const [l,k]=v.split('|'); cur=l; tab=k; mo={t2:'ngay',k4:'w4'}; ngay=HOMNAY; tuan=TUAN_NAY-1;
+    tuan3=TUAN_NAY; kytk=kyMac(l); lkRet=''; render(); return}
+  case 'ycF': mo.ycF=v; render(); return;
+  case 'ycDL': {const t=tkId(v);
+    toast('🔗 Deep-link <code>/'+t.src+'?ctx='+t.id+'&amp;return=M2.9</code> — mở ticket ở <b>menu chủ</b>. '
+     +'Tab này <b>chỉ đọc</b>: quyền duyệt là <code>D</code> ở Feature của menu chủ, không phải ở đây.'); return}
   case 't1v': t1v=v; render(); return;
-  case 'thoatCN': cn=false; if(cur&&tabsCho().indexOf(tab)<0) tab='T1'; render();
+  case 'thoatCN': cn=false; if(cur&&tabsCho().indexOf(tab)<0) tab='TT'; render();
     toast('Đã rời chế độ lớp chủ nhiệm — đang ở <b>Danh sách lớp học</b>, đủ các tab của lớp.'); return;
   case 'cnLop': cur=v; mo={t2:'ngay',k4:'w4'}; kytk=kyMac(v); render(); return;
+
+  /* --- T9 · Hop phu huynh (cum HPH · 23/9/2026) --- */
+  case 't9f': mo.t9f=v; mo.t9=undefined; mo.t9c=''; render(); return;
+  case 't9Sel': mo.t9=v||null; mo.t9c=''; render(); return;
+  case 't9Loc': mo.t9c=mo.t9c==='chua'?'':'chua'; render(); return;
+  case 't9Tao': moFormLM('lop'); return;
+  case 't9CM': {const [id,h]=v.split('|'), x=LM.find(y=>y.id===id);
+    x.cm[h]=el.checked; render(); return}
+  case 't9Gui': {const x=LM.find(y=>y.id===v); x.tt='gui'; x.at=HOMNAY; render();
+    toast('📨 Đã gửi <b>'+esc(x.ten)+'</b> tới <b>'+lmMoi(x).length+'</b> gia đình. '
+     +'Danh sách người nhận <b>nở ra đúng lúc này rồi đóng băng</b> — phản hồi neo vào danh sách đó.'); return}
+  case 't9Xoa': {const x=LM.find(y=>y.id===v);
+    modal('🗑 Xóa nháp','<div class="warn">Xóa hẳn lượt mời <b>'+esc(x.ten)+'</b>? Nháp <b>chưa gửi cho ai</b> nên xóa được — '
+     +'lượt mời <b>đã gửi</b> thì ⛔ không xóa, chỉ hủy và bản ghi ở lại danh sách <i>(nh4.10 §8 ràng buộc 2)</i>.</div>',
+     [['Giữ lại','',closeM],['🗑 Xóa nháp','d',()=>{LM.splice(LM.indexOf(x),1); mo.t9=undefined; closeM(); render();
+       toast('🗑 Đã xóa nháp.')}]]); return}
+  case 't9Nhac': {const x=LM.find(y=>y.id===v), chua=lmChuaTL(x);
+    modal('🔔 Nhắc '+chua.length+' nhà chưa trả lời',
+     '<div class="ro">🛑 <b>Nhắc dùng ĐÚNG MỘT LẦN cho mỗi lượt mời.</b> Bấm xong thì nút khóa vĩnh viễn — '
+     +'⛔ không có cách mở lại, kể cả với Hiệu trưởng. <i>Một lần nhắc trước ngày họp là nhắc; lần thứ hai là quấy rối '
+     +'(nh4.10 §4 điều ④).</i></div>'
+     +'<div class="hint">Gửi tới <b>'+chua.length+'</b> gia đình chưa trả lời: '+chua.slice(0,6).map(h=>esc(HS[h].ph)).join(' · ')
+     +(chua.length>6?' … và '+(chua.length-6)+' nhà nữa':'')+'. ⛔ Nhà <b>đã trả lời</b> không nhận gì — '
+     +'kể cả nhà trả lời «không dự được».</div>',
+     [['Để sau','',closeM],['🔔 Gửi nhắc — dùng lượt duy nhất','p',()=>{x.nhac={at:HOMNAY,by:toiLa()||x.by}; closeM(); render();
+       toast('🔔 Đã nhắc <b>'+chua.length+'</b> nhà. Lượt nhắc của lượt mời này <b>đã dùng hết</b>.')}]]); return}
+  case 't9Doi': {const x=LM.find(y=>y.id===v);
+    modal('✎ Đổi giờ / phòng — '+esc(x.ten),
+     '<div class="ro">Ranh giới của nh4.10 §3: <b>đổi thứ khiến người ta đi nhầm chỗ nhầm giờ ⇒ phải báo lại</b>. '
+     +'Nên đổi <b>giờ</b> hoặc <b>phòng</b> thì hệ thống gửi thông báo cập nhật tới đúng người đã nhận; sửa nội dung vặt thì không.</div>'
+     +'<div class="fld"><label>Ngày họp</label><select class="fldi" id="dgD" style="width:230px">'
+     +(function(){let o=''; for(let d=HOMNAY-1;d<=HOMNAY+40;d++) if(!laCN(d)||d>HOMNAY)
+       o+='<option value="'+d+'"'+(d===x.d?' selected':'')+'>'+dfull(d)+(d<HOMNAY?' — (đã qua, thử luồng chặn)':'')+'</option>';
+      return o})()+'</select></div>'
+     +'<div class="fld"><label>Giờ</label><input class="fldi" id="dgG" value="'+esc(x.gio)+'" style="width:180px"></div>'
+     +'<div class="fld"><label>Phòng</label><input class="fldi" id="dgP" value="'+esc(x.phong)+'"></div>',
+     [['Huỷ','',closeM],['Lưu và báo lại','p',()=>{
+       const d=+$('#dgD').value, g=$('#dgG').value.trim(), p=$('#dgP').value.trim();
+       if(d<HOMNAY){toast('⛔ <b>Chặn cứng: ngày đã qua.</b> Ràng buộc chặn ngày quá khứ áp cả khi <b>dời lịch</b>, '
+        +'không riêng lúc tạo <i>(nh4.10 §8)</i>.'); return}
+       if(d===x.d&&g===x.gio&&p===x.phong){toast('Không có gì đổi — ⛔ không gửi thông báo rỗng cho ai.'); return}
+       const n=lmMoi(x).length; x.d=d; x.gio=g||x.gio; x.phong=p||x.phong; x.sua={at:HOMNAY,by:toiLa()||x.by};
+       closeM(); render();
+       toast('✎ Đã đổi lịch — <b>M8.1 gửi thông báo cập nhật</b> tới <b>'+n+'</b> gia đình đã nhận lời mời. '
+        +'Câu trả lời cũ <b>giữ nguyên</b>, ⛔ không tự xóa: người ta trả lời cho buổi họp, không phải cho cái giờ.')}]]); return}
+  case 't9Huy': {const x=LM.find(y=>y.id===v);
+    modal('✕ Hủy lượt mời — '+esc(x.ten),
+     '<div class="warn">Thông báo đã gửi <b>không thu hồi được</b> — hủy thì phải nói vì sao, và <b>lý do viết cho người ngoài đọc</b>. '
+     +'Bản ghi <b>vẫn ở lại danh sách</b> <i>(kế thừa nguyên chốt của M6.8)</i>.</div>'
+     +'<div class="fld"><label>Lý do hủy <span class="req">*</span></label>'
+     +'<textarea class="fldi" id="hyL" rows="3" placeholder="Phụ huynh sẽ đọc đúng câu này — viết cho họ, không viết cho hệ thống"></textarea></div>',
+     [['Giữ lịch','',closeM],['✕ Hủy và báo cho phụ huynh','d',()=>{
+       const ly=$('#hyL').value.trim();
+       if(!ly){toast('⛔ <b>Lý do hủy là bắt buộc.</b> Hủy một buổi đã báo mà không nói vì sao là bỏ mặc '
+        +lmMoi(x).length+' gia đình đã sắp xếp công việc để đi.'); return}
+       x.tt='huy'; x.huy={ly:ly,at:HOMNAY,by:toiLa()||x.by}; closeM(); render();
+       toast('✕ Đã hủy — M8.1 gửi thông báo hủy kèm lý do tới <b>'+lmMoi(x).length+'</b> gia đình. '
+        +'Lượt mời ở lại danh sách với nhãn <b>Đã hủy</b>.')}]]); return}
+  case 't9ND': {const x=LM.find(y=>y.id===v), ds=lmMoi(x);
+    const vang=ds.filter(h=>x.cm[h]===false), chua=ds.filter(h=>x.cm[h]===undefined);
+    modal('📨 Gửi nội dung họp cho phụ huynh vắng mặt',
+     '<div class="ro">Đây là <b>mục đích duy nhất</b> của ô ghi có mặt: biết phải gửi lại nội dung buổi họp cho nhà nào '
+     +'<i>(nh4.10 §4.1)</i>. ⛔ Không dùng để đánh giá phụ huynh, ⛔ không vào báo cáo nào.</div>'
+     +'<div class="sumbar"><div class="it"><b>'+vang.length+'</b>Ghi «không dự»</div>'
+     +'<div class="it"><b>'+chua.length+'</b>Chưa ghi gì</div></div>'
+     +'<div class="hint">Chỉ gửi cho <b>'+vang.length+'</b> nhà đã ghi «không dự». '
+     +(chua.length?'<b>'+chua.length+'</b> nhà bạn chưa ghi gì thì ⛔ <b>không gửi</b> — ô trống nghĩa là <b>chưa biết</b>, '
+       +'không phải «đã vắng».':'')+' Tin đi qua <b>M8.1</b> như một thông báo thường.</div>',
+     [['Đóng','',closeM],['📨 Gửi cho '+vang.length+' nhà','p',()=>{closeM();
+       toast(vang.length?'📨 Đã gửi nội dung buổi họp cho <b>'+vang.length+'</b> gia đình vắng mặt.'
+        :'Không có nhà nào được ghi «không dự» — ⛔ không gửi tin rỗng.')}]]); return}
 
   /* --- T1 · Ban can su --- */
   case 'bcsF': mo.bcsF=v; render(); return;
@@ -2584,6 +3433,7 @@ function act(a,v,el){
   case 'hd': mo.hd=v; render(); return;
   case 't2': mo.t2=v; render(); return;
   case 'k4': mo.k4=v; render(); return;
+  case 's4': mo.s4=v; render(); return;   /* KGLH-1A luot bo sung · S12 — sap xep T4, khong ghi gi */
   case 'ngay': ngay=Math.max(0,Math.min(HOMNAY,+v)); render(); return;
   case 'tuan': tuan=Math.max(1,Math.min(TUAN_NAY,+v)); render(); return;
   case 'ky': kytk=v; mo.hs=null; render(); return;
@@ -2769,7 +3619,7 @@ function act(a,v,el){
      +'muốn nói thêm thì tạo <b>bản bổ sung</b>, bản gốc vẫn giữ. Không có bước duyệt của Ban giám hiệu.</div>'
      +'<div class="roblk">Phụ huynh sẽ thấy: nhận xét chung · số liệu <b>của cả lớp</b> ở dạng tổng hợp · '
      +'số liệu <b>riêng con mình</b> · <b>nhận xét riêng của con</b> nếu có · kế hoạch tuần tới.<br>'
-     +'<b>Không thấy</b>: nguyên văn lời phê bình trong sổ đầu bài · nhận xét riêng của bạn khác · xếp hạng.</div>',
+     +'<b>Không thấy</b>: nguyên văn lời nhắc nhở trong sổ đầu bài · nhận xét riêng của bạn khác · xếp hạng.</div>',
      [['Huỷ','',closeM],['Publish','p',()=>{b.tt='pub'; b.by=toiLa(); b.at=HOMNAY;
        closeM(); render(); toast('📨 Đã publish báo cáo tuần '+tuan+' — <b>'+siSo(cur)
         +' phụ huynh</b> nhận thông báo.')}]]); return}
@@ -2808,7 +3658,7 @@ function act(a,v,el){
         :'chưa có')+'</td></tr>'
      +'<tr><td>Khen thưởng · Kỷ luật</td><td>'+(kk.length?kk.map(k=>esc(k.hinh)).join(', '):'không có')+'</td></tr>'
      +'</table></div></div>'
-     +'<div class="roblk">⛔ <b>Không hiện cho phụ huynh:</b> nguyên văn lời phê bình trong sổ đầu bài · '
+     +'<div class="roblk">⛔ <b>Không hiện cho phụ huynh:</b> nguyên văn lời nhắc nhở trong sổ đầu bài · '
      +'nhận xét riêng của học sinh khác · xếp hạng của con trong lớp.</div>',
      [['Đóng','',closeM]]); return}
 
@@ -2822,7 +3672,10 @@ function act(a,v,el){
      '<div class="ro">Bạn ký xác nhận đánh giá của <b>'+siSo(cur)+' học sinh</b> lớp '+esc(cur)+' cho '
      +'<b>'+KY[kytk]+'</b>. Đây là <b>tầng 2</b> của chuỗi ký học bạ.</div>'
      +'<div class="warn">Sau khi ký, dữ liệu <b>khoá</b>. Sửa được nhưng phải <b>gửi yêu cầu mở khoá</b> và '
-     +'Ban giám hiệu đồng ý. Chữ ký này là <b>điều kiện</b> để M3.1 chạy tính tổng kết lớp.</div>',
+     +'Ban giám hiệu đồng ý. Chữ ký này là <b>điều kiện</b> để M3.1 chạy tính tổng kết lớp.</div>'
+     /* SDBG-1E · ✅ chot 22/9 (SDBG-2Z) — so SDBG §2b — han cuoi dinh chinh so dau bai = ky chot ren luyen cua ky */
+     +'<div class="info">📓 Từ lúc ký, <b>sổ đầu bài của lớp trong kỳ này không đính chính được nữa</b> — khen, nhắc nhở '
+     +'trong tiết là căn cứ của kết quả rèn luyện bạn đang ký. <i>(✅ luật cứng — chốt 22/9/2026.)</i></div>',
      [['Huỷ','',closeM],['Ký chốt','g',()=>{KYTK[kyKey()]={ky:{gv:toiLa(),at:HOMNAY}};
        closeM(); render(); toast('⚖ Đã ký chốt <b>'+KY[kytk]+'</b> lớp '+esc(cur)+'.')}]]); return}
   case 'mkGui': {modal('Gửi yêu cầu mở khoá — '+KY[kytk],
@@ -2863,7 +3716,7 @@ function act(a,v,el){
 document.addEventListener('click',e=>{
  const mb=e.target.closest('[data-mb]'); if(mb){const f=mfns['b'+mb.dataset.mb]; f?f():closeM(); return}
  /* Doi vai GIU che do lop chu nhiem va tab cua loi tat — de thu cung mot loi tat voi nhieu vai */
- const rb=e.target.closest('.rb'); if(rb){role=rb.dataset.r; cur=null; if(!cn) tab='T1'; t1v='lop'; mo={t2:'ngay',k4:'w4'};
+ const rb=e.target.closest('.rb'); if(rb){role=rb.dataset.r; cur=null; if(!cn) tab='TT'; t1v='lop'; mo={t2:'ngay',k4:'w4'};
   $$('.rb').forEach(x=>x.classList.toggle('on',x===rb)); render(); return}
  if(e.target.id==='btnNote'){const on=document.body.classList.toggle('nn');
   e.target.classList.toggle('on',!on); e.target.textContent='💡 Ghi chú thiết kế: '+(on?'TẮT':'BẬT'); return}
@@ -2874,6 +3727,7 @@ document.addEventListener('change',e=>{
  const el=e.target.closest('[data-ch]'); if(!el) return;
  const f=el.dataset.ch, v=el.value;
  if(f==='q'){mo.q=v; render(); return}
+ if(f==='lmPV'){moFormLM(v,docFormLM()); return}   /* HPH: bo chon Pham vi moi DOI LUON phan duoi cua panel */
  if(f==='bcNx'&&cur){bcGet(cur,tuan).nx=v; return}
  if(f==='bcKh'&&cur){bcGet(cur,tuan).kh=v; return}
  if(f==='bcHS'&&cur){bcGet(cur,tuan).nxhs[el.dataset.h]=v; return}
@@ -2887,6 +3741,9 @@ document.addEventListener('input',e=>{
 });
 
 render();
+/* SDBG-1E · &tiet= mo thang popup noi dung tiet; ctx la lop khong co thi noi ra, khong mo mot lop bat ky */
+if(lkTiet&&cur===lkTiet.l&&tab==='T3') popSDB(lkTiet.d,lkTiet.t);
+if(lkLoi) toast('⛔ Liên kết xin lớp <b>'+esc(lkLoi)+'</b> — không có lớp này trong năm học đang chọn. Đang mở danh sách lớp.');
 
 </script>
 </body>

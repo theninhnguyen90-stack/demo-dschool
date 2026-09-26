@@ -361,7 +361,9 @@ const NS={
  hoa  :['Nguyễn Thị Hoa','GVCN 6A1','A'],
  minh :['Lê Văn Minh','GVCN 7A1 — GV Tin học','A'],
  nhung:['Hoàng Thị Nhung','GVCN 6B1','B'],
- tam  :['Đỗ Thị Tâm','Phụ trách bán trú','A'],
+ /* BTNV-1B: vai ban tru DA GO khoi ROLES, nhung NGUOI thi GIU — AUDIT ngay 20/12/2026
+    la ban ghi LICH SU va «nhat ky truy cap khong xoa duoc» (§11 nguyen tac 4). */
+ tam  :['Đỗ Thị Tâm','Phụ trách bán trú (đã gỡ quyền vào menu này 23/9/2026)','A'],
  huong:['Phạm Thu Hương','PHT Điểm trường A','A'],
  huy  :['Nguyễn Quang Huy','Hiệu trưởng','A'],
  lan  :['Nguyễn Thị Lan','GV Toán','A'],
@@ -394,8 +396,9 @@ const ROLES={
    q:['xem','sinhton','suaST','ketqua','sukien','ghiSK','doiKham','tuthuoc','dich','baocao','cauhinh','xuat','khancap'],rec:'all'},
  GVCN:{ma:'hoa',  cd:'GVCN 6A1',sc:'Class',dt:'A',lop:'6A1',
    q:['xem','sinhton','sukien','khancap'],rec:'lop'},
- BT  :{ma:'tam',  cd:'Phụ trách bán trú',sc:'Branch',dt:'A',lop:null,
-   q:['xem','diung'],rec:'all'},
+ /* BTNV-1B (23/9/2026): vai BT (NVBT — nhan vien ban tru) DA GO khoi menu M6.6.
+    Di ung thuc an cua HS ban tru chieu san o M6.1 §5.1 — khong can menu rieng.
+    Nang luc 'diung' va ham veDiUngBT() go theo, vi CHI vai nay dung. */
  PHT :{ma:'huong',cd:'PHT Điểm trường A',sc:'Branch',dt:'A',lop:null,
    q:['xem','tonghop','duyetKH','dieuphoiDich','xuat'],rec:'all'},
  HT  :{ma:'huy',  cd:'Hiệu trưởng',sc:'School',dt:null,lop:null,
@@ -931,8 +934,7 @@ function docDuoc(hid){
  const trongPV = r.sc==='Class' ? h.lop===r.lop
    : (dtHieuLuc()==='ALL'||h.dt===dtHieuLuc());
  return {
-  l1: trongPV&&(can('sinhton')||can('diung')),
-  l1DiUngOnly: can('diung')&&!can('sinhton'),
+  l1: trongPV&&can('sinhton'),
   l2: trongPV&&can('ketqua'),
   l3: trongPV&&can('sukien'),
   chiTongHop: can('tonghop')&&!can('sinhton')
@@ -1113,7 +1115,7 @@ function header(){
 function tabsOK(){
  const out=[];
  if(can('sukien')||can('tonghop')) out.push(['sk','1 · Sổ y tế',can('sukien')?(skDangMo().length||null):null]);
- if(can('sinhton')||can('diung'))  out.push(['hs','2 · Hồ sơ sức khỏe',null]);
+ if(can('sinhton'))  out.push(['hs','2 · Hồ sơ sức khỏe',null]);
  const nk=dotTrongPhamVi().filter(d=>(d.tt==='choduyet'&&can('duyetKH'))||(d.tt==='nhapkq'&&can('doiKham'))).length;
  if(can('doiKham')||can('duyetKH')) out.push(['kham','3 · Đợt khám sức khỏe',nk||null]);
  if(can('tuthuoc')){
@@ -1145,8 +1147,7 @@ function scopeBar(extra){
    : r.sc==='School' ? (ST.dt==='ALL'?'School — toàn trường':'School (đang lọc '+DT[ST.dt]+')')
    : 'Branch — '+DT[r.dt];
  let chan='';
- if(can('diung')&&!can('sinhton')) chan=' Chỉ đọc được <b>dị ứng thức ăn</b> — không thấy nhóm máu, bệnh nền, liên hệ khẩn cấp hay kết quả khám.';
- else if(can('tonghop')&&!can('sinhton')) chan=' <b>Không đọc hồ sơ y tế của từng em</b> — chỉ thấy <b>con số tổng hợp</b>. Quyền quản lý cao hơn không đồng nghĩa đọc được nhiều dữ liệu cá nhân hơn.';
+ if(can('tonghop')&&!can('sinhton')) chan=' <b>Không đọc hồ sơ y tế của từng em</b> — chỉ thấy <b>con số tổng hợp</b>. Quyền quản lý cao hơn không đồng nghĩa đọc được nhiều dữ liệu cá nhân hơn.';
  else if(can('sinhton')&&!can('ketqua')) chan=' Đọc được <b>hồ sơ sinh tồn</b> của lớp mình, <b>không</b> đọc kết quả khám định kỳ.';
  return '<div class="scope"><span>🩺</span><span class="sp">Vai <b>'+esc(r.cd)+'</b> — '+esc(tenNS(r.ma))
   +'. Phạm vi: <b>'+pv+'</b>. Thấy <b>'+hsTrongPhamVi().length+' học sinh</b>.'+chan
@@ -1379,10 +1380,8 @@ function panelSK(){
 /* ══════════════════════════════════════════════════════════════════
    TAB 2 — HỒ SƠ SỨC KHỎE
    ★ Danh sách gom theo Điểm trường → Lớp, tự duỗi phẳng khi đang tìm.
-   ★ Bán trú chỉ thấy MỘT CỘT: dị ứng thức ăn.
    ══════════════════════════════════════════════════════════════════ */
 function veHoSo(){
- if(can('diung')&&!can('sinhton')) return veDiUngBT();
  const q=kd(ST.timHS||'');
  let ds=hsTrongPhamVi();
  if(q) ds=ds.filter(h=>kd(h.ten).includes(q)||kd(h.id).includes(q)||kd(h.lop).includes(q));
@@ -1452,31 +1451,8 @@ function lanKhamGanNhat(hid){
  DOTKHAM.forEach(d=>{const kq=kqCua(d.id,hid); if(kq&&(!best||kq.ngay>best.kq.ngay)) best={d,kq}});
  return best;
 }
-/* ★ Bán trú chỉ đọc MỘT CỘT — và màn hình nói thẳng điều đó */
-function veDiUngBT(){
- const ds=hsTrongPhamVi().filter(h=>stCua(h.id).diUngTA.length);
- const theoMon={};
- ds.forEach(h=>stCua(h.id).diUngTA.forEach(m=>{(theoMon[m]=theoMon[m]||[]).push(h)}));
- let h=scopeBar();
- h+='<div class="info">Vai <b>Phụ trách bán trú</b> đọc <b>đúng một cột</b>: <b>dị ứng thức ăn</b>. '
-  +'Nhóm máu, bệnh nền, liên hệ khẩn cấp, kết quả khám và sổ y tế <b>không có trong kết quả trả về</b> — '
-  +'không phải bị ẩn nút, mà là <b>không được trả về</b>.<br>'
-  +'Lý do: người lên thực đơn cần biết <b>ai không ăn được gì</b>, và chỉ thế thôi.</div>';
- h+='<div class="tbw"><div class="ch">Dị ứng thức ăn — gom theo món <span class="tg r">'+ds.length+' học sinh</span>'
-  +'<span class="sp"></span><span class="xs">đơn vị dòng: <b>một món gây dị ứng</b></span></div><table>'
-  +'<tr><th style="width:190px">Món · nhóm thực phẩm</th><th class="num">Số em</th><th>Học sinh · lớp</th></tr>'
-  +(Object.keys(theoMon).length?Object.keys(theoMon).sort().map(m=>
-    '<tr class="badrow"><td><b>'+esc(m)+'</b></td><td class="num"><b>'+theoMon[m].length+'</b></td>'
-    +'<td style="font-size:11.5px">'+theoMon[m].map(x=>esc(x.ten)+' <span class="pill">'+x.lop+'</span>').join(' · ')+'</td></tr>').join('')
-   :'<tr><td colspan="3" class="empty">Không có em nào ghi nhận dị ứng thức ăn.</td></tr>')
-  +'</table><div class="lgd"><span class="chip">Gom <b>theo món</b> chứ không theo em — vì bếp nấu theo món, '
-  +'không nấu theo từng học sinh</span>'
-  +'<span class="chip">🔗 Thực đơn và suất ăn ở <b>M6.1 Bán trú</b></span></div></div>';
- h+=dnote('Đây là ví dụ rõ nhất của nguyên tắc <b>phạm vi lọc cả CỘT, không chỉ DÒNG</b>. '
-  +'Bán trú thấy <b>đủ mọi học sinh</b> của điểm trường — nhưng chỉ <b>một trường dữ liệu</b>. '
-  +'Cho họ xem cả hồ sơ y tế «cho tiện» là mở rộng bề mặt rủi ro mà không thêm được gì cho việc nấu ăn.');
- return h;
-}
+/* BTNV-1B (23/9/2026): ham veDiUngBT() DA GO — vai ban tru khong con o menu nay.
+   Bang «gom theo mon gay di ung» neu truong can thi dung o M6.1, khong dung lai o day. */
 /* ── Tầng 2: hồ sơ một em ── */
 function panelHS(){
  if(!ST.curHS) return '<div class="panel"></div>';

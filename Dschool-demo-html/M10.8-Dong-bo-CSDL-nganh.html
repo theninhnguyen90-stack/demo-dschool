@@ -107,7 +107,7 @@ code{background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:11px}
 /* ═══════════ NHÓM DỮ LIỆU ═══════════ */
 /* thu tu = thu tu phu thuoc bat buoc (§3.1) */
 const NHOM=[
- {id:'cc', ten:'Cơ cấu tổ chức', mo:'điểm trường · hệ đào tạo · tổ chuyên môn', mn:'M10.1 ② ⑤', keo:1,day:1, n:14,   lan:'12/08/2026 05:12'},
+ {id:'cc', ten:'Cơ cấu tổ chức', mo:'điểm trường · hệ đào tạo · tổ chuyên môn', mn:'M10.2 ③ ④ + M10.1 ② ⑤', keo:1,day:1, n:14,   lan:'12/08/2026 05:12'},
  {id:'lop',ten:'Danh mục lớp',    mo:'38 lớp · gồm cả lớp không hoạt động',       mn:'M10.1 ③', keo:1,day:1, n:38,   lan:'12/08/2026 05:14'},
  {id:'ns', ten:'Danh sách nhân sự',mo:'chỉ người có cờ “Thuộc diện khai CSDL ngành”',mn:'M4.1',keo:1,day:1, n:79,  lan:'20/08/2026 09:40'},
  {id:'hs', ten:'Hồ sơ học sinh',  mo:'toàn trường',                               mn:'M1.1', keo:1,day:1, n:1284, lan:'12/08/2026 05:20'},
@@ -235,7 +235,7 @@ const ANHXA_HS=[
  ['Diện «Học sinh mồ côi» — «cha» hoặc «mẹ»','M1.2 §3.1b','⛔ không có ô nhận','🛑 dòng nằm lại tab ④ — ⛔ KHÔNG GỘP. Một em còn mẹ mà khai mồ côi cả cha mẹ là KHAI SAI, và cái sai đó quay lại thành căn cứ chính sách','ko'],
  ['Diện «Học sinh dân tộc thiểu số»','M1.2 §3.1b','⛔ không ánh xạ','cổng lấy từ trường «Dân tộc» của hồ sơ — 🛑 ⛔ không đẩy hai lần (1D E.3 ③)','ko'],
  ['🆕 Bảy diện mới của phiên 1D','M1.2 §3.1','Con người có công · Con anh hùng · Bị bỏ rơi mất nguồn nuôi dưỡng · Con hộ nghèo CT 135 · CS HS Dân tộc bán trú (NĐ 66) · CS HS Dân tộc nội trú (NĐ 66) · HS hưởng CS ăn trưa (NĐ 339)','✅ CẢ BẢY ĐỀU CÓ ô nhận — nằm trong danh mục 16 giá trị của cổng. Trước đây bị đánh «thiếu» vì DSCHOOL chưa có, ⛔ không phải vì cổng không có',''],
- ['🆕 Bốn chế độ của khối «Chế độ đang hưởng»','M1.2 §3.4','Hỗ trợ chi phí học tập · Hỗ trợ nhà ở · Cấp tiền hàng tháng · Cấp gạo (tệp import 4.1.2)','🛑 cổng chỉ có CỜ có/không ⇒ đẩy cờ, ⛔ không đẩy «Mức hưởng» và «Đơn vị»','ax'],
+ ['🆕 Bốn chế độ của khối «Chế độ nhà nước cấp»','M1.2 §3.4','Hỗ trợ chi phí học tập · Hỗ trợ nhà ở · Cấp tiền hàng tháng · Cấp gạo (tệp import 4.1.2)','🛑 cổng chỉ có CỜ có/không ⇒ đẩy cờ, ⛔ không đẩy «Mức hưởng» và «Đơn vị»','ax'],
  ['Miễn học phí · Giảm học phí','🔗 M7.4','Miễn học phí · Giảm học phí','','ax'],
  ['d. Trạng thái'],
  ['Trạng thái + Ngày trạng thái','M1.1 · mốc học kỳ 🔗 M10.1 ①','12 giá trị gắn học kỳ của cổng','qua hàm trangThaiNganh() — §3.8','dx']];
@@ -494,6 +494,24 @@ const VIEC=[
   ly:'TT 10/2026 bắt buộc công khai thông tin văn bằng lên cổng thông tin và cơ sở dữ liệu', ai:'VT'},
  {loai:'vb', t:'📜 Văn bằng chờ công khai — TỒN ĐỌNG HỒI TỐ', ob:'1.842 bằng đã cấp trước 15/04/2026', ct:'Khóa 2019–2020 … 2024–2025',
   ly:'Nghĩa vụ công khai của TT 10/2026 áp dụng HỒI TỐ cho cả văn bằng đã cấp trước đây — không có hàng đợi này thì trường vi phạm mà không biết', ai:'VT'},
+
+ /* ══ 🆕 23/9/2026 — RSHS-2B: ba loại việc của hợp đồng HDTC ══
+    Sinh khi `Trạng thái kết nối` ≠ «Đang hoạt động» (§4 — sáu giá trị, có cả «Chưa có API (MVP)»).
+    🛑 Tích ở ĐÂY, một lần, một chỗ. Menu nghiệp vụ chỉ CHIẾU 🔗, ⛔ không có ô tích riêng (D2).
+    🛑 ⛔ KHÔNG chặn nghiệp vụ nội bộ — chưa tích thì em VẪN chuyển lớp được, VẪN thôi học được.
+       Ngoại lệ DUY NHẤT: bước Đóng hồ sơ của M1.5, nơi rào chắn bảo vệ HỌC SINH. */
+ {loai:'tay_lop', t:'🔁 Cập nhật lớp trên cổng', ob:'Trần Gia Bảo · 8A2 → 8A1 · hiệu lực 21/08/2026',
+  ct:'Nguồn: M1.7 · ticket CL-2026-0042 — hạn 7 ngày, còn 2 ngày',
+  ly:'Chuyển lớp TRONG CÙNG điểm trường. 🛑 Mã định danh ⛔ KHÔNG đổi — đây ⛔ không phải thủ tục chuyển trường; trên cổng là chức năng cập nhật lớp. Gọi sai tên thì văn thư đi tìm chức năng «chuyển trường» cho một em không hề đổi trường.', ai:'VT'},
+ {loai:'tay_dt', t:'🏫 Cập nhật điểm trường và lớp trên cổng', ob:'Lê Khánh Chi · 7A1 (Điểm trường A) → 7A3 (Điểm trường B) · hiệu lực 24/08/2026',
+  ct:'Nguồn: M1.7 · ticket CL-2026-0047 — hạn 5 ngày, còn 3 ngày',
+  ly:'Phải đẩy CẢ HAI trường dữ liệu: Điểm trường và Lớp. Hạn ngắn hơn ca cùng điểm trường vì nó đụng SĨ SỐ THEO ĐIỂM TRƯỜNG — con số Sở đọc.', ai:'VT'},
+ {loai:'tay_hs', t:'📥 Nhập hồ sơ học sinh từ tỉnh khác', ob:'Đỗ Minh Khang · nhận hồ sơ bản giấy · Khối 9',
+  ct:'Nguồn: M1.5 chiều đến · mã định danh trường cũ 36315020014000099 — hạn 3 ngày, còn 1 ngày',
+  ly:'🛑 Ký tiếp nhận ở M1.5 ⛔ KHÔNG có nghĩa là xong việc với cổng. Khi nhập trên cổng phải khai ĐÚNG mã định danh cũ — ⛔ TUYỆT ĐỐI không để cổng sinh mã mới, nếu không em có HAI mã và toàn bộ quá trình học ở trường cũ đứt khỏi em (TT 42/2021).', ai:'VT'},
+ {loai:'tay_hs', t:'📥 Nhập hồ sơ học sinh từ tỉnh khác — ⚠ CHƯA có mã định danh', ob:'Lý Thu Trang · nhận hồ sơ bản giấy · Khối 7',
+  ct:'Nguồn: M1.5 chiều đến · mang mã tạm PENDING-2026-0060 — gia đình chưa mang đủ giấy',
+  ly:'Hồ sơ VẪN tạo được (⛔ không chặn — gia đình có thể không mang đủ giấy) nhưng nằm lại đây tới khi điền được mã. Xin lại học bạ hoặc giấy giới thiệu của trường cũ, hoặc hỏi thẳng trường cũ.', ai:'VT'},
 
  /* ══ 🆕 20/9/2026 — CSDL-2A: dòng của bốn loại việc mới và của loại `sk` mở rộng ══ */
  {loai:'sk', t:'⚑ Cờ ba giá trị còn «Chưa khảo sát»', ob:'47 học sinh · cờ «Học tiếng dân tộc» (M1.1 §6.3.7)',
@@ -1229,7 +1247,15 @@ const LOAI={duyet:['⏸','Phiên đẩy chờ Hiệu trưởng duyệt','t-y'],
             diachi:['🏠','Địa chỉ ở chế độ nhập tự do — chưa chuẩn hóa','t-y'],
             onhan:['🚫','Cổng không có ô nhận — Dschool mịn hơn cổng','t-n'],
             chualop:['📋','Chưa xếp lớp — chưa gắn được vào phiên đẩy','t-b'],
-            tnghiep:['🎓','Ngoài tập đẩy theo trạng thái','t-n']};
+            tnghiep:['🎓','Ngoài tập đẩy theo trạng thái','t-n'],
+            /* 🆕 RSHS-2B (23/9/2026) — hợp đồng HDTC: việc phải LÀM TAY trên cổng Sở.
+               🛑 BA loại, BA TÊN, BA HẠN — ⛔ KHÔNG gộp tên. Văn thư ngồi trước cổng ĐỌC
+               dòng việc rồi đi tìm chức năng tương ứng, mà ba việc này ở BA CHỖ khác nhau
+               trên cổng. Gộp một tên thì hoặc họ làm thiếu nửa việc, hoặc đi tìm một
+               chức năng ⛔ không tồn tại. */
+            tay_lop:['🔁','Cập nhật lớp trên cổng — hạn 7 ngày','t-b'],
+            tay_dt: ['🏫','Cập nhật điểm trường và lớp trên cổng — hạn 5 ngày','t-y'],
+            tay_hs: ['📥','Nhập hồ sơ học sinh từ tỉnh khác — hạn 3 ngày','t-r']};
 /* 🆕 MYC-2C (21/9/2026) — luật che M1.1 §6.3.9 đi theo khi đẩy */
 const CHE_CCCD='<div class="note n-d" style="margin:0 10px 10px">🛑 <b>Luật che của M1.1 §6.3.9 đi theo ba dòng CCCD của người trưởng thành.</b> '+
  '<b>Phiên đồng bộ gửi số ĐẦY ĐỦ lên cổng</b> — đó là mục đích khai. Nhưng <b>mọi màn hình của M10.8</b> — bảng đối chiếu · tab ④ Việc chưa xong · tệp xuất — hiện <b>dạng che <span class="mono">034•••••821</span></b>. '+
@@ -1239,6 +1265,14 @@ function tab4(){
    '<div class="note n-w">🆕 <b>20/9/2026 — bốn loại việc mới và một loại mở rộng.</b> Bốn nguyên nhân mới đòi <b>bốn hành động khác nhau của bốn người khác nhau</b>, và <b>hai trong số đó không có hành động nào cả</b> '+
    '(<code>🚫 Cổng không có ô nhận</code> · <code>🎓 Ngoài tập đẩy</code>). Gộp chúng vào một con số <i>“còn N việc chưa xong”</i> thì tab này thành một <b>chỉ báo đỏ không bao giờ về 0</b> — '+
    'đúng loại thất bại mà §1.1 đã bỏ bảng nguồn sự thật vì nó.</div>'+
+   /* 🆕 RSHS-2B — hợp đồng HDTC */
+   '<div class="note n-w">🆕 <b>23/9/2026 — BA loại việc «phải làm tay trên cổng Sở» (hợp đồng <code>HDTC</code>).</b> '+
+   'Khi <b>Trạng thái kết nối ≠ «Đang hoạt động»</b> <i>(§4 — sáu giá trị, có cả «Chưa có API (MVP)»)</i>, mọi sự kiện đáng lẽ đẩy tự động sẽ thành <b>một dòng việc ở đây</b>.<br>'+
+   '🛑 <b>Tích ở ĐÂY — một lần, một chỗ.</b> Menu nghiệp vụ <i>(M1.5 · M1.6 · M1.7)</i> chỉ mang <b>một chip chiếu 🔗 CHỈ ĐỌC</b> và deep-link sang đúng dòng việc; ⛔ <b>không menu nào có ô tích riêng</b> — đặt ô tích rời ở năm menu là <b>năm nguồn sự thật</b> cho cùng một câu hỏi, và <b>sẽ không ai tích</b>: người mở ticket là PHT_ĐT, người gõ cổng là Văn thư và họ gõ <b>cả lô một lần</b>.<br>'+
+   '🛑 <b>BA TÊN khác nhau, ⛔ không gộp</b> — ba việc này ở <b>ba chỗ khác nhau trên cổng</b>. Gộp một tên thì hoặc làm thiếu nửa việc, hoặc đi tìm một chức năng ⛔ không tồn tại.<br>'+
+   '✅ <b>Khi API mở: CÙNG một dòng việc, chỉ khác là máy tự đóng</b> — ⛔ không màn hình nào phải dựng lại. Đó là lý do lớn nhất để làm theo cách này.<br>'+
+   '⚙ <b>Tham số «Chuyển trường khác tỉnh»</b>: <code>đồng bộ được</code> / <code>phải làm tay</code> — <b>mặc định «phải làm tay»</b>. '+
+   '<i>Hai cái sai ⛔ không cân nhau: đoán «đồng bộ được» mà sai thì văn thư tưởng máy đã làm, ⛔ không ai lên cổng, <b>học sinh rơi giữa hai trường</b> và ⛔ không ai biết; đoán «phải làm tay» mà sai thì thừa <b>đúng một cú bấm</b>.</i></div>'+
    '<div class="note n-i">🔗 <b>Mức ② là cảnh báo SỚM trong trường; cửa chặn ở tab này giữ nguyên.</b> '+
    'Hồ sơ học sinh đếm trường CSDL ngành còn thiếu <b>từ trước</b>, ở dòng <i>«📋 Khai báo CSDL ngành: thiếu N mục»</i> có hạn — xem <b>M1.1 §3.0</b>. '+
    'Dòng nào lúc đẩy vẫn thiếu thì <b>vẫn nằm lại đây như cũ</b>, ⛔ không luật chặn nào đổi.</div>';
@@ -1422,5 +1456,138 @@ function doiVai(){
 document.getElementById('role').value='FULL';
 document.getElementById('cst').value='ok';
 doiVai();
+
+/* ═══════════════════════════════════════════════════════════════
+   KTLD-1F — M10.8 trong LUỒNG KHỞI TẠO LẦN ĐẦU
+   Tài liệu: M10.8 §3.1b (thứ tự kéo · nhân sự KHÔNG treo vào lớp) ·
+             §4.1 (kênh chưa mở thì luồng vẫn chạy) · §6.6 (kho rỗng tuyệt đối) ·
+             §6.7 (🔴 chống tạo trùng hàng loạt — khép M1.9 §13.1)
+
+   🛑 M10.8 ⛔ KHÔNG phải một bước của luồng — nó là ĐƯỜNG NẠP THAY THẾ.
+   🛑 Tệp này ⛔ KHÔNG sửa một byte nào của app.js — chỉ bọc ve() và tabChieu().
+   ═══════════════════════════════════════════════════════════════ */
+
+let KHO_KT = 'rong';   /* rong = kho rỗng tuyệt đối · codl = đã có dữ liệu, còn hồ sơ thiếu mã */
+
+/* ───── dữ liệu mẫu: lượt kéo «Hồ sơ học sinh» đầu tiên ───── */
+const KT_KHOP = [
+  {ten:'Nguyễn Minh Khuê', ns:'18/02/2012', khoi:'Khối 8', ma:'79.01.2012.004312',
+   hs:{ma:'HS-2024-0312', lop:'8A2', diem:14}, muc:'chac'},
+  {ten:'Trần Gia Bảo',     ns:'05/11/2011', khoi:'Khối 9', ma:'79.01.2011.008907',
+   hs:{ma:'HS-2023-0188', lop:'9A1', diem:22}, muc:'chac'},
+  {ten:'Lê Thanh Hà',      ns:'—',          khoi:'Khối 7', ma:'79.01.2013.001255',
+   hs:{ma:'HS-2025-0461', lop:'7A3', diem:6},  muc:'nghi'},
+];
+const KT_MOI = 1294;   /* dòng «chỉ có ở CSDL ngành» KHÔNG khớp ai */
+
+/* ───── bọc ve(): thêm dải bước vào tab Kéo về ───── */
+const _veGoc108 = ve;
+ve = function(){
+  _veGoc108.apply(null, arguments);
+  if (tab !== 2) return;
+  const v = document.getElementById('view'); if (!v) return;
+  v.insertAdjacentHTML('afterbegin', daiKT108());
+};
+
+function daiKT108(){
+  const rong = KHO_KT === 'rong';
+  const knMo = kn === 'ok';
+  let h = '<div class="sec"><h3>🧭 Luồng khởi tạo lần đầu<span class="r">M10.8 ⛔ KHÔNG phải một bước — nó là ĐƯỜNG NẠP THAY THẾ</span></h3>'+
+    '<div style="padding:0 10px 10px">'+
+    '<div class="bar" style="border:none;padding:0 0 8px"><b>Tình huống kho (demo):</b> '+
+    '<button class="btn'+(rong?' p':'')+'" onclick="datKho(\'rong\')">Kho RỖNG TUYỆT ĐỐI</button> '+
+    '<button class="btn'+(rong?'':' p')+'" onclick="datKho(\'codl\')">Kho đã có dữ liệu · còn 3 hồ sơ thiếu mã</button></div>';
+
+  /* §4.1 — kênh chưa mở thì luồng vẫn chạy trọn */
+  h += knMo
+    ? '<div class="note n-i">🔌 <b>Kênh đang mở</b> — có thể <b>kéo thay cho nạp Excel</b> ở bước <b>2 · 8a</b> <i>(cơ cấu)</i> · <b>4</b> <i>(nhân sự)</i> · '+
+      '<b>8b③</b> <i>(lớp)</i> · <b>9</b> <i>(học sinh)</i>.</div>'
+    : '<div class="note n-w">🔌 <b>Chưa mở kênh CSDL ngành</b> — mọi bước của luồng khởi tạo <b>nạp bằng Excel</b> '+
+      '<i>(chốt <code>H3</code>: Excel là đường chính, kênh ngành là <b>nguồn tùy chọn</b>)</i>.<br>'+
+      '🛑 ⛔ Bảng tiến độ của <b>M10.12</b> ⛔ <b>không có dòng nào cho M10.8</b>, và ⛔ <b>không bước nào</b> chuyển '+
+      '<i>chưa đủ điều kiện</i> vì kênh chưa mở.</div>';
+
+  /* §3.1b — thứ tự kéo, và cách đọc sơ đồ §3.1 cho đúng */
+  h += '<div class="note n-d">🔴 <b>Đọc sơ đồ §3.1 cho đúng:</b> <b>Danh sách nhân sự treo vào «Cơ cấu tổ chức», ⛔ KHÔNG treo vào «Danh mục lớp»</b> — '+
+    '⛔ không một trường nào của hồ sơ nhân sự trỏ vào một lớp. Sơ đồ vẽ thành chuỗi tuyến tính nên đọc nhầm được, '+
+    'và đọc nhầm thì hoặc <b>sửa luồng cho khớp sơ đồ</b>, hoặc <b>chặn nhầm lượt kéo nhân sự</b> vì «chưa có lớp».<br>'+
+    '⟹ Nhân sự <i>(bước 4)</i> và Danh mục lớp <i>(bước 8b③)</i> là <b>hai nhánh song song</b>.</div>';
+
+  /* §6.6 — hai ca */
+  h += rong
+    ? '<div class="note n-g">✅ <b>Kho RỖNG TUYỆT ĐỐI</b> — nhóm đang kéo có <b>0 bản ghi</b> ⇒ ⛔ <b>không có gì để trùng</b> ⇒ '+
+      '<b>cho tạo hàng loạt</b>, nút <b>Chọn tất cả</b> sống. Hộp xác nhận nêu <b>số bản ghi sẽ tạo · nguồn · thời điểm chốt dữ liệu của cổng</b>; '+
+      'ghi thành <b>một phiên</b> có hoàn tác 7 ngày.<br>'+
+      '🛑 Điều kiện đọc theo <b>TỪNG NHÓM</b>: trường đã nạp nhân sự bằng Excel ở bước 4 thì kho <b>nhân sự</b> có dữ liệu, '+
+      'kho <b>học sinh</b> vẫn rỗng — lượt kéo học sinh ấy <b>vẫn được tạo hàng loạt</b>.<br>'+
+      '⚠ «Rỗng tuyệt đối» ⛔ <b>không phải</b> «rỗng sau bộ lọc» — đếm toàn bộ, ⛔ không đếm theo điểm trường hay năm học đang chọn.</div>'
+    : '<div class="note n-w">🔴 <b>Kho đã có dữ liệu</b> — nhóm có <b>≥ 1 bản ghi</b> ⇒ áp <b>§6.7 chống tạo trùng hàng loạt</b>. '+
+      'Rủi ro lớn nhất đúng lúc này: hệ thống có hồ sơ <b>thiếu mã định danh</b>, lượt kéo thấy các em đó là <b>«chỉ có ở CSDL ngành»</b>, '+
+      'một cú <b>Chọn tất cả</b> sinh ra <b>hàng nghìn hồ sơ trùng</b> — mỗi em <b>một bản có điểm không mã</b> và <b>một bản có mã trống rỗng</b>.</div>';
+
+  h += '<div style="margin-top:8px"><button class="btn p" onclick="xemLuotKeo108()">👁 Xem trước lượt kéo «Hồ sơ học sinh» đầu tiên</button></div>';
+  return h + '</div></div>';
+}
+
+function datKho(v){ KHO_KT = v; ve(); }
+
+/* ───── màn xem trước: hai ca khác hẳn nhau ───── */
+function xemLuotKeo108(){
+  const rong = KHO_KT === 'rong';
+  let b;
+  if (rong){
+    b = '<div class="note n-g" style="margin:0 0 10px">✅ <b>Kho học sinh RỖNG TUYỆT ĐỐI</b> — 0 bản ghi. '+
+      'Mọi dòng đều là <b>➕ chỉ có ở CSDL ngành</b>, và ⛔ <b>không có hồ sơ nào để trùng</b>.</div>'+
+      '<dl class="kv"><dt>Sẽ tạo</dt><dd><b>'+so(KT_MOI + KT_KHOP.length)+'</b> hồ sơ học sinh</dd>'+
+      '<dt>Nguồn</dt><dd>CSDL ngành GD&ĐT · mã trường <span class="mono">79.01.0123456789012345</span></dd>'+
+      '<dt>Thời điểm chốt dữ liệu của cổng</dt><dd class="mono">23/09/2026 06:00</dd>'+
+      '<dt>Hoàn tác</dt><dd><b>7 ngày</b> — bỏ qua bản ghi đã bị sửa tay sau phiên, và nêu đích danh</dd></dl>'+
+      '<div class="note n-i" style="margin:10px 0 0">Nút <b>Chọn tất cả</b> <b>sống</b> ở ca này — ⛔ và chỉ ở ca này.</div>';
+  } else {
+    b = '<div class="note n-w" style="margin:0 0 10px">🔴 <b>3 dòng khớp gần đúng với hồ sơ đang có mà THIẾU MÃ.</b> '+
+      'Nút <b>Chọn tất cả</b> <b>bị vô hiệu hóa</b> ở nhóm dòng này.</div>'+
+      '<div class="note n-i" style="margin:0 0 10px"><b>Luật khớp</b> <i>(bê nguyên M1.5 §7.11.1)</i>: '+
+      '<b>khớp chắc</b> = họ tên (bỏ dấu, chuẩn hóa khoảng trắng) + ngày sinh trùng · '+
+      '<b>khớp nghi ngờ</b> = họ tên trùng + cùng khối.</div>'+
+      '<table><thead><tr><th>Dòng của cổng</th><th>Khớp với hồ sơ đang có</th><th style="width:250px">Thao tác</th></tr></thead><tbody>'+
+      KT_KHOP.map(function(x){
+        return '<tr><td><b>'+esc(x.ten)+'</b><br><span class="mut">'+esc(x.ns)+' · '+esc(x.khoi)+' · mã '+esc(x.ma)+'</span></td>'+
+          '<td><span class="tag '+(x.muc==='chac'?'t-y':'t-n')+'">⇄ khớp '+(x.muc==='chac'?'chắc':'nghi ngờ')+'</span><br>'+
+          '<b>'+esc(x.hs.ma)+'</b> · '+esc(x.hs.lop)+' · <b>'+x.hs.diem+' đầu điểm</b> · <span class="tag t-r">THIẾU MÃ</span></td>'+
+          '<td><button class="btn p" onclick="ganMa108(\''+x.hs.ma+'\')">⇄ Gán mã vào hồ sơ đang có</button> '+
+          '<button class="btn" onclick="taoMoi108(\''+esc(x.ten)+'\',\''+x.hs.ma+'\','+x.hs.diem+')">+ Tạo hồ sơ mới</button></td></tr>';
+      }).join('')+
+      '<tr><td colspan="3" class="mut">… và <b>'+so(KT_MOI)+'</b> dòng ⛔ <b>không khớp ai</b> — tick chọn bình thường, '+
+      'nút <b>Chọn tất cả</b> của <i>nhóm này</i> vẫn sống.</td></tr>'+
+      '</tbody></table>'+
+      '<div class="note n-d" style="margin:10px 0 0">⛔ <b>Đối khớp gần đúng ⛔ KHÔNG bao giờ tự áp dụng</b> <i>(§8.1)</i> — '+
+      'nhưng nó <b>phải được đề xuất</b>: lỗi trùng hồ sơ sinh ra chính từ chỗ người dùng <b>không biết là đang có hồ sơ khớp</b>.<br>'+
+      '🔑 Nút chính là <b>Gán mã</b> vì hồ sơ ấy <b>trống mã</b>, và §1.4 cho phép <b>nhận mã từ CSDL ngành</b> — '+
+      'đó là <b>ngoại lệ duy nhất</b> mà mã định danh tham gia đồng bộ.</div>';
+  }
+  modal('👁 Xem trước — lượt kéo «Hồ sơ học sinh» đầu tiên', b,
+    '<button class="btn" onclick="dong()">Đóng</button>'+
+    (rong ? '<button class="btn p" onclick="dong();toast(\'Đã tạo <b>'+so(KT_MOI + KT_KHOP.length)+'</b> hồ sơ trong MỘT phiên — hoàn tác 7 ngày\')">📥 Tạo hàng loạt</button>' : ''));
+}
+
+function ganMa108(ma){
+  dong();
+  toast('⇄ Đã gán mã định danh vào hồ sơ <b>'+esc(ma)+'</b> — ⛔ không tạo hồ sơ mới, ⛔ không mất một đầu điểm nào');
+}
+function taoMoi108(ten, ma, diem){
+  modal('⚠ Tạo hồ sơ MỚI cho «'+esc(ten)+'»?',
+   '<div class="note n-w" style="margin:0 0 10px">Hệ thống <b>đang có</b> một hồ sơ khớp gần đúng. Tạo mới nghĩa là '+
+   '<b>hai hồ sơ cho một em</b>: một bản <b>có điểm, không mã</b> và một bản <b>có mã, trống rỗng</b>.</div>'+
+   '<table><tr><th>Hồ sơ đang có</th><th>Dòng của CSDL ngành</th></tr>'+
+   '<tr><td><b>'+esc(ma)+'</b><br>'+esc(ten)+'<br><b>'+diem+' đầu điểm</b><br><span class="tag t-r">THIẾU MÃ</span></td>'+
+   '<td><b>chưa có trong hệ thống</b><br>'+esc(ten)+'<br>0 đầu điểm<br><span class="tag t-y">có mã định danh</span></td></tr></table>'+
+   '<div class="note n-d" style="margin:10px 0 0">Trùng họ tên và ngày sinh là <b>chuyện có thật</b>, nên ⛔ không chặn cứng — '+
+   'nhưng phải nói ra, và người bấm phải <b>nhận trách nhiệm bằng lời</b>.</div>',
+   '<button class="btn" onclick="dong()">Quay lại</button>'+
+   '<button class="btn p" onclick="dong();toast(\'Đã tạo hồ sơ mới — audit ghi <b>lời xác nhận hai em khác nhau</b>\')">'+
+   'Tôi xác nhận đây là hai học sinh khác nhau</button>');
+}
+
+ve();
 </script>
 </body></html>

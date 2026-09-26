@@ -956,6 +956,96 @@ document.addEventListener('change',function(ev){
 });
 
 render();
+
+/* ═══════════════════════════════════════════════════════════════
+   KTLD-1G — M10.9 trong LUỒNG KHỞI TẠO LẦN ĐẦU
+   Tài liệu: M10.9 §4b — bước B07 phần ⓐ · loại FORM (⛔ không có mẫu Excel)
+             §4b.3 hạng N, con số có mẫu số = số tuần thực học ≥ 35 (QĐ 2308)
+   🛑 Tệp này ⛔ KHÔNG sửa một byte nào của app.js — chỉ gán lại render().
+   ═══════════════════════════════════════════════════════════════ */
+
+let KT109_TRONG = true;
+let KT109_XN    = false;
+
+const _renderGoc109 = render;
+render = function(){
+  _renderGoc109.apply(null, arguments);
+  const c = document.getElementById('content'); if (!c) return;
+  if (!c.innerHTML) return;
+  c.insertAdjacentHTML('afterbegin', daiKT109());
+};
+
+function ktLuong109(v){ KT109_TRONG = !!v; render(); }
+function ktXN109(){
+  KT109_XN = true;
+  toast('✓ Ghi <b>' + esc(R().ten) + '</b> lúc <b>07/09/2026 09:12</b>. 🛑 ⛔ Không phải ô tick trạng thái — máy đếm <b>con số</b>, người ra <b>kết luận</b>.');
+  render();
+}
+
+/* số tuần thực học thấp nhất trong các lớp — đọc lại chỉ số CÓ SẴN của T3,
+   ⛔ không dựng chỉ số thứ hai */
+function ktTuanThapNhat109(){
+  let min = 1e9, lop = '';
+  LOP.forEach(function(l){
+    const n = thucHoc(l.id, NH.hk1bd, NH.hk2kt) / NGAYHOC.length;
+    if (n < min){ min = n; lop = l.ten + ' · ' + dtTen(l.dt); }
+  });
+  return {tuan: min, lop: lop};
+}
+
+function daiKT109(){
+  let h = '<div class="scope" style="display:block">' +
+    '🧭 <b>Luồng khởi tạo lần đầu</b> — bước <b>B07 phần ⓐ</b> <i>(phần ⓑ là <code>M10.6</code> Trung tâm cấu hình)</i> ' +
+    '<button class="rolnk' + (KT109_TRONG ? '' : ' off') + '" onclick="ktLuong109(1)">trong luồng</button> ' +
+    '<button class="rolnk' + (KT109_TRONG ? ' off' : '') + '" onclick="ktLuong109(0)">ngoài luồng</button>';
+
+  if (!KT109_TRONG){
+    return h + '<div style="margin-top:7px">Trường ở trạng thái <b>dang_van_hanh</b> — menu chạy bình thường, ' +
+      '⛔ không dải luồng, ⛔ không nút <code>↩ Về tiến độ</code>.</div></div>';
+  }
+
+  const song = DOT.filter(function(d){ return !d.huy; });
+  const ngay = Object.keys(ngayNghiSet(LOP.map(function(l){ return l.id; }))).length;
+  const t = ktTuanThapNhat109();
+  const dat = t.tuan >= TUAN_CHUAN.nam;
+
+  h += '<div style="margin-top:8px">🛑 <b>Bước này là <code>form</code> — ⛔ KHÔNG có mẫu Excel, và đó ⛔ không phải chỗ còn thiếu.</b> ' +
+    'Một năm có khoảng ' + song.length + ' đợt nghỉ; nạp hàng loạt để tiết kiệm mười một lần gõ là <b>bỏ mất F4 — bảng ảnh hưởng BẰNG SỐ trước khi lưu</b> ' +
+    '<i>(mỗi đợt nói trước sẽ hủy bao nhiêu tiết, bao nhiêu suất ăn)</i> và <b>F3 ba cờ hệ quả</b>. ' +
+    'Tức là <b>ghi ' + song.length + ' quyết định hủy tiết mà ⛔ không ai xem hậu quả một lần nào</b>.</div>';
+
+  h += '<div style="margin-top:8px;font-family:ui-monospace,monospace;font-size:12px;white-space:pre-wrap;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:9px 11px">' +
+    'Đã khai ' + song.length + ' đợt nghỉ · ' + ngay + ' ngày nghỉ (tính trên ngày học trong tuần).\n' +
+    'Số tuần thực học thấp nhất trong các lớp: ' + t.tuan.toFixed(1).replace('.', ',') + ' tuần  ' +
+    (dat ? '✓ ≥ 35 (QĐ 2308)' : '🔴 < 35 (QĐ 2308) — ' + esc(t.lop)) +
+    '</div>';
+
+  h += dat
+    ? ''
+    : '<div style="margin-top:7px;color:#991b1b">🔴 <b>Dưới 35 tuần ⇒ cảnh báo ĐỎ, ⛔ KHÔNG chặn.</b> ' +
+      'Máy nêu đích danh lớp thiếu; <b>người vẫn kết luận được</b>. Chặn thì một trường khai thừa một đợt nghỉ sẽ <b>kẹt cứng ở bước 7</b> ' +
+      'trong khi lịch năm học còn điều chỉnh được ở <code>M10.1</code>.</div>';
+
+  h += '<div style="margin-top:7px">🛑 <b>Vì sao ⛔ không thể là hạng M:</b> máy ⛔ không biết trường sẽ nghỉ bao nhiêu đợt ' +
+    '<i>(nghỉ Tết theo quyết định của tỉnh · nghỉ bù · ngày sự kiện riêng của trường)</i>. Nặng hơn: <b>0 đợt nghỉ là một trạng thái dữ liệu hợp lệ</b> ⇒ ' +
+    'máy ⛔ không phân biệt được «chưa ai khai» với «khai rồi, và năm nay không có đợt nào» — đúng chỗ luật <b>KT-9</b> cấm.</div>';
+
+  h += KT109_XN
+    ? '<div style="margin-top:7px">✅ <b>' + esc(R().ten) + '</b> đã xác nhận lúc <b>07/09/2026 09:12</b> ⇒ <b>phần ⓐ XONG</b>. ' +
+      'Bước 7 xong khi <b>cả hai phần</b> xong <i>(hội — AND)</i>.</div>'
+    : '<div style="margin-top:7px">Lịch nghỉ của năm đã đủ chưa? ' +
+      '<button class="rolnk off" onclick="toast(\'Bước giữ trạng thái <b>đang làm</b> — ⛔ máy không kết luận hộ.\')">Chưa đủ</button> ' +
+      '<button class="rolnk" onclick="ktXN109()">✓ Đủ — xác nhận</button></div>';
+
+  h += '<div style="margin-top:8px;font-size:11.5px;color:#475569">🔗 <b>vào:</b> <code>/M10.9?ctx=khoi_tao&buoc=B07&phan=a&tab=dot_nghi&return=M10.12</code> · ' +
+    '<b>về:</b> <code>/M10.12?tab=luong&buoc=B07</code> ' +
+    '<button class="rolnk" onclick="toast(\'↩ Về khung luồng M10.12 — nút này CHỈ hiện khi trường ở trạng thái <b>dang_khoi_tao</b> (HDKT ①).\')">↩ Về tiến độ khởi tạo</button>' +
+    '<br>⚠ Phụ thuộc <b>thuận chiều</b> tới <b>B08a</b>: bốn mốc thời gian của năm ở <code>M10.1</code> mục ① đã lên <b>ngay sau bước 2</b> ⇒ tới đây mốc <b>đã có sẵn</b>.</div>';
+
+  return h + '</div>';
+}
+
+render();
 </script>
 </body>
 </html>

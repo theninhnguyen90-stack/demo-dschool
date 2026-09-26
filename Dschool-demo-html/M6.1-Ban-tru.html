@@ -276,18 +276,22 @@ const NGAY_CHOT=['2026-10-22'];          /* ngày đã chốt số báo bếp (v
 
 /* ========== DỮ LIỆU NỀN ========== */
 const DT={A:'Điểm trường A',B:'Điểm trường B',C:'Điểm trường C'};
+/* gvcn · sdt · cbGvcn — 🆕 BTNV-1A: BẢN CHIẾU CHỈ ĐỌC ở DÒNG LỚP, M6.1 không sở hữu.
+   gvcn + cbGvcn ← M4.5 F3 (phân công chủ nhiệm) · sdt ← SĐT CÔNG VỤ, lát «thông tin cơ bản» M4.1 §8.
+   🛑 cbGvcn=false ⇒ lớp CHƯA CÔNG BỐ: hiện chữ «chưa công bố», ⛔ không hiện tên và số,
+      ⛔ không đọc ô ghi hộ của M10.1 §7.0.3 (bản ghi sinh từ đó mang nhãn «chưa công bố»). */
 const LOP=[
- {id:'6A1',dt:'A',khoi:6,gvcn:'Nguyễn Thị Hoa',cham:'Nguyễn Thị Hoa',nc:'gvcn',dk:38},
- {id:'6A2',dt:'A',khoi:6,gvcn:'Lê Văn Minh',   cham:'Lê Văn Minh',   nc:'gvcn',dk:35},
- {id:'6A3',dt:'A',khoi:6,gvcn:'Vũ Thị Mai',    cham:'Vũ Thị Mai',    nc:'gvcn',dk:31},
- {id:'7A1',dt:'A',khoi:7,gvcn:'Đặng Thị Hồng', cham:'Đặng Thị Hồng', nc:'gvcn',dk:33},
- {id:'7A2',dt:'A',khoi:7,gvcn:'Phạm Văn Đức',  cham:'Phạm Văn Đức',  nc:'gvcn',dk:26},
- {id:'8A1',dt:'A',khoi:8,gvcn:'Ngô Thanh Tùng',cham:'Trần Thị Lan',  nc:'rieng',dk:18},
- {id:'6B1',dt:'B',khoi:6,gvcn:'Hoàng Thị Nhung',cham:'Hoàng Thị Nhung',nc:'gvcn',dk:30},
- {id:'6B2',dt:'B',khoi:6,gvcn:'Dương Văn Kiên', cham:'Dương Văn Kiên', nc:'gvcn',dk:27},
- {id:'7B1',dt:'B',khoi:7,gvcn:'Lý Thị Phượng',  cham:'Lý Thị Phượng',  nc:'gvcn',dk:21},
- {id:'6C1',dt:'C',khoi:6,gvcn:'Bùi Văn Thắng',  cham:'Bùi Văn Thắng',  nc:'gvcn',dk:20},
- {id:'7C1',dt:'C',khoi:7,gvcn:'Trịnh Thu Hà',   cham:'Trịnh Thu Hà',   nc:'gvcn',dk:17}
+ {id:'6A1',dt:'A',khoi:6,gvcn:'Nguyễn Thị Hoa',cham:'Nguyễn Thị Hoa',nc:'gvcn',dk:38,sdt:'0912 345 601',cbGvcn:true},
+ {id:'6A2',dt:'A',khoi:6,gvcn:'Lê Văn Minh',   cham:'Lê Văn Minh',   nc:'gvcn',dk:35,sdt:'0912 345 602',cbGvcn:true},
+ {id:'6A3',dt:'A',khoi:6,gvcn:'Vũ Thị Mai',    cham:'Vũ Thị Mai',    nc:'gvcn',dk:31,sdt:'0912 345 603',cbGvcn:true},
+ {id:'7A1',dt:'A',khoi:7,gvcn:'Đặng Thị Hồng', cham:'Đặng Thị Hồng', nc:'gvcn',dk:33,sdt:'0912 345 604',cbGvcn:true},
+ {id:'7A2',dt:'A',khoi:7,gvcn:'Phạm Văn Đức',  cham:'Phạm Văn Đức',  nc:'gvcn',dk:26,sdt:'0912 345 605',cbGvcn:true},
+ {id:'8A1',dt:'A',khoi:8,gvcn:'Ngô Thanh Tùng',cham:'Trần Thị Lan',  nc:'rieng',dk:18,sdt:'0912 345 606',cbGvcn:true},
+ {id:'6B1',dt:'B',khoi:6,gvcn:'Hoàng Thị Nhung',cham:'Hoàng Thị Nhung',nc:'gvcn',dk:30,sdt:'0912 345 607',cbGvcn:true},
+ {id:'6B2',dt:'B',khoi:6,gvcn:'Dương Văn Kiên', cham:'Dương Văn Kiên', nc:'gvcn',dk:27,sdt:'0912 345 608',cbGvcn:true},
+ {id:'7B1',dt:'B',khoi:7,gvcn:'Lý Thị Phượng',  cham:'Lý Thị Phượng',  nc:'gvcn',dk:21,sdt:'0912 345 609',cbGvcn:true},
+ {id:'6C1',dt:'C',khoi:6,gvcn:'Bùi Văn Thắng',  cham:'Bùi Văn Thắng',  nc:'gvcn',dk:20,sdt:'0912 345 610',cbGvcn:true},
+ {id:'7C1',dt:'C',khoi:7,gvcn:'Trịnh Thu Hà',   cham:'Trịnh Thu Hà',   nc:'gvcn',dk:17,sdt:'0912 345 611',cbGvcn:false}
 ];
 const lopById=id=>LOP.find(l=>l.id===id);
 const khoiCua=dt=>[...new Set(LOP.filter(l=>l.dt===dt).map(l=>l.khoi))].sort();
@@ -317,22 +321,32 @@ const LUUTRU=[
 ];
 
 /* ========== VAI TRÒ ========== */
+/* 🆕 BTNV-1A — hai năng lực HIỂN THỊ, ⛔ không phải quyền của M6.1:
+   'm11' = vai có ô quyền ở menu chủ M1.1 · 'm74' = vai có ô quyền ở menu chủ M7.4.
+   'lhkc' = Feature m6.1.lien_he_khan_cap (BT-1, 23/9/2026).
+   🔴 NVBT (vai BT · BTB) CO Y KHONG co 'lhkc' — day la «mac dinh DONG».
+   Truong muon bat thi tich o m6.1.lien_he_khan_cap × NVBT tai M10.4.
+   ⛔ Dung them 'lhkc' cho BT/BTB de «cho de xem» — lam the la pha diem chot BT-1.
+   Dùng ĐÚNG MỘT việc: ẩn 🔗 deep-link với vai không có quyền ở menu đích
+   (tiền lệ M8.2 §244 · D3 khung menu). ⛔ Không sinh ô quyền mới ở M6.1.
+   🛑 NVBT (vai BT · BTB) ⛔ không có cả hai — điểm chốt của cụm BTNV: NVBT rời M1.1 và M6.6.
+   NVBT VẪN giữ 'diung': cột Dị ứng là BẢN CHIẾU CHỈ ĐỌC trong Feature m6.1.dang_ky_ban_tru. */
 const QALL=['xem','cham','chambu','chotso','dkTao','dkSua','dkXoa','duyetNgoaiLe','mienNgoaiLe',
  'kehoach','anhkhoi','doichieu','quyettoan','trinh','duyetThang','kyThang','duyetSua',
- 'cauhinhBT','cauhinhChung','nhap','xuat','diung'];
+ 'cauhinhBT','cauhinhChung','nhap','xuat','diung','m11','m74','lhkc'];
 const ROLES={
  FULL :{n:'Trần Minh Đức',cd:'🔓 Đủ quyền (demo)',sc:'School',dt:null,q:QALL},
  BT   :{n:'Trần Thị Lan',cd:'NV bán trú — Điểm trường A',sc:'Branch',dt:'A',
         q:['xem','cham','chambu','chotso','dkTao','dkSua','dkXoa','duyetNgoaiLe','mienNgoaiLe','kehoach','anhkhoi','doichieu','quyettoan','trinh','cauhinhBT','nhap','xuat','diung']},
  BTB  :{n:'Mai Thị Hạnh',cd:'NV bán trú — Điểm trường B',sc:'Branch',dt:'B',
         q:['xem','cham','chambu','chotso','dkTao','dkSua','dkXoa','duyetNgoaiLe','mienNgoaiLe','kehoach','anhkhoi','doichieu','quyettoan','trinh','cauhinhBT','nhap','xuat','diung']},
- GVCN1:{n:'Nguyễn Thị Hoa',cd:'GVCN 6A1 — người chấm',sc:'Class',dt:'A',lop:['6A1'],q:['xem','cham','diung']},
- GVCN8:{n:'Ngô Thanh Tùng',cd:'GVCN 8A1 — không được phân công chấm',sc:'Class',dt:'A',lop:['8A1'],q:['xem','cham','diung']},
+ GVCN1:{n:'Nguyễn Thị Hoa',cd:'GVCN 6A1 — người chấm',sc:'Class',dt:'A',lop:['6A1'],q:['xem','cham','diung','m11']},
+ GVCN8:{n:'Ngô Thanh Tùng',cd:'GVCN 8A1 — không được phân công chấm',sc:'Class',dt:'A',lop:['8A1'],q:['xem','cham','diung','m11']},
  DP   :{n:'Đỗ Văn Sơn',cd:'Người chấm dự phòng ĐT A',sc:'Branch',dt:'A',q:['xem','cham','diung']},
- PHT  :{n:'Lý Thanh Bình',cd:'PHT Điểm trường A',sc:'Branch',dt:'A',q:['xem','kehoach','quyettoan','duyetThang','duyetSua','duyetNgoaiLe','cauhinhBT','xuat','diung']},
- HT   :{n:'Nguyễn Quang Huy',cd:'Hiệu trưởng',sc:'School',dt:null,q:['xem','kyThang','cauhinhChung','xuat','diung']},
- KT   :{n:'Hoàng Thị Yến',cd:'Kế toán',sc:'Branch',dt:'A',q:['xem','xuat']},
- VT   :{n:'Phan Thị Thảo',cd:'Văn thư',sc:'Branch',dt:'A',q:['xem','dkTao','dkSua','kehoach','nhap','xuat']}
+ PHT  :{n:'Lý Thanh Bình',cd:'PHT Điểm trường A',sc:'Branch',dt:'A',q:['xem','kehoach','quyettoan','duyetThang','duyetSua','duyetNgoaiLe','cauhinhBT','xuat','diung','m11','lhkc']},
+ HT   :{n:'Nguyễn Quang Huy',cd:'Hiệu trưởng',sc:'School',dt:null,q:['xem','kyThang','cauhinhChung','xuat','diung','m11','lhkc']},
+ KT   :{n:'Hoàng Thị Yến',cd:'Kế toán',sc:'Branch',dt:'A',q:['xem','xuat','m11','m74']},
+ VT   :{n:'Phan Thị Thảo',cd:'Văn thư',sc:'Branch',dt:'A',q:['xem','dkTao','dkSua','kehoach','nhap','xuat','m11']}
 };
 let role='FULL', simGio='08:18';
 const R=()=>ROLES[role];
@@ -378,6 +392,27 @@ const DIUNG_DAC=[
  {lop:'6A2',i:6,ten:'Bùi Thị Ngọc',   ma:'HS-2026-0522',du:null},
  {lop:'7A2',i:1,ten:'Dương Quốc Việt',ma:'HS-2026-0812',du:null}
 ];
+/* 🔴 GIỚI TÍNH — 🆕 BTNV-1A. BẢN CHIẾU CHỈ ĐỌC lát «Cơ bản» của M1.1; ⛔ M6.1 không thêm trường.
+   🛑 SINH BẰNG NGUỒN ĐỘC LẬP — ⛔ TUYỆT ĐỐI KHÔNG rút r() của hsCuaLop():
+      hsCuaLop gieo bằng MỘT chuỗi r() tuần tự (ten → chonNgay → ma → ht → mg).
+      Chèn thêm một lệnh r() vào giữa là DỊCH CẢ CHUỖI ⇒ đổi tên, hình thức và
+      miễn giảm của MỌI học sinh trong demo. Hàm này chỉ ĐỌC tên đã sinh, và khi
+      tên không đủ căn cứ thì băm (lopId, i) — không đụng bộ sinh ngẫu nhiên nào. */
+const DEM_NU=['Thị','Thu','Ngọc','Phương'], DEM_NAM=['Văn','Quốc','Đức','Duy'];
+const TEN_NU=['Chi','Giang','Hà','Lan','Mai','Oanh','Trang','Tú','Vy','Yến','Linh','Nhung','Hạnh','Thảo','Ngân','Hân','Vân Anh','Ngọc','Phượng'];
+const TEN_NAM=['Bình','Dũng','Hùng','Khang','Nam','Phúc','Quân','Sơn','Long','Thắng','Kiên','Đạt','Duy','Tuấn','Bảo','Huy','Khôi','Việt','Khánh'];
+function gioiTinh(ten,lopId,i){
+ const p=String(ten).split(' '), cuoi=p.slice(2).join(' '), dem=p[1]||'';
+ /* đệm «Thị» · «Văn» xét TRƯỚC — hai chữ này không lưỡng nghĩa trong tên người Việt,
+    nếu xét tên chính trước thì «Nguyễn Thị Dũng» sẽ ra Nam. */
+ if(DEM_NU.includes(dem)) return 'Nữ';
+ if(DEM_NAM.includes(dem)) return 'Nam';
+ if(TEN_NU.includes(cuoi)) return 'Nữ';
+ if(TEN_NAM.includes(cuoi)) return 'Nam';
+ let s=7; const k=lopId+'#'+i;
+ for(let j=0;j<k.length;j++) s=(s*131+k.charCodeAt(j))>>>0;
+ return ((s>>>5)&1)?'Nữ':'Nam';
+}
 const HSCACHE={};
 function hsCuaLop(lopId){
  if(HSCACHE[lopId]) return HSCACHE[lopId];
@@ -390,7 +425,22 @@ function hsCuaLop(lopId){
    mg:r()<0.13?{ten:'Hỗ trợ bữa trưa — NĐ 339/2025',muc:28000,ns:'Ngân sách nhà nước'}:null});
  }
  DIUNG_DAC.filter(x=>x.lop===lopId).forEach(x=>{if(ds[x.i]){ds[x.i].ten=x.ten;ds[x.i].ma=x.ma;ds[x.i].du=x.du;ds[x.i].ht=0}});
+ /* 🆕 BTNV-1A — gán gt SAU khi tên đã chốt (kể cả tên bị DIUNG_DAC ghi đè).
+    Lượt này nằm NGOÀI vòng gieo, ⛔ không chạm r() ⇒ 0 giá trị cũ đổi. */
+ ds.forEach((h,i)=>{h.gt=gioiTinh(h.ten,lopId,i)});
  HSCACHE[lopId]=ds; return ds;
+}
+
+/* ---- Liên hệ khẩn cấp — bản chiếu CHỈ ĐỌC từ M1.1, lát «liên hệ khẩn cấp» của YT.
+   Sinh bằng nguồn ĐỘC LẬP, ⛔ không rút r() của hsCuaLop (giữ nguyên chuỗi gieo). ---- */
+const QUANHE=['Mẹ','Bố','Bà nội','Ông ngoại','Dì','Bác'];
+function lienHeKhanCap(hs){
+ let n=0; const k=hs.id+"|lhkc";
+ for(let i=0;i<k.length;i++) n=(n*131+k.charCodeAt(i))>>>0;
+ const qh=QUANHE[n%QUANHE.length];
+ const ho=HO[(n>>>3)%HO.length], dem=DEM[(n>>>7)%DEM.length], ten=TEN[(n>>>11)%TEN.length];
+ const sdt="09"+String(10000000+(n%90000000)).slice(0,8);
+ return {qh, ten:ho+" "+dem+" "+ten, sdt:sdt.slice(0,4)+" "+sdt.slice(4,7)+" "+sdt.slice(7)};
 }
 
 /* ========== ĐĂNG KÝ BÁN TRÚ ========== */
@@ -739,6 +789,18 @@ function veDangKy(){
  return h+(ST.sub==='ngay'?veDSNgay():veQuanLyDK());
 }
 
+/* 🆕 BTNV-1A — khối GVCN của DÒNG LỚP (⛔ KHÔNG phải cột của từng học sinh).
+   Anh Ninh chốt nguyên văn: «Không phải thêm cột GVCN vào mà là thêm thông tin
+   GVCN cùng SĐT GVCN vào lớp học». GVCN là THUỘC TÍNH CỦA LỚP.
+   🛑 Chỉ đọc bản ghi ĐÃ CÔNG BỐ của M4.5 F3. Chưa công bố ⇒ nói thẳng «chưa công bố»,
+      ⛔ không để trống im lặng, ⛔ không suy đoán từ ô ghi hộ của M10.1 §7.0.3.
+   SĐT là SĐT CÔNG VỤ theo lát «thông tin cơ bản» M4.1 §8 — lát đó đã cắt
+   «SĐT khôi phục tài khoản»; ⛔ không đẻ lát cắt mới, ⛔ không chạm số cá nhân. */
+function gvcnLop(l){
+ if(l.cbGvcn===false) return '<span class="tg c" style="font-weight:600">GVCN: chưa công bố</span>';
+ return '<span style="font-weight:600;color:var(--ink2)">GVCN: '+esc(l.gvcn)+' · '+esc(l.sdt)+'</span>';
+}
+
 /* ---- 1a · quản lý danh sách đăng ký ---- */
 function veQuanLyDK(){
  const lp=lopTrongPhamVi(), q=kd(ST.q);
@@ -751,9 +813,12 @@ function veQuanLyDK(){
   +(can('nhap')?'<button class="btn" id="dkNhap">📥 Nhập Excel</button>':'')
   +(can('xuat')?'<button class="btn" id="dkXuat">📤 Xuất</button>':'')+'</div>';
  h+=dnote('Bản ghi đã hủy <b>không xóa</b> — tháng 9 em ăn 21 buổi rồi hủy từ tháng 10; xóa đi thì quyết toán tháng 9 mất căn cứ. '
-  +'Chip <b>Đã hủy</b> là đường tra ra chúng.<br>Cột <b>Dị ứng</b> và <b>Miễn giảm</b> là bản chiếu chỉ đọc từ M1.1 và M7.4, có 🔗 về menu chủ (D2).');
+  +'Chip <b>Đã hủy</b> là đường tra ra chúng.'
+  +'<br>Cột <b>Giới tính</b> · <b>Dị ứng</b> · <b>Miễn giảm</b> là <b>bản chiếu chỉ đọc</b> (D2) — Giới tính và Dị ứng từ <b>M1.1</b>, Miễn giảm từ <b>M7.4</b>; '
+  +'🔗 <b>chỉ hiện với vai có quyền ở menu chủ</b> — vai không có quyền thì không hiện, để khỏi dẫn tới màn hình bị từ chối.'
+  +'<br>Khối <b>GVCN · SĐT công vụ</b> nằm ở <b>dòng lớp</b>, không thành cột của từng em — đọc bản <b>đã công bố</b> của M4.5 F3; lớp chưa công bố hiện chữ <b>«chưa công bố»</b>.');
  h+='<div class="stage'+(ST.curHS?' open':'')+'"><div class="listw">'
-  +'<div class="hdrow" style="grid-template-columns:1.5fr 1.1fr 1.1fr 1.1fr 1.2fr"><div>Học sinh</div><div class="hcol">Hình thức</div>'
+  +'<div class="hdrow" style="grid-template-columns:'+(ST.curHS?'1.5fr 1.4fr':'1.5fr .7fr 1.05fr 1.05fr 1.05fr 1.15fr')+'"><div>Học sinh</div><div class="hcol">Giới tính</div><div class="hcol">Hình thức</div>'
   +'<div class="hcol">Trạng thái</div><div class="hcol">Dị ứng</div><div class="hcol">Miễn giảm</div></div>';
  let dem=0, dtHT=null;
  lp.forEach(l=>{
@@ -764,16 +829,19 @@ function veQuanLyDK(){
    return true;});
   if(!ds.length) return;
   if(!q&&l.dt!==dtHT){dtHT=l.dt;h+='<div class="grph">🏫 '+DT[l.dt]+'</div>'}
-  if(!q) h+='<div class="grph" style="padding-left:26px">📘 Lớp '+l.id+'<span class="cnt">'+ds.length+' học sinh</span></div>';
+  if(!q) h+='<div class="grph" style="padding-left:26px">📘 Lớp '+l.id
+    +'<span style="margin-left:12px">'+gvcnLop(l)+'</span>'
+    +'<span class="cnt">'+ds.length+' học sinh</span></div>';
   ds.forEach(hs=>{dem++;
    const t=ttDangKy(hs.id);
-   h+='<div class="hrow'+(ST.curHS===hs.id?' on':'')+'" style="grid-template-columns:'+(ST.curHS?'1.5fr 1.4fr':'1.5fr 1.1fr 1.1fr 1.1fr 1.2fr')+'" data-hs="'+hs.id+'">'
+   h+='<div class="hrow'+(ST.curHS===hs.id?' on':'')+'" style="grid-template-columns:'+(ST.curHS?'1.5fr 1.4fr':'1.5fr .7fr 1.05fr 1.05fr 1.05fr 1.15fr')+'" data-hs="'+hs.id+'">'
     +'<div><b>'+esc(hs.ten)+'</b><div style="font-size:11px;color:var(--ink3)">'+esc(hs.ma)+(q?' · '+DT[l.dt]+' › '+l.id:'')+'</div></div>'
+    +'<div class="hcol">'+esc(hs.gt)+'</div>'
     +'<div class="hcol">'+(hs.ht?'<span class="tg c">Chọn ngày: T'+hs.ht.join(' · T')+'</span>':'<span class="tg a">Toàn tuần</span>')+'</div>'
     +'<div class="hcol"><span class="st2 '+t.cls+'">'+t.nhan+'</span></div>'
-    +'<div class="hcol">'+(hs.du&&can('diung')?'<span style="color:var(--red);font-size:12px">🔴 '+esc(hs.du.t)+'</span> <span class="rolnk" data-lnk="M1.1">🔗</span>'
+    +'<div class="hcol">'+(hs.du&&can('diung')?'<span style="color:var(--red);font-size:12px">🔴 '+esc(hs.du.t)+'</span>'+(can('m11')?' <span class="rolnk" data-lnk="M1.1">🔗</span>':'')
       :hs.du?'<span style="color:var(--ink3);font-size:11.5px">— (vai này không thấy)</span>':'<span style="color:var(--ink3)">—</span>')+'</div>'
-    +'<div class="hcol">'+(hs.mg?'<span style="font-size:11.5px">'+vn(hs.mg.muc)+'đ/ngày</span> <span class="rolnk" data-lnk="M7.4">🔗</span>':'<span style="color:var(--ink3)">—</span>')+'</div>'
+    +'<div class="hcol">'+(hs.mg?'<span style="font-size:11.5px">'+vn(hs.mg.muc)+'đ/ngày</span>'+(can('m74')?' <span class="rolnk" data-lnk="M7.4">🔗</span>':''):'<span style="color:var(--ink3)">—</span>')+'</div>'
     +'</div>';});
  });
  if(!dem) h+='<div class="empty">Không có bản ghi nào khớp bộ lọc <b>'+chips.find(c=>c[0]===ST.chipDK)[1]+'</b>.</div>';
@@ -790,6 +858,20 @@ function panelDK(){
   +'<span class="pill">'+esc(hs.ma)+'</span><span class="pill">'+lopId+' · '+DT[l.dt]+'</span>'
   +'<span class="st2 '+t.cls+'">'+t.nhan+'</span></div></div><div class="spacer"></div>'
   +'<button class="btn sm" id="dongPanel">✕ Đóng</button></div><div class="pbody">';
+  /* BT-1 — khối chỉ đọc, CHỈ hiện với vai có ô m6.1.lien_he_khan_cap */
+ if(can('lhkc')){const lh=lienHeKhanCap(hs);
+  h+='<div class="card"><div class="ch">☎ Liên hệ khẩn cấp</div><div class="cb">'
+   +'<div class="f"><div class="k">Người liên hệ</div><div class="v">'+esc(lh.ten)+' <span class="tg a">'+esc(lh.qh)+'</span></div></div>'
+   +'<div class="f"><div class="k">Số điện thoại</div><div class="v"><b>'+esc(lh.sdt)+'</b></div></div>'
+   +'<div class="ro">Bản chiếu <b>chỉ đọc</b> từ <b>M1.1</b> — đúng lát <i>«liên hệ khẩn cấp»</i> của Y tế. '
+   +'⛔ Không phải trọn lát <i>Liên hệ gia đình (B)</i>, ⛔ không có CCCD cha · mẹ · người giám hộ.</div>'
+   +'</div></div>';}
+ else if(R().cd.indexOf('bán trú')>=0){
+  h+='<div class="card"><div class="ch">☎ Liên hệ khẩn cấp</div><div class="cb">'
+   +'<div class="ro">🔒 <b>Trường chưa bật khối này cho nhân viên bán trú.</b> Đây là <b>mặc định ĐÓNG</b> của điểm <b>BT-1</b>. '
+   +'Muốn bật thì Hiệu trưởng tích ô <code>m6.1.lien_he_khan_cap × NVBT</code> tại <b>M10.4</b> — hệ thống '
+   +'<b>bắt ghi lý do</b>, đóng <b>dấu ⚠ vĩnh viễn</b> lên ô và <b>ghi audit</b> (M10.4 §5).</div>'
+   +'</div></div>';}
  h+='<div class="card"><div class="ch">Đăng ký hiện tại</div><div class="cb">'
   +'<div class="f"><div class="k">Hình thức</div><div class="v">'+(hs.ht?'Chọn ngày — T'+hs.ht.join(' · T'):'Toàn tuần (T2 → T6)')+'</div></div>'
   +'<div class="f"><div class="k">Hiệu lực</div><div class="v">Từ 05/09/2026'+(t.tt==='huy'?' đến '+k2s(t.d.huyTu)+' <span class="tg c">đã hủy</span>':'')+'</div></div>'
@@ -806,7 +888,7 @@ function panelDK(){
   +(!can('diung')?'<span style="color:var(--ink3)">Vai này không được xem — Luật BVDLCN 91/2025</span>'
    :hs.du?'<span style="color:var(--red)">🔴 '+esc(hs.du.t)+' — mức '+MUC_DU[hs.du.m]+'</span>':'Không có ghi nhận')+'</div></div>'
   +'</div>'+(can('diung')?'<div class="cact"><span style="font-size:11.5px;color:var(--ink2)">Sửa thuộc M1.1 — M6.1 chỉ đọc.</span>'
-  +'<div class="spacer"></div><span class="rolnk" data-lnk="M1.1">↗ Cập nhật tại M1.1</span></div>':'')+'</div>';
+  +'<div class="spacer"></div>'+(can('m11')?'<span class="rolnk" data-lnk="M1.1">↗ Cập nhật tại M1.1</span>':'')+'</div>':'')+'</div>';
  h+='<div class="card"><div class="ch">Tiền ăn theo tháng <span class="tg a">'+TEN_CHEDO[CFG.cheDoThu]+'</span></div><div class="cb">'
   +[['Tháng 9/2026',t9],['Tháng 10/2026 (tới '+k2s(HOMNAY)+')',t10]].map(([n,t])=>
    '<div class="f"><div class="k">'+n+'</div><div class="v" style="font-weight:400">'

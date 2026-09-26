@@ -718,7 +718,13 @@ const CFG={
   BTD:['hop_bch_doan_doi'],TPT:['hop_bch_doan_doi'],                         /* YKDD-2E — đúng một loại */
   TTCM:[],GV:[]
  },
- hanBB:3               /* ngày — quá hạn này thì «Chờ biên bản» tô đỏ. Chỉ nhắc, không chặn */
+ hanBB:3,              /* ngày — quá hạn này thì «Chờ biên bản» tô đỏ. Chỉ nhắc, không chặn */
+ /* ✅ GY18-E2 20/9/2026 — ba tham số của HẠN GIAO VIỆC CÓ GIỜ (M6.18 §2.10d · §7 khối 2).
+    ★ Ba con số này ở ⚙ chứ KHÔNG cứng trong mã: Dschool triển khai on-premise từng trường, mỗi trường một khung giờ
+      — 16:00 của trường này rơi GIỮA tiết 8 (15:20–16:05) của trường kia.
+    ★ gioGoiY chỉ điền vào ô giờ KHI người dùng TÍCH ô «Đặt giờ cụ thể» — không điền sẵn khi chưa tích.
+    ★ M5.4 KHÔNG khai số riêng, chỉ chiếu 🔗 sang đây (D1 — một thực thể một menu chủ). */
+ gioGoiY:'16:00', gioChip2:'17:00', truocHopPhut:120
 };
 const loaiH=h=>CFG.loai[h.loai];
 
@@ -913,7 +919,43 @@ const TT_KL={dang_lam:['Đang làm','b'],da_bao_hoan_thanh:['Đã báo hoàn th�
 const SK_KL={tao:'Sinh việc — biên bản đã xác nhận',bao_hoan_thanh:'Báo hoàn thành',nghiem_thu:'Nghiệm thu',tra_lai:'Trả lại',huy:'Hủy',go_xac_nhan_bien_ban:'Gỡ xác nhận biên bản — việc giữ, gắn nhãn đang sửa'};
 const coKL=h=>h.loai!=='ngoai';                          /* áp mọi loại có biên bản — KHÔNG áp «Đi họp ngoài trường» */
 const daSinh=k=>k.nguon_xac_nhan==='bien_ban_da_xac_nhan';
-const quaHanKL=k=>!!k.han&&k.han<HOMNAY&&k.trang_thai==='dang_lam';
+/* ═══ GY18-E2 · 20/9/2026 · HDDD ① han_gio — HẠN CÓ GIỜ (TÙY CHỌN) ═══
+   ★ han là NGÀY; han_gio là GIỜ 'HH:mm' TÙY CHỌN. han_gio = null nghĩa là «trong ngày hôm đó» —
+     KHÔNG suy 23:59 khi tính, KHÔNG bịa 00:00 khi hiện.
+   ★ Quá hạn vẫn DẪN XUẤT, không lưu: có giờ ⇒ (han, han_gio) < bây giờ · không giờ ⇒ giữ nguyên luật cũ han < hôm nay.
+   ★ Nhãn dùng ĐÚNG CHỮ và ĐÚNG NGƯỠNG 60 PHÚT của M0.2 §4.3.1c — hai màn hình nói khác nhau về cùng một việc
+     thì người dùng không biết tin màn hình nào.
+   🛑 Quá hạn theo giờ KHÔNG làm căn cứ đánh giá, thi đua, kỷ luật; không chảy sang M7.6. */
+const GIO_DEMO='09:10';                                  /* đồng hồ demo cố định để ca F1…F10 lặp lại được */
+const phutG=g=>phut(String(g||'00:00'));                 /* phut() đã có ở app.10-nen.js */
+const g2s=p=>p2(Math.floor(((p%1440)+1440)%1440/60))+':'+p2(((p%60)+60)%60);
+/* chip «Trước giờ họp sau» — CHỈ có khi cuộc họp kế tiếp CÙNG LOẠI (với họp BCH: cùng trục tổ chức)
+   đã có trên lịch. Phần lớn mốc giờ dẫn xuất từ một sự kiện có giờ ở hạ nguồn, mà menu này ĐÃ BIẾT giờ đó.
+   ★ GỢI Ý, KHÔNG TỰ ĐIỀN — phải bấm chip mới vào ô. */
+function hopKeTiep(h){
+ return HOP.filter(x=>x.id!==h.id&&x.loai===h.loai&&(!loaiH(h).bch||x.tc===h.tc)&&x.tt!=='huy'&&x.ngay>h.ngay)
+          .sort((a,b)=>a.ngay<b.ngay?-1:1)[0]||null;
+}
+function gioTruocHopSau(h){
+ const n=hopKeTiep(h); if(!n) return null;
+ const p=phut(khoang(n)[0])-CFG.truocHopPhut;
+ return p>0?{gio:g2s(p),hop:n}:null;
+}
+const quaHanKL=k=>{
+ if(!k.han||k.trang_thai!=='dang_lam') return false;
+ if(k.han<HOMNAY) return true;                           /* hôm trước trở về trước — luật cũ, không đụng tới giờ */
+ return k.han===HOMNAY && !!k.han_gio && phutG(k.han_gio)<phutG(GIO_DEMO);
+};
+function nhanQuaHanKL(k){                                /* CÙNG CHỮ với M0.2 §4.3.1c */
+ if(!quaHanKL(k)) return '';
+ if(k.han<HOMNAY) return '⏰ quá '+soNgay(k.han,HOMNAY)+' ngày';
+ const d=phutG(GIO_DEMO)-phutG(k.han_gio);
+ return d<60 ? '⏰ quá '+d+' phút' : '⏰ quá '+Math.floor(d/60)+' giờ';
+}
+/* mốc hạn hiện ra: dd/mm/yyyy · HH:mm khi có giờ — 🛑 không bịa 00:00 cho dòng không giờ */
+const mocHanKL=k=>k.han?k2s(k.han)+(k.han_gio?' · '+k.han_gio:''):'';
+/* khóa sắp xếp: dòng KHÔNG giờ xếp CUỐI ngày của nó (cùng luật M0.2 §4.3.1c) */
+const khoaHanKL=k=>k.han?k.han+' '+(k.han_gio||'23:59'):'~';
 const trongM02=k=>daSinh(k)&&['dang_lam','da_bao_hoan_thanh'].includes(k.trang_thai);   /* rời M0.2 khi da_nghiem_thu hoặc huy */
 const dangSuaBB=k=>(k.nhan||[]).includes('bien_ban_dang_sua');
 const klChoNghiemThu=h=>(h.kl||[]).filter(k=>daSinh(k)&&k.trang_thai==='da_bao_hoan_thanh');
@@ -921,7 +963,7 @@ const klChoNghiemThu=h=>(h.kl||[]).filter(k=>daSinh(k)&&k.trang_thai==='da_bao_h
 const klCuaNguoi=m=>HOP.flatMap(h=>(h.kl||[]).filter(k=>k.nguoi_thuc_hien_id===m&&trongM02(k)).map(k=>({h,k})));
 let MKL=0, MNHOM=0;
 function klMoi(h,o){                                     /* một dòng — MỘT tài khoản; nhập nhiều người thì mỗi người một dòng cùng nhom_id */
- return Object.assign({id:'KL-'+p2(++MKL),cuoc_hop_id:h.id,menu_chu:'M6.18',nhom_id:null,noi_dung:'',nguoi_thuc_hien_id:null,han:null,
+ return Object.assign({id:'KL-'+p2(++MKL),cuoc_hop_id:h.id,menu_chu:'M6.18',nhom_id:null,noi_dung:'',nguoi_thuc_hien_id:null,han:null,han_gio:null,
   cach_bao_ket_qua:'tu_danh_dau',trang_thai:'dang_lam',bao_ket_qua:null,lich_su:[],nhan:[],nguon_xac_nhan:'chua_xac_nhan'},o);
 }
 /* DD-4 ✅ — nội dung thuộc menu chủ khác: GỢI Ý, không chặn. Máy không hiểu nội dung tự do, chỉ nhận ra vài cụm từ quen */
@@ -1120,8 +1162,11 @@ themHop({id:'HOP-12',loai:'hdt',ten:'Họp Hội đồng trường — kỳ họ
    cach_bao_ket_qua:'kem_minh_chung',trang_thai:'da_bao_hoan_thanh',nguon_xac_nhan:'bien_ban_da_xac_nhan',
    bao_ket_qua:{nguoi:'tung',luc:'2026-12-25 16:40',noi_dung:'Đã hoàn thiện kế hoạch, dự trù kinh phí kèm theo.',tep:['Ke-hoach-Xuan-tinh-nguyen-2027.docx']},
    lich_su:[{luc:XN,nguoi:'trung',su_kien:'tao',ly_do:null},{luc:'2026-12-25 16:40',nguoi:'tung',su_kien:'bao_hoan_thanh',ly_do:null}]}),
-  klMoi(h,{nhom_id:'N-'+(++MNHOM),noi_dung:'Kiểm tra sổ chi đoàn 9A1 · 9A2, báo kết quả cho BCH',nguoi_thuc_hien_id:'vtmai',han:'2026-12-25',
+  /* GY18-E2 — ca HẠN CÓ GIỜ, quá hạn TRONG NGÀY: hạn hôm nay 08:00, đồng hồ demo 09:10 ⇒ «⏰ quá 1 giờ».
+     Đây là ca mà tám tiếng 08:00 → 00:00 trước đây hệ thống vẫn báo xanh «đang làm» (§2.10d ý 4). */
+  klMoi(h,{nhom_id:'N-'+(++MNHOM),noi_dung:'Kiểm tra sổ chi đoàn 9A1 · 9A2, báo kết quả cho BCH',nguoi_thuc_hien_id:'vtmai',han:HOMNAY,han_gio:'08:00',
    cach_bao_ket_qua:'tu_danh_dau',nguon_xac_nhan:'bien_ban_da_xac_nhan',lich_su:[{luc:XN,nguoi:'trung',su_kien:'tao',ly_do:null}]}),
+  /* ĐỐI CHỨNG — Hoàng Thị Nhung giữ hạn KHÔNG GIỜ: nhánh «chỉ ngày» phải còn sống. */
   klMoi(h,{nhom_id:'N-'+(++MNHOM),noi_dung:'Rà danh sách đoàn viên Điểm trường B chuẩn bị đợt đánh giá xếp loại',nguoi_thuc_hien_id:'nhung',han:'2027-01-08',
    cach_bao_ket_qua:'bao_trong_cuoc_hop_sau',nguon_xac_nhan:'bien_ban_da_xac_nhan',lich_su:[{luc:XN,nguoi:'trung',su_kien:'tao',ly_do:null}]})
  ];
@@ -1480,7 +1525,7 @@ function nutHop(h,t){
 /* ══════════════ 🎯 KẾT LUẬN GIAO VIỆC — theo dõi tiến độ NGAY TRONG CUỘC HỌP (YKDD-2E · HDDD ①) ══════════════
    chiToi = true: người thực hiện không có tên trong cuộc họp — chỉ đúng dòng của họ (không lộ biên bản — LH-10). */
 function veKetLuan(h,chiToi){
- const m=toi(), ds=(h.kl||[]).filter(k=>!chiToi||(k.nguoi_thuc_hien_id===m&&daSinh(k)));
+ const m=toi(); let ds=(h.kl||[]).filter(k=>!chiToi||(k.nguoi_thuc_hien_id===m&&daSinh(k)));
  const sinh=ds.filter(daSinh), nhap=ds.filter(k=>!daSinh(k)), dem=t=>sinh.filter(k=>k.trang_thai===t).length, qh=sinh.filter(quaHanKL).length;
  const coNhom=id=>(h.kl||[]).filter(k=>k.nhom_id===id).length>1;
  let s='<div class="card" id="mucKL"'+(ST.muc==='ket_luan'?' style="box-shadow:0 0 0 2px var(--brand)"':'')+'><div class="ch">🎯 Kết luận giao việc'+(chiToi?' — việc giao cho bạn':'')
@@ -1492,13 +1537,15 @@ function veKetLuan(h,chiToi){
   +'Dòng bị bỏ khi sửa sẽ <b>hủy</b> (lý do «bỏ khi sửa biên bản»); dòng mới chỉ sinh khi chủ trì xác nhận lại.</div>';
  if(!ds.length) return s+'<div class="empty" style="padding:12px">Biên bản chưa có dòng kết luận giao việc. Thêm ở <b>📝 Ghi / sửa biên bản</b> — mỗi dòng <b>một người thực hiện · nội dung · hạn · cách báo kết quả</b>. Không bắt buộc: có cuộc họp không giao việc.</div></div></div>';
  /* mỗi việc một KHỐI xếp dòng — panel chỉ rộng 50% màn hình, bảng 7 cột bóp nội dung và cắt mất cột nút */
+ ds=ds.slice().sort((a,b)=>khoaHanKL(a)<khoaHanKL(b)?-1:khoaHanKL(a)>khoaHanKL(b)?1:0);   /* GY18-E2 — dòng KHÔNG giờ xếp cuối ngày của nó (M0.2 §4.3.1c) */
  s+=ds.map(k=>{
    const tt=daSinh(k)?TT_KL[k.trang_thai]:['Chưa xác nhận — chưa sinh việc','n'], tl=k.lich_su.filter(x=>x.su_kien==='tra_lai').slice(-1)[0], gy=goiYMenu(k.noi_dung), nut=nutKL(h,k);
    return '<div class="klrow'+(quaHanKL(k)?' qh':'')+(k.trang_thai==='huy'?' huy':'')+'" data-klid="'+k.id+'">'
     +'<div class="klh"><span class="klid">'+k.id+'</span><b class="kln">'+esc(k.noi_dung)+'</b>'+st2(tt[0],tt[1])+(dangSuaBB(k)?'<span class="tg b">biên bản đang sửa</span>':'')
     +(coNhom(k.nhom_id)?'<span class="tg a" title="Nhập cùng lúc cho nhiều người — mỗi người một dòng">nhóm '+k.nhom_id+'</span>':'')+'</div>'
     +'<div class="klm">👤 <b>'+esc(tenNS(k.nguoi_thuc_hien_id))+'</b> <span style="color:var(--ink3)">'+esc(cdChinh(k.nguoi_thuc_hien_id))+'</span>'
-    +' · 📅 '+(k.han?'hạn <b>'+k2s(k.han)+'</b>':'<span style="color:var(--ink3)">không có hạn</span>')+(quaHanKL(k)?' <b style="color:var(--red)">⏰ quá hạn '+soNgay(k.han,HOMNAY)+' ngày</b>':'')
+    /* GY18-E2: mốc hiện dd/mm/yyyy · HH:mm khi có giờ — 🛑 KHÔNG bịa 00:00 cho dòng không giờ; nhãn quá hạn dùng ĐÚNG CHỮ và ĐÚNG NGƯỠNG 60 PHÚT của M0.2 §4.3.1c */
+    +' · 📅 '+(k.han?'hạn <b>'+mocHanKL(k)+'</b>'+(k.han_gio?'':'<span style="color:var(--ink3)" title="Không đặt giờ = trong ngày hôm đó — không suy 23:59"> (cả ngày)</span>'):'<span style="color:var(--ink3)">không có hạn</span>')+(quaHanKL(k)?' <b style="color:var(--red)">'+nhanQuaHanKL(k)+'</b>':'')
     +' · 📨 '+CACH_BAO[k.cach_bao_ket_qua]+(trongM02(k)?' · <span style="color:var(--ink3)">đang ở M0.2 của người thực hiện</span>':'')+'</div>'
     +(gy.length?'<div class="klx" style="color:var(--ink2)">💡 Gợi ý: việc này có menu chủ — '+gy.map(g=>'<b>'+g[1]+'</b> '+esc(g[2])).join(' · ')+'. Kết luận chỉ ghi <i>ai làm</i>; thao tác nghiệp vụ vẫn ở menu chủ (DD-4 — gợi ý, không chặn).</div>':'')
     +(k.bao_ket_qua?'<div class="klx">📨 '+esc(tenNS(k.bao_ket_qua.nguoi))+' · '+k.bao_ket_qua.luc+(k.trang_thai==='dang_lam'?' <span class="tg b">lần báo trước — đã trả lại</span>':'')+': <i>'+esc(k.bao_ket_qua.noi_dung||'')+'</i> '
@@ -1946,7 +1993,7 @@ function ghiBB(h){
   +(ngoai?'':'<div class="ro" style="margin-top:8px">Lưu xong, biên bản chờ <b>chủ trì '+esc(tenNS(h.chuTri))+'</b> xác nhận. Sửa biên bản sau khi đã xác nhận thì xác nhận bị gỡ — phải xác nhận lại.</div>'),
   '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="bb">💾 Lưu</button>');
  mfns.veTep=veTep;
- if(!ngoai){mfns.klH=h;mfns.kl=JSON.parse(JSON.stringify(h.kl||[]));mfns.klF={nd:'',ng:[],han:'',cach:'tu_danh_dau'};veKLBox()}
+ if(!ngoai){mfns.klH=h;mfns.kl=JSON.parse(JSON.stringify(h.kl||[]));mfns.klF={nd:'',ng:[],han:'',gio:false,hangio:'',cach:'tu_danh_dau'};veKLBox()}
  mfns.bbb=()=>{const nd=$('#bbNd').value.trim(), kl=$('#bbKl').value.trim(), thieu=[];
   if(!kl) thieu.push(ngoai?'Việc cần triển khai lại':'Kết luận');
   if(!nd&&!mfns.tep) thieu.push('Nội dung hoặc tệp biên bản — cần một trong hai');
@@ -2005,7 +2052,7 @@ function veKLBox(){
  box.innerHTML='<div class="mbox">'
   +(mfns.kl.length?'<table><tr><th>Nội dung</th><th>Người thực hiện</th><th>Hạn</th><th>Cách báo</th><th>Trạng thái</th><th></th></tr>'+mfns.kl.map(k=>{
     const dong=['da_nghiem_thu','huy'].includes(k.trang_thai)&&daSinh(k);
-    return '<tr'+(k._bo?' style="text-decoration:line-through;opacity:.6"':'')+'><td>'+esc(k.noi_dung)+'</td><td>'+esc(tenNS(k.nguoi_thuc_hien_id))+'</td><td>'+(k.han?k2n(k.han):'—')+'</td><td style="font-size:11.5px">'+CACH_BAO[k.cach_bao_ket_qua]+'</td>'
+    return '<tr'+(k._bo?' style="text-decoration:line-through;opacity:.6"':'')+'><td>'+esc(k.noi_dung)+'</td><td>'+esc(tenNS(k.nguoi_thuc_hien_id))+'</td><td>'+(k.han?k2n(k.han)+(k.han_gio?' · '+k.han_gio:''):'—')+'</td><td style="font-size:11.5px">'+CACH_BAO[k.cach_bao_ket_qua]+'</td>'
      +'<td style="font-size:11.5px">'+(daSinh(k)?TT_KL[k.trang_thai][0]+' <span class="tg b">đã sinh việc</span>':'chưa xác nhận')+'</td><td>'
      +(dong?'<span style="font-size:11px;color:var(--ink3)">đã đóng — giữ</span>'
       :daSinh(k)?'<button class="btn xs'+(k._bo?'':' d')+'" data-klbo="'+k.id+'">'+(k._bo?'↺ Giữ lại':'✕ Bỏ khỏi biên bản')+'</button>'
@@ -2018,21 +2065,46 @@ function veKLBox(){
   +'<div><label class="lbl">Người thực hiện <span style="font-weight:400">(Ctrl — chọn nhiều ⇒ mỗi người một dòng)</span></label><select class="fldi" id="klNg" multiple size="5">'
   +'<optgroup label="Có tên trong cuộc họp">'+ids.map(m=>'<option value="'+m+'"'+(f.ng.includes(m)?' selected':'')+'>'+esc(tenDu(m))+'</option>').join('')+'</optgroup>'
   +'<optgroup label="Nhân sự khác (người phụ trách có tài khoản)">'+khac.map(m=>'<option value="'+m+'"'+(f.ng.includes(m)?' selected':'')+'>'+esc(tenDu(m))+'</option>').join('')+'</optgroup></select></div></div>'
-  +'<div class="frow"><div><label class="lbl">Hạn <span style="font-weight:400">(để trống = không có hạn)</span></label><input type="date" class="fldi" id="klHan" value="'+f.han+'"></div>'
+  /* ═══ GY18-E2 — HẠN: ngày bắt buộc, GIỜ tùy chọn qua Ô TÍCH (M6.18 §2.10d) ═══
+     ★ Ô giờ ẨN khi chưa tích; tích thì hiện ra ĐÃ ĐIỀN SẴN giờ gợi ý từ ⚙.
+     ★ KHÔNG điền sẵn khi chưa tích: mặc định im lặng thì không ai xóa, và ba tháng sau mọi việc đều hạn 16:00
+       mà không ai nhớ vì sao — ① nhánh «chỉ ngày» thành mã chết · ② báo động giả làm người dùng thôi tin nhãn đỏ
+       · ③ dòng 16:00 rác chen lên trước dòng cố ý để trống. Một cú bấm, nhưng cú bấm đó LÀ TÍN HIỆU Ý CHÍ. */
+  +'<div class="frow"><div><label class="lbl">Hạn <span style="font-weight:400">(để trống = không có hạn)</span></label><input type="date" class="fldi" id="klHan" value="'+f.han+'" onchange="klDocForm();veKLBox()">'
+   +'<label class="kchk" style="margin-top:4px"><input type="checkbox" data-klgio="1" id="klGio"'+(f.gio?' checked':'')+(f.han?'':' disabled')+'> Đặt giờ cụ thể</label>'
+   +(f.han?'':'<div style="font-size:11px;color:var(--ink3)">Chưa có hạn ngày thì không tích giờ được — giờ không có ngày thì vô nghĩa.</div>')
+   +(f.gio&&f.han?'<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px"><input type="time" class="fldi" style="max-width:110px" id="klHanGio" value="'+(f.hangio||CFG.gioGoiY)+'">'
+     +chipGio(mfns.klH)+'</div>'
+     +'<div style="font-size:11px;color:var(--ink3)">Bỏ tích ⇒ về <b>hạn cả ngày</b> — giá trị giờ <b>không giữ ngầm</b>.</div>':'')+'</div>'
   +'<div><label class="lbl">Cách báo kết quả</label><select class="fldi" id="klCach">'+Object.keys(CACH_BAO).map(c=>'<option value="'+c+'"'+(f.cach===c?' selected':'')+'>'+CACH_BAO[c]+'</option>').join('')+'</select></div>'
   +'<div style="align-self:flex-end"><button class="btn sm p" data-klthem="1">＋ Thêm dòng</button></div></div>'
   +'<div style="font-size:11.5px;color:var(--ink3);margin-top:4px">Giao cho <b>đơn vị</b> hoặc <b>học sinh</b> thì ghi <b>người phụ trách có tài khoản</b> — việc phải về «Việc của tôi» của một người cụ thể.</div></div>';
 }
-function klDocForm(){const f=mfns.klF;if(!$('#klNd'))return;f.nd=$('#klNd').value;f.ng=[...$('#klNg').selectedOptions].map(o=>o.value);f.han=$('#klHan').value;f.cach=$('#klCach').value}
+/* chip nhanh: hai mốc từ ⚙ + «Trước giờ họp sau» (chỉ hiện khi cuộc họp kế tiếp cùng loại/cùng trục đã có trên lịch) */
+function chipGio(h){
+ const t=gioTruocHopSau(h);
+ return [CFG.gioGoiY,CFG.gioChip2].map(g=>'<button class="chip" data-klchip="'+g+'">'+g+'</button>').join('')
+  +(t?'<button class="chip" data-klchip="'+t.gio+'" title="'+esc(t.hop.ten)+' · '+k2s(t.hop.ngay)+' lúc '+khoang(t.hop)[0]+' — trừ '+CFG.truocHopPhut+' phút (⚙)">Trước giờ họp sau</button>'
+     :'<span style="font-size:11px;color:var(--ink3)">chưa có cuộc họp kế tiếp trên lịch ⇒ không có chip «Trước giờ họp sau»</span>');
+}
+function klDocForm(){const f=mfns.klF;if(!$('#klNd'))return;f.nd=$('#klNd').value;f.ng=[...$('#klNg').selectedOptions].map(o=>o.value);f.han=$('#klHan').value;
+ const g=$('#klHanGio'); if(f.gio&&g) f.hangio=g.value;
+ if(!f.han) f.gio=false;                                /* mất hạn ngày ⇒ ô tích mờ, giờ rơi về null */
+ f.cach=$('#klCach').value}
+/* bỏ tích ⇒ han_gio = null và KHÔNG giữ ngầm giá trị cũ — giữ ngầm rồi tích lại ra số cũ là một mốc sống lại ngoài ý người dùng */
+function klToggleGio(){klDocForm();const f=mfns.klF;if(!f.han){toast('⛔ Chưa có hạn ngày — giờ không có ngày thì vô nghĩa.');veKLBox();return}
+ f.gio=!f.gio; f.hangio=f.gio?CFG.gioGoiY:''; veKLBox();}
+function klChip(g){klDocForm();const f=mfns.klF;if(!f.gio)return;f.hangio=g;veKLBox();}
 function klThem(){
  klDocForm(); const f=mfns.klF, h=mfns.klH, thieu=[];
  if(!f.nd.trim()) thieu.push('Nội dung việc'); if(!f.ng.length) thieu.push('Người thực hiện');
  if(f.han&&f.han<h.ngay) thieu.push('Hạn trước ngày họp ('+k2s(f.han)+')');
  if(thieu.length){toast('⛔ Còn thiếu: '+thieu.join(' · '));return}
  const nhom='N-'+(++MNHOM);
- f.ng.forEach(m=>mfns.kl.push(klMoi(h,{nhom_id:nhom,noi_dung:f.nd.trim(),nguoi_thuc_hien_id:m,han:f.han||null,cach_bao_ket_qua:f.cach})));
+ const hg=(f.han&&f.gio&&f.hangio)?f.hangio:null;        /* không tích ⇒ null; KHÔNG suy 23:59 */
+ f.ng.forEach(m=>mfns.kl.push(klMoi(h,{nhom_id:nhom,noi_dung:f.nd.trim(),nguoi_thuc_hien_id:m,han:f.han||null,han_gio:hg,cach_bao_ket_qua:f.cach})));
  toast('＋ Thêm '+f.ng.length+' dòng'+(f.ng.length>1?' cùng nhóm '+nhom+' — mỗi người một việc riêng, báo và nghiệm thu riêng':'')+'.');
- mfns.klF={nd:'',ng:[],han:f.han,cach:f.cach}; veKLBox();
+ mfns.klF={nd:'',ng:[],han:f.han,gio:f.gio,hangio:f.hangio,cach:f.cach}; veKLBox();
 }
 function klBo(id){
  klDocForm(); const i=mfns.kl.findIndex(k=>k.id===id), k=mfns.kl[i]; if(!k) return;
@@ -2124,6 +2196,14 @@ function veCauHinh(){
  const vp=HOP.filter(h=>h.loai==='vanphong'&&h.tt!=='huy').sort((a,b)=>a.ngay<b.ngay?1:-1)[0];
  s+='<div class="card"><div class="ch">2 · Tham số</div><div class="cb">'
   +'<div class="f"><span class="k">Hạn ghi biên bản (gợi ý)</span><span class="v"><input type="number" class="mini" id="hanBB" value="'+CFG.hanBB+'" min="1" max="30"'+(sua?'':' disabled')+'> ngày sau họp — quá hạn thì tô đỏ ở tab 2 · <span style="font-weight:400">chỉ nhắc, không chặn</span></span></div>'
+  /* ✅ GY18-E2 20/9/2026 — ba tham số của HẠN GIAO VIỆC CÓ GIỜ (§2.10d).
+     ★ Ở ⚙ chứ không cứng trong mã: on-premise từng trường, mỗi trường một khung giờ —
+       16:00 của trường này rơi GIỮA tiết 8 (15:20–16:05) của trường kia.
+     ★ Đổi số ở đây CHỈ áp cho dòng TẠO MỚI; dòng đã lưu KHÔNG đổi (việc đang ở M0.2 của người ta). */
+  +'<div class="f"><span class="k">Giờ gợi ý cho hạn giao việc</span><span class="v"><input type="time" class="mini" style="width:96px" id="gioGoiY" value="'+CFG.gioGoiY+'"'+(sua?'':' disabled')+'> — điền vào ô giờ <b>khi người dùng tích</b> «Đặt giờ cụ thể» · <span style="font-weight:400">🛑 không điền sẵn khi chưa tích</span></span></div>'
+  +'<div class="f"><span class="k">Chip nhanh thứ hai</span><span class="v"><input type="time" class="mini" style="width:96px" id="gioChip2" value="'+CFG.gioChip2+'"'+(sua?'':' disabled')+'></span></div>'
+  +'<div class="f"><span class="k">«Trước giờ họp sau» = giờ họp trừ</span><span class="v"><input type="number" class="mini" id="truocHop" value="'+CFG.truocHopPhut+'" min="5" max="600" step="5"'+(sua?'':' disabled')+'> phút — chip chỉ hiện khi <b>cuộc họp kế tiếp cùng loại</b> đã có trên lịch · <span style="font-weight:400">gợi ý, không tự điền</span></span></div>'
+  +'<div class="f"><span class="k">Hạn giao việc có giờ</span><span class="v">Giờ là <b>TÙY CHỌN</b> — không tích ⇒ hạn <b>cả ngày</b>, 🛑 <b>không suy 23:59</b> và không bịa <code>00:00</code> khi hiện. Quá hạn theo giờ <b>không làm căn cứ</b> đánh giá, thi đua, kỷ luật; không chảy sang M7.6 · <span style="font-weight:400">M5.4 dùng chung ba con số này (🔗 chiếu — D1)</span></span></div>'
   +'<div class="f"><span class="k">Trùng tiết dạy của người được mời</span><span class="v">Cảnh báo nêu đích danh — <b>không chặn</b> <span class="tg c">cố định</span></span></div>'
   +'<div class="f"><span class="k">Nhắc trước cuộc họp</span><span class="v">Chỉ do người tạo bấm — <b>không có nhắc tự động</b> <span class="tg c">cố định · M6.8 v2.5</span></span></div>'
   +'<div class="f"><span class="k">Báo lại khi dời · đổi nơi · hủy</span><span class="v">Bắt buộc khi đã gửi mời <span class="tg c">cố định</span></span></div>'
@@ -2165,6 +2245,10 @@ function render(){
  const ct=$('#chkToi'); if(ct) ct.onchange=()=>{ST.chiToi=ct.checked?1:0;render()};
  const ch=$('#chkHuy'); if(ch) ch.onchange=()=>{ST.hienHuy=ch.checked?1:0;render()};
  const hb=$('#hanBB'); if(hb) hb.onchange=()=>{CFG.hanBB=Math.max(1,+hb.value||3);toast('Đã lưu: hạn ghi biên bản '+CFG.hanBB+' ngày.');render()};
+ /* GY18-E2 — ba tham số hạn giao việc có giờ. Đổi ở đây CHỈ áp cho dòng TẠO MỚI; dòng đã lưu không đổi */
+ const gg=$('#gioGoiY'); if(gg) gg.onchange=()=>{CFG.gioGoiY=gg.value||'16:00';toast('Đã lưu: giờ gợi ý <b>'+CFG.gioGoiY+'</b> — chỉ áp cho dòng tạo mới, dòng đã lưu không đổi.');render()};
+ const g2=$('#gioChip2'); if(g2) g2.onchange=()=>{CFG.gioChip2=g2.value||'17:00';toast('Đã lưu: chip nhanh thứ hai '+CFG.gioChip2+'.');render()};
+ const th=$('#truocHop'); if(th) th.onchange=()=>{CFG.truocHopPhut=Math.max(5,+th.value||120);toast('Đã lưu: «Trước giờ họp sau» = giờ họp trừ '+CFG.truocHopPhut+' phút.');render()};
 }
 /* mở một cuộc họp: tab 2 → panel; tab khác → hộp thoại tại chỗ (M6.5 §5.7) */
 function moHop(id){
@@ -2198,6 +2282,8 @@ document.addEventListener('click',e=>{
  if((x=g('data-fluu'))){luuForm(x.dataset.fluu);return}
  if((x=g('data-ftc'))){if(x.disabled)return;F.tc=x.dataset.ftc;F.moi.bch=F.tc;F.chuTri=NS[R().ma]?R().ma:(F.tc==='Doan'?'trung':'ngoc');veForm();return}
  /* kết luận giao việc — trong hộp biên bản */
+ if(g('data-klgio')){klToggleGio();return}                /* GY18-E2 — ô tích «Đặt giờ cụ thể» */
+ if((x=g('data-klchip'))){klChip(x.dataset.klchip);return}
  if(g('data-klthem')){klThem();return}
  if((x=g('data-klbo'))){klBo(x.dataset.klbo);return}
  if(g('data-kltep')){mfns.klTep.push(['Minh-chung-hoan-thanh.pdf','Anh-hien-truong.jpg','Bao-cao-ket-qua.docx'][mfns.klTep.length%3]);$('#klTepBox').innerHTML=mfns.veKlTep();return}

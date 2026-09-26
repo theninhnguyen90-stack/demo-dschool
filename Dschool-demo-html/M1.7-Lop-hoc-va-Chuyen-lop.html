@@ -322,6 +322,9 @@ const LOP=[
 ];
 const lopOf=id=>LOP.find(x=>x.id===id)||{};
 const gvcnCua=id=>lopOf(id).gvcn||'—';
+/* RSHS-2B — số điện thoại GVCN, để đưa vào thông báo gia đình */
+const SDT_GVCN={'Đỗ Minh Châu':'0912 447 118','Lê Minh Quang':'0987 231 405','Nguyễn Thị Hòa':'0905 771 236'};
+const sdtGVCN=id=>SDT_GVCN[gvcnCua(id)]||'— chưa khai —';
 const khoiCua=id=>lopOf(id).k||0;
 const heCua=id=>lopOf(id).he||'';
 const dtCua=id=>lopOf(id).dt||'';
@@ -359,6 +362,20 @@ const aiDuyet=t=>nhanhB(t)?'Hiệu trưởng':'PHT '+dtCua(t.lopCu);
 const dong=t=>['tuchoi','huy'].includes(t.tt);
 const nhanhB=t=>dtCua(t.lopCu)!==dtCua(t.lopMoi);
 const khacHe=t=>heCua(t.lopCu)!==heCua(t.lopMoi);
+
+/* ═══ 🆕 RSHS-2B (23/9/2026) — dữ liệu và hàm cho ba dòng kiểm tra «khác điểm trường» ═══ */
+/* Địa chỉ điểm trường — để người duyệt NHÌN THẤY em đang chuyển đi đâu */
+const DC_DT={'Điểm trường A':'Số 8 Nguyễn Trãi, Phường Thanh Xuân, Hà Nội',
+             'Điểm trường B':'Số 145 Hoàng Quốc Việt, Phường Nghĩa Đô, Hà Nội'};
+const dcDT=dt=>DC_DT[dt]||'— chưa khai địa chỉ —';
+/* Bậc học là thuộc tính của ĐIỂM TRƯỜNG (nền tảng Phần C §1.2).
+   🛑 Khối mà một điểm trường có là DẪN XUẤT từ danh mục lớp — ⛔ không khai tay,
+   nếu không thì có hai nguồn sự thật cho cùng một câu hỏi. */
+const dtCoKhoi=(dt,k)=>LOP.some(l=>l.dt===dt&&+l.k===+k);
+/* 🔗 Bản chiếu CHỈ ĐỌC từ M6.10 Ký túc xá — M1.7 chỉ ĐỌC để chặn và deep-link,
+   ⛔ không tự bố trí phòng, ⛔ không tự kết thúc lưu trú. M6.10 giữ nguyên là menu chủ. */
+const KTX={'HS-2026-0389':{khu:'Khu B — nam',phong:'B204',ql:'Thầy Đặng Văn Thành'}};
+const ktxCua=ma=>KTX[ma]||null;
 
 const lg=(ai,vc,y)=>[NGAY3,ai,vc,y||''];
 
@@ -502,6 +519,32 @@ function dieuKien(t){
    s:(nhanhB(t)?'Cần <b>hủy bán trú</b> ở '+dtCua(t.lopCu)+' và hỏi gia đình đăng ký lại. ':'')+
      (khacHe(t)?'Cần <b>điều chỉnh khoản thu</b> từ tháng hiệu lực — hệ '+heCua(t.lopCu)+' → '+heCua(t.lopMoi)+'. ':'')+
      'Xem khối <i>Dữ liệu sẽ cập nhật</i> bên dưới.'});
+
+ /* ═══ 🆕 RSHS-2B (23/9/2026) — BA DÒNG chỉ hiện khi KHÁC ĐIỂM TRƯỜNG ═══
+    Với GIA ĐÌNH, chuyển khác điểm trường nhìn y hệt chuyển trường: đổi địa điểm đưa đón,
+    đổi GVCN, đổi TOÀN BỘ giáo viên bộ môn, có khi đổi cả suất ăn và tiền.
+    Với PHÁP LUẬT, nó là điều chuyển nội bộ trong MỘT pháp nhân — mã định danh ⛔ không đổi. */
+ if(nhanhB(t)){
+  /* ⛔ CHẶN 3: điểm trường đến có khối lớp này không (bậc học là thuộc tính của ĐIỂM TRƯỜNG) */
+  O.push(dtCoKhoi(dtCua(t.lopMoi),lm.k)
+   ?{c:'o',l:'🏫 Điểm trường đến có khối lớp này',v:dtCua(t.lopMoi)+' có khối '+lm.k,s:''}
+   :{c:'r',l:'🏫 Điểm trường đến có khối lớp này',v:dtCua(t.lopMoi)+' ⛔ KHÔNG có khối '+lm.k,
+     s:'<b>Bậc học là thuộc tính của Điểm trường</b>. Bộ chọn lớp vốn đã lọc theo khối nên ca này gần như ⛔ không xảy ra; xảy ra thì là <b>dữ liệu hỏng</b>, ⛔ không phải sai chính sách.'});
+  /* ⛔ CHẶN 4: ký túc xá — NGOẠI LỆ CÓ CHỦ Ý, xem §4.1 */
+  const kt=ktxCua(t.ma);
+  O.push(!kt
+   ?{c:'o',l:'🛏 Ký túc xá',v:'Em ⛔ không ở ký túc xá',s:''}
+   :{c:'r',l:'🛏 Ký túc xá',v:'⛔ Em đang ở KTX '+kt.khu+' · phòng '+kt.phong+' tại '+dtCua(t.lopCu),
+     s:'🆕 <b>Loại chặn thứ BA — việc chưa có phương án cho một nhu cầu sinh hoạt của học sinh.</b> '+
+       'Sĩ số, kỳ thi, số lần chuyển đều là thứ <b>nhà trường đã bàn với gia đình rồi</b>. Còn <b>chỗ ngủ đêm nay</b> thì ⛔ <b>không nằm trong cuộc bàn về việc đổi lớp</b> — '+
+       'nó là một cuộc bàn khác, với <b>quản sinh và người xếp phòng</b>, và rất dễ ⛔ <b>không ai nhớ ra</b>. '+
+       'Chặn ở đây ⛔ không phải bắt người ta xin phép chính mình; là <b>bắt hỏi một người chưa được hỏi</b>.',go:'M6.10'});
+  /* ⚠ CHỈ BÀY RA: khoảng cách — 🛑 máy ⛔ KHÔNG tính đường, ⛔ không đo km */
+  O.push({c:'w',l:'📍 Hai điểm trường',
+   v:dtCua(t.lopCu)+' → '+dtCua(t.lopMoi),
+   s:'<b>'+dtCua(t.lopCu)+'</b> — '+dcDT(dtCua(t.lopCu))+'<br><b>'+dtCua(t.lopMoi)+'</b> — '+dcDT(dtCua(t.lopMoi))+'<br>'+
+     '🛑 Máy ⛔ <b>không tính đường, không đo km</b> — nhưng người duyệt <b>phải nhìn thấy em đang chuyển đi đâu</b>.'});
+ }
  return O}
 const chan=t=>dieuKien(t).filter(x=>x.c==='r');
 const nhac=t=>dieuKien(t).filter(x=>x.c==='w');
@@ -713,6 +756,45 @@ function khoiDK(t){
    (d.go?'<span class="rolnk" data-go="'+d.go+'">→ '+d.go+'</span>':'')+'</div>').join('')+
   '</div></div>'}
 
+/* ═══ 🆕 RSHS-2B — THÔNG BÁO GIA ĐÌNH · phần menu đang THIẾU HẲN ═══
+   §5 liệt kê 10 dòng dữ liệu được cập nhật mà ⛔ KHÔNG có dòng nào là báo cho gia đình.
+   Cùng điểm trường thì tạm được (GVCN nói miệng). Khác điểm trường thì ⛔ KHÔNG được. */
+function khoiBao(t){
+ if(!nhanhB(t)) return '';
+ const daBao=!!t.duyet, h=hsOf(t.ma);
+ return '<div class="hb"><div class="lbh">📨 Thông báo gia đình <span class="sp"></span>'+
+  (daBao?'<span class="st2 o">đã gửi '+t.duyet.ngay+'</span>':'<span class="st2 w">gửi NGAY khi duyệt</span>')+
+  '</div><div style="padding:11px 13px">'+
+  '<div class="ro">🛑 <b>Gửi NGAY khi duyệt — ⛔ không đợi ngày hiệu lực.</b> Gia đình cần thời gian thu xếp <b>đưa đón</b>: '+
+   'với họ, chuyển khác điểm trường nhìn <b>y hệt chuyển trường</b> — đổi địa điểm, đổi GVCN, đổi toàn bộ giáo viên bộ môn.</div>'+
+  '<div class="f2"><div class="k">Gửi cho</div><div class="v">'+h.ph+
+   '<div style="font-weight:400;font-size:11.5px;color:var(--ink2)">🛑 <b>Mọi phụ huynh đã liên kết App</b> của em — liên kết phụ huynh đang hiệu lực <i>(HDLP ② — TKPH 25/9/2026)</i></div>'+
+   '<div style="font-weight:400;font-size:11.5px;color:var(--ink2)">⚠ Em <b>chưa có phụ huynh liên kết App</b> thì ⛔ ai nhận trên App — báo bằng kênh khác · <b>↗ M10.5</b> <i>Liên kết App phụ huynh · lọc «Học sinh chưa có tài khoản liên kết»</i> </div></div></div>'+
+  '<div style="border:1px solid var(--line);border-radius:9px;padding:11px 12px;margin-top:9px;background:#fafbfc;font-size:12.5px;line-height:1.75">'+
+   '<b>Nội dung thông báo</b><br>'+
+   '• Lớp <b>'+t.lopCu+'</b> → <b>'+t.lopMoi+'</b><br>'+
+   '• Điểm trường mới: <b>'+dtCua(t.lopMoi)+'</b> — '+dcDT(dtCua(t.lopMoi))+'<br>'+
+   '• Ngày có hiệu lực: <b>'+(t.hieuluc||'— chọn khi duyệt —')+'</b><br>'+
+   '• GVCN mới: <b>'+gvcnCua(t.lopMoi)+'</b> · số điện thoại <b>'+sdtGVCN(t.lopMoi)+'</b><br>'+
+   '• <b>Việc gia đình phải làm:</b> đăng ký lại bán trú (nếu có) · trả sách thư viện (nếu có)'+(khacHe(t)?' · <b>khoản thu đổi</b> vì khác hệ đào tạo':'')+
+  '</div>'+
+  '<div class="ro" style="margin:9px 0 0">Ghi ở <b>M0.3</b> thông báo · và <b>một mốc ở M1.1 Quá trình học tập</b> — 🆕 mốc <b>phải nêu tên CẢ HAI điểm trường</b>, ⛔ không chỉ ghi lớp.</div>'+
+  '</div></div>'}
+
+/* ═══ 🆕 RSHS-2B — CHIP CHIẾU 🔗 hợp đồng HDTC ═══
+   🛑 CHỈ ĐỌC. Tích ở M10.8, một lần, một chỗ — M1.7 ⛔ KHÔNG có ô tích riêng (D2). */
+function chipTay(t){
+ if(t.tt!=='hl') return '';
+ const B=nhanhB(t), loai=B?'Cập nhật điểm trường và lớp trên cổng':'Cập nhật lớp trên cổng';
+ const han=B?5:7, xong=!!t.tayXong;
+ return '<div class="'+(xong?'ok':'warn')+'" style="margin:0 0 9px">'+
+  (xong?'✅ <b>Đã xử lý trên CSDL ngành</b> — '+t.tayXong.ai+' · '+t.tayXong.ngay
+      :'⏳ <b>Chưa xử lý trên CSDL ngành</b> — việc «'+loai+'», hạn '+han+' ngày')+
+  '<div style="margin-top:5px;font-size:11.5px">🛑 Đây là <b>bản chiếu CHỈ ĐỌC</b>. Tích ở <b>M10.8 tab ④</b>, một lần, một chỗ — '+
+   'menu này ⛔ <b>không có ô tích riêng</b>. <i>Đặt ô tích rời ở năm menu là năm nguồn sự thật, và sẽ không ai tích: '+
+   'người mở ticket là PHT_ĐT, người gõ cổng là Văn thư và họ gõ cả lô một lần.</i>'+
+   '<span class="rolnk" data-go="M10.8">→ M10.8 tab ④ · Việc chưa xong</span></div></div>'}
+
 /* ---- điều gì xảy ra sau khi có hiệu lực ---- */
 function khoiSau(t){
  const B=nhanhB(t);
@@ -727,15 +809,35 @@ function khoiSau(t){
    ['Hồ sơ học sinh','Cập nhật <b>Lớp</b>'+(B?' và <b>Điểm trường</b>':'')+', ghi sự kiện vào Quá trình học tập'],
    ['Lịch giảng dạy','Em theo lịch lớp mới từ ngày hiệu lực']]
   .map(x=>'<tr><td><b>'+x[0]+'</b></td><td>'+x[1]+'</td></tr>').join('')+
-  (B?'<tr><td colspan="2" style="background:#ede9fe;font-weight:700;color:#5b21b6">Riêng chuyển khác điểm trường còn kéo theo</td></tr>'+
-    '<tr><td><b>Bán trú</b></td><td>Hủy đăng ký ở '+dtCua(t.lopCu)+', <b>hỏi gia đình có đăng ký lại</b> ở '+dtCua(t.lopMoi)+' <span class="rolnk" data-go="M6.1">→ M6.1</span></td></tr>'+
-    (khacHe(t)?'<tr><td><b>Khoản thu</b></td><td>Điều chỉnh từ tháng hiệu lực <span class="rolnk" data-go="M7.2">→ M7.2</span></td></tr>':'')+
-    '<tr><td><b>Giáo viên bộ môn</b></td><td>Khác hoàn toàn → thông báo toàn bộ GVBM lớp '+t.lopMoi+'</td></tr>':'')+
-  '</table></div></div></div>'}
+  /* 🔁 RSHS-2B (23/9/2026) — bảng này từ BA dòng lên MƯỜI.
+     🛑 M1.7 ⛔ KHÔNG tự đi ghi vào M6.1 · M6.10 · M6.19 · M6.13 — mỗi thứ có MENU CHỦ riêng.
+     M1.7 làm đúng hai việc: PHÁT SỰ KIỆN `hoc_sinh_doi_lop` và BÀY TRƯỚC hệ quả cho người duyệt. */
+  (B?'<tr><td colspan="2" style="background:#ede9fe;font-weight:700;color:#5b21b6">Riêng chuyển khác điểm trường còn kéo theo — <b>10 việc</b> · cột phải ghi rõ <b>chạy LÚC NÀO</b></td></tr>'+
+    '<tr><td><b>① Bán trú</b></td><td><span class="st2 b">hiệu lực</span> Hủy đăng ký ở '+dtCua(t.lopCu)+', <b>hỏi gia đình có đăng ký lại</b> ở '+dtCua(t.lopMoi)+' <span class="rolnk" data-go="M6.1">→ M6.1</span><div style="font-size:11px;color:var(--ink3)">Hệ quả dây chuyền của sự kiện · M6.1 ghi nguồn <b>↩ M1.7 · '+t.id+'</b></div></td></tr>'+
+    (khacHe(t)?'<tr><td><b>② Khoản thu</b></td><td><span class="st2 b">hiệu lực</span> Điều chỉnh từ tháng hiệu lực <span class="rolnk" data-go="M7.2">→ M7.2</span></td></tr>':'')+
+    '<tr><td><b>③ Giáo viên bộ môn</b></td><td><span class="st2 b">hiệu lực</span> Khác hoàn toàn → thông báo toàn bộ GVBM lớp '+t.lopMoi+'</td></tr>'+
+    '<tr><td><b>④ Ký túc xá</b></td><td><span class="st2 r">TRƯỚC khi duyệt</span> '+(ktxCua(t.ma)?'⛔ <b>CHẶN</b> — em đang ở KTX '+ktxCua(t.ma).khu+' · phòng '+ktxCua(t.ma).phong:'Em ⛔ không ở ký túc xá')+' <span class="rolnk" data-go="M6.10">→ M6.10</span></td></tr>'+
+    '<tr><td><b>⑤ Thư viện</b></td><td><span class="st2 w">lúc duyệt</span> ⚠ Sách đang mượn ở <b>kho của '+dtCua(t.lopCu)+'</b> — «mỗi điểm trường một kho», mã cá biệt <code>{ĐT}-{KHO}-{SỐ}</code>. Sinh <b>việc còn tồn ở M0.2</b>, ⛔ <b>không chặn</b> <span class="rolnk" data-go="M6.19">→ M6.19</span></td></tr>'+
+    '<tr><td><b>⑥ Lịch trực &amp; nền nếp</b></td><td><span class="st2 w">lúc duyệt</span> Em trong <b>Ban nền nếp / Đội Sao đỏ</b> của '+dtCua(t.lopCu)+' ⇒ sinh việc cho <b>TPT / BTĐ</b>. 🛑 M1.7 ⛔ <b>KHÔNG tự gỡ em khỏi lực lượng</b> — đó là quyết định của người phụ trách <span class="rolnk" data-go="M6.13">→ M6.13</span></td></tr>'+
+    '<tr><td><b>⑦ Y tế học đường</b></td><td>Hồ sơ sức khỏe <b>đi theo em</b> — ⛔ không thuộc điểm trường. Chỉ đổi <b>nơi lưu bản giấy</b> <span class="rolnk" data-go="M6.6">→ M6.6</span></td></tr>'+
+    '<tr><td><b>⑧ Bảng tin Đời sống trường</b></td><td><span class="st2 b">hiệu lực</span> Bài có <code>Phạm vi = điểm trường</code>: gia đình <b>thôi thấy</b> bảng tin '+dtCua(t.lopCu)+', <b>bắt đầu thấy</b> '+dtCua(t.lopMoi)+'. 🛑 ⛔ <b>Không hồi tố bài cũ</b> <span class="rolnk" data-go="M8.6">→ M8.6</span></td></tr>'+
+    '<tr><td><b>⑨ Sĩ số hai ĐIỂM TRƯỜNG</b></td><td><span class="st2 b">hiệu lực</span> ⛔ <b>Không chỉ sĩ số hai lớp</b> — báo cáo theo điểm trường đúng <b>từ ngày hiệu lực</b>, 🛑 ⛔ <b>không hồi tố</b> <span class="rolnk" data-go="M10.2">→ M10.2</span></td></tr>'+
+    '<tr><td><b>⑩ Cập nhật trên cổng Sở</b></td><td><span class="st2 b">hiệu lực</span> Sinh dòng việc <b>«Cập nhật điểm trường và lớp trên cổng»</b> — hạn <b>5 ngày</b> <span class="rolnk" data-go="M10.8">→ M10.8 tab ④</span></td></tr>'
+   :'<tr><td colspan="2" style="background:#eff6ff;font-weight:700;color:#1d4ed8">Cùng điểm trường — chỉ thêm một việc</td></tr>'+
+    '<tr><td><b>Cập nhật trên cổng Sở</b></td><td><span class="st2 b">hiệu lực</span> Sinh dòng việc <b>«Cập nhật lớp trên cổng»</b> — hạn <b>7 ngày</b> <span class="rolnk" data-go="M10.8">→ M10.8 tab ④</span></td></tr>')+
+  '</table></div>'+
+  /* 🛑 RSHS-2B — TÁCH HAI MỐC. §3.2 nói «cập nhật ngay khi duyệt xong» còn §5.1 cho chọn
+     ngày hiệu lực TƯƠNG LAI ⇒ duyệt hôm nay, hiệu lực tuần sau, mà sĩ số đổi ngay hôm nay
+     thì BÁO CÁO TUẦN NÀY SAI và em bị điểm danh ở lớp mới trong lúc vẫn ngồi lớp cũ.
+     ⚠ Lỗi này ⛔ KHÔNG riêng ca khác điểm trường — sai cho MỌI ca có hiệu lực tương lai. */
+  '<div class="ro" style="margin:11px 0 0">🛑 <b>Hai mốc, ⛔ không gộp.</b><br>'+
+  '<b>Lúc duyệt:</b> ghi quyết định · <b>thông báo gia đình</b> · sinh các <b>việc chuẩn bị</b> (trả sách, bố trí KTX, đăng ký lại bán trú) · chốt ngày hiệu lực.<br>'+
+  '<b>Lúc đến ngày hiệu lực:</b> đổi lớp · đổi điểm trường · đổi sĩ số · đổi lịch · đổi nhóm chat · <b>sinh dòng việc trên cổng</b>.</div>'+
+  '</div></div>'}
 
 function bodyYC(t){
  const h=hsOf(t.ma);
- return khoiTT(t)+khoiDK(t)+
+ return chipTay(t)+khoiTT(t)+khoiDK(t)+      /* RSHS-2B — chip chiếu HDTC đứng đầu panel */
  '<div class="hb"><div class="lbh">👤 Học sinh và phương án đã chốt</div>'+
   '<div class="f2"><div class="k">Họ và tên</div><div class="v">'+h.n+' · '+h.gt+' · '+h.ns+'</div></div>'+
   '<div class="f2"><div class="k">Mã HS · Trạng thái</div><div class="v">'+t.ma+' · '+h.tt+'</div></div>'+
@@ -747,7 +849,7 @@ function bodyYC(t){
   '<div class="f2"><div class="k">Mô tả</div><div class="v" style="font-weight:400">'+t.mota+'</div></div>'+
   '<div class="f2"><div class="k">Người lập yêu cầu</div><div class="v" style="font-weight:400">'+t.boi+' · '+t.ngay+'</div></div>'+
   (t.hieuluc?'<div class="f2"><div class="k">Ngày có hiệu lực</div><div class="v">'+t.hieuluc+'</div></div>':'')+
- '</div>'+khoiSau(t)}
+ '</div>'+khoiBao(t)+khoiSau(t)}   /* RSHS-2B — thêm khối Thông báo gia đình */
 
 function timeline(t){
  return '<div class="hb" style="margin-bottom:0"><div class="lbh">🕘 Nhật ký (audit)</div><div style="padding:11px 13px"><div class="tl">'+

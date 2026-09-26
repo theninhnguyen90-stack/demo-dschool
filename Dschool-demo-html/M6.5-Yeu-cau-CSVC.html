@@ -340,8 +340,13 @@ const vnd=n=>vn(n)+'đ';
 
 /* ========== PHÒNG (Master) ========== */
 const LOAIP={hoc:'Phòng học thường',bomon:'Phòng bộ môn',dachucnang:'Phòng đa chức năng',
- hoitruong:'Hội trường',thuvien:'Thư viện',yte:'Phòng y tế',nhansu:'Phòng nhân viên',bep:'Khu bếp — bán trú'};
-const TT_PHONG={dung:['Đang sử dụng','o'],sua:['Đang sửa','w'],dong:['Đóng cửa','r']};
+ hoitruong:'Hội trường',thuvien:'Thư viện',yte:'Phòng y tế',nhansu:'Phòng nhân viên',bep:'Khu bếp — bán trú',
+ /* PHKT-1C (24/9/2026) — bản sao riêng theo M6.4 v2.8: loại thứ mười một. ⛔ NGOÀI loại cho mượn và
+    ⛔ không bật được ở tab 6 (LOAIP_KHONG_MUON) — phòng ở là chỗ ngủ của học sinh, không phải tài nguyên dùng chung. */
+ noitru:'Phòng ở nội trú'};
+const LOAIP_KHONG_MUON=['noitru'];
+const TT_PHONG={dung:['Đang sử dụng','o'],sua:['Đang sửa','w'],dong:['Đóng cửa','r'],
+ chua:['Chưa đưa vào sử dụng','n']};   /* PHKT-1C — trạng thái thứ tư của M6.4 (PK-2) */
 const PHONG=[
  {id:'A-101',ten:'Phòng 101',dt:'A',tang:1,loai:'hoc',succhua:45,dt2:52,tb:['Bảng chống lóa','Máy chiếu','4 quạt trần'],tt:'dung'},
  {id:'A-102',ten:'Phòng 102',dt:'A',tang:1,loai:'hoc',succhua:45,dt2:52,tb:['Bảng chống lóa','4 quạt trần'],tt:'dung'},
@@ -1481,6 +1486,8 @@ function veCauHinh(){
  h+='<div class="tbw" style="margin-top:12px"><div class="ch">2 · Loại phòng cho mượn</div><table>'
   +'<tr><th>Loại phòng</th><th class="num">Số phòng</th><th style="width:120px">Cho mượn</th></tr>'
   +Object.keys(LOAIP).map(k=>{const n=PHONG.filter(p=>p.loai===k).length, on=CFG.loaiPhongMuon.includes(k);
+    if(LOAIP_KHONG_MUON.includes(k))return '<tr><td><b>'+LOAIP[k]+'</b></td><td class="num">'+(n||'—')+'</td>'
+     +'<td><span class="kchk" title="Phòng ở nội trú — chỗ ngủ của học sinh (M6.4 · M6.10), không phải tài nguyên dùng chung">⛔ không cho mượn</span></td></tr>';
     return '<tr><td><b>'+LOAIP[k]+'</b></td><td class="num">'+n+'</td>'
      +'<td><label class="kchk"><input type="checkbox" data-lpm="'+k+'"'+(on?' checked':'')+'> '
      +(on?'có':'không')+'</label></td></tr>'}).join('')

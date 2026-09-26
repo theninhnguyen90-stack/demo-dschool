@@ -866,6 +866,45 @@ const diemCCTS=id=>DIEMCC_CHIEU.find(d=>d.ts===id);
 const laCC=t=>t&&t.loai==='chamcong';
 
 /* ══════════════════════════════════════════════════════════════════════
+   PHKT-1A (24/9/2026) — PHÒNG VỀ MỘT NHÀ: phòng ở nội trú (ký túc xá) là ĐỊA ĐIỂM của M6.4
+   Bản chốt CHOT-24-09-co-cau-to-chuc-ve-thong-tin-truong.md điểm E · sổ PROMPT-PHKT-00 §3 hợp đồng ①⑥.
+   ★ VÌ SAO Ở NỀN CHUNG (luật PH-2): M6.11 phải báo hỏng — sửa chữa được phòng KTX, nên hai menu
+     phải thấy CÙNG địa điểm. Chỉ DỮ LIỆU ở đây; cách M6.4 vẽ, chặn sức chứa, cờ phòng máy, nhóm mục
+     đích máy tính ở tệp riêng app.19 của M6.4. Khối đặt CUỐI tệp — sau seedKK — để đợt kiểm kê ĐÃ KÝ
+     (KK-01) không bị vá lùi (tiền lệ app.14 · khối chấm công ở trên).
+   ★ Ngoài mọi phép đếm phòng DẠY (PK-6): loại «noitru» KHÔNG thuộc LOAI_DAY ['hoc','bomon'] (app.16)
+     và không thuộc dòng 2 · 2b · 3 của báo cáo công trình (app.18) — ba con số đang chạy không đổi.
+   ★ Sức chứa = SỐ GIƯỜNG khi loai = noitru (PK-3). Trạng thái thứ tư «chua» dùng chung mọi công trình
+     mới xây (PK-2); «ngừng dùng» của M6.10 ≡ «dong». Mã theo PK-1: tiền tố khu KA-/KB- — mã cũ ở maM610.
+   ══════════════════════════════════════════════════════════════════════ */
+LOAIP.noitru='Phòng ở nội trú';
+TT_PHONG.chua=['Chưa đưa vào sử dụng','n'];
+/* định mức thiết bị gắn liền của phòng ở — để báo hỏng đèn, quạt, bình nóng lạnh ở M6.11 có dòng mà trỏ */
+DINHMUC.noitru=[['Bóng đèn tuýp',4],['Quạt trần',2],['Ổ điện',4],['Bình nóng lạnh',1]];
+/* [mã mới, mã cũ ở M6.10, khu = dãy nhà, tầng, số giường, trạng thái, ghi chú] — khớp M6.10 app.10-du-lieu.js */
+[
+ ['KA-101','A-101','KA',1,8,'dung'],['KA-102','A-102','KA',1,8,'dung'],['KA-103','A-103','KA',1,8,'dung'],
+ ['KA-104','A-104','KA',1,7,'dung'],['KA-105','A-105','KA',1,6,'dung'],['KA-201','A-201','KA',2,8,'dung'],
+ ['KA-202','A-202','KA',2,8,'dung'],['KA-203','A-203','KA',2,8,'dung'],['KA-204','A-204','KA',2,8,'dung'],
+ ['KA-205','A-205','KA',2,8,'dung'],['KA-301','A-301','KA',3,8,'sua','Thấm trần, dự kiến xong 30/10/2026'],
+ ['KA-302','A-302','KA',3,8,'chua','Mới xây, chưa nghiệm thu'],
+ ['KB-101','B-101','KB',1,8,'dung'],['KB-102','B-102','KB',1,8,'dung'],['KB-103','B-103','KB',1,8,'dung'],
+ ['KB-104','B-104','KB',1,6,'dung'],['KB-105','B-105','KB',1,6,'dung'],['KB-201','B-201','KB',2,8,'dung'],
+ ['KB-202','B-202','KB',2,8,'dung'],['KB-203','B-203','KB',2,8,'dung'],['KB-204','B-204','KB',2,6,'dung'],
+ ['KB-205','B-205','KB',2,6,'dung']
+].forEach(([id,cu,khu,tang,giuong,tt,gc])=>{
+ PHONG.push({id,ten:'Phòng ở '+id.slice(3)+' — Nhà '+khu.slice(1),dt:'A',tang,loai:'noitru',succhua:giuong,
+  dt2:giuong>=8?36:30,tb:[],tt,day:khu,maM610:cu,ghichu:gc||''});
+ DINHMUC.noitru.forEach(([ten,dm])=>themTBRow(id,ten,dm,0,dm,''));
+});
+/* đợt kiểm kê cố định ĐANG ĐẾM của điểm trường A phải đếm cả thiết bị gắn liền phòng ở (phòng về một nhà
+   ⇒ vào kiểm kê); đợt đã ký giữ nguyên bản chụp */
+KIEMKE.filter(k=>k.tt==='dem'&&k.snapTB).forEach(k=>{
+ PHONG.filter(x=>x.loai==='noitru'&&x.dt===k.dt).forEach(ph=>tbCuaPhong(ph.id).forEach(x=>{
+  k.snapTB[x.id]={phong:x.phong,ten:x.ten,dm:x.dm,sl:x.sl,hong:x.hong}}));
+});
+
+/* ══════════════════════════════════════════════════════════════════════
    NỀN CHUNG · THIẾT BỊ THEO MÔN & BÀI HỌC — tệp này GIỐNG HỆT TỪNG BYTE ở ba thư mục:
      demo-src/M6.4-Danh-muc-va-Kiem-ke-CSVC/app.14-nen-chung-mon-bai.js   ← menu CHỦ (ghi)
      demo-src/M6.5-Yeu-cau-CSVC/app.14-nen-chung-mon-bai.js               ← đọc 🔗 để lọc khi mượn

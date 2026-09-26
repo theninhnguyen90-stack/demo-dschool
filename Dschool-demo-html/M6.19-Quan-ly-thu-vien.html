@@ -1961,9 +1961,10 @@ function veThongKe(){
 /* ═══════════ TAB 5 · ⚙ CẤU HÌNH ═══════════ */
 function veCauHinh(){
  if(!can('ch_x')) return tuChoi('⚙ Cấu hình','Cấu hình hạn mượn, mã cá biệt, mẫu phiếu nhắc thuộc về <b>người phụ trách nghiệp vụ</b> — quản thư (khung §4, phương án B).');
- const s=can('ch_s'), dis=s?'':' disabled';
+ const s=can('ch_s'), dis=s?'':' disabled', dis2=s&&!PB19.cho?'':' disabled';   /* dis2 — khối ② ④ ⑤ khóa khi có bản chờ (DCCH-1B) */
  const hanV=v=>v==='nam'?'năm':v==null?'—':v;
- let h=scopeBar('<span>Cấu hình áp <b>toàn trường</b>, cho mọi năm học đến khi đổi.</span>');
+ let h=scopeBar('<span>Cấu hình áp <b>toàn trường</b>, cho mọi năm học đến khi đổi — <b>Master</b>, có ngày hiệu lực và lịch sử phiên bản.</span>');
+ h+=veDai19();
  if(R().sc!=='School') h+='<div class="warn">⚠ Bạn là quản thư <b>'+DTN[R().dt]+'</b> (phạm vi Branch) nhưng cấu hình này áp <b>cả hai kho</b> — hai quản thư có thể ghi đè cấu hình của nhau (⏳ TV-9, cùng loại M6.4 điểm U). Mọi lần lưu ghi audit.</div>';
  h+='<div class="card"><div class="ch">① Kho sách và mã cá biệt</div><div class="tbx"><table class="cfgtb"><thead><tr><th>Kho</th><th>Tiền tố</th><th>Số tiếp theo — A</th><th>Số tiếp theo — B</th></tr></thead><tbody>'
   +Object.keys(KHO).map(k=>'<tr><td>'+KHO[k].ten+'</td><td class="mono">'+KHO[k].tien+'</td><td class="mono">'+maCB('A',k,SO_TIEP.A[k])+'</td><td class="mono">'+maCB('B',k,SO_TIEP.B[k])+'</td></tr>').join('')
@@ -1971,23 +1972,24 @@ function veCauHinh(){
   +'<span class="srcline">{DT} điểm trường · {KHO} tiền tố kho · {SO5} số 5 chữ số chạy theo điểm trường × kho (chốt 4A)</span></span></div>'
   +'<div class="f"><span class="k">Số cũ trước sáp nhập</span><span class="v" style="font-weight:400">Nhập Excel <b>giữ nguyên</b> mã cũ nếu cột mã có giá trị, không trùng, đúng tiền tố điểm trường — để không dán nhãn lại hàng nghìn cuốn. Số tiếp theo luôn lớn hơn số lớn nhất đã có.</span></div></div></div>';
  h+='<div class="card"><div class="ch">② Hạn mượn — loại sách × loại bạn đọc</div><div class="tbx"><table class="cfgtb"><thead><tr><th>Loại sách</th><th>Học sinh</th><th>Nhân sự</th></tr></thead><tbody>'
-  +Object.keys(KHO).map(k=>'<tr><td>'+KHO[k].ten+'</td>'+['hs','ns'].map(b=>'<td><input class="fs mini" data-cfh="'+k+'|'+b+'" value="'+hanV(CFG.han[k][b])+'"'+dis+'></td>').join('')+'</tr>').join('')
+  +Object.keys(KHO).map(k=>'<tr><td>'+KHO[k].ten+'</td>'+['hs','ns'].map(b=>'<td><input class="fs mini" data-cfh="'+k+'|'+b+'" value="'+hanV(CFG.han[k][b])+'"'+dis2+'></td>').join('')+'</tr>').join('')
   +'</tbody></table></div><div class="cb">'
   +'<div class="f"><span class="k">Cách ghi</span><span class="v" style="font-weight:400">số ngày · <b>năm</b> = theo năm học (hạn = ngày kết thúc năm học ở 🔗 M10.1) · <b>—</b> = không áp dụng (vẫn mượn được, có cảnh báo + lý do)</span></div>'
-  +'<div class="f"><span class="k">Số cuốn tối đa</span><span class="v">Học sinh <input class="fs mini" id="cfTdHs" value="'+CFG.toiDa.hs+'"'+dis+'> · Nhân sự <input class="fs mini" id="cfTdNs" value="'+CFG.toiDa.ns+'"'+dis+'><span class="srcline">chỉ đếm lượt thường — vượt thì cảnh báo, không chặn</span></span></div>'
-  +'<div class="f"><span class="k">Gia hạn mỗi lần</span><span class="v">Học sinh <input class="fs mini" id="cfGhHs" value="'+CFG.giaHan.hs+'"'+dis+'> ngày · Nhân sự <input class="fs mini" id="cfGhNs" value="'+CFG.giaHan.ns+'"'+dis+'> ngày · tối đa <input class="fs mini" id="cfGhLan" value="'+CFG.giaHan.lan+'"'+dis+'> lần</span></div>'
+  +'<div class="f"><span class="k">Số cuốn tối đa</span><span class="v">Học sinh <input class="fs mini" id="cfTdHs" value="'+CFG.toiDa.hs+'"'+dis2+'> · Nhân sự <input class="fs mini" id="cfTdNs" value="'+CFG.toiDa.ns+'"'+dis2+'><span class="srcline">chỉ đếm lượt thường — vượt thì cảnh báo, không chặn</span></span></div>'
+  +'<div class="f"><span class="k">Gia hạn mỗi lần</span><span class="v">Học sinh <input class="fs mini" id="cfGhHs" value="'+CFG.giaHan.hs+'"'+dis2+'> ngày · Nhân sự <input class="fs mini" id="cfGhNs" value="'+CFG.giaHan.ns+'"'+dis2+'> ngày · tối đa <input class="fs mini" id="cfGhLan" value="'+CFG.giaHan.lan+'"'+dis2+'> lần</span></div>'
   +'<div class="lgd">Văn bản không quy định hạn mượn, số cuốn, gia hạn — đây là <b>mặc định của hệ thống</b>, trường sửa theo nội quy thư viện (TT 16/2022 Đ.9: Hiệu trưởng ban hành quy định).</div></div></div>';
  h+='<div class="card"><div class="ch">③ Tiêu chí thanh lọc — danh sách đóng theo TT 02/2020/TT-BVHTTDL</div><div class="cb">'
   +Object.keys(LYDO).map(k=>'<div class="f"><span class="k mono">'+LYDO[k].cc+'</span><span class="v" style="font-weight:400">'+LYDO[k].n+'</span></div>').join('')
   +'<div class="f"><span class="k">Ngưỡng mỗi lần</span><span class="v">'+CFG.nguongThanhLoc+'% tổng kho <span class="srcline">Đ.16 — cảnh báo khi vượt, không chặn</span></span></div>'
   +'<div class="f"><span class="k">Hình thức xử lý</span><span class="v" style="font-weight:400">'+Object.values(HINHTHUC).join(' · ')+'</span></div>'
   +'<div class="lgd">Không sửa được ở đây — danh sách lấy thẳng từ văn bản, không phải danh mục trường tự đặt (cùng cách M6.4 đặt căn cứ kiểm kê).</div></div></div>';
- h+='<div class="card"><div class="ch">④ Mẫu phiếu nhắc trả sách</div><div class="cb" style="padding:10px 12px"><textarea class="fldi" id="cfNhac" rows="3"'+dis+'>'+esc(CFG.mauNhac)+'</textarea>'
+ h+='<div class="card"><div class="ch">④ Mẫu phiếu nhắc trả sách</div><div class="cb" style="padding:10px 12px"><textarea class="fldi" id="cfNhac" rows="3"'+dis2+'>'+esc(CFG.mauNhac)+'</textarea>'
   +'<div class="srcline">Trường trộn: {TEN} {LOP} {DT}. In giấy — không gửi App (chốt 3).</div></div></div>';
- h+='<div class="card"><div class="ch">⑤ Thời hạn giữ chi tiết lịch sử mượn</div><div class="cb"><div class="f"><span class="k">Giữ chi tiết</span><span class="v"><select class="fs" id="cfGiu"'+dis+'>'
+ h+='<div class="card"><div class="ch">⑤ Thời hạn giữ chi tiết lịch sử mượn</div><div class="cb"><div class="f"><span class="k">Giữ chi tiết</span><span class="v"><select class="fs" id="cfGiu"'+dis2+'>'
   +[1,2,3].map(n=>'<option'+(n===CFG.giuLichSu?' selected':'')+'>'+n+'</option>').join('')+'</select> năm học, sau đó <b>ẩn tên bạn đọc</b> — giữ bản, ngày, kết quả để thống kê</span></div>'
   +'<div class="lgd">⏳ TV-8 — Luật BVDLCN 91/2025 đòi tối thiểu hóa thời gian lưu. Lượt dẫn tới việc loại sách giữ theo hồ sơ thanh lọc (tối thiểu 5 năm).</div></div></div>';
- if(s) h+='<div class="bar"><button class="btn p" data-a="luuCH">💾 Lưu cấu hình</button><button class="btn" data-a="cloneCH">⧉ Lấy cấu hình từ năm học…</button></div>';
+ /* DCCH-1B — ⚙ Master: 🕘 Lịch sử phiên bản · ↺ Khôi phục thay cho ⧉ Lấy cấu hình từ năm học (luật DC-3) */
+ h+='<div class="bar">'+(s?'<button class="btn p" data-a="luuCH">💾 Lưu cấu hình</button>':'')+'<button class="btn" data-a="lsCH">🕘 Lịch sử phiên bản · ↺ Khôi phục</button></div>';
  return h;
 }
 function luuCauHinh(){
@@ -2000,18 +2002,129 @@ function luuCauHinh(){
   han[k]=han[k]||{}; han[k][b]=v==='năm'||v==='nam'?'nam':v==='—'||v==='-'||v===''?null:(+v>0?+v:'ERR');
   if(han[k][b]==='ERR') loi.push(KHO[k].ten+' × '+(b==='hs'?'học sinh':'nhân sự')+': «'+esc(e.value)+'» không hợp lệ.')});
  if(loi.length){toast('⛔ Chưa lưu: '+loi.join(' '));return}
- CFG.mauMa=mau; CFG.han=han; CFG.toiDa={hs:+$('#cfTdHs').value||3,ns:+$('#cfTdNs').value||10};
- CFG.giaHan={hs:+$('#cfGhHs').value||7,ns:+$('#cfGhNs').value||14,lan:+$('#cfGhLan').value||2};
- CFG.mauNhac=$('#cfNhac').value; CFG.giuLichSu=+$('#cfGiu').value;
- toast('💾 Đã lưu cấu hình — áp cho lượt mượn <b>từ bây giờ</b>; lượt đang mở giữ hạn cũ. Audit ghi giá trị cũ → mới.'); render();
+ /* DCCH-1B — ① mẫu mã áp ngay như trước; ② ④ ⑤ đi qua hộp chọn ngày hiệu lực (mặc định «Ngay» — hành vi cũ) → app.75 */
+ const moi={han,toiDa:{hs:+$('#cfTdHs').value||3,ns:+$('#cfTdNs').value||10},
+  giaHan:{hs:+$('#cfGhHs').value||7,ns:+$('#cfGhNs').value||14,lan:+$('#cfGhLan').value||2},
+  mauNhac:$('#cfNhac').value,giuLichSu:+$('#cfGiu').value};
+ chonHieuLuc19(moi,()=>{CFG.mauMa=mau});
 }
-function hopClone(){
- modal('⧉ Lấy cấu hình từ năm học…',
-  '<label class="lbl">Năm học nguồn</label><select class="fldi"><option>2025-2026</option></select>'
-  +'<div class="stt" style="margin-top:10px">Sẽ lấy</div><div class="ro">② Hạn mượn · số cuốn · gia hạn · ④ Mẫu phiếu nhắc · ⑤ Thời hạn giữ lịch sử</div>'
-  +'<div class="stt">Không lấy — và vì sao</div><div class="ro">① Mẫu mã và số tiếp theo — <b>dữ liệu xuyên năm</b>: đổi số chạy là sinh mã trùng · ③ Tiêu chí thanh lọc — <b>lấy từ văn bản</b>, không phải cấu hình năm (khung §19.2 quy tắc 1).</div>',
-  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="clOk">⧉ Lấy</button>');
- mfns.bclOk=()=>{closeM();toast('⧉ Đã lấy 3 khối từ năm học 2025-2026 — giá trị không đổi (hai năm cùng cấu hình). Audit ghi lượt lấy.')};
+/* hopClone() «⧉ Lấy cấu hình từ năm học…» ĐÃ BỎ (DCCH-1B, 24/9/2026 — luật DC-3): khối ② ④ ⑤ là Master có ngày hiệu lực;
+   lấy lại bộ cũ = ↺ Khôi phục ở 🕘 Lịch sử phiên bản → bản chờ hiệu lực (app.75-phien-ban-cau-hinh.js). */
+
+
+/* ═══════════ TAB 5 · ⚙ CẤU HÌNH — VÒNG ĐỜI CẤU HÌNH MASTER (DCCH-1B, 24/9/2026) ═══════════
+   Chốt C · luật DC-3 của cụm DCCH (bản chốt CHOT-24-09-co-cau-to-chuc-ve-thong-tin-truong.md §4):
+   ② hạn mượn · số cuốn · gia hạn  ·  ④ mẫu phiếu nhắc  ·  ⑤ thời hạn giữ lịch sử  là MỘT BỘ cấu hình MASTER —
+   một bộ đang hiệu lực + tối đa MỘT bản chờ hiệu lực + lịch sử phiên bản, theo mẫu M5.10 §4.6.
+   ⛔ Không còn «⧉ Lấy cấu hình từ năm học…» — muốn lấy lại bộ cũ thì «↺ Khôi phục» = tạo BẢN CHỜ HIỆU LỰC.
+   DC-4: CFG vẫn là BỘ ĐANG HIỆU LỰC — quầy, gia hạn, phiếu nhắc đọc CFG như cũ; «💾 Lưu» mặc định vẫn
+   «áp cho lượt từ bây giờ, lượt mở giữ hạn cũ». ① mẫu mã và ③ tiêu chí thanh lọc KHÔNG vào bộ phiên bản
+   (① áp ngay khi lưu như trước — ⏳ điểm P · ③ lấy từ văn bản, không sửa được). */
+const s19=()=>JSON.parse(JSON.stringify({han:CFG.han,toiDa:CFG.toiDa,giaHan:CFG.giaHan,mauNhac:CFG.mauNhac,giuLichSu:CFG.giuLichSu}));
+const MUC19=[['han','② Hạn mượn'],['toiDa','② Số cuốn tối đa'],['giaHan','② Gia hạn'],['mauNhac','④ Mẫu phiếu nhắc'],['giuLichSu','⑤ Giữ chi tiết lịch sử']];
+const khac19=(a,b)=>MUC19.filter(([k])=>JSON.stringify(a[k])!==JSON.stringify(b[k]));
+const PB19={
+ /* tt: 'hl' đang hiệu lực · 'thay' đã thay thế · 'huy' bản chờ đã hủy (giữ vết) */
+ ls:[{v:1,hl:'2026-09-15',boi:'Nguyễn Thị Thu Hà',cd:'TV — Thư viện điểm trường A',tt:'thay',ghi:'Khởi tạo — mặc định hệ thống khi mở menu',
+   gt:{...s19(),mauNhac:'Thư viện nhà trường nhắc em {TEN} (lớp {LOP}) trả sách đã quá hạn tại thư viện {DT}.'}},
+  {v:2,hl:'2026-10-05',boi:'Nguyễn Thị Thu Hà',cd:'TV — Thư viện điểm trường A',tt:'hl',
+   ghi:'Mẫu phiếu nhắc thêm giờ mở cửa và câu hướng dẫn khi sách mất / hỏng — góp ý của GVCN khối 10',gt:s19()}],
+ cho:null
+};
+const pb19HL=()=>PB19.ls.find(x=>x.tt==='hl');
+const pb19Max=()=>Math.max(...PB19.ls.map(x=>x.v),PB19.cho?PB19.cho.v:0);
+const tomTat19=g=>'HS '+g.toiDa.hs+' · NS '+g.toiDa.ns+' cuốn · gia hạn +'+g.giaHan.hs+'/+'+g.giaHan.ns+' ngày × '+g.giaHan.lan+' · giữ '+g.giuLichSu+' năm';
+function apBo19(g){CFG.han=g.han;CFG.toiDa=g.toiDa;CFG.giaHan=g.giaHan;CFG.mauNhac=g.mauNhac;CFG.giuLichSu=g.giuLichSu}
+
+/* dải đầu tab: bộ đang hiệu lực + bản chờ */
+function veDai19(){
+ const h=pb19HL();
+ let s='<div class="ro">⚙ <b>Cấu hình Master — không theo năm học.</b> Khối ② ④ ⑤ đang hiệu lực: <b>v'+h.v+'</b> từ <b>'+k2s(h.hl)+'</b> · '
+  +esc(h.boi)+'. Bộ chọn năm học ở header <b>không áp</b> cho tab này.</div>';
+ const c=PB19.cho;
+ if(c){
+  const d=khac19(h.gt,c.gt);
+  s+='<div class="warn">⏳ <b>Bản chờ hiệu lực v'+c.v+'</b> — áp từ <b>'+k2s(c.hl)+'</b>'+(c.kp?' · <b>↺ khôi phục từ v'+c.kp+'</b>':'')+' · '+esc(c.boi)
+   +'<br>Đổi: <b>'+(d.length?d.map(x=>x[1]).join(' · '):'không đổi giá trị nào')+'</b> — '+tomTat19(c.gt)
+   +'<br><span style="font-size:11.5px">Tới ngày đó quầy vẫn tính hạn theo <b>v'+h.v+'</b>; từ ngày đó lượt <b>mới</b> theo v'+c.v+', lượt đang mở giữ hạn cũ. '
+   +'Có bản chờ thì <b>không sửa thẳng</b> khối ② ④ ⑤ — hủy bản chờ trước.</span>'
+   +(can('ch_s')?'<div style="margin-top:6px"><button class="btn sm" data-a="huyCho19">✕ Hủy bản chờ</button> '
+    +'<button class="btn sm" data-a="tuaCho19">⏩ (demo) Giả lập tới '+k2s(c.hl)+'</button></div>':'')+'</div>';
+ }
+ return s;
+}
+
+/* sau khi kiểm hợp lệ ở luuCauHinh(): moi = bộ ②④⑤ mới, apMa = hàm áp ① (áp ngay như trước) */
+function chonHieuLuc19(moi,apMa){
+ const h=pb19HL(), d=khac19(h.gt,moi);
+ if(!d.length){apMa();toast('💾 Đã lưu cấu hình — áp cho lượt mượn <b>từ bây giờ</b>; lượt đang mở giữ hạn cũ. Audit ghi giá trị cũ → mới.');render();return}
+ if(PB19.cho){toast('⛔ Chưa lưu: đang có <b>bản chờ hiệu lực v'+PB19.cho.v+'</b> — hủy bản chờ trước, để hai thay đổi không đè nhau.');return}
+ modal('💾 Lưu cấu hình — chọn ngày hiệu lực',
+  '<div class="ro">Thay đổi ở khối ② ④ ⑤: <b>'+d.map(x=>x[1]).join(' · ')+'</b></div>'
+  +'<label class="lbl">Có hiệu lực</label>'
+  +'<div><label class="kchk"><input type="radio" name="hl19" value="ngay" checked> Ngay — áp cho lượt mượn <b>từ bây giờ</b>, lượt đang mở giữ hạn cũ <i>(như trước)</i></label></div>'
+  +'<div style="margin-top:4px"><label class="kchk"><input type="radio" name="hl19" value="hen"> Hẹn ngày — tạo <b>bản chờ hiệu lực v'+(pb19Max()+1)+'</b> từ</label> '
+  +'<input class="fs" type="date" id="hl19Ngay" min="'+cong(HOMNAY,1)+'" value="'+cong(HOMNAY,1)+'"></div>'
+  +'<div style="font-size:11px;color:var(--ink3);margin-top:3px">Hợp với nội quy thư viện Hiệu trưởng ban hành có ngày áp dụng (TT 16/2022 Đ.9). ① Mẫu mã — nếu có đổi — <b>luôn áp ngay</b>.</div>'
+  +'<label class="lbl">Ghi chú thay đổi <i style="font-weight:400">(hiện ở lịch sử phiên bản)</i></label><input class="fldi" id="hl19Ghi">',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="hl19Ok">💾 Lưu</button>');
+ mfns.bhl19Ok=()=>{
+  const hen=(document.querySelector('input[name=hl19]:checked')||{}).value==='hen', ngay=$('#hl19Ngay').value, ghi=$('#hl19Ghi').value.trim()||d.map(x=>x[1]).join(' · ');
+  if(hen&&(!ngay||ngay<=HOMNAY)){toast('⛔ Ngày hiệu lực phải <b>sau hôm nay</b> — muốn áp ngay thì chọn «Ngay».');return}
+  apMa();
+  if(hen){PB19.cho={v:pb19Max()+1,hl:ngay,boi:R().n,cd:R().cd,gt:moi,ghi};closeM();render();
+   toast('⏳ Đã tạo <b>bản chờ hiệu lực v'+PB19.cho.v+'</b> từ '+k2s(ngay)+'. Tới ngày đó quầy vẫn theo <b>v'+h.v+'</b>. Audit ghi giá trị cũ → mới.');return}
+  h.tt='thay'; PB19.ls.push({v:pb19Max()+1,hl:HOMNAY,boi:R().n,cd:R().cd,tt:'hl',gt:moi,ghi}); apBo19(moi); closeM(); render();
+  toast('💾 Đã lưu cấu hình — áp cho lượt mượn <b>từ bây giờ</b>; lượt đang mở giữ hạn cũ. Lịch sử: <b>v'+pb19HL().v+'</b>. Audit ghi giá trị cũ → mới.');
+ };
+}
+
+/* 🕘 Lịch sử phiên bản · ↺ Khôi phục (DC-3) — thay «⧉ Lấy cấu hình từ năm học…» */
+function hopLichSu19(){
+ const rows=[...PB19.ls,...(PB19.cho?[{...PB19.cho,tt:'cho'}]:[])].sort((a,b)=>b.v-a.v);
+ const nhan={hl:'<span class="tg g">đang hiệu lực</span>',thay:'<span class="tg c">đã thay thế</span>',cho:'<span class="tg b">chờ hiệu lực</span>',huy:'<span class="tg r">bản chờ đã hủy</span>'};
+ modal('🕘 Lịch sử phiên bản — khối ② ④ ⑤',
+  '<div class="info">Cấu hình <b>Master</b>: một bộ đang hiệu lực, tối đa một bản chờ hiệu lực. <b>↺ Khôi phục</b> tạo <b>bản chờ hiệu lực</b> từ ngày bạn chọn — <b>không ghi đè</b> bộ đang chạy, lượt đang mở không đổi hạn.</div>'
+  +'<div class="tbx"><table class="cfgtb"><thead><tr><th>Bản</th><th>Hiệu lực từ</th><th>Người</th><th>Tóm tắt ②⑤</th><th>Ghi chú</th><th></th></tr></thead><tbody>'
+  +rows.map(x=>'<tr><td><b>v'+x.v+'</b> '+nhan[x.tt]+'</td><td>'+k2s(x.hl)+'</td><td style="font-size:11.5px">'+esc(x.boi)+'</td>'
+   +'<td style="font-size:11.5px">'+tomTat19(x.gt)+'</td><td style="font-size:11.5px">'+esc(x.ghi)+(x.kp?' <span class="tg a">↺ từ v'+x.kp+'</span>':'')+'</td>'
+   +'<td>'+((x.tt==='thay'||x.tt==='huy')&&can('ch_s')?'<button class="btn sm" data-mb="kp19_'+x.v+'">↺ Khôi phục</button>':'')+'</td></tr>').join('')
+  +'</tbody></table></div>'
+  +'<div class="ro" style="margin-top:9px"><b>Không có trong lịch sử này:</b> ① mẫu mã và số tiếp theo — <b>dữ liệu xuyên năm</b>, áp ngay khi lưu, vết ở audit · ③ tiêu chí thanh lọc — <b>lấy từ văn bản</b> TT 02/2020, không sửa được.</div>',
+  '<button class="btn p" data-mb="close">Đóng</button>');
+ rows.forEach(x=>{mfns['bkp19_'+x.v]=()=>khoiPhuc19(x.v)});
+}
+function khoiPhuc19(v){
+ const src=PB19.ls.find(x=>x.v===v), h=pb19HL();
+ if(PB19.cho){toast('⛔ Đang có <b>bản chờ hiệu lực v'+PB19.cho.v+'</b> — mỗi lúc chỉ một bản chờ. Hủy bản chờ ấy trước, rồi khôi phục.');return}
+ const d=khac19(h.gt,src.gt);
+ if(!d.length){toast('ℹ️ Bản v'+v+' <b>trùng giá trị</b> với bộ đang hiệu lực v'+h.v+' — không có gì để khôi phục.');return}
+ modal('↺ Khôi phục bản v'+v+' — tạo bản chờ hiệu lực',
+  '<div class="tbx"><table class="cfgtb"><thead><tr><th>Khối</th><th>Đang hiệu lực (v'+h.v+')</th><th>Bản v'+v+'</th></tr></thead><tbody>'
+  +d.map(([k,n])=>'<tr><td>'+n+' <span class="tg b">sẽ đổi</span></td><td style="font-size:11.5px">'+esc(typeof h.gt[k]==='object'?JSON.stringify(h.gt[k]):h.gt[k])+'</td>'
+   +'<td style="font-size:11.5px"><b>'+esc(typeof src.gt[k]==='object'?JSON.stringify(src.gt[k]):src.gt[k])+'</b></td></tr>').join('')+'</tbody></table></div>'
+  +'<label class="lbl">Hiệu lực từ *</label><input class="fs" type="date" id="kp19Ngay" min="'+cong(HOMNAY,1)+'" value="'+cong(HOMNAY,1)+'">'
+  +'<div style="font-size:11px;color:var(--ink3);margin-top:3px">Sớm nhất là ngày mai — khôi phục <b>không ghi đè</b> bộ đang hiệu lực (luật DC-3).</div>'
+  +'<label class="lbl">Ghi chú</label><input class="fldi" id="kp19Ghi" value="Khôi phục từ v'+v+'">',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="kp19Ok">↺ Tạo bản chờ hiệu lực</button>');
+ mfns.bkp19Ok=()=>{
+  const ngay=$('#kp19Ngay').value;
+  if(!ngay||ngay<=HOMNAY){toast('⛔ Ngày hiệu lực phải <b>sau hôm nay</b>.');return}
+  PB19.cho={v:pb19Max()+1,hl:ngay,boi:R().n,cd:R().cd,gt:JSON.parse(JSON.stringify(src.gt)),ghi:$('#kp19Ghi').value.trim()||'Khôi phục từ v'+v,kp:v};
+  closeM();render();
+  toast('↺ Đã tạo <b>bản chờ hiệu lực v'+PB19.cho.v+'</b> từ '+k2s(ngay)+' — khôi phục từ v'+v+'. Bộ đang hiệu lực <b>v'+h.v+'</b> giữ nguyên tới ngày đó.');
+ };
+}
+function huyCho19(){
+ const c=PB19.cho; if(!c) return;
+ PB19.ls.push({...c,tt:'huy',ghi:c.ghi+' — hủy '+k2s(HOMNAY)+' bởi '+R().n}); PB19.cho=null;
+ toast('✕ Đã hủy bản chờ v'+c.v+' — giữ vết ở lịch sử phiên bản. Bộ đang hiệu lực không đổi.');
+}
+/* ⏩ chỉ có ở demo — để thấy bản chờ CHUYỂN THÀNH bộ đang hiệu lực */
+function tuaCho19(){
+ const c=PB19.cho; if(!c) return;
+ pb19HL().tt='thay'; PB19.ls.push({...c,tt:'hl'}); PB19.cho=null; apBo19(JSON.parse(JSON.stringify(c.gt)));
+ toast('▶ (demo) Tới '+k2s(c.hl)+': <b>v'+c.v+' đang hiệu lực</b> — lượt mượn mới tính theo bộ này; lượt đang mở giữ hạn cũ.');
 }
 
 /* ═══════════ RENDER + SỰ KIỆN ═══════════ */
@@ -2076,7 +2189,9 @@ const A={
   toast('✕ Đã rút <b>'+v+'</b> khỏi danh mục — bản giữ <b>Chờ loại</b>; muốn cho mượn lại thì <b>↺ Hoàn về kho</b> ở tab 2.')},
  /* tab 4 · 5 */
  xuatTK:()=>{toast('⬇ Đã xuất báo cáo định kỳ '+ST.nam+' — chỉ số tổng hợp, không có tên học sinh.');return 1},
- luuCH:()=>{luuCauHinh();return 1}, cloneCH:()=>{hopClone();return 1}
+ luuCH:()=>{luuCauHinh();return 1},
+ /* DCCH-1B — thay cloneCH «⧉ Lấy cấu hình từ năm học» */
+ lsCH:()=>{hopLichSu19();return 1}, huyCho19:()=>{huyCho19()}, tuaCho19:()=>{tuaCho19()}
 };
 
 /* ---------- kiểm kê: quét · thừa · chốt ---------- */

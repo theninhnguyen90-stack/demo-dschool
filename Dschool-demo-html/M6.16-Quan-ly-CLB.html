@@ -2032,13 +2032,14 @@ function veKHThucHien(ck,c){
 
 /* ══════════════ TAB 3 · ⚙ CẤU HÌNH ĐÁNH GIÁ CLB ══════════════
    Hai khối: BIỂU MẪU (có phiên bản) · CHU KỲ (định nghĩa — mở/đóng ở tab 2).
-   Quy ước M10.1 §6.3.6: mọi tab ⚙ có «⧉ Lấy cấu hình từ năm học…». */
+   ~~Quy ước M10.1 §6.3.6: mọi tab ⚙ có «⧉ Lấy cấu hình từ năm học…».~~ DCCH-1B (24/9/2026): biểu mẫu là MASTER —
+   🕘 các phiên bản · ↺ khôi phục (app.55); chu kỳ là YEARLY — giữ «⧉ Lấy khung chu kỳ từ năm học…» riêng khối đó. */
 function soPhieuV(v){return PHIEU.filter(p=>p.v===v).length}
 function veCauHinh(){
- let h=scopeBar('Cấu hình <b>dùng chung</b> cho mọi CLB — cả Liên đội lẫn Đoàn trường. Thuộc năm học <b>2026–2027</b>; phiên bản cũ và chu kỳ năm trước hiện để tra, không sửa.');
+ let h=scopeBar('Cấu hình <b>dùng chung</b> cho mọi CLB — cả Liên đội lẫn Đoàn trường. <b>📋 Biểu mẫu là Master</b> — dùng xuyên năm học, có phiên bản và ngày hiệu lực, bộ chọn năm học <b>không áp</b>. <b>🗓 Chu kỳ theo năm học</b> — chu kỳ năm trước hiện để tra, không sửa.');
  h+='<div class="bar">'+[['bieumau','📋 Biểu mẫu đánh giá'],['chuky','🗓 Chu kỳ đánh giá']]
   .map(([k,n])=>'<button class="chip'+(ST.sub3===k?' on':'')+'" data-s3="'+k+'">'+n+'</button>').join('')
-  +'<div class="spacer"></div>'+(can('cauhinh')?'<button class="btn" id="layCH">⧉ Lấy cấu hình từ năm học…</button>':'')+'</div>';
+  +'<div class="spacer"></div></div>';
  return h+(ST.sub3==='chuky'?veCauHinhCK():veCauHinhBM());
 }
 function bangTC(b){
@@ -2051,24 +2052,29 @@ function veCauHinhBM(){
  const b=bmHienHanh(), n=soPhieuV(b.v);
  let h='<div class="card"><div class="ch">Biểu mẫu hiện hành — <span class="st2 o">v'+b.v+'</span>'
   +'<span style="font-weight:400;font-size:11.5px;color:var(--ink2)">'+k2s(b.ngay)+' · '+esc(b.boi)+' · '+n+' phiếu đang dùng</span><span class="sp"></span>'
-  +(can('cauhinh')?'<button class="btn sm p" id="suaBM">✎ Sửa biểu mẫu</button>':'')+'</div>'
+  +(can('cauhinh')?'<button class="btn sm p" id="suaBM"'+(BMCHO?' disabled title="Đang có bản chờ hiệu lực — hủy bản chờ trước"':'')+'>✎ Sửa biểu mẫu</button>':'')+'</div>'
   +'<div class="tbx">'+bangTC(b)+'</div>'
   +'<div class="lgd"><span class="chip">Mức quy đổi: <b>Tốt 100% · Khá 80% · Đạt 60% · Chưa đạt 30%</b> điểm tối đa của tiêu chí</span>'
   +'<span class="chip">Xếp loại CLB theo % tổng: <b>Xuất sắc ≥ '+b.nguong.xs+' · Tốt ≥ '+b.nguong.tot+' · Đạt ≥ '+b.nguong.dat+'</b> · dưới đó Chưa đạt</span></div></div>';
+ h+=veDaiChoBM();
  h+='<div class="info">Biểu mẫu <b>đã có phiếu</b> thì mọi thay đổi <b>sinh phiên bản mới</b>. Phiếu đã nhập <b>giữ phiên bản của nó</b> — kể cả khi chu kỳ đang mở. '
   +'Tham chiếu tự động chỉ <b>hiện số cho người chấm</b>, không tự quy ra điểm.</div>';
- h+='<div class="tbw"><div class="ch">Các phiên bản</div><div class="tbx"><table><tr><th>Bản</th><th>Ngày</th><th>Người sửa</th><th>Thay đổi</th>'
+ h+='<div class="tbw"><div class="ch">🕘 Các phiên bản · ↺ Khôi phục</div><div class="tbx"><table><tr><th>Bản</th><th>Hiệu lực từ</th><th>Người sửa</th><th>Thay đổi</th>'
   +'<th class="num">Tiêu chí</th><th>Phiếu đang dùng</th><th></th></tr>'
-  +BM.slice().reverse().map(x=>{const ck=[...new Set(PHIEU.filter(p=>p.v===x.v).map(p=>ckById(p.ck).ten))];
-   return '<tr'+(x===b?'':' class="rorow"')+'><td><b>v'+x.v+'</b>'+(x===b?' <span class="st2 o">hiện hành</span>':' <span class="st2 n">khóa cấu trúc</span>')+'</td>'
-    +'<td>'+k2s(x.ngay)+'</td><td>'+esc(x.boi)+'</td><td style="font-size:11.5px">'+esc(x.ghi)+'</td><td class="num">'+x.tc.length+'</td>'
+  +[...(BMCHO?[{...BMCHO,_tt:'cho'}]:[]),...BMHUY.map(x=>({...x,_tt:'huy'})),...BM].sort((p,q)=>q.v-p.v).map(x=>{const ck=[...new Set(PHIEU.filter(p=>p.v===x.v).map(p=>ckById(p.ck).ten))];
+   const nh=x._tt==='cho'?' <span class="st2 w">chờ hiệu lực</span>':x._tt==='huy'?' <span class="st2 n">bản chờ đã hủy</span>':x===b?' <span class="st2 o">hiện hành</span>':' <span class="st2 n">khóa cấu trúc</span>';
+   return '<tr'+(x===b?'':' class="rorow"')+'><td><b>v'+x.v+'</b>'+nh+'</td>'
+    +'<td>'+k2s(bmHL(x))+'</td><td>'+esc(x.boi)+'</td><td style="font-size:11.5px">'+esc(x.ghi)+(x.kp?' <span class="tg a">↺ từ v'+x.kp+'</span>':'')+'</td><td class="num">'+x.tc.length+'</td>'
     +'<td style="font-size:11.5px">'+soPhieuV(x.v)+(ck.length?' — '+ck.map(esc).join(', '):'')+'</td>'
-    +'<td><button class="btn xs" data-bmv="'+x.v+'">Xem</button></td></tr>'}).join('')+'</table></div></div>';
+    +'<td><button class="btn xs" data-bmv="'+x.v+'">Xem</button>'
+    +(!x._tt&&x!==b&&can('cauhinh')?' <button class="btn xs" data-kpbm="'+x.v+'">↺ Khôi phục</button>':'')+'</td></tr>'}).join('')+'</table></div>'
+  +'<div class="lgd"><span class="chip"><b>↺ Khôi phục</b> tạo <b>bản chờ hiệu lực</b> từ ngày bạn chọn — <b>không ghi đè</b> bản hiện hành, không chạm phiếu nào</span>'
+  +'<span class="chip">Mỗi lúc <b>tối đa một bản chờ</b></span></div></div>';
  return h;
 }
 function xemBM(v){
- const b=bmV(v);
- modal('Biểu mẫu v'+v+' — '+k2s(b.ngay),'<div class="ro">'+esc(b.ghi)+' · '+esc(b.boi)+'</div>'+bangTC(b)
+ const b=bmV(v)||(BMCHO&&BMCHO.v===v?BMCHO:null)||BMHUY.find(x=>x.v===v);
+ modal('Biểu mẫu v'+v+' — hiệu lực từ '+k2s(bmHL(b)),'<div class="ro">'+esc(b.ghi)+' · '+esc(b.boi)+'</div>'+bangTC(b)
   +'<div style="font-size:11.5px;color:var(--ink2);margin-top:8px">Ngưỡng: Xuất sắc ≥ '+b.nguong.xs+' · Tốt ≥ '+b.nguong.tot+' · Đạt ≥ '+b.nguong.dat+'</div>',
   '<button class="btn p" data-mb="close">Đóng</button>');
 }
@@ -2076,7 +2082,8 @@ function xemBM(v){
 /* ── sửa biểu mẫu — nháp trong ST.bmNhap, lưu thì tách phiên bản nếu bản hiện hành đã có phiếu ── */
 function moSuaBM(){
  const b=bmHienHanh();
- ST.bmNhap={tc:b.tc.map(t=>({...t})),nguong:{...b.nguong}};
+ if(BMCHO){toast('⛔ Đang có <b>bản chờ hiệu lực v'+BMCHO.v+'</b> — hủy bản chờ trước rồi sửa, để hai thay đổi không đè nhau.');return}
+ ST.bmNhap={tc:b.tc.map(t=>({...t})),nguong:{...b.nguong},hen:false,hl:null};
  veSuaBM();
 }
 function veSuaBM(){
@@ -2094,10 +2101,11 @@ function veSuaBM(){
    +d.tc.reduce((s,t)=>s+(+t.max||0),0)+'</b> — xếp loại theo %, không bắt tổng bằng 100</span></td></tr></table>'
   +'<label class="lbl">Ngưỡng xếp loại CLB (% tổng)</label><div class="frow">'
   +[['xs','Xuất sắc ≥'],['tot','Tốt ≥'],['dat','Đạt ≥']].map(([k,n])=>'<div><span style="font-size:11.5px">'+n+'</span> <input class="cell" type="number" data-bmf="ng|'+k+'" value="'+d.nguong[k]+'"></div>').join('')+'</div>'
-  +(n?lblReq('Ghi chú thay đổi (hiện ở bảng phiên bản)')+'<input class="fldi" id="fGhiBM">':'')
+  +oHieuLucBM(d)
+  +'<label class="lbl">Ghi chú thay đổi (hiện ở bảng phiên bản)'+(n?' <span style="color:var(--red)">*</span>':' <i style="font-weight:400">— bắt buộc khi hẹn ngày</i>')+'</label><input class="fldi" id="fGhiBM">'
   +(mo.length&&n?'<div class="info" style="margin-top:10px">Chu kỳ đang mở: '+mo.map(k=>'<b>'+esc(k.ten)+'</b> — '
-   +PHIEU.filter(p=>p.ck===k.id).length+' phiếu giữ nguyên bản cũ; CLB chưa có phiếu sẽ chấm theo <b>v'+(b.v+1)+'</b>').join(' · ')+'.</div>':'')+errBox(),
-  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="LuuBM">'+(n?'Lưu thành v'+(b.v+1):'Lưu')+'</button>');
+   +PHIEU.filter(p=>p.ck===k.id).length+' phiếu giữ nguyên bản cũ; CLB chưa có phiếu sẽ chấm theo <b>v'+(bmMaxV()+1)+'</b>').join(' · ')+'.</div>':'')+errBox(),
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="LuuBM">'+(n?'Lưu thành v'+(bmMaxV()+1):'Lưu')+'</button>');
 }
 mfns.bBmThem=()=>{ST.bmNhap.tc.push({id:'t'+Date.now().toString(36),ten:'',kieu:'diem',max:10});veSuaBM()};
 mfns.bLuuBM=()=>{
@@ -2107,20 +2115,24 @@ mfns.bLuuBM=()=>{
   if(!(t.max>=1&&t.max<=100)) loi.push('«'+esc(t.ten||'#'+(i+1))+'» — điểm tối đa phải từ 1 đến 100.')});
  const ten=d.tc.map(t=>kd(t.ten.trim())); if(new Set(ten).size!==ten.length) loi.push('Có hai tiêu chí trùng tên.');
  const g=d.nguong; if(!(g.xs>g.tot&&g.tot>g.dat&&g.dat>0&&g.xs<=100)) loi.push('Ngưỡng phải giảm dần: 100 ≥ Xuất sắc > Tốt > Đạt > 0.');
- const ghi=n?$('#fGhiBM').value.trim():''; if(n&&!ghi) loi.push('Chưa ghi <b>ghi chú thay đổi</b>.');
+ const hen=!!d.hen, hl=($('#fHlNgay')||{}).value||d.hl;
+ if(hen&&(!hl||hl<=HOMNAY)) loi.push('Ngày hiệu lực phải <b>sau hôm nay</b> — muốn áp ngay thì chọn «Ngay khi lưu».');
+ const ghi=$('#fGhiBM').value.trim(); if((n||hen)&&!ghi) loi.push('Chưa ghi <b>ghi chú thay đổi</b>.');
  const giong=JSON.stringify(d.tc.map(t=>[t.ten,t.kieu,+t.max]))===JSON.stringify(b.tc.map(t=>[t.ten,t.kieu,t.max]))&&JSON.stringify(g)===JSON.stringify(b.nguong);
  if(giong) loi.push('Không có thay đổi nào.');
  if(loi.length) return baoLoi(loi);
  const tc=d.tc.map(t=>({...t,ten:t.ten.trim(),max:+t.max}));
- if(n){BM.push({v:b.v+1,ngay:HOMNAY,boi:R().n,ghi,nguong:{...g},tc}); toast('💾 Đã tạo <b>biểu mẫu v'+(b.v+1)+'</b>. '+n+' phiếu cũ giữ bản của nó.')}
- else {b.tc=tc; b.nguong={...g}; b.ngay=HOMNAY; toast('💾 Đã sửa biểu mẫu v'+b.v+' tại chỗ (chưa có phiếu nào dùng).')}
+ if(hen){BMCHO={v:bmMaxV()+1,ngay:HOMNAY,hl,boi:R().n,ghi,nguong:{...g},tc};
+  toast('⏳ Đã tạo <b>bản chờ hiệu lực v'+BMCHO.v+'</b> từ '+k2s(hl)+'. Tới ngày đó phiếu mới vẫn chấm theo <b>v'+b.v+'</b>.')}
+ else if(n){const v=bmMaxV()+1; BM.push({v,ngay:HOMNAY,hl:HOMNAY,boi:R().n,ghi,nguong:{...g},tc}); toast('💾 Đã tạo <b>biểu mẫu v'+v+'</b>. '+n+' phiếu cũ giữ bản của nó.')}
+ else {b.tc=tc; b.nguong={...g}; b.ngay=HOMNAY; if(ghi) b.ghi=ghi; toast('💾 Đã sửa biểu mẫu v'+b.v+' tại chỗ (chưa có phiếu nào dùng).')}
  closeM(); render();
 };
 
 /* ── chu kỳ ── */
 function veCauHinhCK(){
  let h='<div class="bar" style="padding-top:0"><span style="font-size:12px;color:var(--ink2)">Định nghĩa chu kỳ ở đây — <b>mở / đóng ở tab 2</b>, nơi thấy CLB nào còn thiếu phiếu.</span>'
-  +'<div class="spacer"></div>'+(can('cauhinh')?'<button class="btn p" id="themCK">➕ Thêm chu kỳ</button>':'')+'</div>';
+  +'<div class="spacer"></div>'+(can('cauhinh')?'<button class="btn" id="layCH">⧉ Lấy khung chu kỳ từ năm học…</button> <button class="btn p" id="themCK">➕ Thêm chu kỳ</button>':'')+'</div>';
  h+='<div class="tbw"><div class="tbx"><table><tr><th>Chu kỳ</th><th>Loại</th><th>Năm học</th><th>Thời gian</th><th>Trạng thái</th><th class="num">Phiếu</th></tr>'
   +CK.slice().sort((a,b)=>b.tu.localeCompare(a.tu)).map(k=>{const ps=PHIEU.filter(p=>p.ck===k.id);
    return '<tr'+(k.nam!=='2026–2027'?' class="rorow"':'')+'><td><b>'+esc(k.ten)+'</b>'+(k.nam!=='2026–2027'?' <span class="tg c">năm trước — chỉ đọc</span>':'')+'</td>'
@@ -2160,36 +2172,106 @@ mfns.bThemCK=()=>{
  closeM(); toast('➕ Đã thêm chu kỳ <b>'+esc(ten)+'</b> — trạng thái <b>Chưa mở</b>. Mở ở tab 2.'); render();
 };
 
-/* ── ⧉ Lấy cấu hình từ năm học… (quy ước M10.1 §6.3.6) ── */
+/* ── ⧉ Lấy khung chu kỳ từ năm học… — CHỈ khối Chu kỳ (Yearly). Biểu mẫu là Master: không lấy (DCCH-1B · DC-2 · DC-3) ── */
 function moLayCH(){
- modal('⧉ Lấy cấu hình từ năm học…',
+ modal('⧉ Lấy khung chu kỳ từ năm học…',
   lblReq('Năm nguồn')+'<select class="fldi" id="fNguon"><option>2025–2026 · Đã kết thúc</option></select>'
   +'<div style="font-size:11px;color:var(--ink3);margin-top:3px">Chỉ chọn được năm đã qua một kỳ vận hành thật (M10.1 §6.3.4 quy tắc 6). Trường bắt đầu dùng hệ thống từ <b>HK II 2025–2026</b>.</div>'
-  +'<label class="lbl">Lấy những gì</label><div><label class="kchk"><input type="checkbox" id="fLayBM" checked> Biểu mẫu (v1)</label>'
-  +'<label class="kchk"><input type="checkbox" id="fLayCK" checked> Khung chu kỳ (Học kỳ II)</label></div>'
+  +'<label class="lbl">Lấy những gì</label><div><label class="kchk"><input type="checkbox" id="fLayCK" checked> Khung chu kỳ (Học kỳ II)</label></div>'
+  +'<div class="ro" style="margin-top:6px"><b>Không lấy:</b> 📋 Biểu mẫu đánh giá — <b>Master</b>, dùng xuyên năm học; năm mới chấm theo <b>bản đang hiệu lực</b>. '
+  +'Muốn dùng lại bộ tiêu chí cũ thì <b>↺ Khôi phục</b> ở bảng «Các phiên bản» của khối Biểu mẫu.</div>'
   +'<label class="lbl">Khi năm đích đã có</label><div><label class="kchk"><input type="radio" name="fChe" value="them" checked> Chỉ thêm phần chưa có</label>'
   +'<label class="kchk"><input type="radio" name="fChe" value="de"> Ghi đè</label></div>'
-  +'<div style="font-size:11px;color:var(--ink3);margin-top:3px">Ghi đè <b>không áp</b> cho biểu mẫu đã có phiếu và chu kỳ đã mở — những dòng đó vào phần bỏ qua.</div>',
+  +'<div style="font-size:11px;color:var(--ink3);margin-top:3px">Ghi đè <b>không áp</b> cho chu kỳ đã mở — dòng đó vào phần bỏ qua.</div>',
   '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="LayCH">Lấy cấu hình</button>');
 }
 mfns.bLayCH=()=>{
- const bm=$('#fLayBM').checked, ck=$('#fLayCK').checked, de=radVal('fChe')==='de', ok=[], bo=[];
- if(bm){const b=bmHienHanh();
-  if(soPhieuV(b.v)) bo.push(['Biểu mẫu v1 → 2026–2027','Năm đích đã có biểu mẫu <b>v'+b.v+'</b> đang có '+soPhieuV(b.v)+' phiếu — '
-   +(de?'ghi đè không áp cho biểu mẫu đã dùng':'đã có')+'. Muốn dùng lại bộ tiêu chí v1 thì sửa biểu mẫu thành phiên bản mới']);
-  else if(!de) bo.push(['Biểu mẫu v1 → 2026–2027','Năm đích đã có biểu mẫu <b>v'+b.v+'</b> — chế độ «Chỉ thêm phần chưa có»']);
-  else {b.tc=bmV(1).tc.map(t=>({...t})); b.nguong={...bmV(1).nguong}; ok.push(['Biểu mẫu','Ghi đè bộ tiêu chí của v'+b.v+' (chưa có phiếu nào) bằng bộ tiêu chí v1'])}}
+ const ck=$('#fLayCK').checked, de=radVal('fChe')==='de', ok=[], bo=[];
+ bo.push(['📋 Biểu mẫu đánh giá','<b>Master</b> — không theo năm học; năm 2026–2027 dùng bản đang hiệu lực <b>v'+bmHienHanh().v+'</b> (menu chủ: M6.16 · khối Biểu mẫu)']);
  if(ck){const cu=CK.find(k=>k.nam==='2026–2027'&&k.loai==='hk'&&k.tu===NAMHOC.hk2[0]);
   if(cu&&(!de||cu.tt!=='chua')) bo.push(['Học kỳ II 2026–2027',cu.tt!=='chua'?'Chu kỳ đã mở — không ghi đè':'Đã có — chế độ «Chỉ thêm phần chưa có»']);
   else if(cu){Object.assign(cu,{tu:NAMHOC.hk2[0],den:NAMHOC.hk2[1]}); cu.ls.push({ngay:HOMNAY,boi:R().n,vi:'⧉ Ghi đè từ 2025–2026'}); ok.push(['Học kỳ II 2026–2027','Ghi đè ngày theo lịch năm học'])}
   else {CK.push({id:'CK-2627-2',ten:'Học kỳ II 2026–2027',loai:'hk',nam:'2026–2027',tu:NAMHOC.hk2[0],den:NAMHOC.hk2[1],tt:'chua',
    ls:[{ngay:HOMNAY,boi:R().n,vi:'⧉ Tạo từ khung 2025–2026'}]}); ok.push(['Học kỳ II 2026–2027',k2s(NAMHOC.hk2[0])+' → '+k2s(NAMHOC.hk2[1])+' · Chưa mở'])}}
- modal('Kết quả lấy cấu hình từ 2025–2026',
+ modal('Kết quả lấy khung chu kỳ từ 2025–2026',
   '<div class="okbox">✅ <b>ĐÃ TẠO '+ok.length+'</b></div>'+(ok.length?'<table class="lt">'+ok.map(x=>'<tr><td><b>'+x[0]+'</b></td><td>'+x[1]+'</td></tr>').join('')+'</table>':'')
   +'<div class="warn" style="margin-top:11px">⚠ <b>ĐÃ BỎ QUA '+bo.length+'</b></div>'+(bo.length?'<table class="lt">'+bo.map(x=>'<tr><td><b>'+x[0]+'</b></td><td>'+x[1]+'</td></tr>').join('')+'</table>':''),
   '<button class="btn p" data-mb="close">Đóng</button>');
  render();
 };
+
+
+/* ══════════════ TAB 3 · BIỂU MẪU — VÒNG ĐỜI CẤU HÌNH MASTER (DCCH-1B, 24/9/2026) ══════════════
+   Chốt C · luật DC-3 của cụm DCCH (bản chốt CHOT-24-09-co-cau-to-chuc-ve-thong-tin-truong.md §4):
+   biểu mẫu đánh giá CLB là MASTER — CLB tồn tại qua nhiều năm, thước đo của nó cũng vậy.
+   Đã có phiên bản (v1…v3, «bản đã có phiếu khóa cấu trúc» — GIỮ); nay thêm:
+     · tối đa MỘT bản chờ hiệu lực (hẹn ngày) — BMCHO
+     · ↺ Khôi phục một bản cũ = tạo BẢN CHỜ HIỆU LỰC, ⛔ không ghi đè bản hiện hành
+     · bản chờ đã hủy giữ vết — BMHUY
+   BM vẫn chỉ chứa các bản ĐÃ hiệu lực ⇒ bmHienHanh() của tab 2 KHÔNG đổi (DC-4).
+   🗓 Chu kỳ đánh giá là YEARLY — giữ nút «⧉ Lấy khung chu kỳ từ năm học…» riêng cho khối đó. */
+let BMCHO=null;
+const BMHUY=[];
+const bmMaxV=()=>Math.max(...BM.map(b=>b.v),...BMHUY.map(b=>b.v),BMCHO?BMCHO.v:0);
+const bmHL=b=>b.hl||b.ngay;
+const ngayMaiCLB=()=>{const d=k2d(HOMNAY);d.setDate(d.getDate()+1);return d2k(d)};
+const bmGiong=(a,b)=>JSON.stringify(a.tc.map(t=>[t.ten,t.kieu,+t.max]))===JSON.stringify(b.tc.map(t=>[t.ten,t.kieu,+t.max]))
+ &&JSON.stringify(a.nguong)===JSON.stringify(b.nguong);
+
+/* ô chọn hiệu lực trong hộp ✎ Sửa biểu mẫu — mặc định «Ngay» = hành vi trước DCCH-1B */
+function oHieuLucBM(d){
+ return '<label class="lbl">Có hiệu lực</label>'
+  +'<div><label class="kchk"><input type="radio" name="fHlBM" value="ngay"'+(d.hen?'':' checked')+' onchange="ST.bmNhap.hen=false"> Ngay khi lưu <i>(như trước)</i></label></div>'
+  +'<div style="margin-top:4px"><label class="kchk"><input type="radio" name="fHlBM" value="hen"'+(d.hen?' checked':'')+' onchange="ST.bmNhap.hen=true"> Hẹn ngày — tạo <b>bản chờ hiệu lực v'+(bmMaxV()+1)+'</b> từ</label> '
+  +'<input class="fs" type="date" id="fHlNgay" min="'+ngayMaiCLB()+'" value="'+(d.hl||ngayMaiCLB())+'" onchange="ST.bmNhap.hl=this.value"></div>'
+  +'<div style="font-size:11px;color:var(--ink3);margin-top:3px">Hẹn ngày: phiếu tạo <b>trước</b> ngày đó chấm theo bản hiện hành; phiếu tạo <b>từ</b> ngày đó chấm theo bản mới. Hẹn ngày luôn sinh phiên bản mới — bắt ghi chú.</div>';
+}
+
+/* dải bản chờ ở khối Biểu mẫu */
+function veDaiChoBM(){
+ const c=BMCHO; if(!c) return '';
+ const b=bmHienHanh();
+ return '<div class="warn">⏳ <b>Bản chờ hiệu lực v'+c.v+'</b> — áp từ <b>'+k2s(c.hl)+'</b>'+(c.kp?' · <b>↺ khôi phục từ v'+c.kp+'</b>':'')
+  +' · '+esc(c.boi)+' · '+c.tc.length+' tiêu chí, tổng tối đa '+maxBM(c)+' <i>(hiện hành v'+b.v+': '+b.tc.length+' tiêu chí, '+maxBM(b)+')</i><br>'
+  +'<span style="font-size:11.5px">Tới ngày đó phiếu mới vẫn chấm theo <b>v'+b.v+'</b>. Có bản chờ thì <b>không sửa thẳng</b> biểu mẫu — hủy bản chờ trước, để hai thay đổi không đè nhau.</span>'
+  +(can('cauhinh')?'<div style="margin-top:6px"><button class="btn xs" data-bmv="'+c.v+'">Xem</button> <button class="btn xs" id="huyChoBM">✕ Hủy bản chờ</button> '
+   +'<button class="btn xs" id="tuaChoBM">⏩ (demo) Giả lập tới '+k2s(c.hl)+'</button></div>':'')+'</div>';
+}
+
+function khoiPhucBM(v){
+ const src=bmV(v), b=bmHienHanh();
+ if(BMCHO){toast('⛔ Đang có <b>bản chờ hiệu lực v'+BMCHO.v+'</b> — mỗi lúc chỉ một bản chờ. Hủy bản chờ ấy trước, rồi khôi phục.');return}
+ if(bmGiong(src,b)){toast('ℹ️ Bản v'+v+' <b>trùng bộ tiêu chí</b> với bản hiện hành v'+b.v+' — không có gì để khôi phục.');return}
+ modal('↺ Khôi phục biểu mẫu v'+v+' — tạo bản chờ hiệu lực',
+  '<div class="info">Khôi phục <b>không ghi đè</b> bản hiện hành v'+b.v+' và <b>không chạm phiếu nào</b> — tạo <b>v'+(bmMaxV()+1)+'</b> chờ hiệu lực, chép bộ tiêu chí của v'+v+'.</div>'
+  +'<div class="frow"><div><div style="font-weight:600;font-size:12px;margin:6px 0">Hiện hành v'+b.v+'</div>'+bangTC(b)+'</div><div><div style="font-weight:600;font-size:12px;margin:6px 0">Bản v'+v+' — sẽ áp</div>'+bangTC(src)+'</div></div>'
+  +lblReq('Hiệu lực từ')+'<input class="fs" type="date" id="fKpNgay" min="'+ngayMaiCLB()+'" value="'+ngayMaiCLB()+'">'
+  +'<div style="font-size:11px;color:var(--ink3);margin-top:3px">Sớm nhất là ngày mai (luật DC-3).</div>'
+  +lblReq('Ghi chú thay đổi')+'<input class="fldi" id="fKpGhi" value="Khôi phục bộ tiêu chí v'+v+'">'+errBox(),
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="KpBM">↺ Tạo bản chờ hiệu lực</button>');
+ mfns.bKpBM=()=>{
+  const ngay=$('#fKpNgay').value, ghi=$('#fKpGhi').value.trim(), loi=[];
+  if(!ngay||ngay<=HOMNAY) loi.push('Ngày hiệu lực phải <b>sau hôm nay</b>.');
+  if(!ghi) loi.push('Chưa ghi <b>ghi chú thay đổi</b>.');
+  if(loi.length) return baoLoi(loi);
+  BMCHO={v:bmMaxV()+1,ngay:HOMNAY,hl:ngay,boi:R().n,ghi,kp:v,nguong:{...src.nguong},tc:src.tc.map(t=>({...t}))};
+  closeM(); render();
+  toast('↺ Đã tạo <b>bản chờ hiệu lực v'+BMCHO.v+'</b> từ '+k2s(ngay)+' — khôi phục từ v'+v+'. Bản hiện hành <b>v'+b.v+'</b> giữ nguyên tới ngày đó.');
+ };
+}
+function huyChoBM(){
+ const c=BMCHO; if(!c) return;
+ BMHUY.push({...c,huy:HOMNAY,huyBoi:R().n}); BMCHO=null; render();
+ toast('✕ Đã hủy bản chờ v'+c.v+' — giữ vết ở bảng «Các phiên bản». Bản hiện hành không đổi.');
+}
+/* ⏩ chỉ có ở demo — để thấy bản chờ CHUYỂN THÀNH bản hiện hành */
+function tuaChoBM(){
+ const c=BMCHO; if(!c) return;
+ BM.push({v:c.v,ngay:c.ngay,hl:c.hl,boi:c.boi,ghi:c.ghi,kp:c.kp,nguong:{...c.nguong},tc:c.tc.map(t=>({...t}))}); BMCHO=null; render();
+ const mo=CK.filter(k=>k.tt==='mo');
+ toast('▶ (demo) Tới '+k2s(c.hl)+': <b>biểu mẫu v'+c.v+' hiện hành</b>. Phiếu đã tạo giữ bản của nó'
+  +(mo.length?'; CLB chưa có phiếu ở '+mo.map(k=>esc(k.ten)).join(', ')+' chấm theo v'+c.v:'')+'.');
+}
 
 
 /* ══════════════ M6.16 — TAB · RENDER · SỰ KIỆN ══════════════ */
@@ -2232,6 +2314,7 @@ function suKien(t){
  if((x=g('data-lsck'))){lichSuCK();return}
  if((x=g('data-s3'))){ST.sub3=x.dataset.s3;render();return}
  if((x=g('data-bmv'))){xemBM(+x.dataset.bmv);return}
+ if((x=g('data-kpbm'))){khoiPhucBM(+x.dataset.kpbm);return}          /* DCCH-1B */
  if((x=g('data-bmx'))){ST.bmNhap.tc.splice(+x.dataset.bmx,1);veSuaBM();return}
  const c=ST.curCLB&&clbById(ST.curCLB);
  switch(t.closest('button')&&t.closest('button').id){
@@ -2268,6 +2351,8 @@ function suKien(t){
   case 'suaBM': moSuaBM(); return;
   case 'themCK': moThemCK(); return;
   case 'layCH': moLayCH(); return;
+  case 'huyChoBM': huyChoBM(); return;          /* DCCH-1B */
+  case 'tuaChoBM': tuaChoBM(); return;
  }
 }
 /* ô nhập của phiếu và của biểu mẫu nháp — ghi khi rời ô */

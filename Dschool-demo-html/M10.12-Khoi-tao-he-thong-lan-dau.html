@@ -1,0 +1,1265 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M10.12 Khởi tạo hệ thống lần đầu — Dschool</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#f1f5f9;--surface:#fff;--line:#e2e8f0;--line2:#cbd5e1;
+ --ink:#0f172a;--ink2:#475569;--ink3:#94a3b8;--brand:#1d4ed8;--brand-soft:#eff6ff;
+ --red:#dc2626;--red-soft:#fef2f2;--amber:#d97706;--amber-soft:#fffbeb;
+ --green:#059669;--green-soft:#ecfdf5;--violet:#7c3aed}
+body{font:14px/1.5 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select,textarea{font:inherit}
+
+.hdr{height:56px;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:13px;padding:0 15px;position:sticky;top:0;z-index:40}
+.logo{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px}
+.logo .mark{width:28px;height:28px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px}
+.school{color:var(--ink2);font-size:12.5px;border-left:1px solid var(--line);padding-left:13px;max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sel{border:1px solid var(--line2);border-radius:7px;padding:5px 9px;font-size:12.5px;background:#fff}
+.sel:disabled{background:var(--bg);color:var(--ink3);cursor:not-allowed}
+.lockwrap{position:relative;display:inline-flex;align-items:center;gap:5px}
+.lockwrap .lk{font-size:11px;color:var(--ink3)}
+.spacer{flex:1}
+.icobtn{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;position:relative;font-size:15px}
+.icobtn:hover{background:var(--bg)}
+.dot{position:absolute;top:3px;right:3px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--violet);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700}
+
+.wrap{display:flex;min-height:calc(100vh - 56px)}
+.side{width:206px;flex:0 0 206px;background:var(--surface);border-right:1px solid var(--line);padding:10px 8px;position:sticky;top:56px;max-height:calc(100vh - 56px);overflow-y:auto}
+.sgrp{font-size:10.5px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;padding:12px 10px 5px}
+.snav{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;color:var(--ink2);font-size:12.5px;margin-bottom:1px}
+.snav:hover{background:var(--bg)}
+.snav.on{background:var(--brand-soft);color:var(--brand);font-weight:600}
+.snav .nb{margin-left:auto;flex:0 0 auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9px;min-width:18px;text-align:center;line-height:15px}
+.snav.off{opacity:.34;pointer-events:none}
+.main{flex:1;padding:15px 18px 40px;min-width:0}
+
+.tophd{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+h1{font-size:19px;font-weight:700}
+.btn{border:1px solid var(--line2);background:#fff;border-radius:8px;padding:7px 12px;font-size:13px;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--bg)}
+.btn.p{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn.p:hover{background:#1e40af}
+.btn.d{background:var(--red);color:#fff;border-color:var(--red)}
+.btn.g{background:var(--green);color:#fff;border-color:var(--green)}
+.btn.sm{padding:4px 10px;font-size:12px}
+.btn.xs{padding:3px 8px;font-size:11.5px}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.tabs{display:flex;gap:3px;border-bottom:2px solid var(--line);margin:12px 0 0;flex-wrap:wrap}
+.tab1{padding:9px 15px;font-size:13.5px;font-weight:600;color:var(--ink2);border-bottom:2px solid transparent;margin-bottom:-2px;display:flex;align-items:center;gap:7px}
+.tab1.on{color:var(--brand);border-bottom-color:var(--brand)}
+.tab1 .b{background:var(--bg);color:var(--ink2);font-size:11px;font-weight:700;padding:1px 7px;border-radius:9px}
+.tab1.on .b{background:var(--brand);color:#fff}
+.tab1 .b.r{background:var(--red);color:#fff}
+
+.scopebar{background:#eef2ff;border:1px solid #c7d2fe;color:#3730a3;padding:8px 12px;border-radius:9px;font-size:12.5px;margin:11px 0;display:flex;gap:8px;align-items:flex-start}
+.scopebar code{background:#e0e7ff;padding:0 4px;border-radius:3px;font-size:11.5px}
+.info{background:var(--brand-soft);border:1px solid #bfdbfe;color:#1e40af;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:12px}
+.warn{background:var(--amber-soft);border:1px solid #fde68a;color:#92400e;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:12px}
+.danger{background:var(--red-soft);border:1px solid #fecaca;color:#991b1b;padding:9px 12px;border-radius:9px;font-size:12.5px;line-height:1.6;margin-bottom:12px}
+.ro{background:#f8fafc;border:1px solid var(--line);color:var(--ink2);padding:8px 11px;border-radius:9px;font-size:12px;margin-bottom:12px}
+.rolnk{font-size:10px;font-weight:700;color:var(--brand);background:#eef2ff;border:1px solid #c7d2fe;border-radius:999px;padding:1px 7px;cursor:pointer;white-space:nowrap;margin-left:6px}
+.rolnk:hover{background:#e0e7ff}
+.backbar{background:#0f172a;color:#cbd5e1;border-radius:9px;padding:8px 12px;font-size:12.5px;display:flex;gap:9px;align-items:center;margin-bottom:11px}
+.backbar b{color:#fff}
+.oldwk{background:#fef3c7;border:1px solid var(--amber);color:#92400e;border-radius:9px;padding:9px 13px;
+ font-size:12.5px;margin-bottom:11px;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.oldwk .sp{flex:1}
+.wksel{border:1px solid var(--line2);border-radius:8px;padding:6px 11px;font-size:12.5px;background:#fff;font-weight:700}
+.lastles{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:9px;padding:9px 12px;font-size:12.5px;color:#065f46;margin-bottom:11px}
+.lastles b{color:#064e3b}
+.backbar button{color:#93c5fd;font-weight:600}
+
+.navbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:0 0 11px}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden;background:#fff}
+.seg button{padding:6px 13px;font-size:12.5px;color:var(--ink2);border-right:1px solid var(--line)}
+.seg button:last-child{border-right:none}
+.seg button.on{background:var(--brand);color:#fff;font-weight:600}
+.sumbar{display:flex;gap:0;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:12px}
+.sumbar .it{padding:9px 15px;border-right:1px solid var(--line);font-size:12.5px;color:var(--ink2)}
+.sumbar .it b{display:block;font-size:17px;color:var(--ink);font-weight:700;line-height:1.25}
+.sumbar .it.w b{color:var(--amber)}.sumbar .it.r b{color:var(--red)}.sumbar .it.g b{color:var(--green)}
+
+.stage{display:flex;gap:13px;align-items:flex-start}
+.listw{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.stage.open .listw{flex:1 1 0}
+.panel{flex:1;min-width:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:none}
+.stage.open .panel{display:block}
+@media(max-width:1180px){.stage.open .listw{display:none}.stage.open .panel{flex:1}}
+
+.grow{display:flex;align-items:center;gap:9px;padding:9px 13px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:12.5px;font-weight:700;cursor:pointer}
+.grow:hover{background:#eef2f7}
+.grow .ar{color:var(--ink3);font-size:10px;width:12px}
+.grow .ct{margin-left:auto;font-weight:400;color:var(--ink3);font-size:11.5px;display:flex;gap:10px}
+
+.trow{display:flex;gap:11px;padding:10px 13px;border-bottom:1px solid var(--line);align-items:center;cursor:pointer}
+.trow:hover{background:var(--brand-soft)}
+.trow.on{background:#eff6ff;box-shadow:inset 3px 0 0 var(--brand)}
+.trow .tm{flex:0 0 72px;text-align:center;font-size:11px;color:var(--ink3)}
+.trow .tm b{display:block;font-size:13px;color:var(--ink);font-weight:700}
+.trow .bd{flex:1;min-width:0}
+.trow .bd b{font-size:13.5px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trow .bd .sub{font-size:11.5px;color:var(--ink3)}
+.trow .rt{flex:0 0 auto;display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;max-width:300px}
+.trow.huy{background:var(--red-soft)}
+.trow.huy .bd b{text-decoration:line-through;color:#991b1b}
+
+.lrow{display:flex;gap:11px;padding:10px 13px;border-bottom:1px solid var(--line);align-items:center;cursor:pointer}
+.lrow:hover{background:var(--brand-soft)}
+.lrow.on{background:#eff6ff;box-shadow:inset 3px 0 0 var(--brand)}
+.lrow .lp{flex:0 0 150px}
+.lrow .lp b{font-size:13.5px;display:block}
+.lrow .lp span{font-size:11.5px;color:var(--ink3)}
+.lrow .num{flex:0 0 86px;text-align:center;font-size:11px;color:var(--ink3)}
+.lrow .num b{display:block;font-size:15px;color:var(--ink)}
+.lrow .num.r b{color:var(--red)}.lrow .num.w b{color:var(--amber)}.lrow .num.g b{color:var(--green)}
+.bar4{flex:1;min-width:120px;display:flex;height:9px;border-radius:5px;overflow:hidden;background:var(--bg)}
+.bar4 i{display:block;height:100%}
+
+.st2{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;white-space:nowrap;display:inline-block}
+.st2.o{background:var(--green-soft);color:var(--green)}
+.st2.w{background:var(--amber-soft);color:var(--amber)}
+.st2.r{background:var(--red-soft);color:var(--red)}
+.st2.n{background:var(--bg);color:var(--ink2)}
+.st2.b{background:#e0e7ff;color:#3730a3}
+.st2.v{background:#ede9fe;color:#5b21b6}
+
+.ph{padding:12px 15px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.ph .n{flex:1;min-width:0}
+.ph .n h2{font-size:16px;font-weight:700}
+.ph .n .m{font-size:12px;color:var(--ink2);margin-top:3px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.pill{font-size:10.5px;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--ink2)}
+.pnav{display:flex;gap:6px;align-items:center;padding:8px 15px;border-bottom:1px solid var(--line);background:#fafbfc;font-size:12px;color:var(--ink2)}
+.pnav .sp{flex:1}
+.pbody{padding:14px 15px;max-height:calc(100vh - 260px);overflow-y:auto}
+.f{display:grid;grid-template-columns:136px 1fr;gap:11px;align-items:start;padding:7px 0;font-size:13px}
+.f+.f{border-top:1px solid #f1f5f9}
+.f .k{color:var(--ink2);font-size:12.5px}
+.f .v{font-weight:600;min-width:0}
+.card{border:1px solid var(--line);border-radius:11px;margin-bottom:12px;overflow:hidden}
+.card.lock{opacity:.55}
+.card.hl{border-color:#fde68a}
+.ch{display:flex;align-items:center;gap:9px;padding:9px 12px;background:#f8fafc;border-bottom:1px solid var(--line);font-size:12.5px;font-weight:700;flex-wrap:wrap}
+.card.hl .ch{background:var(--amber-soft);border-bottom-color:#fde68a;color:#92400e}
+.ch .sp{flex:1}
+.cb{padding:4px 12px}
+.cb.p{padding:11px 12px}
+.cact{display:flex;gap:6px;padding:9px 12px;border-top:1px solid var(--line);background:#fcfdfe;flex-wrap:wrap;align-items:center}
+.logl{border-left:2px solid var(--line);margin-left:6px;padding-left:14px}
+.logi{position:relative;padding:7px 0;font-size:12.5px}
+.logi::before{content:"";position:absolute;left:-20px;top:12px;width:8px;height:8px;border-radius:50%;background:var(--brand);border:2px solid #fff}
+.logi.w::before{background:var(--amber)}.logi.r::before{background:var(--red)}.logi.g::before{background:var(--green)}
+.logi b{display:block;font-weight:600}
+.logi .mm{color:var(--ink3);font-size:11.5px}
+
+.fld{margin-bottom:11px}
+.fld label{display:block;font-size:12.5px;font-weight:600;margin-bottom:4px}
+.fld label .req{color:var(--red)}
+.fldi{width:100%;border:1px solid var(--line2);border-radius:8px;padding:8px 10px;background:#fff}
+.fldi:disabled,textarea.fldi:disabled{background:var(--bg);color:var(--ink3);cursor:not-allowed}
+.fldi.err{border-color:var(--red);background:var(--red-soft)}
+.mucs{display:flex;gap:6px;flex-wrap:wrap}
+.muc{border:1.5px solid var(--line2);background:#fff;border-radius:8px;padding:6px 15px;font-size:12.5px;font-weight:600;color:var(--ink2)}
+.muc:hover:not(:disabled){background:var(--bg)}
+.muc.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.muc:disabled{opacity:.45;cursor:not-allowed}
+
+.dd{display:flex;gap:9px;padding:7px 0;font-size:12.5px;align-items:flex-start;border-bottom:1px solid #f1f5f9}
+.dd:last-child{border-bottom:none}
+.dd .nm{flex:1;min-width:0}
+.dd .nm b{display:block;font-weight:600}
+.dd .nm span{color:var(--ink3);font-size:11.5px}
+.dd .ac{flex:0 0 auto;display:flex;gap:4px}
+.roblk{background:#f8fafc;border:1px dashed var(--line2);border-radius:9px;padding:9px 11px;font-size:12px;color:var(--ink2)}
+
+table.tb{width:100%;border-collapse:collapse;font-size:12.5px}
+table.tb th{text-align:left;font-size:10.5px;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;font-weight:700;padding:7px 9px;border-bottom:1px solid var(--line);background:#f8fafc}
+table.tb td{padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+table.tb tr:last-child td{border-bottom:none}
+.diff-o{background:var(--red-soft);color:#991b1b;padding:1px 4px;border-radius:3px;text-decoration:line-through}
+.diff-n{background:var(--green-soft);color:#065f46;padding:1px 4px;border-radius:3px;font-weight:600}
+
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:11px}
+.chip{border:1px solid var(--line2);background:#fff;border-radius:999px;padding:4px 12px;font-size:12px;color:var(--ink2)}
+.chip.on{background:var(--brand);color:#fff;border-color:var(--brand);font-weight:600}
+.ms{position:relative}
+.msb{border:1px solid var(--line2);border-radius:8px;padding:6px 10px;font-size:12.5px;background:#fff;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.msb.act{border-color:var(--brand);background:var(--brand-soft);color:var(--brand);font-weight:600}
+.msb .cnt{background:var(--brand);color:#fff;font-size:10px;font-weight:700;padding:0 5px;border-radius:8px}
+.msp{position:absolute;top:calc(100% + 4px);left:0;background:#fff;border:1px solid var(--line2);border-radius:9px;box-shadow:0 8px 22px rgba(15,23,42,.14);min-width:210px;max-height:260px;overflow-y:auto;z-index:20;display:none;padding:5px}
+.msp.on{display:block}
+.mso{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:7px;font-size:12.5px;cursor:pointer}
+.mso:hover{background:var(--bg)}
+.mso input{width:15px;height:15px;flex:0 0 15px}
+
+.mask{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:60;display:none;place-items:center}
+.mask.on{display:grid}
+.modal{background:#fff;border-radius:13px;width:700px;max-width:94vw;max-height:88vh;display:flex;flex-direction:column}
+.mh{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700}
+.mb{padding:15px 18px;overflow-y:auto;font-size:13px}
+.mf{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;align-items:center}
+
+.rolebar{background:#0f172a;color:#cbd5e1;padding:8px 15px;display:flex;align-items:center;gap:7px;font-size:12.5px;flex-wrap:wrap}
+.rolebar b{color:#fff}
+.rb{border:1px solid #334155;border-radius:999px;padding:3px 10px;font-size:12px;color:#cbd5e1}
+.rb:hover{background:#1e293b;color:#fff}
+.rb.on{background:#fff;color:#0f172a;border-color:#fff;font-weight:700}
+.note{margin-left:auto;color:#64748b;font-size:11.5px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(90px);background:#0f172a;color:#fff;padding:11px 17px;border-radius:9px;font-size:13px;z-index:80;transition:transform .22s;max-width:92vw}
+.toast.on{transform:translateX(-50%)}
+.empty{padding:38px;text-align:center;color:var(--ink3)}
+.lgd{display:flex;gap:13px;font-size:11px;color:var(--ink3);padding:9px 13px;border-top:1px solid var(--line);flex-wrap:wrap;align-items:center}
+
+/* ── bố cục sidebar (P17 · khuôn M2.5 §15) — phần riêng của M2.2; khuôn ở style.05-sidebar-lop.css ── */
+.sbl-main>.tabs{margin-top:0}
+.dlsel{background:#1e293b;color:#e2e8f0;border:1px solid #334155;border-radius:7px;padding:3px 6px;font-size:11.5px;max-width:330px}
+.caphd{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:11px 0 0}
+.caphd h2{font-size:16px;margin:0}
+.caphd span{font-size:12px;color:var(--ink3)}
+.lrow.tong{flex-wrap:wrap;cursor:default;background:#f8fafc}
+.lrow.tong:hover{background:#f8fafc}
+.ngoaicap{font-size:12px;color:var(--ink2);padding:8px 13px;background:#fffbeb;border-bottom:1px solid #fde68a}
+
+
+/* ── GY18-H1 · ô XÁC NHẬN sĩ số của tiết (không phải ô gõ số) ── */
+.xnbox{border:1px solid var(--line);border-left:3px solid var(--ink3);border-radius:9px;padding:10px 12px;margin-top:9px;background:#fff}
+.xnbox.du{border-left-color:var(--green);background:#f0fdf4}
+.xnbox.vang{border-left-color:var(--amber);background:#fffbeb}
+.xnbox.chua{border-left-color:var(--ink3);background:#f8fafc}
+.xnh{display:flex;align-items:center;gap:8px;font-weight:700;font-size:12.5px;flex-wrap:wrap}
+.xnhan{font-size:11px;color:var(--ink3);font-weight:400;margin-top:4px}
+.xnb{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap}
+.xnds{margin-top:9px}
+.xnck{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:12.5px}
+.xnck input{width:15px;height:15px;flex:0 0 15px}
+
+/* ══ GDDP (v2.5) — PHẦN của môn chia phần ═══════════════════════════════════
+   Dải «phần của tôi» ở đầu danh sách tiết của cặp, và dòng tên phần trên mỗi
+   dòng tiết. Môn một phần KHÔNG sinh phần tử nào — PC1 chạy y hệt hôm nay.   */
+.phandai{flex:1 1 100%;margin-top:6px;padding:7px 10px;border-radius:7px;
+  background:color-mix(in srgb,var(--violet) 7%,transparent);
+  border-left:3px solid var(--violet);font-size:12px;line-height:1.5}
+.phandai b{color:var(--violet)}
+.phandai span{font-size:11px;color:var(--ink3)}
+.phandai div{margin-top:2px;color:var(--ink2)}
+.phanln{font-size:11.5px;color:var(--violet);margin:2px 0 1px}
+
+/* M10.12 — lớp riêng của tab ① Khai trường lần đầu */
+
+.ttbar{background:#1e293b;color:#e2e8f0;padding:7px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px;border-top:1px solid #334155}
+.ttbar b{color:#f8fafc;font-size:12px}
+.ttbar .note{color:#94a3b8;font-size:11.5px;margin-left:6px}
+.tt{border:1px solid #475569;background:#0f172a;color:#cbd5e1;border-radius:7px;padding:4px 11px;font-size:12px}
+.tt:hover{background:#1e293b}
+.tt.on{background:#f8fafc;color:#0f172a;border-color:#f8fafc;font-weight:600}
+
+.form{display:grid;grid-template-columns:1fr 1fr;gap:13px 18px;padding:14px}
+.fld{display:flex;flex-direction:column;gap:5px}
+.fld label{font-size:12px;font-weight:600;color:var(--ink2)}
+.fld .req{color:var(--red)}
+.fld input,.fld select{border:1px solid var(--line2);border-radius:7px;padding:7px 10px;font-size:13px;background:#fff}
+.fld input:focus,.fld select:focus{outline:2px solid var(--brand);outline-offset:-1px;border-color:var(--brand)}
+.fld.loi input,.fld.loi select{border-color:var(--red);background:var(--red-soft)}
+.fld .err{color:var(--red);font-size:11.5px;font-weight:600}
+.fld .hint{color:var(--ink3);font-size:11.5px;line-height:1.5}
+.fld.khoa{grid-column:1 / -1}
+.khoao{border:1px dashed var(--line2);background:var(--bg);border-radius:7px;padding:7px 10px;font-size:13px;color:var(--ink2);font-weight:600}
+
+.rdg{display:flex;gap:6px}
+.rd{border:1px solid var(--line2);background:#fff;border-radius:7px;padding:7px 16px;font-size:13px}
+.rd:hover{background:var(--bg)}
+.rd.on{background:var(--brand);color:#fff;border-color:var(--brand);font-weight:600}
+
+.ok{background:var(--green-soft);border:1px solid #a7f3d0;color:#065f46;padding:11px 14px;border-radius:9px;font-size:13.5px;margin-bottom:12px}
+
+.tkbox .cb{padding:14px}
+.tkr{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}
+.tkr:last-of-type{border-bottom:none}
+.tkr>span:first-child{width:170px;flex:0 0 170px;color:var(--ink2);font-size:12.5px}
+.tkr b{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px}
+.tkr .tkp{color:var(--ink3);font-size:11.5px}
+
+.xn .xnk{border:1px solid var(--line);border-radius:9px;padding:10px 12px;margin-bottom:9px;font-size:13px;background:#f8fafc}
+.xn .xnp{color:var(--ink2);font-size:12px;line-height:1.7}
+
+.hintline{background:#f8fafc;border:1px dashed var(--line2);color:var(--ink2);padding:7px 11px;border-radius:8px;font-size:12px;margin-bottom:12px}
+.pill{background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px 11px;font-size:11.5px;color:var(--ink2)}
+.pill code{font-size:11px}
+.st2{font-size:11px;font-weight:700;padding:1px 7px;border-radius:9px;background:var(--bg);color:var(--ink2)}
+.st2.n{background:#e0e7ff;color:#3730a3}
+
+/* ───────── tab ② luồng khởi tạo (phiên 1B) ───────── */
+.tiendo{display:flex;align-items:center;gap:11px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12.5px;flex-wrap:wrap}
+.tdb{width:190px;height:9px;border-radius:9px;background:var(--line);overflow:hidden;flex:0 0 190px}
+.tdf{height:100%;background:var(--green);border-radius:9px}
+.qok{font-size:11.5px;color:var(--green);background:var(--green-soft);border:1px solid #a7f3d0;border-radius:999px;padding:2px 10px}
+.qno{font-size:11.5px;color:#991b1b;background:var(--red-soft);border:1px solid #fecaca;border-radius:999px;padding:2px 10px}
+.nochip{display:inline-block;background:#fff;border:1px solid #fde68a;border-radius:999px;padding:1px 9px;font-size:11.5px;margin:2px 3px 0 0}
+
+table.bb{width:100%;border-collapse:collapse;font-size:12.5px}
+table.bb td{border-bottom:1px solid var(--line);padding:9px 10px;vertical-align:top}
+table.bb tr:last-child td{border-bottom:none}
+.bma{width:62px;white-space:nowrap}
+.bma b{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
+.tuy{display:block;font-size:9.5px;color:var(--ink3);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.bten b{font-size:13px}
+.bmeta{display:flex;gap:6px;flex-wrap:wrap;margin-top:3px}
+.bmeta span{font-size:10.5px;border-radius:999px;padding:1px 8px;background:var(--bg);color:var(--ink2);border:1px solid var(--line)}
+.bmeta .lonap{background:#eef2ff;color:#3730a3;border-color:#c7d2fe;font-weight:700}
+.bmeta .hang{background:#fff;color:var(--ink3);cursor:help}
+.bmeta .mnu{font-family:ui-monospace,Menlo,Consolas,monospace}
+.bmeta .cdn{background:#f8fafc}
+.btt{width:250px}
+.ttp{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:2px 10px;border:1px solid var(--line)}
+.bso{color:var(--ink2);font-size:11.5px;margin-top:3px;line-height:1.5}
+.bai{color:var(--ink3);font-size:11px;margin-top:2px}
+.bnut{width:150px;text-align:right}
+.nutcho{font-size:11px;color:var(--ink3);line-height:1.45;display:inline-block}
+
+.tt-xong .ttp{background:var(--green-soft);color:#065f46;border-color:#a7f3d0}
+.tt-lam .ttp{background:var(--brand-soft);color:#1e40af;border-color:#bfdbfe}
+.tt-sang .ttp{background:#fff;color:var(--ink2)}
+.tt-cho .ttp{background:var(--bg);color:var(--ink3)}
+.tt-xn .ttp{background:var(--amber-soft);color:#92400e;border-color:#fde68a}
+.tt-ral .ttp{background:var(--red-soft);color:#991b1b;border-color:#fecaca}
+.tt-ral{background:#fffbfb}
+.tuyr{opacity:.72}
+
+.dtr{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:5px}
+.dtc{font-size:10.5px;border:1px dashed var(--line2);border-radius:7px;padding:1px 8px;color:var(--ink3)}
+.dtc.co{border-style:solid;color:var(--ink2);background:#f8fafc}
+.dtn{font-size:10.5px;color:var(--ink3);font-style:italic}
+.ralai{background:var(--red-soft);border:1px solid #fecaca;border-radius:8px;padding:7px 10px;margin-top:6px;font-size:11.5px;color:#991b1b;line-height:1.6}
+
+.songsong{border:1px dashed var(--line2);border-radius:11px;padding:10px;margin-bottom:12px;background:#fbfdff}
+.ssh{font-size:12px;color:var(--ink2);margin-bottom:9px}
+.ssg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;align-items:start}
+.ssc{margin-bottom:0}
+.ssc .btt{width:auto}
+.ssc .bnut{width:auto}
+.ssc table.bb td{padding:7px 8px;font-size:12px}
+
+.klbar{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:12px;flex-wrap:wrap}
+.klp{display:flex;gap:3px;flex-wrap:wrap}
+.klc{width:23px;height:23px;border-radius:6px;display:grid;place-items:center;font-size:10.5px;font-weight:700;border:1px solid var(--line);background:#fff;color:var(--ink3)}
+.klc.on{outline:2px solid var(--brand);outline-offset:1px}
+.klc.tt-xong{background:var(--green-soft);color:#065f46;border-color:#a7f3d0}
+.klc.tt-ral{background:var(--red-soft);color:#991b1b;border-color:#fecaca}
+.klc.tt-xn{background:var(--amber-soft);color:#92400e;border-color:#fde68a}
+
+.khoi{border:2px dashed #c7d2fe;border-radius:12px;background:#fbfcff;margin-bottom:12px}
+.khoih{background:#eef2ff;color:#3730a3;font-size:11.5px;padding:7px 12px;border-radius:9px 9px 0 0}
+.khoih code{background:#e0e7ff;padding:0 4px;border-radius:3px;font-size:11px}
+.khoib{padding:12px}
+.gia{border:1px solid var(--line);border-radius:9px;background:#fff;padding:26px 14px;text-align:center;color:var(--ink2);font-size:13px;font-weight:600}
+.giap{font-size:11.5px;color:var(--ink3);font-weight:400;margin-top:5px}
+.dkbox{background:#f8fafc;border:1px solid var(--line);border-radius:9px;padding:9px 12px;margin-top:11px;font-size:12px;line-height:1.7}
+
+table.tt2{width:100%;border-collapse:collapse;font-size:12.5px}
+table.tt2 td{border-bottom:1px solid var(--line);padding:8px 10px}
+table.tt2 tr:last-child td{border-bottom:none}
+.t2a{width:150px;color:var(--ink2)}
+.t2b{width:170px}
+.t2c{color:var(--ink3);font-size:11.5px}
+</style>
+</head>
+<body><div class="rolebar">
+  <b>Chức danh:</b>
+  <button class="rb on" data-r="FULL">🔓 Đủ quyền (demo)</button>
+  <button class="rb" data-r="IT">Tài khoản nguồn (IT)</button>
+  <button class="rb" data-r="HT">Hiệu trưởng</button>
+  <button class="rb" data-r="VT">Văn thư</button>
+  <span class="note">⚠ Tab ① <b>KHÔNG đọc chức danh</b> — nó chạy trước khi có phân quyền (§6 của tệp mô tả). Đổi vai ở đây chỉ đổi tab ② ③.</span>
+</div>
+
+<div class="ttbar">
+  <b>Tình huống:</b>
+  <button class="tt on" data-s="chua">① Kho trống — chưa khởi tạo</button>
+  <button class="tt" data-s="dang">② Đang khởi tạo</button>
+  <button class="tt" data-s="van_hanh">③ Đang vận hành</button>
+  <button class="rb2" data-x="reset" title="Đặt lại dữ liệu mẫu của demo">↺ Dữ liệu mẫu</button>
+  <span class="note">Ba trạng thái của TRƯỜNG (§2) — thứ quyết định tab ① còn tồn tại hay không.</span>
+</div>
+
+<header class="hdr">
+  <div class="logo"><span class="mark">DS</span> Dschool</div>
+  <div class="school" id="hschool">— chưa khai tên trường —</div>
+  <select class="sel" id="hnam" disabled title="Chưa có hồ sơ năm học nào — năm học tạo ở bước 8"><option>— chưa có năm học —</option></select>
+  <select class="sel" id="hdt" disabled title="Chưa khai điểm trường — khai ở bước 8 mục ②"><option>— chưa có điểm trường —</option></select>
+  <div class="spacer"></div>
+  <button class="icobtn">🔔</button>
+  <div class="avatar" id="ava">—</div>
+</header>
+
+<div class="wrap">
+  <main class="main">
+    <div class="tophd"><h1>Khởi tạo hệ thống lần đầu</h1><div class="spacer"></div>
+      <span class="pill">Nhóm ⚙️ Quản trị &amp; cấu hình · cụm <code>KTLD</code></span></div>
+    <div id="tabs"></div>
+    <div id="content"></div>
+  </main>
+</div>
+
+<div class="mask" id="mask"><div class="modal">
+  <div class="mh" id="mh"></div><div class="mb" id="mb"></div><div class="mf" id="mf"></div>
+</div></div>
+<div class="toast" id="toast"></div>
+<script>/* ═══════════════════════════════════════════════════════════════
+   M10.12 — KHỞI TẠO HỆ THỐNG LẦN ĐẦU  ·  cụm KTLD, phiên 1A
+   Phiên này dựng TAB ① Khai trường lần đầu. Tab ② ③ do phiên 1B dựng.
+
+   🛑 Tab ① là NGOẠI LỆ DUY NHẤT của mô hình phân quyền — nó chạy trước
+   khi có bất kỳ chức danh nào, nên KHÔNG đọc vai. Cái quyết định nó có
+   tồn tại hay không là TRẠNG THÁI CỦA TRƯỜNG (§2 của tệp mô tả):
+       chua_khoi_tao → dang_khoi_tao → dang_van_hanh
+   và cờ da_khoi_tao BẤT BIẾN (KT-4).
+   ═══════════════════════════════════════════════════════════════ */
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ───────── vai: chỉ dùng cho tab ② ③ (H2) ───────── */
+const ROLES = {
+  FULL: {cd:'🔓 Đủ quyền (demo)', av:'ĐQ', luong:'xs'},
+  IT:   {cd:'Tài khoản nguồn (IT)', av:'IT', luong:'x'},
+  HT:   {cd:'Hiệu trưởng', av:'HT', luong:'xs'},
+  VT:   {cd:'Văn thư', av:'VT', luong:''},
+};
+let role = 'FULL';
+const R = () => ROLES[role];
+
+/* ───────── trạng thái của TRƯỜNG ───────── */
+const BAN_DAU = {
+  trangThai: 'chua',        /* chua | dang | van_hanh */
+  daKhoiTao: false,          /* cờ BẤT BIẾN — KT-4 */
+  soNhanSu: 0,
+  truong: null,              /* {ten, ma, loai} */
+  nguoiDau: null,            /* {ten, ns, gt, cccd, sdt, dien} */
+  taiKhoan: null,            /* {u, mk, daXem} */
+  moc: null,                 /* thời điểm khởi tạo */
+  nhatKy: [],                /* M10.7 */
+};
+let S = JSON.parse(JSON.stringify(BAN_DAU));
+
+const MOC_DEMO = '23/09/2026 09:14';
+
+function ghiNhatKy(loai, noiDung){
+  S.nhatKy.unshift({t:'23/09/2026 ' + new Date().toTimeString().slice(0,5), loai, noiDung, ip:'192.168.1.24'});
+}
+
+/* ═══════════════ KHUNG ═══════════════ */
+const TABS = [
+  ['khai', '🏫 Khai trường lần đầu'],
+  ['luong','🧭 Luồng khởi tạo'],
+  ['bg',   '✅ Bàn giao'],
+];
+let tab = 'khai';
+
+/* Tab ① CHỈ tồn tại khi: bảng nhân sự RỖNG **VÀ** cờ chưa bật (§4.1 — hai điều kiện) */
+const moDuocTab1 = () => S.soNhanSu === 0 && !S.daKhoiTao;
+
+function veTabs(){
+  $('#tabs').innerHTML = '<div class="tabs">' + TABS.map(function(t){
+    const id = t[0], ten = t[1];
+    let phu = '';
+    if (id === 'khai' && !moDuocTab1()) phu = '<span class="b r">đã đóng</span>';
+    if (id === 'luong' && S.trangThai === 'chua') phu = '<span class="b">chưa mở</span>';
+    if (id === 'bg' && S.trangThai !== 'van_hanh') phu = '<span class="b">chưa tới</span>';
+    return '<button class="tab1' + (tab === id ? ' on' : '') + '" data-t="' + id + '">' + ten + phu + '</button>';
+  }).join('') + '</div>';
+}
+
+function daiTrangThai(){
+  const nhan = {chua:'Chưa khởi tạo', dang:'Đang khởi tạo', van_hanh:'Đang vận hành'}[S.trangThai];
+  const mau = {chua:'var(--red)', dang:'var(--amber)', van_hanh:'var(--green)'}[S.trangThai];
+  return '<div class="scopebar">🏫 <b>Trạng thái trường:</b> <span style="color:' + mau + ';font-weight:700">' + nhan + '</span>' +
+    ' · cờ <code>da_khoi_tao</code> = <b>' + (S.daKhoiTao ? 'BẬT (bất biến)' : 'chưa bật') + '</b>' +
+    ' · bảng nhân sự: <b>' + S.soNhanSu + '</b> hồ sơ' +
+    ' · tab ① ' + (moDuocTab1() ? '<b style="color:var(--green)">mở được</b>' : '<b style="color:var(--red)">không còn đường vào</b>') + '</div>';
+}
+
+function ghiChuDemo(){
+  return '<div class="hintline">🧪 <b>Demo hiển thị mọi chức năng của menu.</b> ' +
+    'Tab ① <b>không đọc chức danh</b> — dùng thanh <b>Tình huống</b> ở trên để đổi trạng thái của trường và xem cửa mở hay đóng.</div>';
+}
+
+function ve(){
+  veTabs();
+  $('#ava').textContent = R().av;
+  $('#hschool').textContent = S.truong ? S.truong.ten : '— chưa khai tên trường —';
+  const c = $('#content');
+  c.innerHTML = daiTrangThai() + ghiChuDemo() +
+    (tab === 'khai' ? veKhai() : tab === 'luong' ? veLuong() : veBanGiao());
+}
+
+/* ═══════════════ TAB ① — KHAI TRƯỜNG LẦN ĐẦU ═══════════════ */
+let f = {ten:'', ma:'', loai:'Công lập', hoTen:'', ns:'', gt:'', cccd:'', sdt:'', dien:''};
+let loi = {};
+let ketQua = false;
+
+const DIEN = ['Viên chức', 'Hợp đồng lao động', 'Hợp đồng thỉnh giảng', 'Biệt phái'];
+
+function veKhai(){
+  /* 🛑 THỨ TỰ HAI DÒNG NÀY LÀ CÓ LÝ DO — ⛔ đừng đảo.
+     Ghi xong thì cờ da_khoi_tao đã BẬT và bảng nhân sự đã có 1 hồ sơ, nên moDuocTab1()
+     thành false NGAY LẬP TỨC. Kiểm điều kiện mở trước thì màn hình kết quả không bao giờ
+     hiện, và người dùng MẤT LUÔN mật khẩu tạm — thứ chỉ hiện đúng một lần.
+     Lỗi này do chạy thử demo bắt được (phiếu KTLD-1A mục G, ca G-6). */
+  if (ketQua) return veKetQua();
+  if (!moDuocTab1()) return veDaDong();
+
+  return '<div class="warn">🛑 <b>Màn hình này chạy ĐÚNG MỘT LẦN và không mở lại được</b>, kể cả khi sau đó xoá hết nhân sự ' +
+      '<i>(cờ <code>da_khoi_tao</code> bất biến — luật <code>KT-4</code>)</i>. ' +
+      'Nó tồn tại để cắt một vòng kín: <b>tài khoản chỉ sinh từ hồ sơ nhân sự</b> <i>(M10.5 §2)</i>, ' +
+      '<b>hồ sơ nhân sự cần quyền <code>TCNS</code></b> <i>(M4.1 F11)</i>, <b>quyền đến từ chức danh gán cho một hồ sơ nhân sự</b> <i>(M4.3 §1)</i> ' +
+      '⟹ muốn có người đầu tiên thì phải đã có người đầu tiên.</div>' +
+
+    '<div class="card"><div class="ch">🏫 Khối A — Định danh trường <span class="st2 n">3 ô</span>' +
+      '<div class="sp"></div><span style="font-size:11.5px;color:var(--ink2)">Sáu khối Master đầy đủ khai ở <code>M10.2</code> ① — bước 2</span></div>' +
+    '<div class="cb form">' +
+      o('ten', 'Tên trường đầy đủ', 'text', 'VD: THPT Chuyên Hùng Vương') +
+      o('ma', 'Mã trường CSDL ngành', 'text', '20 ký tự — TT 42/2021') +
+      sel('loai', 'Loại hình', ['Công lập', 'Tư thục', 'Dân lập']) +
+    '</div></div>' +
+
+    '<div class="card"><div class="ch">👤 Khối B — Người đầu tiên <span class="st2 n">6 ô</span>' +
+      '<div class="sp"></div><span style="font-size:11.5px;color:var(--ink2)">Dùng NGUYÊN biểu mẫu bảy ô mức ① của <code>M4.1</code> §6.11.1</span></div>' +
+    '<div class="cb form">' +
+      o('hoTen', 'Họ và tên', 'text', '') +
+      o('ns', 'Ngày sinh', 'text', 'dd/mm/yyyy') +
+      radio('gt', 'Giới tính', ['Nam', 'Nữ']) +
+      o('cccd', 'Số căn cước công dân', 'text', '12 chữ số') +
+      o('sdt', 'Số điện thoại', 'text', '= định danh đăng nhập (M4.1 §4b.4)') +
+      sel('dien', 'Diện làm việc', DIEN) +
+      '<div class="fld khoa"><label>Chức danh chính <span class="req">*</span></label>' +
+        '<div class="khoao">🔒 IT — Quản trị hệ thống</div>' +
+        '<div class="hint">Khoá cứng, ⛔ không có ô chọn. Màn hình này chạy <b>trước khi có bất kỳ phân quyền nào</b>, ' +
+        'nên một ô chọn chức danh ở đây là <b>ô tự cấp quyền cho chính mình</b> <i>(§4.3 · chốt <code>H1</code>)</i>. ' +
+        'Trường chưa có ai làm quản trị thì hồ sơ <b>đứng tên Hiệu trưởng</b>; bước 5 gán thêm chức danh <code>HT</code> — hệ thống cho kiêm nhiệm.</div></div>' +
+    '</div></div>' +
+
+    '<div class="ro">⛔ <b>Không có ô nào khác trên màn hình này</b> — không ảnh 4×6, không hợp đồng, không địa chỉ. ' +
+      'Mọi thứ khác khai sau ở <code>M4.1</code>. ⛔ <b>Không nhận dữ liệu hàng loạt</b>: đúng một hồ sơ, không import, không tệp <i>(hàng rào ④)</i>.</div>' +
+
+    '<div class="cact">' +
+      '<span style="font-size:12px;color:var(--ink2)">Bấm xác nhận sẽ ghi <b>5 việc trong MỘT giao dịch</b> — hỏng giữa chừng thì quay lui toàn bộ</span>' +
+      '<div class="spacer" style="flex:1"></div>' +
+      '<button class="btn p" data-x="xac-nhan">✓ Khởi tạo trường</button></div>';
+}
+
+function o(k, nhan, kieu, hint){
+  return '<div class="fld' + (loi[k] ? ' loi' : '') + '"><label>' + nhan + ' <span class="req">*</span></label>' +
+    '<input type="' + kieu + '" data-f="' + k + '" value="' + esc(f[k]) + '">' +
+    (loi[k] ? '<div class="err">⛔ ' + esc(loi[k]) + '</div>' : (hint ? '<div class="hint">' + hint + '</div>' : '')) + '</div>';
+}
+function sel(k, nhan, ds){
+  return '<div class="fld' + (loi[k] ? ' loi' : '') + '"><label>' + nhan + ' <span class="req">*</span></label>' +
+    '<select data-f="' + k + '"><option value="">— chọn —</option>' +
+    ds.map(x => '<option' + (f[k] === x ? ' selected' : '') + '>' + x + '</option>').join('') + '</select>' +
+    (loi[k] ? '<div class="err">⛔ ' + esc(loi[k]) + '</div>' : '') + '</div>';
+}
+function radio(k, nhan, ds){
+  return '<div class="fld' + (loi[k] ? ' loi' : '') + '"><label>' + nhan + ' <span class="req">*</span></label>' +
+    '<div class="rdg">' + ds.map(x => '<button class="rd' + (f[k] === x ? ' on' : '') + '" data-rd="' + k + '" data-v="' + x + '">' + x + '</button>').join('') + '</div>' +
+    (loi[k] ? '<div class="err">⛔ ' + esc(loi[k]) + '</div>' : '') + '</div>';
+}
+
+/* Kiểm: ô thiếu viền đỏ NGAY và nút Lưu nêu ĐÍCH DANH ô còn thiếu (M4.1 §6.11.1) */
+function kiem(){
+  loi = {};
+  const nhan = {ten:'Tên trường đầy đủ', ma:'Mã trường CSDL ngành', loai:'Loại hình',
+    hoTen:'Họ và tên', ns:'Ngày sinh', gt:'Giới tính', cccd:'Số căn cước công dân', sdt:'Số điện thoại', dien:'Diện làm việc'};
+  Object.keys(nhan).forEach(function(k){ if (!f[k]) loi[k] = 'Còn trống'; });
+  if (f.ma && f.ma.length !== 20) loi.ma = 'Mã trường phải đúng 20 ký tự (TT 42/2021) — đang có ' + f.ma.length;
+  if (f.ns && !/^\d{2}\/\d{2}\/\d{4}$/.test(f.ns)) loi.ns = 'Sai định dạng — cần dd/mm/yyyy';
+  if (f.cccd && !/^\d{12}$/.test(f.cccd)) loi.cccd = 'Căn cước phải là 12 chữ số';
+  if (f.sdt && !/^0\d{9}$/.test(f.sdt)) loi.sdt = 'Số điện thoại phải 10 chữ số, bắt đầu bằng 0';
+  return Object.keys(loi);
+}
+
+function hopXacNhan(){
+  const thieu = kiem();
+  if (thieu.length){
+    ve();
+    const ten = {ten:'Tên trường', ma:'Mã trường CSDL ngành', loai:'Loại hình', hoTen:'Họ và tên',
+      ns:'Ngày sinh', gt:'Giới tính', cccd:'Số căn cước', sdt:'Số điện thoại', dien:'Diện làm việc'};
+    bao('⛔ Còn thiếu hoặc sai: ' + thieu.map(k => ten[k]).join(' · '));
+    return;
+  }
+  modal('Khởi tạo trường?',
+    '<div class="xn"><div class="xnk">🏫 <b>' + esc(f.ten) + '</b><br>' +
+      '<span class="xnp">Mã trường CSDL ngành: <code>' + esc(f.ma) + '</code> · ' + esc(f.loai) + '</span></div>' +
+    '<div class="xnk">👤 <b>' + esc(f.hoTen) + '</b> · ' + esc(f.ns) + ' · ' + esc(f.gt) + '<br>' +
+      '<span class="xnp">Chức danh: <b>IT — Quản trị hệ thống</b><br>' +
+      'Tên đăng nhập sẽ là mã nhân sự hệ thống cấp; đăng nhập được bằng số điện thoại ' + esc(f.sdt) + '</span></div>' +
+    '<div class="danger" style="margin:10px 0 0">🛑 Màn hình này chạy <b>MỘT LẦN</b> và <b>KHÔNG mở lại được</b>, kể cả khi sau đó xoá hết nhân sự.</div></div>',
+    '<button class="btn" data-x="dong">Huỷ</button><button class="btn p" data-x="ghi">✓ Khởi tạo trường</button>');
+}
+
+/* Năm việc, MỘT giao dịch (§4.5) */
+function ghi(){
+  dong();
+  S.truong = {ten:f.ten, ma:f.ma, loai:f.loai};
+  S.nguoiDau = {ten:f.hoTen, ns:f.ns, gt:f.gt, cccd:f.cccd, sdt:f.sdt, dien:f.dien};
+  S.soNhanSu = 1;
+  S.taiKhoan = {u:'NS0001', mk:'Kx7#mQ2v', daXem:false};
+  S.daKhoiTao = true;
+  S.trangThai = 'dang';
+  S.moc = MOC_DEMO;
+  ghiNhatKy('Khởi tạo trường', 'Tạo hồ sơ nhân sự đầu tiên ' + f.hoTen + ' · gán chức danh IT@School · lật cờ da_khoi_tao');
+  ketQua = true;
+  ve();
+}
+
+function veKetQua(){
+  const tk = S.taiKhoan;
+  return '<div class="ok">✅ <b>Đã khởi tạo trường ' + esc(S.truong.ten) + '</b> — lúc ' + S.moc + '</div>' +
+
+    '<div class="card"><div class="ch">Năm việc đã ghi trong MỘT giao dịch</div><div class="cb"><table><tbody>' +
+      hg('①', 'Ba trường định danh trường', 'M10.2 ① — 30 ô còn lại của sáu khối Master vẫn trống, khai ở bước 2') +
+      hg('②', 'Hồ sơ nhân sự ' + esc(S.nguoiDau.ten), 'M4.1 — hồ sơ thật, không phải bản ghi riêng của menu này') +
+      hg('③', 'Tài khoản <b>' + tk.u + '</b> — trạng thái <b>Chờ đổi mật khẩu lần đầu</b>', 'M10.5 — sinh bằng TRIGGER của M4.1 §4b.2, menu này không tự tạo tài khoản') +
+      hg('④', 'Chức danh <b>IT</b> phạm vi <b>School</b>', 'M4.3 — bản ghi user_role_scoped đầu tiên của hệ thống') +
+      hg('⑤', 'Cờ <code>da_khoi_tao</code> BẬT + ghi nhật ký', 'M10.7 — thời điểm · địa chỉ mạng · nội dung (hàng rào ③)') +
+    '</tbody></table></div></div>' +
+
+    '<div class="card tkbox"><div class="ch">🔑 Tài khoản đầu tiên</div><div class="cb">' +
+      '<div class="tkr"><span>Tên đăng nhập</span><b>' + tk.u + '</b><span class="tkp">= mã nhân sự</span></div>' +
+      '<div class="tkr"><span>Đăng nhập được bằng</span><b>' + esc(S.nguoiDau.sdt) + '</b></div>' +
+      '<div class="tkr"><span>Mật khẩu tạm</span><b>' + (tk.daXem ? tk.mk : '••••••••') + '</b>' +
+        '<button class="btn xs" data-x="hien-mk">' + (tk.daXem ? '🙈 Ẩn' : '👁 Hiện') + '</button>' +
+        '<button class="btn xs" data-x="chep-mk">⧉ Chép</button></div>' +
+      '<div class="danger" style="margin:10px 0 0">⚠ Mật khẩu này hiện <b>ĐÚNG MỘT LẦN</b>, không xem lại được. Bắt buộc đổi ở lần đăng nhập đầu.<br>' +
+        '⏳ <b>Cách phát mật khẩu đang chờ chốt</b> — §11 điểm 1 của tệp mô tả: <code>M10.5</code> §6.1.2 vốn cấm hiện mật khẩu tạm trên màn hình, ' +
+        'nhưng ở đây người khai chính là người nhận và hệ thống <b>chưa có kênh nào để gửi</b>.</div>' +
+    '</div></div>' +
+
+    '<div class="cact"><div class="spacer" style="flex:1"></div>' +
+      '<button class="btn p" data-x="sang-luong">Tôi đã ghi lại mật khẩu — sang luồng khởi tạo ↗</button></div>';
+}
+function hg(n, a, b){
+  return '<tr><td style="width:34px;text-align:center"><b>' + n + '</b></td><td>' + a +
+    '<br><span style="color:var(--ink3);font-size:11.5px">' + b + '</span></td></tr>';
+}
+
+/* Màn hình khi cửa đã đóng — nói rõ, KHÔNG im lặng và KHÔNG 404 (§4.1) */
+function veDaDong(){
+  const vs = [];
+  if (S.soNhanSu > 0) vs.push('bảng nhân sự đã có <b>' + S.soNhanSu + '</b> hồ sơ');
+  if (S.daKhoiTao) vs.push('cờ <code>da_khoi_tao</code> đã <b>BẬT</b>');
+  return '<div class="danger" style="font-size:13px">🔒 <b>Màn hình khai trường lần đầu đã đóng.</b><br>' +
+      (S.moc ? 'Trường khởi tạo lúc <b>' + S.moc + '</b>' + (S.nguoiDau ? ' — người thực hiện: <b>' + esc(S.nguoiDau.ten) + '</b>' : '') + '.<br>' : '') +
+      'Lý do không mở được: ' + vs.join(' · ') + '.<br>' +
+      'Màn hình này chỉ chạy <b>MỘT LẦN</b> và <b>không mở lại được</b> — kể cả khi sau đó xoá hết nhân sự.</div>' +
+
+    '<div class="ro">🛑 <b>Vì sao cờ bất biến.</b> Nếu tắt được thì chỉ cần <b>xoá sạch nhân sự</b> là mở lại được cửa tạo người đầu tiên — ' +
+      'đường tấn công rõ ràng nhất vào toàn bộ dữ liệu trẻ em của trường. Vì thế <b>hai điều kiện</b> mở cửa ' +
+      '<i>(nhân sự rỗng <b>VÀ</b> cờ chưa bật)</i> — mỗi cái bịt đường thoát của cái kia.</div>' +
+
+    '<div class="card"><div class="ch">Đi đâu bây giờ</div><div class="cb"><table><tbody>' +
+      '<tr><td>Thêm nhân sự</td><td><button class="btn xs" data-x="di-m41">↗ M4.1 Hồ sơ nhân sự</button></td></tr>' +
+      '<tr><td>Cấp tài khoản</td><td>Tài khoản <b>sinh cùng hồ sơ nhân sự</b> <i>(M10.5 §2 — M10.5 không có nút tạo)</i></td></tr>' +
+      '<tr><td>Tiếp tục khởi tạo</td><td><button class="btn xs p" data-x="sang-luong">🧭 Tab ② Luồng khởi tạo</button></td></tr>' +
+    '</tbody></table></div></div>' +
+
+    (S.nhatKy.length ? '<div class="card"><div class="ch">🕘 Vết ở <code>M10.7</code> <span class="st2 n">' + S.nhatKy.length + '</span></div>' +
+      '<div class="cb"><table><thead><tr><th style="width:120px">Thời điểm</th><th style="width:150px">Loại</th><th>Nội dung</th><th style="width:110px">Địa chỉ mạng</th></tr></thead><tbody>' +
+      S.nhatKy.map(n => '<tr><td>' + n.t + '</td><td>' + esc(n.loai) + '</td><td>' + esc(n.noiDung) + '</td><td>' + n.ip + '</td></tr>').join('') +
+      '</tbody></table></div></div>' : '');
+}
+
+/* ═══════════════ tiện ích ═══════════════ */
+function modal(h, b, fo){ $('#mh').innerHTML = h; $('#mb').innerHTML = b; $('#mf').innerHTML = fo; $('#mask').classList.add('on'); }
+function dong(){ $('#mask').classList.remove('on'); }
+function bao(m){ const t = $('#toast'); t.innerHTML = m; t.classList.add('on'); setTimeout(() => t.classList.remove('on'), 3200); }
+const chuaDung = m => modal('🚧 Ngoài phạm vi demo', '<div class="ro">' + m + '</div>', '<button class="btn" data-x="dong">Đóng</button>');
+
+/* ═══════════════ SỰ KIỆN ═══════════════ */
+document.addEventListener('click', e => {
+  const rb = e.target.closest('.rb');
+  if (rb){ role = rb.dataset.r; document.querySelectorAll('.rb').forEach(b => b.classList.toggle('on', b === rb)); ve(); return; }
+
+  const tt = e.target.closest('.tt');
+  if (tt){
+    document.querySelectorAll('.tt').forEach(b => b.classList.toggle('on', b === tt));
+    const s = tt.dataset.s;
+    if (s === 'chua'){ S = JSON.parse(JSON.stringify(BAN_DAU)); ketQua = false; f = {ten:'', ma:'', loai:'Công lập', hoTen:'', ns:'', gt:'', cccd:'', sdt:'', dien:''}; loi = {}; tab = 'khai'; }
+    else {
+      S.daKhoiTao = true; S.soNhanSu = (s === 'van_hanh' ? 63 : 1); S.trangThai = s; S.moc = MOC_DEMO;
+      if (!S.truong) S.truong = {ten:'THPT Chuyên Hùng Vương', ma:'25012345678901234567', loai:'Công lập'};
+      if (!S.nguoiDau) S.nguoiDau = {ten:'Nguyễn Văn Sơn', ns:'15/03/1985', gt:'Nam', cccd:'001085012345', sdt:'0912345678', dien:'Viên chức'};
+      if (!S.nhatKy.length) ghiNhatKy('Khởi tạo trường', 'Tạo hồ sơ nhân sự đầu tiên Nguyễn Văn Sơn · gán chức danh IT@School · lật cờ da_khoi_tao');
+      ketQua = false; if (tab === 'khai' && s === 'van_hanh') tab = 'bg';
+    }
+    ve(); return;
+  }
+
+  const tb = e.target.closest('.tab1');
+  if (tb){ tab = tb.dataset.t; ve(); return; }
+
+  const rd = e.target.closest('[data-rd]');
+  if (rd){ f[rd.dataset.rd] = rd.dataset.v; delete loi[rd.dataset.rd]; ve(); return; }
+
+  const b = e.target.closest('[data-x]');
+  if (!b) return;
+  const x = b.dataset.x;
+
+  if (x === 'dong') return dong();
+  if (x === 'reset'){ S = JSON.parse(JSON.stringify(BAN_DAU)); ketQua = false; loi = {}; tab = 'khai';
+    datLaiD();   /* 🔁 TNHM: nút «↩ Đưa về Nháp» của demo đổi D — đặt lại cả dữ liệu luồng */
+    document.querySelectorAll('.tt').forEach((t, i) => t.classList.toggle('on', i === 0)); ve(); return bao('↺ Đã đặt lại dữ liệu mẫu'); }
+  if (x === 'xac-nhan') return hopXacNhan();
+  if (x === 'ghi') return ghi();
+  if (x === 'hien-mk'){ S.taiKhoan.daXem = !S.taiKhoan.daXem; if (S.taiKhoan.daXem) ghiNhatKy('Xem mật khẩu tạm', 'Tài khoản ' + S.taiKhoan.u); return ve(); }
+  if (x === 'chep-mk'){ return bao('⧉ Đã chép mật khẩu tạm — hệ thống ghi một dòng vào M10.7'); }
+  if (x === 'sang-luong'){ tab = 'luong'; ketQua = false; buocDangMo = 'B02'; return ve(); }
+  if (x === 'di-m41') return chuaDung('Deep-link <code>/M4.1?action=tao&amp;return=M10.12</code> — mở sẵn biểu mẫu bảy ô của <code>M4.1</code> §6.11.1.');
+
+  /* ───── tab ② luồng ───── */
+  if (x === 'mo-buoc'){ buocDangMo = b.dataset.b; return ve(); }
+  if (x === 've-tiendo'){ buocDangMo = null; return ve(); }
+  if (x === 'buoc-truoc' || x === 'buoc-tiep'){
+    const i = BUOC.map(z => z.ma).indexOf(buocDangMo);
+    const j = i + (x === 'buoc-tiep' ? 1 : -1);
+    if (j >= 0 && j < BUOC.length) buocDangMo = BUOC[j].ma;
+    return ve();
+  }
+  /* Hạng N — máy ĐẾM, người KẾT LUẬN (kiến trúc §7). Câu hỏi BẮT BUỘC kèm số. */
+  if (x === 'mo-xn'){
+    const bu = BUOC.filter(z => z.ma === b.dataset.b)[0];
+    const k = dkXong(bu);
+    const d = D[bu.ma];
+    let chiTiet = '';
+    if (d && d.theoDT) chiTiet = '<br>' + DT.map((t, i) => t + ': <b>' + (d.theoDT[i] || 0) + '</b>').join(' · ');
+    return modal('Xác nhận bước ' + bu.ma,
+      '<div class="ro">Máy đếm được: <b>' + esc(k.so) + '</b>' + chiTiet + '</div>' +
+      '<div class="info">🛑 Đây là <b>hạng N</b> — máy ⛔ <b>không biết</b> trường còn thiếu ai hay không; ' +
+      'con số trên là thứ duy nhất máy tính được. <b>«Đủ chưa» là kết luận nghiệp vụ của người</b>, và hệ thống ghi lại <b>ai kết luận, lúc nào</b> ' +
+      '<i>(kiến trúc §7 — ⛔ không trái <code>KT-2</code>: nó ⛔ không phải ô tick thay cho thứ máy tính được)</i>.</div>',
+      '<button class="btn" data-x="dong">Chưa đủ — để sau</button>' +
+      '<button class="btn p" data-x="xn-du" data-b="' + bu.ma + '">✓ Đã đủ — xác nhận</button>');
+  }
+  if (x === 'xn-du'){
+    xacNhan[b.dataset.b] = true;
+    aiLam[b.dataset.b] = [R().cd === '🔓 Đủ quyền (demo)' ? 'Trần Văn Định' : R().cd, '24/09 09:05'];
+    dong(); ve(); return bao('✓ Đã ghi: ' + b.dataset.b + ' — người xác nhận và thời điểm lưu vào vết của bước');
+  }
+  /* KT-10 — gỡ nhãn «cần rà lại» là KẾT LUẬN CỦA NGƯỜI */
+  if (x === 'ra-lai-xong'){
+    delete raLai[b.dataset.b];
+    ve(); return bao('✓ ' + b.dataset.b + ' — đã rà lại, hệ thống ghi ai rà và lúc nào');
+  }
+  /* Mô phỏng KT-10: sửa bước đã xong ⇒ bước phụ thuộc chuyển «cần rà lại», KHÔNG tự xoá gì */
+  if (x === 'sua-b08'){
+    /* 🔁 TNHM: khoá D.B08 đã tách thành B08a/B08b từ 23/9 — sửa cùng lượt */
+    D.B08a.muc['②'] = true;
+    raLai.B09 = 'bước B08a mục ② vừa đổi — đưa thêm một điểm trường vào năm; 42 lớp và ' + tongDT(D.B09.theoDT).toLocaleString('vi') + ' hồ sơ học sinh cần rà lại';
+    raLai.B11 = 'bước B08a mục ② vừa đổi — thời khoá biểu của điểm trường mới chưa có';
+    buocDangMo = null; ve();
+    return bao('⚠ B09 và B11 chuyển «cần rà lại» — hệ thống ⛔ không tự xoá, không tự chạy lại gì (KT-10)');
+  }
+  /* 🔁 TNHM — B08b ⓓ «✓ Tạo hồ sơ năm học» (M10.1 F5, chỉ HT). Chặn thật là của M10.1 (N5). */
+  if (x === 'tao-ho-so'){
+    D.B08b.trangThaiNam = 'sap_toi';
+    aiLam.B08b = ['Trần Văn Định', '24/09 09:10'];
+    ve(); return bao('✓ Đã tạo hồ sơ năm học — Nháp → Sắp tới. Ba nhánh sau B08b mở; 🚀 Bắt đầu năm học vẫn là B14, thao tác riêng');
+  }
+  /* 🔁 TNHM — N8 «↩ Đưa về Nháp»: điều kiện DẪN XUẤT (TN-4) — máy đếm, ⛔ không ô tick */
+  if (x === 've-nhap'){
+    const co = demGhiVaoNam();
+    if (!co.length){
+      D.B08b.trangThaiNam = 'nhap';
+      ve(); return bao('↩ Hồ sơ về Nháp — B09 · B11 · B12 về «Chưa đủ điều kiện»; ⛔ không gắn «cần rà lại» vì chưa có bản ghi nào (TN-4)');
+    }
+    return modal('↩ Đưa về Nháp — bị chặn',
+      '<div class="warn">⛔ <b>Không đưa về Nháp được</b> — các menu mở khi tạo hồ sơ <b>đã ghi dữ liệu</b> vào năm này:<br>' +
+        co.map(s => '• ' + esc(s)).join('<br>') + '</div>' +
+      '<div class="info">Máy đếm bản ghi, ⛔ không có ô tick «tôi chắc chắn chưa có dữ liệu» <i>(luật <code>TN-4</code>)</i>. ' +
+        '🚀 Bắt đầu năm học thì ⛔ không có đường lui nào <i>(<code>N8</code>)</i>.</div>',
+      '<button class="btn" data-x="dong">Đóng</button>' +
+      '<button class="btn" data-x="ve-nhap-rong" title="Chỉ có trong demo">🧪 Demo: xem ca năm chưa ghi gì</button>');
+  }
+  if (x === 've-nhap-rong'){
+    D.B09.theoDT = {0:0, 1:0, 2:0}; D.B11.lopCoTKB = 0; D.B12.khoanThu = 0;
+    delete xacNhan.B09; delete aiLam.B09;
+    D.B08b.trangThaiNam = 'nhap';
+    dong(); ve(); return bao('🧪 Demo: năm chưa có bản ghi nào ⇒ về Nháp được. Nút «✓ Tạo hồ sơ năm học» hiện lại ở B08b ⓓ');
+  }
+  /* Tab ③ */
+  if (x === 'ky-ban-giao' || x === 'bo-qua-ky'){
+    S.trangThai = 'van_hanh';
+    ghiNhatKy('Bàn giao hệ thống', x === 'ky-ban-giao' ? 'Hiệu trưởng ký số Nhóm A' : 'Hiệu trưởng BỎ QUA ký số — ghi audit, đồng bộ M4.3');
+    document.querySelectorAll('.tt').forEach((t, i) => t.classList.toggle('on', i === 2));
+    ve();
+    return bao(x === 'ky-ban-giao' ? '⚖ Đã ký bàn giao — trường chuyển sang Đang vận hành'
+      : '⚠ Đã bỏ qua ký số — ghi audit và đồng bộ sang M4.3; trường chuyển sang Đang vận hành');
+  }
+});
+
+document.addEventListener('input', e => {
+  const i = e.target.closest('[data-f]');
+  if (!i) return;
+  f[i.dataset.f] = i.value;
+  if (loi[i.dataset.f]) delete loi[i.dataset.f];
+});
+document.addEventListener('change', e => {
+  const s = e.target.closest('select[data-f]');
+  if (!s) return;
+  f[s.dataset.f] = s.value; delete loi[s.dataset.f]; ve();
+});
+
+/* khởi động ở app.90-khoi-dong.js — app.js nối TRƯỚC app.20/app.30 nên ve() phải chạy sau cùng */
+
+/* ═══════════════════════════════════════════════════════════════
+   TAB ② — LUỒNG KHỞI TẠO  ·  cụm KTLD, phiên 1B
+
+   🛑 LUẬT KT-1: tab này sở hữu THỨ TỰ · ĐIỀU KIỆN CHUYỂN BƯỚC · VẾT AI LÀM GÌ.
+   ⛔ Nó KHÔNG sở hữu một ô dữ liệu nghiệp vụ nào. Mọi ô nhập thuộc MENU CHỦ,
+   mở trong khung luồng theo hợp đồng HDKT ③ — khoiBuoc(ctx).
+
+   🛑 LUẬT KT-2: trạng thái mỗi bước là DẪN XUẤT — máy đọc dữ liệu menu chủ.
+   ⛔ Không có ô tick «đã xong». Riêng bước hạng N thì máy ĐẾM, người KẾT LUẬN
+   (kiến trúc §7) — và đó KHÔNG phải ô tick, vì thứ máy tính được là CON SỐ.
+
+   🛑 LUẬT KT-10: sửa bước đã xong ⇒ bước phụ thuộc chuyển «cần rà lại»,
+   ⛔ không tự xoá / tự sửa / tự chạy lại. Gỡ nhãn là kết luận của người.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ───────── 16 bước · 14 bước chính + 2 bước tuỳ chọn ─────────
+   hang: 'M' = máy kết luận · 'N' = máy đếm, người kết luận
+   nhanh: sau B08b có BA nhánh chạy song song (kiến trúc §5.3)
+
+   🔁 SỬA THỨ TỰ 23/9/2026 — anh Ninh chốt: «thông tin Trường / Điểm trường phải
+   khai TRƯỚC danh mục môn học». Bước 8 TÁCH LÀM HAI:
+     · B08a KHUNG năm học  (mục ① mốc · ② điểm trường · cấp học · hệ) → ngay sau B02
+     · B08b CHI TIẾT       (mục ③ lớp · ④ môn của năm · ⑤ tổ · ⑥ môn của lớp) → sau B07
+   Vì BỐN chỗ trước bước 8 đều đọc mục ②: B03 cần cấp học · B04 và B05 cần danh sách
+   điểm trường · M10.2 lấy «Bậc học của trường» làm dẫn xuất.
+   🛑 Mã bước ⛔ KHÔNG đánh lại — B08a đứng ở vị trí thứ BA là CHỦ Ý.
+
+   🔁 24/9/2026 — cụm TNHM (phiên 1B · bản chốt CHOT-24-09 §8 N1…N8):
+     · B08b = ⓐ to_chuc (khối môn + tổ) · ⓑ nhan_su (RÀ — hạng N) · ⓒ lop
+              · ⓓ «✓ Tạo hồ sơ năm học» (M10.1 F5, Nháp → Sắp tới — DỜI TỪ B14)
+       ⇒ B08b hạng M → N. Ba nhánh sau B08b chỉ mở khi hồ sơ ĐÃ RỜI NHÁP
+       (M10.1 §2.4 khoá ghi M4.5 · M4.6 · M7.1 ⚙ · phân lớp ở Nháp).
+     · B14 = CHỈ «🚀 Bắt đầu năm học» (F6) — thao tác RIÊNG. ⛔ Bỏ chữ «Kích hoạt».
+     · Mục của M10.1 gọi theo TÊN: thoi_gian · to_chuc · nhan_su · lop · hoc_sinh · dieu_kien.
+     · ⛔ Không mã bước mới (kiến trúc §7.2 luật ④). */
+const BUOC = [
+  {ma:'B02',  ten:'Thông tin trường · điểm trường & hệ', tang:'Master', loai:'form',     hang:'M', menu:'M10.2 ① ③', cd:'HT · VT',        nhanh:'chinh', pt:['B00']},
+  {ma:'B08a', ten:'Khung năm học — thời gian · điểm trường', tang:'Năm học', loai:'form', hang:'M', menu:'M10.1 thoi_gian · to_chuc', cd:'PHT_DT', nhanh:'chinh', pt:['B02'], dt:true},
+  {ma:'B03',  ten:'Danh mục môn · tổ bộ môn',      tang:'Master',    loai:'form',       hang:'N', menu:'M10.2 ② ④', cd:'PHT_CM',         nhanh:'chinh', pt:['B08a']},
+  {ma:'B04',  ten:'Nạp nhân sự hiện hữu',          tang:'Nhân sự',   loai:'nạp',        hang:'N', menu:'M4.1 F11', cd:'TCNS',           nhanh:'chinh', pt:['B08a'], dt:true},
+  {ma:'B05',  ten:'Gán chức danh · điểm công tác', tang:'Nhân sự',   loai:'nạp',        hang:'M', menu:'M4.3',     cd:'TCNS',           nhanh:'chinh', pt:['B04'], dt:true},
+  {ma:'B06',  ten:'Bàn giao — lãnh đạo đăng nhập', tang:'Nhân sự',   loai:'quyết định', hang:'M', menu:'M10.5',    cd:'HT ⚖',           nhanh:'chinh', pt:['B05']},
+  {ma:'B07',  ten:'Lịch nghỉ · tham số vận hành',  tang:'Master',    loai:'form',       hang:'N', menu:'M10.9 · M10.6', cd:'VT · HT',   nhanh:'chinh', pt:['B06']},
+  {ma:'B08b', ten:'Chi tiết năm học → ✓ Tạo hồ sơ năm học', tang:'Năm học', loai:'form + nạp + quyết định', hang:'N', menu:'M10.1 to_chuc · nhan_su · lop · F5', cd:'PHT_DT · PHT_CM · HT', nhanh:'chinh', pt:['B03','B07'], dt:true},
+  {ma:'B08⑦', ten:'Điều kiện đảm bảo & hạ tầng',   tang:'Năm học',   loai:'form',       hang:'N', menu:'M10.1 dieu_kien', cd:'IT',        nhanh:'chinh', pt:['B08b'], tuyChon:true},
+  /* hạng N từ 23/9 (phiên 1G · M1.9 §3.2.2) — bảng cũ còn ghi M, sửa cùng lượt TNHM */
+  {ma:'B09',  ten:'Học sinh vào lớp — nạp + xếp lớp', tang:'Học sinh', loai:'nạp',      hang:'N', menu:'M1.9 ① ②', cd:'HT · PHT_DT',    nhanh:'hs',    pt:['B08b'], dt:true},
+  {ma:'B10',  ten:'Bù hồ sơ · điểm · chuyên cần',  tang:'Học sinh',  loai:'nạp',        hang:'N', menu:'M1.9 ③④⑤', cd:'VT · PHT_CM',    nhanh:'hs',    pt:['B09'], tuyChon:true},
+  {ma:'B10b', ten:'Lô «kết quả năm trước»',        tang:'Học sinh',  loai:'nạp',        hang:'N', menu:'M1.3',     cd:'VT · PHT_CM',    nhanh:'hs',    pt:['B09'], tuyChon:true},
+  {ma:'B11',  ten:'KHGD · phân công · thời khoá biểu', tang:'Chuyên môn', loai:'nạp',   hang:'M', menu:'M5.1 · M4.5 · M4.6', cd:'PHT_CM · TTCM', nhanh:'cm', pt:['B08b']},
+  /* 🔁 H11 ①: B12 RA KHỎI luồng bắt buộc — khoản đã thu và đang thu trước mốc đi
+     luồng cũ ngoài hệ thống. Thiếu cờ này thì B12 chặn B14 (phiên 1I bắt được). */
+  {ma:'B12',  ten:'Khoản thu cho đợt sau mốc',     tang:'Tài chính', loai:'form',       hang:'N', menu:'M7.1 · M7.2', cd:'KT',          nhanh:'tc',    pt:['B08b'], tuyChon:true},
+  {ma:'B13',  ten:'Bật dịch vụ App PH-HS',         tang:'Ra ngoài',  loai:'quyết định', hang:'N', menu:'M10.10 · M10.5', cd:'HT',        nhanh:'tc',    pt:['B09']},
+  /* 🔁 TNHM: chỉ còn F6 — «Tạo hồ sơ» (F5) đã lên B08b ⓓ; pt ghi thẳng B09 (N3)
+     ✅ TNHM-Z · chốt P-2 (anh Ninh 24/9/2026): B14 ⛔ KHÔNG chặn ký bàn giao — trường nhận hệ thống mùa hè ký được
+     ngay khi đã «Tạo hồ sơ» (B08b ⓓ) và xếp học sinh vào lớp (B09); 🚀 làm ở M10.1 vào ngày tựu trường như mọi năm.
+     Cờ khongChanBG ≠ tuyChon: B14 vẫn là bước BẮT BUỘC của luồng (thanh tiến độ vẫn đếm), chỉ không vào checklist bàn giao. */
+  {ma:'B14',  ten:'🚀 Bắt đầu năm học',             tang:'Chạy',      loai:'quyết định', hang:'M', menu:'M10.1 F6',  cd:'HT ⚖',           nhanh:'chinh', pt:['B09','B11','B12','B13','B10'], khongChanBG:true},
+];
+const NHANH = {chinh:'Đường chính', hs:'🎓 Nhánh Học sinh', cm:'📖 Nhánh Chuyên môn', tc:'💰 Nhánh Tài chính · App'};
+
+/* ───────── dữ liệu mẫu: thứ MENU CHỦ giữ, luồng chỉ ĐỌC ───────── */
+const DT = ['Điểm trường A', 'Điểm trường B', 'Điểm trường C'];
+let D;
+function datLaiD(){
+  D = {
+    B02: {daKhai: 33, tong: 33},
+    /* B03 nay hạng N: máy ĐẾM (môn theo nguồn), người KẾT LUẬN — danh mục CT GDPT nạp sẵn
+       nên điều kiện kiểu M luôn đúng sẵn và bước tự báo xong (M10.2 §5.12). */
+    B03: {gdpt: 22, truong: 4},
+    B08a: {muc: {'①':true, '②':true}, theoDT: {0:1, 1:1, 2:1}},
+    B04: {theoDT: {0:28, 1:21, 2:14}},
+    B05: {thieu: []},
+    B06: {daDangNhap: 2},
+    B07: {dotNghi: 4, khoiThamSo: 12},
+    'B08⑦': {daKhai: 12, tong: 38},
+    /* 🔁 TNHM — bốn PHẦN: ⓐ to_chuc (môn + tổ) · ⓑ nhan_su (rà — người bấm «✓ Đã rà»)
+       · ⓒ lop (khai theo từng điểm trường — H5, nên B08b có chiều điểm trường)
+       · ⓓ «✓ Tạo hồ sơ năm học» — trangThaiNam: 'nhap' | 'sap_toi' | 'dang_hoat_dong' */
+    B08b: {phan: {to_chuc:true, nhan_su:true, lop:true}, trangThaiNam: 'sap_toi', theoDT: {0:18, 1:14, 2:10}},
+    B09: {theoDT: {0:612, 1:438, 2:247}, hangDoi: 0},
+    B10: {lo: 3, oDaGhi: 9042},
+    B10b: {lo: 0},
+    B11: {lopCoTKB: 42, lop: 42, monCoKHGD: 312, mon: 312},
+    B12: {khoanThu: 5},
+    B13: {dichVu: 4, moiPH: 0},
+    B14: {},                /* 🚀 Bắt đầu năm học đọc D.B08b.trangThaiNam — một nguồn, ⛔ không giữ cờ thứ hai */
+  };
+  xacNhan = {};           /* hạng N: người đã kết luận «đủ» chưa */
+  raLai = {};             /* KT-10: bước nào đang cần rà lại */
+  aiLam = {
+    B02: ['Nguyễn Văn Sơn', '23/09 09:40'], B03: ['Lê Hồng Sơn', '23/09 10:05'],
+    B04: ['Đỗ Thị Lan', '23/09 10:50'], B05: ['Đỗ Thị Lan', '23/09 11:20'],
+    B06: ['Trần Văn Định', '23/09 11:35'], B07: ['Đỗ Thị Lan', '23/09 13:10'],
+    B08a: ['Phạm Thu Hà', '23/09 09:55'], B08b: ['Phạm Thu Hà', '23/09 15:40'],
+    B09: ['Trần Văn Định', '24/09 08:15'],
+  };
+  xacNhan = {B03: true, B04: true, B07: true, B08b: true, B09: true};
+  buocDangMo = null;
+}
+let xacNhan = {}, raLai = {}, aiLam = {}, buocDangMo = null;
+datLaiD();
+
+/* ───────── điều kiện xong — HÀM ĐỌC dữ liệu menu chủ (KT-2 · kiến trúc §7.1) ───────── */
+function dkXong(b){
+  const d = D[b.ma] || {};
+  switch (b.ma){
+    case 'B02':  return {xong: d.daKhai >= d.tong, so: d.daKhai + '/' + d.tong + ' ô Master'};
+    case 'B03':  return {xong: (d.gdpt + d.truong) > 0, so: d.gdpt + ' môn CT GDPT · ' + d.truong + ' môn của trường'};
+    case 'B04':  return {xong: tongDT(d.theoDT) > 0, so: tongDT(d.theoDT) + ' hồ sơ'};
+    case 'B05':  return {xong: d.thieu.length === 0, so: d.thieu.length ? 'thiếu ' + d.thieu.join(' · ') : 'đủ chức danh bắt buộc'};
+    case 'B06':  return {xong: d.daDangNhap >= 1, so: d.daDangNhap + ' người ngoài tài khoản nguồn đã đăng nhập'};
+    case 'B07':  return {xong: d.dotNghi > 0 && d.khoiThamSo > 0, so: d.dotNghi + ' đợt nghỉ · ' + d.khoiThamSo + ' khối tham số'};
+    case 'B08a': {const m = Object.keys(d.muc).filter(k => d.muc[k]); return {xong: m.length === 2, so: m.length + '/2 mục (① mốc · ② điểm trường)'};}
+    case 'B08b': {
+      /* hội bốn phần (kiến trúc §7.2 luật ②); phần ⓓ đúng khi hồ sơ đã RỜI Nháp */
+      const m = ['to_chuc', 'nhan_su', 'lop'].filter(k => d.phan[k]);
+      const tao = d.trangThaiNam !== 'nhap';
+      return {xong: m.length === 3 && tao,
+        so: (m.length + (tao ? 1 : 0)) + '/4 phần (ⓐ to_chuc · ⓑ nhan_su · ⓒ lop · ⓓ Tạo hồ sơ) · hồ sơ ' + NHAN_NAM[d.trangThaiNam]};
+    }
+    case 'B08⑦': return {xong: d.daKhai > 0, so: d.daKhai + '/' + d.tong + ' trường'};
+    case 'B09':  return {xong: d.hangDoi === 0 && tongDT(d.theoDT) > 0, so: tongDT(d.theoDT) + ' học sinh · hàng đợi Chờ xếp lớp: ' + d.hangDoi};
+    case 'B10':  return {xong: d.lo > 0, so: d.lo + ' lô · ' + d.oDaGhi.toLocaleString('vi') + ' ô đã ghi'};
+    case 'B10b': return {xong: d.lo > 0, so: d.lo + ' lô'};
+    case 'B11':  return {xong: d.lopCoTKB >= d.lop && d.monCoKHGD >= d.mon, so: d.lopCoTKB + '/' + d.lop + ' lớp có TKB · ' + d.monCoKHGD + '/' + d.mon + ' môn có KHGD'};
+    case 'B12':  return {xong: d.khoanThu > 0, so: d.khoanThu + ' khoản thu có hiệu lực sau mốc'};
+    case 'B13':  return {xong: d.dichVu > 0, so: d.dichVu + ' dịch vụ đã bật · ' + d.moiPH + ' em đã tạo link liên kết'};
+    case 'B14':  {const t = D.B08b.trangThaiNam; return {xong: t === 'dang_hoat_dong', so: 'hồ sơ ' + NHAN_NAM[t] + (t === 'dang_hoat_dong' ? ' — đã bắt đầu năm học' : ' — chưa bắt đầu năm học')};}
+  }
+  return {xong: false, so: ''};
+}
+const NHAN_NAM = {nhap: 'Nháp', sap_toi: 'Sắp tới', dang_hoat_dong: 'Đang hoạt động'};
+const tongDT = o => Object.keys(o).reduce((a, k) => a + o[k], 0);
+
+/* Trạng thái DẪN XUẤT — năm giá trị (HDKT ②) */
+function trangThai(b){
+  if (raLai[b.ma]) return 'can_ra_lai';
+  /* 🛑 H11 ②: bước TÙY CHỌN ⛔ KHÔNG CHẶN bước nào — kể cả khi nó nằm trong pt.
+     Thiếu vế `!t.tuyChon` thì B10 (bù dữ liệu) và B12 (khoản thu) giữ B14 ở
+     «chưa đủ điều kiện» vĩnh viễn: trường nào không có gì để bù thì ⛔ không bao
+     giờ bấm được «Bắt đầu năm học». Phiên 1I bắt được lệch này. */
+  const du = b.pt.every(function(p){
+    if (p === 'B00') return true;
+    const t = BUOC.filter(x => x.ma === p)[0];
+    if (!t || t.tuyChon) return true;
+    return trangThaiGoc(t) === 'xong';
+  });
+  if (!du) return 'chua_du_dieu_kien';
+  const k = dkXong(b);
+  if (!k.xong) return aiLam[b.ma] ? 'dang_lam' : 'san_sang';
+  if (b.hang === 'N' && !xacNhan[b.ma]) return 'cho_xac_nhan';
+  return 'xong';
+}
+function trangThaiGoc(b){
+  const k = dkXong(b);
+  if (!k.xong) return 'chua';
+  if (b.hang === 'N' && !xacNhan[b.ma]) return 'cho';
+  return 'xong';
+}
+const NHAN_TT = {
+  chua_du_dieu_kien: ['Chưa đủ điều kiện', 'tt-cho'],
+  san_sang:          ['Sẵn sàng',          'tt-sang'],
+  dang_lam:          ['Đang làm',          'tt-lam'],
+  cho_xac_nhan:      ['Chờ người xác nhận','tt-xn'],
+  can_ra_lai:        ['⚠ Cần rà lại',      'tt-ral'],
+  xong:              ['✓ Xong',            'tt-xong'],
+};
+
+/* ═══════════════ VẼ TAB ② ═══════════════ */
+function veLuong(){
+  if (S.trangThai === 'chua')
+    return '<div class="warn">🧭 <b>Luồng khởi tạo chưa mở.</b> Nó sống từ trạng thái <code>dang_khoi_tao</code> — ' +
+      'tức sau khi tab ① chạy xong. Đổi thanh <b>Tình huống</b> ở trên để xem.</div>';
+
+  if (buocDangMo) return veKhungLuong();
+
+  const xong = BUOC.filter(b => trangThai(b) === 'xong').length;
+  const batBuoc = BUOC.filter(b => !b.tuyChon);
+  const xongBB = batBuoc.filter(b => trangThai(b) === 'xong').length;
+
+  let h = '<div class="info">🧭 <b>Luồng 13 bước</b> — bạn ⛔ không phải đi tìm menu. ' +
+    'Mỗi bước mở <b>khối giao diện của chính menu chủ</b> ngay trong khung luồng <i>(hợp đồng <code>HDKT</code> ③)</i>; ' +
+    'trang này chỉ giữ <b>thứ tự · điều kiện chuyển bước · vết ai làm gì</b> <i>(luật <code>KT-1</code>)</i>.<br>' +
+    '🛑 Trạng thái mỗi bước là <b>dẫn xuất</b> — máy đọc dữ liệu của menu chủ, ⛔ <b>không có ô tick «đã xong»</b> <i>(<code>KT-2</code>)</i>.</div>';
+
+  /* thanh tiến độ */
+  h += '<div class="tiendo"><div class="tdb"><div class="tdf" style="width:' + Math.round(xongBB / batBuoc.length * 100) + '%"></div></div>' +
+    '<b>' + xongBB + '/' + batBuoc.length + '</b> bước bắt buộc xong' +
+    ' · <span style="color:var(--ink2)">' + xong + '/' + BUOC.length + ' kể cả ' + BUOC.filter(b => b.tuyChon).length + ' bước tuỳ chọn</span>' +
+    '<div class="spacer" style="flex:1"></div>' + quyenLuong() + '</div>';
+
+  /* ai đang nợ việc */
+  const no = BUOC.filter(b => ['san_sang', 'dang_lam', 'cho_xac_nhan', 'can_ra_lai'].indexOf(trangThai(b)) >= 0);
+  if (no.length) h += '<div class="warn">👤 <b>Đang chờ ai:</b> ' +
+    no.map(b => '<span class="nochip">' + b.ma + ' · ' + esc(b.cd) + '</span>').join(' ') + '</div>';
+
+  /* đường chính */
+  h += bangBuoc('chinh', BUOC.filter(b => b.nhanh === 'chinh' && b.ma !== 'B14'));
+
+  /* BA NHÁNH SONG SONG sau B08 — hiện CÙNG LÚC (kiến trúc §5.3 · việc E-1 của 0A) */
+  h += '<div class="songsong"><div class="ssh">⇉ <b>Ba nhánh chạy SONG SONG sau bước 8</b> — ba nhóm người khác nhau, ' +
+    '⛔ không phải xếp hàng chờ nhau</div><div class="ssg">' +
+    ['hs', 'cm', 'tc'].map(n => bangBuoc(n, BUOC.filter(b => b.nhanh === n), true)).join('') +
+    '</div></div>';
+
+  /* bước cuối */
+  h += bangBuoc('cuoi', BUOC.filter(b => b.ma === 'B14'));
+  return h;
+}
+
+function quyenLuong(){
+  const q = R().luong;
+  if (!q) return '<span class="qno">🔒 ' + esc(R().cd) + ' ⛔ không có ô quyền nào ở Feature này <i>(chốt H2)</i></span>';
+  return '<span class="qok">🔑 ' + esc(R().cd) + ' · quyền <code>' + q + '</code>' + (q === 'x' ? ' — chỉ xem' : '') + '</span>';
+}
+
+function bangBuoc(nhom, ds, gon){
+  if (!ds.length) return '';
+  let h = '<div class="card' + (gon ? ' ssc' : '') + '">';
+  if (nhom !== 'chinh' && nhom !== 'cuoi') h += '<div class="ch">' + NHANH[nhom] + '</div>';
+  else if (nhom === 'chinh') h += '<div class="ch">Đường chính — bước 2 → 8</div>';
+  else h += '<div class="ch">Bước cuối</div>';
+  h += '<div class="cb"><table class="bb"><tbody>';
+  ds.forEach(function(b){
+    const tt = trangThai(b), nh = NHAN_TT[tt], k = dkXong(b);
+    h += '<tr class="' + nh[1] + '">' +
+      '<td class="bma"><b>' + b.ma + '</b>' + (b.tuyChon ? '<span class="tuy">tuỳ chọn</span>' : '') + '</td>' +
+      '<td class="bten"><b>' + esc(b.ten) + '</b>' +
+        '<div class="bmeta"><span class="lo' + (b.loai === 'nạp' ? ' lonap' : '') + '">' + b.loai + '</span>' +
+        '<span class="hang" title="' + (b.hang === 'M' ? 'Máy kết luận' : 'Máy ĐẾM, người KẾT LUẬN — kiến trúc §7') + '">hạng ' + b.hang + '</span>' +
+        '<span class="mnu">' + esc(b.menu) + '</span><span class="cdn">' + esc(b.cd) + '</span></div>' +
+        (b.dt ? daiDiemTruong(b) : '') +
+        (tt === 'can_ra_lai' ? '<div class="ralai">⚠ <b>Cần rà lại</b> — ' + esc(raLai[b.ma]) +
+          '<br>🛑 Hệ thống ⛔ <b>không tự xoá, không tự sửa, không tự chạy lại</b> gì <i>(luật <code>KT-10</code>)</i>. ' +
+          '<button class="btn xs" data-x="ra-lai-xong" data-b="' + b.ma + '">✓ Đã rà lại</button></div>' : '') +
+      '</td>' +
+      '<td class="btt"><span class="ttp ' + nh[1] + '">' + nh[0] + '</span>' +
+        '<div class="bso">' + esc(k.so) + '</div>' +
+        (aiLam[b.ma] ? '<div class="bai">' + esc(aiLam[b.ma][0]) + ' · ' + aiLam[b.ma][1] + '</div>' : '') + '</td>' +
+      '<td class="bnut">' + nutBuoc(b, tt) + '</td></tr>';
+  });
+  return h + '</tbody></table></div></div>';
+}
+
+/* Chiều ĐIỂM TRƯỜNG — ba bước nạp theo từng cơ sở (H5 · việc E-1 của 0A) */
+function daiDiemTruong(b){
+  const d = D[b.ma];
+  if (!d || !d.theoDT) return '';
+  return '<div class="dtr">📍 ' + DT.map(function(t, i){
+    const n = d.theoDT[i];
+    return '<span class="dtc' + (n > 0 ? ' co' : '') + '">' + t.replace('Điểm trường ', '') + ': <b>' + (n || 0) + '</b></span>';
+  }).join('') + '<span class="dtn">' + (b.ma === 'B08b'
+    ? 'phần ⓒ lop — lớp khai theo từng điểm trường; tên lớp TRÙNG nhau giữa các cơ sở'
+    : 'nạp theo TỪNG điểm trường — mỗi cơ sở cũ một tệp riêng') + '</span></div>';
+}
+
+function nutBuoc(b, tt){
+  const q = R().luong;
+  if (tt === 'chua_du_dieu_kien'){
+    const thieu = b.pt.filter(function(p){ const t = BUOC.filter(x => x.ma === p)[0]; return t && trangThaiGoc(t) !== 'xong'; });
+    /* KT-A2: B05 đọc mục ② của B08a — chưa khai điểm trường thì nói ĐÚNG câu ấy
+       (🔁 TNHM: trước đây trỏ D.B08 — khoá đã tách thành B08a/B08b từ 23/9, sửa cùng lượt) */
+    if (b.ma === 'B05' && !D.B08a.muc['②'])
+      return '<span class="nutcho" title="kiến trúc §7.1">chưa khai điểm trường<br>nên chưa biết còn thiếu ai</span>';
+    /* 🔁 TNHM — N8: hồ sơ vừa «↩ Đưa về Nháp» thì ba nhánh nói ĐÚNG lý do */
+    if (thieu.indexOf('B08b') >= 0 && D.B08b.trangThaiNam === 'nhap' && b.ma !== 'B08⑦')
+      return '<span class="nutcho">chờ B08b — hồ sơ năm học<br>đang ở Nháp, chưa «Tạo hồ sơ»</span>';
+    return '<span class="nutcho">chờ ' + thieu.join(' · ') + '</span>';
+  }
+  if (tt === 'cho_xac_nhan')
+    return q.indexOf('s') >= 0
+      ? '<button class="btn sm p" data-x="mo-xn" data-b="' + b.ma + '">Xác nhận đủ…</button>'
+      : '<span class="nutcho">chờ ' + esc(b.cd) + '</span>';
+  if (tt === 'xong') return '<button class="btn sm" data-x="mo-buoc" data-b="' + b.ma + '">↗ Xem lại</button>';
+  return q.indexOf('s') >= 0
+    ? '<button class="btn sm p" data-x="mo-buoc" data-b="' + b.ma + '">↗ Làm bước này</button>'
+    : '<button class="btn sm" data-x="mo-buoc" data-b="' + b.ma + '">↗ Xem</button>';
+}
+
+/* ═══════════════ KHUNG LUỒNG B+ (HDKT ③) ═══════════════ */
+function veKhungLuong(){
+  const b = BUOC.filter(x => x.ma === buocDangMo)[0];
+  const i = BUOC.indexOf(b);
+  const k = dkXong(b);
+
+  let h = '<div class="klbar">' +
+    '<button class="btn sm" data-x="ve-tiendo">↩ Về tiến độ</button>' +
+    '<div class="klp">' + BUOC.map(function(x, j){
+      const t = trangThai(x);
+      return '<span class="klc' + (j === i ? ' on' : '') + ' ' + NHAN_TT[t][1] + '" title="' + x.ma + ' ' + esc(x.ten) + '">' + (t === 'xong' ? '✓' : j + 2) + '</span>';
+    }).join('') + '</div>' +
+    '<div class="spacer" style="flex:1"></div>' +
+    (i > 0 ? '<button class="btn sm" data-x="buoc-truoc">← Bước trước</button>' : '') +
+    (i < BUOC.length - 1 ? '<button class="btn sm p" data-x="buoc-tiep">Bước tiếp →</button>' : '') +
+    '</div>';
+
+  h += '<div class="scopebar">🧭 <b>' + b.ma + ' · ' + esc(b.ten) + '</b> — menu chủ <b>' + esc(b.menu) + '</b> · ' +
+    'chức danh <b>' + esc(b.cd) + '</b> · loại <b>' + b.loai + '</b> · hạng điều kiện <b>' + b.hang + '</b></div>';
+
+  /* Đây là chỗ khối của MENU CHỦ mở ra. Demo mô phỏng — bản thật do menu chủ xuất. */
+  h += '<div class="khoi"><div class="khoih">⬇ Khối giao diện do <b>' + esc(b.menu) + '</b> xuất ra — ' +
+      '<code>khoiBuoc({ma_buoc:\'' + b.ma + '\', trong_luong:true, return:\'M10.12\'})</code></div>' +
+    '<div class="khoib">' +
+      '<div class="ro">🛑 <b>Khung luồng ⛔ KHÔNG vẽ ô nhập nào của bước này.</b> Nó chỉ cấp chỗ; ' +
+        'ô nhập · ràng buộc · bước đối chiếu ba mức đều là <b>của menu chủ</b>, và <b>cùng một khối ấy</b> cũng chạy khi mở thẳng <code>' + esc(b.menu.split(' ')[0]) + '</code> ' +
+        '<i>(hợp đồng <code>HDKT</code> ③ — một khối, hai ngữ cảnh)</i>.</div>' +
+      '<div class="gia">' + esc(b.menu) + ' · ' + esc(b.ten) +
+        '<div class="giap">Bản demo mô phỏng — phiên dựng khối thật là <b>' +
+          ({'M10.2 ① ③':'KTLD-1E · CCTT-1A', 'M10.2 ② ④':'KTLD-1E · CCTT-1A', 'M4.1 F11':'KTLD-1D', 'M4.3':'KTLD-1D', 'M10.5':'KTLD-1D',
+            'M10.9 · M10.6':'KTLD-1G', 'M10.1 thoi_gian · to_chuc':'KTLD-1C · TNHM-1A',
+            'M10.1 to_chuc · nhan_su · lop · F5':'KTLD-1C · TNHM-1A', 'M10.1 dieu_kien':'KTLD-1C', 'M1.9 ① ②':'KTLD-1G',
+            'M1.9 ③④⑤':'KTLD-1G', 'M1.3':'KTLD-1J', 'M5.1 · M4.5 · M4.6':'KTLD-1G · 1H',
+            'M7.1 · M7.2':'KTLD-1I', 'M10.10 · M8.1':'KTLD-1G', 'M10.1 F6':'KTLD-1C · TNHM-1A'}[b.menu] || '—') + '</b></div>' +
+        (b.ma === 'B08b' ? khoiB08b() : '') + '</div>' +
+      '<div class="dkbox"><b>Điều kiện xong</b> <i>(hàm <code>dieuKienXong()</code> của menu chủ — <code>KT-2</code>)</i>: ' +
+        esc(k.so) + ' ⇒ <b>' + (k.xong ? '✓ đạt' : 'chưa đạt') + '</b>' +
+        (b.hang === 'N' ? '<br>⚠ <b>Hạng N</b> — máy chỉ ĐẾM được con số trên; <b>«đủ chưa» là kết luận của người</b> ' +
+          '<i>(kiến trúc §7 — ⛔ không trái <code>KT-2</code> vì thứ máy tính được là con số)</i>' : '') + '</div>' +
+    '</div></div>';
+
+  /* Mô phỏng KT-10 — ở B08a để thấy hệ quả dây chuyền
+     (🔁 TNHM: trước đây so b.ma === 'B08' — mã đã tách từ 23/9 nên nút không bao giờ hiện) */
+  if (b.ma === 'B08a')
+    h += '<div class="cact"><span style="font-size:12px;color:var(--ink2)">Thử luật <code>KT-10</code>:</span>' +
+      '<div class="spacer" style="flex:1"></div>' +
+      '<button class="btn sm" data-x="sua-b08">✎ Mô phỏng: sửa mục ② (đưa thêm một điểm trường vào năm)</button></div>';
+  return h;
+}
+
+/* 🔁 TNHM — mô phỏng KHỐI của M10.1 cho B08b (bản thật do M10.1 xuất — HDKT ③).
+   Bốn phần; phần ⓓ là nút «✓ Tạo hồ sơ năm học» của M10.1, CHỈ HT.
+   «↩ Đưa về Nháp» (N8 · TN-4): máy ĐẾM bản ghi của năm ở các menu mở khi tạo — ≠ 0 ⇒ chặn, nêu đích danh. */
+function khoiB08b(){
+  const d = D.B08b, laHT = role === 'HT' || role === 'FULL';
+  const dong = (k, ten, hang, ok, ghi) => '<tr><td class="bma"><b>' + k + '</b></td><td class="bten">' + ten +
+    ' <span class="hang">hạng ' + hang + '</span><div class="bso">' + ghi + '</div></td>' +
+    '<td class="btt"><span class="ttp ' + (ok ? 'tt-xong' : 'tt-sang') + '">' + (ok ? '✓' : 'chưa') + '</span></td></tr>';
+  let nut;
+  if (d.trangThaiNam === 'nhap')
+    nut = laHT ? '<button class="btn sm p" data-x="tao-ho-so">✓ Tạo hồ sơ năm học</button>'
+               : '<span class="nutcho">chờ HT — chỉ Hiệu trưởng tạo hồ sơ</span>';
+  else if (d.trangThaiNam === 'sap_toi')
+    nut = laHT ? '<button class="btn sm" data-x="ve-nhap">↩ Đưa về Nháp</button>' : '<span class="nutcho">hồ sơ đã ở Sắp tới</span>';
+  else nut = '<span class="nutcho">đã bắt đầu năm học — ⛔ không có đường lui (N8)</span>';
+  return '<table class="bb" style="margin-top:8px"><tbody>' +
+    dong('ⓐ', '<code>to_chuc</code> — môn học của năm · tổ bộ môn trong năm', 'M', d.phan.to_chuc, 'đủ môn bắt buộc · mọi môn của năm thuộc một tổ hoạt động năm nay') +
+    dong('ⓑ', '<code>nhan_su</code> — rà nhân sự trong năm', 'N', d.phan.nhan_su, 'máy đếm chức danh khuyết · GV chưa có môn được phép dạy; người bấm «✓ Đã rà» (TN-7: rà trên dữ liệu vừa nạp ở B04 · B05)') +
+    dong('ⓒ', '<code>lop</code> — danh sách lớp · GVCN · môn của lớp', 'M', d.phan.lop, '⛔ không có «⧉ Kế thừa từ năm học» — năm triển khai đầu (TN-7)') +
+    dong('ⓓ', '<b>✓ Tạo hồ sơ năm học</b> <i>(Nháp → Sắp tới)</i>', 'M', d.trangThaiNam !== 'nhap', 'hồ sơ đang ở <b>' + NHAN_NAM[d.trangThaiNam] + '</b> · 🚀 Bắt đầu năm học là <b>B14</b> — thao tác riêng') +
+    '</tbody></table><div class="cact"><div class="spacer" style="flex:1"></div>' + nut + '</div>';
+}
+/* TN-4 — bảng đếm DẪN XUẤT, ⛔ không có ô tick «tôi chắc chắn chưa có dữ liệu» */
+function demGhiVaoNam(){
+  const ds = [];
+  const hs = tongDT(D.B09.theoDT);
+  if (hs) ds.push('M1.9 — ' + hs.toLocaleString('vi') + ' học sinh đã vào lớp');
+  if (D.B11.lopCoTKB) ds.push('M4.6 — ' + D.B11.lopCoTKB + ' lớp đã có thời khoá biểu');
+  if (D.B12.khoanThu) ds.push('M7.1 — ' + D.B12.khoanThu + ' khoản thu');
+  return ds;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TAB ③ — BÀN GIAO  ·  cụm KTLD, phiên 1B
+
+   Mốc PHÁP LÝ «trường nhận hệ thống»: ai ký, ngày nào, trạng thái dữ liệu
+   lúc đó (chốt H8 — Ký số Option Nhóm A, bỏ qua được nhưng ghi audit).
+   Bấm xong ⇒ trạng thái trường chuyển dang_van_hanh, quyền khởi tạo tạm
+   HẾT HIỆU LỰC (HDKT ④), và luồng thành bản ghi lịch sử.
+   ═══════════════════════════════════════════════════════════════ */
+
+function veBanGiao(){
+  if (S.trangThai === 'chua')
+    return '<div class="warn">✅ <b>Chưa tới bước bàn giao.</b> Nó đến sau khi các bước <b>chặn bàn giao</b> của luồng khởi tạo xong — 🚀 <b>B14</b> ⛔ không nằm trong số đó (chốt P-2).</div>';
+
+  /* ✅ TNHM-Z · P-2: bước chặn bàn giao = bắt buộc VÀ không mang cờ khongChanBG (B14 🚀) */
+  const chanBG = b => !b.tuyChon && !b.khongChanBG;
+  const chua = BUOC.filter(b => chanBG(b) && trangThai(b) !== 'xong');
+  const du = chua.length === 0;
+  const daXong = S.trangThai === 'van_hanh';
+
+  let h = '';
+
+  if (daXong)
+    h += '<div class="ok">✅ <b>Trường đã nhận hệ thống</b> — bàn giao lúc <b>24/09/2026 09:20</b>, người ký: <b>Trần Văn Định · Hiệu trưởng</b> ' +
+      '<i>(Ký số Option Nhóm A)</i>. Luồng khởi tạo nay là <b>bản ghi lịch sử</b> — mở ra xem được, ⛔ không thao tác được.</div>';
+  else if (du)
+    h += '<div class="ok">✅ <b>Đủ điều kiện bàn giao</b> — ' + BUOC.filter(chanBG).length + ' bước chặn bàn giao đã xong' + (trangThai(BUOC.filter(b => b.ma === 'B14')[0]) === 'xong' ? '' : ' — 🚀 <b>B14 Bắt đầu năm học</b> chưa làm: ⛔ không chặn, làm ở M10.1 vào ngày tựu trường (chốt P-2)') + '.</div>';
+  else
+    h += '<div class="warn">⏳ <b>Chưa đủ điều kiện bàn giao</b> — còn <b>' + chua.length + '</b> bước bắt buộc: ' +
+      chua.map(b => '<span class="nochip">' + b.ma + ' · ' + esc(b.ten) + '</span>').join(' ') + '</div>';
+
+  /* Checklist MÁY ĐẾM — ⛔ không ô tick (KT-2) */
+  h += '<div class="card"><div class="ch">Checklist bàn giao <span class="st2 n">máy đếm</span>' +
+    '<div class="sp"></div><span style="font-size:11.5px;color:var(--ink2)">⛔ không có ô tick — mọi dòng đọc từ menu chủ</span></div>' +
+    '<div class="cb"><table class="bb"><tbody>' +
+    BUOC.filter(chanBG).map(function(b){
+      const tt = trangThai(b), nh = NHAN_TT[tt], k = dkXong(b);
+      return '<tr class="' + nh[1] + '"><td class="bma"><b>' + b.ma + '</b></td>' +
+        '<td class="bten">' + esc(b.ten) + '<div class="bmeta"><span class="mnu">' + esc(b.menu) + '</span></div></td>' +
+        '<td class="btt"><span class="ttp ' + nh[1] + '">' + nh[0] + '</span><div class="bso">' + esc(k.so) + '</div></td></tr>';
+    }).join('') +
+    BUOC.filter(b => !chanBG(b)).map(function(b){
+      const tt = trangThai(b);
+      return '<tr class="tuyr"><td class="bma"><b>' + b.ma + '</b><span class="tuy">' + (b.khongChanBG ? 'riêng' : 'tuỳ chọn') + '</span></td>' +
+        '<td class="bten">' + esc(b.ten) + '</td>' +
+        '<td class="btt"><span class="ttp">' + NHAN_TT[tt][0] + '</span><div class="bso">⛔ không chặn bàn giao' + (b.khongChanBG ? ' — làm ở M10.1 ngày tựu trường (P-2)' : '') + '</div></td></tr>';
+    }).join('') +
+    '</tbody></table></div></div>';
+
+  /* Bảng tóm tắt — trường nhận hệ thống với những gì */
+  const ns = tongDT(D.B04.theoDT), hs = tongDT(D.B09.theoDT);
+  h += '<div class="card"><div class="ch">Trường nhận hệ thống với</div><div class="cb"><table class="tt2"><tbody>' +
+    tt2('👥 Nhân sự', ns + ' hồ sơ', DT.map((t, i) => t + ': ' + D.B04.theoDT[i]).join(' · ')) +
+    tt2('🎓 Học sinh', hs.toLocaleString('vi') + ' hồ sơ', DT.map((t, i) => t + ': ' + D.B09.theoDT[i]).join(' · ')) +
+    tt2('🏫 Lớp học', D.B11.lop + ' lớp', D.B11.lopCoTKB + ' lớp đã có thời khoá biểu') +
+    tt2('📖 Môn của lớp', D.B11.mon + ' bản ghi', D.B11.monCoKHGD + ' đã có kế hoạch giảng dạy') +
+    tt2('💰 Khoản thu', D.B12.khoanThu + ' khoản', 'chỉ đợt bắt đầu SAU mốc — khoản trước mốc đi luồng cũ ngoài hệ thống (H11 ①)') +
+    tt2('📱 App PH-HS', D.B13.dichVu + ' dịch vụ đã bật', D.B13.moiPH + ' em đã tạo link liên kết phụ huynh') +
+    '</tbody></table></div></div>';
+
+  if (daXong) return h + '<div class="ro">🛑 <b>Quyền khởi tạo tạm đã HẾT HIỆU LỰC</b> <i>(hợp đồng <code>HDKT</code> ④)</i> — ' +
+    'từ đây mọi thao tác đi qua ma trận <b>Chức danh × Feature × Phạm vi</b> như mọi menu khác. ⛔ Không gia hạn.</div>';
+
+  /* Ô ký */
+  const laHT = role === 'HT' || role === 'FULL';
+  h += '<div class="card"><div class="ch">⚖ Ký bàn giao <span class="st2 n">Nhóm A</span></div><div class="cb">' +
+    '<div class="info">Đây là <b>mốc pháp lý «trường nhận hệ thống»</b>: ai ký, ngày nào, trạng thái dữ liệu lúc đó. ' +
+    'Về sau nếu có tranh luận <i>«dữ liệu sai từ lúc nào»</i> thì đây là mốc duy nhất trả lời được <i>(chốt <code>H8</code>)</i>.<br>' +
+    'Ký số Option <b>Nhóm A</b> — <b>bỏ qua được</b>, bỏ qua thì <b>ghi audit</b> và đồng bộ sang <code>M4.3</code>.</div>' +
+    '<div class="cact"><span style="font-size:12px;color:var(--ink2)">' +
+      (laHT ? 'Người ký: <b>Hiệu trưởng</b>' : '🔒 Chỉ <b>Hiệu trưởng</b> ký được — vai hiện tại là ' + esc(R().cd)) + '</span>' +
+    '<div class="spacer" style="flex:1"></div>' +
+    '<button class="btn" data-x="bo-qua-ky"' + (du && laHT ? '' : ' disabled') + '>Bỏ qua ký số</button>' +
+    '<button class="btn p" data-x="ky-ban-giao"' + (du && laHT ? '' : ' disabled') + '>⚖ Ký bằng USB Token / SmartCA</button></div>' +
+    (du ? '' : '<div class="ro">Nút khoá vì còn bước bắt buộc chưa xong — ⛔ không phải vì quyền.</div>') +
+    '</div></div>';
+  return h;
+}
+function tt2(a, b, c){
+  return '<tr><td class="t2a">' + a + '</td><td class="t2b"><b>' + b + '</b></td>' +
+    '<td class="t2c">' + esc(c) + '</td></tr>';
+}
+
+/* Chạy sau cùng — app.js nối trước app.20-luong.js và app.30-ban-giao.js (gen-demo concat theo tên). */
+ve();
+</script>
+</body>
+</html>

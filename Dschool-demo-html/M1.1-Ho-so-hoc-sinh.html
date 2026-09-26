@@ -281,7 +281,6 @@ tr:last-child td{border-bottom:none}
   <button class="rb" data-r="GVCN">GVCN</button>
   <button class="rb" data-r="GVBM">GVBM</button>
   <button class="rb" data-r="YT">YT</button>
-  <button class="rb" data-r="BT">NVBT</button>
   <button class="rb" data-r="KT">KT</button>
   <button class="rb" data-r="HT">HT</button>
   <span class="note">│ Phụ huynh dùng App riêng, không phải vai Web —</span>
@@ -467,10 +466,59 @@ const DCK=[['tt_ho','Nơi thường trú'],['tt_tam','Tạm trú'],['hien_tai','
            ['qq','Quê quán'],['nsinh','Nơi sinh'],['nksinh','Nơi khai sinh']];
 /* HS co it nhat MOT cum dia chi dang o che do tu do -> bo loc ⚠ o F1 */
 const coChuaCH=h=>DCK.some(k=>dcTD_q((h.dc||{})[k[0]]));
-const TINH=['Hà Nội','Nam Định','Cao Bằng','Phú Thọ','Nghệ An'];
+/* 🔁 RSHS-1B (23/9/2026) — danh muc hanh chinh nap DU 34 tinh, thanh pho (chinh quyen HAI CAP
+   sau sap nhap 2025). Truoc do demo chi co 5 tinh, nen doi mac dinh sang `danh_muc` o RSHS-1A
+   se lam nguoi dung ⛔ khong tim thay tinh cua minh va phai bam sang `tu_do`.
+   🛑 Danh sach XA chi nap cho tinh CO TRONG du lieu mau — §B.10.3 cam nap mot danh sach
+   suu tam tren mang. Man hinh giu nhan `ban nap san — chua dong bo`. */
+const TINH=['An Giang','Bắc Ninh','Cà Mau','Cần Thơ','Cao Bằng','Đà Nẵng','Đắk Lắk','Điện Biên',
+ 'Đồng Nai','Đồng Tháp','Gia Lai','Hà Nội','Hà Tĩnh','Hải Phòng','Huế','Hưng Yên','Khánh Hòa',
+ 'Lai Châu','Lâm Đồng','Lạng Sơn','Lào Cai','Nghệ An','Ninh Bình','Phú Thọ','Quảng Ngãi',
+ 'Quảng Ninh','Quảng Trị','Sơn La','Tây Ninh','Thái Nguyên','Thanh Hóa','TP. Hồ Chí Minh',
+ 'Tuyên Quang','Vĩnh Long'];
 const XA={'Hà Nội':['Phường Cầu Giấy','Phường Nghĩa Đô','Phường Thanh Xuân','Phường Mỹ Đình'],
- 'Nam Định':['Xã Mỹ Hà','Phường Nam Định'],'Cao Bằng':['Xã Trùng Khánh','Phường Thục Phán'],
+ 'Ninh Bình':['Xã Mỹ Hà','Phường Nam Định'],'Cao Bằng':['Xã Trùng Khánh','Phường Thục Phán'],
  'Phú Thọ':['Phường Việt Trì'],'Nghệ An':['Xã Nghi Lộc']};
+/* ⚠ «Nam Định» nhap vao NINH BINH tu 2025 — du lieu mau van giu chuoi cu o che do tu_do,
+   ⛔ khong ep doi: do la ca ③ cua HDCS ① (don vi hanh chinh da doi, chuoi cu dung ve lich su). */
+const TEN_CU={'Nam Định':'Ninh Bình'};
+
+/* ===== RSHS-1B — DANH MUC DAN TOC (§B.12) =====
+   🛑 Du lieu TOAN QUOC, ⛔ khong phai cau hinh cua truong: M10.6 giu zero-write, danh muc
+   NAP SAN va keo ve qua M10.8, mang nhan `ban nap san — chua dong bo` cho toi khi co ban
+   chinh thuc. Truong ⛔ KHONG tu them dan toc thu 55.
+   Nguon: Danh muc cac dan toc Viet Nam — QD 121-TCTK/PPCĐ ngay 02/3/1979 (54 dan toc, co MA).
+   Cong So nhan MA, ⛔ khong nhan chu: go tay thi `Tày` / `Tầy` / `TAY` la ba gia tri khac nhau.
+   Cot thu ba la TEN GOI KHAC — giay khai sinh cu hay ghi ten goi khac, nen o nhap phai
+   tim duoc theo ca cot nay. */
+const DANTOC=[
+ ['01','Kinh','Việt'],['02','Tày','Thổ · Ngạn · Phén · Thù Lao · Pa Dí'],['03','Thái','Tày Khao · Tày Đăm · Tày Mười'],
+ ['04','Hoa','Hán · Triều Châu · Phúc Kiến · Quảng Đông · Hải Nam · Xạ Phang'],['05','Khơ Me','Cur · Cul · Thổ'],
+ ['06','Mường','Mol · Mual · Moi · Ao Tá · Ậu Tá'],['07','Nùng','Xuồng · Giang · Nùng An · Phàn Slình'],
+ ['08','HMông','Mèo · Mẹo · Mã · Miếu Hạ · Mán Trắng'],['09','Dao','Mán · Động · Trại · Dìu Miền · Kim Miền'],
+ ['10','Gia Rai','Giơ Rai · Tơ Buăn · Hơ Bau · Hdrung · Chor'],['11','Ngái','Xín · Lê · Đản · Khách Gia'],
+ ['12','Ê Đê','Ra Đê · Đê · Kpa · Adham · Krung · Ktul'],['13','Ba Na','Gơ Lar · Tơ Lô · Giơ Lâng · Rơ Ngao'],
+ ['14','Xơ Đăng','Xơ Teng · Hđang · Tơ Đra · Mơ Nâm · Ha Lăng'],['15','Sán Chay','Cao Lan · Sán Chỉ · Mán Cao Lan'],
+ ['16','Cơ Ho','Xrê · Nốp · Cơ Don · Chil · Lat · Tơ Ring'],['17','Chăm','Chàm · Chiêm Thành · Hroi'],
+ ['18','Sán Dìu','Sán Déo · Trại · Trại Đất · Mán Quần Cộc'],['19','Hrê','Chăm Rê · Chom · Krẹ · Luỹ'],
+ ['20','Mnông','Pnông · Nông · Pré · Bu Đâng · Đi Pri'],['21','Ra Glai','Ra Glây · Rai · Noang · La Oang'],
+ ['22','Xtiêng','Xa Điêng'],['23','Bru - Vân Kiều','Bru · Vân Kiều · Măng Coong · Tri · Khua'],
+ ['24','Thổ','Kẹo · Mọn · Cuối · Họ · Đan Lai · Ly Hà · Tày Poọng'],['25','Giáy','Nhắng · Dẩng · Pầu Thìn · Pu Nà'],
+ ['26','Cơ Tu','Ca Tu · Gao · Hạ · Phương · Ca Tang'],['27','Gié Triêng','Đgiéh · Tareb · Giang Rẫy · Pin · Triêng'],
+ ['28','Mạ','Châu Mạ · Mạ Ngăn · Mạ Xóp · Mạ Tô · Mạ Krung'],['29','Khơ Mú','Xá Cẩu · Mứn Xen · Pu Thênh · Tềnh · Tày Hay'],
+ ['30','Co','Cor · Col · Cùa · Trầu'],['31','Tà Ôi','Tôi Ôi · Pa Co · Pa Hi · Ba Hi'],
+ ['32','Chơ Ro','Dơ Ro · Châu Ro'],['33','Kháng','Xá Khao · Xá Xúa · Xá Đón · Xá Dâng · Xá Hộc'],
+ ['34','Xinh Mun','Puộc · Pụa'],['35','Hà Nhì','U Ní · Xá U Ní'],['36','Chu Ru','Chơ Ru · Chu'],
+ ['37','Lào','Lào Bốc · Lào Nọi'],['38','La Chí','Cù Tê · La Quả'],['39','La Ha','Xá Khao · Khlá Phlạo'],
+ ['40','Phù Lá','Bồ Khô Pạ · Mu Di Pạ · Xá Phó · Phổ · Va Xơ Lao'],['41','La Hủ','Lao · Pu Đang · Khù Sung · Cò Xung'],
+ ['42','Lự','Lừ · Nhuồn · Duôn · Mun Di'],['43','Lô Lô','Mun Di'],['44','Chứt','Sách · Máy · Rục · Mã Liềng · A Rem'],
+ ['45','Mảng','Mảng Ư · Xá Lá Vàng'],['46','Pà Thẻn','Pà Hưng · Tống'],['47','Co Lao',''],
+ ['48','Cống','Xắm Khống · Mấng Nhé · Xá Xeng'],['49','Bố Y','Chủng Chá · Trọng Gia · Tu Dí · Tu Dìn'],
+ ['50','Si La','Cù Dề Xừ · Khả Pẻ'],['51','Pu Péo','Ka Bèo · Pen Ti Lô Lô'],['52','Brâu','Brao'],
+ ['53','Ơ Đu','Tày Hạt'],['54','Rơ Măm',''],
+ ['99','Nước ngoài','học sinh người nước ngoài — ⛔ không mở ô tự do']];
+const tenDanToc=ma=>{const d=DANTOC.find(x=>x[0]===ma);return d?d[1]:''};
+const maDanToc=ten=>{const d=DANTOC.find(x=>x[1]===ten);return d?d[0]:''};
 
 /* --- HDCS ③ — co ba gia tri. `Chua khao sat` KHONG duoc thanh `Khong` khi day --- */
 const CO3={co:'Có',khong:'Không',cks:'Chưa khảo sát'};
@@ -496,9 +544,12 @@ const BUOI_TAY={6:{v:3,ly:'Em học hòa nhập, chỉ dự 3 buổi/tuần theo
 /* --- gieo du lieu cum CSDL vao HS. Du lieu CU => che_do = tu_do (HDCS ① quy tac d) --- */
 (function seedCSDL(){
  HS.forEach(h=>{
-  h.dc={tt_ho:h.tt_ho?dcTD(h.tt_ho):dcTD(''),tt_tam:dcTD(''),
-        hien_tai:h.tt_moi?dcTD(h.tt_moi):dcTD(''),
-        qq:dcTD(''),nsinh:h.nsinh?dcTD(h.nsinh):dcTD(''),nksinh:dcTD('')};
+  /* 🔁 RSHS-1A (23/9/2026) — o RONG khoi tao o che do DANH MUC, dung HDCS ① «Mac dinh danh_muc».
+     Chuoi CU van vao tu_do theo quy tac d — 🛑 ⛔ KHONG doi che do cua du lieu DA CO
+     (vi du que quan theo don vi hanh chinh DA GIAI THE: dung ve lich su, ⛔ khong co ma nao dung). */
+  h.dc={tt_ho:h.tt_ho?dcTD(h.tt_ho):dcDM('','',''),tt_tam:dcDM('',''),
+        hien_tai:h.tt_moi?dcTD(h.tt_moi):dcDM('',''),
+        qq:dcDM('',''),nsinh:h.nsinh?dcTD(h.nsinh):dcDM('',''),nksinh:dcDM('','')};
   h.tgk=h.tgk||''; h.dan_ks=h.dan_ks!==undefined?h.dan_ks:h.dan;
   h.cccd_nc=''; h.cccd_nn=''; h.qt='Việt Nam'; h.qt2=''; h.qt2_mo=false;   /* ✅ P-1 chot 19/9 */
   h.hc_so=''; h.hc_nc=''; h.hc_nn=''; h.hc_mo=false;
@@ -523,6 +574,9 @@ const BUOI_TAY={6:{v:3,ly:'Em học hòa nhập, chỉ dự 3 buổi/tuần theo
  c1.qt2='Australia'; c1.hc_so='PA1847221'; c1.hc_nc='08/03/2024'; c1.hc_nn='Cục Quản lý xuất nhập cảnh';
  c1.ttlop=1; c1.nganh={kv:'KV3',ttdt:'khong',ctb:'co',chaDt:'khong',meDt:'khong',hndn:'khong',tvhn:'co',phMt:'co',phSt:'co'};
  c1.cha.cccd='034083112455'; c1.me.cccd='001186004721';
+ /* 🆕 RSHS-3A — ba ca mẫu của tab «Tài khoản phụ huynh» */
+ c1.lk={me:{tt:'hd',bat:true}, cha:{tt:'hd',bat:false,cc:'toa',ccAi:'Hiệu trưởng duyệt',ccNgay:'12/8/2026'}};
+ c1.uq=[{ten:'Nguyễn Thị Lựu (bà nội)',sdt:'0913 662 470',so:'UQ-2026-014',tt:'hd',bat:true,han:'hết năm học 2026-2027'}];
  c1.cutru=[['09/2018','08/2023',dcTD('Số 8 Nguyễn Trãi, Thanh Xuân, Hà Nội')],
            ['09/2023','',dcDM('Hà Nội','Phường Cầu Giấy','Số 12 ngõ 45 Trần Duy Hưng')]];
 
@@ -632,24 +686,53 @@ function dcRow(h,key,label,gid){
   <div>${lack?'<span class="lacktag">Còn thiếu</span>':laNG(label)&&!dmDu(d)?ngTag(h):td&&d.chuoi_tu_do?'<span class="rotag">chế độ tự do</span>':d.che_do==='danh_muc'&&dcHT(d)?'<span class="rotag">danh mục</span>':''}</div></div>`}
 
 /* ======== O CCCD nguoi truong thanh — che mac dinh, 👁 Hien ghi audit ======== */
-function cccdRow(h,who,label){
+/* 🔁 RSHS-1A (23/9/2026) — o CCCD nay CO NHANH SUA. Truoc do ham nay chi co che do xem,
+   nen bam «✎ Sua nhom» thi ca nhom thanh o nhap TRU CCCD. Ba trang thai, ton trong §6.3.9:
+   ① chua co so        ⇒ o nhap binh thuong (⛔ khong co gi de lo)
+   ② da co + CO quyen Hien ⇒ nut «✎ Thay so» mo o nhap RONG — 🛑 ⛔ KHONG do san so cu,
+      vi do san = hien so day du ma ⛔ khong qua nut 👁 Hien, vong qua chinh cai audit cua §6.3.9;
+      va doi CCCD la NHAP LAI tu the moi tren tay, ⛔ khong phai sua vai chu so.
+   ③ da co + KHONG quyen Hien ⇒ giu dang che, ⛔ khong co o sua (rb a — «biet du de lam viec») */
+let thaySo={};   /* key da bam «✎ Thay so» trong phien nay */
+function cccdRow(h,who,label,gid){
  const p = who==='cha'?h.cha:who==='me'?h.me:(h.gh||{});
  const key=h.id+'|'+who, mo=!!moCCCD[key], co=!!p.cccd;
  const duoc=HIEN_CCCD.includes(role);
- return `<div class="f t2">
-  <div class="k">📝<span class="lo l2a" title="② nhánh gia đình · 📋 Khai báo CSDL ngành — chỉ khi người này có trong hồ sơ"></span>📋 ${label}</div>
-  <div class="v">${co?(mo?`<b>${p.cccd}</b> <span class="cchtag" style="border-color:#94a3b8;color:#475569">đã ghi audit lượt đọc</span>`
+ const ed = !daRoi(h) && editGrp===gid && (R().edit===1||R().edit==='tang1');
+ let body;
+ if(ed && (!co || (duoc && thaySo[key]))){
+  body=`<input class="ed" inputmode="numeric" maxlength="12" placeholder="12 chữ số" value="">
+   <span class="rotag">${co?'nhập lại từ thẻ mới — ⛔ không đổ sẵn số cũ':'12 chữ số'}</span>`;
+ } else if(ed && co && duoc){
+  body=`<span class="cmask">${cheCCCD(p.cccd)}</span>
+   <span class="rolnk" data-thayso="${key}">✎ Thay số</span>`;
+ } else if(ed && co && !duoc){
+  body=`<span class="cmask">${cheCCCD(p.cccd)}</span>
+   <span class="rotag" title="Luật BVDLCN 91/2025 — chỉ Văn thư và Hiệu trưởng mở được số đầy đủ">🔒 chỉ VT và HT sửa được</span>`;
+ } else {
+  body=`${co?(mo?`<b>${p.cccd}</b> <span class="cchtag" style="border-color:#94a3b8;color:#475569">đã ghi audit lượt đọc</span>`
       :`<span class="cmask">${cheCCCD(p.cccd)}</span>`)
       :'<span style="color:var(--ink3);font-weight:400">— chưa có —</span> '+ngTag(h)}
    ${co&&!mo&&duoc?`<span class="rolnk" data-hien="${key}">👁 Hiện</span>`:''}
-   ${co&&!duoc?`<span class="rotag" title="Luật BVDLCN 91/2025 — chỉ Văn thư và Hiệu trưởng mở được số đầy đủ">🔒 chỉ VT và HT mở được</span>`:''}</div>
+   ${co&&!duoc?`<span class="rotag" title="Luật BVDLCN 91/2025 — chỉ Văn thư và Hiệu trưởng mở được số đầy đủ">🔒 chỉ VT và HT mở được</span>`:''}`;
+ }
+ return `<div class="f t2">
+  <div class="k">📝<span class="lo l2a" title="② nhánh gia đình · 📋 Khai báo CSDL ngành — chỉ khi người này có trong hồ sơ"></span>📋 ${label}</div>
+  <div class="v">${body}</div>
   <div><span class="rotag">dữ liệu người trưởng thành</span></div></div>`}
 
 /* ======== MYC-2C — ô ② CSDL ngành của NGƯỜI GIÁM HỘ (năm sinh · giới tính): chỉ vẽ khi hồ sơ có người giám hộ ======== */
-function ngRow(label,v,h){
+/* 🔁 RSHS-1A (23/9/2026) — ham nay cung THIEU nhanh sua y het cccdRow, nen ba o ma cum MYC
+   vua them cho khoi nguoi giam ho (cong So bat khai CA BA) thi ⛔ khong o nao nhap duoc.
+   `Nam sinh` la kieu NAM — o so 4 chu so, 🛑 ⛔ KHONG phai bo chon ngay (RSHS-1B lo phan kieu). */
+function ngRow(label,v,h,gid){
+ const ed = !daRoi(h) && editGrp===gid && (R().edit===1||R().edit==='tang1');
+ /* 🔁 RSHS-1B — dung CHUNG bo dieu phoi oNhap(), ⛔ khong viet rieng mot khuon o thu hai */
+ const body = ed ? oNhap(label,v)
+  : (v||'<span style="color:var(--ink3);font-weight:400">— chưa có —</span> '+ngTag(h));
  return `<div class="f t2">
   <div class="k">📝<span class="lo l2a" title="② nhánh gia đình · 📋 Khai báo CSDL ngành — chỉ khi hồ sơ có người giám hộ"></span>📋 ${label}</div>
-  <div class="v">${v||'<span style="color:var(--ink3);font-weight:400">— chưa có —</span> '+ngTag(h)}</div><div></div></div>`}
+  <div class="v">${body}</div><div></div></div>`}
 /* ======== MYC-2C — Ô ẢNH 4×6 (M1.1 §6.3.6b): ⛔ không phải trường — chỉ HIỂN THỊ tệp mục «Ảnh 4×6» của Kho giấy tờ ======== */
 function anhRow(h){
  const co=h.anh!==0, veF6=R().tabs.includes('e');
@@ -770,11 +853,14 @@ const ROLE={
  GVCN:{n:'GVCN lớp 9A2',sc:'Lớp 9A2',menu:['hs','lop','gt'],tabs:['ab','c','d','e','f','g'],lienhe:'full',sk:'full',edit:0,duyet:'ykien',ghichu:1,xuat:1},
  GVBM:{n:'GV bộ môn Toán',sc:'Lớp mình dạy',menu:['lop','gt'],tabs:['ab'],lienhe:'none',sk:'none',edit:0,duyet:0,ghichu:0,xuat:0},
  YT:{n:'Y tế học đường',sc:'Điểm trường',menu:['vh','gt'],tabs:['ab'],lienhe:'khancap',sk:'full',edit:0,duyet:0,ghichu:0,xuat:0},
- BT:{n:'Nhân viên bán trú',sc:'Điểm trường',menu:['vh','gt'],tabs:['ab'],lienhe:'none',sk:'diung',edit:0,duyet:0,ghichu:0,xuat:0},
+ /* BTNV-1B (23/9/2026): vai BT (NVBT — nhan vien ban tru) DA GO khoi menu M1.1.
+    Lat cat du lieu §4 GIU NGUYEN (M6.1 §5.1 chieu chi doc), chi quyen MENU bi go. */
  KT:{n:'Kế toán',sc:'Điểm trường',menu:['tc','gt'],tabs:['ab','c'],lienhe:'nhacno',sk:'none',edit:0,duyet:0,ghichu:0,xuat:1},
  HT:{n:'Hiệu trưởng',sc:'Toàn trường',menu:'all',tabs:['ab','c','d','e','f','g'],lienhe:'full',sk:'full',edit:0,duyet:0,ghichu:1,xuat:1},
 };
-const TABN={ab:'Cá nhân & Gia đình',c:'Đối tượng ưu tiên',d:'Quá trình học tập',e:'Kho giấy tờ',f:'Kho quyết định',g:'Đơn từ đã gửi'};
+/* TKPH-1A (25/9/2026): tab «Tài khoản phụ huynh» GỠ — Feature m1.1.tai_khoan_phu_huynh để trống; quản lý MỘT nơi ở M10.5 tab ②.
+   Nhãn `tk` giữ trong TABN chỉ để hàm TKPH (vết RSHS-3A) còn đọc được — ⛔ vai nào còn tab `tk`. */
+const TABN={ab:'Cá nhân & Gia đình',c:'Đối tượng ưu tiên',d:'Quá trình học tập',e:'Kho giấy tờ',f:'Kho quyết định',g:'Đơn từ đã gửi',tk:'Tài khoản phụ huynh'};
 
 let role='DQ',t1='ds',cur=null,tab='ab',editGrp=null,openG={};
 const fDT=new Set(),fKH=new Set(),fLOP=new Set();
@@ -890,12 +976,14 @@ function filters(){
 function hsRow(h,sub){
  const [c,lb,n,na,nb]=hsState(h), fl=[];
  if(h.uu&&['DQ','VT','GVCN','KT','HT','PH'].includes(role))fl.push('<span class="fl uu">Ưu tiên</span>');
- if(h.di&&['DQ','VT','GVCN','YT','BT','HT','PH'].includes(role))fl.push('<span class="fl di">Dị ứng</span>');
+ if(h.di&&['DQ','VT','GVCN','YT','HT','PH'].includes(role))fl.push('<span class="fl di">Dị ứng</span>');
  if(h.no&&['DQ','VT','GVCN','KT','HT'].includes(role))fl.push('<span class="fl no">Nợ quá hạn</span>');
  if(h.kl&&['DQ','VT','GVCN','HT'].includes(role))fl.push('<span class="fl kl">Thời hiệu KL</span>');
  const q=$('#q')?.value.trim();
  const hl=t=>q?t.replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'),'<mark>$1</mark>'):t;
- const lienhe=R().lienhe!=='none'?`${h.cha.chinh?h.cha.n:h.me.n}<br><span style="color:var(--ink3)">${h.cha.chinh?h.cha.sdt:h.me.sdt}</span>`:'<span style="color:var(--ink3)">—</span>';
+ /* TKPH-1A: ⛔ khái niệm «Liên hệ chính» (PH8) — cột hiện ô đầu tiên CÓ SỐ theo thứ tự hồ sơ cha → mẹ → người giám hộ; cờ `chinh` trong dữ liệu giữ nguyên, ⛔ đọc */
+ const lhP=[h.cha,h.me,h.gh].filter(p=>p&&p.sdt)[0]||{n:'—',sdt:''};
+ const lienhe=R().lienhe!=='none'?`${lhP.n}<br><span style="color:var(--ink3)">${lhP.sdt}</span>`:'<span style="color:var(--ink3)">—</span>';
  return `<div class="hrow ${sub?'sub':''} ${cur===h.id?'on':''}" data-id="${h.id}">
   <div class="who2"><div class="ava2">${h.i}</div><div class="i"><b>${hl(h.n)}</b>
    <span>${sub?h.ma:h.dt+' · '+(h.lop||'<b style="color:#4338ca">Chưa xếp lớp</b>')}</span>${fl.length?`<div class="flags">${fl.join('')}</div>`:''}</div></div>
@@ -935,7 +1023,7 @@ function listTab(){
   <div class="stage ${cur?'open':''}">
    <div class="listw">
     ${flat&&q?`<div class="ro" style="margin:9px 13px">🔍 Đang tìm kiếm — danh sách <b>tự phẳng hóa</b>, mỗi dòng hiện Điểm trường · Lớp</div>`:''}
-    <div class="hdrow"><div class="kc">Học sinh</div><div>Ngày sinh</div><div class="kc">Hồ sơ</div><div>Trạng thái</div><div>Liên hệ chính</div></div>
+    <div class="hdrow"><div class="kc">Học sinh</div><div>Ngày sinh</div><div class="kc">Hồ sơ</div><div>Trạng thái</div><div>Liên hệ gia đình</div></div>
     ${body}
     <div class="lgd"><span>Gom nhóm: ${flat?'<b>phẳng</b> (đang tìm kiếm hoặc chỉ 1 lớp)':noDT?'<b>Lớp → HS</b> (header đã chọn 1 ĐT)':'<b>ĐT → Lớp → HS</b>'}</span></div>
    </div>
@@ -1078,6 +1166,57 @@ const TANG={'Họ và tên':2,'Ngày sinh':2,'Giới tính':2,'Số định danh
  'CCCD — Ngày cấp':2,'CCCD — Nơi cấp':2,'Số hộ chiếu':2,'Hộ chiếu — Ngày cấp':2,'Hộ chiếu — Nơi cấp':2,
  'Thứ tự trong lớp':3,'Quốc tịch thứ hai':2,'Nơi thường trú':2,'Tạm trú':2,'Chỗ ở hiện tại':1};
 
+/* ===== RSHS-1B (23/9/2026) — O NHAP THEO KIEU, thay cho MOT khuon o text duy nhat =====
+   Truoc do moi truong deu ra `<input class="ed">`, ke ca ngay thang va dan toc.
+   🛑 ⛔ KHONG ep moi «ngay» ve kieu Date — ho so truong hoc co BA loai khac nhau:
+     date  ngay day du   Ngay sinh HS · CCCD/Ho chieu Ngay cap · moc Qua trinh hoc tap
+     year  NAM           Nam sinh cua cha, me, nguoi giam ho  (demo gieo `1957`, `1978`)
+     month thang/nam     moc cu tru  Tu · Den
+   Ep `Nam sinh` thanh Date la BIA ra ngay va thang — va cai bia ay DI LEN CSDL nganh
+   (M10.8 §3.4a co dong anh xa Nam sinh cua nguoi giam ho). Dung loai sai ma HDCS ③ da cam:
+   «chua biet» ⛔ khong duoc bien thanh mot gia tri trong nhu da biet. */
+const KIEU_O={
+ 'Ngày sinh':'date','CCCD — Ngày cấp':'date','Hộ chiếu — Ngày cấp':'date',
+ 'Năm sinh':'year',
+ 'Dân tộc':'dantoc','Dân tộc trên giấy khai sinh':'dantoc',
+ 'Giới tính':'gioitinh'};
+const HOM_NAY=new Date().toISOString().slice(0,10);
+const dmy2iso=s=>{const m=/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec((s||'').trim());
+ return m?m[3]+'-'+('0'+m[2]).slice(-2)+'-'+('0'+m[1]).slice(-2):''};
+const iso2dmy=s=>{const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||'');return m?m[3]+'/'+m[2]+'/'+m[1]:''};
+
+function oDanToc(v,cho){
+ const cur=(v||'').trim();
+ const la=DANTOC.some(d=>d[1]===cur);
+ return `<select class="fs" ${cho||''}>
+   <option value=""${cur?'':' selected'}>— chọn dân tộc —</option>
+   ${DANTOC.map(d=>`<option value="${d[1]}"${d[1]===cur?' selected':''}>${d[0]} · ${d[1]}${d[2]?' ('+d[2].split(' · ')[0]+'…)':''}</option>`).join('')}
+   ${cur&&!la?`<option value="${cur}" selected>⚠ ${cur} — ngoài danh mục</option>`:''}
+  </select>${cur&&!la?' <span class="cchtag">⚠ chưa chuẩn hóa</span>':''}`}
+
+function oNhap(k,v){
+ const kieu=KIEU_O[k];
+ if(kieu==='date'){const iso=dmy2iso(v);
+  return `<input class="ed" type="date" max="${HOM_NAY}" value="${iso}">`+
+   (v&&!iso?` <span class="cchtag">⚠ chưa chuẩn hóa — giữ nguyên «${v}»</span>`:'')}
+ if(kieu==='year')
+  return `<input class="ed" type="number" min="1900" max="${new Date().getFullYear()}" step="1" placeholder="VD: 1978" value="${v||''}"> <span class="rotag">năm — 4 chữ số</span>`;
+ if(kieu==='dantoc') return oDanToc(v);
+ if(kieu==='gioitinh')
+  return `<select class="fs"><option value=""${v?'':' selected'}>— chọn —</option><option${v==='Nam'?' selected':''}>Nam</option><option${v==='Nữ'?' selected':''}>Nữ</option></select>`;
+ return `<input class="ed" value="${v||''}">`}
+
+/* RSHS-1B rang buoc `a` — ngay sinh lech qua ±3 tuoi so voi tuoi chuan cua khoi lop thi
+   CANH BAO MEM, 🛑 ⛔ KHONG CHAN: hoc som, hoc muon, luu ban deu la ca binh thuong.
+   (Ngay tuong lai thi chan cung — `max` cua chinh o nhap.) */
+function nhacTuoi(h,v){
+ const iso=dmy2iso(v); if(!iso||!h.lop) return '';
+ const khoi=parseInt(String(h.lop).match(/^\d+/)||[0],10); if(!khoi) return '';
+ const nam=new Date().getFullYear(), tuoi=nam-(+iso.slice(0,4));
+ const chuan=khoi+6, lech=tuoi-chuan;
+ if(Math.abs(lech)<=3) return '';
+ return ` <span class="cchtag" style="border-color:#fcd34d;color:#92400e" title="Học sớm, học muộn, lưu ban đều là ca bình thường — không chặn">⚠ ${tuoi} tuổi · lệch ${lech>0?'+':''}${lech} so với khối ${khoi}</span>`}
+
 function fld(k,v,h,gid){
  const t=TANG[k]||3, lo=LOAI[k]||3;
  /* HS chua tung co lop: phan lop lan dau o M1.4, khong phai Chuyen lop o M1.7 */
@@ -1090,7 +1229,7 @@ function fld(k,v,h,gid){
  const canGo = ro && ro[0] && ['DQ','VT','HT','PHT_DT'].includes(role);
  return `<div class="f ${lack?'lack':'t'+t}">
   <div class="k">${ro?'🔗':t===3?'🔒':t===2?'📝':''}${cham(k)}${k}</div>
-  <div class="v">${ed?`<input class="ed" value="${v||''}">`:(v||'<span style="color:var(--ink3);font-weight:400">— chưa có —</span>')}${canGo?` <span class="rolnk" data-ro="${k}">→ ${ro[0]}</span>`:''}</div>
+  <div class="v">${ed?oNhap(k,v):(v||'<span style="color:var(--ink3);font-weight:400">— chưa có —</span>')}${k==='Ngày sinh'?nhacTuoi(h,v):''}${canGo?` <span class="rolnk" data-ro="${k}">→ ${ro[0]}</span>`:''}</div>
   <div>${pend?'<span class="pending">Chờ duyệt</span>':lack?'<span class="lacktag">Còn thiếu</span>':laNG(k)&&!v?ngTag(h):ro?`<span class="rotag" title="${ro[1]}">chỉ đọc</span>`:''}</div></div>`}
 
 const GRP_RO={gsk:'M6.6'};   /* nhom la ban chieu chi doc tu Menu khac */
@@ -1133,7 +1272,7 @@ function AB(h){
  if(r.sk!=='none'){
   const f=[]; if(r.sk==='full')f.push(['Tình trạng sức khỏe',h.suckhoe]);
   f.push(['Dị ứng',h.diung||'Không']);
-  out.push(grp('🩺 Sức khỏe'+(r.sk==='diung'?' — chỉ dị ứng thức ăn':''),'gsk',f,h,
+  out.push(grp('🩺 Sức khỏe','gsk',f,h,
    'Projection chỉ đọc từ <b>M6.6 Y tế học đường</b>.'))}
 
  if(r.lienhe==='none'){
@@ -1181,16 +1320,17 @@ function AB(h){
     ['@raw',dcRow(h,'hien_tai','Chỗ ở hiện tại','g2')]],h,
    'Mỗi ô là <b>cụm sáu phần</b> của HDCS ① — chính quyền <b>hai cấp</b>, ⛔ không có cấp huyện <i>(TT 13/2025 · TT 26/2025)</i>.<br>'+
    '🛑 Chế độ <b>Nhập tự do</b> là <b>chế độ nhập hợp lệ</b>, ⛔ <b>không phải lỗi</b>: ⛔ không chặn lưu, ⛔ không chặn tạo hồ sơ, ⛔ không sinh việc ở M0.2, ⛔ không vào trạng thái hoàn thiện hồ sơ.<br>'+
+   '🗂 Danh mục hành chính <b>34 tỉnh, thành phố</b> — <span class="cchtag">bản nạp sẵn — chưa đồng bộ</span> ⛔ <b>không phải cấu hình của trường</b>: dữ liệu toàn quốc, M10.6 giữ <b>zero-write</b>, kéo về qua <b>M10.8</b>. Danh sách Phường/Xã chỉ nạp cho tỉnh có trong dữ liệu mẫu — ⛔ <b>không nạp một danh sách sưu tầm trên mạng</b>.<br>'+
    'Nút <b>⇄ Chuẩn hóa</b> chỉ <b>gợi ý</b>, <b>người xác nhận</b> — 🛑 ⛔ <b>máy không bao giờ tự đổi</b>, dò sai thì sai im lặng. Đổi <b>hai chiều bất cứ lúc nào, không cần lý do</b>.<br>'+
    '⚠ Khi đẩy lên cổng: dòng ở chế độ tự do <b>nằm lại M10.8 tab ④ Việc chưa xong</b> — nhãn ⚠ không vô hại, nó là lý do dòng đó chưa lên được Sở.'));
   out.push(cutruGrp(h));
   out.push(nganhGrp(h));
   out.push(aceGrp(h));
   const per=(p,lb,g,who)=>grp(lb,g,[['Họ tên',p.n],['Quan hệ với học sinh',who==='cha'?'Cha':who==='me'?'Mẹ':'Người giám hộ'],
-   ...(who==='gh'?[['@raw',ngRow('Năm sinh',p.ns,h)],['@raw',ngRow('Giới tính',p.gt,h)]]:[['Năm sinh',p.ns]]),   /* MYC-2C — cổng bắt khai cả ba ô của người giám hộ */
-   ['@raw',cccdRow(h,who,'CCCD')],['Nghề nghiệp',p.ngh],
+   ...(who==='gh'?[['@raw',ngRow('Năm sinh',p.ns,h,g)],['@raw',ngRow('Giới tính',p.gt,h,g)]]:[['Năm sinh',p.ns]]),   /* MYC-2C — cổng bắt khai cả ba ô của người giám hộ · RSHS-1A truyền gid */
+   ['@raw',cccdRow(h,who,'CCCD',g)],['Nghề nghiệp',p.ngh],
    ['Nơi công tác',p.nc],['Số điện thoại',p.sdt],['Email',p.mail],
-   ['Vai trò',(p.chinh?'Liên hệ chính · ':'')+'Được phép đón HS']],h,
+   ['Vai trò','Được phép đón HS']],h,   /* TKPH-1A — ⛔ «Liên hệ chính» (PH8) */
    'CCCD <b>che mặc định</b>, nút <b>👁 Hiện</b> chỉ <b>Văn thư và Hiệu trưởng</b>, <b>ghi audit từng lượt đọc</b> — cùng khuôn M4.1 §6.2.2.<br>'+
    '<b>Căn cứ Luật BVDLCN 91/2025:</b> đây là <b>dữ liệu định danh của người trưởng thành</b>, ⛔ <b>không phải của học sinh</b> — cha mẹ là chủ thể dữ liệu độc lập. '+
    '⛔ <b>XD Xuất dữ liệu không bao giờ xuất số đầy đủ</b>. ⛔ CCCD <b>không phải</b> khóa định danh tài khoản phụ huynh — khóa vẫn là <b>số điện thoại</b>.');
@@ -1198,6 +1338,7 @@ function AB(h){
   out.push(per(h.me,'👩 Thông tin mẹ','g4','me'));
   /* MYC-2C — khối người giám hộ CHỈ vẽ khi hồ sơ có người giám hộ (§6.3.1 «chỉ hiện khi có») */
   if(h.gh&&h.gh.n) out.push(per(h.gh,'🧑 Người giám hộ','g6','gh'));
+  if(R().lienhe==='full') out.push(lkphDong(h));   /* TKPH-1A — dòng 🔗 chỉ đọc (G7) */
   if(r.ghichu&&h.hc)out.push(grp('🏡 Hoàn cảnh gia đình','g5',[['Mô tả',h.hc]],h));
  }
  return out.join('')}
@@ -1361,14 +1502,14 @@ function qtForm(h,m,v,err){
     Khen thưởng của trường <b>(M2.10)</b> và giải HSG <b>(M11.4)</b> tự lên dòng thời gian — đừng nhập lại.</div>
    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
     <div><b>Năm học</b><select class="fldi" id="qf-nh">${opt(genTL(h).nam.map(y=>[y[0],y[0]+' · lớp '+y[1]]),v.nh)}</select></div>
-    <div><b>Thời điểm</b> <span style="color:var(--red)">*</span><input class="fldi" id="qf-d" value="${v.d}" placeholder="dd/mm/yyyy"></div></div>
+    <div><b>Thời điểm</b> <span style="color:var(--red)">*</span><input class="fldi" type="date" id="qf-d" max="${HOM_NAY}" value="${dmy2iso(v.d)}"></div></div>   <!-- RSHS-1B — mốc Quá trình học tập là NGÀY ĐẦY ĐỦ -->
    <div style="margin-top:10px"><b>Loại sự kiện</b>
     <select class="fldi" id="qf-loai">${opt([['ht','Học tập'],['tt','Thành tích'],['hd','Hoạt động'],['khac','Khác (mặc định)']],v.loai)}</select>
     <div style="font-size:11.5px;color:var(--ink3);margin-top:4px">Không có <b>Kỷ luật</b>: mốc kỷ luật chỉ đến từ quyết định đã được Hiệu trưởng duyệt ở M2.7.</div></div>
    <div style="margin-top:10px"><b>Nội dung</b> <span style="color:var(--red)">*</span><textarea class="fldi" id="qf-nd" style="min-height:55px">${v.nd}</textarea></div>
    <div style="margin-top:10px"><b>Căn cứ / nguồn</b><input class="fldi" id="qf-can" value="${v.can}" placeholder="VD: Giấy chứng nhận — Kho giấy tờ · Học bạ trường cũ"></div>`,
   [['Hủy',0],[m?'Lưu':'Thêm mốc',()=>{
-    const g=id=>$('#'+id).value.trim(),nv={nh:g('qf-nh'),d:g('qf-d'),loai:g('qf-loai'),nd:g('qf-nd'),can:g('qf-can')};
+    const g=id=>$('#'+id).value.trim(),nv={nh:g('qf-nh'),d:iso2dmy(g('qf-d'))||g('qf-d'),loai:g('qf-loai'),nd:g('qf-nd'),can:g('qf-can')};   /* RSHS-1B — ô là type=date, đổi về dd/mm/yyyy để phần dưới giữ nguyên */
     const y0=+nv.nh.slice(0,4),ok=/^\d{2}\/\d{2}\/\d{4}$/.test(nv.d),k=ok?dk(nv.d):'';
     if(!ok)return qtForm(h,m,nv,'Thời điểm phải có dạng dd/mm/yyyy.');
     if(k<y0+'0801'||k>(y0+1)+'0731')return qtForm(h,m,nv,`Thời điểm ${nv.d} không thuộc năm học ${nv.nh} (01/08/${y0} – 31/07/${y0+1}). Chọn lại năm học hoặc thời điểm.`);
@@ -1467,7 +1608,103 @@ function G(h){
    <td><span class="st2 ${d[4]}">${d[4]==='o'?'Đã duyệt':'Chờ xử lý'}</span></td>
    <td><button class="btn xs" data-go="${d[5]}">↗</button></td></tr>`).join('')}</table>`}
 
-const TABF={ab:AB,c:C,d:D,e:E,f:F,g:G};
+/* 🕘 VẾT — TKPH-1A 25/9/2026: tab dưới ĐÃ GỠ khỏi mọi vai (bản CHỐT TKPH G7 · PH8). Giữ mã làm vết, ⛔ còn được gọi.
+   ═══════════ 🆕 RSHS-3A (23/9/2026) — TAB «Tài khoản phụ huynh» ═══════════
+   Feature RIÊNG `m1.1.tai_khoan_phu_huynh` — ⛔ KHÔNG phải một khối trong tab hiện có:
+   quyền của `m1.1.danh_sach_hoc_sinh` đang mở cho GVCN · GVBM · YT · KT · GVU,
+   ⛔ KHÔNG thể để những vai đó bật/tắt quyền xem dữ liệu của trẻ.
+
+   🔑 Mô hình dữ liệu ĐÃ là nhiều-nhiều TỪ ĐẦU — `nh6.3` §3.1 ghi nguyên văn
+      «1 HS có thể liên kết NHIỀU TK PHHS (VD cả cha và mẹ, mỗi người 1 SĐT)»,
+      và §3.2 đã check TỪNG số của cha, mẹ, người giám hộ. Cái thiếu là MÀN HÌNH.
+   🛑 Liên kết là DẪN XUẤT từ SĐT trong hồ sơ; cái khai tay CHỈ là thuộc tính của
+      liên kết (bật/tắt + căn cứ) cộng dòng ủy quyền. Cho tự thêm/xóa liên kết thì
+      sửa SĐT ở hồ sơ sẽ ĐÁ NHAU với danh sách — đúng lỗi «hai nguồn sự thật».
+   ⛔ XÓA HẲN chữ «PHHS thứ 1 / 2 / 3» — chính nó đẻ ra câu hỏi «số nào mới là số
+      được liên kết», câu ⛔ KHÔNG có đáp án vì nó đặt sai: CẢ BA đều được liên kết. */
+
+/* Căn cứ TẮT truy cập — 🛑 ⛔ KHÔNG có lựa chọn «theo đề nghị của gia đình».
+   Luật HN&GĐ 2014 Đ.82–83: cha/mẹ không trực tiếp nuôi con VẪN có quyền và nghĩa vụ
+   thăm nom, người trực tiếp nuôi ⛔ không được cản trở; hạn chế quyền do TÒA quyết
+   định (Đ.85–87). Trường bấm nút tắt theo lời đề nghị miệng của một bên là trường
+   thi hành một việc mình ⛔ KHÔNG có thẩm quyền. */
+const CAN_CU_TAT=[
+ {ma:'toa',  t:'Bản án / quyết định của Tòa án',              dk:1, ai:'HT', gc:'Đính kèm bắt buộc'},
+ {ma:'thoa', t:'Văn bản thỏa thuận có chữ ký của CẢ cha và mẹ',dk:1, ai:'HT', gc:'Đính kèm bắt buộc'},
+ {ma:'mat',  t:'Người đã mất',                                 dk:1, ai:'VT', gc:'Giấy chứng tử'},
+ {ma:'sdt',  t:'Số điện thoại không còn là của người này',      dk:0, ai:'VT', gc:'⚠ Ca KỸ THUẬT — ⛔ KHÔNG phải tước quyền. Nhắc cập nhật SĐT mới trong hồ sơ'}];
+const ccTat=ma=>CAN_CU_TAT.find(x=>x.ma===ma)||null;
+
+/* Trạng thái liên kết — 🆕 «Chưa mời»: liên kết có, tài khoản CHƯA sinh, SMS CHƯA gửi.
+   Vì sao: trường 1.700 HS × 2–3 số = 3.000–4.000 tài khoản một đợt, phần lớn ⛔ không
+   bao giờ kích hoạt; mà M10.5 §6.3 có rà soát «Chờ kích hoạt quá 14 ngày → phải gọi»
+   ⇒ hàng đợi ấy có HÀNG NGHÌN dòng vĩnh viễn, và một hàng đợi không bao giờ rỗng là
+   một hàng đợi ⛔ KHÔNG AI NHÌN NỮA. */
+const TT_TK={chuamoi:['Chưa mời','w'],cho:['Chờ kích hoạt','b'],hd:['Đang hoạt động','o'],khoa:['Đang khóa','r']};
+
+function lienKet(h){
+ const r=[];
+ const push=(p,qh,khoa)=>{ if(!p||!p.n||!p.sdt) return;
+  const lk=(h.lk||{})[khoa]||{};
+  r.push({khoa:khoa, sdt:p.sdt, ten:p.n, qh:qh, chinh:!!p.chinh,
+   nguon:'Từ hồ sơ — ô SĐT của '+qh.toLowerCase(),
+   tt: lk.tt || (p.chinh?'cho':'chuamoi'),
+   bat: lk.bat===undefined ? true : !!lk.bat,
+   cc: lk.cc||null, ccAi:lk.ccAi||'', ccNgay:lk.ccNgay||'', han:''})};
+ push(h.cha,'Cha','cha'); push(h.me,'Mẹ','me'); push(h.gh,'Người giám hộ','gh');
+ /* 🆕 Dòng ỦY QUYỀN THEO DÕI — ⛔ KHÔNG nhét ông/bà/chú/dì vào ô «Người giám hộ» */
+ (h.uq||[]).forEach((u,i)=>r.push({khoa:'uq'+i, sdt:u.sdt, ten:u.ten, qh:'Người được ủy quyền theo dõi',
+   chinh:false, nguon:'Ủy quyền — phiếu '+u.so, tt:u.tt||'cho', bat:u.bat!==false,
+   cc:null, ccAi:'', ccNgay:'', han:u.han||'hết năm học 2026-2027', uq:1}));
+ return r}
+
+function TKPH(h){
+ const L=lienKet(h), sua=['DQ','VT','HT'].includes(role), duyet=['DQ','HT'].includes(role);
+ return `<div class="ro">🔑 <b>Mô hình nhiều-nhiều đã có từ đầu</b> — <code>nh6.3</code> §3.1: «1 học sinh có thể liên kết <b>nhiều</b> tài khoản phụ huynh».
+   Cái thiếu trước đây là <b>màn hình</b>: <code>M1.1</code> ⛔ không nói gì về tài khoản, còn <code>M10.5</code> tab ② xoay trục theo <b>tài khoản</b> nên ⛔ không tra ngược từ một em ra được.<br>
+   🛑 <b>Ba khái niệm tách bạch</b> — <b>Quan hệ</b> <i>(cha/mẹ/giám hộ/ủy quyền)</i> · <b>Liên hệ chính</b> <i>(đúng một người, để gọi điện và xưng hô — ⛔ <b>không</b> quyết ai được xem App)</i> · <b>Truy cập App</b> <i>(công tắc riêng từng liên kết)</i>.
+   ⛔ Chữ «PHHS thứ 1 / 2 / 3» <b>đã bỏ hẳn</b>.</div>
+  <div class="ro">🛑 <b>Liên kết là DẪN XUẤT</b> từ số điện thoại trong hồ sơ — ⛔ <b>không tự thêm, không tự xóa</b>.
+   Chỉ <b>công tắc bật/tắt</b> và <b>dòng ủy quyền theo dõi</b> là khai tay. <i>Cho sửa liên kết tùy ý thì sửa SĐT ở hồ sơ sẽ đá nhau với danh sách — đúng lỗi «hai nguồn sự thật».</i><br>
+   🔗 Thực thể <b>TÀI KHOẢN</b> <i>(khóa · mở khóa · gửi lại mã · nhật ký đăng nhập)</i> là của <b>M10.5</b>; ở đây là <b>quan hệ LIÊN KẾT</b> — ai được xem <b>em này</b>. <span class="rolnk" data-go="M10.5">→ M10.5 tab ②</span></div>
+  <table><tr><th>Số điện thoại</th><th>Người</th><th>Nguồn liên kết</th><th>Trạng thái TK 🔗</th><th>Truy cập hồ sơ em này</th><th>Hạn</th><th></th></tr>
+  ${L.length?L.map(x=>{const st=TT_TK[x.tt]||TT_TK.chuamoi;
+   return `<tr>
+    <td><b>${x.sdt}</b></td>
+    <td>${x.ten}<br><span style="color:var(--ink3);font-size:11px">${x.qh}${x.chinh?' · <b>Liên hệ chính</b>':''}</span></td>
+    <td style="font-size:11.5px;color:var(--ink2)">${x.nguon}</td>
+    <td><span class="st2 ${st[1]}">${st[0]}</span></td>
+    <td>${x.bat?'<span class="st2 o">🟢 Bật</span>'
+       :'<span class="st2 r">🔴 Tắt</span><div style="font-size:11px;color:var(--ink2);margin-top:3px">căn cứ: <b>'+(ccTat(x.cc)||{t:'—'}).t+'</b><br>'+x.ccAi+' · '+x.ccNgay+'</div>'}</td>
+    <td style="font-size:11.5px;color:var(--ink3)">${x.han||'vô hạn'}</td>
+    <td>${x.tt==='chuamoi'&&sua?`<button class="btn xs" data-moi="${x.khoa}">📨 Mời</button> `:''}
+      ${x.tt==='cho'&&sua?`<button class="btn xs" data-go="M10.5">↻ Gửi lại mã</button> `:''}
+      ${sua?`<button class="btn xs" data-tat="${x.khoa}">${x.bat?'⏻ Tắt truy cập':'⏻ Bật lại'}</button>`:''}
+      ${!x.bat?` <button class="btn xs" data-xemcc="${x.khoa}">📄 Xem căn cứ</button>`:''}</td></tr>`}).join('')
+   :'<tr><td colspan="7" style="color:var(--ink3)">Hồ sơ chưa có số điện thoại nào — ⛔ không tài khoản nào liên kết được</td></tr>'}
+  </table>
+  ${sua?`<div style="margin-top:9px"><button class="btn sm" data-themuq="1">＋ Thêm người được ủy quyền theo dõi</button></div>`:''}
+  <div class="ro" style="margin-top:11px">🆕 <b>Trạng thái «Chưa mời»</b> — liên kết <b>có</b>, tài khoản <b>chưa sinh</b>, SMS <b>chưa gửi</b>.
+   Chỉ người <b>Liên hệ chính</b> được mời <b>tự động</b>; hai người còn lại Văn thư bấm <b>📨 Mời</b> khi gia đình yêu cầu.<br>
+   <i>Vì sao: trường 1.700 học sinh × 2–3 số = <b>3.000–4.000 tài khoản</b> một đợt, phần lớn ⛔ không bao giờ kích hoạt — mà <code>M10.5</code> §6.3 có rà soát «Chờ kích hoạt quá 14 ngày → trường phải gọi».
+   Hàng đợi ấy sẽ có <b>hàng nghìn dòng vĩnh viễn</b>, và <b>một hàng đợi không bao giờ rỗng là một hàng đợi ⛔ không ai nhìn nữa</b>.</i></div>
+  <div class="danger" style="margin-top:9px">⚖️ <b>Tắt quyền xem của cha hoặc mẹ ruột ⛔ KHÔNG phải việc trường tự quyết.</b>
+   <b>Luật Hôn nhân và Gia đình 2014 Đ.82–83</b>: cha/mẹ <b>không trực tiếp nuôi con</b> vẫn có <b>quyền và nghĩa vụ thăm nom</b>, người trực tiếp nuôi ⛔ <b>không được cản trở</b>;
+   <b>hạn chế quyền do TÒA ÁN quyết định</b> <i>(Đ.85–87)</i>. ⇒ Nút <b>Tắt</b> <b>bắt buộc chọn căn cứ</b>, và ⛔ <b>KHÔNG có lựa chọn «theo đề nghị của gia đình»</b>.</div>
+  <div class="ro" style="margin-top:9px">🕳️ <b>Đổi số điện thoại: trạng thái đi theo NGƯỜI, ⛔ không theo SỐ.</b>
+   <code>nh6.3</code> §3.3 cũ hủy liên kết cũ rồi tạo liên kết mới <b>mặc định bật</b> — nghĩa là người cha bị tắt theo bản án chỉ cần báo <i>«tôi đổi số»</i> là <b>liên kết mới mở toang</b>.
+   Nay liên kết mới <b>thừa kế trạng thái Tắt và căn cứ cũ</b>; muốn bật lại phải có <b>căn cứ MỚI</b>.</div>`}
+
+const TABF={ab:AB,c:C,d:D,e:E,f:F,g:G,tk:TKPH};
+/* ═══ TKPH-1A (25/9/2026) — dòng 🔗 «Liên kết App phụ huynh» — CHIẾU chỉ đọc từ M10.5 tab ② (G7) ═══
+   Số liên kết là của M10.5 (HDLP ②) — ⛔ DẪN XUẤT từ SĐT hồ sơ. Demo gieo số chiếu theo mã em (dữ liệu mẫu MỚI,
+   ⛔ đọc c1.lk / c1.uq cũ — hai trường đó là vết RSHS-3A). ↗ chỉ hiện với vai có X ở M10.5 tab ② (D3). */
+const LKPH_CHIEU={1:{hl:2,cd:0},2:{hl:1,cd:0},3:{hl:0,cd:0},4:{hl:1,cd:0},5:{hl:2,cd:0}};
+function lkphDong(h){const c=LKPH_CHIEU[h.id]||{hl:(h.id%3),cd:0},coM105=['DQ','VT','HT'].indexOf(role)>=0;
+ return `<div class="ro" style="margin-top:10px">🔗 <b>Liên kết App phụ huynh:</b> ${c.hl?`đã liên kết <b>${c.hl}</b> tài khoản`:'<b style="color:var(--amber)">chưa có tài khoản nào liên kết</b>'}`+
+  `${c.cd?` · ${c.cd} chỉ đọc`:''} <span class="rotag">chỉ đọc</span> `+
+  (coM105?`<span class="rolnk" data-go="M10.5?tab=lien_ket_phu_huynh&ctx=${h.ma}">↗ M10.5</span>`:'')+
+  `<div style="font-size:11.5px;color:var(--ink3);margin-top:4px">Cấp link · cấp lại · ngắt · ghi chú của học sinh ở <b>M10.5 tab ② Liên kết App phụ huynh</b> — quản lý MỘT nơi. Ba ô SĐT cha · mẹ · người giám hộ ở trên là <b>nguồn cho link</b>; sửa số ⛔ tự đổi liên kết.</div></div>`}
 /* Dải Số dư tạm giữ — CHỈ ĐỌC, chỉ hiện khi khác 0, hai ngăn KHÔNG cộng lại */
 function sdBand(h){
  const g=sdGD(h.id), n=sdNS(h.id);
@@ -1497,17 +1734,74 @@ function panelHTML(){
    ${r.tabs.length<6?`<span style="padding:8px 12px;font-size:11.5px;color:var(--ink3);white-space:nowrap">${r.tabs.length}/6 tab</span>`:''}</div>
   <div class="pbody">${TABF[tab](h)}</div>`}
 
+/* ===== GIU VI TRI CUON quanh render() — RSHS-1A, 23/9/2026 =====
+   render() thay CA innerHTML cua #content (va sidebar() thay ca #side), nen moi
+   khung cuon bi dung lai va trinh duyet tra con tro ve 0. Bam bat ky nut nao trong
+   tab Ca nhan / Gia dinh la mat cho dang doc.
+   Do TRUOC khi thay, dat lai SAU khi thay — dat o mot cho de moi nut cua menu
+   cung het loi; dat o tung handler thi nut them sau nay lai quen.  */
+function khoaCuon(el){
+ const c=(el.classList&&el.classList[0])||'';
+ if(!c) return null;
+ const ds=[...document.querySelectorAll('#content .'+c)];
+ return c+'#'+ds.indexOf(el)}
+function docCuon(){
+ const m={_y:window.scrollY||0, _side:($('#side')||{}).scrollTop||0};
+ document.querySelectorAll('#content [class]').forEach(el=>{
+  if(el.scrollTop>0){const k=khoaCuon(el); if(k)m[k]=el.scrollTop}});
+ return m}
+function datCuon(m){
+ Object.keys(m).forEach(k=>{
+  if(k[0]==='_') return;
+  const p=k.split('#'), el=document.querySelectorAll('#content .'+p[0])[+p[1]];
+  if(el) el.scrollTop=m[k]});
+ const sd=$('#side'); if(sd) sd.scrollTop=m._side;
+ window.scrollTo(0,m._y)}
+
 function render(){
+ const _cuon=docCuon();                      /* RSHS-1A */
  $('#ava').textContent=role.slice(0,2);
  $('#cds').textContent=rows().length; $('#cyc').textContent=R().duyet?YC.length:0;
  $('#content').innerHTML = t1==='ds'?listTab():ycTab();
- sidebar()}
+ sidebar();
+ datCuon(_cuon)}                             /* RSHS-1A */
 
 /* ============ EVENTS ============ */
 function modal(t,body,btns){$('#mh').textContent=t;$('#mb').innerHTML=body;
  $('#mf').innerHTML=btns.map((b,i)=>`<button class="btn ${i===btns.length-1?'p':''}" data-mb="${i}">${b[0]}</button>`).join('');
  $('#mf').querySelectorAll('[data-mb]').forEach((el,i)=>el.onclick=()=>{$('#mask').classList.remove('on');if(btns[i][1])btns[i][1]()});
  $('#mask').classList.add('on')}
+
+/* ===== RSHS-1A — popup «Thêm một mốc cư trú cũ», dùng CHUNG khuôn địa chỉ hai chế độ =====
+   Mặc định `● Chọn danh mục` đúng HDCS ①; đổi hai chiều bất cứ lúc nào, ⛔ không cần lý do. */
+let ctThemTD=0;
+function popupCuTru(){
+ modal('＋ Thêm một mốc cư trú cũ',
+  `<div class="ro">Mỗi dòng là <b>một cụm địa chỉ + khoảng thời gian</b>, ⛔ không phải một ô chuỗi.</div>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <div><b>Từ</b> <span style="color:var(--red)">*</span><input class="fldi" type="month" id="ct-tu"></div>
+    <div><b>Đến</b><input class="fldi" type="month" id="ct-den"><span class="rotag">trống = đang ở</span></div></div>
+   <div style="margin-top:9px"><b>Địa chỉ</b>
+    <div class="dcsw" style="margin:5px 0 6px">
+     <button class="dcm ${ctThemTD?'':'on'}" data-ctmode="danh_muc">● Chọn danh mục</button>
+     <button class="dcm ${ctThemTD?'on':''}" data-ctmode="tu_do">○ Nhập tự do</button>
+     <span class="dchint">${ctThemTD
+       ?'Ô chuỗi — dùng cho địa chỉ ngoài tỉnh, ngoài nước, danh mục chưa cập nhật, hoặc đơn vị hành chính đã giải thể'
+       :'Tỉnh → Phường/Xã + ô chi tiết'}</span></div>
+    ${ctThemTD
+     ?`<input class="fldi" placeholder="Địa chỉ đầy đủ">`
+     :`<div class="dcgrid">
+        <select class="fs"><option value="">— Tỉnh / Thành phố —</option>${TINH.map(t2=>`<option>${t2}</option>`).join('')}</select>
+        <select class="fs"><option value="">— Phường / Xã —</option></select>
+        <input class="ed" placeholder="Tổ, thôn, xóm, số nhà"></div>`}</div>
+   <div class="warn">⛔ Không tự sinh dòng khi Nơi thường trú đổi · ⛔ không xóa dòng, chỉ sửa.</div>`,
+  [['Hủy',0],['Thêm dòng',()=>{
+    /* RSHS-1B — `Đến` ⛔ khong duoc truoc `Tu` */
+    const tu=($('#ct-tu')||{}).value||'', den=($('#ct-den')||{}).value||'';
+    if(!tu){toast('⛔ Thiếu mốc «Từ» — trường bắt buộc');return}
+    if(den&&den<tu){toast('⛔ «Đến» không được trước «Từ» — '+iso2thang(den)+' < '+iso2thang(tu));return}
+    toast('Đã thêm mốc cư trú · ghi audit'+(den?'':' · để trống «Đến» = đang ở'))}]])}
+const iso2thang=s=>{const m=/^(\d{4})-(\d{2})$/.exec(s||'');return m?m[2]+'/'+m[1]:s};
 
 function soDuModal(h){
  const l=SODU.filter(x=>x.hs===h.id);
@@ -1540,9 +1834,88 @@ document.body.addEventListener('click',e=>{
  if(e.target.closest('[data-x="sodu"]')){soDuModal(HS.find(x=>x.id===cur));return}
  /* ---- cum CSDL 19/9/2026 ---- */
  if(e.target.closest('[data-cch]')){fCCH=!fCCH;render();return}
+ /* ═══ RSHS-3A — thao tác của tab «Tài khoản phụ huynh» ═══ */
+ const mo=e.target.closest('[data-moi]');
+ if(mo){const h=HS.find(x=>x.id===cur); h.lk=h.lk||{}; h.lk[mo.dataset.moi]=Object.assign({},h.lk[mo.dataset.moi],{tt:'cho'});
+  render(); toast('📨 Đã mời · SMS mang MÃ KÍCH HOẠT 6 số dùng một lần, hạn 15 phút — ⛔ không gửi mật khẩu qua SMS (nh6.3 G57)');return}
+ const xc=e.target.closest('[data-xemcc]');
+ if(xc){const h=HS.find(x=>x.id===cur), L=lienKet(h), x=L.find(y=>y.khoa===xc.dataset.xemcc), c=ccTat(x&&x.cc);
+  modal('📄 Căn cứ tắt truy cập',
+   `<div class="ro"><b>${x?x.ten:''}</b> · ${x?x.qh:''} · ${x?x.sdt:''}</div>
+    <div class="danger"><b>Căn cứ:</b> ${c?c.t:'—'}<br>Người thực hiện: <b>${x?x.ccAi:''}</b> · ${x?x.ccNgay:''}</div>
+    <div style="border:1.5px dashed var(--line2);border-radius:9px;padding:15px;text-align:center;color:var(--ink3);font-size:12.5px">📎 Bản chụp văn bản đính kèm</div>
+    <div class="ro" style="margin-top:9px">🛑 Mọi lượt bật/tắt ghi <b>audit</b> kèm <b>tên và chức danh tại thời điểm</b> — truy được vết kể cả khi người thực hiện đã nghỉ việc.</div>`,
+   [['Đóng']]);return}
+ const tt=e.target.closest('[data-tat]');
+ if(tt){const h=HS.find(x=>x.id===cur), khoa=tt.dataset.tat, L=lienKet(h), x=L.find(y=>y.khoa===khoa);
+  if(!x) return;
+  if(!x.bat){ /* bật lại — phải có căn cứ MỚI */
+   modal('⏻ Bật lại truy cập',
+    `<div class="danger">🛑 <b>Bật lại phải có căn cứ MỚI</b> — ⛔ không phải gỡ căn cứ cũ.<br>
+      Đang tắt theo: <b>${(ccTat(x.cc)||{t:'—'}).t}</b> · ${x.ccAi} · ${x.ccNgay}</div>
+     <div><b>Căn cứ mới</b> <span style="color:var(--red)">*bắt buộc</span>
+      <textarea class="fldi" id="ccm" rows="3" placeholder="VD: Quyết định của Tòa ngày … cho phép cha thăm nom trở lại"></textarea></div>`,
+    [['Hủy',0],['⏻ Bật lại',()=>{const v=($('#ccm')||{}).value?.trim();
+      if(!v){toast('⛔ Phải nêu căn cứ mới');return}
+      h.lk=h.lk||{}; h.lk[khoa]=Object.assign({},h.lk[khoa],{bat:true,cc:null,ccAi:'',ccNgay:''});
+      render(); toast('⏻ Đã bật lại · ghi audit kèm căn cứ mới')}]]);
+   return}
+  /* tắt — BẮT BUỘC chọn căn cứ, ⛔ KHÔNG có «theo đề nghị của gia đình» */
+  const laChaMe=(khoa==='cha'||khoa==='me');
+  modal('⏻ Tắt truy cập hồ sơ — '+x.ten,
+   `<div class="danger">⚖️ <b>Tắt quyền xem của cha hoặc mẹ ruột ⛔ KHÔNG phải việc trường tự quyết.</b><br>
+     <b>Luật Hôn nhân và Gia đình 2014 Đ.82–83</b>: cha/mẹ <b>không trực tiếp nuôi con</b> vẫn có <b>quyền và nghĩa vụ thăm nom</b>,
+     người trực tiếp nuôi con ⛔ <b>không được cản trở</b>. <b>Hạn chế quyền do TÒA ÁN quyết định</b> <i>(Đ.85–87)</i>.</div>
+    <div><b>Căn cứ</b> <span style="color:var(--red)">*bắt buộc</span>
+     <select class="fldi" id="cc">${CAN_CU_TAT.map(c=>`<option value="${c.ma}">${c.t}</option>`).join('')}</select></div>
+    <div id="ccgc" class="ro" style="margin-top:8px"></div>
+    <label style="display:flex;gap:7px;align-items:center;margin-top:8px;font-size:12.5px"><input type="checkbox" id="ccdk" style="width:15px;height:15px"> Đã đính kèm văn bản</label>
+    <div class="warn" style="margin-top:9px">🛑 ⛔ <b>KHÔNG có lựa chọn «theo đề nghị của gia đình»</b> — đó chính là ca mà trường ⛔ không có thẩm quyền.</div>`,
+   [['Hủy',0],['⏻ Tắt truy cập',()=>{
+     const ma=($('#cc')||{}).value||'', c=ccTat(ma), dk=($('#ccdk')||{}).checked;
+     if(c&&c.dk&&!dk){toast('⛔ Căn cứ «'+c.t+'» bắt buộc đính kèm văn bản');return}
+     if(c&&c.ai==='HT'&&!['DQ','HT'].includes(role)){
+      toast('⛔ Căn cứ «'+c.t+'» do HIỆU TRƯỞNG duyệt — Văn thư lập, Hiệu trưởng quyết');return}
+     h.lk=h.lk||{}; h.lk[khoa]=Object.assign({},h.lk[khoa],{bat:false,cc:ma,ccAi:R().n,ccNgay:'23/9/2026'});
+     render(); toast('🔴 Đã tắt truy cập · căn cứ «'+(c?c.t:'')+'» · ghi audit'+
+       (ma==='sdt'?' · ⚠ nhớ CẬP NHẬT SĐT MỚI trong hồ sơ — đây là ca kỹ thuật, ⛔ không phải tước quyền':''))},'d']]);
+  setTimeout(()=>{const sel=$('#cc'),gc=$('#ccgc');
+   const ve=()=>{const c=ccTat(sel.value);gc.innerHTML=c?('<b>'+c.gc+'</b> · người quyết: <b>'+c.ai+'</b>'):''};
+   if(sel&&gc){ve();sel.onchange=ve}},0);
+  return}
+ if(e.target.closest('[data-themuq]')){
+  modal('＋ Người được ủy quyền theo dõi',
+   `<div class="ro">🛑 <b>⛔ KHÔNG nhét ông, bà, chú, dì vào ô «Người giám hộ».</b>
+     Giám hộ là chế định <b>BLDS 2015 Đ.47</b>, phải được <b>cử và đăng ký ở UBND cấp xã</b> <i>(Luật Hộ tịch 2014)</i> — <b>nặng hơn</b> một tờ ủy quyền;
+     và ba ô của người giám hộ <b>đẩy lên CSDL ngành</b> <i>(M10.8 §3.4a)</i>, ghi sai = <b>báo sai lên Sở</b>.<br>
+     🔑 <b>Giám hộ là THAY cha mẹ. Ủy quyền theo dõi là GIÚP cha mẹ.</b></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+     <div><b>Họ tên</b> <span style="color:var(--red)">*</span><input class="fldi" id="uq-ten" placeholder="VD: Nguyễn Thị Lựu (bà nội)"></div>
+     <div><b>Số điện thoại</b> <span style="color:var(--red)">*</span><input class="fldi" id="uq-sdt" placeholder="09xx xxx xxx"></div></div>
+    <div style="margin-top:8px"><b>Phiếu đề nghị cấp quyền theo dõi</b> <span style="color:var(--red)">*bắt buộc</span>
+     <div style="border:1.5px dashed var(--line2);border-radius:9px;padding:14px;text-align:center;color:var(--ink3);font-size:12.5px;margin-top:4px">📎 Biểu mẫu của trường — <b>cha HOẶC mẹ ký tay</b> · nhận bản giấy <b>hoặc ẢNH CHỤP</b></div>
+     <label style="display:flex;gap:7px;align-items:center;margin-top:6px;font-size:12.5px"><input type="checkbox" id="uq-dk" style="width:15px;height:15px"> Đã nhận phiếu có chữ ký</label>
+     <div style="font-size:11.5px;color:var(--ink2);margin-top:5px">🛑 ⛔ <b>KHÔNG đòi công chứng</b> — Luật BVDLCN 91/2025 đòi <b>sự đồng ý của người đại diện theo pháp luật</b>, ⛔ không đòi công chứng.
+      Chữ ký của cha hoặc mẹ trên phiếu của trường <b>chính là sự đồng ý đó</b>. Trường vốn đã làm đúng mức này với danh sách <i>«người được phép đón học sinh»</i> — mà <b>đón con rủi ro cao hơn xem chuyên cần rất nhiều</b>.<br>
+      Cha mẹ ở nước ngoài: nhận <b>ảnh chụp phiếu gửi qua Zalo / email</b>, ghi rõ nhận qua kênh nào, ngày nào. ⛔ Không đòi hợp pháp hóa lãnh sự.</div></div>
+    <div style="margin-top:8px"><b>Hạn</b><input class="fldi" value="Hết năm học 2026-2027" disabled>
+     <div style="font-size:11.5px;color:var(--ink2);margin-top:4px">Hết hạn <b>tự tắt</b>, ⛔ không tự gia hạn — Văn thư gia hạn bằng một nút.</div></div>
+    <div class="warn" style="margin-top:9px"><b>Phạm vi HẸP</b>: xem <b>chuyên cần · thông báo · lịch</b> — ⛔ <b>không</b> điểm, ⛔ <b>không</b> học bạ, ⛔ <b>không</b> gửi đơn, ⛔ <b>không</b> thanh toán.</div>`,
+   [['Hủy',0],['＋ Thêm',()=>{
+     const ten=($('#uq-ten')||{}).value?.trim(), sdt=($('#uq-sdt')||{}).value?.trim(), dk=($('#uq-dk')||{}).checked;
+     if(!ten||!sdt){toast('⛔ Thiếu họ tên hoặc số điện thoại');return}
+     if(!dk){toast('⛔ Chưa nhận phiếu có chữ ký của cha hoặc mẹ');return}
+     const h=HS.find(x=>x.id===cur); h.uq=h.uq||[];
+     h.uq.push({ten:ten,sdt:sdt,so:'UQ-2026-0'+(20+h.uq.length),tt:'chuamoi',bat:true,han:'hết năm học 2026-2027'});
+     render(); toast('＋ Đã thêm · phạm vi HẸP · hết năm học tự tắt')},'p']]);
+  return}
  const hi=e.target.closest('[data-hien]');
  if(hi){moCCCD[hi.dataset.hien]=1;render();
   toast('👁 Đã mở số đầy đủ · GHI AUDIT lượt đọc — ai mở, của ai, lúc nào · Luật BVDLCN 91/2025');return}
+ /* RSHS-1A — mo o nhap RONG de thay so CCCD; ⛔ khong do san so cu */
+ const ts=e.target.closest('[data-thayso]');
+ if(ts){thaySo[ts.dataset.thayso]=1;render();
+  toast('Nhập lại 12 chữ số từ thẻ mới · lưu sẽ GHI AUDIT «đổi CCCD» — ⛔ ô không đổ sẵn số cũ');return}
  const dm=e.target.closest('[data-dcmode]');
  if(dm){const [k,mode]=dm.dataset.dcmode.split('|'),h=HS.find(x=>x.id===cur);
   const d=h.dc[k];
@@ -1589,15 +1962,11 @@ document.body.addEventListener('click',e=>{
     <div style="margin-top:8px"><b>Lý do</b> <span style="color:var(--red)">*bắt buộc</span><textarea class="fldi" style="min-height:56px"></textarea></div>
     <div class="warn">⛔ Sau khi sửa tay, <b>lớp đổi số buổi thì KHÔNG ghi đè</b> giá trị này.</div>`,
    [['Hủy',0],['Lưu + ghi lý do',()=>toast('Đã lưu · nhãn «đã sửa tay» + lý do · lớp không ghi đè')]]);return}
- if(e.target.closest('[data-ctthem]')){
-  modal('＋ Thêm một mốc cư trú cũ',
-   `<div class="ro">Mỗi dòng là <b>một cụm địa chỉ + khoảng thời gian</b>, ⛔ không phải một ô chuỗi.</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-     <div><b>Từ</b> <span style="color:var(--red)">*</span><input class="fldi" placeholder="mm/yyyy"></div>
-     <div><b>Đến</b><input class="fldi" placeholder="trống = đang ở"></div></div>
-    <div style="margin-top:8px"><b>Địa chỉ</b> — có đủ <b>hai chế độ nhập</b> như mọi địa chỉ khác<input class="fldi"></div>
-    <div class="warn">⛔ Không tự sinh dòng khi Nơi thường trú đổi · ⛔ không xóa dòng, chỉ sửa.</div>`,
-   [['Hủy',0],['Thêm dòng',()=>toast('Đã thêm mốc cư trú · ghi audit')]]);return}
+ /* RSHS-1A — popup nay truoc chi co MOT o text kem chu thich «co du hai che do nhap nhu moi
+    dia chi khac», tuc chu thich mo ta mot thu ⛔ khong ton tai. Nay dung dung khuon dcRow. */
+ if(e.target.closest('[data-ctthem]')){ctThemTD=0;popupCuTru();return}
+ const ctm=e.target.closest('[data-ctmode]');
+ if(ctm){ctThemTD=ctm.dataset.ctmode==='tu_do'?1:0;popupCuTru();return}
  const cts=e.target.closest('[data-ctsua]');
  if(cts){toast('Sửa mốc cư trú — ⛔ không có nút Xóa: xóa một mốc là xóa căn cứ của một diện đã từng được hưởng');return}
  const t=e.target.closest('[data-t1]');
@@ -1628,7 +1997,7 @@ document.body.addEventListener('click',e=>{
  if(e.target.closest('#pclose')){cur=null;editGrp=null;render();return}
  const pt=e.target.closest('[data-ptab]');if(pt){tab=pt.dataset.ptab;editGrp=null;render();return}
  const eg=e.target.closest('[data-eg]');if(eg){editGrp=eg.dataset.eg;render();return}
- if(e.target.closest('[data-cancel]')){editGrp=null;render();return}
+ if(e.target.closest('[data-cancel]')){editGrp=null;thaySo={};render();return}   /* RSHS-1A — bo sua thi quen luon lan «Thay so» */
  const sv=e.target.closest('[data-save]');
  if(sv){
   if(0){editGrp=null;render();

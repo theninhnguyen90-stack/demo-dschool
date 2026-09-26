@@ -2717,7 +2717,7 @@ CT.khai({
   },
   oPhu: {
     soEm: { ten: 'Số em được miễn giảm', loaiSo: 'TON', donVi: 'em', quyTacDem: { tinhVao: ['Đếm HỌC SINH có ít nhất một dòng miễn giảm đang hiệu lực tại ngày chốt.'], khongTinh: ['Em chỉ được đề nghị mà chưa vào chính sách nào.'] } },
-    soLuotDien: { ten: 'Lượt (em × diện)', loaiSo: 'TON', donVi: 'lượt', quyTacDem: { tinhVao: ['Đếm từng cặp (em × diện đã xác nhận).', 'Một em thuộc hai diện tính HAI lượt — nên Σ lượt ≥ số em.'], khongTinh: ['Chế độ đang hưởng của M1.2 — đó là «được hưởng gì», không phải «thuộc diện gì».'] } },
+    soLuotDien: { ten: 'Lượt (em × diện)', loaiSo: 'TON', donVi: 'lượt', quyTacDem: { tinhVao: ['Đếm từng cặp (em × diện đã xác nhận).', 'Một em thuộc hai diện tính HAI lượt — nên Σ lượt ≥ số em.'], khongTinh: ['Chế độ nhà nước cấp của M1.2 — đó là «được hưởng gì», không phải «thuộc diện gì».'] } },
     soTien: { ten: 'Số tiền giảm', loaiSo: 'TON', donVi: 'đồng', quyTacDem: { tinhVao: ['Cộng tiền giảm của chính sách ĐƯỢC CHỌN.'], khongTinh: ['Chính sách bị bỏ vì mức thấp hơn.'] } },
     soKepTran: { ten: 'Trường hợp bị kẹp trần', loaiSo: 'TON', donVi: 'dòng', quyTacDem: { tinhVao: ['Dòng mà mức giảm theo giá trị LỚN HƠN giá trị khoản thu, nên bị kẹp về đúng giá trị khoản.'], khongTinh: ['Dòng giảm theo tỉ lệ — tỉ lệ không vượt được 100%.'] } }
   }
@@ -2789,7 +2789,7 @@ CT.khai({
     ],
     khongTinh: [
       'Diện đang CHỜ XÁC NHẬN ở M1.2 — chưa ai xác nhận thì chưa thành quyền lợi.',
-      '🛑 Khối «Chế độ đang hưởng»: một em thuộc 1 diện và hưởng 3 chế độ là 1, KHÔNG phải 4 (PHIEU-CSDL-1D E.4).',
+      '🛑 Khối «Chế độ nhà nước cấp»: một em thuộc 1 diện và hưởng 3 chế độ là 1, KHÔNG phải 4 (PHIEU-CSDL-1D E.4).',
       'Diện đã hết hiệu lực tính tới ngày chốt.'
     ]
   },
@@ -3407,7 +3407,7 @@ function veTab3() {
     id: 'mg', tieuDe: 'A · Miễn giảm khoản thu — phân tổ theo ' + (CT.CHIEU[ct] || ct),
     ma: 'TC.03', chip: 'TON', moTaKy: PV.moTaChot(), tenCotDau: CT.CHIEU[ct] || 'Chính sách',
     dong: dongA, gomNhom: false,
-    link: d => ({ menu: 'M7.4', ctx: 'tab=hocsinh&' + d.q, nhan: 'Học sinh đang hưởng chính sách' }),
+    link: d => ({ menu: 'M7.4', ctx: 'tab=hocsinh&' + d.q, nhan: 'Học sinh được trường giảm' }),
     cot: [
       { khoa: 'soEm', ten: 'Số em', kieu: 'so', nguon: 'm7.4.bao_cao' },
       { khoa: 'soLuotDien', ten: 'Lượt (em × diện)', kieu: 'so', nguon: 'm1.2.hoc_sinh_thuoc_dien' },
@@ -4061,6 +4061,79 @@ window.doMatDoChu = doMatDoChu;
 
 ST.tab = tabMacDinh();
 moTab(ST.tab);
+ve();
+
+/* ==========================================================================
+   app.70-khoi-tao.js — M9.7 · dải mốc vận hành (§8.1)
+   Cụm KTLD · phiên KTLD-1I · 23/9/2026 — hệ quả ② của chốt H11 ①
+
+   🛑 ⛔ KHÔNG sửa một byte nào của bốn tệp nền HDBC (app.10 · app.11 · app.12
+      · app.13) và app.19 — cả năm chép NGUYÊN BYTE sang nhiều demo khác.
+   ⛔ Cũng không sửa app.20 · app.30. Chỉ gán lại ve().
+   ========================================================================== */
+
+let KT_MOC = null;
+let KT_CHOT_SOM = false;                 /* mô phỏng «Chốt tại ngày» lùi qua mốc */
+const KT_NGAY_SOM = '10/09/2026';
+const ktBat = () => !!KT_MOC;
+/* Tab 6 đọc M7.6 · M4.9 — CÔNG và TIẾT, ⛔ không phải khoản thu ⇒ ⛔ không dải */
+const ktCoDai = () => ktBat() && ST.tab !== 'cham_cong_luong';
+
+function ktThanh() {
+  let h = '<div class="ro" style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:9px">' +
+    '<b>🧪 Tình huống trường (demo):</b>' +
+    '<button class="btn xs' + (ktBat() ? '' : ' p') + '" data-ktx="tat">Đang vận hành bình thường</button>' +
+    '<button class="btn xs' + (KT_MOC === '15/09/2026' ? ' p' : '') + '" data-ktx="bat" data-ktm="15/09/2026">Năm học đầu — vận hành từ 15/09/2026</button>' +
+    (ktBat() ? '<button class="btn xs' + (KT_CHOT_SOM ? ' p' : '') + '" data-ktx="chot">🔴 Chốt tại ngày ' + KT_NGAY_SOM + ' (trước mốc)</button>' : '') +
+    '<span style="opacity:.75">Cụm <b>KTLD</b> · chốt <b>H11 ①</b> — sản phẩm đọc mốc ở <b>M10.1 §7.1b</b>.</span></div>';
+  if (ktCoDai())
+    h += '<div class="canh" style="background:#fffbeb;border:1px solid #fde68a;color:#92400e;padding:8px 12px;border-radius:9px;font-size:12.5px;margin-bottom:9px">' +
+      '🕘 <b>Số liệu tính từ ' + KT_MOC + '</b> — khoản thu trước mốc thực hiện <b>ngoài hệ thống</b>.' +
+      '<div style="margin-top:3px;font-size:11.5px">🛑 ⛔ <b>Không tắt được</b> — cùng khuôn <b>dải giới hạn H4</b> ở §4.1: <i>che đi là giả làm số đúng</i>. ' +
+      'Menu này ⛔ <b>không sở hữu một bản ghi nào</b> <i>(N4)</i> — nó đọc <b>M7.x</b> nên <b>thừa hưởng nguyên khoảng trống ấy</b>.' +
+      (ST.tab === 'mien_giam' ? ' ⚠ Đây là <b>dải THỨ HAI</b> của tab này, cạnh dải <b>H4</b> — ⛔ <b>không gộp</b>, chúng nói <b>hai giới hạn khác nhau</b>.' : '') +
+      '</div></div>';
+  if (ktBat() && ST.tab === 'cham_cong_luong')
+    h += '<div class="ro" style="margin-bottom:9px">🛑 Tab 6 ⛔ <b>KHÔNG có dải mốc vận hành</b> — nó đọc <b>M7.6 · M4.9</b> <i>(công và tiết)</i>, ⛔ không phải khoản thu. ' +
+      'Mốc vận hành ⛔ không nói gì về chúng; hiện dải ở đây là <b>dán một câu SAI lên một bảng đúng</b> <i>(§8.1)</i>.</div>';
+  return h;
+}
+
+/* «Chốt tại ngày» lùi qua mốc ⇒ bảng RỖNG CÓ GIẢI THÍCH, ⛔ không phải 0đ */
+function ktKhoiChotSom() {
+  return '<div class="kbb" style="border:1px solid #fde68a;background:#fffbeb;border-radius:11px;padding:13px 15px;margin-bottom:11px">' +
+    '<div style="font-weight:800;margin-bottom:7px">🕘 Chốt tại ngày ' + KT_NGAY_SOM + ' — TRƯỚC khi hệ thống bắt đầu vận hành (' + KT_MOC + ')</div>' +
+    '<div style="font-size:12.5px;line-height:1.75">' +
+    'Hôm ấy hệ thống <b>chưa giữ một hóa đơn nào</b>: khoản thu của giai đoạn đó nhà trường <b>thực hiện theo sổ cũ, ngoài hệ thống</b>.<br>' +
+    '⛔ Đây <b>KHÔNG</b> phải «trường chưa thu được đồng nào».<br>' +
+    'Ngày sớm nhất có dữ liệu: <b>05/10/2026</b> <i>(mốc công bố Tháng 10/2026)</i>.</div>' +
+    '<div style="margin-top:9px;font-size:11.5px;opacity:.9">' +
+    '🔑 Cùng lý lẽ <b>§2.2</b> đã viết cho mốc công bố: <i>một kỳ <b>biến khỏi bảng</b> vì hôm ấy hóa đơn của nó <b>chưa tồn tại</b>, ⛔ không phải vì nó bằng 0.</i> ' +
+    'Mốc vận hành là <b>vế mạnh hơn</b> của đúng câu ấy.<br>' +
+    '⚠ Đây là ca <b>N5 ⛔ KHÔNG bắt được</b>: <b>N5</b> che ô theo <b>quyền</b>, chỗ này ô rỗng theo <b>thời gian</b>. ' +
+    '⛔ <b>Không dùng khối <code>.noacc</code> của N5</b> để nói về mốc — nó nói <i>«bạn không có quyền»</i>, còn sự thật là <i>«lúc ấy chưa có dữ liệu»</i>.</div>' +
+    '<div style="margin-top:9px"><button class="btn p" data-ktx="chotve">↗ Chốt lại tại 05/10/2026</button></div></div>';
+}
+
+const _ktVe = ve;
+ve = function () {
+  _ktVe();
+  const c = document.getElementById('content');
+  if (!c) return;
+  if (KT_CHOT_SOM && ktCoDai()) c.innerHTML = ktThanh() + ktKhoiChotSom();
+  else c.innerHTML = ktThanh() + c.innerHTML;
+};
+
+document.addEventListener('click', e => {
+  const el = e.target.closest ? e.target.closest('[data-ktx]') : null;
+  if (!el) return;
+  const x = el.dataset.ktx;
+  if (x === 'bat') { KT_MOC = el.dataset.ktm; ve(); return; }
+  if (x === 'tat') { KT_MOC = null; KT_CHOT_SOM = false; ve(); return; }
+  if (x === 'chot') { KT_CHOT_SOM = !KT_CHOT_SOM; ve(); return; }
+  if (x === 'chotve') { KT_CHOT_SOM = false; ve(); return; }
+});
+
 ve();
 </script>
 </body>

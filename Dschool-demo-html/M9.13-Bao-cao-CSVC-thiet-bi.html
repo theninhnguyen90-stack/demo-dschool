@@ -2014,9 +2014,13 @@ const DT = { A: 'Điểm trường A', B: 'Điểm trường B', C: 'Điểm tr�
 const LOAIP = {
   hoc: 'Phòng học thường', bomon: 'Phòng bộ môn', dachucnang: 'Phòng đa chức năng',
   hoitruong: 'Hội trường', thuvien: 'Thư viện', yte: 'Phòng y tế', nhansu: 'Phòng nhân viên',
-  bep: 'Khu bếp — bán trú', ngoaitroi: 'Sân · khu ngoài trời', congvu: 'Nhà công vụ cho giáo viên'
+  bep: 'Khu bếp — bán trú', ngoaitroi: 'Sân · khu ngoài trời', congvu: 'Nhà công vụ cho giáo viên',
+  noitru: 'Phòng ở nội trú'   /* PHKT-1C (24/9/2026) — loại mới của M6.4 v2.8; ⛔ ngoài CS.05 (PK-6) */
 };
-const TT_PHONG = { dung: ['Đang sử dụng', 'o'], sua: ['Đang sửa', 'w'], dong: ['Đóng cửa', 'r'] };
+const TT_PHONG = { dung: ['Đang sử dụng', 'o'], sua: ['Đang sửa', 'w'], dong: ['Đóng cửa', 'r'],
+  chua: ['Chưa đưa vào sử dụng', 'n'] };   /* PHKT-1C — trạng thái thứ tư (PK-2) */
+/* PHKT-1C — loại ⛔ vào CS.05: sân · nhà công vụ · phòng ở nội trú (một danh sách, hai chỗ dùng) */
+const LOAI_NGOAI_CS05 = ['ngoaitroi', 'congvu', 'noitru'];
 const PHONG = [
   { id: 'A-101', ten: 'Phòng 101', dt: 'A', loai: 'hoc', tt: 'dung' },
   { id: 'A-102', ten: 'Phòng 102', dt: 'A', loai: 'hoc', tt: 'dung' },
@@ -2561,7 +2565,7 @@ function tietTKBTrongKhoang(phong, tu, den) {
 }
 const ycPhong = (p, tu, den) => YEUCAU.filter(y => y.loai === 'phong' && y.phong === p
   && y.ngay >= tu && y.ngay <= den);
-const phongKhaDung = p => p && p.tt === 'dung' && !['ngoaitroi', 'congvu'].includes(p.loai);
+const phongKhaDung = p => p && p.tt === 'dung' && !LOAI_NGOAI_CS05.includes(p.loai);
 /* ★ Nhận CẢ MỘT NHÓM đối tượng, không chỉ một. Phân tổ theo điểm trường ·
    loại phòng · tháng là cộng TỬ SỐ và MẪU SỐ của cả nhóm rồi mới chia —
    ⛔ không lấy trung bình các tỉ lệ dòng: một phòng dùng 2/2 tiết và một
@@ -2919,7 +2923,7 @@ function veTab2() {
    Khuôn K2 — bảng chéo. CHỈ SỐ PHÁT SINH: câu hỏi của tab này luôn là
    «trong khoảng ấy phòng được dùng bao nhiêu», không có vế «tại ngày».    */
 function veTab3() {
-  const phongDem = PHONG.filter(p => !['ngoaitroi', 'congvu'].includes(p.loai));
+  const phongDem = PHONG.filter(p => !LOAI_NGOAI_CS05.includes(p.loai));   /* PHKT-1C — + noitru */
   const dsPV = phongDem.filter(trongPV);
   let h = daiPV('phòng', dsPV.length, phongDem.length) + PV.khoang();
 

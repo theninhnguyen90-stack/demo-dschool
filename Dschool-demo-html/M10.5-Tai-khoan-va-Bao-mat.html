@@ -159,6 +159,12 @@ tr:last-child td{border-bottom:none}
 .noacc{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:40px;text-align:center}
 .noacc h3{font-size:17px;margin-bottom:9px}
 .noacc p{color:var(--ink2);font-size:13px;max-width:560px;margin:0 auto 9px}
+/* TKCT-1A (24/9/2026) — tab ① thêm cột «App liên kết» (6 cột); tab ② giữ 5 cột */
+.hrow.nsg,.hdrow.nsg{grid-template-columns:1.8fr 1.05fr 1.1fr 1.25fr 1.15fr 1.1fr}
+/* TKPH-1A (25/9/2026) — tab ② «Liên kết App phụ huynh»: QR mô phỏng */
+.lpqr{display:grid;grid-template-columns:repeat(11,12px);grid-template-rows:repeat(11,12px);border:8px solid #fff;outline:1px solid var(--line)}
+.lpqr i{display:block}
+.st2+.st2{margin-left:2px}
 </style>
 </head>
 <body>
@@ -172,6 +178,7 @@ tr:last-child td{border-bottom:none}
   <button class="rb" data-r="HT">HT</button>
   <button class="rb" data-r="TCNS">TCNS</button>
   <button class="rb" data-r="VT">VT</button>
+  <button class="rb" data-r="PHT_DT">PHT_ĐT</button>
   <button class="rb" data-r="GVBM">GVBM</button>
   <span class="note">Menu này chỉ quyết định <b>đăng nhập được hay không</b> — vào được menu nào là việc của M10.4</span>
 </div>
@@ -299,13 +306,128 @@ lg('27/08 08:05','0908221100','ph',0,'Tài khoản đang khóa','171.244.8.55','
 let POL={doDai:8,chuSo:true,phien:60,nguong:5,khoaPhut:30,
  twofa:false,ipwl:false,ghiHinh:false,mahoa:false,doiDinhKy:false};
 const NGOAI_MVP=['twofa','ipwl','ghiHinh','mahoa','doiDinhKy'];
-const POLTEN={twofa:['Xác thực hai lớp (2FA)','Chỉ có OTP khi kích hoạt tài khoản phụ huynh'],
+const POLTEN={twofa:['Xác thực hai lớp (2FA)','OTP của tài khoản App do công ty vận hành — ⛔ trên máy chủ trường (TKPH)'],
  ipwl:['Chỉ cho đăng nhập từ dải IP của trường',''],
  ghiHinh:['Ghi hình phiên làm việc',''],mahoa:['Mã hóa dữ liệu khi lưu (encryption at rest)',''],
  doiDinhKy:['Bắt buộc đổi mật khẩu định kỳ','']};
 
 /* ===== ĐỀ XUẤT KHÓA ===== */
 let DX=[{id:1,ns:'N19',boi:'Hoàng Văn Nam (TCNS)',ly:'Nhân sự có quyết định chuyển công tác từ 01/9/2026 — đề nghị khóa tài khoản đúng ngày',ngay:truoc(1),tt:'cho'}];
+
+/* ===== TKCT-1A (24/9/2026) — LIÊN KẾT APP · 🔒 HDLK (băm C0A0D77A…CC52) · HDGT ⑦ =====
+   Dữ liệu NỐI THÊM theo mã nhân sự — ⛔ không đổi một trường nào của 30 hồ sơ ở NS.
+   Menu này chỉ NHÌN và THU HỒI liên kết (bit D của F1); ⛔ không có Đồng ý hộ (C7 · M10.5 §6.1.3). */
+const LKTT={chua:['—','gr'],cho:['⏳ đang chờ','w'],hl:['📱 đang liên kết','o'],tn:['⏸ tạm ngưng','w']};
+const LKLY={tai_khoan_khoa:'tài khoản Web đang khóa',da_nghi_viec:'hồ sơ đã chuyển Đã nghỉ việc'};
+const lkChe=s=>{const d=String(s).replace(/\D/g,'');return d.slice(0,3)+'•••'+d.slice(-3)};
+let LKA={
+ N01:{tt:'hl',id:'lk-a1k9p',tk:'Nguyễn Thị Hạnh',sdt:'0903111222',tb:'iPhone 14 · iOS 18',tu:'05/08/2026',dung:'hôm nay 07:02'},
+ N02:{tt:'hl',id:'lk-b7q2m',tk:'Trần Văn Minh',sdt:'0904222333',tb:'Samsung Galaxy S23',tu:'06/08/2026',dung:'hôm qua 21:10'},
+ N09:{tt:'hl',id:'lk-c3w8z',tk:'Nguyễn Văn An',sdt:'0913456789',tb:'Oppo Reno 11',tu:'07/08/2026',dung:'hôm nay 06:55'},
+ N12:{tt:'hl',id:'lk-d5r1t',tk:'Ngô Thị Thu',sdt:'0914555666',tb:'iPhone 13 · iOS 18',tu:'10/08/2026',dung:'hôm nay 06:48'},
+ N29:{tt:'hl',id:'lk-e8u4n',tk:'Kiều Văn Hoàng',sdt:'0918333444',tb:'Xiaomi 14',tu:'20/08/2026',dung:'3 ngày trước'},
+ N18:{tt:'cho',id:'lk-f2h6s',tk:'Lê Thị Hương',sdt:'0987654321',sdtHS:'0916888999',tb:'Xiaomi Redmi Note 13',gui:'29/08 06:20',hh:'30/08 06:20'},
+ N11:{tt:'tn',ly:'tai_khoan_khoa',id:'lk-g4j7v',tk:'Bùi Văn Sơn',sdt:'0915777444',tb:'iPhone 12 · iOS 17',tu:'02/08/2026',tam:truoc(12)},
+ N06:{tt:'tn',ly:'da_nghi_viec',id:'lk-h9x3c',tk:'Trần Thị Bích',sdt:'0912000111',tb:'Vivo Y36',tu:'10/12/2025',tam:'01/01/2026'}};
+let LKLOG=[
+ {gio:'29/08 06:20',ns:'N18',sk:'gui_yeu_cau',tb:'Xiaomi Redmi Note 13',ai:'App',them:'⚠ SĐT lệch hồ sơ'},
+ {gio:'29/08 06:14',ns:'N18',sk:'sinh_ma',tb:'—',ai:'Chủ tài khoản Web',them:''},
+ {gio:'20/08 20:31',ns:'N29',sk:'dong_y',tb:'Xiaomi 14',ai:'Chủ tài khoản Web',them:''},
+ {gio:'20/08 20:30',ns:'N29',sk:'gui_yeu_cau',tb:'Xiaomi 14',ai:'App',them:''},
+ {gio:truoc(12).slice(0,5)+' 10:02',ns:'N11',sk:'tam_ngung',tb:'iPhone 12 · iOS 17',ai:'Hệ thống',them:'tài khoản Web bị khóa · thu hồi giấy thông hành chat'},
+ {gio:'10/08 07:15',ns:'N12',sk:'dong_y',tb:'iPhone 13 · iOS 18',ai:'Chủ tài khoản Web',them:'⚠ SĐT lệch hồ sơ'},
+ {gio:'07/08 19:40',ns:'N09',sk:'dong_y',tb:'Oppo Reno 11',ai:'Chủ tài khoản Web',them:''},
+ {gio:'07/08 19:22',ns:'N09',sk:'het_han_yeu_cau',tb:'Oppo Reno 11',ai:'Hệ thống',them:'yêu cầu trước quá 24 giờ'},
+ {gio:'06/08 21:05',ns:'N02',sk:'dong_y',tb:'Samsung Galaxy S23',ai:'Chủ tài khoản Web',them:''},
+ {gio:'05/08 16:40',ns:'N01',sk:'dong_y',tb:'iPhone 14 · iOS 18',ai:'Chủ tài khoản Web',them:''},
+ {gio:'04/08 08:12',ns:'N12',sk:'tu_choi',tb:'Samsung Galaxy A15',ai:'Chủ tài khoản Web',them:'yêu cầu lạ — không phải máy của mình'},
+ {gio:'02/08 09:30',ns:'N11',sk:'dong_y',tb:'iPhone 12 · iOS 17',ai:'Chủ tài khoản Web',them:''},
+ {gio:'01/01 00:00',ns:'N06',sk:'tam_ngung',tb:'Vivo Y36',ai:'Hệ thống',them:'«Đã nghỉ việc» từ M4.2 · thu hồi giấy thông hành chat'},
+ {gio:'10/12 15:20',ns:'N06',sk:'dong_y',tb:'Vivo Y36',ai:'Chủ tài khoản Web',them:''}];
+const LKSK={sinh_ma:'Tạo mã',gui_yeu_cau:'Nhận yêu cầu',dong_y:'Đồng ý',tu_choi:'Từ chối',het_han_yeu_cau:'Yêu cầu hết hạn',thay_the:'Bị yêu cầu mới thay',
+ thiet_bi_moi:'Máy mới',tam_ngung:'Tạm ngưng',tro_lai_hieu_luc:'Trở lại hiệu lực',da_ngat:'Đã ngắt'};
+let fLK='', fLkLech=0;
+const lkOf=id=>LKA[id]||{tt:'chua'};
+const lkGio=()=>d2s(HOMNAY).slice(0,5)+' '+p2(new Date().getHours())+':'+p2(new Date().getMinutes());
+function lkGhi(ns,sk,tb,ai,them){LKLOG.unshift({gio:lkGio(),ns,sk,tb:tb||'—',ai:ai||'Hệ thống',them:them||''})}
+/* khóa tài khoản Web ⇒ trong CÙNG giao dịch: liên kết hieu_luc → tam_ngung + thu hồi giấy thông hành chat (§6.1.1 · HDGT ⑦) */
+function lkKhoaTheo(id){const l=LKA[id];if(!l||l.tt!=='hl')return '';
+ l.tt='tn';l.ly='tai_khoan_khoa';l.tam=d2s(HOMNAY);
+ lkGhi(id,'tam_ngung',l.tb,'Hệ thống','tài khoản Web bị khóa · thu hồi giấy thông hành chat');
+ return ' · liên kết App <b>tạm ngưng</b> · <b>thu hồi giấy thông hành chat</b>'}
+function lkMoTheo(id){const l=LKA[id];if(!l||l.tt!=='tn'||l.ly!=='tai_khoan_khoa')return '';
+ l.tt='hl';lkGhi(id,'tro_lai_hieu_luc',l.tb,'Hệ thống','mở khóa tài khoản Web');
+ return ' · liên kết App <b>tự trở lại</b>'}
+function lkCell(p){const l=lkOf(p.id);return '<span class="st2 '+LKTT[l.tt][1]+'"'+(l.tt==='tn'?' title="'+LKLY[l.ly]+'"':'')+'>'+LKTT[l.tt][0]+'</span>'}
+function lkTamNgung(){return NS.filter(p=>lkOf(p.id).tt==='tn')}
+function lkRaSoat(){const a=lkTamNgung(),k=a.filter(p=>LKA[p.id].ly==='tai_khoan_khoa'),n=a.filter(p=>LKA[p.id].ly==='da_nghi_viec'),r=[];
+ if(k.length)r.push(['am','<b>'+k.length+' liên kết tạm ngưng vì tài khoản đang khóa</b>',
+  k.map(p=>'<b>'+esc(p.ten)+'</b> — '+esc(LKA[p.id].tb)+' · từ '+LKA[p.id].tam).join('<br>')+
+  '<br><br>Mở khóa tài khoản Web thì liên kết <b>tự trở lại</b> — trước khi mở, kiểm lại lý do khóa. Nghi <b>máy</b> bị lộ thì thu hồi liên kết thay vì giữ khóa.']);
+ if(n.length)r.push(['am','<b>'+n.length+' liên kết tạm ngưng vì đã nghỉ việc</b>',
+  n.map(p=>'<b>'+esc(p.ten)+'</b> — '+esc(LKA[p.id].tb)+' · từ '+LKA[p.id].tam).join('<br>')+
+  '<br><br>⛔ <b>Không tự trở lại</b> (HDLK ③ mục 3). Người này được tiếp nhận lại thì <b>thu hồi</b> liên kết cũ, rồi họ tự liên kết từ đầu ở '+dlink('M0.4')+'.']);
+ return r}
+function lkCard(p){const l=lkOf(p.id);
+ let h='<div class="card"><div class="ch">📱 Tài khoản App liên kết<span class="sp" style="flex:1"></span><span class="st2 '+LKTT[l.tt][1]+'">'+LKTT[l.tt][0]+'</span></div>';
+ const f=(k,v)=>'<div class="f"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>';
+ if(l.tt==='chua')h+='<div style="padding:10px 12px;font-size:12.5px;color:var(--ink2)">Chưa liên kết App. Người dùng tự liên kết ở <b>Trang cá nhân → Tài khoản &amp; bảo mật</b> '+dlink('M0.4')+'.</div>';
+ else{
+  h+=f('Tài khoản App','<b>'+esc(l.tk)+'</b> · <span class="mono">'+lkChe(l.sdt)+'</span>'+(l.tt==='cho'&&l.sdtHS&&l.sdtHS!==l.sdt?' <span class="st2 w">⚠ SĐT lệch hồ sơ ('+lkChe(l.sdtHS)+')</span>':''))+f('Thiết bị',esc(l.tb));
+  if(l.tt==='cho')h+=f('Gửi lúc',l.gui+' · hết hạn '+l.hh);
+  if(l.tt==='hl')h+=f('Ngày liên kết',l.tu)+f('Dùng gần nhất',l.dung||'—');
+  if(l.tt==='tn')h+=f('Tạm ngưng','từ '+l.tam+' — <b>'+LKLY[l.ly]+'</b>'+(l.ly==='da_nghi_viec'?' · ⛔ không tự trở lại':' · mở khóa thì tự trở lại'));
+  const b=[];
+  if(l.tt==='cho')b.push('<button class="btn xs lk" data-x="lkKhongDongY" title="Không Đồng ý hộ được">Đồng ý</button> <button class="rolnk" data-x="lkKhongDongY">ⓘ vì sao không Đồng ý hộ được</button>');
+  if((l.tt==='hl'||l.tt==='tn')&&duyet())b.push('<button class="btn d xs" data-x="lkThuHoi" data-p="'+p.id+'">⛓ Thu hồi liên kết</button>');
+  if((l.tt==='hl'||l.tt==='tn')&&!duyet())b.push('<span class="rolnk off">🔒 chỉ đọc — thu hồi là việc của HT · Quản trị hệ thống</span>');
+  h+='<div class="cact">'+b.join('')+'</div>'}
+ const ls=LKLOG.filter(x=>x.ns===p.id);
+ if(ls.length)h+='<div style="padding:8px 12px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink2)"><b>Lịch sử liên kết</b><br>'+
+  ls.map(x=>x.gio+' · <b>'+LKSK[x.sk]+'</b> · '+esc(x.tb)+' · '+esc(x.ai)+(x.them?' · <i>'+esc(x.them)+'</i>':'')).join('<br>')+'</div>';
+ return h+'</div>'}
+function lkHangSo(){return '<div class="listw" style="margin-top:12px"><div class="grow">Liên kết App — hằng số hệ thống <span class="st2 gr">chỉ đọc</span>'+
+ '<span class="ct">HDLK ④ mục 4 · C6 — không phải cấu hình của trường</span></div>'+
+ [['Mã liên kết (QR / chuỗi) sống','10 phút · dùng một lần','Mã sống lâu thì một ảnh chụp màn hình trôi nổi vẫn dùng được.'],
+  ['Yêu cầu liên kết chờ Đồng ý','24 giờ rồi tự hết hạn','Lâu hơn thì một yêu cầu lạ nằm chờ và bị bấm nhầm.'],
+  ['Số yêu cầu chờ mỗi hồ sơ','Một — yêu cầu mới thay yêu cầu cũ','Hai yêu cầu cùng chờ thì người dùng phải đoán cái nào là mình.']]
+ .map(x=>'<div class="pol"><div><b>'+x[0]+'</b><div class="d">'+x[2]+'</div></div><div style="display:flex;justify-content:flex-end"><span class="st2 n">🔒 '+x[1]+'</span></div></div>').join('')+
+ '<div style="padding:9px 13px;font-size:12px;color:var(--ink2)">Cùng lý lẽ với giới hạn phiên đồng thời: con số là một phần của cơ chế an toàn — đặt thành tham số thì sẽ có trường tắt nó đi. '+
+ '«Thời gian hết phiên» ở trên áp cho App theo nghĩa <b>tự khóa màn hình</b> (C10).</div></div>'}
+function lkLogTab(){
+ let a=LKLOG.slice();
+ if(fLkLech)a=a.filter(x=>x.sk==='dong_y'&&x.them.indexOf('SĐT lệch')>=0);
+ if(q){const k=kd(q);a=a.filter(x=>kd((nsBy(x.ns)||{}).ten+' '+x.tb+' '+x.ai).indexOf(k)>=0)}
+ const g='grid-template-columns:1fr 1.5fr 1.2fr 1.3fr 1.1fr 1.6fr;cursor:default';
+ let h='<div class="listw"><div class="hdrow" style="'+g+'"><div>Thời điểm</div><div>Nhân sự</div><div>Sự kiện</div><div>Liên kết · thiết bị</div><div>Ai</div><div>Ghi chú</div></div>';
+ if(!a.length)h+='<div class="empty">Không có dòng nào khớp bộ lọc.</div>';
+ a.forEach(x=>{const p=nsBy(x.ns)||{ten:x.ns,ma:''},l=LKA[x.ns]||{};
+  h+='<div class="hrow" style="'+g+'"><div class="mono">'+x.gio+'</div><div><b>'+esc(p.ten)+'</b> <span class="mono" style="color:var(--ink3)">'+p.ma+'</span></div>'+
+   '<div title="'+x.sk+'">'+LKSK[x.sk]+'</div><div style="font-size:11.5px"><span class="mono">'+(l.id||'—')+'</span><div style="color:var(--ink3)">'+esc(x.tb)+'</div></div>'+
+   '<div style="font-size:12px">'+esc(x.ai)+'</div><div style="font-size:12px;color:var(--ink2)">'+(x.them?esc(x.them):'—')+'</div></div>'});
+ return h+'</div><div class="ro" style="margin-top:11px">ⓘ App nói <b>một câu</b> cho mọi ca mã liên kết sai · hết hạn · đã dùng; nhật ký này mới phân biệt. Giữ tối thiểu 1 năm như nhật ký đăng nhập.</div>'}
+function lkXuLy(x,id){
+ if(x==='raSoatLK'){raSoat(lkRaSoat(),'Rà soát liên kết App tạm ngưng');return 1}
+ if(x==='lkLech'){fLkLech=fLkLech?0:1;render();return 1}
+ if(x==='lkKhongDongY'){modal('⛔ Không Đồng ý hộ được liên kết App',
+  '<div class="danger"><b>Vì sao không được.</b> Điều kiện quyết định để một tài khoản App vào được dữ liệu học sinh là <b>chính người giữ tài khoản Web</b> bấm Đồng ý. '+
+  'Lời xác nhận số điện thoại của công ty không đủ — SIM làm lại được. Cho quản trị bấm hộ thì người chiếm SIM chỉ cần gọi điện nhờ trường (C1 · C7).</div>'+
+  '<div class="info"><b>Đường đúng.</b> Người đó đăng nhập Web → <b>Trang cá nhân → Tài khoản &amp; bảo mật</b> '+dlink('M0.4')+' → Đồng ý.</div>'+
+  '<div class="ro"><b>Quên mật khẩu Web?</b> Reset ở thẻ «Tài khoản» phía trên, rồi để họ tự Đồng ý. Yêu cầu tự hết hạn sau 24 giờ — hết thì họ tạo mã mới.</div>',
+  '<button class="btn" data-x="close">Đóng</button>');return 1}
+ if(x==='lkThuHoi'){const p=nsBy(id),l=LKA[id];
+  modal('⛓ Thu hồi liên kết App — '+esc(p.ten),
+   '<div class="warn">App trên <b>'+esc(l.tb)+'</b> ('+esc(l.tk)+' · '+lkChe(l.sdt)+') <b>mất quyền</b> với trường ngay lượt gọi kế tiếp và <b>xóa dữ liệu đã tải</b> của trường. '+
+   '<b>Giấy thông hành chat</b> bị <b>thu hồi ngay</b>; dòng mục lục phía công ty bị gỡ.</div>'+
+   '<div class="ro">Thu hồi <b>không khóa tài khoản Web</b> — người này vẫn làm việc trên Web. Muốn dùng App lại thì họ <b>tự liên kết từ đầu</b> ở M0.4. '+
+   'Chính chủ thấy dòng thu hồi kèm <b>tên và chức danh của bạn</b> trong lịch sử của họ.</div>'+
+   '<label class="lbl">Lý do thu hồi <b>*</b></label><textarea class="ta" id="lkLy"></textarea>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn d" data-x="lkDoThuHoi" data-p="'+id+'">⛓ Thu hồi</button>');return 1}
+ if(x==='lkDoThuHoi'){const ly=$('#lkLy').value.trim();
+  if(!ly){toast('⛔ <b>Bắt buộc ghi lý do</b> khi thu hồi liên kết');return 1}
+  const l=LKA[id];lkGhi(id,'da_ngat',l.tb,R().ten,'đường ③ thu hồi — '+ly);delete LKA[id];
+  closeModal();render();toast('Đã thu hồi liên kết App của <b>'+esc(nsBy(id).ten)+'</b> · giấy thông hành chat thu hồi ngay · tài khoản Web <b>không</b> bị khóa');return 1}
+ return 0}
 
 /* ===== TRẠNG THÁI ===== */
 let role='FULL', tab='ns', cur=null, curPH=null, q='';
@@ -316,6 +438,7 @@ const ROLE={
  HT  :{ten:'Hiệu trưởng',       sua:0,duyet:1,dexuat:0,polSua:0,tabs:['ns','ph','pol','log']},
  TCNS:{ten:'Tổ chức nhân sự',   sua:0,duyet:0,dexuat:1,polSua:0,tabs:['ns']},
  VT  :{ten:'Văn thư',           sua:0,duyet:0,dexuat:0,polSua:0,tabs:['ph']},
+ PHT_DT:{ten:'PHT phụ trách điểm trường',sua:0,duyet:0,dexuat:0,polSua:0,tabs:['ph']},   /* TKPH-1A — duyệt link thủ công khi công tắc bật */
  GVBM:{ten:'Giáo viên bộ môn',  sua:0,duyet:0,dexuat:0,polSua:0,tabs:[]}};
 const R=()=>ROLE[role];
 const suaNS=()=>R().sua, duyet=()=>R().duyet;
@@ -374,40 +497,41 @@ function chips(){
   if(va)h.push('<button class="rolnk am" data-x="raSoat">⚠ '+va+'</button>');
   h.push('<button class="rolnk" data-x="raSoat">Rà soát tài khoản</button>');
   const cd=DX.filter(x=>x.tt==='cho').length;
-  if(cd)h.push('<button class="rolnk am" data-x="xemDX">📩 '+cd+' đề xuất khóa chờ xử lý</button>')}
- if(tab==='ph'){const r=dsRaPH();
-  if(r.length)h.push('<button class="rolnk am" data-x="raSoatPH">⚠ '+r.length+'</button>');
-  h.push('<button class="rolnk" data-x="raSoatPH">Rà soát tài khoản PH</button>');
-  h.push('<button class="rolnk rd" data-x="viSaoKhongReset">🔒 vì sao không reset được mật khẩu</button>')}
+  if(cd)h.push('<button class="rolnk am" data-x="xemDX">📩 '+cd+' đề xuất khóa chờ xử lý</button>');
+  const tn=lkTamNgung().length;   /* TKCT-1A — chip rà soát liên kết tạm ngưng (§6.1) */
+  if(tn)h.push('<button class="rolnk am" data-x="raSoatLK">⏸ '+tn+' liên kết tạm ngưng</button>')}
+ if(tab==='ph')h.push(lpChips());   /* TKPH-1A — tab ② theo HỌC SINH (app.80) */
  if(tab==='pol'&&!polSua())h.push('<button class="rolnk off" data-x="viSaoPol">🔒 chỉ đọc</button>');
+ if(tab==='log'&&fLoai==='lk')h.push('<button class="rolnk'+(fLkLech?' rd':' am')+'" data-x="lkLech">⚠ Đồng ý khi SĐT lệch'+(fLkLech?' ✕':'')+'</button>');
  if(tab==='log'){const n=ipNghi();
   if(n.length)h.push('<button class="rolnk rd" data-x="xemIP">🔴 '+n.length+' IP đáng ngờ</button>');
   h.push('<button class="rolnk" data-x="sangM107">↗ Đang tìm <b>thao tác nghiệp vụ</b>? → M10.7</button>')}
  h.push('<button class="rolnk" data-x="viSaoAuth">ⓘ chỉ authentication</button>');
  return h.join(' ')}
 function scopeBar(){
- const s=tab==='ph'?('<b>'+PH.length+'</b> tài khoản phụ huynh · <b>'+PH.reduce((a,x)=>a+x.con.length,0)+'</b> liên kết con')
-  :tab==='log'?('<b>'+LOG.length+'</b> lượt · <b style="color:var(--red)">'+LOG.filter(l=>!l.ok).length+'</b> thất bại')
+ const lw=LOG.filter(l=>l.loai!=='ph');   /* TKPH — phụ huynh đăng nhập với CÔNG TY; dòng cũ giữ trong dữ liệu, ⛔ hiện */
+ const s=tab==='ph'?''
+  :tab==='log'?('<b>'+lw.length+'</b> lượt · <b style="color:var(--red)">'+lw.filter(l=>!l.ok).length+'</b> thất bại')
   :('<b>'+NS.length+'</b> tài khoản / <b>'+NS.length+'</b> hồ sơ nhân sự <span class="st2 o">✔ khớp</span>');
- return '<div class="scope">▸ Phạm vi <b>Toàn trường</b> · '+s+'<span class="sp"></span>'+chips()+'</div>'}
+ return '<div class="scope">▸ '+(tab==='ph'?lpScope():'Phạm vi <b>Toàn trường</b> · '+s)+'<span class="sp"></span>'+chips()+'</div>'}
 function filBar(){
  if(tab==='pol')return '';
  if(tab==='log')return '<input class="inp" id="q" placeholder="⌕ Tìm tài khoản, IP…" value="'+esc(q)+'">'+
   '<select class="fs" id="fkq"><option value="">Mọi kết quả</option><option value="1"'+(fKQ==='1'?' selected':'')+'>Thành công</option>'+
   '<option value="0"'+(fKQ==='0'?' selected':'')+'>⚠ Thất bại</option></select>'+
   '<select class="fs" id="floai"><option value="">Mọi loại</option><option value="ns"'+(fLoai==='ns'?' selected':'')+'>Nhân sự</option>'+
-  '<option value="ph"'+(fLoai==='ph'?' selected':'')+'>Phụ huynh</option></select>';
- if(tab==='ph')return '<input class="inp" id="q" placeholder="⌕ Tìm SĐT, tên phụ huynh, tên con…" value="'+esc(q)+'">'+
-  '<select class="fs" id="ftt"><option value="">Mọi trạng thái</option>'+
-  ['hd','cho','khoa'].map(k=>'<option value="'+k+'"'+(fTT===k?' selected':'')+'>'+TTPH[k][0]+'</option>').join('')+'</select>';
+  '<option value="lp"'+(fLoai==='lp'?' selected':'')+'>Liên kết phụ huynh</option><option value="lk"'+(fLoai==='lk'?' selected':'')+'>Liên kết App</option></select>';
+ if(tab==='ph')return lpFil();   /* TKPH-1A */
  return '<input class="inp" id="q" placeholder="⌕ Tìm họ tên, mã, tên đăng nhập…" value="'+esc(q)+'">'+
   '<select class="fs" id="ftt"><option value="">Mọi trạng thái</option>'+
-  ['hd','cho','khoa','nghi'].map(k=>'<option value="'+k+'"'+(fTT===k?' selected':'')+'>'+TT[k][0]+'</option>').join('')+'</select>'}
+  ['hd','cho','khoa','nghi'].map(k=>'<option value="'+k+'"'+(fTT===k?' selected':'')+'>'+TT[k][0]+'</option>').join('')+'</select>'+
+  '<select class="fs" id="flk"><option value="">App liên kết: mọi</option>'+
+  [['chua','Chưa'],['cho','Đang chờ'],['hl','Đang liên kết'],['tn','Tạm ngưng']].map(k=>'<option value="'+k[0]+'"'+(fLK===k[0]?' selected':'')+'>'+k[1]+'</option>').join('')+'</select>'}
 function tabsHtml(){
  const T=[['ns','Nhân sự',NS.length],
-  ['ph','Phụ huynh',PH.length],
+  ['ph','Liên kết PH',lpDem()],   /* TKPH-1A — «Liên kết App phụ huynh», mỗi dòng một học sinh */
   ['pol','Chính sách',''],
-  ['log','Nhật ký',LOG.length]];
+  ['log','Nhật ký',LOG.filter(l=>l.loai!=='ph').length]];
  $('#tabs').innerHTML=T.filter(t=>coTab(t[0])).map(function(t){return '<button class="tab1'+(tab===t[0]?' on':'')+'" data-t="'+t[0]+'">'+
   t[1]+(t[2]!==''?'<span class="b">'+t[2]+'</span>':'')+'</button>'}).join('')+'<div class="tfil">'+filBar()+'</div>'}
 
@@ -415,6 +539,7 @@ function tabsHtml(){
 function locNS(){
  let a=NS.slice();
  if(fTT)a=a.filter(p=>p.tt===fTT);
+ if(fLK)a=a.filter(p=>lkOf(p.id).tt===fLK);
  if(q){const k=kd(q);a=a.filter(p=>kd(p.ten+' '+p.ma+' '+p.u).indexOf(k)>=0)}
  return a}
 const dnTen=p=>(p.dn<0?'<span class="st2 w">chưa đăng nhập lần nào</span>'
@@ -423,17 +548,18 @@ function nsTab(){
  const a=locNS();
  let h='';
  h+='<div class="stage'+(cur?' open':'')+'"><div class="listw">'+
-  '<div class="hdrow"><div>Nhân sự</div><div>Tên đăng nhập</div><div class="hcol">Trạng thái</div>'+
-  '<div class="hcol">Chức danh</div><div class="hcol">Đăng nhập gần nhất</div></div>';
+  '<div class="hdrow nsg"><div>Nhân sự</div><div>Tên đăng nhập</div><div class="hcol">Trạng thái</div>'+
+  '<div class="hcol">Chức danh</div><div class="hcol">Đăng nhập gần nhất</div><div class="hcol">App liên kết</div></div>';
  if(!a.length)h+='<div class="empty">Không có dòng nào khớp bộ lọc.</div>';
  a.forEach(function(p){
-  h+='<div class="hrow'+(cur===p.id?' on':'')+''+'" data-p="'+p.id+'">'+
+  h+='<div class="hrow nsg'+(cur===p.id?' on':'')+''+'" data-p="'+p.id+'">'+
    '<div class="who2"><div class="ava2">'+esc(vt(p.ten))+'</div><div class="i"><b>'+esc(p.ten)+'</b>'+
     '<span>'+p.ma+' · '+DT[p.dt]+'</span></div></div>'+
    '<div class="mono">'+esc(p.u)+'</div>'+
    '<div class="hcol"><span class="st2 '+TT[p.tt][1]+'">'+TT[p.tt][0]+'</span></div>'+
    '<div class="hcol" style="font-size:11.5px;color:var(--ink2)">'+(p.cd.length?esc(p.cd.join(' · ')):'<span style="color:var(--ink3)">—</span>')+'</div>'+
-   '<div class="hcol" style="font-size:12px">'+dnTen(p)+'</div></div>'});
+   '<div class="hcol" style="font-size:12px">'+dnTen(p)+'</div>'+
+   '<div class="hcol" style="font-size:12px">'+lkCell(p)+'</div></div>'});
  h+='</div>'+(cur?nsPanel():'')+'</div>';
  return h}
 function nsPanel(){
@@ -452,6 +578,7 @@ function nsPanel(){
   '<div class="f"><div class="k">Đăng nhập gần nhất</div><div class="v">'+dnTen(p)+'</div></div>'+
   '<div class="f"><div class="k">Phiên đang mở</div><div class="v">'+(p.tt==='hd'&&p.dn===0?'<span class="st2 o">1 phiên</span> Chrome · Windows, từ 07:12':'<span style="color:var(--ink3)">không có</span>')+'</div></div>'+
   '<div class="cact">'+nsNut(p)+'</div></div>';
+ h+=lkCard(p);   /* TKCT-1A — §6.1.3 */
  h+='<div class="card"><div class="ch">Chức danh và phạm vi — chỉ đọc</div>'+
   (p.cd.length?'<table><tr><th>Chức danh</th><th>Phạm vi dữ liệu</th><th>Feature</th><th>Cấu hình gốc</th></tr>'+
    p.cd.map(c=>'<tr><td><b>'+esc(c)+'</b></td><td><span class="st2 v">'+esc(PV[c]||'Của tôi')+'</span></td>'+
@@ -478,7 +605,7 @@ function nsNut(p){
  if(p.tt==='nghi')b.push('<button class="btn xs lk" data-x="viSaoNghi" data-p="'+p.id+'">🔓 Mở khóa</button>');
  return b.length?b.join(''):'<span style="color:var(--ink3);font-size:12px">Không có thao tác nào cho trạng thái này</span>'}
 
-/* ===== TAB ② PHỤ HUYNH ===== */
+/* ===== TAB ② PHỤ HUYNH — 🕘 VẾT v1.4 (xoay theo TÀI KHOẢN) · ⛔ còn gọi từ TKPH-1A, tab ② nay ở app.80 ===== */
 function phTab(){
  let a=PH.slice();
  if(fTT)a=a.filter(x=>x.tt===fTT);
@@ -604,6 +731,8 @@ function polTab(){
  h+='<div class="listw" style="margin-top:12px"><div class="grow">Ngoài phạm vi MVP — nh6.3 §6.2'+
   '<span class="ct">hiện ở đây để không phải giải thích bằng miệng mỗi lần kiểm tra an toàn thông tin</span></div>'+
   NGOAI_MVP.map(k=>pol(k,POLTEN[k][0],POLTEN[k][1],'sw',1)).join('')+'</div>';
+ h+=lkHangSo();   /* TKCT-1A — §6.5.3 */
+ h+=lpPol();   /* TKPH-1A — §6.5.4 · §6.5.5 */
  return h}
 function pol(k,ten,mo,kieu,dis){
  const v=POL[k];
@@ -615,7 +744,9 @@ function pol(k,ten,mo,kieu,dis){
 
 /* ===== TAB ⑤ NHẬT KÝ ===== */
 function logTab(){
- let a=LOG.slice();
+ if(fLoai==='lk')return lkLogTab();   /* TKCT-1A — §6.6.2 */
+ if(fLoai==='lp')return lpLogTab();   /* TKPH-1A — §6.6.3 */
+ let a=LOG.filter(l=>l.loai!=='ph');   /* TKPH — ⛔ còn lượt đăng nhập phụ huynh trên máy chủ trường */
  if(fKQ!=='')a=a.filter(l=>String(l.ok)===fKQ);
  if(fLoai)a=a.filter(l=>l.loai===fLoai);
  if(q){const k=kd(q);a=a.filter(l=>kd(l.ai+' '+l.ip+' '+l.ly).indexOf(k)>=0)}
@@ -652,6 +783,7 @@ function mKhoa(id){const p=nsBy(id),coPhien=p.tt==='hd'&&p.dn===0;
    'cho tới khi phiên hết hạn — mặc định <b>'+POL.phien+' phút</b>.</div></div>':'')+
   '<div class="ro"><b>Khóa tài khoản ≠ gỡ chức danh.</b> Khóa là biện pháp của tình huống bất thường (nghi lộ mật khẩu, đang xác minh). '+
   'Nếu người này chỉ <b>thôi giữ chức vụ</b> thì việc cần làm là gỡ chức danh ở '+dlink('M4.3')+', không phải khóa tài khoản.</div>'+
+  (lkOf(id).tt==='hl'?'<div class="warn">📱 Người này có <b>liên kết App</b> trên <b>'+esc(LKA[id].tb)+'</b>. Khóa thì liên kết <b>tạm ngưng</b> và <b>giấy thông hành chat bị thu hồi ngay</b> — không có bước này thì người vừa bị khóa vẫn nhắn tin với phụ huynh tới 24 giờ. Mở khóa thì liên kết tự trở lại.</div>':'')+
   '<label class="lbl">Lý do khóa <b>*</b></label><textarea class="ta" id="khLy"></textarea>',
   '<button class="btn" data-x="close">Hủy</button><button class="btn d" data-x="doKhoa" data-p="'+id+'">🔒 Khóa'+(coPhien?' và buộc thoát phiên':'')+'</button>')}
 function viSaoNghi(id){const p=nsBy(id);
@@ -664,17 +796,16 @@ function viSaoNghi(id){const p=nsBy(id);
   'Tài khoản sẽ tự mở theo.</div>',
   '<button class="btn" data-x="close">Đóng</button><button class="btn p" data-x="dl" data-m="M4.2">↗ Mở M4.2</button>')}
 function viSaoKhongReset(){
- modal('🔒 Trường KHÔNG reset được mật khẩu phụ huynh',
-  '<div class="danger">Đây là <b>quyền riêng tư của phụ huynh</b> — <code>nh6.3</code> §3.4. Trường không có quyền đặt lại mật khẩu tài khoản phụ huynh.</div>'+
+ modal('🔒 Trường KHÔNG reset được mật khẩu phụ huynh — việc của công ty',
+  '<div class="danger">Tài khoản App phụ huynh là <b>của công ty</b> <i>(TKPH — HDLP ①)</i>. Máy chủ trường ⛔ lưu mật khẩu, ⛔ lưu OTP, ⛔ có tài khoản phụ huynh để đặt lại.</div>'+
   '<div class="sech">Đường đúng</div>'+
-  '<div class="okbox">Phụ huynh <b>tự bấm "Quên mật khẩu"</b> trong App → <b>OTP gửi về chính SĐT</b> đang dùng làm tên đăng nhập → đặt mật khẩu mới. '+
-  'Trường <b>không tham gia</b> vào luồng này.</div>'+
-  '<div class="sech">Ca ngoại lệ duy nhất — phụ huynh MẤT số điện thoại</div>'+
-  '<div class="warn">Khi đó mới đổi SĐT trong hồ sơ học sinh tại '+dlink('M1.1')+'.<div style="margin-top:6px">'+
-  '<b>Hệ quả phải nói trước:</b> tài khoản cũ <b>mất liên kết với học sinh này</b>; hệ thống tạo tài khoản mới theo SĐT mới. '+
-  'Nếu phụ huynh còn con khác dùng SĐT cũ thì tài khoản cũ <b>vẫn còn</b> với những con đó.</div></div>'+
-  '<div class="ro">⚠ <b>Vì sao nút vẫn hiện mà không ẩn đi.</b> Ẩn nút thì người trực hỗ trợ nhận cuộc gọi <i>"tôi quên mật khẩu"</i> sẽ '+
-  '<b>tự tìm đường vòng</b> — và đường vòng sẵn có là đổi SĐT, làm phụ huynh mất lịch sử. <b>Cấm mà không chỉ đường thay thế '+
+  '<div class="okbox">Phụ huynh <b>tự bấm "Quên mật khẩu"</b> trong App → <b>OTP của công ty</b> về chính SĐT của tài khoản → đặt mật khẩu mới. '+
+  'Vướng nữa thì <b>cửa hỗ trợ của công ty</b>. Trường <b>không tham gia</b>.</div>'+
+  '<div class="sech">Phụ huynh MẤT / ĐỔI số điện thoại</div>'+
+  '<div class="warn">Tài khoản App <b>⛔ đổi được SĐT</b> — phụ huynh <b>đăng ký tài khoản mới</b> với công ty. Trường: cập nhật SĐT ở '+dlink('M1.1')+
+  ' ⇒ <b>tạo link theo số mới</b> ở tab này; hộp tạo link hỏi luôn <i>«ngắt liên kết cũ?»</i> — liên kết cũ ngắt <b>đúng lúc link mới được dùng</b>.</div>'+
+  '<div class="ro">⚠ <b>Vì sao vẫn nói ra mà không im lặng.</b> Người trực hỗ trợ nhận cuộc gọi <i>"tôi quên mật khẩu"</i> mà không có câu trả lời sẽ '+
+  '<b>tự tìm đường vòng</b> — ví dụ cấp link thủ công cho một số lạ theo lời người gọi. <b>Cấm mà không chỉ đường thay thế '+
   'thì người ta sẽ tự tìm đường tệ hơn.</b></div>',
   '<button class="btn" data-x="close">Đóng</button>')}
 function viSaoAuth(){
@@ -739,7 +870,7 @@ function ghiChu(){
   '<div class="sech">Năm tab</div>'+
   '<table><tr><th>Tab</th><th>Đơn vị dòng</th><th>Trả lời</th></tr>'+
   '<tr><td>Tài khoản nhân sự</td><td>một tài khoản</td><td><i>"Người này đăng nhập được không"</i></td></tr>'+
-  '<tr><td>Tài khoản phụ huynh</td><td>một SĐT</td><td><i>"Kích hoạt chưa, gắn con nào"</i></td></tr>'+
+  '<tr><td>Liên kết App phụ huynh</td><td>một học sinh</td><td><i>"Em này đã liên kết với ai — cấp link cho ai"</i></td></tr>'+
   '<tr><td><b>Chức danh và phạm vi</b></td><td>một nhân sự</td><td><i>"<b>Vì sao</b> không thấy màn hình X"</i></td></tr>'+
   '<tr><td>Chính sách bảo mật</td><td>biểu mẫu</td><td><i>"Mật khẩu mạnh cỡ nào"</i></td></tr>'+
   '<tr><td>Nhật ký đăng nhập</td><td>một lần đăng nhập</td><td><i>"Có ai dò mật khẩu không"</i></td></tr></table>'+
@@ -757,7 +888,7 @@ function xuat(){
  modal('⬇ Xuất dữ liệu',
   '<div class="warn">⚠ <b>Bắt buộc chọn mục đích</b> — danh sách có <b>SĐT phụ huynh</b> và thông tin học sinh, thuộc phạm vi <b>Luật BVDLCN 91/2025</b>. Lượt xuất ghi audit.</div>'+
   '<label class="lbl">Bản xuất</label><select class="din"><option>Danh sách tài khoản nhân sự và trạng thái</option>'+
-  '<option>Danh sách tài khoản phụ huynh và liên kết con</option><option>Nhật ký đăng nhập theo khoảng thời gian</option></select>'+
+  '<option>Danh sách liên kết App phụ huynh theo học sinh</option><option>Nhật ký đăng nhập theo khoảng thời gian</option></select>'+
   '<label class="lbl">Mục đích <b>*</b></label><select class="din"><option value="">— chọn mục đích —</option>'+
   '<option>Hồ sơ kiểm tra an toàn thông tin</option><option>Rà soát tài khoản định kỳ</option>'+
   '<option>Điều tra sự cố đăng nhập bất thường</option></select>',
@@ -777,7 +908,7 @@ function render(){
  if(!coTab(tab))tab=R().tabs[0];
  tabsHtml();
  $('#content').innerHTML=scopeBar()+
-  (tab==='ns'?nsTab():tab==='ph'?phTab():tab==='pol'?polTab():logTab());
+  (tab==='ns'?nsTab():tab==='ph'?lpTab():tab==='pol'?polTab():logTab());
  const qi=$('#q');if(qi){qi.focus();qi.setSelectionRange(qi.value.length,qi.value.length)}}
 
 /* ===== SỰ KIỆN ===== */
@@ -785,10 +916,11 @@ document.addEventListener('click',function(e){
  const rb=e.target.closest('.rb');
  if(rb){role=rb.dataset.r;document.querySelectorAll('.rb').forEach(b=>b.classList.toggle('on',b===rb));
   cur=null;curPH=null;q='';fTT='';fKQ='';fLoai='';POLDIRTY={};
+  fLK='';fLkLech=0;lpCur=null;fLp='';
   if(ROLE[role].tabs.length&&ROLE[role].tabs.indexOf(tab)<0)tab=ROLE[role].tabs[0];
   render();return}
  const t1=e.target.closest('.tab1');
- if(t1){tab=t1.dataset.t;cur=null;curPH=null;q='';fTT='';fKQ='';fLoai='';render();return}
+ if(t1){tab=t1.dataset.t;cur=null;curPH=null;q='';fTT='';fKQ='';fLoai='';fLK='';fLkLech=0;lpCur=null;fLp='';render();return}
  const sw=e.target.closest('[data-pol-sw]');
  if(sw){if(!polSua()){toast('🔒 Chỉ IT_Admin sửa được chính sách');return}
   const k=sw.dataset.polSw;POL[k]=!POL[k];POLDIRTY[k]=1;render();return}
@@ -801,6 +933,8 @@ document.addEventListener('click',function(e){
   if(x==='xuat'){xuat();return}
   if(x==='raSoat'){raSoat(dsRa(),'Rà soát tài khoản nhân sự');return}
   if(x==='raSoatPH'){raSoat(dsRaPH(),'Rà soát tài khoản phụ huynh');return}
+  if(lkXuLy(x,id))return;   /* TKCT-1A — liên kết App */
+  if(lpXuLy(x,el))return;   /* TKPH-1A — liên kết App phụ huynh */
   if(x==='viSaoAuth'){viSaoAuth();return}
   if(x==='sangM107'){modal('↗ M10.5 giữ nhật ký ĐĂNG NHẬP · M10.7 giữ nhật ký THAO TÁC',
    '<table><tr><th></th><th>M10.5 tab ④ <i>(màn hình này)</i></th><th>M10.7 Nhật ký hệ thống</th></tr>'+
@@ -846,10 +980,10 @@ document.addEventListener('click',function(e){
    if(!ly){toast('⛔ <b>Bắt buộc ghi lý do</b> khi khóa tài khoản');return}
    const coPhien=p.tt==='hd'&&p.dn===0;
    p.tt='khoa';p.lyDo=ly;p.boi=nsBy('N22').ten+' ('+R().ten+')';p.tuNgay=d2s(HOMNAY);p.dn=0;
-   closeModal();render();
-   toast('Đã khóa <b>'+esc(p.ten)+'</b>'+(coPhien?' · <b>đã buộc thoát 1 phiên đang mở</b>':'')+' · Audit ghi kèm lý do');return}
-  if(x==='moKhoa'){const p=nsBy(id);p.tt='hd';p.lyDo='';p.dn=0;render();
-   toast('Đã mở khóa <b>'+esc(p.ten)+'</b> · Audit ghi người mở và thời điểm');return}
+   const lkt=lkKhoaTheo(id);closeModal();render();
+   toast('Đã khóa <b>'+esc(p.ten)+'</b>'+(coPhien?' · <b>đã buộc thoát 1 phiên đang mở</b>':'')+lkt+' · Audit ghi kèm lý do');return}
+  if(x==='moKhoa'){const p=nsBy(id);p.tt='hd';p.lyDo='';p.dn=0;const lkm=lkMoTheo(id);render();
+   toast('Đã mở khóa <b>'+esc(p.ten)+'</b>'+lkm+' · Audit ghi người mở và thời điểm');return}
   if(x==='guiLai'){toast('Đã gửi lại thông tin đăng nhập cho <b>'+esc(nsBy(id).ten)+'</b>');return}
   if(x==='mDeXuat'){mDeXuat(id);return}
   if(x==='doDeXuat'){const ly=$('#dxLy').value.trim();
@@ -859,7 +993,7 @@ document.addEventListener('click',function(e){
    toast('Đã gửi đề xuất khóa <b>'+esc(nsBy(id).ten)+'</b> · chờ <b>HT hoặc IT_Admin</b> xử lý · hiện ở M0.2 của họ');return}
   if(x==='dxKhoa'){const d=DX.filter(y=>y.id==el.dataset.i)[0],p=nsBy(d.ns);
    p.tt='khoa';p.lyDo=d.ly;p.boi=R().ten+' (theo đề xuất của '+d.boi+')';p.tuNgay=d2s(HOMNAY);p.dn=0;
-   d.tt='xong';closeModal();render();
+   d.tt='xong';lkKhoaTheo(d.ns);closeModal();render();
    toast('Đã khóa <b>'+esc(p.ten)+'</b> theo đề xuất của <b>'+esc(d.boi)+'</b>');return}
   if(x==='dxTuChoi'){const d=DX.filter(y=>y.id==el.dataset.i)[0];d.tt='tuchoi';closeModal();render();
    toast('Đã từ chối đề xuất · người đề xuất nhận được thông báo kèm lý do');return}
@@ -892,10 +1026,624 @@ document.addEventListener('input',function(e){
 document.addEventListener('change',function(e){
  const t=e.target;
  if(t.id==='ftt'){fTT=t.value;render();return}
+ if(t.id==='flk'){fLK=t.value;render();return}
  if(t.id==='fkq'){fKQ=t.value;render();return}
  if(t.id==='floai'){fLoai=t.value;render();return}
  if(t.id==='ktFe'){kiemTra();return}
 });
+render();
+
+/* ═══════════════════════════════════════════════════════════════
+   KTLD-1D — M10.5 và MỐC BÀN GIAO  ·  bước B06
+   Tài liệu: M10.5 §2.1 (tài khoản đầu tiên · ⛔ không tài khoản kỹ thuật · mốc bàn giao)
+
+   🛑 KT-1: VẾT của bước thuộc M10.12. Menu này chỉ CHIẾU 🔗 — ⛔ không đẻ bản ghi tiến độ.
+   🛑 Ràng buộc 1b giữ nguyên: ⛔ KHÔNG có nút tạo tài khoản ở đây.
+   ═══════════════════════════════════════════════════════════════ */
+
+let TT_TR05 = 'dang_khoi_tao';
+let nguonDoiMK = false;
+
+const _renderGoc05 = render;
+render = function(){ _renderGoc05.apply(null, arguments); veBanGiao05(); };
+
+function veBanGiao05(){
+  const c = document.querySelector('#content');
+  if(!c || !R().tabs.length) return;
+  c.insertAdjacentHTML('afterbegin', dai05());
+}
+
+function dai05(){
+  let h = '<div class="card" style="margin-bottom:12px">'+
+   '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>Tình huống của trường (demo):</b>'+
+   ['dang_khoi_tao','dang_van_hanh'].map(t=>'<button class="btn xs'+(TT_TR05===t?' p':'')+
+     '" data-kt="tt" data-v="'+t+'">'+(t==='dang_khoi_tao'?'Đang khởi tạo':'Đang vận hành')+'</button>').join('')+
+   '</div>'+
+   '<div class="ro" style="margin-top:10px;line-height:1.7">🛑 <b>⛔ KHÔNG tồn tại tài khoản kỹ thuật</b> — ⛔ không <code>admin</code>, '+
+   '⛔ không <code>root</code>, ⛔ không tài khoản nhà cung cấp. Phép đếm bất biến: '+
+   '<b>tài khoản không gắn hồ sơ nhân sự: 0</b> · <b>số tài khoản = số hồ sơ</b>. '+
+   'Ba lý do ở <b>§2.1.1</b> — phá bất biến · <b>nhật ký đăng nhập trỏ về KHÔNG AI</b> · tài khoản không chức danh thì ⛔ không có một ô quyền nào.</div>';
+
+  if(TT_TR05==='dang_khoi_tao' && tab==='ns'){
+    h += '<div class="info" style="margin-top:10px;line-height:1.7">'+
+     '<b>Bước 6 của luồng khởi tạo lần đầu — <code>B06</code> Bàn giao, lãnh đạo đăng nhập.</b><br>'+
+     '<b>Xong khi</b> <i>(hạng <code>M</code>)</i>: ≥ 1 người <b>ngoài tài khoản nguồn</b> đã <b>đăng nhập thành công</b> '+
+     '<i>và</i> <b>đổi mật khẩu lần đầu</b>; và <b>Hiệu trưởng đã ký ⚖</b> <i>(Ký số Option Nhóm A — bỏ qua được, bỏ qua thì ghi audit)</i>.<br>'+
+     '🔑 <b>Vì sao ⛔ không đo bằng «đã phát mật khẩu»:</b> phát mật khẩu là việc <b>một chiều</b>, nó chứng minh công ty đã làm xong phần mình '+
+     'chứ ⛔ không chứng minh trường <b>cầm được</b> hệ thống. Đăng nhập thành công rồi đổi mật khẩu là bằng chứng <b>hai đầu</b>.</div>'+
+     '<div class="okbox" style="margin-top:10px">🔗 <b>2 / 63</b> tài khoản đã đăng nhập lần đầu và đổi mật khẩu — '+
+     'Điểm trường A: <b>2</b> · B: <b>0</b> · C: <b>0</b>. '+
+     '<button class="rolnk" data-kt="ve">↗ M10.12 — bước 6</button><br>'+
+     '<span style="color:var(--ink2)">Khối này <b>chiếu</b> từ luồng. ⛔ Menu này không có nút «hoàn tất bàn giao» — nút ấy ở M10.12.</span></div>';
+    if(!nguonDoiMK){
+      h += '<div class="danger" style="margin-top:10px;line-height:1.7">⚠ <b>Tài khoản quản trị vẫn đang dùng mật khẩu bàn giao.</b> '+
+       'Từ lúc công ty tạo tài khoản nguồn tới lúc trường đổi mật khẩu, mật khẩu ban đầu nằm <b>ngoài trường</b>. '+
+       'Dải này ⛔ <b>không ẩn, không tắt</b> chừng nào chưa đổi <i>(ràng buộc 17)</i>. '+
+       '<button class="btn xs p" data-kt="doiMK">Đã đổi mật khẩu (demo)</button></div>';
+    } else {
+      h += '<div class="okbox" style="margin-top:10px">✅ Tài khoản nguồn <b>đã đổi mật khẩu</b> lúc 09:21 ngày 23/09/2026 — '+
+       'vết nằm ở <b>tab ④ Nhật ký đăng nhập</b>, và <b>bản bàn giao in kèm đoạn nhật ký ấy</b> '+
+       '<i>(để trường ký vào thứ mình nhìn thấy, ⛔ không phải ký vào lời hứa)</i>. '+
+       '<button class="rolnk" data-kt="datMK">↺ Đặt lại (demo)</button></div>';
+    }
+    h += '<div class="ro" style="margin-top:8px;line-height:1.7">🔑 <b>Tài khoản của Hiệu trưởng sinh ở đâu:</b> '+
+     'nạp hồ sơ ở <b>bước 4</b> <i>(M4.1 F11)</i> ⇒ tài khoản <b>tự sinh</b>; gán chức danh <b>HT</b> ở <b>bước 5</b> <i>(M4.3)</i>. '+
+     '⛔ <b>Không có thao tác thứ ba</b>, và ⛔ <b>không có nút nào ở menu này</b> <i>(ràng buộc 1b)</i>.</div>';
+  }
+  return h + '</div>';
+}
+
+document.addEventListener('click', function(e){
+  const b = e.target.closest('[data-kt]'); if(!b) return;
+  const k = b.dataset.kt;
+  if(k==='tt'){ TT_TR05 = b.dataset.v; render(); return; }
+  if(k==='ve'){ toast('Deep-link <b>↗ M10.12?tab=luong&buoc=B06</b> — demo này ⛔ không rời menu'); return; }
+  if(k==='doiMK'){ nguonDoiMK = true; render();
+    toast('Đã ghi vào <b>nhật ký đăng nhập</b> — bản bàn giao in kèm đoạn nhật ký này'); return; }
+  if(k==='datMK'){ nguonDoiMK = false; render(); return; }
+});
+
+render();
+
+/* ═══════════════════════════════════════════════════════════════
+   TKPH-1A (25/9/2026) — TAB ② «LIÊN KẾT APP PHỤ HUYNH» · mỗi dòng một HỌC SINH
+   Tài liệu: M10.5 v1.5 §6.3 · §6.5.4 · §6.5.5 · §6.6.3
+   Luật: 🔒 HDLP bản 2 — bản CHỐT CHOT-25-09-tai-khoan-app-phhs-TKPH.md §4.5 (băm F33519D2…3847)
+         🔁 HDLP-B2 26/9/2026 (bản 1 371D9462…6ECD hết hiệu lực): 🔒 Khóa / 🔓 Mở khóa (da_khoa, lý do
+         bắt buộc, lý do NỘI BỘ) cạnh ⛓ Ngắt · bộ lọc «Liên kết đang khóa» · dòng chỉ đọc «phụ huynh
+         đang ẩn em này» (cờ an_tren_app — LPAN) · ngắt theo báo «tài khoản App đã xóa»
+         (da_ngat · tai_khoan_da_xoa) · ghi chú chỉ VT · HT · PHT_DT đọc (U-1). ⛔ ô quyền mới — bit S.
+   Mã Feature GIỮ m10.5.tai_khoan_phu_huynh — chỉ đổi nhãn (G7).
+
+   🛑 TK-0b: mọi đường tạo link có căn cứ do TRƯỜNG nắm (kênh gửi tới SĐT hồ sơ · văn thư xác minh + lý do).
+   🛑 Hệ thống ⛔ tự gửi SMS / Zalo (PH7) — chỉ xuất danh sách + in phiếu.
+   🛑 Ghi chú của học sinh: CẢNH BÁO + tích «đã đọc» + nhật ký — ⛔ chặn (G2).
+   Dữ liệu mẫu MỚI, tách riêng — ⛔ không đổi một trường nào của NS · PH · LOG · LKA · LKLOG cũ.
+   Khai bằng `var` vì app.js gọi render() trước khi tệp này chạy.
+   ═══════════════════════════════════════════════════════════════ */
+
+var LPQ={FULL:['x','t','s','d','e'],IT:['x','s','d','e'],HT:['x','s','d','e'],VT:['x','t','s','e'],PHT_DT:['x','d'],TCNS:[],GVBM:[]};
+var LPVAI={VT:'DT1',PHT_DT:'DT2'};   /* vai @Branch — điểm trường neo */
+function lpCo(b){return (LPQ[role]||[]).indexOf(b)>=0}
+function lpDtVai(){return LPVAI[role]||''}
+
+var LPQH={cha:'👨 Cha',me:'👩 Mẹ',giam_ho:'🛡 Giám hộ',khac:'👤 Khác'};
+var LPNGUON={ho_so_cha:'SĐT cha (hồ sơ)',ho_so_me:'SĐT mẹ (hồ sơ)',ho_so_giam_ho:'SĐT giám hộ (hồ sơ)',thu_cong:'Link thủ công',tai_cho:'Mã tại chỗ'};
+var LPO2N={cha:'ho_so_cha',me:'ho_so_me',giam_ho:'ho_so_giam_ho'};
+var LPLKTT={hieu_luc:['hiệu lực','o'],chi_doc:['chỉ đọc','gr'],da_ngat:['đã ngắt','r'],da_khoa:['🔒 đang khóa','gr']};
+var LPLINKTT={cho_duyet:['chờ duyệt','v'],cho_dung:['chờ dùng','b'],da_dung:['đã dùng','o'],het_han:['hết hạn','w'],huy:['đã hủy','gr']};
+var LPSK={tao_link:'Tạo link',xuat_danh_sach:'Xuất danh sách',duyet_link:'Duyệt link',tu_choi_link:'Từ chối link',huy_link:'Hủy link',
+ doi_link:'Đổi link — liên kết mới',doi_link_sai:'Đổi link sai',ngat:'Ngắt liên kết',chi_doc:'Chuyển chỉ đọc',tro_lai_hieu_luc:'Trở lại hiệu lực',
+ doi_may:'Đổi máy',doc_ghi_chu:'Đọc ghi chú',sua_ghi_chu:'Sửa ghi chú',
+ khoa:'Khóa liên kết',mo_khoa:'Mở khóa liên kết',bao_xoa_tai_khoan:'Công ty báo xóa tài khoản'};   /* + ba sự kiện HDLP-B2 (⑫) */
+var LPDUYET=false;   /* ⚙ tab ③ — công tắc «Link thủ công cần HT / PHT phụ trách điểm trường duyệt» — MẶC ĐỊNH TẮT (Q2) */
+
+var lpSau=function(n){const d=new Date(HOMNAY);d.setDate(d.getDate()+n);return d2s(d)};
+var lpChe=function(s){if(!s)return '—';const d=String(s).replace(/\D/g,'');return d.slice(0,3)+'•••'+d.slice(-3)};
+var LPSEQ=100;
+function lpMa(){LPSEQ++;const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';let n=LPSEQ*7919+13;for(let i=0;i<6;i++){s+=c[n%c.length];n=Math.floor(n/c.length)+i*31}return 'NTT-'+s}
+
+/* ===== HỌC SINH (chiếu 🔗 M1.1 — SĐT cha · mẹ · người giám hộ là NGUỒN cho link) ===== */
+var LPHS=[
+ {id:'HS01',ten:'Nguyễn Minh Anh', ma:'HS26001',lop:'9A2', dt:'DT1',tt:'hoc',sdt:{cha:['Nguyễn Văn Bình','0912345678'],me:['Lê Thị Thu','0978111222'],giam_ho:null}},
+ {id:'HS02',ten:'Nguyễn Minh Khôi',ma:'HS26002',lop:'6A1', dt:'DT1',tt:'hoc',sdt:{cha:['Nguyễn Văn Bình','0912345678'],me:['Lê Thị Thu','0978111222'],giam_ho:null}},
+ {id:'HS03',ten:'Trần Gia Bảo',    ma:'HS26003',lop:'8A3', dt:'DT1',tt:'hoc',sdt:{cha:null,me:['Trần Thị Hồng','0987000111'],giam_ho:null}},
+ {id:'HS04',ten:'Lê Bảo Ngọc',     ma:'HS26004',lop:'6A2', dt:'DT2',tt:'hoc',sdt:{cha:['Lê Quang Vinh','0903112233'],me:null,giam_ho:null}},
+ {id:'HS05',ten:'Phạm Anh Tuấn',   ma:'HS24005',lop:'12A1',dt:'DT1',tt:'roi',roi:'tốt nghiệp',sdt:{cha:null,me:['Phạm Thị Cúc','0938776655'],giam_ho:null}},
+ {id:'HS06',ten:'Hoàng Thu Trang', ma:'HS26006',lop:'10A2',dt:'DT3',tt:'hoc',sdt:{cha:['Hoàng Văn Tú','0977001122'],me:null,giam_ho:null}},
+ {id:'HS07',ten:'Hoàng Nam Sơn',   ma:'HS23007',lop:'12A3',dt:'DT3',tt:'roi',roi:'tốt nghiệp',sdt:{cha:['Hoàng Văn Tú','0977001122'],me:null,giam_ho:null}},
+ {id:'HS08',ten:'Đỗ Khánh Linh',   ma:'HS26008',lop:'7A1', dt:'DT2',tt:'hoc',sdt:{cha:null,me:['Đỗ Thị Vân','0916554433'],giam_ho:null}},
+ {id:'HS09',ten:'Vũ Hà My',        ma:'HS26009',lop:'9A1', dt:'DT1',tt:'hoc',sdt:{cha:['Vũ Đình Trung','0908221100'],me:['Nguyễn Thị Lụa','0935667788'],giam_ho:null}},
+ {id:'HS10',ten:'Bùi Đức Anh',     ma:'HS26010',lop:'11A2',dt:'DT3',tt:'hoc',sdt:{cha:null,me:['Bùi Thị Nhung','0965443322'],giam_ho:null}},
+ {id:'HS11',ten:'Trịnh Bảo Nam',   ma:'HS26011',lop:'10A1',dt:'DT3',tt:'hoc',sdt:{cha:['Trịnh Văn Lâm','0944332211'],me:null,giam_ho:null}},
+ {id:'HS12',ten:'Ngô Gia Hân',     ma:'HS24012',lop:'12A2',dt:'DT1',tt:'roi',roi:'chuyển đi',sdt:{cha:null,me:['Ngô Thị Hà','0922113344'],giam_ho:null}},
+ {id:'HS13',ten:'Đặng Quốc Việt',  ma:'HS26013',lop:'9A2', dt:'DT1',tt:'hoc',sdt:{cha:['Đặng Văn Toàn','0911002233'],me:['Phí Thị Hằng','0982334455'],giam_ho:null}},
+ {id:'HS14',ten:'Lương Thảo Vy',   ma:'HS26014',lop:'9A2', dt:'DT1',tt:'hoc',sdt:{cha:['Lương Văn Hậu','0915223344'],me:['Mạc Thị Oanh','0946778899'],giam_ho:null}},
+ {id:'HS15',ten:'Phan Nhật Minh',  ma:'HS26015',lop:'9A2', dt:'DT1',tt:'hoc',sdt:{cha:null,me:null,giam_ho:['Phan Thị Xuân (bà nội)','0967112200']}},
+ {id:'HS16',ten:'Cao Hải Yến',     ma:'HS26016',lop:'9A2', dt:'DT1',tt:'hoc',sdt:{cha:['Cao Văn Lực','0973445566'],me:null,giam_ho:null}},
+ {id:'HS17',ten:'Tạ Đức Huy',      ma:'HS26017',lop:'9A2', dt:'DT1',tt:'hoc',sdt:{cha:['Tạ Văn Quý','0909887766'],me:null,giam_ho:null}}];
+var lpHs=function(id){return LPHS.filter(x=>x.id===id)[0]};
+/* HDLP-B2 (U-1) — ghi chú chỉ VT · HT · PHT_DT đọc (+ vai Đủ quyền của demo); IT có X ở tab ② mà ⛔ đọc. */
+function lpDocGC(){return ['FULL','VT','HT','PHT_DT'].indexOf(role)>=0}
+
+/* ===== LIÊN KẾT lien_ket_phu_huynh (HDLP ②) ===== */
+var LPLK=[
+ {id:'lp-a1',hs:'HS01',tk:'Nguyễn Văn Bình',sdt:'0912345678',qh:'cha',nguon:'ho_so_cha',tt:'hieu_luc',tu:'12/08/2026'},
+ {id:'lp-a2',hs:'HS02',tk:'Nguyễn Văn Bình',sdt:'0912345678',qh:'cha',nguon:'ho_so_cha',tt:'hieu_luc',tu:'12/08/2026'},
+ {id:'lp-a3',hs:'HS03',tk:'Trần Thị Hồng',  sdt:'0987654321',qh:'me', nguon:'ho_so_me', tt:'hieu_luc',tu:'14/08/2026'},
+ {id:'lp-a4',hs:'HS05',tk:'Phạm Thị Cúc',   sdt:'0938776655',qh:'me', nguon:'ho_so_me', tt:'chi_doc', tu:'20/08/2025',chiDoc:'tốt nghiệp · 31/05/2026'},
+ {id:'lp-a5',hs:'HS06',tk:'Hoàng Văn Tú',   sdt:'0977001122',qh:'cha',nguon:'ho_so_cha',tt:'hieu_luc',tu:'15/08/2026'},
+ {id:'lp-a6',hs:'HS07',tk:'Hoàng Văn Tú',   sdt:'0977001122',qh:'cha',nguon:'ho_so_cha',tt:'chi_doc', tu:'15/08/2025',chiDoc:'tốt nghiệp · 31/05/2026'},
+ {id:'lp-a7',hs:'HS09',tk:'Nguyễn Thị Lụa', sdt:'0935667788',qh:'me', nguon:'ho_so_me', tt:'hieu_luc',tu:'13/08/2026'},
+ {id:'lp-a8',hs:'HS10',tk:'Bùi Thị Nhung',  sdt:'0965443322',qh:'me', nguon:'ho_so_me', tt:'hieu_luc',tu:'16/08/2026'},
+ {id:'lp-a9',hs:'HS10',tk:'Đinh Thị Gấm',   sdt:'0913557799',qh:'khac',nguon:'thu_cong',tt:'hieu_luc',tu:'18/08/2026',ly:'Bà ngoại đưa đón hằng ngày — mẹ làm việc ở Hàn Quốc, đã gọi xác nhận với mẹ'},
+ {id:'lp-b1',hs:'HS11',tk:'Trịnh Văn Lâm',  sdt:'0944332211',qh:'cha',nguon:'ho_so_cha',tt:'hieu_luc',tu:'17/08/2026'},
+ {id:'lp-b2',hs:'HS12',tk:'Ngô Thị Hà',     sdt:'0922113344',qh:'me', nguon:'ho_so_me', tt:'chi_doc', tu:'19/08/2024',chiDoc:'chuyển đi · 15/06/2026'},
+ {id:'lp-b3',hs:'HS14',tk:'Mạc Thị Oanh',   sdt:'0946778899',qh:'me', nguon:'ho_so_me', tt:'hieu_luc',tu:'21/08/2026'},
+ {id:'lp-b4',hs:'HS17',tk:'Tạ Văn Quý',     sdt:'0909887766',qh:'khac',nguon:'tai_cho',tt:'hieu_luc',tu:'22/08/2026',ly:'Phụ huynh đến quầy, đối chiếu CCCD với hồ sơ'},
+ {id:'lp-b5',hs:'HS03',tk:'Trần Văn Khánh', sdt:'0904556677',qh:'cha',nguon:'thu_cong',tt:'da_ngat',tu:'01/08/2026',ngat:{ly:'ngat_boi_truong',boi:'Đỗ Thị Lan (Văn thư)',luc:'10/08/2026',ghi:'Cha không còn chung sống; mẹ đề nghị, đã đối chiếu quyết định của tòa'}}];
+/* HDLP-B2 — dữ liệu mẫu MỚI, nối cuối (⛔ đổi một trường nào của dòng cũ):
+   · một liên kết ĐANG KHÓA (da_khoa — lý do NỘI BỘ, ⛔ lên App) · em vẫn còn liên kết hiệu lực của mẹ;
+   · cờ an_tren_app của PHỤ HUYNH (LPAN: id liên kết → lúc bật) — trường CHỈ ĐỌC, ⛔ nhật ký. */
+LPLK.push({id:'lp-c1',hs:'HS10',tk:'Bùi Văn Hải',sdt:'0983221144',qh:'khac',nguon:'thu_cong',tt:'da_khoa',tu:'05/09/2026',ly:'Bố — làm việc xa, đã gọi xác nhận qua mẹ',
+ khoa:{ly:'Mẹ báo đang tranh chấp quyền nuôi con — chờ bản án của tòa',boi:'Chu Thị Bình (Văn thư)',luc:'12/09/2026'}});
+var LPAN={'lp-a2':'20/09/2026'};   /* Nguyễn Văn Bình đang ẩn em Khôi (HS02) trên App */
+
+/* ===== LINK (HDLP ④) ===== */
+var LPLINK=[
+ {id:'lk-01',hs:'HS01',ma:'NTT-7QK2MX',nguon:'ho_so_me',sdt:'0978111222',tao:truoc(2),het:lpSau(5),tt:'cho_dung',boi:'Đỗ Thị Lan (Văn thư)'},
+ {id:'lk-02',hs:'HS04',ma:'NTT-P3WZ8R',nguon:'ho_so_cha',sdt:'0903112233',tao:truoc(12),het:truoc(5),tt:'het_han',boi:'Mai Văn Thịnh (Văn thư)'},
+ {id:'lk-03',hs:'HS08',ma:'NTT-H6TN4C',nguon:'ho_so_me',sdt:'0916554433',tao:truoc(1),het:lpSau(6),tt:'cho_dung',boi:'Mai Văn Thịnh (Văn thư)'},
+ {id:'lk-04',hs:'HS13',ma:'NTT-D9LB5V',nguon:'ho_so_cha',sdt:'0911002233',tao:truoc(10),het:truoc(3),tt:'het_han',boi:'Đỗ Thị Lan (Văn thư)'},
+ {id:'lk-05',hs:'HS01',ma:'NTT-A2GF7Y',nguon:'ho_so_cha',sdt:'0912345678',tao:'05/08/2026',het:'12/08/2026',tt:'da_dung',boi:'Đỗ Thị Lan (Văn thư)'},
+ {id:'lk-06',hs:'HS10',ma:'NTT-S8MJ3Q',nguon:'thu_cong',sdt:'0913557799',tao:'17/08/2026',het:'24/08/2026',tt:'da_dung',boi:'Chu Thị Bình (Văn thư)',ly:'Bà ngoại đưa đón hằng ngày — mẹ làm việc ở Hàn Quốc, đã gọi xác nhận với mẹ'}];
+var lpLinkBy=function(id){return LPLINK.filter(x=>x.id===id)[0]};
+var lpLkBy=function(id){return LPLK.filter(x=>x.id===id)[0]};
+
+/* ===== GHI CHÚ CỦA HỌC SINH (HDLP ⑩) — chỉ người có quyền ở tab ② đọc ===== */
+var LPGC={
+ HS09:{nd:'Bố (Vũ Đình Trung) bị hạn chế quyền trực tiếp nuôi con theo Bản án số 125/2026/HNGĐ-ST ngày 02/6/2026 — mẹ trực tiếp nuôi. Mẹ đề nghị trường cân nhắc trước khi cấp link cho SĐT của bố.',
+  boi:'Đỗ Thị Lan (Văn thư)',luc:'20/08/2026',ls:[]}};
+
+/* ===== NHẬT KÝ (HDLP ⑫) ===== */
+var LPLOG=[
+ {gio:truoc(1).slice(0,5)+' 09:14',hs:'HS08',sk:'tao_link',ai:'Mai Văn Thịnh (Văn thư)',them:'đường ① · SĐT mẹ'},
+ {gio:truoc(2).slice(0,5)+' 15:40',hs:'HS01',sk:'tao_link',ai:'Đỗ Thị Lan (Văn thư)',them:'đường ① · SĐT mẹ'},
+ {gio:truoc(3).slice(0,5)+' 20:02',hs:'HS13',sk:'doi_link_sai',ai:'App',them:'khác SĐT — tài khoản 09••••17 thử mã của SĐT cha · App chỉ hiện câu chung'},
+ {gio:'22/08 10:31',hs:'HS17',sk:'doi_link',ai:'App',them:'mã tại chỗ · Tạ Văn Quý'},
+ {gio:'22/08 10:24',hs:'HS17',sk:'tao_link',ai:'Đỗ Thị Lan (Văn thư)',them:'đường ③ mã tại chỗ · lý do: đối chiếu CCCD'},
+ {gio:'20/08 14:05',hs:'HS09',sk:'sua_ghi_chu',ai:'Đỗ Thị Lan (Văn thư)',them:''},
+ {gio:'18/08 19:12',hs:'HS10',sk:'doi_link',ai:'App',them:'link thủ công · Đinh Thị Gấm'},
+ {gio:'17/08 08:40',hs:'HS10',sk:'tao_link',ai:'Chu Thị Bình (Văn thư)',them:'đường ② link thủ công · lý do bắt buộc'},
+ {gio:'10/08 16:20',hs:'HS03',sk:'ngat',ai:'Đỗ Thị Lan (Văn thư)',them:'đường ① · Cha không còn chung sống'}];
+LPLOG.push({gio:'12/09 10:05',hs:'HS10',sk:'khoa',ai:'Chu Thị Bình (Văn thư)',them:'Bùi Văn Hải · lý do nội bộ: Mẹ báo đang tranh chấp quyền nuôi con — chờ bản án của tòa'});   /* HDLP-B2 — nối cuối */
+function lpGhi(hs,sk,them){LPLOG.unshift({gio:lkGio(),hs:hs,sk:sk,ai:lpAi(),them:them||''})}
+function lpAi(){return role==='FULL'?'Đủ quyền (demo)':R().ten}
+
+var lpCur=null, fLp='';
+
+/* ===== DẪN XUẤT ===== */
+function lpPhamVi(){const d=lpDtVai();return LPHS.filter(h=>!d||h.dt===d)}
+function lpDem(){return (LPHS||[]).length&&lpCo('x')?lpPhamVi().length:0}
+function lpLkSong(hs){return LPLK.filter(l=>l.hs===hs&&(l.tt==='hieu_luc'||l.tt==='chi_doc'||l.tt==='da_khoa'))}   /* + da_khoa — HDLP-B2 */
+function lpKhoaSo(hs,sdt){return LPLK.some(l=>l.hs===hs&&l.tt==='da_khoa'&&l.sdt===sdt)}
+function lpDangKhoa(h){return LPLK.some(l=>l.hs===h.id&&l.tt==='da_khoa')}
+function lpDangAn(h){return LPLK.some(l=>l.hs===h.id&&(l.tt==='hieu_luc'||l.tt==='chi_doc')&&LPAN[l.id])}
+function lpLinkCua(hs){return LPLINK.filter(k=>k.hs===hs)}
+function lpDaLkSo(hs,sdt){return LPLK.some(l=>l.hs===hs&&l.tt==='hieu_luc'&&l.sdt===sdt)}
+function lpSoHS(h){return ['cha','me','giam_ho'].filter(k=>h.sdt[k]).map(k=>h.sdt[k][1])}
+/* HDLP bản 2 ② mục 6 — «đã liên kết» khi ĐẾM = hieu_luc (kể cả đang ẩn) hoặc da_khoa */
+function lpChuaLk(h){return h.tt==='hoc'&&!LPLK.some(l=>l.hs===h.id&&(l.tt==='hieu_luc'||l.tt==='da_khoa'))}
+function lpHetHanChuaDung(h){return lpLinkCua(h.id).some(k=>k.tt==='het_han'&&!(k.sdt&&lpDaLkSo(h.id,k.sdt))&&
+ !lpLinkCua(h.id).some(y=>y.sdt===k.sdt&&(y.tt==='cho_dung'||y.tt==='cho_duyet')))}   /* cặp đã có link sống ⇒ ⛔ đếm */
+function lpNgoai(h){return LPLK.some(l=>l.hs===h.id&&l.tt!=='da_ngat'&&(l.nguon==='thu_cong'||l.nguon==='tai_cho'))||
+ lpLinkCua(h.id).some(k=>(k.tt==='cho_dung'||k.tt==='cho_duyet')&&(k.nguon==='thu_cong'||k.nguon==='tai_cho'))}
+/* liên kết nguồn ho_so_* mà SĐT tài khoản ≠ SĐT hiện tại của ĐÚNG ô đó (HDLP ② mục 3 — ⛔ tự chuyển) */
+function lpSdtDoi(h){return LPLK.filter(l=>l.hs===h.id&&l.tt==='hieu_luc'&&/^ho_so_/.test(l.nguon)).some(l=>{
+ const o=h.sdt[l.nguon.replace('ho_so_','')];return !o||o[1]!==l.sdt})}
+function lpChoDuyet(h){return lpLinkCua(h.id).some(k=>k.tt==='cho_duyet')}
+var LPLOC={chua_lien_ket:['Chưa có tài khoản liên kết',lpChuaLk],het_han:['Link hết hạn chưa dùng',lpHetHanChuaDung],
+ ngoai_ho_so:['Link / liên kết cho SĐT ngoài hồ sơ',lpNgoai],sdt_doi:['SĐT hồ sơ đã đổi — liên kết còn theo số cũ',lpSdtDoi],
+ co_ghi_chu:['Có ghi chú',h=>!!LPGC[h.id]],cho_duyet:['Link chờ duyệt',lpChoDuyet]};
+LPLOC.dang_khoa=['Liên kết đang khóa',lpDangKhoa];   /* HDLP-B2 — loc=dang_khoa */
+function lpLoc(){
+ let a=lpPhamVi();
+ if(fLp&&LPLOC[fLp])a=a.filter(LPLOC[fLp][1]);
+ if(q){const k=kd(q);a=a.filter(h=>kd(h.ten+' '+h.ma+' '+h.lop+' '+lpSoHS(h).join(' ')).indexOf(k)>=0)}
+ return a}
+
+/* ===== KHUNG — gọi từ tabsHtml · filBar · chips · scopeBar của app.js ===== */
+function lpFil(){
+ return '<input class="inp" id="q" placeholder="⌕ Tìm tên em, mã, lớp, SĐT…" value="'+esc(q)+'">'+
+  '<select class="fs" id="flp"><option value="">Mọi học sinh</option>'+
+  Object.keys(LPLOC).filter(k=>k!=='cho_duyet'||LPDUYET||lpPhamVi().some(lpChoDuyet)).map(k=>'<option value="'+k+'"'+(fLp===k?' selected':'')+'>'+LPLOC[k][0]+'</option>').join('')+'</select>'}
+function lpChips(){
+ const v=lpPhamVi(),h=[];
+ const c=v.filter(lpChuaLk).length,e=v.filter(lpHetHanChuaDung).length,s=v.filter(lpSdtDoi).length,d=v.filter(lpChoDuyet).length;
+ if(c)h.push('<button class="rolnk am" data-x="lpLoc" data-v="chua_lien_ket">🔶 '+c+' em chưa có tài khoản liên kết</button>');
+ if(e)h.push('<button class="rolnk am" data-x="lpLoc" data-v="het_han">⏳ '+e+' em có link hết hạn</button>');
+ if(s)h.push('<button class="rolnk am" data-x="lpLoc" data-v="sdt_doi">⚠ '+s+' SĐT hồ sơ đã đổi</button>');
+ if(d&&lpCo('d'))h.push('<button class="rolnk rd" data-x="lpLoc" data-v="cho_duyet">✍ '+d+' link chờ tôi duyệt</button>');
+ const kh=v.filter(lpDangKhoa).length;if(kh)h.push('<button class="rolnk" data-x="lpLoc" data-v="dang_khoa">🔒 '+kh+' liên kết đang khóa</button>');
+ if(lpCo('t'))h.push('<button class="btn xs p" data-x="lpHL">⚡ Tạo link hàng loạt</button>','<button class="btn xs" data-x="lpTaoLai">↻ Tạo lại link hết hạn</button>');
+ if(lpCo('e'))h.push('<button class="btn xs" data-x="lpIn">🖨 In phiếu QR theo lớp</button>');
+ if(!lpCo('t'))h.push('<span class="rolnk off">🔒 '+esc(R().ten)+' ⛔ tạo link — việc của Văn thư</span>');
+ h.push('<button class="rolnk rd" data-x="viSaoKhongReset">🔒 quên mật khẩu App — việc của công ty</button>');
+ return h.join(' ')}
+function lpScope(){
+ const v=lpPhamVi(),d=lpDtVai();
+ return 'Phạm vi <b>'+(d?DT[d]:'Toàn trường')+'</b>'+(d?' <span class="st2 gr">🔒 điểm trường của vai</span>':'')+' · <b>'+v.length+'</b> học sinh · <b>'+
+  LPLK.filter(l=>l.tt==='hieu_luc'&&v.some(h=>h.id===l.hs)).length+'</b> liên kết hiệu lực'}
+
+/* ===== TAB ② — DANH SÁCH (tầng 1) ===== */
+function lpQhCell(h){const a=lpLkSong(h.id);if(!a.length)return '<span class="st2 w">0</span>';
+ return a.map(l=>'<span class="st2 '+(l.tt==='hieu_luc'?'o':'gr')+'" title="'+esc(l.tk)+' · '+LPNGUON[l.nguon]+(l.tt==='da_khoa'?' · đang khóa':'')+'">'+(l.tt==='da_khoa'?'🔒 ':'')+LPQH[l.qh]+'</span>').join(' ')}
+function lpLinkCell(h){const k=lpLinkCua(h.id),n=t=>k.filter(x=>x.tt===t).length,r=[];
+ if(n('cho_dung'))r.push('<span class="st2 b">'+n('cho_dung')+' chờ dùng</span>');
+ if(n('cho_duyet'))r.push('<span class="st2 v">'+n('cho_duyet')+' chờ duyệt</span>');
+ if(n('het_han'))r.push('<span class="st2 w">'+n('het_han')+' hết hạn</span>');
+ return r.join(' ')||'<span style="color:var(--ink3)">—</span>'}
+function lpDau(h){const r=[];if(LPGC[h.id])r.push('<span title="Có ghi chú của học sinh">📝</span>');
+ if(lpSdtDoi(h))r.push('<span class="st2 w">⚠ SĐT đổi</span>');if(lpNgoai(h))r.push('<span class="st2 v">🟠 ngoài hồ sơ</span>');
+ if(h.tt==='roi')r.push('<span class="st2 gr">đã rời trường</span>');
+ if(lpDangKhoa(h))r.push('<span class="st2 gr">🔒 đang khóa</span>');if(lpDangAn(h))r.push('<span class="st2 n" title="Cờ của phụ huynh — trường chỉ đọc">🙈 PH đang ẩn</span>');return r.join(' ')}
+function lpTab(){
+ if(!lpCo('x'))return '<div class="noacc"><h3>🚫 '+esc(R().ten)+' không có quyền ở tab này</h3></div>';
+ const a=lpLoc();
+ let h='<div class="stage'+(lpCur?' open':'')+'"><div class="listw">'+
+  '<div class="hdrow"><div>Học sinh</div><div>Liên kết</div><div class="hcol">Link đã phát</div><div class="hcol">SĐT hồ sơ 🔗 M1.1</div><div class="hcol">Dấu</div></div>';
+ if(!a.length)h+='<div class="empty">Không có học sinh nào khớp bộ lọc.</div>';
+ const row=x=>'<div class="hrow'+(lpCur===x.id?' on':'')+(lpChuaLk(x)?' warn':'')+'" data-x="lpMo" data-hs="'+x.id+'">'+
+   '<div class="who2"><div class="ava2">'+esc(vt(x.ten))+'</div><div class="i"><b>'+esc(x.ten)+'</b><span>'+x.ma+' · lớp '+x.lop+'</span></div></div>'+
+   '<div style="font-size:11.5px">'+lpQhCell(x)+'</div>'+
+   '<div class="hcol" style="font-size:11.5px">'+lpLinkCell(x)+'</div>'+
+   '<div class="hcol mono" style="font-size:11px">'+['cha','me','giam_ho'].map(k=>x.sdt[k]?(k==='cha'?'C ':k==='me'?'M ':'GH ')+lpChe(x.sdt[k][1]):'').filter(Boolean).join('<br>')+'</div>'+
+   '<div class="hcol" style="font-size:11.5px">'+lpDau(x)+'</div></div>';
+ if(q){a.forEach(x=>{h+=row(x)})}
+ else Object.keys(DT).forEach(d=>{const b=a.filter(x=>x.dt===d);if(!b.length)return;
+  h+='<div class="grow">'+DT[d]+'<span class="ct">'+b.length+' học sinh</span></div>';
+  b.map(x=>x.lop).filter((v,i,s)=>s.indexOf(v)===i).sort().forEach(l=>{
+   h+='<div class="grow" style="background:#fff;font-weight:600;color:var(--ink2);padding-left:24px">Lớp '+l+'</div>';
+   b.filter(x=>x.lop===l).forEach(x=>{h+=row(x)})})});
+ h+='</div>'+(lpCur?lpPanel():'')+'</div>';
+ return h}
+
+/* ===== PANEL MỘT HỌC SINH (tầng 2) ===== */
+function lpPanel(){
+ const x=lpHs(lpCur),f=(k,v)=>'<div class="f"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>';
+ let h='<div class="panel"><div class="ph2"><div class="n"><h2>'+esc(x.ten)+'</h2><div class="m"><span class="pill">'+x.ma+'</span><span class="pill">lớp '+x.lop+'</span><span class="pill">'+DT[x.dt]+'</span>'+
+  (x.tt==='roi'?'<span class="st2 gr">đã rời trường — '+esc(x.roi)+'</span>':'<span class="st2 o">đang học</span>')+'</div></div>'+
+  '<div class="spacer"></div><button class="btn sm" data-x="lpDong">✕</button></div><div class="pbody">';
+ if(x.tt==='roi')h+='<div class="ro">Em đã rời trường ⇒ liên kết chuyển <b>chỉ đọc</b> <i>(học bạ · giấy tờ · lịch sử tài chính)</i>, ⛔ ngắt — §4.3 · <code>HDLP</code> ③. ⛔ Tạo link mới cho em đã rời trường.</div>';
+ if(LPGC[x.id]&&lpDocGC())h+='<div class="danger">📝 <b>Em này có ghi chú</b> — đọc thẻ ④ trước khi cấp link. Tạo link sẽ bắt tích «đã đọc ghi chú».</div>';
+ /* ① SĐT hồ sơ */
+ h+='<div class="card"><div class="ch">① SĐT trong hồ sơ 🔗 chỉ đọc<span class="sp" style="flex:1"></span>'+dlink('M1.1','sửa ở M1.1')+'</div>';
+ ['cha','me','giam_ho'].forEach(k=>{const o=x.sdt[k];
+  if(!o){h+=f(LPQH[k],'<span style="color:var(--ink3)">— ô trống</span>');return}
+  const da=lpDaLkSo(x.id,o[1]),song=lpLinkCua(x.id).filter(l=>l.sdt===o[1]&&(l.tt==='cho_dung'||l.tt==='cho_duyet'))[0];
+  let nut='';
+  if(da)nut='<span class="st2 o">✓ đã liên kết</span>';
+  else if(lpKhoaSo(x.id,o[1]))nut='<span class="st2 gr">🔒 liên kết đang khóa — mở / ngắt ở thẻ ②</span>';
+  else if(x.tt!=='hoc')nut='';
+  else if(lpCo('t'))nut='<button class="btn xs p" data-x="lpTao" data-hs="'+x.id+'" data-qh="'+k+'">🔗 Tạo link</button>'+(song?' <span class="st2 b">có link '+LPLINKTT[song.tt][0]+' — tạo mới sẽ hủy link cũ</span>':'');
+  h+=f(LPQH[k],esc(o[0])+' · <span class="mono">'+lpChe(o[1])+'</span> '+nut)});
+ h+='</div>';
+ /* ② Liên kết */
+ const lk=LPLK.filter(l=>l.hs===x.id);
+ h+='<div class="card"><div class="ch">② Liên kết<span class="sp" style="flex:1"></span><span class="st2 n">'+lpLkSong(x.id).length+'</span></div>';
+ if(!lk.length)h+='<div style="padding:10px 12px;color:var(--ink3);font-size:12.5px">Chưa có tài khoản App nào liên kết với em này.</div>';
+ lk.forEach(l=>{const kem=LPLINK.filter(k=>k.ngatKem===l.id&&k.tt==='cho_dung')[0];
+  h+='<div class="f"><div class="k">'+LPQH[l.qh]+'</div><div class="v"><b>'+esc(l.tk)+'</b> <span class="mono">'+lpChe(l.sdt)+'</span>'+
+   ' <span class="st2 n">'+LPNGUON[l.nguon]+'</span> <span class="st2 '+LPLKTT[l.tt][1]+'">'+LPLKTT[l.tt][0]+'</span>'+
+   '<span style="font-weight:400;color:var(--ink3);font-size:11.5px">từ '+l.tu+(l.chiDoc?' · chỉ đọc từ '+esc(l.chiDoc):'')+'</span>'+
+   (l.ly?'<div style="font-weight:400;font-size:11.5px;color:var(--ink2);width:100%">Lý do: <i>'+esc(l.ly)+'</i></div>':'')+
+   (l.ngat?'<div style="font-weight:400;font-size:11.5px;color:var(--red);width:100%">Ngắt '+l.ngat.luc+' · '+esc(l.ngat.boi)+' · '+({doi_tai_khoan:'đổi tài khoản',tai_khoan_da_xoa:'tài khoản App đã xóa (công ty báo)'}[l.ngat.ly]||'nhà trường ngắt')+(l.ngat.ghi?' — <i>'+esc(l.ngat.ghi)+'</i>':'')+'</div>':'')+
+   (l.tt==='da_khoa'&&l.khoa?'<div style="font-weight:400;font-size:11.5px;color:var(--ink2);width:100%">🔒 Khóa '+l.khoa.luc+' · '+esc(l.khoa.boi)+' · lý do <b>nội bộ</b>: <i>'+esc(l.khoa.ly)+'</i> <span class="st2 gr">⛔ lên App</span></div>':'')+
+   ((l.tt==='hieu_luc'||l.tt==='chi_doc')&&LPAN[l.id]?'<div style="width:100%"><span class="st2 n" title="Cờ an_tren_app của phụ huynh — lưu ở liên kết; trường chỉ đọc, ⛔ nhật ký (HDLP ⑧b)">🙈 Phụ huynh đang ẩn em này trên App — từ '+LPAN[l.id]+' · vẫn tính «đã liên kết»</span></div>':'')+
+   (kem?'<div style="width:100%"><span class="st2 w">⏳ sẽ ngắt khi link '+kem.ma+' được dùng</span></div>':'')+
+   ((l.tt==='hieu_luc'||l.tt==='chi_doc')&&lpCo('s')?' <button class="btn xs" data-x="lpKhoa" data-lk="'+l.id+'">🔒 Khóa</button>':'')+
+   (l.tt==='da_khoa'&&lpCo('s')?' <button class="btn xs p" data-x="lpMoKhoa" data-lk="'+l.id+'">🔓 Mở khóa</button>':'')+
+   ((l.tt==='hieu_luc'||l.tt==='chi_doc'||l.tt==='da_khoa')&&lpCo('s')?' <button class="btn d xs" data-x="lpNgat" data-lk="'+l.id+'">⛓ Ngắt liên kết</button>':'')+
+   (l.tt!=='da_ngat'?' <button class="btn xs" data-x="lpXoaTK" data-lk="'+l.id+'" title="Demo — mô phỏng phía công ty (HDLP ⑧c)">▶ Mô phỏng: công ty báo tài khoản đã xóa</button>':'')+'</div></div>'});
+ h+='</div>';
+ /* ③ Link đã phát */
+ const ks=lpLinkCua(x.id);
+ h+='<div class="card"><div class="ch">③ Link đã phát<span class="sp" style="flex:1"></span><span class="st2 n">'+ks.length+'</span></div>';
+ if(!ks.length)h+='<div style="padding:10px 12px;color:var(--ink3);font-size:12.5px">Chưa phát link nào.</div>';
+ ks.forEach(k=>{const b=[];
+  if(k.tt==='cho_dung'){b.push('<button class="btn xs" data-x="lpQR" data-k="'+k.id+'">👁 Xem QR</button>','<button class="btn xs" data-x="lpChep" data-k="'+k.id+'">⧉ Chép link</button>');
+   if(lpCo('t'))b.push('<button class="btn xs" data-x="lpHuy" data-k="'+k.id+'">✕ Hủy</button>');
+   b.push('<button class="btn xs" data-x="lpDung" data-k="'+k.id+'" title="Demo — mô phỏng phía App">▶ Mô phỏng: phụ huynh xác nhận</button>')}
+  if(k.tt==='cho_duyet'&&lpCo('d'))b.push('<button class="btn xs p" data-x="lpDuyet" data-k="'+k.id+'">✓ Duyệt</button>','<button class="btn xs" data-x="lpTuChoi" data-k="'+k.id+'">✕ Từ chối</button>');
+  if((k.tt==='het_han'||k.tt==='huy')&&lpCo('t')&&x.tt==='hoc'&&!(k.sdt&&lpDaLkSo(x.id,k.sdt))&&k.nguon!=='tai_cho')b.push('<button class="btn xs" data-x="lpCapLai" data-k="'+k.id+'">↻ Cấp lại</button>');
+  h+='<div class="f"><div class="k"><span class="mono">'+k.ma+'</span></div><div class="v"><span class="st2 '+LPLINKTT[k.tt][1]+'">'+LPLINKTT[k.tt][0]+'</span>'+
+   ' <span class="st2 n">'+LPNGUON[k.nguon]+'</span> <span class="mono">'+(k.sdt?lpChe(k.sdt):'không gắn số')+'</span>'+
+   '<span style="font-weight:400;color:var(--ink3);font-size:11.5px">tạo '+k.tao+' · hạn '+k.het+' · '+esc(k.boi||'')+'</span>'+
+   (k.ly?'<div style="font-weight:400;font-size:11.5px;color:var(--ink2);width:100%">Lý do: <i>'+esc(k.ly)+'</i></div>':'')+
+   (k.ngatKem?'<div style="width:100%"><span class="st2 w">kèm ngắt liên kết cũ khi được dùng</span></div>':'')+
+   (b.length?'<div style="width:100%;display:flex;gap:5px;flex-wrap:wrap">'+b.join('')+'</div>':'')+'</div></div>'});
+ h+='</div>';
+ /* ④ Ghi chú */
+ const g=LPGC[x.id];
+ if(!lpDocGC())h+='<div class="card"><div class="ch">④ Ghi chú của học sinh</div><div class="ro" style="margin:9px 12px">🔒 Ghi chú chỉ <b>Văn thư · Hiệu trưởng · PHT phụ trách điểm trường</b> đọc <i>(HDLP bản 2 ⑩ — U-1)</i>. '+esc(R().ten)+' ⛔ thấy nội dung.</div></div>';
+ else h+='<div class="card"><div class="ch">④ Ghi chú của học sinh <span class="st2 gr">chỉ VT · HT · PHT phụ trách điểm trường đọc</span></div><div style="padding:9px 12px;font-size:12.5px">'+
+  (g?'<div>'+esc(g.nd)+'</div><div style="color:var(--ink3);font-size:11.5px;margin-top:4px">Sửa '+g.luc+' · '+esc(g.boi)+(g.ls.length?' · '+g.ls.length+' bản trước':'')+'</div>'+
+   (g.ls.length?'<div style="margin-top:6px;font-size:11.5px;color:var(--ink2)"><b>Lịch sử</b><br>'+g.ls.map(o=>o.luc+' · '+esc(o.boi)+': <s>'+esc(o.nd)+'</s>').join('<br>')+'</div>':'')
+   :'<span style="color:var(--ink3)">Không có ghi chú.</span>')+
+  '<div style="font-size:11.5px;color:var(--ink3);margin-top:6px">⛔ lên App · ⛔ vào báo cáo · ⛔ vào tệp xuất · ⛔ chiếu sang M1.1</div></div>'+
+  (lpCo('s')?'<div class="cact"><button class="btn xs" data-x="lpGC" data-hs="'+x.id+'">✎ '+(g?'Sửa':'Thêm')+' ghi chú</button></div>':'')+'</div>';
+ /* ⑤ Thao tác khác */
+ if(x.tt==='hoc'&&lpCo('t'))h+='<div class="card"><div class="ch">⑤ SĐT không có trong hồ sơ</div><div class="cact">'+
+  '<button class="btn xs" data-x="lpTC" data-hs="'+x.id+'">✍ Link thủ công</button><button class="btn xs" data-x="lpTaiCho" data-hs="'+x.id+'">🎫 Mã tại chỗ</button>'+
+  '<span style="font-size:11.5px;color:var(--ink2)">Lý do <b>bắt buộc</b>'+(LPDUYET?' · link thủ công <b>chờ HT / PHT duyệt</b>':' · công tắc duyệt đang <b>tắt</b>')+'</span></div></div>';
+ /* ⑥ Lịch sử */
+ const ls=LPLOG.filter(o=>o.hs===x.id);
+ if(ls.length)h+='<div class="card"><div class="ch">⑥ Lịch sử</div><div style="padding:8px 12px;font-size:11.5px;color:var(--ink2)">'+
+  ls.map(o=>o.gio+' · <b>'+LPSK[o.sk]+'</b> · '+esc(o.ai)+(o.them?' · <i>'+esc(o.them)+'</i>':'')).join('<br>')+'</div></div>';
+ return h+'</div></div>'}
+
+/* ===== HỘP TẠO LINK — dùng chung ba đường ===== */
+function lpKhoiGC(hs){const g=LPGC[hs];if(!g)return '';
+ return '<div class="danger">📝 <b>Ghi chú của học sinh</b><div style="margin-top:5px">'+esc(g.nd)+'</div>'+
+  '<label style="display:flex;gap:7px;align-items:center;margin-top:8px;font-weight:700"><input type="checkbox" id="lpDaDoc"> Tôi đã đọc ghi chú của học sinh</label>'+
+  '<div style="font-weight:400;font-size:11.5px;margin-top:4px">Đây là <b>cảnh báo, ⛔ không phải chặn</b> — trường ⛔ có thẩm quyền tước quyền của cha mẹ; người cấp link đọc rồi tự quyết, và <b>có vết</b> mình đã đọc.</div></div>'}
+function lpDaDocOk(hs){if(!LPGC[hs])return true;const c=$('#lpDaDoc');return !!(c&&c.checked)}
+function lpHuyCu(hs,sdt){LPLINK.filter(k=>k.hs===hs&&k.sdt===sdt&&(k.tt==='cho_dung'||k.tt==='cho_duyet')).forEach(k=>{k.tt='huy';lpGhi(hs,'huy_link','thay bằng link mới · '+k.ma)})}
+function lpTaoLink(hs,nguon,sdt,o){o=o||{};
+ if(sdt)lpHuyCu(hs,sdt);
+ const cho=(nguon==='thu_cong'&&LPDUYET);
+ const k={id:'lk-'+(++LPSEQ),hs:hs,ma:lpMa(),nguon:nguon,sdt:sdt||null,tao:d2s(HOMNAY),het:nguon==='tai_cho'?d2s(HOMNAY)+' +15 phút':lpSau(7),
+  tt:cho?'cho_duyet':'cho_dung',boi:lpAi(),ly:o.ly||'',ngatKem:o.ngatKem||'',tk:o.tk||''};
+ if(LPGC[hs]){k.daDoc={boi:lpAi(),luc:lkGio()};lpGhi(hs,'doc_ghi_chu','trước khi tạo link '+k.ma)}
+ LPLINK.push(k);
+ lpGhi(hs,'tao_link',{ho_so_cha:'đường ① · SĐT cha',ho_so_me:'đường ① · SĐT mẹ',ho_so_giam_ho:'đường ① · SĐT giám hộ',thu_cong:'đường ② link thủ công',tai_cho:'đường ③ mã tại chỗ'}[nguon]+(o.ly?' · lý do: '+o.ly:'')+(cho?' · chờ duyệt':''));
+ return k}
+function lpLkCuCungQh(hs,qh,sdt){return LPLK.filter(l=>l.hs===hs&&l.tt==='hieu_luc'&&l.qh===qh&&l.sdt!==sdt)[0]}
+function mLpTao(hs,qh){const x=lpHs(hs),o=x.sdt[qh],cu=lpLkCuCungQh(hs,qh,o[1]);
+ modal('🔗 Tạo link liên kết — '+esc(x.ten)+' · '+LPQH[qh],
+  lpKhoiGC(hs)+
+  '<div class="info">Link gắn <b>một học sinh × một SĐT</b>: <b>'+esc(o[0])+'</b> · <span class="mono">'+o[1]+'</span> <i>(ô '+LPQH[qh]+' trong hồ sơ)</i>. '+
+  'Chỉ tài khoản App <b>đúng số này</b> đổi được. Hạn <b>7 ngày</b>, <b>dùng một lần</b>.</div>'+
+  (cu?'<div class="warn">Em đang có liên kết <b>'+LPQH[qh]+'</b> với tài khoản <b>'+esc(cu.tk)+'</b> · SĐT <span class="mono">'+lpChe(cu.sdt)+'</span> — khác số hồ sơ hiện tại.'+
+   '<label style="display:flex;gap:7px;align-items:center;margin-top:6px;font-weight:700"><input type="checkbox" id="lpNgatKem" checked> Ngắt liên kết cũ SĐT '+lpChe(cu.sdt)+' khi link mới được dùng</label>'+
+   '<div style="font-size:11.5px;margin-top:3px">Ngắt <b>đúng lúc link mới đổi thành công</b>, ⛔ lúc tạo — ⛔ có khoảng trống không ai xem được <i>(HDLP ⑤ mục 3)</i>.</div></div>':'')+
+  '<div class="ro">🛑 Hệ thống <b>⛔ tự gửi</b> SMS / Zalo. Tạo xong: chép link, cho quét QR, hoặc xuất / in để trường tự gửi.</div>',
+  '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="lpTaoOk" data-hs="'+hs+'" data-qh="'+qh+'">🔗 Tạo link</button>')}
+function mLpTC(hs){const x=lpHs(hs);
+ modal('✍ Link thủ công — '+esc(x.ten),
+  lpKhoiGC(hs)+
+  '<div class="info">Cho <b>SĐT KHÔNG có trong hồ sơ</b> — bố mẹ làm xa, người trông em <i>(PH9)</i>. Căn cứ của trường là <b>văn thư xác minh trực tiếp</b> + <b>lý do</b> <i>(TK-0b)</i>.</div>'+
+  '<label class="lbl">SĐT <b>*</b></label><input class="din" id="lpSdt" placeholder="09…">'+
+  '<label class="lbl">Họ tên người nhận</label><input class="din" id="lpTen">'+
+  '<label class="lbl">Lý do — đã xác minh thế nào <b>*</b></label><textarea class="ta" id="lpLy"></textarea>'+
+  (LPDUYET?'<div class="warn">⚙ Công tắc duyệt đang <b>BẬT</b> ⇒ link sinh ở <b>chờ duyệt</b>; HT hoặc PHT phụ trách điểm trường duyệt rồi mới dùng / xuất được.</div>'
+   :'<div class="ro">⚙ Công tắc duyệt đang <b>TẮT</b> <i>(mặc định)</i> ⇒ link dùng được <b>ngay</b>.</div>'),
+  '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="lpTCOk" data-hs="'+hs+'">✍ Tạo link thủ công</button>')}
+function mLpTaiCho(hs){const x=lpHs(hs);
+ modal('🎫 Mã tại chỗ — '+esc(x.ten),
+  lpKhoiGC(hs)+
+  '<div class="info">Sau khi <b>đối chiếu giấy tờ trực tiếp</b> tại quầy. Mã <b>⛔ gắn số</b>, sống <b>15 phút</b>, <b>dùng một lần</b> — trao tận tay, phụ huynh quét ngay.</div>'+
+  '<label class="lbl">Lý do — đã đối chiếu giấy tờ gì <b>*</b></label><textarea class="ta" id="lpLy"></textarea>',
+  '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="lpTaiChoOk" data-hs="'+hs+'">🎫 Phát mã</button>')}
+function lpQRHtml(ma){let s=0;for(const c of ma)s=(s*31+c.charCodeAt(0))%100003;let h='';
+ for(let i=0;i<121;i++){const r=Math.floor(i/11),c=i%11,goc=(r<3&&c<3)||(r<3&&c>7)||(r>7&&c<3);s=(s*1103515245+12345)%2147483648;
+  h+='<i style="background:'+(goc?((r%2||c%2)&&!(r===1&&(c===1||c===9))&&!(r===9&&c===1)?'#0f172a':'#fff'):(s%3?'#0f172a':'#fff'))+'"></i>'}
+ return '<div class="lpqr">'+h+'</div>'}
+function mLpQR(k){const x=lpHs(k.hs);
+ modal('👁 Link liên kết — '+esc(x.ten),
+  '<div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">'+lpQRHtml(k.ma)+'<div><div class="lbl" style="margin:0">Mã ngắn — nhập tay trong App</div>'+
+  '<div class="mono" style="font-size:22px;font-weight:700;letter-spacing:.06em">'+k.ma+'</div>'+
+  '<div class="lbl">Link</div><div class="mono">https://lk.‹tên miền công ty›/p/'+k.ma+'</div>'+
+  '<div class="lbl">Gắn SĐT</div><div class="mono">'+(k.sdt?lpChe(k.sdt):'không gắn số (tại chỗ)')+'</div><div class="lbl">Hạn</div><div>'+k.het+'</div></div></div>'+
+  '<div class="ro" style="margin-top:12px">Mã chỉ mang <b>mã trường</b> + chuỗi ngẫu nhiên — ⛔ tên em, ⛔ SĐT. Trang dự phòng của công ty ⛔ chứa dữ liệu nào của trường. '+
+  'Phụ huynh mở link / quét QR / nhập mã ở màn <b>«Thêm con»</b> của App PH-HS.</div>',
+  '<button class="btn" data-x="close">Đóng</button>')}
+
+/* ===== HÀNG LOẠT (G5 ①) ===== */
+function lpLopTrongPV(){return lpPhamVi().filter(h=>h.tt==='hoc').map(h=>h.lop).filter((v,i,s)=>s.indexOf(v)===i).sort()}
+function mLpHL(){
+ const lops=lpLopTrongPV(),d=lpDtVai();
+ modal('⚡ Tạo link hàng loạt',
+  '<div class="info">Mỗi em × mỗi SĐT trong hồ sơ ⇒ <b>một link</b> 7 ngày. Chỉ em <b>đang học</b>, trong phạm vi <b>'+(d?DT[d]:'Toàn trường')+'</b>.</div>'+
+  '<label class="lbl">① Chọn học sinh</label><select class="din" id="lpPV">'+
+  lops.map(l=>'<option value="lop:'+l+'"'+(l==='9A2'?' selected':'')+'>Lớp '+l+'</option>').join('')+
+  lops.map(l=>l.replace(/[A-Z].*/,'')).filter((v,i,s)=>s.indexOf(v)===i).map(k=>'<option value="khoi:'+k+'">Khối '+k+'</option>').join('')+
+  Object.keys(DT).filter(x=>!d||x===d).map(x=>'<option value="dt:'+x+'">Điểm trường '+DT[x]+'</option>').join('')+
+  (d?'':'<option value="all">Cả trường</option>')+'</select>'+
+  '<label class="lbl">② Nguồn SĐT</label><div style="display:flex;gap:14px;margin-top:5px">'+
+  ['cha','me','giam_ho'].map(k=>'<label><input type="checkbox" class="lpNg" value="'+k+'" checked> '+LPQH[k]+'</label>').join('')+'</div>'+
+  '<div class="ro" style="margin-top:11px">Bỏ qua kèm lý do: em <b>đã liên kết đúng số</b> · <b>ô SĐT trống</b> · em <b>có ghi chú</b> <i>(tạo từng em)</i> · số <b>đã có link còn hạn</b>.</div>',
+  '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="lpHLChay">⚡ Chạy</button>')}
+function lpChonHS(v){const a=lpPhamVi().filter(h=>h.tt==='hoc');
+ if(v==='all')return a;const p=v.split(':');
+ if(p[0]==='lop')return a.filter(h=>h.lop===p[1]);if(p[0]==='khoi')return a.filter(h=>h.lop.replace(/[A-Z].*/,'')===p[1]);return a.filter(h=>h.dt===p[1])}
+var LPKQ=null;
+function lpChayHL(hsList,ngs){const ok=[],bo=[];
+ hsList.forEach(h=>ngs.forEach(k=>{const o=h.sdt[k],nm=LPQH[k];
+  if(!o){bo.push([h,nm,'—','ô SĐT trống']);return}
+  if(lpDaLkSo(h.id,o[1])){bo.push([h,nm,o[1],'đã liên kết đúng số này']);return}
+  if(lpKhoaSo(h.id,o[1])){bo.push([h,nm,o[1],'liên kết đang khóa — xử lý từng em']);return}   /* HDLP-B2 ⑤ ① */
+  if(LPGC[h.id]){bo.push([h,nm,o[1],'có ghi chú — tạo từng em']);return}
+  if(LPLINK.some(x=>x.hs===h.id&&x.sdt===o[1]&&(x.tt==='cho_dung'||x.tt==='cho_duyet'))){bo.push([h,nm,o[1],'đã có link còn hạn cho số này']);return}
+  const lk=lpTaoLink(h.id,LPO2N[k],o[1]);ok.push([h,nm+' · '+o[0],o[1],lk])}));
+ return {ok:ok,bo:bo}}
+function mLpKQ(ten){const r=LPKQ;
+ modal(ten+' — bảng kết quả',
+  '<div class="okbox">✅ <b>'+r.ok.length+'</b> link tạo thành công · ⏭ <b>'+r.bo.length+'</b> dòng bỏ qua</div>'+
+  (r.ok.length?'<div class="sech">✅ Thành công</div><table><tr><th>Học sinh</th><th>Lớp</th><th>Người nhận</th><th>SĐT</th><th>Mã ngắn</th><th>Hạn</th></tr>'+
+   r.ok.map(o=>'<tr><td>'+esc(o[0].ten)+'</td><td>'+o[0].lop+'</td><td>'+esc(o[1])+'</td><td class="mono">'+lpChe(o[2])+'</td><td class="mono">'+o[3].ma+'</td><td>'+o[3].het+'</td></tr>').join('')+'</table>':'')+
+  (r.bo.length?'<div class="sech">⏭ Bỏ qua kèm lý do</div><table class="lpbo"><tr><th>Học sinh</th><th>Nguồn</th><th>SĐT</th><th>Lý do</th></tr>'+
+   r.bo.map(o=>'<tr><td>'+esc(o[0].ten)+' <span style="color:var(--ink3)">'+o[0].lop+'</span></td><td>'+o[1]+'</td><td class="mono">'+(o[2]==='—'?'—':lpChe(o[2]))+'</td><td>'+esc(o[3])+
+    (o[3].indexOf('ghi chú')>=0?' <button class="rolnk" data-x="lpMo" data-hs="'+o[0].id+'">mở em này</button>':'')+'</td></tr>').join('')+'</table>':''),
+  '<button class="btn" data-x="close">Đóng</button>'+(r.ok.length&&lpCo('e')?'<button class="btn" data-x="lpXuat" data-v="in">🖨 In phiếu QR</button><button class="btn p" data-x="lpXuat" data-v="excel">⬇ Xuất Excel</button>':''))}
+var LPXUAT=null;
+function mLpXuat(kieu,ds){LPXUAT={kieu:kieu,ds:ds};
+ modal(kieu==='excel'?'⬇ Xuất danh sách link — Excel':'🖨 In phiếu QR',
+  '<div class="warn">⚠ Tệp / phiếu chứa <b>link</b> và <b>dữ liệu trẻ em</b> — <b>bắt chọn mục đích</b>, lượt xuất ghi nhật ký <i>(Luật BVDLCN 91/2025)</i>. '+
+  'Link gắn SĐT nên tệp bị lộ <b>ít hại</b> — người khác ⛔ dùng được nếu không có tài khoản đúng số.</div>'+
+  '<label class="lbl">Mục đích <b>*</b></label><select class="din" id="lpMD"><option value="">— chọn mục đích —</option>'+
+  '<option>Gửi qua Zalo OA của trường</option><option>Gửi qua SMS Gateway của trường</option><option>In phiếu phát tại họp phụ huynh</option><option>Khác — ghi rõ ở nhật ký</option></select>'+
+  (kieu==='excel'?'<div class="sech">Tệp gồm '+ds.length+' dòng · ba trang tính</div><table><tr><th>Trang</th><th>Cột</th></tr>'+
+   '<tr><td><b>Danh sách</b></td><td>học sinh · mã HS · lớp · người nhận · SĐT · link · <b>mã ngắn</b> · ảnh QR (tên tệp kèm) · hạn</td></tr>'+
+   '<tr><td><b>Zalo OA</b></td><td>SĐT dạng <code>84…</code> · tham số mẫu tin: tên em · link · mã ngắn · hạn</td></tr>'+
+   '<tr><td><b>SMS Gateway</b></td><td>SĐT · nội dung ghép sẵn ≤ 160 ký tự không dấu, có link + mã ngắn</td></tr></table>'+
+   '<div class="ro" style="margin-top:9px">⛔ Cột ghi chú của học sinh · ⛔ link chờ duyệt. Hệ thống <b>⛔ tự gửi</b> — trường tự nạp tệp vào công cụ của mình <i>(PH7)</i>.</div>'
+   :'<div class="ro" style="margin-top:9px">Mỗi link <b>chờ dùng</b> một phiếu: tên trường · tên em · lớp · người nhận <i>(⛔ in SĐT đầy đủ)</i> · QR · <b>mã ngắn</b> · hạn · ba bước «cài App → đăng ký bằng đúng SĐT này → quét mã». GVCN <b>phát tay</b> — ⛔ cần ô quyền nào.</div>'),
+  '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="lpXuatOk">'+(kieu==='excel'?'⬇ Xuất':'🖨 In')+'</button>')}
+function mLpIn(){const lops=lpLopTrongPV();
+ modal('🖨 In phiếu QR theo lớp',
+  '<label class="lbl">Lớp</label><select class="din" id="lpLopIn">'+lops.map(l=>'<option'+(l==='9A2'?' selected':'')+'>'+l+'</option>').join('')+'</select>'+
+  '<div class="ro" style="margin-top:9px">In mọi link <b>chờ dùng</b> của lớp. Lớp chưa có link ⇒ tạo hàng loạt trước.</div>',
+  '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="lpInChon">Tiếp</button>')}
+
+/* ===== ĐỔI LINK (mô phỏng phía App — HDLP ⑥) ===== */
+function lpDungLink(k,tk,sdtTk){const x=lpHs(k.hs);
+ if(!(k.tt==='cho_dung'))return 'Không dùng được link này.';
+ if(k.nguon!=='tai_cho'&&sdtTk!==k.sdt){lpGhi(k.hs,'doi_link_sai','khác SĐT · App chỉ hiện một câu chung');return 'sai'}
+ const qh=k.nguon==='ho_so_cha'?'cha':k.nguon==='ho_so_me'?'me':k.nguon==='ho_so_giam_ho'?'giam_ho':'khac';
+ const khac=LPLK.filter(l=>l.hs===k.hs&&l.tt==='hieu_luc'&&!LPAN[l.id]);   /* HDLP-B2 ⑨ mục 1 — trừ tài khoản đang ẩn em */
+ const lk={id:'lp-'+(++LPSEQ),hs:k.hs,tk:tk,sdt:sdtTk,qh:qh,nguon:k.nguon,tt:'hieu_luc',tu:d2s(HOMNAY),ly:k.ly||''};
+ LPLK.push(lk);k.tt='da_dung';
+ lpGhi(k.hs,'doi_link',k.ma+' · '+tk);
+ let them='';
+ if(k.ngatKem){const cu=lpLkBy(k.ngatKem);if(cu&&cu.tt!=='da_ngat'){cu.tt='da_ngat';cu.ngat={ly:'doi_tai_khoan',boi:'Hệ thống (gộp ngắt + cấp)',luc:d2s(HOMNAY)};
+  lpGhi(k.hs,'ngat','đường ② gộp ngắt + cấp · SĐT cũ '+lpChe(cu.sdt));them=' · liên kết cũ SĐT '+lpChe(cu.sdt)+' <b>ngắt đúng lúc này</b> + thu hồi giấy thông hành chat'}}
+ return 'ok'+(khac.filter(l=>l.id!==k.ngatKem).length?' · <b>'+khac.filter(l=>l.id!==k.ngatKem).length+'</b> phụ huynh khác nhận «Có thêm một tài khoản theo dõi con '+esc(x.ten)+'»':'')+them}
+
+/* ===== TAB ③ — công tắc + hằng số ===== */
+function lpPol(){
+ return '<div class="listw" style="margin-top:12px"><div class="grow">Liên kết App phụ huynh<span class="ct">M10.5 §6.5.4 · §6.5.5 · HDLP ⑪</span></div>'+
+  '<div class="pol"><div><b>Link thủ công cần HT / PHT phụ trách điểm trường duyệt</b><div class="d">Mặc định TẮT — căn cứ của trường đã là văn thư xác minh + lý do bắt buộc (TK-0b). Bật thì link thủ công sinh ở «chờ duyệt». Chỉ áp link thủ công.</div></div>'+
+  '<div style="display:flex;justify-content:flex-end"><div class="sw'+(LPDUYET?' on':'')+(polSua()?'':' dis')+'" data-x="lpSw"><i></i></div></div></div>'+
+  [['Link liên kết sống','7 ngày'],['Mã tại chỗ sống','15 phút'],['Số lần dùng một link','Một lần'],['Thiết bị di động mỗi tài khoản mỗi trường','Một — đổi máy đi theo tài khoản'],['Chống dò mã','Sai 5 lần ⇒ khóa đổi mã 30 phút']]
+  .map(x=>'<div class="pol"><div><b>'+x[0]+'</b> <span class="st2 gr">hằng số hệ thống</span></div><div style="display:flex;justify-content:flex-end"><span class="st2 n">🔒 '+x[1]+'</span></div></div>').join('')+'</div>'}
+
+/* ===== TAB ④ — nhật ký liên kết phụ huynh ===== */
+function lpLogTab(){
+ let a=LPLOG.slice();
+ if(q){const k=kd(q);a=a.filter(o=>kd(((lpHs(o.hs)||{}).ten||'')+' '+o.ai+' '+o.them).indexOf(k)>=0)}
+ const g='grid-template-columns:1fr 1.4fr 1.3fr 1.3fr 2fr;cursor:default';
+ let h='<div class="listw"><div class="hdrow" style="'+g+'"><div>Thời điểm</div><div>Học sinh</div><div>Sự kiện</div><div>Ai</div><div>Ghi chú</div></div>';
+ if(!a.length)h+='<div class="empty">Không có dòng nào khớp bộ lọc.</div>';
+ a.forEach(o=>{const x=lpHs(o.hs)||{ten:o.hs,lop:''};
+  h+='<div class="hrow" style="'+g+'"><div class="mono">'+o.gio+'</div><div><b>'+esc(x.ten)+'</b> <span style="color:var(--ink3)">'+x.lop+'</span></div>'+
+   '<div title="'+o.sk+'">'+(o.sk==='doi_link_sai'?'<span class="st2 r">'+LPSK[o.sk]+'</span>':LPSK[o.sk])+'</div><div style="font-size:12px">'+esc(o.ai)+'</div>'+
+   '<div style="font-size:12px;color:var(--ink2)">'+(o.them?esc(o.them):'—')+'</div></div>'});
+ return h+'</div><div class="ro" style="margin-top:11px">ⓘ Nhật ký <b>phân biệt</b> mọi ca đổi link sai <i>(mã sai · hết hạn · đã dùng · chờ duyệt · khác SĐT · sai loại tài khoản)</i>; App chỉ nói <b>một câu chung</b> — cùng luật §6.6.1. '+
+  'Ghi chú của học sinh ⛔ hiện nội dung ở đây — chỉ «đọc / sửa». Phụ huynh đăng nhập <b>với công ty</b> — máy chủ trường ⛔ còn lượt đăng nhập phụ huynh.</div>'}
+
+/* ===== SỰ KIỆN ===== */
+function lpXuLy(x,el){
+ if(x.indexOf('lp')!==0)return 0;
+ const hs=el.dataset.hs,k=el.dataset.k?lpLinkBy(el.dataset.k):null;
+ if(x==='lpMo'){closeModal();lpCur=hs;render();return 1}
+ if(x==='lpDong'){lpCur=null;render();return 1}
+ if(x==='lpLoc'){fLp=fLp===el.dataset.v?'':el.dataset.v;lpCur=null;render();return 1}
+ if(x==='lpTao'){mLpTao(hs,el.dataset.qh);return 1}
+ if(x==='lpTaoOk'){const qh=el.dataset.qh,o=lpHs(hs).sdt[qh];
+  if(!lpDaDocOk(hs)){toast('⛔ Tích <b>«Tôi đã đọc ghi chú của học sinh»</b> trước khi tạo link');return 1}
+  const cu=lpLkCuCungQh(hs,qh,o[1]),nk=$('#lpNgatKem');
+  const lk=lpTaoLink(hs,LPO2N[qh],o[1],{ngatKem:cu&&nk&&nk.checked?cu.id:''});closeModal();render();mLpQR(lk);
+  toast('Đã tạo link <b>'+lk.ma+'</b>'+(lk.ngatKem?' · liên kết cũ <b>sẽ ngắt khi link này được dùng</b>':''));return 1}
+ if(x==='lpTC'){mLpTC(hs);return 1}
+ if(x==='lpTCOk'){const s=($('#lpSdt').value||'').replace(/\D/g,''),ly=$('#lpLy').value.trim();
+  if(!/^0\d{9}$/.test(s)){toast('⛔ SĐT không hợp lệ');return 1}
+  if(lpSoHS(lpHs(hs)).indexOf(s)>=0){toast('⛔ Số này <b>có trong hồ sơ</b> — dùng nút «Tạo link» ở thẻ ① (đường ①)');return 1}
+  if(!ly){toast('⛔ <b>Lý do bắt buộc</b> với link thủ công');return 1}
+  if(!lpDaDocOk(hs)){toast('⛔ Tích <b>«Tôi đã đọc ghi chú của học sinh»</b> trước khi tạo link');return 1}
+  const lk=lpTaoLink(hs,'thu_cong',s,{ly:ly});closeModal();render();
+  if(lk.tt==='cho_duyet')toast('Link <b>'+lk.ma+'</b> ở <b>chờ duyệt</b> — HT / PHT phụ trách điểm trường nhận việc ở M0.2');else{mLpQR(lk);toast('Đã tạo link thủ công <b>'+lk.ma+'</b> — dùng được ngay (công tắc duyệt tắt)')}return 1}
+ if(x==='lpTaiCho'){mLpTaiCho(hs);return 1}
+ if(x==='lpTaiChoOk'){const ly=$('#lpLy').value.trim();
+  if(!ly){toast('⛔ <b>Lý do bắt buộc</b> với mã tại chỗ');return 1}
+  if(!lpDaDocOk(hs)){toast('⛔ Tích <b>«Tôi đã đọc ghi chú của học sinh»</b> trước khi phát mã');return 1}
+  const lk=lpTaoLink(hs,'tai_cho',null,{ly:ly});closeModal();render();mLpQR(lk);return 1}
+ if(x==='lpQR'){mLpQR(k);return 1}
+ if(x==='lpChep'){toast('Đã chép <code>https://lk.‹tên miền công ty›/p/'+k.ma+'</code> · mã ngắn <b>'+k.ma+'</b>');return 1}
+ if(x==='lpHuy'){k.tt='huy';lpGhi(k.hs,'huy_link',k.ma);render();toast('Đã hủy link <b>'+k.ma+'</b>');return 1}
+ if(x==='lpCapLai'){if(LPGC[k.hs]&&!el.dataset.ok){modal('↻ Cấp lại — '+esc(lpHs(k.hs).ten),lpKhoiGC(k.hs),
+   '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="lpCapLai" data-k="'+k.id+'" data-ok="1">↻ Cấp lại</button>');return 1}
+  if(!lpDaDocOk(k.hs)){toast('⛔ Tích <b>«Tôi đã đọc ghi chú của học sinh»</b> trước khi cấp lại');return 1}
+  const lk=lpTaoLink(k.hs,k.nguon,k.sdt,{ly:k.ly});closeModal();render();toast('Đã cấp lại <b>'+lk.ma+'</b> — cùng nguồn, cùng số, hạn '+lk.het);return 1}
+ if(x==='lpDung'){const tk=(lpHs(k.hs).sdt.cha&&lpHs(k.hs).sdt.cha[1]===k.sdt)?lpHs(k.hs).sdt.cha[0]:(lpHs(k.hs).sdt.me&&lpHs(k.hs).sdt.me[1]===k.sdt)?lpHs(k.hs).sdt.me[0]:(lpHs(k.hs).sdt.giam_ho&&lpHs(k.hs).sdt.giam_ho[1]===k.sdt)?lpHs(k.hs).sdt.giam_ho[0]:'Tài khoản '+lpChe(k.sdt||'0900000000');
+  const r=lpDungLink(k,tk,k.sdt||'0900000000');render();
+  toast(r.indexOf('ok')===0?'📱 App: phụ huynh bấm <b>Xác nhận</b> ⇒ liên kết <b>hiệu lực</b>'+r.slice(2):'App: «Không dùng được mã này» — câu chung');return 1}
+ if(x==='lpDuyet'){k.tt='cho_dung';k.het=lpSau(7);k.duyet={boi:lpAi(),luc:lkGio(),kq:'duyet'};lpGhi(k.hs,'duyet_link',k.ma);render();toast('Đã duyệt <b>'+k.ma+'</b> — hạn 7 ngày tính từ lúc duyệt');return 1}
+ if(x==='lpTuChoi'){modal('✕ Từ chối link '+k.ma,'<label class="lbl">Lý do <b>*</b></label><textarea class="ta" id="lpLy"></textarea>',
+  '<button class="btn" data-x="close">Hủy</button><button class="btn d" data-x="lpTuChoiOk" data-k="'+k.id+'">✕ Từ chối</button>');return 1}
+ if(x==='lpTuChoiOk'){const ly=$('#lpLy').value.trim();if(!ly){toast('⛔ Bắt buộc ghi lý do');return 1}
+  k.tt='huy';k.duyet={boi:lpAi(),luc:lkGio(),kq:'tu_choi',ly:ly};lpGhi(k.hs,'tu_choi_link',k.ma+' · '+ly);closeModal();render();toast('Đã từ chối — văn thư nhận thông báo kèm lý do');return 1}
+ if(x==='lpNgat'){const l=lpLkBy(el.dataset.lk);
+  modal('⛓ Ngắt liên kết — '+esc(l.tk),
+   '<div class="warn"><b>Ngắt là VĨNH VIỄN</b> — đổi tài khoản, cấp nhầm người. Còn chờ xác minh / tranh chấp ⇒ dùng <b>🔒 Khóa</b> (đảo được).<br>'+
+   'Em <b>rời danh sách</b> trên App + thông báo <b>một lần</b> <i>«Nhà trường đã ngừng liên kết hồ sơ '+esc(lpHs(l.hs).ten)+'»</i> — ⛔ nêu lý do. App <b>xóa dữ liệu đã tải</b> của em; '+
+   '<b>giấy thông hành chat thu hồi ngay</b> <i>(HDGT ⑦ · mã lien_ket)</i>. Muốn dùng lại ⇒ <b>link mới</b>.</div>'+
+   '<div class="ro">⛔ Không có thao tác «chặn người» — chỉ ngắt <b>một liên kết</b>. Người sau cấp lại hay không là quyết định của người đọc ghi chú.</div>'+
+   '<label class="lbl">Lý do <b>*</b></label><textarea class="ta" id="lpLy"></textarea>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn d" data-x="lpNgatOk" data-lk="'+l.id+'">⛓ Ngắt</button>');return 1}
+ if(x==='lpNgatOk'){const l=lpLkBy(el.dataset.lk),ly=$('#lpLy').value.trim();
+  if(!ly){toast('⛔ <b>Lý do bắt buộc</b> khi ngắt liên kết');return 1}
+  l.tt='da_ngat';l.ngat={ly:'ngat_boi_truong',boi:lpAi(),luc:d2s(HOMNAY),ghi:ly};lpGhi(l.hs,'ngat','đường ① · '+ly);closeModal();render();
+  toast('Đã ngắt · em rời danh sách trên App, phụ huynh nhận một lần «Nhà trường đã ngừng liên kết hồ sơ …» · giấy thông hành chat thu hồi ngay');return 1}
+ /* ── HDLP-B2 (U-3 · U-4 · U-5) — khóa / mở khóa · mô phỏng công ty báo xóa tài khoản ── */
+ if(x==='lpKhoa'){const l=lpLkBy(el.dataset.lk);
+  modal('🔒 Khóa liên kết — '+esc(l.tk),
+   '<div class="info"><b>Khóa là TẠM, đảo được</b> — chờ xác minh · tranh chấp · quyết định hạn chế quyền. Quyết định đã rõ là vĩnh viễn ⇒ dùng <b>⛓ Ngắt</b>.</div>'+
+   '<div class="warn">App của tài khoản này hiện hồ sơ <b>'+esc(lpHs(l.hs).ten)+'</b> ở trạng thái <b>Tắt, ⛔ bật lại được</b>, câu cố định: '+
+   '<i>«Nhà trường đã khóa liên kết này. Vui lòng liên hệ văn phòng nhà trường: ‹số văn phòng›.»</i> · App <b>xóa dữ liệu đã tải</b> · <b>giấy thông hành chat thu hồi ngay</b> <i>(HDGT ⑦ · mã lien_ket)</i> · ⛔ thông báo đẩy, ⛔ báo phụ huynh khác.</div>'+
+   '<label class="lbl">Lý do — <b>NỘI BỘ</b>, ⛔ lên App <b>*</b></label><textarea class="ta" id="lpLy"></textarea>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="lpKhoaOk" data-lk="'+l.id+'">🔒 Khóa</button>');return 1}
+ if(x==='lpKhoaOk'){const l=lpLkBy(el.dataset.lk),ly=$('#lpLy').value.trim();
+  if(!ly){toast('⛔ <b>Lý do bắt buộc</b> khi khóa liên kết');return 1}
+  l.tt='da_khoa';l.khoa={ly:ly,boi:lpAi(),luc:d2s(HOMNAY)};lpGhi(l.hs,'khoa',l.tk+' · lý do nội bộ: '+ly);closeModal();render();
+  toast('Đã khóa · App hiện «Nhà trường đã khóa liên kết này…» kèm số văn phòng · giấy thông hành chat thu hồi ngay');return 1}
+ if(x==='lpMoKhoa'){const l=lpLkBy(el.dataset.lk),x2=lpHs(l.hs);
+  modal('🔓 Mở khóa liên kết — '+esc(l.tk),
+   '<div class="info">Trạng thái sau khi mở <b>dẫn xuất</b>: em '+(x2.tt==='hoc'?'đang học ⇒ <b>hiệu lực</b>':'đã rời trường ⇒ <b>chỉ đọc</b>')+' <i>(HDLP ③ mục 3)</i>. ⛔ cần link mới; App tải lại dữ liệu, về đúng lựa chọn Ẩn / Hiện cũ của phụ huynh.</div>'+
+   '<label class="lbl">Lý do <b>*</b></label><textarea class="ta" id="lpLy"></textarea>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="lpMoKhoaOk" data-lk="'+l.id+'">🔓 Mở khóa</button>');return 1}
+ if(x==='lpMoKhoaOk'){const l=lpLkBy(el.dataset.lk),ly=$('#lpLy').value.trim();
+  if(!ly){toast('⛔ <b>Lý do bắt buộc</b> khi mở khóa');return 1}
+  l.tt=lpHs(l.hs).tt==='hoc'?'hieu_luc':'chi_doc';l.moKhoa={ly:ly,boi:lpAi(),luc:d2s(HOMNAY)};lpGhi(l.hs,'mo_khoa',l.tk+' · '+ly+' ⇒ '+LPLKTT[l.tt][0]);closeModal();render();
+  toast('Đã mở khóa ⇒ <b>'+LPLKTT[l.tt][0]+'</b> · App bật lại hồ sơ, ⛔ cần link mới');return 1}
+ if(x==='lpXoaTK'){const l=lpLkBy(el.dataset.lk),ds=LPLK.filter(y=>y.sdt===l.sdt&&y.tk===l.tk&&y.tt!=='da_ngat');
+  ds.forEach(y=>{y.tt='da_ngat';y.ngat={ly:'tai_khoan_da_xoa',boi:'Hệ thống (theo báo của công ty)',luc:d2s(HOMNAY)};lpGhi(y.hs,'ngat','đường ⑤ · tài khoản App đã xóa · '+y.tk)});
+  LPLOG.unshift({gio:lkGio(),hs:'',sk:'bao_xoa_tai_khoan',ai:'Hệ thống',them:'tài khoản '+l.tk+' · '+lpChe(l.sdt)+' · '+ds.length+' liên kết ⇒ da_ngat · tai_khoan_da_xoa'});
+  render();toast('Công ty báo xóa tài khoản <b>'+esc(l.tk)+'</b> ⇒ <b>'+ds.length+'</b> liên kết <b>đã ngắt · tài khoản App đã xóa</b> · giấy thông hành chat thu hồi');return 1}
+ if(x==='lpGC'){if(!lpDocGC()){toast('🔒 Ghi chú chỉ VT · HT · PHT phụ trách điểm trường đọc');return 1}const g=LPGC[hs];
+  modal('✎ Ghi chú của học sinh — '+esc(lpHs(hs).ten),
+   '<div class="ro">Ví dụ: <i>«bố bị hạn chế quyền theo bản án số …»</i>. Chỉ người có quyền ở tab ② đọc. Sửa <b>giữ lịch sử</b>.</div>'+
+   '<textarea class="ta" id="lpGcNd" style="min-height:90px">'+esc(g?g.nd:'')+'</textarea>',
+   '<button class="btn" data-x="close">Hủy</button><button class="btn p" data-x="lpGCOk" data-hs="'+hs+'">Lưu</button>');return 1}
+ if(x==='lpGCOk'){const nd=$('#lpGcNd').value.trim(),g=LPGC[hs];
+  if(g){g.ls.unshift({nd:g.nd,boi:g.boi,luc:g.luc});g.nd=nd;g.boi=lpAi();g.luc=d2s(HOMNAY)}else if(nd)LPGC[hs]={nd:nd,boi:lpAi(),luc:d2s(HOMNAY),ls:[]};
+  lpGhi(hs,'sua_ghi_chu','');closeModal();render();toast('Đã lưu ghi chú · bản cũ giữ trong lịch sử');return 1}
+ if(x==='lpHL'){mLpHL();return 1}
+ if(x==='lpHLChay'){const v=$('#lpPV').value,ngs=[].slice.call(document.querySelectorAll('.lpNg')).filter(c=>c.checked).map(c=>c.value);
+  if(!ngs.length){toast('⛔ Chọn ít nhất một nguồn SĐT');return 1}
+  LPKQ=lpChayHL(lpChonHS(v),ngs);
+  const ph=document.querySelector('#lpPV option:checked');
+  LPLOG.unshift({gio:lkGio(),hs:'',sk:'tao_link',ai:lpAi(),them:'hàng loạt · '+(ph?ph.textContent:v)+' · '+LPKQ.ok.length+' link · bỏ qua '+LPKQ.bo.length});
+  render();mLpKQ('⚡ Tạo link hàng loạt');return 1}
+ if(x==='lpTaoLai'){const hsl=lpPhamVi().filter(h=>h.tt==='hoc'),ok=[],bo=[];
+  LPLINK.filter(k2=>k2.tt==='het_han'&&hsl.some(h=>h.id===k2.hs)).forEach(k2=>{const h=lpHs(k2.hs);
+   if(k2.sdt&&lpDaLkSo(h.id,k2.sdt)){bo.push([h,LPNGUON[k2.nguon],k2.sdt,'đã liên kết số này bằng đường khác']);return}
+   if(LPLINK.some(y=>y.hs===h.id&&y.sdt===k2.sdt&&(y.tt==='cho_dung'||y.tt==='cho_duyet'))){bo.push([h,LPNGUON[k2.nguon],k2.sdt,'đã có link còn hạn cho số này']);return}
+   if(LPGC[h.id]){bo.push([h,LPNGUON[k2.nguon],k2.sdt,'có ghi chú — tạo từng em']);return}
+   const lk=lpTaoLink(h.id,k2.nguon,k2.sdt,{ly:k2.ly});ok.push([h,LPNGUON[k2.nguon],k2.sdt,lk])});
+  LPKQ={ok:ok,bo:bo};render();mLpKQ('↻ Tạo lại link hết hạn');return 1}
+ if(x==='lpXuat'){mLpXuat(el.dataset.v,(LPKQ?LPKQ.ok:[]).map(o=>o[3]).filter(k2=>k2.tt==='cho_dung'));return 1}
+ if(x==='lpIn'){mLpIn();return 1}
+ if(x==='lpInChon'){const l=$('#lpLopIn').value;const ds=LPLINK.filter(k2=>k2.tt==='cho_dung'&&(lpHs(k2.hs)||{}).lop===l);
+  if(!ds.length){toast('Lớp '+l+' chưa có link chờ dùng — tạo hàng loạt trước');return 1}mLpXuat('in',ds);return 1}
+ if(x==='lpXuatOk'){const md=$('#lpMD').value;if(!md){toast('⛔ <b>Bắt buộc chọn mục đích</b> — Luật BVDLCN 91/2025');return 1}
+  LPLOG.unshift({gio:lkGio(),hs:'',sk:'xuat_danh_sach',ai:lpAi(),them:(LPXUAT.kieu==='excel'?'Excel':'phiếu QR')+' · '+LPXUAT.ds.length+' link · mục đích: '+md});
+  closeModal();render();toast((LPXUAT.kieu==='excel'?'⬇ Đã xuất ':'🖨 Đã in ')+'<b>'+LPXUAT.ds.length+'</b> link · mục đích ghi nhật ký · hệ thống <b>⛔ tự gửi</b>');return 1}
+ if(x==='lpSw'){if(!polSua()){toast('🔒 Chỉ người có quyền sửa chính sách (IT) đổi được công tắc');return 1}
+  LPDUYET=!LPDUYET;render();toast('Công tắc duyệt link thủ công: <b>'+(LPDUYET?'BẬT':'TẮT')+'</b> · link đã sinh ⛔ đổi trạng thái');return 1}
+ return 0}
+document.addEventListener('change',function(e){const t=e.target;if(t.id==='flp'){fLp=t.value;lpCur=null;render()}});
+
 render();
 </script>
 </body>

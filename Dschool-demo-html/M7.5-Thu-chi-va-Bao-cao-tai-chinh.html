@@ -564,6 +564,8 @@ let DM=[
  {ma:'C-VPP',   ten:'Văn phòng phẩm, chi vặt', c:'chi', nt:'A', md:'C-VPP',   tt:'ap'},
  {ma:'C-KT',    ten:'Khen thưởng học sinh, nhân sự',c:'chi',nt:'A',md:'C-KT', tt:'ap'},
  {ma:'C-DD',    ten:'Kinh phí hỗ trợ hoạt động Đoàn - Đội',c:'chi',nt:'A',md:'C-DD', tt:'ap'},
+ /* CSDL-2C: danh muc chi cho bon che do ho tro cua M1.2 (CS-6) — KHONG phai mien giam M7.4 */
+ {ma:'C-CDHS',  ten:'Chi chế độ hỗ trợ học sinh (NĐ 66/2025 · NĐ 339/2025)',c:'chi',nt:'A',md:'C-CDHS',tt:'ap'},
  {ma:'C-DT',    ten:'Chi đào tạo, bồi dưỡng',  c:'chi', nt:'A', md:'C-DT',    tt:'het',
   ngung:{ngay:'31/08/2026',by:'Phạm Thị Lan — Kế toán',vi:'Từ năm học này chi đào tạo do Phòng GD cấp trực tiếp, trường không chi.'}},
 ];
@@ -619,6 +621,12 @@ let GD=[
   by:'Phạm Thị Lan — Kế toán',luc:'26/09/2026 08:15'},
  {id:'GD-2609-0090',ngay:'26/09/2026',c:'chi',dm:'C-KT',  dt:'ALL',so:5600000,ng:'tay',tt:'ghi',mo:'Khen thưởng học sinh giỏi cấp quận',
   dt2:'Chi tiền mặt cho học sinh',mn:'KT-2609-002',by:'Phạm Thị Lan — Kế toán',luc:'26/09/2026 15:40'},
+ /* CSDL-2C — khoản chi thật theo chế độ hỗ trợ học sinh, gắn mã bản ghi chế độ CD-xx của M1.2.
+    CD-08 đã chi; CD-07 (gạo) và CD-09 CHƯA có giao dịch — để thấy dải cảnh báo và cột «chưa ghi sổ». */
+ {id:'GD-2609-0095',ngay:'28/09/2026',c:'chi',dm:'C-CDHS',dt:'B',so:22464000,ng:'tay',tt:'ghi',
+  mo:'Tiền ăn theo chế độ — 24 em × 936.000đ — tháng 9/2026',
+  dt2:'Chi qua tài khoản của gia đình',mn:'CD-08',ct:'DS-ky-nhan-CD08-T9.pdf',
+  by:'Phạm Thị Lan — Kế toán',luc:'28/09/2026 16:05'},
  /* tháng 8 — để có kỳ trước mà so sánh */
  {id:'GD-2608-0044',ngay:'30/08/2026',c:'thu',dm:'HP-2B', dt:'A',so:88200000,ng:'M7.2',tt:'xuat',mo:'Học phí 2 buổi — tháng 8'},
  {id:'GD-2608-0045',ngay:'30/08/2026',c:'thu',dm:'AN-BT', dt:'A',so:52400000,ng:'M7.2',tt:'xuat',mo:'Tiền ăn bán trú — tháng 8'},
@@ -636,6 +644,21 @@ let DOICHIEU=[
  {menu:'M2.8',ten:'Khen thưởng HS giỏi quận',ma:'KT-2609-002',    so:6000000, ky:'Tháng 9/2026',dt:'ALL',mo:'Danh sách khen thưởng đã duyệt'},
  {menu:'M6.11',ten:'Phiếu sửa chữa mái tôn', ma:'BH-21',so:4500000, ky:'Tháng 9/2026',dt:'C',mo:'Sửa mái tôn dãy nhà C2'},
 ];
+
+/* ===== CHẾ ĐỘ HỖ TRỢ HỌC SINH — chiếu CHỈ ĐỌC từ M1.2 khối «Chế độ nhà nước cấp» (CS-6, 19/9/2026) =====
+   M1.2 BÁO sang đây khi xác nhận / gia hạn một chế độ. KHÔNG tự sinh bút toán, KHÔNG vào hàng đợi bàn giao.
+   `dv` giữ ĐÚNG đơn vị của chế độ — 'kg gạo / tháng' KHÔNG quy đổi ra tiền (đơn giá chỉ có tại thời điểm chi). */
+let CHEDO=[
+ {ma:'CD-07',ten:'Cấp gạo',            cc:'NĐ 66/2025 Đ.6 k2 — chính sách HS dân tộc bán trú',
+  hs:24,muc:15,dv:'kg gạo / tháng',ky:'Tháng 9/2026',dt:'B',duyet:'18/09/2026',by:'Trần Thị Hòa — PHT phụ trách ĐT B'},
+ {ma:'CD-08',ten:'Cấp tiền hàng tháng',cc:'NĐ 66/2025 Đ.6 k2 — tiền ăn',
+  hs:24,muc:936000,dv:'đồng / tháng', ky:'Tháng 9/2026',dt:'B',duyet:'18/09/2026',by:'Trần Thị Hòa — PHT phụ trách ĐT B'},
+ {ma:'CD-09',ten:'Hỗ trợ nhà ở',       cc:'NĐ 66/2025 Đ.6 k2 — 360.000đ/tháng khi HS tự túc chỗ ở',
+  hs:6, muc:360000,dv:'đồng / tháng', ky:'Tháng 9/2026',dt:'B',duyet:'18/09/2026',by:'Trần Thị Hòa — PHT phụ trách ĐT B'},
+];
+const cdTien=c=>c.dv.indexOf('đồng')===0;                 /* chế độ tính bằng tiền hay bằng hiện vật */
+const cdChu =c=>cdTien(c)?M(c.muc):c.muc+' '+c.dv.replace(' / tháng','');
+const cdGD  =c=>GD.filter(g=>g.mn===c.ma&&g.tt!=='dao'&&!biDao(g));
 
 /* ==================== CÔNG NỢ & NGHĨA VỤ (chiếu chỉ đọc) ==================== */
 const NGHIAVU={
@@ -744,7 +767,7 @@ const biDao=g=>!!daoCua(g.id);
 
 /* ==================== TAB 1 · SỔ THU CHI ==================== */
 const GDTT={nhap:['n','Nháp'],ghi:['o','Đã ghi nhận'],xuat:['b','Đã xuất kế toán'],dao:['r','Bút toán đảo']};
-const FSO=[['all','Tất cả'],['thu','Chỉ THU'],['chi','Chỉ CHI'],['tay','Nhập tay'],['bg','Từ bàn giao'],['dao','Đã đảo / bút toán đảo']];
+const FSO=[['all','Tất cả'],['thu','Chỉ THU'],['chi','Chỉ CHI'],['tay','Nhập tay'],['bg','Từ bàn giao'],['dao','Đã đảo / bút toán đảo'],['cd','🎒 Chế độ hỗ trợ học sinh']];
 
 function vSO(){
  const tq=RK==='TQ';
@@ -795,6 +818,41 @@ function vSO(){
    'Cho phép đóng im lặng thì tới cuối năm sổ thiếu một khoản mà không ai biết thiếu từ đâu.');
  }
 
+ /* --- CSDL-2C: BÁO từ M1.2 (nguồn nhóm ② — KHÔNG tự sinh bút toán, KHÔNG vào hàng đợi bàn giao) --- */
+ const cds=CHEDO.filter(trongPV).filter(c=>KYCUR.indexOf('Tháng')!==0||c.ky===KYCUR);
+ const cdChua=cds.filter(c=>!cdGD(c).length);
+ if(!tq&&cds.length){
+  h+='<div class="info">🎒 <b>M1.2 báo: '+cds.length+' chế độ hỗ trợ học sinh đang hưởng trong kỳ</b> '+
+   '<span class="ngdn bg">🔗 M1.2 — khối Chế độ nhà nước cấp</span>'+
+   '<div class="hq2">Đây là <b>thông báo</b>, ⛔ <b>không phải bàn giao</b>: máy <b>không tự sinh bút toán</b>. '+
+   'Chế độ được hưởng là <b>quyền của gia đình</b> theo quyết định của cơ quan nhà nước; phiếu chi là <b>hành vi chi tiền của trường</b> — '+
+   'hai việc do hai người chịu trách nhiệm, gộp lại thì không còn ai ký. Kế toán nhập khoản chi thật ở sổ và gắn <b>mã chế độ CD-xx</b>. '+
+   'Bốn chế độ này ⛔ <b>không vào công nợ học phí</b> và ⛔ <b>không đi qua M7.4</b>.</div></div>';
+  if(cdChua.length) h+='<div class="canhbao">⏳ <b>'+cdChua.length+' chế độ đã duyệt nhưng chưa có khoản chi nào trong sổ</b> — '+
+    cdChua.map(c=>'<b>'+esc(c.ten)+'</b> ('+c.ma+', '+c.hs+' em × '+cdChu(c)+', duyệt '+c.duyet+')').join(' · ')+
+    '<div class="hq2">Cảnh báo, ⛔ <b>không chặn</b> và ⛔ <b>không tự ghi sổ</b> — trường có thể chi theo quý, hoặc ngân sách chưa về.</div></div>';
+ }
+ if(!tq&&S.fso==='cd'){
+  h+='<div class="khoi on"><div class="khh"><b>🎒 Đang hưởng trong kỳ — để lập phiếu chi đủ em, đủ mức, đủ kỳ</b>'+
+   '<span class="sub">chiếu chỉ đọc từ M1.2 · giữ NGUYÊN đơn vị của chế độ</span></div><div class="khb">'+
+   '<div class="wrapx"><table style="min-width:720px"><thead><tr><th style="text-align:left">Chế độ · căn cứ</th><th style="text-align:left">Mã</th>'+
+   '<th style="text-align:right">Số em</th><th style="text-align:right">Mức / tháng</th><th style="text-align:left">Tổng của kỳ</th>'+
+   '<th style="text-align:left">Đã ghi sổ</th></tr></thead><tbody>';
+  cds.forEach(c=>{const gs=cdGD(c);
+   h+='<tr><td><b>'+esc(c.ten)+'</b><div class="ct2">'+esc(c.cc)+'</div></td>'+
+    '<td><span class="ct2">'+c.ma+'</span><div class="ct2">'+dtChu(c.dt)+'</div></td>'+
+    '<td style="text-align:right"><b>'+c.hs+'</b></td>'+
+    '<td style="text-align:right">'+cdChu(c)+'</td>'+
+    '<td>'+(cdTien(c)?'<b>'+M(c.hs*c.muc)+'</b>'
+      :'<b>'+(c.hs*c.muc)+' kg gạo</b><div class="ct2">⛔ không quy đổi ra tiền — đơn giá chỉ có tại thời điểm chi</div>')+'</td>'+
+    '<td>'+(gs.length?gs.map(g=>'<b>'+M(g.so)+'</b> <span class="ct2">'+g.id+'</span>').join('<br>')
+      :'<span class="st2 w">chưa ghi sổ</span>')+'</td></tr>';});
+  h+='</tbody></table></div>';
+  h+=D('Cột <b>Tổng của kỳ</b> của chế độ <b>Cấp gạo</b> là <b>kg</b>, không phải tiền — và nó <b>không cộng</b> vào bất kỳ ô tổng tiền nào của menu. '+
+   'Giao dịch ghi ở sổ là <b>số tiền trường trả cho nhà cung cấp gạo</b>; số kg của từng em nằm ở M1.2 và chỉ dùng để <b>đối chiếu khối lượng</b>.');
+  h+='</div></div>';
+ }
+
  /* --- thanh lọc --- */
  h+='<div class="bar"><input class="inp" id="q" placeholder="Tìm mã giao dịch, nội dung, đối tác…" value="'+esc(S.q)+'">'+
   (tq?'':FSO.map(f=>'<button class="chip '+(S.fso===f[0]?'on':'')+'" data-f="'+f[0]+'">'+f[1]+'</button>').join(''))+
@@ -810,6 +868,7 @@ function vSO(){
  if(S.fso==='tay') ds=ds.filter(g=>g.ng==='tay');
  if(S.fso==='bg')  ds=ds.filter(g=>g.ng!=='tay');
  if(S.fso==='dao') ds=ds.filter(g=>g.tt==='dao'||biDao(g));
+ if(S.fso==='cd')  ds=ds.filter(g=>g.mn&&CHEDO.some(c=>c.ma===g.mn));   /* CSDL-2C: lối lọc khoản chi theo chế độ hỗ trợ */
 
  h+='<div class="sum" style="margin:0 0 9px;justify-content:flex-start"><span><b>'+ds.length+'</b> giao dịch</span>'+
   '<span>·</span><span>THU <b>'+M(tong('thu',null,ds))+'</b></span><span>·</span><span>CHI <b>'+M(tong('chi',null,ds))+'</b></span></div>';
@@ -940,13 +999,31 @@ function vBC(){
        :(ch<0?'Chi <b>ít hơn</b> con số nguồn '+M(-ch)+' — cần biết vì sao <i>(giá thương lượng lại, số lượng thực tế ít hơn…)</i>'
              :'Chi <b>vượt</b> con số nguồn '+M(ch)+' — <b>cần giải trình</b>')))+'</td></tr>';});
   t+='</tbody></table></div>';
-  const chuaGhep=GD.filter(g=>g.ng==='tay'&&g.mn&&!DOICHIEU.some(x=>x.ma===g.mn));
+  /* CSDL-2C: ma che do CD-xx ghep o bang RIENG ben duoi, khong phai ma nguon bi mo coi */
+  const chuaGhep=GD.filter(g=>g.ng==='tay'&&g.mn&&!DOICHIEU.some(x=>x.ma===g.mn)&&!CHEDO.some(c=>c.ma===g.mn));
   if(chuaGhep.length) t+='<div class="canhbao">🔗 <b>'+chuaGhep.length+' giao dịch có mã nguồn nhưng không ghép được</b> — mã gõ sai, hoặc bản ghi bên menu nguồn đã bị hủy: '+
     chuaGhep.map(g=>g.id+' <span class="ct2">'+esc(g.mn)+'</span>').join(' · ')+'</div>';
   const khongMa=GD.filter(g=>g.ng==='tay'&&!g.mn&&['C-CSVC','C-SK','C-KT'].indexOf(g.dm)>=0);
   if(khongMa.length) t+='<div class="canhbao">✍ <b>'+khongMa.length+' giao dịch nhập tay chưa gắn mã nguồn</b> ở nhóm danh mục thường có phiếu duyệt: '+
     khongMa.map(g=>g.id+' — '+esc(g.mo)).join(' · ')+
     '<div class="hq2">Không gắn mã thì khoản chi này <b>không bao giờ được đối chiếu</b> với phiếu đã duyệt.</div></div>';
+  /* CSDL-2C: chế độ hỗ trợ học sinh — bảng RIÊNG vì có chế độ tính bằng HIỆN VẬT, không cộng chung cột tiền */
+  const cds2=CHEDO.filter(trongPV).filter(x=>KYCUR.indexOf('Tháng')!==0||x.ky===KYCUR);
+  if(cds2.length){
+   t+='<div class="sech2" style="margin-top:14px">🎒 Chế độ hỗ trợ học sinh <span class="ct2">🔗 M1.2 — khối Chế độ nhà nước cấp</span></div>';
+   t+='<div class="wrapx"><table style="min-width:760px"><thead><tr><th style="text-align:left">Chế độ</th><th style="text-align:left">Mã</th>'+
+    '<th style="text-align:left">Nguồn báo <span class="ct2">(số em × mức)</span></th><th style="text-align:right">Đã ghi sổ</th>'+
+    '<th style="text-align:left">Kết luận</th></tr></thead><tbody>';
+   cds2.forEach(c=>{const gs=cdGD(c),so=gs.reduce((a,g)=>a+g.so,0);
+    t+='<tr><td><b>'+esc(c.ten)+'</b><div class="ct2">'+esc(c.cc)+'</div></td>'+
+     '<td><span class="ct2">'+c.ma+'</span></td>'+
+     '<td>'+c.hs+' em × '+cdChu(c)+' = <b>'+(cdTien(c)?M(c.hs*c.muc):(c.hs*c.muc)+' kg gạo')+'</b></td>'+
+     '<td style="text-align:right">'+(gs.length?'<b>'+M(so)+'</b>':'<span class="st2 w">chưa ghi sổ</span>')+'</td>'+
+     '<td style="font-size:11.5px">'+(!gs.length?'<b>Chưa có khoản chi thật</b> — chưa chi, hoặc kế toán quên gắn mã chế độ'
+       :(cdTien(c)?(so===c.hs*c.muc?'Khớp':'Lệch <b>'+M(so-c.hs*c.muc)+'</b> — cần biết vì sao <i>(em nghỉ giữa kỳ, chi thiếu một em…)</i>')
+        :'⚠ <b>Đối chiếu khối lượng, ⛔ không cộng vào tiền</b> — hai cột <b>khác đơn vị</b>: nguồn báo tính bằng <b>kg</b>, sổ ghi bằng <b>đồng</b> theo đơn giá tại thời điểm chi'))+'</td></tr>';});
+   t+='</tbody></table></div>';
+  }
   t+=D('Bảng này là chỗ duy nhất trả lời được câu <b>“duyệt 12 triệu mà sao chi 11,64 triệu”</b>. '+
    'Nếu M6.4 tự đẩy giao dịch sang đây thì con số dự toán <b>trở thành khoản chi</b>, và khoản chi thật vẫn phải nhập — <b>một khoản chi có hai sổ</b>.');
   return t;
@@ -1243,7 +1320,7 @@ function moFormGD(){
   '<div class="k">Nội dung</div><div><input class="inp" id="fmo" value="'+esc(f.mo||'')+'" style="width:100%" placeholder="Sáu tháng sau đọc lại vẫn hiểu"></div>'+
   '<div class="k">Đối tác</div><div><input class="inp" id="fdt2" value="'+esc(f.dt2||'')+'" style="width:100%" placeholder="Nhà cung cấp, cơ quan cấp tiền, nhà tài trợ…"></div>'+
   '<div class="k">Mã nguồn đối chiếu</div><div><input class="inp" id="fmn" value="'+esc(f.mn||'')+'" style="min-width:250px" placeholder="DMS-… · BH-… · SK-… · KT-…">'+
-   '<div class="hint">Gắn mã đợt mua sắm của <b>M6.4</b>, mã phiếu sửa chữa của <b>M6.11</b>, mã sự kiện của <b>M6.8</b>, mã phiếu quỹ của <b>M6.17</b>… để khối <b>② Đối chiếu</b> ghép được <i>duyệt bao nhiêu — chi bao nhiêu</i>. '+
+   '<div class="hint">Gắn mã đợt mua sắm của <b>M6.4</b>, mã phiếu sửa chữa của <b>M6.11</b>, mã sự kiện của <b>M6.8</b>, mã phiếu quỹ của <b>M6.17</b>, <b>mã chế độ CD-xx</b> của <b>M1.2</b>… để khối <b>② Đối chiếu</b> ghép được <i>duyệt bao nhiêu — chi bao nhiêu</i>. '+
    'Bỏ trống thì khoản chi này không bao giờ được đối chiếu.</div></div>'+
   '<div class="k">Chứng từ</div><div><button class="btn sm" data-x="themtep">📎 Đính kèm</button></div>'+
   '</div>',
@@ -1300,6 +1377,79 @@ document.addEventListener('click',e=>{
 });
 
 /* ==================== KHỞI ĐỘNG ==================== */
+render();
+
+/* ==========================================================================
+   app.70-khoi-tao.js — M7.5 · dải «Số liệu tính từ dd/mm/yyyy»
+   Cụm KTLD · phiên KTLD-1I · 23/9/2026 — tài liệu M7.5 §6b (luật TM-4)
+
+   ⛔ KHÔNG sửa một byte nào của app.js — gán lại scopeBar · vBC.
+   ========================================================================== */
+
+let KT_MOC = null;
+const KT_CA = ['01/09/2026', '15/09/2026'];
+const ktBat = () => !!KT_MOC;
+
+function ktThanh() {
+  let h = '<div class="ro" style="display:flex;gap:9px;align-items:center;flex-wrap:wrap">' +
+    '<b>🧪 Tình huống trường (demo):</b>' +
+    '<button class="btn xs' + (ktBat() ? '' : ' p') + '" data-ktx="tat">Đang vận hành bình thường</button>' +
+    KT_CA.map(m => '<button class="btn xs' + (KT_MOC === m ? ' p' : '') + '" data-ktx="bat" data-ktm="' + m + '">Năm học đầu — vận hành từ ' + m + '</button>').join('') +
+    '<span style="color:var(--ink3)">Cụm <b>KTLD</b> · chốt <b>H11 ①</b>, hệ quả ②.</span></div>';
+  if (ktBat())
+    h += '<div class="kybar"><span>🕘</span><div><b>Số liệu tính từ ' + KT_MOC + '</b> — khoản thu trước mốc thực hiện <b>ngoài hệ thống</b>.' +
+      '<div style="margin-top:2px;font-size:11.5px">🛑 Dải này ⛔ <b>không tắt được</b>, ⛔ không thu gọn — <b>che đi là giả làm số đúng</b> <i>(luật TM-4, §6b)</i>. ' +
+      'Nó chỉ hiện ở <b>năm học đầu tiên</b> và chỉ khi mốc <b>rơi vào trong</b> năm ấy. ' +
+      'Không nói ra thì Hiệu trưởng nhìn báo cáo <b>tưởng trường thu thiếu</b> — loại hiểu nhầm ⛔ <b>không ai báo lỗi</b>, ' +
+      'vì con số <b>đúng với thứ nó đang đếm</b>; cái sai nằm ở <b>khoảng thời gian mà người đọc tưởng nó đang đếm</b>.</div></div></div>';
+  return h;
+}
+
+/* ---------- T2: dải trên đầu + khối xem trước DÒNG MỐC trong tệp xuất ---------- */
+const _ktBC = vBC;
+vBC = function () {
+  if (!ktBat()) return _ktBC();
+  const tep =
+    'Nguồn: Dschool — M7.5 Thu chi &amp; Báo cáo tài chính\n' +
+    'Khoảng: 01/09/2026 → 31/08/2027\n' +
+    '⚠ Hệ thống bắt đầu vận hành ' + KT_MOC + ' — khoản thu trước mốc thực hiện NGOÀI hệ thống,\n' +
+    '  KHÔNG có trong tệp này.';
+  const dau = '<div class="kybar"><span>🕘</span><div><b>Số liệu tính từ ' + KT_MOC + '</b> — khoản thu trước mốc thực hiện <b>ngoài hệ thống</b>. ' +
+    'Bốn khối dưới đây <b>đều</b> mang giới hạn này: ① so với kỳ trước ⇒ mẫu số <b>không có</b>, in <b>—</b> ⛔ <b>không in −100 %</b> · ' +
+    '② hai vế đối chiếu <b>cùng thiếu một khúc</b> nên <i>Chênh = 0</i> ⛔ không đọc thành «khớp hết» · ' +
+    '③ công nợ ⛔ <b>không gồm phần trước mốc</b> · ④ xem dưới.</div></div>';
+  const cuoi = '<div class="bl" style="margin-top:12px"><div class="blh">' +
+    '<div class="t">🔴 Tệp xuất kế toán phải mang <b>DÒNG MỐC</b> — ⛔ không chỉ nằm trên màn hình</div>' +
+    '<div class="s">Ba tệp <i>Thu chi tiết · Chi chi tiết · Tổng hợp kỳ</i> — dòng đầu tệp</div></div>' +
+    '<div class="blb"><pre style="margin:0;padding:11px 13px;background:#f8fafc;border:1px solid var(--line);border-radius:9px;font-size:12px;white-space:pre-wrap">' + tep + '</pre>' +
+    '<div class="ro" style="margin:10px 0 0">🔑 <b>Vì sao đây là chỗ quan trọng nhất:</b> tệp <b>rời khỏi hệ thống</b>. Kế toán nhập nó vào MISA / DAS / FAST, ' +
+    'rồi câu giải thích trên màn hình <b>ở lại phía sau</b>. Không có dòng ấy thì các tháng trước mốc <b>biến mất lặng lẽ</b> trong sổ kế toán — ' +
+    'đúng cái giá §1 đã nêu: <i>«tới cuối năm hai sổ lệch nhau mà không ai biết từ tháng nào»</i>.' +
+    '<div style="margin-top:6px">⚖ <b>TT 09/2024/TT-BGDĐT</b> buộc công khai thu chi theo <b>NĂM TÀI CHÍNH</b> <i>(báo cáo thường niên trước 10/6)</i>. ' +
+    'Năm đầu hệ thống chỉ giữ <b>một phần</b> năm tài chính ấy ⇒ bản công khai dựng từ <b>sổ kế toán</b>, ⛔ không phải từ tệp này. <i>(⏳ §10 điểm I9 — chạm tiền)</i></div></div>' +
+    '<div class="ro" style="margin:9px 0 0">📄 <b>Báo cáo Thu chi năm đã ký</b> của năm đầu mang dải này <b>vĩnh viễn</b>, ⛔ không gỡ khi mở lại ở năm sau. ' +
+    'Đây là <b>dải THỨ HAI</b> trên cùng bản ký, cạnh dải <i>«đã phát sinh thêm … kể từ khi ký»</i> — ⛔ <b>không gộp</b>: ' +
+    'một cái về <b>khoảng thời gian dữ liệu</b>, một cái về <b>độ tươi của con số</b>.</div>' +
+    '</div></div>';
+  return dau + _ktBC() + cuoi;
+};
+
+const _ktScope = scopeBar;
+scopeBar = function () { return _ktScope() + ktThanh(); };
+
+document.addEventListener('click', e => {
+  const el = e.target.closest ? e.target.closest('[data-ktx]') : null;
+  if (!el) return;
+  const x = el.dataset.ktx;
+  if (x === 'bat' || x === 'tat') {
+    KT_MOC = (x === 'bat') ? el.dataset.ktm : null;
+    S.tab = 'bc'; render();
+    toast(ktBat() ? '🧪 Năm học đầu tiên — <b>Số liệu tính từ ' + KT_MOC + '</b>. Dải ⛔ không tắt được.'
+      : '🧪 Trở lại trường đang vận hành bình thường — ⛔ không dải.');
+    return;
+  }
+});
+
 render();
 </script>
 </body>

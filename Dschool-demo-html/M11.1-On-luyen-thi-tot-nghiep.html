@@ -448,6 +448,9 @@ tr.grp td{background:#f8fafc;font-size:12px;color:var(--ink2);border-top:1px sol
 .capr .pill .wt{color:var(--amber);font-weight:700}
 .capok{font-size:12.5px;color:#065f46;background:var(--green-soft);border:1px solid #a7f3d0;border-radius:9px;padding:7px 11px;margin-bottom:10px}
 .pb2 i.a{background:var(--green)}.pb2 i.b{background:var(--amber)}
+/* v1.3 — chế độ tích môn (§7.1b) */
+table.tich tr.doi td{background:#fffbeb}
+table.tich input[type=checkbox]{width:16px;height:16px;cursor:pointer}
 </style>
 </head>
 <body class="nn">
@@ -628,8 +631,15 @@ const DK_BAN=[
 ];
 /* bốn em có chứng chỉ IELTS: sẽ đăng ký THI Ngoại ngữ (được miễn) nhưng KHÔNG đăng ký ÔN Tiếng Anh */
 const KHONG_ON_ANH=['a3-01','a3-02','a4-17','a4-18'];
+/* v1.3 §7.2c — mỗi dòng mang `nguoi` = «Người nhập đăng ký» {ten · vai (đóng băng lúc nhập) · nguon · ngay}; `ls` = các dòng trước
+   (dòng mới nhất là dòng hiện hành, ⛔ không ghi đè — §3). */
+const NGUOI_V1={ten:'Phan Thị Thảo',vai:'Văn thư',nguon:'import «Phiếu đăng ký ôn luyện — đợt 1»',ngay:'2027-02-20',duong:'import'};
 const DK={};
-HS12().forEach(h=>DK[h.id]={mon:['toan','van'].concat(h.th.filter(m=>!(m==='anh'&&KHONG_ON_ANH.includes(h.id)))),ban:'v1'});
+HS12().forEach(h=>DK[h.id]={mon:['toan','van'].concat(h.th.filter(m=>!(m==='anh'&&KHONG_ON_ANH.includes(h.id)))),ban:'v1',nguoi:NGUOI_V1,ls:[]});
+/* ảnh chụp môn ôn LÚC NẠP — tệp mẫu 12/04 (tepMau) dựng từ đây, không từ DK sống: chủ nhiệm tích trong demo thì tệp không tự đổi theo */
+const DK_GOC={}; Object.keys(DK).forEach(h=>DK_GOC[h]=DK[h].mon.slice());
+/* v1.3 §7.2d — bản chiếu CHỈ ĐỌC lên App PH-HS qua kênh thông báo sẵn có (không mã chức năng App mới, không nút) */
+const TB_APP=[];
 
 /* ---------- MÔN THI CHÍNH THỨC — bản chiếu 🔗 M3.4 (chỉ đọc, chỉ để THAM KHẢO) ----------
    Có sau khi khóa đăng ký dự thi (năm 2026: 17h 5/5). Demo bật/tắt bằng nút trên thanh vai. Khác môn ôn KHÔNG phải lỗi. */
@@ -688,10 +698,22 @@ const NGOAI_KHOA=[];
    siSo = SĨ SỐ TỐI ĐA MỘT LỚP ÔN — tham số của đợt, gợi ý sẵn bằng trần sĩ số lớp THPT (45). Dùng tính gợi ý số lớp. */
 const DOT=[
  {id:'D1',nam:'2026-2027',ten:'Ôn thi TN THPT 2027 — giai đoạn 1',tu:'2027-03-01',den:'2027-05-08',siSo:45,
-  pt:'Vũ Thị Lan',qd:'KH 21/KH-NTT ngày 16/02/2027',huy:null},
+  pt:'Vũ Thị Lan',qd:'KH 21/KH-NTT ngày 16/02/2027',huy:null,
+  dkMo:'2027-02-10',dkHan:'2027-02-20',dkKhoa:null,
+  dkLs:[{luc:'10/02/2027 07:30',boi:'Vũ Thị Lan · PHT chuyên môn',viec:'▶ Mở đăng ký',chiTiet:'mở 10/02 · hạn 20/02'}]},
  {id:'D2',nam:'2026-2027',ten:'Ôn thi TN THPT 2027 — giai đoạn 2 (sau khi khóa đăng ký dự thi)',tu:'2027-05-10',den:'2027-06-05',siSo:40,
-  pt:'Vũ Thị Lan',qd:'(chưa có số kế hoạch)',huy:null}
+  pt:'Vũ Thị Lan',qd:'(chưa có số kế hoạch)',huy:null,dkMo:null,dkHan:null,dkKhoa:null,dkLs:[]}
 ];
+/* v1.3 §7.2b — GIAI ĐOẠN ĐĂNG KÝ là ba TRƯỜNG của đợt (dkMo · dkHan · dkKhoa) + lịch sử dkLs; ⛔ không phải thực thể riêng.
+   Trạng thái DẪN XUẤT — qua hạn là khóa, không chờ ai bấm. D1 đã khóa 20/02 (qua hạn); D2 chưa mở — hôm nay mô phỏng 18/04
+   nằm sau mọi hạn, nên thanh vai có nút mô phỏng «đợt giai đoạn 2 đang mở đăng ký» (app.80). */
+function ttDK(d){
+ if(!d||!d.dkMo||HOMNAY<d.dkMo) return 'chua';
+ if(d.dkKhoa||HOMNAY>d.dkHan) return 'khoa';
+ return 'mo';
+}
+const ngayKhoaDK=d=>d.dkKhoa?d.dkKhoa.ngay:d.dkHan;
+const dotMoDK=()=>DOT.find(d=>d.nam===NAM_HIEN&&!d.huy&&ttDK(d)==='mo');
 /* SỐ LỚP ĐÃ CHỐT theo đợt × môn — người phụ trách chốt, lệch gợi ý phải có lý do */
 const SO_LOP={};
 
@@ -1712,7 +1734,11 @@ function veGVCN(){
  const dots=DOT.filter(d=>d.nam===ST.nam&&!d.huy);
  if(!dots.find(d=>d.id===ST.cnDot)) ST.cnDot=(dots.find(d=>ttDot(d)[0]==='Đang diễn ra')||dots[0]||{}).id;
  let h=scopeBar()+'<div class="hint">GVCN không quản lý lớp ôn — màn hình này trả lời <b>em nào của lớp mình đang ôn môn gì, đi học ra sao</b>. '
-  +'Ghi em <b>rút môn ôn</b> (đơn của gia đình) ở <a class="lk" data-a="nav.tab" data-v="dk">tab 2</a>.</div>';
+  +'Ghi em <b>rút môn ôn</b> (đơn của gia đình) và — trong hạn đăng ký — <b>tích môn ôn hộ</b> em lớp mình ở <a class="lk" data-a="nav.tab" data-v="dk">tab 2</a>.</div>';
+ /* v1.3 §6 — bảng này VẪN CHỈ ĐỌC trong hạn: quyền tích là T của m11.1.dang_ky_mon_on (tab 2), bảng này thuộc m11.1.lop_on_luyen */
+ const dmo=dotMoDK();
+ if(dmo) h+='<div class="alert b">✎<span class="sp">Đợt «'+esc(tenDotNgan(dmo))+'» <b>đang mở đăng ký môn ôn</b> — hạn <b>'+k2n(dmo.dkHan)+'</b> · <b>'+ds.filter(x=>monOn(x.id).length).length+'/'+ds.length+'</b> em đã có đăng ký. '
+  +'Bảng này <b>chỉ đọc</b> — cửa tích ở tab 2.</span><a class="btn p sm" data-a="nav.tab" data-v="dk">↗ Tích ở tab Đăng ký môn ôn</a></div>';
  if(dots.length>1) h+='<div class="bar">'+dots.map(d=>'<button class="chip'+(d.id===ST.cnDot?' on':'')+'" data-a="cn.dot" data-v="'+d.id+'">'+esc(d.ten)+'</button>').join('')+'</div>';
  if(!ST.cnDot) return h+'<div class="empty">Chưa có đợt ôn nào ở năm học này.</div>';
  h+='<div class="tbw tbx"><table><tr><th>Học sinh</th><th>Toán</th><th>Ngữ văn</th><th>Môn tự chọn đăng ký ôn</th>'+(SIM.m34?'<th>Môn thi chính thức 🔗 M3.4</th>':'')+'</tr>';
@@ -1933,7 +1959,7 @@ function veCapMon(ls){
    em có quyền ôn khác môn thi (chọn ôn X rồi thi Y; thi Anh nhờ miễn thi mà không ôn Anh). Môn thi chỉ CHIẾU 🔗 để tham khảo,
    không bao giờ tự sửa đăng ký ôn hay lớp ôn.
    TT 29/2024 Đ.5 (sửa bởi TT 19/2026): HS cuối cấp tự nguyện đăng ký ôn, nhà trường tổng hợp đăng ký THEO TỪNG MÔN.
-   Năng lực: dkImport (ID) · rutOn (S) */
+   Năng lực: dkImport (ID) · rutOn (S) · v1.3: tichDK (T — chủ nhiệm tích hộ, CHỈ trong hạn) · moDK (S @ School — mở · hạn · khóa) */
 
 const tenMonNgan=m=>TEN_NGAN[m]||MON[m].ten;
 const tcOn=h=>monOn(h).filter(m=>MON[m].thi==='tc');
@@ -1961,16 +1987,24 @@ function oThiCT(h){
 }
 
 function veDK(){
- const ds=hsTrongPV(), ban=DK_BAN[DK_BAN.length-1], nhapDuoc=can('dkImport')&&ST.nam===NAM_HIEN;
+ const ds=hsTrongPV(), ban=DK_BAN[DK_BAN.length-1], nhapDuoc=can('dkImport')&&ST.nam===NAM_HIEN, dmo=dotMoDK();
  if(ST.nam!==NAM_HIEN) return scopeBar()+'<div class="empty">Dữ liệu mẫu chỉ dựng đăng ký ôn luyện của năm học '+NAM_HIEN+'.</div>';
+ /* v1.3 — cửa ghi chỉ mở trong hạn; ra khỏi hạn (khóa · đổi vai) thì bản nháp chưa lưu bỏ đi */
+ if(!dmo||!can('tichDK')){ST.tich=false;ST.tam={};ST.tichNguonDong={}}
  const dots=DOT.filter(d=>d.nam===ST.nam&&!d.huy&&HOMNAY<=d.den);
  if(!dots.find(d=>d.id===ST.dkDot)) ST.dkDot=(dots.find(d=>ttDot(d)[0]==='Đang diễn ra')||dots[0]||{}).id;
- let h=scopeBar();
+ let h=scopeBar()+veDaiDK(ds,dmo);
+ const nTich=ds.filter(x=>DK[x.id].nguoi&&DK[x.id].nguoi.duong==='tich').length, nImp=ds.filter(x=>DK[x.id].nguoi&&DK[x.id].nguoi.duong==='import').length;
+ const lyDoXam=dmo?'':(()=>{const k=dotKhoaGanNhat();return k?'Đăng ký đợt «'+tenDotNgan(k)+'» đã khóa '+k2n(ngayKhoaDK(k))+' — import chỉ bật trong hạn đăng ký':'Chưa đợt nào mở đăng ký môn ôn — import chỉ bật trong hạn đăng ký'})();
  h+='<div class="card"><div class="ch">📥 Đăng ký ôn luyện đang dùng'
-  +'<span class="sp"></span><a class="lk" data-a="dk.ls">🕘 Các lần import ('+DK_BAN.length+')</a>'+(nhapDuoc?' <button class="btn p sm" data-a="dk.imp">⬆ Import đăng ký ôn…</button>':'')+'</div>'
-  +'<div class="cb cfr"><div class="f"><div class="k">Bản</div><div class="v"><b>'+esc(ban.ten)+'</b> <span class="mini">'+esc(ban.tep)+'</span></div></div>'
+  +'<span class="sp"></span><a class="lk" data-a="dk.app">📱 Bản chiếu lên App ('+TB_APP.length+')</a> · <a class="lk" data-a="dk.ls">🕘 Các lần import ('+DK_BAN.length+')</a>'
+  +(nhapDuoc?(dmo?' <button class="btn p sm" data-a="dk.imp">⬆ Import đăng ký ôn…</button>'
+   :' <button class="btn sm" style="opacity:.55" data-a="dk.impx" title="'+esc(lyDoXam)+'">⬆ Import đăng ký ôn…</button>'):'')+'</div>'
+  +'<div class="cb cfr"><div class="f"><div class="k">Bản import gần nhất</div><div class="v"><b>'+esc(ban.ten)+'</b> <span class="mini">'+esc(ban.tep)+'</span></div></div>'
   +'<div class="f"><div class="k">Import</div><div class="v">'+ban.luc+' · '+esc(ban.boi)+' ('+esc(ban.vai)+') · nhận <b>'+ban.nhan+'</b> dòng'+(ban.bo?' · bỏ qua '+ban.bo:'')+(ban.doi?' · <b>'+ban.doi+' em đổi môn ôn</b>':'')+'</div></div>'
+  +'<div class="f"><div class="k">Dòng hiện hành theo đường vào</div><div class="v"><b>'+nTich+'</b> em do chủ nhiệm tích · <b>'+nImp+'</b> em từ import <span class="mini">— dòng mới nhất là dòng hiện hành, bất kể đường vào (§3)</span></div></div>'
   +'<div class="f"><div class="k">Môn thi chính thức</div><div class="v">'+(SIM.m34?'🔗 <b>M3.4</b> đã có danh sách dự thi — cột tham khảo bên dưới':'<span class="mini">🔗 M3.4 chưa có danh sách dự thi (khóa đăng ký năm 2026: 17h 5/5)</span>')+'</div></div></div></div>';
+ if(ST.tich) return h+veTich(ds,dmo);
  /* hàng việc — quét cả năm, không theo chip */
  const lech=ds.map(x=>({h:x.id,t:lechCua(x.id)})).filter(x=>x.t.length);
  const chuaLop=dots.length?ds.filter(x=>monOn(x.id).some(m=>!rutCua(x.id,m)&&lopMonDot(ST.dkDot,m).length&&!tvMonDot(x.id,m,ST.dkDot).length)):[];
@@ -1983,6 +2017,7 @@ function veDK(){
   +'<input class="fs" id="dkQ" placeholder="🔍 Tìm tên hoặc mã HS" value="'+esc(ST.dkQ)+'" style="width:190px"></div>';
  const LOC=[['all','Tất cả',()=>true],['rut','Có môn rút ôn',x=>RUT.some(z=>z.hs===x.id&&z.tt==='rut')],['lech','Lệch lớp ôn',x=>lechCua(x.id).length],
   ['doi','Đổi môn ở bản mới',x=>DK[x.id].doi],['nhieu','Ôn trên 2 môn tự chọn',x=>tcOn(x.id).length>2],['it','Ôn dưới 2 môn tự chọn',x=>tcOn(x.id).length<2]]
+  .concat(dmo?[['chua','Chưa đăng ký',x=>!monOn(x.id).length]]:[])
   .concat(SIM.m34?[['khac','Ôn khác môn thi 🔗',x=>khacThi(x.id)]]:[]);
  if(!LOC.find(x=>x[0]===ST.dkLoc)) ST.dkLoc='all';
  h+='<div class="bar">'+LOC.map(([k,n,f])=>'<button class="chip'+(ST.dkLoc===k?' on':'')+'" data-a="dk.loc" data-v="'+k+'">'+n+' <b>'+ds.filter(f).length+'</b></button>').join('')
@@ -1992,10 +2027,10 @@ function veDK(){
  const q=kd(ST.dkQ.trim()); if(q) loc=loc.filter(x=>kd(x.ten).includes(q)||x.ma.includes(q));
  if(ST.dkLoc==='khac') h+='<div class="hint">Em <b>ôn khác môn thi</b> không phải lỗi — đăng ký ôn là tự nguyện và có trước kỳ đăng ký dự thi. Danh sách này để GVCN, người phụ trách <b>hỏi lại nhu cầu</b>; lớp ôn không tự đổi.</div>';
  if(!loc.length) return h+'<div class="empty">Không có học sinh nào khớp bộ lọc.</div>';
- h+='<div class="tbw tbx"><table><tr><th>Học sinh</th><th>Toán</th><th>Ngữ văn</th><th>Môn tự chọn đăng ký ôn</th>'+(SIM.m34?'<th>Môn thi chính thức 🔗 M3.4</th>':'')+'<th>Ghi chú</th><th></th></tr>';
+ h+='<div class="tbw tbx"><table><tr><th>Học sinh</th><th>Toán</th><th>Ngữ văn</th><th>Môn tự chọn đăng ký ôn</th>'+(SIM.m34?'<th>Môn thi chính thức 🔗 M3.4</th>':'')+'<th>Người nhập đăng ký</th><th>Ghi chú</th><th></th></tr>';
  const phang=!!q, nhom={}; loc.forEach(x=>(nhom[x.lop]=nhom[x.lop]||[]).push(x));
  Object.keys(nhom).sort().forEach(lck=>{
-  if(!phang) h+='<tr class="grp"><td colspan="'+(SIM.m34?7:6)+'">🏫 <b>'+lck+'</b> · '+nhom[lck].length+' em</td></tr>';
+  if(!phang) h+='<tr class="grp"><td colspan="'+(SIM.m34?8:7)+'">🏫 <b>'+lck+'</b> · '+nhom[lck].length+' em</td></tr>';
   nhom[lck].forEach(x=>{
    const d=DK[x.id], lc=lechCua(x.id), rutDuoc=can('rutOn')&&ST.nam===NAM_HIEN, tc=tcOn(x.id);
    const cot=m=>monOn(x.id).includes(m)?oMon(x.id,m):'<span class="mini">không đăng ký</span>';
@@ -2003,13 +2038,15 @@ function veDK(){
     +'<td>'+cot('toan')+'</td><td>'+cot('van')+'</td>'
     +'<td>'+(tc.map(m=>'<div class="tci">'+oMon(x.id,m)+'</div>').join('')||'<span class="mini">—</span>')+'</td>'
     +(SIM.m34?'<td class="mini">'+oThiCT(x.id)+'</td>':'')
+    +'<td class="mini">'+oNguoi(x.id)+'</td>'
     +'<td class="mini">'+(tc.length!==2?'<span class="tg c">'+tc.length+' môn tự chọn</span> ':'')+(d.doi?'<span class="tg c" title="Bản cũ: '+esc(d.doi.cu.map(tenMonNgan).join(' + '))+'">đổi môn ôn '+d.doi.luc+'</span> ':'')
     +lc.map(t=>'<span class="tg r">đang học '+esc(tenLop(t.lop))+' — không còn đăng ký</span>').join(' ')+'</td>'
     +'<td>'+(rutDuoc&&monOn(x.id).some(m=>!rutCua(x.id,m))?'<button class="btn xs" data-a="dk.rut" data-v="'+x.id+'">Rút môn ôn…</button>':'')+'</td></tr>';
   });
  });
  h+='</table><div class="lgd"><span><span class="tg g">✓ Lý 1</span> đang học lớp ôn</span><span><span class="tg b">chưa có lớp</span> đăng ký ôn nhưng chưa được xếp lớp ở đợt đang xem</span>'
-  +'<span><span class="tg n">rút ôn</span> đã đăng ký rồi thôi ôn — có lý do</span><span>Số môn tự chọn ôn là của em — không bắt đúng 2 như bài thi</span><span>Nhóm Lớp → Học sinh, tự phẳng khi tìm</span></div></div>';
+  +'<span><span class="tg n">rút ôn</span> đã đăng ký rồi thôi ôn — có lý do</span><span>Số môn tự chọn ôn là của em — không bắt đúng 2 như bài thi</span>'
+  +'<span>Người nhập đăng ký — ✎ tích tay · ⬆ import · di chuột xem các dòng trước</span><span>Nhóm Lớp → Học sinh, tự phẳng khi tìm</span></div></div>';
  return h;
 }
 /* một ô môn: tên môn + trạng thái ôn ở đợt đang xem */
@@ -2079,7 +2116,7 @@ function tepMau(){
  const them=(ma,ten,lop,ms,x)=>rows.push(Object.assign({dong:++n,ma,ten,lop,tick:ms},x||{}));
  const ten=m=>COT_MON.find(x=>x[1]===m)[0];
  HS12().forEach(x=>{
-  let ms=DK[x.id].mon.slice();
+  let ms=DK_GOC[x.id].slice();                                                               /* tệp 12/04 — ảnh chụp, không theo DK sống */
   if(['a5-01','a5-02','a5-03'].includes(x.id)) ms=ms.filter(m=>m!=='dia').concat('ktpl');   /* sau họp PHHS 10/04: bỏ Địa, ôn GDKT&PL */
   if(['a2-37','a2-38'].includes(x.id)) ms=ms.filter(m=>m!=='tin').concat('anh');            /* bỏ Tin, ôn Tiếng Anh */
   if(x.id==='a2-10') ms=ms.concat('sinh');                                                   /* ôn thêm Sinh — 3 môn tự chọn, còn phân vân */
@@ -2117,9 +2154,12 @@ function doiChieu(tep){
  });
  const doi=hop.filter(x=>DK[x.h].mon.slice().sort().join()!==x.mon.slice().sort().join()).map(x=>({h:x.h,cu:DK[x.h].mon.slice(),moi:x.mon}));
  const canh=hop.filter(x=>x.mon.filter(m=>MON[m].thi==='tc').length>2||!x.mon.includes('toan')||!x.mon.includes('van'));
- return {tep,bo,hop,doi,canh,cotLa};
+ /* v1.3 §7.2 — em đang có dòng do chủ nhiệm TÍCH mà tệp ghi khác: vẫn nhận (dòng mới nhất thắng), nhưng nêu đích danh */
+ const cn=doi.filter(x=>DK[x.h].nguoi&&DK[x.h].nguoi.duong==='tich');
+ return {tep,bo,hop,doi,canh,cotLa,cn};
 }
 ON['dk.imp']=()=>{
+ if(!dotMoDK()){toast('⛔ Import chỉ bật trong hạn đăng ký của đợt (§7.2b).');return}
  const tep=tepMau();
  mfns.bdc=()=>{mfns._dc=doiChieu(tep);veDoiChieu()};
  modal('⬆ Import đăng ký ôn luyện — bước 1/2: chọn tệp',
@@ -2138,15 +2178,21 @@ function veDoiChieu(){
  const dc=mfns._dc;
  mfns.bdcghi=()=>{
   const ban={id:'v'+(DK_BAN.length+1),ten:dc.tep.moTa,tep:dc.tep.ten,luc:k2s(HOMNAY)+' '+GIO,boi:R().n,vai:R().cd,dong:dc.tep.rows.length,nhan:dc.hop.length,bo:dc.bo.length,doi:dc.doi.length};
+  const dm=dotMoDK(); if(!dm){toast('⛔ Đăng ký đã khóa trong lúc đối chiếu — chưa ghi gì.');closeM();render();return}
   DK_BAN.push(ban);
-  dc.hop.forEach(x=>{const cu=DK[x.h], d=dc.doi.find(z=>z.h===x.h);DK[x.h]={mon:x.mon,ban:ban.id,doi:d?{cu:d.cu,luc:k2n(HOMNAY)}:cu.doi}});
+  /* v1.3 — em ĐỔI môn mới sinh dòng mới mang `Người nhập đăng ký`; em không đổi giữ dòng hiện hành (và vết của nó) */
+  const ng={ten:R().n,vai:R().vn||R().cd,nguon:'import «'+ban.ten+'»',ngay:HOMNAY,duong:'import'};
+  dc.doi.forEach(z=>{const cu=DK[z.h];DK[z.h]={mon:z.moi,ban:ban.id,doi:{cu:z.cu,luc:k2n(HOMNAY)},nguoi:ng,ls:[{mon:cu.mon,nguoi:cu.nguoi}].concat(cu.ls||[])};guiTB(z.h,'dc',dm)});
   ghiAudit('Import đăng ký ôn luyện',ban.tep+' · nhận '+ban.nhan+' · bỏ qua '+ban.bo+' · đổi môn ôn '+ban.doi);
   demXoa();closeM();ST.dkLoc=dc.doi.length?'doi':'all';render();
-  toast('✅ Đã ghi <b>'+esc(ban.ten)+'</b>: nhận '+ban.nhan+' dòng, bỏ qua '+ban.bo+'. <b>'+ban.doi+' em đổi môn ôn</b> — lớp ôn <b>không tự đổi</b>; xử lý ở <b>tab 3</b>.');
+  toast('✅ Đã ghi <b>'+esc(ban.ten)+'</b>: nhận '+ban.nhan+' dòng, bỏ qua '+ban.bo+'. <b>'+ban.doi+' em đổi môn ôn</b> — sinh '+ban.doi+' dòng mới, lớp ôn <b>không tự đổi</b>; xử lý ở <b>tab 3</b>. 📱 '+ban.doi+' thông báo chỉ đọc lên App.');
  };
  mfns.bdclai=()=>ON['dk.imp']();
  modal('⬆ Import — bước 2/2: đối chiếu «'+esc(dc.tep.ten)+'»',
   '<div class="ro">🔎 <b>Chưa ghi gì vào hệ thống.</b> '+dc.tep.rows.length+' dòng: <b>'+dc.hop.length+'</b> hợp lệ · <b class="red">'+dc.bo.length+'</b> bỏ qua · <b>'+dc.doi.length+'</b> em đổi môn ôn so với bản đang dùng.</div>'
+  +(dc.cn.length?'<div class="warn">⚠ <b>'+dc.cn.length+' em đang có dòng do chủ nhiệm tích mà tệp ghi khác</b> — <b>vẫn nhận</b> (dòng mới nhất thắng, §3), nhưng bạn sắp thay dòng của người khác:'
+   +'<div class="tbw" style="margin-top:6px"><table><tr><th>Học sinh</th><th>Dòng đang dùng (người tích · ngày)</th><th>Tệp ghi</th></tr>'
+   +dc.cn.map(x=>'<tr><td><b>'+esc(tenHS(x.h))+'</b> <span class="mini">'+hsById(x.h).lop+'</span></td><td>'+x.cu.map(tenMonNgan).join(' · ')+'<div class="mini">'+esc(nguoiTxt(DK[x.h].nguoi))+'</div></td><td><b>'+x.moi.map(tenMonNgan).join(' · ')+'</b></td></tr>').join('')+'</table></div></div>':'')
   +(dc.cotLa.length?'<div class="warn">⚠ Tệp có cột <b>'+esc(dc.cotLa.join(', '))+'</b> không thuộc danh mục môn thi TT 24/2024 — có vẻ là <b>mẫu phiếu cũ</b>. Dòng nào tích cột này bị bỏ qua.</div>':'')
   +'<label class="lbl">⛔ Dòng bị bỏ qua ('+dc.bo.length+') — em của dòng này giữ đăng ký đang dùng</label>'
   +'<div class="tbw"><table><tr><th class="num">Dòng</th><th>Mã HS</th><th>Họ tên · lớp</th><th>Môn đã tích</th><th>Lý do</th></tr>'
@@ -2160,6 +2206,184 @@ function veDoiChieu(){
   +'<div class="mini" style="margin-top:6px">✅ '+(dc.hop.length-dc.doi.length)+' em không đổi. Bản cũ <b>không bị xóa</b> — tra ở «Các lần import».</div>',
   '<button class="btn" data-mb="dclai">← Chọn lại</button><button class="btn p" data-mb="dcghi">Ghi đăng ký ôn ('+dc.hop.length+' dòng)</button>');
 }
+
+/* ═══════════ v1.3 (SL24 · Đ1) — GIAI ĐOẠN ĐĂNG KÝ · CHỦ NHIỆM TÍCH HỘ · VẾT NGƯỜI NHẬP · BẢN CHIẾU APP ═══════════ */
+const tenDotNgan=d=>d.ten.replace('Ôn thi TN THPT 2027 — ','').replace(/ \(.*\)$/,'');
+const dotKhoaGanNhat=()=>DOT.filter(d=>d.nam===NAM_HIEN&&!d.huy&&ttDK(d)==='khoa').sort((a,b)=>ngayKhoaDK(a)<ngayKhoaDK(b)?1:-1)[0];
+const NGUON_TXT={giay:'phiếu giấy em nộp',bao:'em báo trực tiếp'};
+/* §7.2c — `tên · vai — nguồn · ngày`; vai ĐÓNG BĂNG lúc nhập */
+const nguoiTxt=n=>n?n.ten+' · '+n.vai+' — '+n.nguon+' · '+k2n(n.ngay):'';
+function oNguoi(h){
+ const d=DK[h]; if(!monOn(h).length||!d.nguoi) return '<span class="tg n">chưa đăng ký</span>';
+ const ls=(d.ls||[]).map(x=>'• '+(x.mon.length?x.mon.map(tenMonNgan).join(' + '):'(chưa đăng ký)')+' — '+nguoiTxt(x.nguoi)).join('\n');
+ return '<span title="'+esc('Dòng hiện hành: '+monOn(h).map(tenMonNgan).join(' + ')+(ls?'\nCác dòng trước:\n'+ls:'\n(chưa có dòng trước)'))+'">'
+  +(d.nguoi.duong==='tich'?'✎ ':'⬆ ')+esc(nguoiTxt(d.nguoi))+(ls?' <b>·'+d.ls.length+'↶</b>':'')+'</span>';
+}
+/* §7.2d — thông báo hệ thống, bản chụp tại lúc ghi; ⛔ không sinh bản ghi M8.1 */
+function guiTB(h,loai,d){
+ TB_APP.unshift({hs:h,loai,dot:tenDotNgan(d),luc:k2n(HOMNAY)+' '+GIO,mon:monOn(h).slice(),nguoi:nguoiTxt(DK[h].nguoi),han:k2n(d.dkHan),khoa:loai==='chot'?k2n(ngayKhoaDK(d)):''});
+}
+
+/* dải giai đoạn đăng ký — đầu tab 2 (§7.1) */
+function veDaiDK(ds,dmo){
+ const moDuoc=can('moDK')&&ST.nam===NAM_HIEN, cho=DOT.filter(d=>d.nam===NAM_HIEN&&!d.huy&&HOMNAY<=d.den&&ttDK(d)!=='mo');
+ const nut=(moDuoc&&cho.length?' <button class="btn sm" data-a="dk.mo">▶ Mở đăng ký…</button>':'')+' <a class="lk" data-a="dk.lsdk">🕘 Lịch sử mở / khóa</a>';
+ if(dmo){
+  const con=Math.round((k2d(dmo.dkHan)-k2d(HOMNAY))/864e5), co=ds.filter(x=>monOn(x.id).length).length;
+  const trongDot=ds.filter(x=>DK[x.id].nguoi&&DK[x.id].nguoi.ngay>=dmo.dkMo).length;
+  const lopTxt=R().sc==='Class'?R().lop+': ':'';
+  return '<div class="alert b">✎<span class="sp"><b>Đợt «'+esc(tenDotNgan(dmo))+'» đang mở đăng ký</b> — hạn <b>'+k2n(dmo.dkHan)+'</b> (còn '+con+' ngày) · '
+   +lopTxt+'<b>'+co+'/'+ds.length+'</b> em đã có đăng ký · <b>'+trongDot+'</b> em đã nhập trong đợt này'+(ds.length-co?' · <b class="red">'+(ds.length-co)+' em chưa có</b>':'')
+   +'<div class="mini" style="margin-top:3px">Trong hạn: chủ nhiệm <b>tích hộ</b> em lớp mình · văn thư <b>import</b> · gia đình nhận <b>bản chiếu chỉ đọc</b> trên App. Sửa môn trong hạn là <b>điều chỉnh</b>, không cần rút.</div></span>'
+   +(can('tichDK')?'<button class="btn '+(ST.tich?'':'p ')+'sm" data-a="dk.tich">'+(ST.tich?'✕ Thoát chế độ tích':'✎ Bật chế độ tích môn')+'</button>':'')
+   +(moDuoc?' <button class="btn sm" data-a="dk.han">🗓 Đổi hạn…</button> <button class="btn sm" data-a="dk.khoa">🔒 Khóa đăng ký…</button>':'')+nut+'</div>';
+ }
+ const k=dotKhoaGanNhat(), c=cho.find(d=>ttDK(d)==='chua');
+ if(k) return '<div class="alert w">🔒<span class="sp"><b>Đăng ký của đợt «'+esc(tenDotNgan(k))+'» đã khóa '+k2n(ngayKhoaDK(k))+'</b>'+(k.dkKhoa?' (bấm khóa)':' (qua hạn — tự khóa)')+' — chỉ còn <b>Rút môn ôn</b> theo đơn.'
+  +(c?' · ⏸ Đợt «'+esc(tenDotNgan(c))+'» '+(c.dkMo?'hẹn mở '+k2n(c.dkMo):'chưa mở đăng ký')+'.':'')
+  +(can('tichDK')?'<div class="mini" style="margin-top:3px">Ngoài hạn cửa ghi <b>đóng thật</b> — bảng chỉ đọc (ràng buộc 23).</div>':'')+'</span>'+nut+'</div>';
+ return '<div class="alert w">⏸<span class="sp"><b>Chưa đợt nào mở đăng ký môn ôn</b>'+(c&&c.dkMo?' — đợt «'+esc(tenDotNgan(c))+'» hẹn mở '+k2n(c.dkMo):'')+'. Trước khi mở ⛔ không ai ghi đăng ký được.</span>'+nut+'</div>';
+}
+
+/* §7.1b — bảng tích: MỖI MÔN MỘT CỘT (đúng hình dạng phiếu import); cột = môn trường dạy ở lớp 12 */
+const COT_TICH=()=>MON_THU_TU.filter(m=>MON[m].day);
+function veTich(ds,dmo){
+ const cot=COT_TICH(), laLop=R().sc==='Class';
+ let rows=ds; if(!laLop) rows=ds.filter(x=>x.lop===ST.tichLop);
+ const nDoi=Object.keys(ST.tam).length;
+ let h='<div class="card"><div class="cb" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">'
+  +'<b>Nguồn cho các dòng sắp lưu <span style="color:var(--red)">*</span></b>'
+  +['giay','bao'].map(k=>'<label class="tick" style="margin:0"><input type="radio" name="tnguon" data-a="dk.nguon" data-v="'+k+'"'+(ST.tichNguon===k?' checked':'')+'> '+NGUON_TXT[k][0].toUpperCase()+NGUON_TXT[k].slice(1)+'</label>').join('')
+  +'<span class="mini">— đổi được từng dòng ở cột «Người nhập đăng ký» · ⛔ không bắt chụp ảnh phiếu: vết là <b>người đứng tên</b></span>'
+  +'<span class="sp" style="flex:1"></span><button class="btn p sm" data-a="dk.luu"'+(nDoi?'':' disabled')+'>Lưu '+nDoi+' em đã đổi</button></div></div>';
+ if(!laLop) h+='<div class="bar">'+LOP_CK.map(l=>'<button class="chip'+(ST.tichLop===l?' on':'')+'" data-a="dk.tlop" data-v="'+l+'">'+l+'</button>').join('')
+  +'<span class="mini">Vai <b>'+esc(R().cd)+'</b> tích theo từng lớp — chủ nhiệm chỉ thấy lớp mình (<code>T @ Class</code>)</span></div>';
+ h+='<div class="hint">Tích / bỏ tích rồi <b>Lưu</b>. Mỗi em <b>đã đổi</b> sinh <b>một dòng mới</b> — ⛔ không ghi đè dòng cũ; em không đổi gì thì không sinh dòng. '
+  +'Bỏ tích <b>hết</b> môn của em đã có đăng ký ⇒ <b>bỏ qua</b> — thôi ôn phải qua <b>Rút môn ôn</b>. Lớp ôn <b>không tự đổi</b>.</div>';
+ h+='<div class="tbw tbx"><table class="tich"><tr><th>Học sinh</th>'+cot.map(m=>'<th style="text-align:center">'+esc(tenMonNgan(m))+'</th>').join('')+'<th>Người nhập đăng ký</th></tr>';
+ rows.forEach(x=>{
+  const doi=!!ST.tam[x.id], cur=doi?ST.tam[x.id]:monOn(x.id);
+  h+='<tr class="'+(doi?'doi':'')+'"><td class="nw"><b>'+esc(x.ten)+'</b><div class="mini">'+x.ma+(laLop?'':' · '+x.lop)+'</div></td>'
+   +cot.map(m=>{const rt=rutCua(x.id,m);
+    return '<td style="text-align:center"><input type="checkbox" data-tk="'+x.id+'|'+m+'"'+(cur.includes(m)?' checked':'')+(rt?' disabled title="Đã rút ôn '+k2n(rt.ngay)+' — khôi phục bằng ↺ ở bảng thường"':'')+'>'+(rt?'<div class="mini">rút</div>':'')+'</td>'}).join('')
+   +'<td class="mini">'+(doi?'✎ <b>sẽ ghi:</b> '+esc(R().n+' · '+(R().vn||R().cd))+' — <select class="fs" data-tnd="'+x.id+'" style="font-size:11px"><option value="">(theo đầu bảng'+(ST.tichNguon?': '+NGUON_TXT[ST.tichNguon]:'')+')</option>'
+     +['giay','bao'].map(k=>'<option value="'+k+'"'+(ST.tichNguonDong[x.id]===k?' selected':'')+'>'+NGUON_TXT[k]+'</option>').join('')+'</select> · '+k2n(HOMNAY)
+     +' <a class="lk" data-a="dk.hoan" data-v="'+x.id+'">↺ hoàn</a>':oNguoi(x.id))+'</td></tr>';
+ });
+ return h+'</table><div class="lgd"><span>Nền vàng = dòng đã đổi, chưa lưu</span><span>Môn trường không dạy ở lớp 12 (CN Công nghiệp · CN Nông nghiệp) <b>không có cột</b> — không tích được thì không cần bước chặn</span></div></div>';
+}
+ON['dk.tich']=()=>{if(ST.tich&&Object.keys(ST.tam).length)toast('Đã bỏ '+Object.keys(ST.tam).length+' dòng chưa lưu.');ST.tich=!ST.tich;ST.tam={};ST.tichNguonDong={};render()};
+ON['dk.tlop']=v=>{ST.tichLop=v;render()};
+ON['dk.nguon']=v=>{ST.tichNguon=v;render()};
+ON['dk.hoan']=v=>{delete ST.tam[v];delete ST.tichNguonDong[v];render()};
+document.addEventListener('change',e=>{
+ const t=e.target;
+ if(t.dataset.tk){const[h,m]=t.dataset.tk.split('|'), cur=(ST.tam[h]||monOn(h)).slice(), i=cur.indexOf(m);
+  if(t.checked&&i<0)cur.push(m); if(!t.checked&&i>=0)cur.splice(i,1);
+  const moi=MON_THU_TU.filter(x=>cur.includes(x));
+  if(moi.join()===MON_THU_TU.filter(x=>monOn(h).includes(x)).join()){delete ST.tam[h];delete ST.tichNguonDong[h]} else ST.tam[h]=moi;
+  const y=window.scrollY;render();window.scrollTo(0,y);return}
+ if(t.dataset.tnd){if(t.value)ST.tichNguonDong[t.dataset.tnd]=t.value;else delete ST.tichNguonDong[t.dataset.tnd];return}
+});
+/* Lưu — cùng luật chặn của bước đối chiếu, phần áp được với một dòng tích tay; kết quả là BẢNG, không phải toast */
+ON['dk.luu']=()=>{
+ const d=dotMoDK(); if(!d){toast('⛔ Đăng ký đã khóa — không lưu được.');ST.tich=false;ST.tam={};render();return}
+ const ids=Object.keys(ST.tam); if(!ids.length) return;
+ const thieu=ids.filter(h=>!(ST.tichNguonDong[h]||ST.tichNguon));
+ if(thieu.length){toast('⛔ Chưa chọn <b>nguồn</b> cho '+thieu.length+' em — chọn «Phiếu giấy em nộp» hoặc «Em báo trực tiếp» ở đầu bảng (ràng buộc 24). Chưa ghi gì.');return}
+ const kq={ghi:[],bo:[],kc:[],ah:[]};
+ ids.forEach(h=>{
+  const cu=monOn(h).slice(), moi=ST.tam[h];
+  if(!moi.length){if(cu.length) kq.bo.push({h,ly:'Không tích môn nào — em đã có đăng ký: thôi ôn phải qua «Rút môn ôn» (có lý do), ⛔ không xóa bằng cách bỏ tích'});return}
+  const ah=anhHuong({h,cu,moi});
+  DK[h]={mon:moi,ban:null,doi:cu.length?{cu,luc:k2n(HOMNAY)}:DK[h].doi,
+   nguoi:{ten:R().n,vai:R().vn||R().cd,nguon:NGUON_TXT[ST.tichNguonDong[h]||ST.tichNguon],ngay:HOMNAY,duong:'tich'},
+   ls:[{mon:cu,nguoi:DK[h].nguoi}].concat(DK[h].ls||[])};
+  kq.ghi.push(h); guiTB(h,'dc',d);
+  if(moi.filter(m=>MON[m].thi==='tc').length>2||!moi.includes('toan')||!moi.includes('van')) kq.kc.push(h);
+  if(ah.length) kq.ah.push({h,ah});
+ });
+ ghiAudit('Tích môn ôn hộ học sinh',d.ten+' · ghi '+kq.ghi.length+' dòng mới · bỏ qua '+kq.bo.length);
+ ST.tam={};ST.tichNguonDong={};demXoa();render();
+ const ten=a=>a.map(h=>esc(tenHS(h))+' <span class="mini">'+hsById(h).lop+'</span>').join(' · ');
+ modal('✎ Kết quả lưu — đợt «'+esc(tenDotNgan(d))+'»',
+  '<div class="tbw"><table><tr><th>Nhóm</th><th class="num">Số em</th><th>Chi tiết</th></tr>'
+  +'<tr><td>✅ Ghi dòng đăng ký mới</td><td class="num"><b>'+kq.ghi.length+'</b></td><td class="mini">'+(ten(kq.ghi)||'—')+'</td></tr>'
+  +'<tr><td>⏭ Bỏ qua — không tích môn nào</td><td class="num"><b>'+kq.bo.length+'</b></td><td class="mini red">'+(kq.bo.map(x=>esc(tenHS(x.h))+': '+esc(x.ly)).join('<br>')||'—')+'</td></tr>'
+  +'<tr><td>ℹ Khác cơ cấu bài thi — vẫn nhận</td><td class="num">'+kq.kc.length+'</td><td class="mini">'+(kq.kc.map(h=>esc(tenHS(h))+' ('+tcOn(h).length+' môn tự chọn'+(monOn(h).includes('van')?'':' · không ôn Ngữ văn')+(monOn(h).includes('toan')?'':' · không ôn Toán')+')').join(' · ')||'—')+'</td></tr>'
+  +'<tr><td>⚠ Đổi môn — ảnh hưởng lớp ôn</td><td class="num">'+kq.ah.length+'</td><td class="mini">'+(kq.ah.map(x=>esc(tenHS(x.h))+': '+esc(x.ah.join(' · '))).join('<br>')||'—')
+   +(kq.ah.length?' <a class="lk" data-a="nav.tab" data-v="chia">↗ Tab 3</a> — lớp ôn <b>không tự đổi</b>':'')+'</td></tr></table></div>'
+  +'<div class="mini" style="margin-top:8px">📱 <b>'+kq.ghi.length+'</b> thông báo <b>chỉ đọc</b> gửi phụ huynh đã liên kết App của các em có dòng mới — nhãn <i>«Đang trong hạn điều chỉnh — sai thì báo giáo viên chủ nhiệm»</i> (§7.2d).</div>'
+  +'<div class="mini" style="margin-top:4px">⚠ Em <b>chưa có phụ huynh liên kết App</b> thì ⛔ ai nhận trên App — báo bằng kênh khác · <b>↗ M10.5</b> <i>Liên kết App phụ huynh · lọc «Học sinh chưa có tài khoản liên kết»</i> (TKPH 25/9/2026)</div>',
+  '<button class="btn p" data-mb="close">Đóng</button>');
+};
+
+/* §7.2b — mở · đổi hạn · khóa: vai có S @ School ở tab 2 (PHT_CM) */
+ON['dk.mo']=()=>{
+ const cho=DOT.filter(d=>d.nam===NAM_HIEN&&!d.huy&&HOMNAY<=d.den&&ttDK(d)!=='mo');
+ mfns.bdkmo=()=>{
+  const d=dotById($('#dkMoDot').value), mo=$('#dkMoNg').value, han=$('#dkMoHan').value, ly=$('#dkMoLy').value.trim(), khac=dotMoDK();
+  if(khac){toast('⛔ <b>Một thời điểm chỉ một đợt đang mở đăng ký.</b> Đợt «'+esc(tenDotNgan(khac))+'» đang mở tới <b>'+k2n(khac.dkHan)+'</b> — khóa đợt đó trước.');return}
+  if(!mo||!han||han<mo){toast('⛔ Hạn phải từ ngày mở trở đi.');return}
+  if(han<HOMNAY){toast('⛔ Hạn '+k2n(han)+' đã qua — cửa mở ra là khóa ngay.');return}
+  const lai=!!d.dkMo; if(lai&&!ly){$('#dkMoLy').classList.add('err');toast('⛔ Đợt này đã từng mở và đã khóa — <b>mở lại bắt buộc lý do</b> (ràng buộc 22).');return}
+  Object.assign(d,{dkMo:mo,dkHan:han,dkKhoa:null});
+  d.dkLs.push({luc:k2n(HOMNAY)+' '+GIO,boi:R().n+' · '+R().cd,viec:lai?'▶ Mở lại':'▶ Mở đăng ký',chiTiet:'mở '+k2n(mo)+' · hạn '+k2n(han),lyDo:ly});
+  ghiAudit(lai?'Mở lại đăng ký môn ôn':'Mở đăng ký môn ôn',d.ten+' · '+k2n(mo)+' → '+k2n(han)+(ly?' · '+ly:''));closeM();render();
+  toast('▶ Đợt «'+esc(tenDotNgan(d))+'» '+(ttDK(d)==='mo'?'<b>đang mở đăng ký</b> tới '+k2n(han)+' — chủ nhiệm tích hộ, văn thư import được.':'hẹn mở '+k2n(mo)+'.'));
+ };
+ modal('▶ Mở đăng ký môn ôn',
+  '<div class="hint">Giai đoạn đăng ký là <b>trường của đợt ôn</b> — ⛔ không phải thực thể mới. Qua hạn là <b>tự khóa</b>, không ai phải nhớ bấm. <b>Một thời điểm chỉ một đợt đang mở.</b></div>'
+  +'<label class="lbl">Đợt</label><select class="fldi" id="dkMoDot">'+cho.map(d=>'<option value="'+d.id+'">'+esc(d.ten)+(d.dkMo?' — đã khóa '+k2n(ngayKhoaDK(d))+' (MỞ LẠI)':'')+'</option>').join('')+'</select>'
+  +'<label class="lbl">Ngày mở</label><input type="date" class="fldi" id="dkMoNg" value="'+HOMNAY+'">'
+  +'<label class="lbl">Hạn</label><input type="date" class="fldi" id="dkMoHan" value="'+addD(HOMNAY,7)+'">'
+  +'<label class="lbl">Lý do <span class="mini">(bắt buộc khi MỞ LẠI đợt đã khóa)</span></label><textarea class="fldi" id="dkMoLy" rows="2" placeholder="VD: họp phụ huynh 10/04 — nhận điều chỉnh bổ sung"></textarea>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="dkmo">Mở đăng ký</button>');
+};
+ON['dk.han']=()=>{
+ const d=dotMoDK(); if(!d) return;
+ mfns.bdkhan=()=>{const han=$('#dkHanMoi').value;
+  if(!han||han<HOMNAY||han<d.dkMo){toast('⛔ Hạn mới phải từ hôm nay ('+k2n(HOMNAY)+') trở đi.');return}
+  const cu=d.dkHan; d.dkHan=han; d.dkLs.push({luc:k2n(HOMNAY)+' '+GIO,boi:R().n+' · '+R().cd,viec:'🗓 Đổi hạn',chiTiet:k2n(cu)+' → '+k2n(han)});
+  ghiAudit('Đổi hạn đăng ký môn ôn',d.ten+' · '+k2n(cu)+' → '+k2n(han));closeM();render();toast('🗓 Hạn đăng ký đợt «'+esc(tenDotNgan(d))+'» nay là <b>'+k2n(han)+'</b>.')};
+ modal('🗓 Đổi hạn đăng ký — '+esc(tenDotNgan(d)),'<label class="lbl">Hạn hiện tại</label><div>'+k2s(d.dkHan)+'</div><label class="lbl">Hạn mới</label><input type="date" class="fldi" id="dkHanMoi" value="'+d.dkHan+'">',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="dkhan">Lưu hạn</button>');
+};
+ON['dk.khoa']=()=>{
+ const d=dotMoDK(); if(!d) return;
+ const co=HS12().filter(x=>monOn(x.id).length).length;
+ mfns.bdkkhoa=()=>{
+  d.dkKhoa={ngay:HOMNAY,boi:R().n}; d.dkLs.push({luc:k2n(HOMNAY)+' '+GIO,boi:R().n+' · '+R().cd,viec:'🔒 Khóa sớm',chiTiet:'hạn cũ '+k2n(d.dkHan)});
+  HS12().filter(x=>monOn(x.id).length).forEach(x=>guiTB(x.id,'chot',d));
+  ghiAudit('Khóa đăng ký môn ôn',d.ten+' · '+co+' em có dòng đăng ký');closeM();render();
+  toast('🔒 Đã khóa đăng ký đợt «'+esc(tenDotNgan(d))+'». Chủ nhiệm: bảng <b>chỉ đọc</b>, chỉ còn Rút môn ôn · Văn thư: Import xám. 📱 '+co+' thông báo <b>bản đã chốt</b> gửi phụ huynh.')};
+ modal('🔒 Khóa đăng ký — '+esc(tenDotNgan(d)),'<div class="warn">Khóa trước hạn '+k2n(d.dkHan)+'. Sau khi khóa <b>chỉ còn Rút môn ôn</b> (tự nguyện, có lý do); nhận thêm đăng ký phải <b>mở lại có lý do</b>.</div>'
+  +'<div class="mini">📱 Phụ huynh của <b>'+co+'</b> em có dòng đăng ký nhận <b>một thông báo bản đã chốt</b>: <i>«Đã khóa '+k2n(HOMNAY)+' — muốn thôi ôn một môn thì làm đơn rút gửi giáo viên chủ nhiệm»</i>.</div>',
+  '<button class="btn" data-mb="close">Hủy</button><button class="btn p" data-mb="dkkhoa">Khóa đăng ký</button>');
+};
+ON['dk.lsdk']=()=>modal('🕘 Lịch sử mở / khóa đăng ký môn ôn',
+ '<div class="tbw"><table><tr><th>Đợt</th><th>Trạng thái</th><th>Lúc</th><th>Người</th><th>Việc</th><th>Chi tiết</th></tr>'
+ +DOT.filter(d=>d.nam===NAM_HIEN&&!d.huy).map(d=>{const tt={chua:'Chưa mở đăng ký',mo:'Đang mở đăng ký',khoa:'Đã khóa đăng ký'}[ttDK(d)];
+  return (d.dkLs.length?d.dkLs:[{luc:'—',boi:'',viec:'',chiTiet:''}]).map((x,i)=>'<tr><td>'+(i?'':'<b>'+esc(tenDotNgan(d))+'</b>')+'</td><td class="mini">'+(i?'':tt+(ttDK(d)==='khoa'&&!d.dkKhoa?' (qua hạn '+k2n(d.dkHan)+')':''))+'</td>'
+   +'<td class="nw mini">'+x.luc+'</td><td class="mini">'+esc(x.boi)+'</td><td>'+esc(x.viec)+'</td><td class="mini">'+esc(x.chiTiet)+(x.lyDo?' · lý do: '+esc(x.lyDo):'')+'</td></tr>').join('')}).join('')+'</table></div>',
+ '<button class="btn" data-mb="close">Đóng</button>');
+ON['dk.app']=()=>modal('📱 Bản chiếu lên App Phụ huynh – Học sinh ('+TB_APP.length+')',
+ '<div class="hint">🛑 <b>Bản chiếu, ⛔ không phải chức năng mới của App</b> — đi kênh thông báo hệ thống sẵn có (khối «🔔 Thông báo mới»). ⛔ Không một nút chọn nào trên App (§2.6). Mỗi thông báo là <b>bản chụp tại lúc ghi</b>; ⛔ không sinh bản ghi M8.1.</div>'
+ +(TB_APP.length?'<div class="mini" style="margin-bottom:6px"><b>'+TB_APP.filter(t=>t.loai==='dc').length+'</b> thông báo điều chỉnh trong hạn · <b>'+TB_APP.filter(t=>t.loai==='chot').length+'</b> thông báo bản đã chốt</div>'
+  +'<div class="tbw"><table><tr><th>Lúc</th><th>Học sinh</th><th>Nội dung</th><th>Nhãn</th></tr>'
+  +TB_APP.filter(t=>t.loai==='dc').concat(TB_APP.filter(t=>t.loai==='chot')).slice(0,60).map(t=>'<tr><td class="nw mini">'+t.luc+'</td><td>'+esc(tenHS(t.hs))+' <span class="mini">'+hsById(t.hs).lop+'</span></td>'
+   +'<td class="mini">Đợt «'+esc(t.dot)+'»: <b>'+t.mon.map(tenMonNgan).join(' + ')+'</b> · '+esc(t.nguoi)+(t.loai==='dc'?' · hạn '+t.han:'')+'</td>'
+   +'<td class="mini">'+(t.loai==='dc'?'<i>Đang trong hạn điều chỉnh — sai thì báo giáo viên chủ nhiệm</i>':'<i>Đã khóa '+t.khoa+' — muốn thôi ôn một môn thì làm đơn rút gửi giáo viên chủ nhiệm</i>')+'</td></tr>').join('')
+  +'</table></div>'+(TB_APP.length>60?'<div class="mini">… và '+(TB_APP.length-60)+' thông báo nữa.</div>':''):'<div class="empty">Chưa có thông báo nào trong phiên demo — ghi đăng ký trong hạn (tích hộ · import) hoặc khóa đăng ký để sinh.</div>'),
+ '<button class="btn" data-mb="close">Đóng</button>');
+ON['dk.impx']=(v,el)=>toast('⛔ '+esc(el.title));
+/* nút mô phỏng trên thanh vai — hôm nay 18/04 nằm sau mọi hạn: bật = PHT_CM đã mở đăng ký đợt giai đoạn 2 từ 11/04, hạn 25/04 */
+ON['sim.dk']=()=>{
+ const d=dotById('D2');
+ if(ttDK(d)==='mo'){Object.assign(d,{dkMo:null,dkHan:null,dkKhoa:null,dkLs:[]});render();toast('🗓 Tắt mô phỏng — không đợt nào đang mở đăng ký: chủ nhiệm <b>chỉ đọc</b>, văn thư <b>Import xám</b>.');return}
+ Object.assign(d,{dkMo:'2027-04-11',dkHan:'2027-04-25',dkKhoa:null,dkLs:[{luc:'11/04/2027 08:00',boi:'Vũ Thị Lan · PHT chuyên môn',viec:'▶ Mở đăng ký',chiTiet:'mở 11/04 · hạn 25/04 — nhận điều chỉnh sau họp phụ huynh 10/04'}]});
+ render();toast('🗓 Mô phỏng: đợt <b>«giai đoạn 2»</b> đang mở đăng ký (11/04 → 25/04). Vai <b>GVCN 12A1</b> → tab 2 → <b>✎ Bật chế độ tích môn</b>.');
+};
 
 /* ═══════════ M11.1 — TAB «CHIA LỚP THEO MÔN» (RIÊNG, thay app.50 thi đầu vào của M11.2) ═══════════
    Đơn vị dòng: MÔN của một đợt. Gợi ý số lớp = trần(số em ôn ÷ sĩ số tối đa của đợt) — là GỢI Ý, người phụ trách chốt.
@@ -2229,7 +2453,8 @@ function veChia(){
  const monPV=MON_THU_TU.filter(m=>MON[m].day&&(r.sc!=='Group'||MON[m].to===r.to));
  let h=scopeBar('<span>Đợt: <b>'+esc(d.ten)+'</b></span>');
  h+='<div class="bar">'+dots.map(x=>'<button class="chip'+(x.id===d.id?' on':'')+'" data-a="chia.dot" data-v="'+x.id+'">'+esc(x.ten)+' <span class="st2 '+ttDot(x)[1]+'">'+ttDot(x)[0]+'</span></button>').join('')+'</div>';
- const ban=DK_BAN[DK_BAN.length-1];
+ const ban=DK_BAN[DK_BAN.length-1], dmo=dotMoDK();
+ if(dmo&&!xong) h+='<div class="warn">⚠ Đăng ký đợt «'+esc(tenDotNgan(dmo))+'» còn mở tới <b>'+k2n(dmo.dkHan)+'</b> — số em có thể còn đổi. Chia sớm là quyết định của người phụ trách (§7.2b).</div>';   /* v1.3 */
  h+='<div class="card"><div class="cb cfr">'
   +'<div class="f"><div class="k">Nguồn danh sách ôn</div><div class="v">Đăng ký ôn luyện <b>«'+esc(ban.ten)+'»</b>'
   +' <span class="mini">import '+ban.luc+'</span> <a class="lk" data-a="nav.tab" data-v="dk">↗ Tab 2</a> · trừ em <b>rút môn ôn</b> (tự nguyện — TT 29/2024)</div></div>'
@@ -2734,21 +2959,23 @@ ON['ch.nb']=v=>{
 /* ═══════════ M11.1 — KHUNG: vai · phạm vi · header · tab (RIÊNG của menu) ═══════════
    Cung cấp hook mà tệp khuôn dùng: R() · can(q) · ST · lopTrongPV() · scopeBar() · nhanDuongVao() · crumb() */
 
-const QALL=['vaoMenu','xem','lopTao','lopSua','lopHuy','tvThem','tvRoi','dkImport','rutOn','chiaLop','chotSoLop',
+const QALL=['vaoMenu','xem','lopTao','lopSua','lopHuy','tvThem','tvRoi','dkImport','rutOn','tichDK','moDK','chiaLop','chotSoLop',
  'xepLich','xepTay','diemDanh','diemNB','chotBuoi','danY','thamSo','xuat','xemEm'];
 /* `xemEm` — OL-5 (M11.2 §2.6, chép sang ở TKOL-1B): mức TỪNG HỌC SINH ở tab 5 Báo cáo. Ban giám hiệu (HT · PHT_CM)
    KHÔNG có — khi báo cáo có thêm so sánh giữa các lần thi thử, con số bắt đầu nói về giáo viên dạy lớp ôn.
    `vaoMenu` — OL-6 (M11.2 §2.7): Kế toán KHÔNG có Feature nào ở M11.1 ⇒ menu này không nằm trong danh sách menu
    của họ. Demo không có sidebar riêng nên dựng đúng hệ quả: không tab nào, chỉ một khối giải thích.
-   Số buổi và số tiết đã CHỐT được ĐẨY sang M7.6 — Kế toán đọc ở đó, ở khối chỉ thống kê. */
+   Số buổi và số tiết đã CHỐT được ĐẨY sang M7.6 — Kế toán đọc ở đó, ở khối chỉ thống kê.
+   v1.3 (SL24): `tichDK` = T tab 2 — tích môn ôn hộ học sinh, CHỈ trong hạn đăng ký (GVCN @ Class; PHT_CM ⛔ không có T) ·
+   `moDK` = S @ School tab 2 — mở · đổi hạn · khóa đăng ký của đợt (PHT_CM). ⛔ GVCN không có `dkImport` (ID). */
 const ROLES={
  FULL :{n:'Trần Minh Đức',cd:'🔓 Đủ quyền (demo)',sc:'School',q:QALL},
- PHTCM:{n:'Vũ Thị Lan',cd:'PHT chuyên môn',sc:'School',q:QALL.filter(q=>q!=='xemEm')},   /* OL-5 — không có `xemEm` */
+ PHTCM:{n:'Vũ Thị Lan',cd:'PHT chuyên môn',sc:'School',q:QALL.filter(q=>q!=='xemEm'&&q!=='tichDK')},   /* OL-5 — không có `xemEm`; tab 2 không có T */
  TTCM :{n:'Nguyễn Thị Phương',cd:'TTCM KHTN',sc:'Group',to:'KHTN',
         q:['vaoMenu','xem','lopTao','lopSua','tvThem','tvRoi','chiaLop','chotSoLop','xepLich','xepTay','danY','xuat','xemEm']},
  GVH  :{n:'Lê Văn Minh',cd:'GV dạy Hóa 1',sc:'Own',gv:'h_a',
         q:['vaoMenu','xem','tvThem','tvRoi','xepLich','xepTay','diemDanh','diemNB','danY','xuat','xemEm']},
- GVCN :{n:'Nguyễn Văn Hùng',cd:'GVCN 12A1',sc:'Class',lop:'12A1',q:['vaoMenu','xem','rutOn']},
+ GVCN :{n:'Nguyễn Văn Hùng',cd:'GVCN 12A1',vn:'GVCN',sc:'Class',lop:'12A1',q:['vaoMenu','xem','rutOn','tichDK']},
  VT   :{n:'Phan Thị Thảo',cd:'Văn thư',sc:'Branch',dt:'A',q:['vaoMenu','xem','dkImport']},
  HT   :{n:'Nguyễn Quang Huy',cd:'Hiệu trưởng',sc:'School',q:['vaoMenu','xem','thamSo','xuat']},
  /* OL-6 (M11.2 §2.7 · ràng buộc 41) — Kế toán KHÔNG còn Feature nào: không `vaoMenu`, nên không tab nào.
@@ -2761,7 +2988,8 @@ const can=q=>R().q.includes(q);
 
 const ST={tab:'lop',nam:NAM_HIEN,dt:'ALL',lop:null,lSub:'tv',lChip:'all',tvChip:'hoc',
  xDot:null,xLop:'all',xSel:null,bcSub:'mon',bcLop:null,bcThang:null,bcDot:null,
- cDot:null,dkDot:null,dkLoc:'all',dkMon:null,dkQ:''};
+ cDot:null,dkDot:null,dkLoc:'all',dkMon:null,dkQ:'',
+ tich:false,tam:{},tichNguon:null,tichNguonDong:{},tichLop:'12A1'};   /* v1.3 — chế độ tích môn (§7.1b): bản nháp chưa lưu */
 
 /* SCOPE CỨNG — lớp ngoài phạm vi KHÔNG có trong dữ liệu trả về (không phải ẩn nút) */
 function lopTrongPV(){
@@ -2796,6 +3024,7 @@ function rolebar(){
   +'<span class="simw">Hôm nay (mô phỏng): <b style="color:#fff">'+kThu(HOMNAY)+' '+k2s(HOMNAY)+'</b></span>'
   +'<button class="simtg'+(SIM.tkb2?'':' off')+'" data-a="sim.tkb">🔀 M4.6 bộ TKB 2 từ 19/04: '+(SIM.tkb2?'BẬT':'TẮT')+'</button>'
   +'<button class="simtg'+(SIM.m34?'':' off')+'" data-a="sim.m34">🔗 M3.4 danh sách dự thi: '+(SIM.m34?'ĐÃ CÓ':'CHƯA CÓ')+'</button>'
+  +'<button class="simtg'+(ttDK(dotById('D2'))==='mo'?'':' off')+'" data-a="sim.dk" title="Hôm nay mô phỏng 18/04 nằm sau hạn đăng ký của giai đoạn 1 — bật để có một cửa đăng ký đang mở (v1.3 §7.2b)">🗓 Mô phỏng: đợt «giai đoạn 2» đang mở đăng ký: '+(ttDK(dotById('D2'))==='mo'?'BẬT':'TẮT')+'</button>'
   +'<button class="ntg" id="btnNote">💡 Ghi chú thiết kế: TẮT</button>';
 }
 
